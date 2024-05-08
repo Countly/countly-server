@@ -572,6 +572,7 @@ usersApi.mergeUserProperties = function(newAppUserP, oldAppUser) {
     newAppUserP.merged_uid = oldAppUser.uid;
     newAppUserP.merged_did = oldAppUser.did;
     newAppUserP.merges = (newAppUserP.merges || 0) + 1;
+    newAppUserP.last_merge = Date.now().valueOf();
 };
 
 /*

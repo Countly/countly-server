@@ -16,6 +16,7 @@ catch (err) {
         );
     }
 }
+var log = require('./log.js')('core:pdf');
 /**
   * Function to generate pdf from html
   * @param {string} html - html text to be converted to html
@@ -31,30 +32,57 @@ exports.renderPDF = async function(html, callback, options = null, puppeteerArgs
         );
     }
     let browser;
-    if (puppeteerArgs) {
-        browser = await puppeteer.launch(puppeteerArgs);
-    }
-    else {
-        browser = await puppeteer.launch();
-    }
+    try {
+        log.d('Starting pdf generation', 'puppeteerArgs: ', puppeteerArgs);
+        if (puppeteerArgs) {
+            browser = await puppeteer.launch(puppeteerArgs);
+        }
+        else {
+            browser = await puppeteer.launch();
+        }
+        const updatedTimeout = 240000;
+        const page = await browser.newPage();
 
-    const page = await browser.newPage();
-    if (!options) {
-        options = { format: 'Letter' };
-    }
-
-    if (remoteContent === true) {
-        await page.goto(`data:text/html;base64,${Buffer.from(html).toString('base64')}`, {
-            waitUntil: 'networkidle0'
+        page.on('console', (msg) => {
+            log.d("Headless chrome page log", msg.text());
         });
-    }
-    else {
-        //page.setContent will be faster than page.goto if html is a static
-        await page.setContent(html);
-    }
 
-    await page.pdf(options).then(callback, function(error) {
-        console.log(error);
-    });
-    await browser.close();
+        page.on('pageerror', (error) => {
+            log.e("Headless chrome page error message", error.message);
+        });
+
+        page.on('response', (response) => {
+            log.d("Headless chrome page response", response.status(), response.url());
+        });
+
+        page.on('requestfailed', (request) => {
+            log.d("Headless chrome page failed request", request.failure().errorText, request.url());
+        });
+
+        page.setDefaultNavigationTimeout(updatedTimeout);
+        if (!options) {
+            options = { format: 'Letter' };
+        }
+
+        if (remoteContent === true) {
+            await page.goto(`data:text/html;base64,${Buffer.from(html).toString('base64')}`, {
+                waitUntil: 'networkidle0'
+            });
+        }
+        else {
+            //page.setContent will be faster than page.goto if html is a static
+            await page.setContent(html);
+        }
+
+        await page.pdf(options).then(callback, function(error) {
+            log.d('pdf generation error', error);
+        });
+        log.d('pdf generated');
+    }
+    catch (error) {
+        log.d('Error:', error);
+    }
+    finally {
+        await browser.close();
+    }
 };

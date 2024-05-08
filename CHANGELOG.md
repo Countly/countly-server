@@ -1,3 +1,66 @@
+## Version 23.11.20
+Fixes:
+- [core] Nullcheck in data exports
+- [events] changed formatSecond to show decimals
+  
+Enterprise Fixes:
+- [core] missing proxy setting added for  enterprise features
+- [drill] fix for select users correctly when navigating from drill to user
+
+## Version 23.11.19
+Features:
+- [core] Increase log level for specific mongodb driver events
+- [reports] log subscribe/unsubscribe to audit logs
+- [scripts] Additions to checking data per cd in drill
+- [scripts] Additional crash deletion scripts
+  
+Fixes:
+- [core] Date picker fixes
+- [data-points] Correct counting data points to do not include events that are discarded from recording or only update user properties.
+  
+Enterprise Features:
+- [drill] Outputing extra columns in drill byval download with unformatted values.
+  
+Enterprise Fixes:
+- [block] Check for valid rule in block
+- [drill] Added missing columns in byval table download
+- [funnels] Localization value fixes
+- [users] Fixed bug - when the session is selected, the event timeline dropdown is not working. 
+  
+## Version 23.11.18
+Fixes:
+- [scripts] Create script for deleting old crashgroups
+- [scripts] Script to validate based on cd field for which dates data was recorded 
+- [reports] Use localhost only in case of dashboard
+- [push] Added a chart to show number of sent and acted events
+- [push] Added the ability to set content-available by default into push settings
+
+Enterprise Fixes:
+- [block] Transform for crash object for crashes to work in block
+- [crash_symbolication] Init countly request correctly
+- [acitve_directory] bugfix for AD user App key null issue
+
+## Version 23.11.17
+Fixes:
+- [core] Always read session store from primary
+- [core] Configuration for shard database connection
+- [core] Fixes for Graph notes user messages
+- [core] Fixes for null_id fixing script
+- [core] Signature consistency for countly-request
+- [core] Store last time merge happened
+- [data-masking]Try-catch on data masking setting check.
+- [reports] Bugfix for Email reports timing out
+- [rights] Optimize dbLoadEventsData
+- [star-rating] Enable email search for feedback
+
+Enterprise Fixes:
+- [drill] Nullcheck in cohorts on user merge
+- [performance-monitoring] Error while redirecting to "../performance-monitoring/all-issues"
+- [block] check for crashes in filtering rules
+- [ab-testing] Add indexes for ab-testing queries
+- [flows] Included custom user properties in filtering rules
+- [drill] Make drill graphs and tables correct for byval queries if there are null and '0' keys.
+
 ## Version 23.11.16
 Fixes:
 - [scripts] custom indexes for customers
