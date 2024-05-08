@@ -9,6 +9,7 @@
                     <a :href="item.url">
                         <div
                             style="width: calc(100% - 24px);"
+                            :data-test-id="'sidebar-management-' + item.name"
                             :class="['cly-vue-sidebar__menu-items has-ellipsis',
                                 {'cly-vue-sidebar__menu-items--selected': (selectedMenuItem && (selectedMenuItem.name === item.name))}]"
                             @click="onMenuItemClick(item)">

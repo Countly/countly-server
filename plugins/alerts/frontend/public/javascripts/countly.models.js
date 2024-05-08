@@ -49,7 +49,7 @@
             url: countlyCommon.API_PARTS.data.r,
             data: {
                 app_id: appId,
-                method: "get_cohorts",
+                method: "get_cohorts"
             },
             dataType: "json",
             success: function(res) {

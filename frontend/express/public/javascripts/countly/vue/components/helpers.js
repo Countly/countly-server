@@ -139,7 +139,7 @@
                 return this.i18n("common.diff-helper.changes", this.diff.length);
             },
             skinToApply: function() {
-                return this.isModal ? 'cly-vue-diff-helper-modal' : 'cly-vue-diff-helper';
+                return this.isModal ? 'cly-vue-diff-helper-modal-wrapper' : '';
             }
         },
         methods: {
@@ -153,18 +153,33 @@
                 this.$emit("discard");
             }
         },
-        template: '<div :class="skinToApply" class="bu-pl-2" v-if="hasDiff">\n' +
-                    '<slot name="main">\n' +
-                      '<div class="message">\n' +
-                          '<span class="text-dark">{{madeChanges}}</span>\n' +
-                          '<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
-                      '</div>\n' +
-                      '<div class="buttons">\n' +
-                          '<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
-                         '<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
-                      '</div>\n' +
-                    '</slot>\n' +
-                  '</div>'
+        template:
+				'<div :class="skinToApply" v-if="hasDiff">' +
+					'<div  v-if="isModal" class="cly-vue-diff-helper-modal bu-pl-2" >\n' +
+						'<slot name="main">\n' +
+							'<div class="message">\n' +
+								'<span class="text-dark">{{madeChanges}}</span>\n' +
+								'<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+							'</div>\n' +
+							'<div class="buttons">\n' +
+								'<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+								'<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
+							'</div>\n' +
+						'</slot>\n' +
+					'</div>' +
+					'<div v-else class="cly-vue-diff-helper bu-pl-2">\n' +
+						'<slot name="main">\n' +
+							'<div class="message">\n' +
+								'<span class="text-dark">{{madeChanges}}</span>\n' +
+								'<span class="text-dark">{{ i18n("common.diff-helper.keep") }}</span>\n' +
+							'</div>\n' +
+							'<div class="buttons">\n' +
+								'<el-button skin="light" class="discard-btn" @click="discard" type="secondary">{{i18n(\'common.discard-changes\')}}</el-button>\n' +
+								'<el-button skin="green" class="save-btn" :disabled="disabled" @click="save" type="success">{{i18n(\'common.save-changes\')}}</el-button>\n' +
+							'</div>\n' +
+						'</slot>\n' +
+					'</div>' +
+				'</div>'
     }));
 
     Vue.component("cly-metric-cards", countlyBaseComponent.extend({
@@ -278,7 +293,7 @@
                                 <div :class=numberClasses>\
                                     <h2 :data-test-id="\'metric-card-\' + testId + \'-column-number\'" v-if="isEstimate" v-tooltip="estimateTooltip" class="is-estimate">~<slot name="number">{{formattedNumber}}</slot></h2>\
                                     <h2 :data-test-id="\'metric-card-\' + testId + \'-column-number\'" v-else><slot name="number">{{formattedNumber}}</slot></h2>\
-                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span :data-test-id="\'metric-card-\' + testId + \'-column-description\'" class="text-medium">{{description}}</span></slot></div>\
+                                    <div class="bu-pl-2 bu-is-flex-grow-1" :data-test-id="\'metric-card-\' + testId + \'-description\'"><slot name="description"><span :data-test-id="\'metric-card-\' + testId + \'-column-description\'" class="text-medium">{{description}}</span></slot></div>\
                                 </div>\
                             </div>\
                         </div>\
@@ -529,7 +544,7 @@
                     :single-option-settings="singleOptionSettings"\
                     :adaptive-length="adaptiveLength"\
                     :arrow="arrow"\
-                    :width="computedWidth"\
+                    :width="width"\
                     v-bind="$attrs"\
                     v-on="$listeners">\
                     <template v-slot:header="selectScope">\
@@ -549,7 +564,7 @@
                     return [];
                 }
             },
-            width: { type: [Number, Object, String]},
+            width: { type: [Number, Object, String], default: 'fit-content'},
             adaptiveLength: {type: Boolean, default: true},
             arrow: {type: Boolean, default: false},
             title: { type: String, require: false},
@@ -566,9 +581,6 @@
             };
         },
         computed: {
-            computedWidth: function() {
-                return this.width || 400;
-            },
             hasTitle: function() {
                 return !!this.title;
             },
@@ -671,11 +683,6 @@
                 return availableEvents;
             }
         },
-        created: function() {
-            if (this.adaptiveLength && this.width === 400 && this.availableEvents.length > 0) {
-                this.width = this.availableEvents * 80;
-            }
-        }
     }));
 
     Vue.component("cly-paginate", countlyBaseComponent.extend({
@@ -924,17 +931,17 @@
     }));
     Vue.component("cly-notification", countlyBaseComponent.extend({
         template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
-                        '<div class="bu-is-flex bu-is-justify-content-space-between">\n' +
+                        '<div class="bu-is-flex bu-is-justify-content-space-between bu-p-3">\n' +
                             '<div class="bu-is-flex">\n' +
-                                '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-4 bu-my-2 bu-ml-2">\n' +
-                                '<slot><span class="alert-text bu-py-3" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
+                                '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-3">\n' +
+                                '<slot><span class="alert-text" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
                             '</div>\n' +
                             '<div v-if="goTo.title" class="bu-is-flex bu-ml-auto"><a class="bu-level-item bu-has-text-link bu-has-text-weight-medium" @click="goToUrl">{{goTo.title}}</a></div>' +
-                            '<div v-if="closable"  class="bu-mt-2" >\n' +
-                                '<div v-if="size==\'full\'" @click="closeModal" class="bu-mr-2 bu-ml-2" >\n' +
+                            '<div v-if="closable"  class="" >\n' +
+                                '<div v-if="size==\'full\'" @click="closeModal" class=" bu-ml-2" >\n' +
                                     '<slot name="close"><i data-test-id="cly-notification-full-size-close-icon" class="el-icon-close"></i></slot>\n' +
                                 '</div>\n' +
-                                '<div v-else @click="closeModal" class="bu-mr-2 bu-ml-6">\n' +
+                                '<div v-else @click="closeModal" class="bu-ml-3 bu-pl-3 bu-ml-3" style="cursor:pointer;">\n' +
                                     '<slot name="close"><i data-test-id="cly-notification-modal-close-icon" class="el-icon-close"></i></slot>\n' +
                                 '</div>\n' +
                             '</div>\n' +
@@ -1166,17 +1173,17 @@
     Vue.component("cly-auto-refresh-toggle", countlyBaseComponent.extend({
         template: "<div class='cly-vue-auto-refresh-toggle'>\
                         <div v-if='autoRefresh' class='bu-level-item'>\
-                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled'>{{i18n('auto-refresh.is')}}</span>\
-                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled-color'>{{i18n('auto-refresh.enabled')}}</span>\
-                            <span v-tooltip.top-left='getRefreshTooltip()' class='bu-ml-1 bu-mr-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled'></span>\
-                            <el-button @click='stopAutoRefresh()'><i class='bu-ml-2 fa fa-stop-circle'></i> {{i18n('auto-refresh.stop')}}\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled' :data-test-id='testId + \"-auto-refresh-toggle-is-label\"'>{{i18n('auto-refresh.is')}}</span>\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled-color' :data-test-id='testId + \"-auto-refresh-toggle-enabled-label\"'>{{i18n('auto-refresh.enabled')}}</span>\
+                            <span v-tooltip.top-left='getRefreshTooltip()' class='bu-ml-1 bu-mr-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled' :data-test-id='testId + \"-auto-refresh-toggle-tooltip\"'></span>\
+                            <el-button @click='stopAutoRefresh()'><i class='bu-ml-2 fa fa-stop-circle' :data-test-id='testId + \"-auto-refresh-toggle-button\"'></i> {{i18n('auto-refresh.stop')}}\
                             </el-button>\
                         </div>\
                         <div v-else-if='!autoRefresh' class='bu-level-item'>\
-                            <el-switch v-model='autoRefresh'>\
+                            <el-switch v-model='autoRefresh' :test-id='testId + \"-auto-refresh-toggle\"'>\
                             </el-switch>\
-                            <span class='cly-vue-auto-refresh-toggle__refresh--disabled'>{{i18n('auto-refresh.enable')}}</span>\
-                            <span v-tooltip.left='getRefreshTooltip()' class='bu-ml-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled'></span>\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--disabled' :data-test-id='testId + \"-auto-refresh-toggle-disabled-label\"'>{{i18n('auto-refresh.enable')}}</span>\
+                            <span v-tooltip.left='getRefreshTooltip()' class='bu-ml-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled' :data-test-id='testId + \"-auto-refresh-toggle-disabled-tooltip\"'></span>\
                         </div>\
                     </div>",
         mixins: [countlyVue.mixins.i18n],
@@ -1187,7 +1194,8 @@
         },
         props: {
             feature: { required: true, type: String },
-            defaultValue: { required: false, default: false, type: Boolean}
+            defaultValue: { required: false, default: false, type: Boolean},
+            testId: { required: false, default: 'cly-test-id', type: String}
         },
         methods: {
             getRefreshTooltip: function() {
