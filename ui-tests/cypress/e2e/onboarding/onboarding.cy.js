@@ -68,7 +68,7 @@ describe('Complete Onboarding', () => {
         cy.dropMongoDatabase();
     });
 
-    it('should be complete onboarding flow with creating demo application', function() {
+    it('should be complete onboarding flow with creating web type demo application', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -95,7 +95,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('should be complete onboarding flow with creating demo application and enable tracking and subscribe to newsletter', function() {
+    it('should be complete onboarding flow with creating mobile type demo application and enable tracking and subscribe to newsletter', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -122,7 +122,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('should be complete onboarding flow with creating own application', function() {
+    it('should be complete onboarding flow with creating mobile type own application and verify all pages with empty data', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -138,7 +138,7 @@ describe('Complete Onboarding', () => {
             appType: APP_TYPE.MOBILE,
             appName: 'My Mobile App',
             appKey: 'aaaaabe5c377f6ab830890e9d7d416970f5541a4',
-            timezone: 'Harare'
+            timezone: 'Istanbul'
         });
 
         initialConsentHelpers.verifyDefaultPageElements();
@@ -146,56 +146,9 @@ describe('Complete Onboarding', () => {
             isEnableTacking: false,
             isSubscribeToNewsletter: false
         });
+
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
-    });
-
-    it('should be complete onboarding flow with creating own application with default app key and enable tracking and subscribe to newsletter', function() {
-        setupHelpers.completeOnboardingSetup({
-            fullName: user.username,
-            emailAddress: user.email,
-            password: user.password,
-            confirmPassword: user.password,
-            isDemoApp: false
-        });
-
-        initialSetupHelpers.completeOnboardingInitialSetup({
-            isDemoApp: false,
-            appType: APP_TYPE.DESKTOP,
-            appName: 'My Desktop App',
-            timezone: 'Andorra'
-        });
-
-        initialConsentHelpers.completeOnboardingInitialConsent({
-            isEnableTacking: true,
-            isSubscribeToNewsletter: true
-        });
-        navigationHelpers.isNavigatedToDashboard();
-        quickstartPopoeverHelpers.verifyDefaultPageElements();
-    });
-
-    it('verify all pages after complete onboarding with empty data', function() {
-        setupHelpers.completeOnboardingSetup({
-            fullName: user.username,
-            emailAddress: user.email,
-            password: user.password,
-            confirmPassword: user.password,
-            isDemoApp: false
-        });
-
-        initialSetupHelpers.completeOnboardingInitialSetup({
-            isDemoApp: false,
-            appType: APP_TYPE.MOBILE,
-            appName: 'My Mobile App',
-            appKey: 'aaaaabe5c377f6ab830890e9d7d416970f5541a4',
-            timezone: 'Istanbul'
-        });
-
-        initialConsentHelpers.completeOnboardingInitialConsent({
-            isEnableTacking: false,
-            isSubscribeToNewsletter: false
-        });
-        navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.closeQuickStartPopover();
         homePageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsUsersOverview();
@@ -308,7 +261,31 @@ describe('Complete Onboarding', () => {
         dbCountlyFsPageHelpers.verifyEmptyPageElements();
     });
 
-    it('verify home page after complete onboarding with Banking data', function() {
+    it('should be complete onboarding flow with creating own desktop type application with default app key and enable tracking and subscribe to newsletter', function() {
+        setupHelpers.completeOnboardingSetup({
+            fullName: user.username,
+            emailAddress: user.email,
+            password: user.password,
+            confirmPassword: user.password,
+            isDemoApp: false
+        });
+
+        initialSetupHelpers.completeOnboardingInitialSetup({
+            isDemoApp: false,
+            appType: APP_TYPE.DESKTOP,
+            appName: 'My Desktop App',
+            timezone: 'Andorra'
+        });
+
+        initialConsentHelpers.completeOnboardingInitialConsent({
+            isEnableTacking: true,
+            isSubscribeToNewsletter: true
+        });
+        navigationHelpers.isNavigatedToDashboard();
+        quickstartPopoeverHelpers.verifyDefaultPageElements();
+    });
+
+    it('should be complete onboarding flow with creating mobile type demo application and verify home page with Banking data', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,

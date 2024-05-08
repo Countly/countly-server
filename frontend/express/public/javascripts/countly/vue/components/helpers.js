@@ -544,7 +544,7 @@
                     :single-option-settings="singleOptionSettings"\
                     :adaptive-length="adaptiveLength"\
                     :arrow="arrow"\
-                    :width="computedWidth"\
+                    :width="width"\
                     v-bind="$attrs"\
                     v-on="$listeners">\
                     <template v-slot:header="selectScope">\
@@ -564,7 +564,7 @@
                     return [];
                 }
             },
-            width: { type: [Number, Object, String]},
+            width: { type: [Number, Object, String], default: 'fit-content'},
             adaptiveLength: {type: Boolean, default: true},
             arrow: {type: Boolean, default: false},
             title: { type: String, require: false},
@@ -581,9 +581,6 @@
             };
         },
         computed: {
-            computedWidth: function() {
-                return this.width || 400;
-            },
             hasTitle: function() {
                 return !!this.title;
             },
@@ -686,11 +683,6 @@
                 return availableEvents;
             }
         },
-        created: function() {
-            if (this.adaptiveLength && this.width === 400 && this.availableEvents.length > 0) {
-                this.width = this.availableEvents * 80;
-            }
-        }
     }));
 
     Vue.component("cly-paginate", countlyBaseComponent.extend({

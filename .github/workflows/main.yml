@@ -212,7 +212,7 @@ jobs:
           npm install
           /sbin/my_init &
           node bin/scripts/test.connection.js
-          npx grunt mochaTest
+          npx grunt mochaTest       
   ui-test-dashboard:
     runs-on: ubuntu-latest
 
@@ -288,7 +288,7 @@ jobs:
           mkdir -p screenshots videos
           tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
-  
+
   ui-test-onboarding:
     runs-on: ubuntu-latest
 
