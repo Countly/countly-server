@@ -132,6 +132,16 @@
             }
         },
         computed: {
+            leftPadding: function() {
+                if (this.hasDiff && this.isModal) {
+                    var dd = document.getElementById('cly-vue-sidebar').getBoundingClientRect();
+                    var value = dd.width || 272;
+                    return "left:" + value + 'px; width:calc(100% - ' + value + 'px)';
+                }
+                else {
+                    return "";
+                }
+            },
             hasDiff: function() {
                 return this.diff.length > 0;
             },
@@ -154,8 +164,8 @@
             }
         },
         template:
-				'<div :class="skinToApply" v-if="hasDiff">' +
-					'<div  v-if="isModal" class="cly-vue-diff-helper-modal bu-pl-2" >\n' +
+				'<div :class="skinToApply" v-if="hasDiff" :style="leftPadding" >' +
+					'<div  v-if="isModal" class="cly-vue-diff-helper-modal bu-pl-2">\n' +
 						'<slot name="main">\n' +
 							'<div class="message">\n' +
 								'<span class="text-dark">{{madeChanges}}</span>\n' +
@@ -293,7 +303,7 @@
                                 <div :class=numberClasses>\
                                     <h2 :data-test-id="\'metric-card-\' + testId + \'-column-number\'" v-if="isEstimate" v-tooltip="estimateTooltip" class="is-estimate">~<slot name="number">{{formattedNumber}}</slot></h2>\
                                     <h2 :data-test-id="\'metric-card-\' + testId + \'-column-number\'" v-else><slot name="number">{{formattedNumber}}</slot></h2>\
-                                    <div class="bu-pl-2 bu-is-flex-grow-1"><slot name="description"><span :data-test-id="\'metric-card-\' + testId + \'-column-description\'" class="text-medium">{{description}}</span></slot></div>\
+                                    <div class="bu-pl-2 bu-is-flex-grow-1" :data-test-id="\'metric-card-\' + testId + \'-description\'"><slot name="description"><span :data-test-id="\'metric-card-\' + testId + \'-column-description\'" class="text-medium">{{description}}</span></slot></div>\
                                 </div>\
                             </div>\
                         </div>\
@@ -544,7 +554,7 @@
                     :single-option-settings="singleOptionSettings"\
                     :adaptive-length="adaptiveLength"\
                     :arrow="arrow"\
-                    :width="computedWidth"\
+                    :width="width"\
                     v-bind="$attrs"\
                     v-on="$listeners">\
                     <template v-slot:header="selectScope">\
@@ -564,7 +574,7 @@
                     return [];
                 }
             },
-            width: { type: [Number, Object, String]},
+            width: { type: [Number, Object, String], default: 'fit-content'},
             adaptiveLength: {type: Boolean, default: true},
             arrow: {type: Boolean, default: false},
             title: { type: String, require: false},
@@ -581,9 +591,6 @@
             };
         },
         computed: {
-            computedWidth: function() {
-                return this.width || 400;
-            },
             hasTitle: function() {
                 return !!this.title;
             },
@@ -686,11 +693,6 @@
                 return availableEvents;
             }
         },
-        created: function() {
-            if (this.adaptiveLength && this.width === 400 && this.availableEvents.length > 0) {
-                this.width = this.availableEvents * 80;
-            }
-        }
     }));
 
     Vue.component("cly-paginate", countlyBaseComponent.extend({
@@ -1181,17 +1183,17 @@
     Vue.component("cly-auto-refresh-toggle", countlyBaseComponent.extend({
         template: "<div class='cly-vue-auto-refresh-toggle'>\
                         <div v-if='autoRefresh' class='bu-level-item'>\
-                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled'>{{i18n('auto-refresh.is')}}</span>\
-                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled-color'>{{i18n('auto-refresh.enabled')}}</span>\
-                            <span v-tooltip.top-left='getRefreshTooltip()' class='bu-ml-1 bu-mr-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled'></span>\
-                            <el-button @click='stopAutoRefresh()'><i class='bu-ml-2 fa fa-stop-circle'></i> {{i18n('auto-refresh.stop')}}\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled' :data-test-id='testId + \"-auto-refresh-toggle-is-label\"'>{{i18n('auto-refresh.is')}}</span>\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--enabled-color' :data-test-id='testId + \"-auto-refresh-toggle-enabled-label\"'>{{i18n('auto-refresh.enabled')}}</span>\
+                            <span v-tooltip.top-left='getRefreshTooltip()' class='bu-ml-1 bu-mr-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled' :data-test-id='testId + \"-auto-refresh-toggle-tooltip\"'></span>\
+                            <el-button @click='stopAutoRefresh()'><i class='bu-ml-2 fa fa-stop-circle' :data-test-id='testId + \"-auto-refresh-toggle-button\"'></i> {{i18n('auto-refresh.stop')}}\
                             </el-button>\
                         </div>\
                         <div v-else-if='!autoRefresh' class='bu-level-item'>\
-                            <el-switch v-model='autoRefresh'>\
+                            <el-switch v-model='autoRefresh' :test-id='testId + \"-auto-refresh-toggle\"'>\
                             </el-switch>\
-                            <span class='cly-vue-auto-refresh-toggle__refresh--disabled'>{{i18n('auto-refresh.enable')}}</span>\
-                            <span v-tooltip.left='getRefreshTooltip()' class='bu-ml-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled'></span>\
+                            <span class='cly-vue-auto-refresh-toggle__refresh--disabled' :data-test-id='testId + \"-auto-refresh-toggle-disabled-label\"'>{{i18n('auto-refresh.enable')}}</span>\
+                            <span v-tooltip.left='getRefreshTooltip()' class='bu-ml-2 cly-vue-auto-refresh-toggle__tooltip ion-help-circled' :data-test-id='testId + \"-auto-refresh-toggle-disabled-tooltip\"'></span>\
                         </div>\
                     </div>",
         mixins: [countlyVue.mixins.i18n],
@@ -1202,7 +1204,8 @@
         },
         props: {
             feature: { required: true, type: String },
-            defaultValue: { required: false, default: false, type: Boolean}
+            defaultValue: { required: false, default: false, type: Boolean},
+            testId: { required: false, default: 'cly-test-id', type: String}
         },
         methods: {
             getRefreshTooltip: function() {

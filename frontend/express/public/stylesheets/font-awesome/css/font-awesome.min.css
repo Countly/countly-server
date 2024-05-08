@@ -6,9 +6,11 @@
 /****
 * Patches
 ****/
-.fa-square-o,.fa-bookmark-o,.fa-calendar,.fa-sticky-note,.fa-smile-o,.fa-futbol-o,.fa-lightbulb-o,.fa-cutlery,.fa-paper-plane {
+.fa-square-o,.fa-bookmark-o,.fa-calendar,.fa-sticky-note,.fa-smile-o,.fa-futbol-o,.fa-lightbulb-o,.fa-cutlery,.fa-paper-plane,.fa-star-o {
     font-weight: 400;
 }
+.fa-star-o:before {
+  content: "\f005"; }
 .fa-pencil:before {
   content: "\f303"; }
 .fa-square-o:before {

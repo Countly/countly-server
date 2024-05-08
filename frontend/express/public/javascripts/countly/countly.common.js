@@ -5183,6 +5183,10 @@
                 inferredLevel = "months";
                 inferredType = "last-n";
             }
+            else if (period.endsWith('years')) {
+                inferredLevel = 'years';
+                inferredType = 'last-n';
+            }
             else {
                 inferredType = "all-time";
                 inferredValue = 0;
