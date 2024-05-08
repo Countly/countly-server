@@ -69,7 +69,6 @@ class FCM extends Splitter {
     constructor(log, type, creds, messages, options) {
         super(log, type, creds, messages, options);
         this.legacyApi = !creds._data.serviceAccountFile;
-        // this.legacyApi = true;
 
         this.log = logger(log).sub(`${threadId}-a`);
         if (this.legacyApi) {
@@ -157,11 +156,9 @@ class FCM extends Splitter {
                 }
                 return errors[err];
             };
-
             if (!this.legacyApi) {
                 const tokens = pushes.map(p => p.t);
                 const topic = pushes[0].m.toString(); // use message id as topic name
-
                 this.log.d("subscribing all %d tokens to topic %s", tokens.length, topic);
                 return this.firebaseMessaging
                     // subscribe to the topic
@@ -236,7 +233,7 @@ class FCM extends Splitter {
                         }
                         if (pushes.length > topicSubResponse.failureCount) {
                             this.send_results(
-                                pushes.filter((_v, index) => erroredIndexes.includes(index))
+                                pushes.filter((_v, index) => !erroredIndexes.includes(index))
                                     .map(({ _id }) => _id),
                                 bytes - errored
                             );
