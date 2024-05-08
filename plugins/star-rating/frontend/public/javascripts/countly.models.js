@@ -31,7 +31,8 @@
         "status",
         "logo",
         "logoType",
-        "globalLogo"
+        "globalLogo",
+        "internalName"
     ];
 
     var widgetJSONProperties = [

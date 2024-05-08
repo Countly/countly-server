@@ -31,6 +31,15 @@
               </div>
             </template>
           </el-table-column>
+          <el-table-column min-width="300" prop="internalName" fixed data-test-id="ratings-widgets-data-table-internal-widget-name-column" :label="i18n('feedback.ratings-widget-internal-name')">
+            <template v-slot="rowScope">
+              <div>
+                <div :data-test-id="'ratings-widgets-data-table-internal-widget-name-' + rowScope.$index">
+                  {{rowScope.row.internalName}}
+                </div>
+              </div>
+            </template>
+          </el-table-column>
           <el-table-column min-width="150" v-if="cohortsEnabled" prop="targeting" :label="i18n('feedback.targeting')">
             <template v-slot="rowScope">
               <cly-cohort-targeting :test-id="'ratings-widgets-data-table-targeting-' + rowScope.$index" inline :targeting="rowScope.row.targeting">

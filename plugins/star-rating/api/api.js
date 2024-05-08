@@ -116,6 +116,10 @@ const widgetProperties = {
         required: false,
         type: "Boolean"
     },
+    internalName: {
+        required: false,
+        type: "String"
+    },
     appearance: {
         required: false,
         type: "Object"

@@ -81,6 +81,13 @@
 								{{formatNumber(scope.row.br)}}%
 							</template>
 						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'u'" :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value">
+							<template v-slot:header>
+								<span v-if="isSpecialPeriod">~</span>
+								<span>{{col.label}}</span>
+								<cly-tooltip-icon v-if="isSpecialPeriod" :tooltip="i18n('common.estimation')" icon="ion ion-help-circled"></cly-tooltip-icon>
+							</template>
+						</el-table-column>
 						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label"></el-table-column>
 					</template>
 				</template>
@@ -118,6 +125,13 @@
 						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
 							<template slot-scope="scope">
 								{{scope.row.br}}
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'u'" :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value">
+							<template v-slot:header>
+								<span v-if="isSpecialPeriod">~</span>
+								<span>{{col.label}}</span>
+								<cly-tooltip-icon v-if="isSpecialPeriod" :tooltip="i18n('common.estimation')" icon="ion ion-help-circled"></cly-tooltip-icon>
 							</template>
 						</el-table-column>
 						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label"></el-table-column>

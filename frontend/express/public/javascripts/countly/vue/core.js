@@ -716,7 +716,9 @@
                             :test-id="dialog.testId"\
                             :saveButtonLabel="dialog.confirmLabel"\
                             :cancelButtonLabel="dialog.cancelLabel"\
-                            :title="dialog.title">\
+                            :title="dialog.title"\
+                            :show-close="dialog.showClose"\
+                            :alignCenter="dialog.alignCenter">\
                                 <template slot-scope="scope">\
                                     <div v-html="dialog.message"></div>\
                                 </template>\
@@ -784,8 +786,8 @@
     };
 
     var QuickstartPopoverView = {
-        template: '<div class="quickstart-popover-wrapper">\
-            <div class="quickstart-popover-positioner">\
+        template: '<div class="quickstart-popover-wrapper" data-test-id="quickstart-popover-wrapper">\
+            <div class="quickstart-popover-positioner" data-test-id="quickstart-popover-positioner">\
             <el-popover\
                 v-for="content in quickstartContent"\
                 popper-class="quickstart-popover-popover"\
@@ -795,7 +797,7 @@
                 :width="content.width"\
                 :key="content.id"\
                 :title="content.title">\
-                <i class="ion-close bu-is-size-7 quickstart-popover-close" @click="handleCloseClick(content.id)"></i>\
+                <i class="ion-close bu-is-size-7 quickstart-popover-close" data-test-id="quickstart-popover-close" @click="handleCloseClick(content.id)"></i>\
                 <div v-html="content.message"></div>\
             </el-popover>\
             </div>\
