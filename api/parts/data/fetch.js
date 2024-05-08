@@ -2030,12 +2030,7 @@ fetch.alljobs = async function(metric, params) {
                 },
                 finished: {
                     $cond: {
-                        if: {
-                            $and: [
-                                { $eq: ["$finished", null] },
-                                { $ne: ["$status", 3] }
-                            ]
-                        },
+                        if: { $eq: ["$status", 0] },
                         then: 9999999999999,
                         else: "$finished"
                     }
