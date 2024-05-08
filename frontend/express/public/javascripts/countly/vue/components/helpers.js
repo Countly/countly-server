@@ -132,6 +132,16 @@
             }
         },
         computed: {
+            leftPadding: function() {
+                if (this.hasDiff && this.isModal) {
+                    var dd = document.getElementById('cly-vue-sidebar').getBoundingClientRect();
+                    var value = dd.width || 272;
+                    return "left:" + value + 'px; width:calc(100% - ' + value + 'px)';
+                }
+                else {
+                    return "";
+                }
+            },
             hasDiff: function() {
                 return this.diff.length > 0;
             },
@@ -154,8 +164,8 @@
             }
         },
         template:
-				'<div :class="skinToApply" v-if="hasDiff">' +
-					'<div  v-if="isModal" class="cly-vue-diff-helper-modal bu-pl-2" >\n' +
+				'<div :class="skinToApply" v-if="hasDiff" :style="leftPadding" >' +
+					'<div  v-if="isModal" class="cly-vue-diff-helper-modal bu-pl-2">\n' +
 						'<slot name="main">\n' +
 							'<div class="message">\n' +
 								'<span class="text-dark">{{madeChanges}}</span>\n' +
