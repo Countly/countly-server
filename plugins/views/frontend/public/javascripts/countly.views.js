@@ -297,25 +297,63 @@
                     }
                 });
             },
-            handleSelectionChange: function(selectedRows) {
+            sortByTotalVisitorsDescending: function(rows) {
+                if (rows.length) {
+                    rows.sort((a, b) => b.u - a.u);
+                }
+                return rows;
+            },
+            handleSelectionChange: function(selectedRowID) {
+                if (typeof selectedRowID !== Object) {
+                    var self = this;
+                    var selected = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
+                    let index = selected.indexOf(selectedRowID);
+                    if (index === -1) {
+                        selected.push(selectedRowID);
+                    }
+                    else {
+                        selected.splice(index, 1);
+                    }
+
+                    var persistData = {};
+                    persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = selected;
+                    countlyCommon.setPersistentSettings(persistData);
+                    if (this.$refs.viewsTable) {
+                        for (var k = 0; k < this.$refs.viewsTable.sourceRows.length; k++) {
+                            if (selected.indexOf(this.$refs.viewsTable.sourceRows[k]._id) > -1) {
+                                this.$refs.viewsTable.sourceRows[k].selected = true;
+                            }
+                            else {
+                                this.$refs.viewsTable.sourceRows[k].selected = false;
+                            }
+                        }
+                    }
+                    this.persistentSettings = selected;
+                    this.$store.dispatch('countlyViews/onSetSelectedViews', selected).then(function() {
+                        self.isGraphLoading = true;
+                        self.$store.dispatch('countlyViews/fetchData').then(function() {
+                            self.calculateGraphSeries();
+                            self.isGraphLoading = false;
+                        });
+                    });
+                }
+            },
+            handleAllSelectionChange: function(selectedRows) {
                 var self = this;
                 var selected = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
-                var map = {};
-                for (var kz = 0; kz < selected.length; kz++) {
-                    map[selected[kz]] = true;
-                }
-                selected = Object.keys(map); //get distinct
-                if (selected.indexOf(selectedRows) === -1) {
-                    selected.push(selectedRows);
+                selectedRows = this.sortByTotalVisitorsDescending(selectedRows);
+                if (!selectedRows.length) {
+                    selected.splice(1, selected.length);
                 }
                 else {
-                    var index = selected.indexOf(selectedRows);
-                    selected.splice(index, 1);
+                    selected.splice(0, selected.length);
+                    selectedRows.forEach(function(row) {
+                        selected.push(row._id);
+                    });
                 }
                 var persistData = {};
                 persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = selected;
                 countlyCommon.setPersistentSettings(persistData);
-
                 if (this.$refs.viewsTable) {
                     for (var k = 0; k < this.$refs.viewsTable.sourceRows.length; k++) {
                         if (selected.indexOf(this.$refs.viewsTable.sourceRows[k]._id) > -1) {

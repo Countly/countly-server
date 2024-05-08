@@ -92,7 +92,19 @@
 					</template>
 				</template>
 			</cly-datatable-n>
-			<cly-datatable-n v-else resizable border :force-loading="isTableLoading" :default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
+			<cly-datatable-n 
+				v-else 
+				resizable 
+				border 
+				:force-loading="isTableLoading" 
+				:default-sort="{prop: 'u', order: 'descending'}" 
+				:available-dynamic-cols="tableDynamicCols" 
+				:persist-key="tablePersistKey" 
+				:data-source="remoteTableDataSource" 
+				:export-query="getExportQuery" 
+				ref="viewsTable" 
+				@select-all = "handleAllSelectionChange" 
+				>
 				<template v-slot:header-left>
 					<el-select v-model="tableMode" class="bu-mr-2" >
 						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
@@ -101,7 +113,7 @@
 				</template>
 		
 				<template v-slot="scope">
-					<el-table-column width="65"  fixed="left" prop="selected">
+					<el-table-column width="65"  fixed="left" prop="selected" type="selection">
 						<template slot-scope="scope">
 							<el-checkbox :disabled="persistentSettings.length === 1 && scope.row.selected" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
 						</template>
