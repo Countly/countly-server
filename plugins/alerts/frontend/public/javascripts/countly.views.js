@@ -437,6 +437,10 @@
             getMetrics: function() {
                 const formData = this.$refs.drawerData.editedObject;
                 this.alertDataSubType2Options = [];
+                if (formData.selectedApps === 'all') {
+                    formData.alertDataType = 'dataPoints';
+                    formData.alertDataSubType = 'total data points';
+                }
                 if (!formData.selectedApps) {
                     return;
                 }
