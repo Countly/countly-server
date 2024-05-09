@@ -474,7 +474,28 @@
     }));
 
     Vue.component("cly-app-select", {
-        template: '<cly-select-x :options="options" :auto-commit="mode !== \'multi-check\'" :mode="mode" :max-items="multipleLimit" v-bind="$attrs" v-on="$listeners"></cly-select-x>',
+        template: `
+        <cly-select-x
+            :options="options"
+            :auto-commit="mode !== \'multi-check\'"
+            :mode="mode"
+            :max-items="multipleLimit"
+            v-bind="$attrs"
+            v-on="$listeners">
+            <template
+                v-slot:option-prefix="option">
+                <div v-if="showAppImage && dropdownApps[option.value] && dropdownApps[option.value].image" class="cly-vue-dropdown__dropdown-icon bu-mt-1 bu-mr-1"
+                    :style="{backgroundImage: \'url(\' + dropdownApps[option.value].image + \')\'}">
+                </div>
+            </template>
+            <template
+                v-if="showAppImage && selectedApps && dropdownApps[selectedApps]"
+                v-slot:label-prefix>
+                <div class="cly-vue-dropdown__dropdown-icon bu-ml-1 bu-mr-1"
+                    :style="{backgroundImage: \'url(\' + dropdownApps[selectedApps].image + \')\'}">
+                </div>
+            </template>
+        </cly-select-x>`,
         props: {
             allowAll: {
                 type: Boolean,
@@ -497,6 +518,11 @@
                     return {};
                 },
                 required: false
+            },
+            showAppImage: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         computed: {
@@ -508,6 +534,9 @@
             },
             mode: function() {
                 return this.multiple ? "multi-check" : "single-list";
+            },
+            selectedApps: function() {
+                return this.$attrs.value;
             },
             apps: function() {
                 var apps = countlyGlobal.apps || {};
@@ -536,6 +565,11 @@
                     };
                 });
             }
+        },
+        data: function() {
+            return {
+                dropdownApps: countlyGlobal.apps || {}
+            };
         }
     });
 
