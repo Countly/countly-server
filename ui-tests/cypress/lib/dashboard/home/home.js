@@ -63,7 +63,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.AUDIENCE.NEW_SESSIONS_LABEL,
         labelText: "New Sessions",
         tooltipElement: homePageElements.AUDIENCE.NEW_SESSIONS_TOOLTIP,
-        tooltipText: "The overall number of users (unique devices/IDs) who have opened your application."
+        tooltipText: "The number of first-time users (unique devices/IDs) in the selected time period."
     });
 
     cy.verifyElement({
