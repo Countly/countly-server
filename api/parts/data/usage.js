@@ -274,6 +274,15 @@ usage.getPredefinedMetrics = function(params, userProps) {
                 params.qstring.metrics._manufacturer = "Apple";
             }
         }
+        if (params.qstring.metrics._has_hinge) {
+            var hasHingeValue = params.qstring.metrics._has_hinge;
+            if (hasHingeValue === "true") {
+                userProps[common.dbUserMap.has_hinge] = "hinged";
+            }
+            else {
+                userProps[common.dbUserMap.has_hinge] = "not_hinged";
+            }
+        }
     }
 
     var predefinedMetrics = [
@@ -327,6 +336,11 @@ usage.getPredefinedMetrics = function(params, userProps) {
                     name: "_resolution",
                     set: "resolutions",
                     short_code: common.dbUserMap.resolution
+                },
+                {
+                    name: "_has_hinge",
+                    set: "has_hinge",
+                    short_code: common.dbUserMap.has_hinge
                 }
             ]
         },
