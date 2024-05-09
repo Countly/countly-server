@@ -2091,49 +2091,17 @@ fetch.jobDetails = async function(metric, params) {
     const columns = ["schedule", "next", "finished", "status", "data", "duration"];
     let sort = {};
     const total = await common.db.collection('jobs').count({ name: params.qstring.name });
-
-    const firstQuery = [
-        {
-            $match: { "name": params.qstring.name, "status": 0 }
-        },
-        {
-            $group: {
-                "_id": {
-                    "status": "$status",
-                },
-                "minNext": {
-                    "$min": "$next"
-                },
-                docs: { $push: "$$ROOT" }
-            }
-        },
-        {
-            $unwind: "$docs"
-        },
-        {
-            $replaceRoot: { newRoot: "$docs" }
-        },
-        {
-            $limit: 1
-        }
-    ];
+    const cursor = common.db.collection('jobs').find({ name: params.qstring.name });
     sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
-    let skip = (Number(params.qstring.iDisplayStart || 0));
-    let limit = (Number(params.qstring.iDisplayLength || 10));
-    const unionedResults = common.db.collection('jobs').aggregate([
-        { $match: { name: params.qstring.name, status: { $ne: 0 } } },
-        { $unionWith: { coll: 'jobs', pipeline: firstQuery } },
-        { $sort: sort },
-        { $skip: skip },
-        { $limit: limit }
-    ]);
-
-    let items = await unionedResults.toArray();
+    cursor.sort(sort);
+    cursor.skip(Number(params.qstring.iDisplayStart || 0));
+    cursor.limit(Number(params.qstring.iDisplayLength || 10));
+    let items = await cursor.toArray();
     items = items.map((job) => {
         job.status = STATUS_MAP[job.status];
         return job;
     });
-    unionedResults.close();
+    cursor.close();
     common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || [] });
 };
 
