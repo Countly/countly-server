@@ -281,6 +281,14 @@ function fetchDatapoints(db, filter, options, callback) {
             }
 
         }
+        if (toReturn["[CLY]_consolidated"] && toReturn["all-apps"]) {
+            //Calculate all-apps data without [CLY]_consolidated data to remove duplication
+            for (let metric in toReturn["all-apps"]) {
+                if (toReturn["[CLY]_consolidated"] && toReturn["[CLY]_consolidated"][metric]) {
+                    toReturn["all-apps"][metric] -= toReturn["[CLY]_consolidated"][metric];
+                }
+            }
+        }
         if (!options.singleApp && toReturn["[CLY]_consolidated"] && toReturn["all-apps"]) {
             //if we have consolidated data, calculate all data without consolidated data
             toReturn["natural-dp"] = {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0};

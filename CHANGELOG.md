@@ -1,3 +1,97 @@
+## Version 23.11.20
+Fixes:
+- [core] Nullcheck in data exports
+- [events] changed formatSecond to show decimals
+  
+Enterprise Fixes:
+- [core] missing proxy setting added for  enterprise features
+- [drill] fix for select users correctly when navigating from drill to user
+
+## Version 23.11.19
+Features:
+- [core] Increase log level for specific mongodb driver events
+- [reports] log subscribe/unsubscribe to audit logs
+- [scripts] Additions to checking data per cd in drill
+- [scripts] Additional crash deletion scripts
+  
+Fixes:
+- [core] Date picker fixes
+- [data-points] Correct counting data points to do not include events that are discarded from recording or only update user properties.
+  
+Enterprise Features:
+- [drill] Outputing extra columns in drill byval download with unformatted values.
+  
+Enterprise Fixes:
+- [block] Check for valid rule in block
+- [drill] Added missing columns in byval table download
+- [funnels] Localization value fixes
+- [users] Fixed bug - when the session is selected, the event timeline dropdown is not working. 
+  
+## Version 23.11.18
+Fixes:
+- [scripts] Create script for deleting old crashgroups
+- [scripts] Script to validate based on cd field for which dates data was recorded 
+- [reports] Use localhost only in case of dashboard
+- [push] Added a chart to show number of sent and acted events
+- [push] Added the ability to set content-available by default into push settings
+
+Enterprise Fixes:
+- [block] Transform for crash object for crashes to work in block
+- [crash_symbolication] Init countly request correctly
+- [acitve_directory] bugfix for AD user App key null issue
+
+## Version 23.11.17
+Fixes:
+- [core] Always read session store from primary
+- [core] Configuration for shard database connection
+- [core] Fixes for Graph notes user messages
+- [core] Fixes for null_id fixing script
+- [core] Signature consistency for countly-request
+- [core] Store last time merge happened
+- [data-masking]Try-catch on data masking setting check.
+- [reports] Bugfix for Email reports timing out
+- [rights] Optimize dbLoadEventsData
+- [star-rating] Enable email search for feedback
+
+Enterprise Fixes:
+- [drill] Nullcheck in cohorts on user merge
+- [performance-monitoring] Error while redirecting to "../performance-monitoring/all-issues"
+- [block] check for crashes in filtering rules
+- [ab-testing] Add indexes for ab-testing queries
+- [flows] Included custom user properties in filtering rules
+- [drill] Make drill graphs and tables correct for byval queries if there are null and '0' keys.
+
+## Version 23.11.16
+Fixes:
+- [scripts] custom indexes for customers
+- [report-manager] Fix warning on adding report manager submenu
+- [push] Add content-available to apns request payload
+  
+## Version 23.11.15
+Fixes:
+- [views] Updated views processing logic to prevent data mismatch in cases where there are multiple records in same request decribing same view event
+- [core] Script to attempt issues with users having uid as null
+- [core] Fixed TypeError currEvent.key.indexOf is not a function
+- [core] Script to reset merge count in app_users documents
+- [views] job catch error
+- [jobs] log error instead of crashing
+- [core] Added code to ensure uid and did in app_users documents in case of deletion/merging inconsistencies
+- [core] Updates for event omitting script
+- [core] Updates for diagnostic script
+- [core] Additions to diagnostic scripts
+- [core] Script to check user mismatch between app users and drill collections
+
+Enterprise Fixes:
+- [license] Update metrics check timestamp after the metrics are fetched
+- [license] Fix for license metrics calculations
+- [cohorts] Fix return type in getNames to return all cohorts
+- [ab-testing] Skip calculation of ab-tests on listing page
+- [config-transfer] List drill reports in config transfer
+- [views] Added tests in drill module for cases with multiple events in same request for same view
+- [flows] add sytemlogs records for flows operations
+- [data-manager] Fix query run in data manager on setting configs
+- [block] Add check for valid rule in blocks
+
 ## Version 23.11.14
 Fixes:
 - [core] Fixes for proxy agent

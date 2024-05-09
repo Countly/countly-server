@@ -542,3 +542,32 @@
     </el-card>
 </script>
 
+<script type="text/x-template" id="details-stats-tab">
+    <el-card class="box-card cly-vue-push-notification-details-stats-card">
+        <el-select
+            v-model="selectedPeriod"
+            size="mini"
+            class="bu-mb-4 bu-mt-2"
+            adaptive-length
+            :options="periodOptions"
+            @change="fetchMessageStats">
+            <el-option
+                v-for="item in periodOptions"
+                :label="i18n(item.label)"
+                :key="item.value"
+                :value="item.value"
+            />
+            <template v-slot:prefix><i class='cly-icon-date cly-icon-prefix-icon'></i></template>
+        </el-select>
+
+        <cly-chart-bar
+            class="bu-p-3"
+            xAxisLabelOverflow="unset"
+            :option="chartOpts"
+            :show-download="false"
+            :show-toggle="false"
+            :show-zoom="false"
+            :height="300"
+        />
+    </el-card>
+</script>

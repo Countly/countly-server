@@ -486,6 +486,10 @@
                         inputObj = [moment().startOf("isoWeek").toDate(), moment().endOf("day").toDate()];
                     }
                     else {
+                        if (this.inBetweenInput.parsed && this.inBetweenInput.parsed.length) {
+                            this.inBetweenInput.parsed[0] = moment(this.inBetweenInput.parsed[0]).startOf("day");
+                            this.inBetweenInput.parsed[1] = moment(this.inBetweenInput.parsed[1]).endOf("day");
+                        }
                         inputObj = this.inBetweenInput.parsed;
                     }
                     break;

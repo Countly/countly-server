@@ -5,15 +5,17 @@
 var common = require("./common.js"),
     plugins = require('../../plugins/pluginManager.js'),
     Promise = require("bluebird"),
-    async = require('async'),
     crypto = require('crypto'),
     log = require('./log.js')('core:rights');
 
 var authorize = require('./authorizer.js'); //for token validations
 
+var collectionMap = {};//map to know when data about som collections/events was refreshed
+var cachedSchema = {};
+
 //check token and return owner id if token valid
 //owner d used later to set all member variables.
-/**Validate if token exists and is not expired(uzing authorize.js) 
+/**Validate if token exists and is not expired(uzing authorize.js)
 * @param {object} params  params
 * @param {string} params.qstring.auth_token  authentication token
 * @param {string}params.req.headers.countly-token {string} authentication token
@@ -489,6 +491,130 @@ function wrapCallback(params, callback, callbackParam, func) {
 }
 
 /**
+ * Function to load and cache data
+ * @param {object} apps - apps 
+ * @param {function} callback - callback function 
+ */
+function loadAndCacheEventsData(apps, callback) {
+    const appIds = [];
+    const appNamesById = {};
+    var anyNameMissing = false;
+    apps.forEach((app) => {
+        cachedSchema[app._id + ''] = cachedSchema[app._id + ''] || {};
+        cachedSchema[app._id + ''].loading = true;
+        appIds.push(common.db.ObjectID(app._id + ''));
+        appNamesById[app._id + ''] = app.name;
+        if (!appNamesById[app._id + '']) {
+            anyNameMissing = true;
+        }
+    });
+
+    /**
+    * Get events collections with replaced app names
+    * A helper function for db access check
+    * @param {object} appColl - application ids and names
+    * @param {function} cb - callback method
+    **/
+    function getEvents(appColl, cb) {
+        common.db.collection('events').find({'_id': { $in: appColl.appIds }}).toArray(function(err, events) {
+            if (!err && events) {
+                for (let h = 0; h < events.length; h++) {
+                    if (events[h].list) {
+                        for (let i = 0; i < events[h].list.length; i++) {
+                            collectionMap[crypto.createHash('sha1').update(events[h].list[i] + events[h]._id + "").digest('hex')] = {"n": true, "a": events[h]._id + "", "e": events[h].list[i], "name": "(" + appNamesById[events[h]._id + ''] + ": " + events[h].list[i] + ")"};
+                        }
+                    }
+                }
+            }
+
+            appColl.appIds.forEach((appId) => {
+                if (plugins.internalDrillEvents) {
+                    for (let i = 0; i < plugins.internalDrillEvents.length; i++) {
+                        collectionMap[crypto.createHash('sha1').update(plugins.internalDrillEvents[i] + appId + "").digest('hex')] = {"n": true, "a": appId + "", "e": plugins.internalDrillEvents[i], "name": "(" + appColl.appNamesById[appId + ''] + ": " + plugins.internalDrillEvents[i] + ")"};
+                    }
+                }
+
+                if (plugins.internalEvents) {
+                    for (let i = 0; i < plugins.internalEvents.length; i++) {
+                        collectionMap[crypto.createHash('sha1').update(plugins.internalEvents[i] + appId + "").digest('hex')] = {"n": true, "a": appId + "", "e": plugins.internalEvents[i], "name": "(" + appColl.appNamesById[appId + ''] + ": " + plugins.internalEvents[i] + ")"};
+                    }
+                }
+            });
+            cb(null, true);
+        });
+    }
+
+    /**
+    * Get views collections with replaced app names
+    * A helper function for db access check
+    * @param {object} appColl - application ids and names
+    * @param {function} cb - callback method
+    **/
+    function getViews(appColl, cb) {
+        common.db.collection('views').find({'_id': { $in: appColl.appIds }}).toArray(function(err, viewDocs) {
+            if (!err && viewDocs) {
+                for (let idx = 0; idx < viewDocs.length; idx++) {
+                    if (viewDocs[idx].segments) {
+                        for (var segkey in viewDocs[idx].segments) {
+                            collectionMap["app_viewdata" + crypto.createHash('sha1').update(segkey + viewDocs[idx]._id + '').digest('hex')] = {"n": true, "a": viewDocs[idx]._id + '', "vs": segkey, "name": "(" + appColl.appNamesById[viewDocs[idx]._id + ''] + ": " + segkey + ")"};
+                        }
+                    }
+                }
+            }
+            appColl.appIds.forEach((appId) => {
+                collectionMap["app_viewdata" + crypto.createHash('sha1').update("" + appId).digest('hex')] = {"n": true, "a": "" + appId, "vs": "", "name": "(" + appColl.appNamesById[appId + ''] + ": no-segment)"};
+            });
+            cb(null, true);
+        });
+    }
+
+    if (anyNameMissing) { //We do not have name for APPs, so we need to fetch them
+        common.db.collection('apps').find({'_id': { $in: appIds }}, {'name': 1}).toArray(function(err, newapps) {
+            if (err) {
+                log.e(err);
+                callback(err);
+            }
+            else {
+                for (var i = 0; i < newapps.length; i++) {
+                    newapps[i].name = newapps[i].name || "Unknown";
+                }
+                loadAndCacheEventsData(newapps, callback);
+            }
+        });
+    }
+    else {
+        getEvents({ appIds, appNamesById }, function(err) {
+            if (err) {
+                log.e(err);
+            }
+            getViews({ appIds, appNamesById }, function(err1) {
+                if (err1) {
+                    log.e(err1);
+                }
+                for (var item in collectionMap) {
+                    if (appNamesById[collectionMap[item].a]) {
+                        if (!collectionMap[item].n) {
+                            delete collectionMap[item];
+                        }
+                        else {
+                            delete collectionMap[item].n;
+                        }
+                    }
+                }
+                apps.forEach((app) => {
+                    cachedSchema[app._id + ''].ts = Date.now();
+                    cachedSchema[app._id + ''].loading = false;
+                });
+                common.cachedSchema = cachedSchema;
+                common.collectionMap = collectionMap;
+                callback(err || err1);
+            });
+        });
+    }
+
+
+}
+/**
 * Get events data
 * A helper function for db access check
 * @param {object} params - {@link params} object
@@ -496,80 +622,73 @@ function wrapCallback(params, callback, callbackParam, func) {
 * @param {function} callback - callback method
 **/
 function dbLoadEventsData(params, apps, callback) {
-
-    /**
-    * Get events collections with replaced app names
-    * A helper function for db access check
-    * @param {object} app - application object
-    * @param {function} cb - callback method
-    **/
-    function getEvents(app, cb) {
-        var result = {};
-        common.db.collection('events').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, events) {
-            if (!err && events && events.list) {
-                for (let i = 0; i < events.list.length; i++) {
-                    result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + events.list[i] + ")";
-                }
-            }
-            if (plugins.internalDrillEvents) {
-                for (let i = 0; i < plugins.internalDrillEvents.length; i++) {
-                    result[crypto.createHash('sha1').update(plugins.internalDrillEvents[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + plugins.internalDrillEvents[i] + ")";
-                }
-            }
-            if (plugins.internalEvents) {
-                for (let i = 0; i < plugins.internalEvents.length; i++) {
-                    result[crypto.createHash('sha1').update(plugins.internalEvents[i] + app._id + "").digest('hex')] = "(" + app.name + ": " + plugins.internalEvents[i] + ")";
-                }
-            }
-            cb(null, result);
-        });
-    }
-
-    /**
-    * Get views collections with replaced app names
-    * A helper function for db access check
-    * @param {object} app - application object
-    * @param {function} cb - callback method
-    **/
-    function getViews(app, cb) {
-        var result = {};
-        common.db.collection('views').findOne({'_id': common.db.ObjectID(app._id + "")}, function(err, viewDoc) {
-            if (!err && viewDoc && viewDoc.segments) {
-                for (var segkey in viewDoc.segments) {
-                    result["app_viewdata" + crypto.createHash('sha1').update(segkey + app._id).digest('hex')] = "(" + app.name + ": " + segkey + ")";
-                }
-            }
-            result["app_viewdata" + crypto.createHash('sha1').update("" + app._id).digest('hex')] = "(" + app.name + ": no-segment)";
-            cb(null, result);
-        });
+    var events = {};
+    var views = {};
+    var callCalculate = [];
+    var appMap = {};
+    for (var a in apps) {
+        if (!cachedSchema[apps[a]._id + ''] || (cachedSchema[apps[a]._id + ''] && !cachedSchema[apps[a]._id + ''].loading && (Date.now() - cachedSchema[apps[a]._id + ''].ts) > 10 * 60 * 1000)) {
+            callCalculate.push(apps[a]);
+        }
+        appMap[apps[a]._id + ''] = true;
     }
 
     if (params.member.eventList) {
         callback(null, params.member.eventList, params.member.viewList);
-    }
-    else {
-        async.map(apps, getEvents, function(err, events) {
-            var eventList = {};
-            for (let i = 0; i < events.length; i++) {
-                for (var j in events[i]) {
-                    eventList[j] = events[i][j];
+        if (callCalculate.length > 0) {
+            loadAndCacheEventsData(callCalculate, function(err) {
+                if (err) {
+                    log.e(err);
                 }
+            });
+        }
+    }
+    else if (callCalculate.length > 0) {
+        loadAndCacheEventsData(callCalculate, function(err) {
+            if (err) {
+                log.e(err);
             }
-            params.member.eventList = eventList;
-            async.map(apps, getViews, function(err1, views) {
-                var viewList = {};
-                for (let i = 0; i < views.length; i++) {
-                    for (let z in views[i]) {
-                        viewList[z] = views[i][z];
+            for (var key in collectionMap) {
+                if (appMap[collectionMap[key].a]) {
+                    if (collectionMap[key].e) {
+                        events[key] = collectionMap[key].name;
+                    }
+                    else if (collectionMap[key].vs) {
+                        views[key] = collectionMap[key].name;
                     }
                 }
-                params.member.viewList = viewList;
-                callback(err, eventList, viewList);
-            });
+            }
+            params.member.eventList = events;
+            params.member.viewList = views;
+            callback(null, events, views);
         });
+    }
+    else {
+        for (var key in collectionMap) {
+            if (appMap[collectionMap[key].a]) {
+                if (collectionMap[key].e) {
+                    events[key] = collectionMap[key].name;
+                }
+                else if (collectionMap[key].vs) {
+                    views[key] = collectionMap[key].name;
+                }
+            }
+        }
+        params.member.eventList = events;
+        params.member.viewList = views;
+        callback(null, events, views);
     }
 }
 exports.dbLoadEventsData = dbLoadEventsData;
+
+exports.getCollectionName = function(hashValue) {
+    if (collectionMap[hashValue]) {
+        return collectionMap[hashValue].name;
+    }
+    else {
+        return hashValue;
+    }
+};
 
 /**
 * Check user has access to collection
@@ -590,7 +709,7 @@ exports.dbUserHasAccessToCollection = function(params, collection, app_id, callb
     }
     var apps = [];
     var userApps = module.exports.getUserApps(params.member);
-
+    var hashValue = "";
     //use whatever user has permission for
     apps = userApps || [];
     // also check for app based restrictions
@@ -611,17 +730,20 @@ exports.dbUserHasAccessToCollection = function(params, collection, app_id, callb
                 appList.push({_id: apps[i]});
             }
         }
-        dbLoadEventsData(params, appList, function(err, eventList/*, viewList*/) {
+        hashValue = collection.replace("drill_events", "").replace("events", "");
+        dbLoadEventsData(params, appList, function(err) {
             if (err) {
                 log.e("[rights.js].dbUserHasAccessToCollection() failed at dbLoadEventsData (events) callback.", err);
                 return callback(false);
             }
-            for (let i in eventList) {
-                if (collection.indexOf(i, collection.length - i.length) !== -1) {
+            else {
+                if (collectionMap[hashValue] && apps.length > 0 && apps.indexOf(collectionMap[hashValue].a) !== -1) {
                     return callback(true);
                 }
+                else {
+                    return callback(false);
+                }
             }
-            return callback(false);
         });
     }
     else if (collection.indexOf("app_viewdata") === 0) {
@@ -630,18 +752,23 @@ exports.dbUserHasAccessToCollection = function(params, collection, app_id, callb
                 appList.push({_id: apps[i]});
             }
         }
+        hashValue = collection;//we keep app_viewdata 
 
-        dbLoadEventsData(params, appList, function(err, eventList, viewList) {
+        dbLoadEventsData(params, appList, function(err) {
             if (err) {
                 log.e("[rights.js].dbUserHasAccessToCollection() failed at dbLoadEventsData (app_viewdata) callback.", err);
                 return callback(false);
             }
-            for (let i in viewList) {
-                if (collection.indexOf(i, collection.length - i.length) !== -1) {
+            else {
+                if (collectionMap[hashValue] && apps.length > 0 && apps.indexOf(collectionMap[hashValue].a) !== -1) {
                     return callback(true);
                 }
+                else {
+                    return callback(false);
+                }
+
             }
-            return callback(false);
+
         });
     }
     else {

@@ -278,7 +278,8 @@
                         badgeNumber: "",
                         onClickURL: "",
                         json: null,
-                        userData: []
+                        userData: [],
+                        setContentAvailable: false,
                     },
                     android: {
                         mediaURL: "",
@@ -692,6 +693,24 @@
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/push/message/all",
                     data: data,
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
+        },
+        fetchMessageStats: function(_id, period = "30days") {
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + "/push/message/stats",
+                    data: { _id, period },
                     dataType: "json",
                     success: function(response) {
                         resolve(response);
@@ -1257,9 +1276,19 @@
                 };
             },
             mapIOSSettings: function(iosSettingsDto) {
+                let subtitle, setContentAvailable;
+                if (iosSettingsDto && Array.isArray(iosSettingsDto.specific)) {
+                    let subtitleItem = iosSettingsDto.specific.find(i => i.subtitle !== undefined);
+                    if (subtitleItem) {
+                        subtitle = countlyPushNotification.helper.decodeMessage(subtitleItem.subtitle || "");
+                    }
+                    let contentAvailableItem = iosSettingsDto.specific.find(i => i.setContentAvailable !== undefined);
+                    setContentAvailable = contentAvailableItem.setContentAvailable;
+                }
                 return {
                     // NOte: subtitle will reside at index zero for now. There are no other platform specifics
-                    subtitle: iosSettingsDto && iosSettingsDto.specific && iosSettingsDto.specific[0] && countlyPushNotification.helper.decodeMessage(iosSettingsDto.specific[0].subtitle || ""),
+                    subtitle,
+                    setContentAvailable,
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
@@ -1916,11 +1945,20 @@
                     result.url = countlyCommon.decodeHtml(iosSettings.onClickURL);
                 }
                 if (iosSettings.subtitle && options.settings[PlatformEnum.IOS].isSubtitleEnabled) {
-                    result.specific = [{subtitle: iosSettings.subtitle}];
+                    if (!result.specific) {
+                        result.specific = [];
+                    }
+                    result.specific.push({ subtitle: iosSettings.subtitle });
                 }
                 if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.media = countlyCommon.decodeHtml(model.settings[PlatformEnum.IOS].mediaURL);
                     result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
+                }
+                if (options.settings[PlatformEnum.IOS].isContentAvailableSet) {
+                    if (!result.specific) {
+                        result.specific = [];
+                    }
+                    result.specific.push({ setContentAvailable: options.settings[PlatformEnum.IOS].isContentAvailableSet });
                 }
                 return result;
             },
@@ -2872,6 +2910,10 @@
         messageSettings[PlatformEnum.ANDROID] = {};
         return {
             pushNotification: countlyPushNotification.helper.getInitialModel(TypeEnum.ONE_TIME),
+            messageStats: {
+                sent: [],
+                action: []
+            },
             platformFilter: null,
             platformFilterOptions: [],
             localeFilter: null,
@@ -2897,6 +2939,19 @@
                     console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
                 });
+        },
+        fetchMessageStats: function(context, { messageId, period }) {
+            context.dispatch('onFetchInit', {useLoader: true});
+            countlyPushNotification.api.fetchMessageStats(messageId, period)
+                .then(function(model) {
+                    context.commit('setMessageStats', model);
+                    context.dispatch('onFetchSuccess', {useLoader: true});
+                })
+                .catch(function(error) {
+                    console.error(error);
+                    context.dispatch('onFetchError', {error: error, useLoader: true});
+                });
+
         },
         onUserCommand: function(context, payload) {
             context.commit('setUserCommand', payload);
@@ -2976,6 +3031,9 @@
     var detailsMutations = {
         setPushNotification: function(state, value) {
             state.pushNotification = value;
+        },
+        setMessageStats: function(state, value) {
+            state.messageStats = value;
         },
         setUserCommand: function(state, value) {
             state.userCommand = value;

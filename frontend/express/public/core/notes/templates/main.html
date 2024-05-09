@@ -6,7 +6,7 @@
         <template v-slot:header-top>
             <cly-back-link :title="i18n('common.back')"></cly-back-link>
         </template>
-        <template v-slot:header-right>
+        <template v-if="hasCreateRight" v-slot:header-right>
             <div class="bu-level-item">
               <el-button type="success" @click="createNote" size="small" icon="el-icon-circle-plus">{{i18n('notes.add-new-note')}}
               </el-button>
@@ -47,9 +47,9 @@
                 </el-table-column>
                 <el-table-column type="options">
                     <template v-slot="rowScope">
-                    <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, rowScope.row)">
-                        <el-dropdown-item command="edit">{{ i18n('common.edit') }}</el-dropdown-item>
-                        <el-dropdown-item command="delete">{{ i18n('common.delete') }}</el-dropdown-item>
+                    <cly-more-options v-if="rowScope.row.hover && (hasUpdateRight || hasDeleteRight)" size="small" @command="handleCommand($event, rowScope.row)">
+                        <el-dropdown-item v-if="hasUpdateRight" command="edit">{{ i18n('common.edit') }}</el-dropdown-item>
+                        <el-dropdown-item v-if="hasDeleteRight" command="delete">{{ i18n('common.delete') }}</el-dropdown-item>
                     </cly-more-options>
                     </template>
                 </el-table-column>
