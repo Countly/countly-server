@@ -235,6 +235,18 @@
             });
 
         },
+        watch: {
+            tableMode: function() {
+                var self = this;
+                this.$store.dispatch('countlyViews/fetchData').then(function() {
+                    self.calculateGraphSeries();
+                    self.isGraphLoading = false;
+                });
+                this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue}).then(function() {
+                    self.isTableLoading = false;
+                });
+            }
+        },
         methods: {
             refresh: function(force) {
                 var self = this;
@@ -299,9 +311,22 @@
             },
             sortByTotalVisitorsDescending: function(rows) {
                 if (rows.length) {
-                    rows.sort((a, b) => b.u - a.u);
+                    rows.sort(function(a, b) {
+                        let totalDiff = b.u - a.u;
+                        if (totalDiff === 0) {
+                            return a.view.localeCompare(b.view);
+                        }
+                        return totalDiff;
+                    });
                 }
                 return rows;
+            },
+            isDisabled: function(row) {
+                var disable = this.persistentSettings.length === 1 && row.selected;
+                if (disable) {
+                    return true;
+                }
+                return false;
             },
             handleSelectionChange: function(selectedRowID) {
                 if (typeof selectedRowID !== Object) {
@@ -346,6 +371,9 @@
                     selected.splice(1, selected.length);
                 }
                 else {
+                    if (this.tableMode !== 'all') {
+                        return false;
+                    }
                     selected.splice(0, selected.length);
                     selectedRows.forEach(function(row) {
                         selected.push(row._id);

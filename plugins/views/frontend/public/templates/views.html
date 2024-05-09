@@ -47,7 +47,15 @@
 			</div>
         </cly-section>
 		<cly-section>
-			<cly-datatable-n v-if="tableMode == 'selected'" resizable border :rows="selectedTableRows" :persist-key="tablePersistKey" :available-dynamic-cols="tableDynamicCols" >
+			<cly-datatable-n 
+				v-if="tableMode == 'selected'" 
+				resizable 
+				border 
+				:rows="selectedTableRows" 
+				:persist-key="tablePersistKey" 
+				:available-dynamic-cols="tableDynamicCols" 
+				@select-all = "handleAllSelectionChange" 
+				>
 				<template v-slot:header-left>
 					<el-select v-model="tableMode" class="bu-mr-2">
 						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
@@ -57,7 +65,7 @@
 				<template v-slot="scope">
 					<el-table-column width="65"  fixed="left" prop="selected">
 						<template slot-scope="scope">
-							<el-checkbox :disabled="persistentSettings.length === 1 && scope.row.selected" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
+							<el-checkbox :disabled="isDisabled(scope.row)" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
 						</template>
 					</el-table-column>
 					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('views.table.view')" fixed="left">
@@ -115,7 +123,7 @@
 				<template v-slot="scope">
 					<el-table-column width="65"  fixed="left" prop="selected" type="selection">
 						<template slot-scope="scope">
-							<el-checkbox :disabled="persistentSettings.length === 1 && scope.row.selected" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
+							<el-checkbox :disabled="isDisabled(scope.row)" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
 						</template>
 					</el-table-column>
 					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('views.table.view')" fixed="left">
