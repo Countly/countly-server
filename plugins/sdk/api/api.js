@@ -194,6 +194,7 @@ plugins.register("/permissions/features", function(ob) {
                     params.qstring.hc = JSON.parse(params.qstring.hc);
                 }
                 catch (ex) {
+                    console.log(params.qstring.hc);
                     console.log("Parse hc failed", ex);
                 }
             }
@@ -225,6 +226,7 @@ plugins.register("/permissions/features", function(ob) {
                     params.qstring.hc = JSON.parse(params.qstring.hc);
                 }
                 catch (ex) {
+                    console.log(params.qstring.hc);
                     console.log("Parse hc failed", ex);
                 }
             }

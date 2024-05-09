@@ -7,7 +7,7 @@ const plugins = require('../../pluginManager'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, test, create, update, toggle, remove, all, one, mime, user, notificationsForUser } = require('./api-message'),
+    { estimate, test, create, update, toggle, remove, all, one, mime, user, notificationsForUser, periodicStats } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
     { legacyApis } = require('./legacy'),
@@ -25,6 +25,7 @@ const plugins = require('../../pluginManager'),
                 estimate: [validateRead, estimate],
                 all: [validateRead, all],
                 GET: [validateRead, one, '_id'],
+                stats: [validateRead, periodicStats],
             },
             user: [validateRead, user],
             notifications: [validateRead, notificationsForUser],
@@ -67,6 +68,7 @@ plugins.setConfigs(FEATURE_NAME, {
     pool_concurrency: 5, // max number of same type connections
     pool_pools: 10, // max number of connections in total
     message_timeout: 3600000, // timeout for a message not sent yet (for TooLateToSend error)
+    default_content_available: false, // sets content-available: 1 by default for ios
 });
 
 plugins.internalEvents.push('[CLY]_push_sent');

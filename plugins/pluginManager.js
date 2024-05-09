@@ -1628,9 +1628,11 @@ var pluginManager = function pluginManager() {
 
         let databases = [];
         if (apiCountlyConfig && apiCountlyConfig.shared_connection) {
+            console.log("using shared connection pool");
             databases = await this.dbConnection(dbs);
         }
         else {
+            console.log("using separate connection pool");
             databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
         }
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
@@ -1804,6 +1806,7 @@ var pluginManager = function pluginManager() {
             process.exit(1);
             return;
         }
+        console.log("New DB connection established to with pool size", maxPoolSize, "for pid", process.pid);
 
         /**
          * Log driver debug logs
@@ -1831,11 +1834,11 @@ var pluginManager = function pluginManager() {
 
         //SDAM
         logDriver("serverOpening", logDriverDb);
-        logDriver("serverClosed", logDriverDb);
-        logDriver("serverDescriptionChanged", logDriverDb);
+        logDriver("serverClosed", logDriverDb, "i");
+        logDriver("serverDescriptionChanged", logDriverDb, "i");
         logDriver("topologyOpening", logDriverDb);
         logDriver("topologyClosed", logDriverDb);
-        logDriver("topologyDescriptionChanged", logDriverDb);
+        logDriver("topologyDescriptionChanged", logDriverDb, "i");
         logDriver("serverHeartbeatStarted", logDriverDb);
         logDriver("serverHeartbeatSucceeded", logDriverDb);
         logDriver("serverHeartbeatFailed", logDriverDb, "e");

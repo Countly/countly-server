@@ -11,7 +11,8 @@
             for (var i = 0; i < chartData.length; i++) {
                 graphData[0].push(chartData[i].c ? chartData[i].c : 0);
                 graphData[1].push(chartData[i].s ? chartData[i].s : 0);
-                graphData[2].push(chartData[i].dur ? chartData[i].dur / (chartData[i].c || 1) : 0);
+                let avgDur = (chartData[i].dur || 0) / (chartData[i].c || 1);
+                graphData[2].push(avgDur < 0.1 ? 0 : avgDur);
                 if (chartData[i].c) {
                     count += chartData[i].c;
                 }
