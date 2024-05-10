@@ -307,10 +307,7 @@
 
                 if (this.$refs.viewsTable) {
                     for (var k = 0; k < this.$refs.viewsTable.sourceRows.length; k++) {
-                        if (selected.indexOf(this.$refs.viewsTable.sourceRows[k]._id) > -1) {
-                            this.$refs.viewsTable.sourceRows[k].selected = true;
-                        }
-                        else {
+                        if (selected.indexOf(this.$refs.viewsTable.sourceRows[k]._id) === -1) {
                             this.$refs.viewsTable.sourceRows[k].selected = false;
                         }
                     }
