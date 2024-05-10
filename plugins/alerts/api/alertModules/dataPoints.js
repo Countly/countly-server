@@ -13,7 +13,7 @@ const DATA_POINT_PROPERTY = "dp";
 module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
     const selectedApp = alert.selectedApps[0];
     let apps;
-    if (selectedApp === "all-apps") {
+    if (selectedApp === "all") {
         apps = await common.db.collection("apps").find().toArray();
     }
     else {
