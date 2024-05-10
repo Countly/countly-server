@@ -1,6 +1,6 @@
 // update script to migrate alerts data for revamped Alerts plugin
 
-const pluginManager = require('./plugins/pluginManager.js');
+const pluginManager = require('../../../../plugins/pluginManager.js');
 
 async function migrateAlertCollection(collectionName, db) {
     console.log('Migrating alert data...');

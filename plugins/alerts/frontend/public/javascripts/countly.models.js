@@ -479,7 +479,7 @@
                                 appNameList = _.map(
                                     alertsList[i].selectedApps,
                                     function(appID) {
-                                        if (appID === "all-apps") {
+                                        if (appID === "all") {
                                             return "All apps";
                                         }
                                         return (

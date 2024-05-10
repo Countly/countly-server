@@ -133,7 +133,7 @@
                         <el-input
                             test-id="alert-name-input"
                             v-model="drawerScope.editedObject.alertName"
-                            class="bu-is-flex bu-mt-1"
+                            class="bu-is-flex"
                             :placeholder="i18n('alert.enter-alert-name')">
                         </el-input>
                     </cly-form-field>
@@ -141,12 +141,13 @@
                     <cly-form-field name="apps" :label="i18n('alert.For_Applications')" rules="required" test-id="application">
                         <cly-app-select
                             test-id= "application-select"
+                            :showAppImage="true"
                             :placeholder="i18n('alerts.select-an-application')"
                             :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
-                            class="bu-is-flex bu-mt-1"
+                            class="bu-is-flex"
                             @change="appSelected"
                             v-model="drawerScope.editedObject.selectedApps"
-                            :allowAll="allowAll"
+                            :allowAll="true"
                             >
                         </cly-app-select>
                     </cly-form-field>
@@ -154,8 +155,10 @@
                     <cly-form-field name="dataType" :label="i18n('alert.Data_type')" rules="required" test-id="data-type">
                         <cly-select-x
                             test-id="data-type-select"
+                            :disabled="drawerScope.editedObject.selectedApps === 'all'"
+                            v-tooltip="{ content: drawerScope.editedObject.selectedApps === 'all' ? i18n('alerts.application-tooltip') : '' }"
                             :searchable="false"
-                            class="bu-is-flex bu-mt-1"
+                            class="bu-is-flex data-points-all-apps"
                             @change="dataTypeSelected"
                             :options="alertDataTypeOptions"
                             :placeholder="i18n('alerts.select-data-type')"
@@ -164,7 +167,7 @@
                         </cly-select-x>
                     </cly-form-field>
 
-                    <cly-form-field name="dataSubType2" :label="subType2Label(drawerScope.editedObject)" v-if="subType2Label(drawerScope.editedObject)" test-id="data-sub-type">
+                    <cly-form-field name="dataSubType2" :label="subType2Label(drawerScope.editedObject)" v-if="subType2Label(drawerScope.editedObject)" rules="required" test-id="data-sub-type">
                         <cly-select-x
                             test-id="data-sub-type-select"
                             :searchable="false"
@@ -182,7 +185,7 @@
                         {{i18n('alerts.filter')}}
                     </div>
 
-                    <div class="bu-is-flex" v-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'events'" data-test-id="alert-data-filter-key-events-label">
+                    <div class="bu-is-flex" v-if="filterButton && drawerScope.editedObject.alertDataType === 'events'" data-test-id="alert-data-filter-key-events-label">
                         <div class="bu-is-flex-grow-1">
                             <cly-select-x
                                 test-id="alert-data-filter-key-event-select"
@@ -205,7 +208,7 @@
                         </div>
                     </div>
 
-                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'rating'" data-test-id="alert-data-filter-key-rating-label">
+                    <div class="bu-is-flex bu-my-3" v-else-if="filterButton && drawerScope.editedObject.alertDataType === 'rating'" data-test-id="alert-data-filter-key-rating-label">
                         <div class="bu-is-flex-grow-1">
                             <el-input
                                 test-id="alert-data-filter-key-rating-input"
@@ -232,7 +235,7 @@
                         </div>
                     </div>
 
-                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'nps'" data-test-id="alert-data-filter-key-nps-label">
+                    <div class="bu-is-flex bu-my-3" v-else-if="filterButton && drawerScope.editedObject.alertDataType === 'nps'" data-test-id="alert-data-filter-key-nps-label">
                         <div class="bu-is-flex-grow-1">
                         <el-input
                             test-id="alert-data-filter-key-nps-input"
@@ -258,7 +261,7 @@
                         </div>
                     </div>
 
-                    <div class="bu-is-flex bu-my-3" v-else-if="showFilter && filterButton && drawerScope.editedObject.alertDataType === 'crashes'" data-test-id="alert-data-filter-key-crashes-label">
+                    <div class="bu-is-flex bu-my-3" v-else-if="filterButton && drawerScope.editedObject.alertDataType === 'crashes'" data-test-id="alert-data-filter-key-crashes-label">
                         <div class="bu-is-flex-grow-1">
                             <el-input
                                 test-id="alert-data-filter-key-crashes-input"
@@ -350,11 +353,10 @@
                             <cly-form-field rules="required" style="display:inline-block" v-if="isCompareTypeSelectAvailable">
                                 <input
                                     data-test-id="trigger-value-input"
-                                    required
                                     @input="handleChange($event.target)"
-                                    class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
+                                    class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input no-spinner"
                                     placeholder="value"
-                                    type="text"
+                                    type="number"
                                     v-model="drawerScope.editedObject.compareValue"
                                     />
                             </cly-form-field>

@@ -78,6 +78,12 @@
         height: auto;
     }
     
+    .no-spinner::-webkit-inner-spin-button,
+    .no-spinner::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    
     .alert-drawer-trigger-input::placeholder{
         cursor:pointer;
         font-weight: 500;
@@ -101,3 +107,11 @@
         color: black;
     }
 }
+
+.data-points-all-apps.el-select .el-input.is-disabled {
+    .el-input__inner {
+        background-color: #FFFFFF;
+        color: black;
+    }
+}
+

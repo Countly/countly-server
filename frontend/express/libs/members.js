@@ -1104,10 +1104,9 @@ membersUtility.updateMember = async function(query = {}, data = {}, upsert = tru
             return reject(ex);
         }
 
-        // _id and api_key are immutable(unique fields. They should not be updated)
+        // _id is immutable(unique field. It should not be updated)
         // created_at is set on user creation and should not be updated)
         delete copy._id;
-        delete copy.api_key;
         delete copy.created_at;
 
         this.db.collection('members').update(query, { $set: copy }, { upsert }, (err) => {
