@@ -140,12 +140,13 @@
                     <cly-form-field name="apps" :label="i18n('alert.For_Applications')" rules="required" test-id="application">
                         <cly-app-select
                             test-id= "application-select"
+                            :showAppImage="true"
                             :placeholder="i18n('alerts.select-an-application')"
                             :auth='{"feature": "alerts", "permission":  drawerScope.editedObject._id ? "u": "c"}'
                             class="bu-is-flex"
                             @change="appSelected"
                             v-model="drawerScope.editedObject.selectedApps"
-                            :allowAll="allowAll"
+                            :allowAll="true"
                             >
                         </cly-app-select>
                     </cly-form-field>
@@ -153,8 +154,10 @@
                     <cly-form-field name="dataType" :label="i18n('alert.Data_type')" rules="required" test-id="data-type">
                         <cly-select-x
                             test-id="data-type-select"
+                            :disabled="drawerScope.editedObject.selectedApps === 'all'"
+                            v-tooltip="{ content: drawerScope.editedObject.selectedApps === 'all' ? i18n('alerts.application-tooltip') : '' }"
                             :searchable="false"
-                            class="bu-is-flex"
+                            class="bu-is-flex data-points-all-apps"
                             @change="dataTypeSelected"
                             :options="alertDataTypeOptions"
                             :placeholder="i18n('alerts.select-data-type')"

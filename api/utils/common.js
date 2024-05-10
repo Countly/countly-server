@@ -217,7 +217,8 @@ common.dbUserMap = {
     'last_end_session_timestamp': 'lest',
     'has_ongoing_session': 'hos',
     'previous_events': 'pe',
-    'resolution': 'r'
+    'resolution': 'r',
+    'has_hinge': 'hh',
 };
 
 common.dbUniqueMap = {
