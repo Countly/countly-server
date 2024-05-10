@@ -37,7 +37,7 @@
         data: function() {
             var self = this;
             var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("jobsTable", {
-                columns: ['name', "schedule", "next", "finished", "status", "total", "sortKey"],
+                columns: ['name', "schedule", "next", "finished", "status", "total"],
                 onRequest: function() {
                     self.loaded = false;
                     return {
