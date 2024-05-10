@@ -1224,6 +1224,7 @@
                         ref="selectx"\
                         :noMatchFoundPlaceholder="i18n(\'common.no-email-addresses\')"\
                         class="cly-vue-select-email"\
+                        :test-id="testId"\
                         @input="handleInput">\
                         <template v-slot:header="selectScope">\
                             <el-input\
@@ -1246,6 +1247,11 @@
             placeholder: {
                 type: String,
                 default: CV.i18n('common.enter-email-addresses'),
+                required: false
+            },
+            testId: {
+                type: String,
+                default: 'cly-select-email-test-id',
                 required: false
             }
         },

@@ -72,7 +72,7 @@
                         </template>
                     </el-table-column>
 
-                    <el-table-column  min-width="175"  sortable="true"  prop="appNameList" :label="i18n('alert.Application')">
+                    <el-table-column  min-width="175"  sortable="true"  prop="appNameList" :label="i18n('alert.Application')" :data-test-id="'datatable-application-' + scope.$index">
                     </el-table-column>
 
                     <el-table-column  min-width="415" prop="condtionText"  sortable="true"  :label="i18n('alert.Condition')">
@@ -119,6 +119,7 @@
 <script type="text/x-template" id="alert-drawer">
     <div id="alert-drawer-container">
         <cly-drawer
+            test-id="alert-drawer"
             @submit="onSubmit"
             @close="onClose"
             @copy="onCopy"
@@ -190,7 +191,7 @@
                                 :options="alertDataFilterKeyOptions"
                             />
                         </div>
-                        <span class="bu-mx-3" style="line-height: 30px" data-test-id="evets-is-label">is</span>
+                        <span class="bu-mx-3" style="line-height: 30px" data-test-id="is-label">is</span>
                         <div class="bu-is-flex-grow-1">
                             <el-input
                                 test-id="alert-data-filter-value-input"
@@ -199,7 +200,7 @@
                                 :placeholder="i18n('alerts.segment-value')"
                             />
                         </div>
-                        <div class="cly-icon-button cly-icon-button--gray" @click="handleFilterClosing" data-test-id="events-close-icon">
+                        <div class="cly-icon-button cly-icon-button--gray" @click="handleFilterClosing" data-test-id="filter-close-icon">
                             <i class="el-icon-close"></i>
                         </div>
                     </div>
@@ -213,7 +214,7 @@
                                 :disabled="true"
                             />
                         </div>
-                        <span class="bu-mx-2" style="line-height: 30px" data-test-id="ratings-is-label">is</span>
+                        <span class="bu-mx-2" style="line-height: 30px" data-test-id="is-label">is</span>
                         <div class="bu-is-flex-grow-1">
                             <cly-select-x
                                 test-id="alert-data-filter-key-rating-select"
@@ -226,7 +227,7 @@
                                 mode="multi-check"
                             />
                         </div>
-                        <div class="cly-icon-button cly-icon-button--gray" @click="handleFilterClosing" data-test-id="ratings-close-icon">
+                        <div class="cly-icon-button cly-icon-button--gray" @click="handleFilterClosing" data-test-id="filter-close-icon">
                             <i class="el-icon-close"></i>
                         </div>
                     </div>
@@ -241,7 +242,7 @@
                             :options="alertDataFilterKeyOptions"
                         />
                         </div>
-                        <span class="bu-mx-3" style="line-height: 30px" data-test-id="nps-is-label">is</span>
+                        <span class="bu-mx-3" style="line-height: 30px" data-test-id="is-label">is</span>
                         <div class="bu-is-flex-grow-1">
                             <cly-select-x
                                 width=282
@@ -267,7 +268,7 @@
                                 :options="alertDataFilterKeyOptions"
                             />
                         </div>
-                        <span class="bu-mx-3" style="line-height: 30px" data-test-id="crashes-is-label">is</span>
+                        <span class="bu-mx-3" style="line-height: 30px" data-test-id="is-label">is</span>
                         <div class="bu-is-flex-grow-1">
                             <cly-select-x
                                 test-id="alert-data-filter-key-crashes-select"
@@ -278,7 +279,7 @@
                                 mode="multi-check"
                             />
                         </div>
-                        <div class="cly-icon-button cly-icon-button--gray" @click=handleFilterClosing data-test-id="crashes-close-icon">
+                        <div class="cly-icon-button cly-icon-button--gray" @click=handleFilterClosing data-test-id="filter-close-icon">
                             <i class="el-icon-close"></i>
                         </div>
                     </div>
@@ -300,6 +301,7 @@
 
                             <cly-form-field rules="required" style="display:inline-block">
                                 <select
+                                    data-test-id="trigger-metric-select"
                                     style="width: 70px;"
                                     @change="handleChange($event.target)"
                                     class="alert-drawer-trigger-select-and-input"
@@ -318,6 +320,7 @@
 
                             <cly-form-field rules="required" style="display:inline-block" v-if="isCompareTypeSelectAvailable">    
                                 <select
+                                data-test-id="trigger-variable-select"
                                     @change="handleChange($event.target)"
                                     v-model="drawerScope.editedObject.compareType"
                                     class="alert-drawer-trigger-select-and-input">
@@ -346,6 +349,7 @@
                             </span>
                             <cly-form-field rules="required" style="display:inline-block" v-if="isCompareTypeSelectAvailable">
                                 <input
+                                    data-test-id="trigger-value-input"
                                     required
                                     @input="handleChange($event.target)"
                                     class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
@@ -354,7 +358,7 @@
                                     v-model="drawerScope.editedObject.compareValue"
                                     />
                             </cly-form-field>
-                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
+                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable" data-test-id="trigger-percentage-label">
                                 {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "" : "%" }}
                             </span>
                             <span class="groupcard-text mediumtextNormal-14px"
@@ -363,6 +367,7 @@
                             </span>
                             <cly-form-field v-if="isPeriodSelectAvailable && drawerScope.editedObject.alertDataSubType !== 't'" rules="required" style="display:inline-block">
                                 <select
+                                    data-test-id="trigger-time-select"
                                     @change="handleChange($event.target)"
                                     v-model="drawerScope.editedObject.period"
                                     class="alert-drawer-trigger-select-and-input">
@@ -385,7 +390,7 @@
                                 v-if="drawerScope.editedObject.alertDataSubType === 't'">
                                 minutes
                             </span>
-                            <span class="groupcard-text mediumtextNormal-14px" data-test-id="triggter-dot-label">.</span>
+                            <span class="groupcard-text mediumtextNormal-14px" data-test-id="trigger-dot-label">.</span>
                         </div>
                     </div>
 
@@ -432,7 +437,7 @@
                             <option :value="null" data-test-id="empty-trigger-time-label" hidden>time</option>
                             <option :value="null"></option>
                         </select>
-                        <span class="groupcard-text mediumtextNormal-14px">.</span>
+                        <span class="groupcard-text mediumtextNormal-14px" data-test-id="trigger-dot-label">.</span>
                     </div>
 
                     <div class="bu-pt-2 bu-pb-3" v-if="drawerScope.editedObject.alertDataSubType === 'new survey response'">
@@ -475,7 +480,7 @@
 
                         <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned bu-mt-0">
                             <el-radio
-                                test-id="email-notification"
+                                :test-id="'email-notification-' + item.value.toLowerCase()"
                                 v-model="selectedRadioButton"
                                 :label="item.value"
                                 :key="idx"
