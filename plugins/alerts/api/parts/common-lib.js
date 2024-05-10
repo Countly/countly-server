@@ -179,7 +179,7 @@ async function compileEmail(result) {
         title: `Countly Alert`,
         alertName: alert.alertName,
         alertDataType: alert.alertDataType,
-        subTitle: `Uh oh! It seems there's been some activity related to `+ alert.alertDataSubType + ` in the `,
+        subTitle: `Uh oh! It seems there's been some activity related to ` + alert.alertDataSubType + ` in the `,
         host,
         compareDescribe: alert.compareDescribe,
         apps: [{
