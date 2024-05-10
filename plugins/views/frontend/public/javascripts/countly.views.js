@@ -296,6 +296,37 @@
                     }
                 });
             },
+            deselectAll: function() {
+                var self = this;
+                var selected = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
+
+                selected.splice(1, selected.length);
+                var persistData = {};
+                persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = selected;
+                countlyCommon.setPersistentSettings(persistData);
+
+                if (this.$refs.viewsTable) {
+                    for (var k = 0; k < this.$refs.viewsTable.sourceRows.length; k++) {
+                        if (selected.indexOf(this.$refs.viewsTable.sourceRows[k]._id) > -1) {
+                            this.$refs.viewsTable.sourceRows[k].selected = true;
+                        }
+                        else {
+                            this.$refs.viewsTable.sourceRows[k].selected = false;
+                        }
+                    }
+                }
+
+                this.persistentSettings = selected;
+                this.$store.dispatch('countlyViews/onSetSelectedViews', selected).then(function() {
+                    self.isGraphLoading = true;
+                    self.$store.dispatch('countlyViews/fetchData').then(function() {
+                        self.calculateGraphSeries();
+                        self.isGraphLoading = false;
+                    });
+                });
+
+                this.refresh();
+            },
             handleSelectionChange: function(selectedRows) {
                 var self = this;
                 var selected = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];

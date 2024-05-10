@@ -53,6 +53,7 @@
 						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
 					</el-select>
 					<a v-if="canUserDelete || canUserUpdate" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
+					<a class="el-button el-button--default" @click="deselectAll" >{{i18n('common.deselect-all')}}</a>
 				</template>
 				<template v-slot="scope">
 					<el-table-column width="65"  fixed="left" prop="selected">
@@ -91,6 +92,7 @@
 						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
 					</el-select>
 					<a v-if="canUserDelete || canUserUpdate" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
+					<a class="el-button el-button--default" @click="deselectAll" >{{i18n('common.deselect-all')}}</a>
 				</template>
 		
 				<template v-slot="scope">
