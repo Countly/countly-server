@@ -220,7 +220,7 @@ module.exports = function(countlyConfig) {
 
 
     function get(uri, options, callback, config) {
-        module.exports(uri, options, callback, config);
+        requestFunction(uri, options, callback, config);
     }
 
     requestFunction.post = post;
