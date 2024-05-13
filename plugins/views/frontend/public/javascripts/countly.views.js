@@ -300,7 +300,16 @@
                 var self = this;
                 var selected = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
 
-                selected.splice(1, selected.length);
+                var highestTotalUserSelected = {total: 0, _id: null};
+                this.$refs.viewsTable.sourceRows.forEach(row => {
+                    if (row.selected && row.u > highestTotalUserSelected.total) {
+                        highestTotalUserSelected.total = row.u;
+                        highestTotalUserSelected._id = row._id;
+                    }
+                });
+                selected.splice(0, selected.length);
+                selected.push(highestTotalUserSelected._id);
+
                 var persistData = {};
                 persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = selected;
                 countlyCommon.setPersistentSettings(persistData);
@@ -353,6 +362,7 @@
                         }
                     }
                 }
+
                 this.persistentSettings = selected;
                 this.$store.dispatch('countlyViews/onSetSelectedViews', selected).then(function() {
                     self.isGraphLoading = true;
