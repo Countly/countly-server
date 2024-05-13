@@ -612,4 +612,5 @@
         this.renderWhenReady(searchView);
     });
 
-})(); 
+})();
+
