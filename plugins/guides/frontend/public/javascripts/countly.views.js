@@ -611,4 +611,5 @@
         searchView.params = { query: query };
         this.renderWhenReady(searchView);
     });
-})();
+
+})(); 
