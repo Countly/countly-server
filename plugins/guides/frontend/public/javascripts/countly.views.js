@@ -263,8 +263,6 @@
                 });
             },
         },
-
-       
     }));
 
     // TAB COMPONENTS
@@ -484,7 +482,7 @@
     var SearchResultTab = countlyVue.views.create({
         template: CV.T('/guides/templates/search-result-tab.html'),
         props: {
-            items: {type: Array, required: false}
+            items: { type: Array, required: false }
         }
     });
 
@@ -613,5 +611,4 @@
         searchView.params = { query: query };
         this.renderWhenReady(searchView);
     });
-
 })();
