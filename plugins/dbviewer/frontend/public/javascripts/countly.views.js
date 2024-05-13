@@ -64,6 +64,9 @@
                         }
                         for (var i = 0; i < response.aaData.length; i++) {
                             response.aaData[i]._view = JSON.stringify(response.aaData[i]);
+                            if (self.index) {
+                                response.aaData[i]._id = response.aaData[i].name;
+                            }
                             if (!self.isRefresh) {
                                 self.expandKeysHolder.push(response.aaData[i]._id);
                             }
@@ -252,6 +255,7 @@
                 refresh: function(force) {
                     this.isRefresh = true;
                     this.fetch(force);
+                    this.isExpanded = true;
                 },
                 highlight: function(content) {
                     return hljs.highlightAuto(content).value;
