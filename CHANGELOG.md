@@ -1,3 +1,13 @@
+## Version 23.11.21
+Fixes:
+- [sdks] Fix negative request queue
+- [server-stats] Fix for duplicated data points due to consolidation
+- [dbviewer] Cache beautified collection names to speed up loading dbviewer
+
+Enterprise Fixes:
+- [license-manager] Fix for multiple expire-today emails
+- [formulas] Fix for for formula percent not showing decimals
+
 ## Version 23.11.20
 Fixes:
 - [core] Nullcheck in data exports
