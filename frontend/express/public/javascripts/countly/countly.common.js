@@ -4526,7 +4526,7 @@
         * @example trimTo = 2, "Xh Xm Xs" result will be trimmed to "Xh Xm"
         */
         countlyCommon.formatSecond = function(second, trimTo = 5) {
-            var timeLeft = parseInt(second);
+            var timeLeft = parseFloat(second);
             var dict = [
                 {k: 'year', v: 31536000},
                 {k: 'day', v: 86400},
@@ -4537,7 +4537,17 @@
             var result = {year: 0, day: 0, hour: 0, minute: 0, second: 0};
             var resultStrings = [];
             for (var i = 0; i < dict.length && resultStrings.length < 3; i++) {
-                result[dict[i].k] = Math.floor(timeLeft / dict[i].v);
+                if (dict[i].k === "second") {
+                    if (timeLeft < 0.1) {
+                        result.second = 0;
+                    }
+                    else {
+                        result.second = Math.round(timeLeft * 10) / 10;
+                    }
+                }
+                else {
+                    result[dict[i].k] = Math.floor(timeLeft / dict[i].v);
+                }
                 timeLeft = timeLeft % dict[i].v;
                 if (result[dict[i].k] > 0) {
                     if (result[dict[i].k] === 1) {
