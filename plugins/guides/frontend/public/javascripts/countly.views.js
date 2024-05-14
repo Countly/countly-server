@@ -124,7 +124,7 @@
                         description: "",
                         placement: "bottom-end"
                     };
-                } 
+                }
             },
             testId: {
                 type: String,
@@ -486,7 +486,7 @@
     var SearchResultTab = countlyVue.views.create({
         template: CV.T('/guides/templates/search-result-tab.html'),
         props: {
-            items: {type: Array, required: false}
+            items: { type: Array, required: false }
         }
     });
 
