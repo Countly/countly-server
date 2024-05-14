@@ -90,13 +90,13 @@ class FCM extends Splitter {
                 creds._data.serviceAccountFile.substring(creds._data.serviceAccountFile.indexOf(',') + 1)
             );
             const serviceAccountObject = JSON.parse(serviceAccountJSON);
-            const appName = creds._id.toString();
+            const appName = creds._data.hash; // using hash as the app name
             const firebaseApp = firebaseAdmin.apps.find(app => app.name === appName)
-                ? firebaseAdmin.app(creds._id.toString())
+                ? firebaseAdmin.app(appName)
                 : firebaseAdmin.initializeApp({
                     credential: firebaseAdmin.credential.cert(serviceAccountObject, this.agent),
                     agent: this.agent
-                }, creds._id.toString());
+                }, appName);
             this.firebaseMessaging = firebaseApp.messaging();
         }
 
@@ -158,90 +158,61 @@ class FCM extends Splitter {
             };
             if (!this.legacyApi) {
                 const tokens = pushes.map(p => p.t);
-                const topic = pushes[0].m.toString(); // use message id as topic name
-                this.log.d("subscribing all %d tokens to topic %s", tokens.length, topic);
-                return this.firebaseMessaging
-                    // subscribe to the topic
-                    // EXAMPLE RESPONSE OF subscribeToTopic:
-                    // {
-                    //     "successCount": 0,
-                    //     "failureCount": 1,
-                    //     "errors": [
-                    //         {
-                    //             "index": 0,
-                    //             "error": {
-                    //                 "code": "messaging/invalid-registration-token",
-                    //                 "message": "Invalid registration t..."
-                    //             }
-                    //         }
-                    //     ]
-                    // }
-                    .subscribeToTopic(tokens, topic)
-                    // send the message to the topic:
-                    .then(async topicSubResponse => {
-                        // if there's no token to send the message to, return
-                        // early with subscribeToTopic response
-                        if (!topicSubResponse.successCount) {
-                            return topicSubResponse;
-                        }
-                        try {
-                            // EXAMPLE RESPONSE OF sendToTopic:
-                            // { messageId: 3388013900968255000 }
-                            await this.firebaseMessaging.sendToTopic(topic, content);
-                        }
-                        catch (err) {
-                            console.log("====== sendToTopic error", err);
-                            // continue as usual if there's an error while
-                            // sending the message
+                const messages = tokens.map(token => ({
+                    token,
+                    ...content,
+                }));
 
-                            // TODO: properly log the error
+                return this.firebaseMessaging
+                    // EXAMPLE RESPONSE of sendEach
+                    // {
+                    //   "responses": [
+                    //     {
+                    //       "success": false,
+                    //       "error": {
+                    //         "code": "messaging/invalid-argument",
+                    //         "message": "The registration token is not a valid FCM registration token"
+                    //       }
+                    //     }
+                    //   ],
+                    //   "successCount": 0,
+                    //   "failureCount": 1
+                    // }
+                    .sendEach(messages)
+                    .then(async result => {
+                        const allPushIds = pushes.map(p => p._id);
+
+                        if (!result.failureCount) {
+                            this.send_results(allPushIds, bytes);
+                            return;
                         }
-                        // we're not really using the response of sendToTopic.
-                        // so just carry subscribeToTopic response to the end
-                        // of the promise chain
-                        return topicSubResponse;
-                    })
-                    // unsubscribe from topic
-                    .then(async topicSubResponse => {
-                        // this should be run in any case (even if there was an
-                        // error in previous step).
-                        await this.firebaseMessaging.unsubscribeFromTopic(tokens, topic);
-                        // we're not using the response of unsubscribe.
-                        return topicSubResponse;
-                    })
-                    // handle and transform results
-                    .then(topicSubResponse => {
-                        let erroredIndexes = [];
-                        // handle errors:
-                        if (topicSubResponse.failureCount) {
-                            for (let i = 0; i < topicSubResponse.failureCount; i++) {
-                                const { error, index } = topicSubResponse.errors[i];
+
+                        // array of successfully sent push._id:
+                        const sentSuccessfully = [];
+
+                        // check for each message
+                        for (let i = 0; i < result.responses.length; i++) {
+                            const { success, error } = result.responses[i];
+                            if (success) {
+                                sentSuccessfully.push(allPushIds[i]);
+                            }
+                            else {
                                 const sdkError = FCM_SDK_ERRORS[error.code];
                                 // check if the sdk error is mapped to an internal error.
                                 // set to default if its not.
                                 let internalErrorCode = sdkError?.mapTo ?? ERROR.DATA_PROVIDER;
                                 let internalErrorMessage = sdkError?.message ?? "Invalid error message";
-                                erroredIndexes.push(index);
                                 errorObject(internalErrorCode, internalErrorMessage)
-                                    .addAffected(pushes[index]._id, one);
+                                    .addAffected(pushes[i]._id, one);
                             }
                         }
-                        let errored = 0;
-                        for (let k in errors) {
-                            errored += errors[k].affectedBytes;
-                            this.send_push_error(errors[k]);
+                        // send results back:
+                        for (let errorKey in errors) {
+                            this.send_push_error(errors[errorKey]);
                         }
-                        if (pushes.length > topicSubResponse.failureCount) {
-                            this.send_results(
-                                pushes.filter((_v, index) => !erroredIndexes.includes(index))
-                                    .map(({ _id }) => _id),
-                                bytes - errored
-                            );
+                        if (sentSuccessfully.length) {
+                            this.send_results(sentSuccessfully, one * sentSuccessfully.length);
                         }
-                    })
-                    .catch(err => {
-                        // should never enter here.
-                        console.log("======== == 0===== 0==== 0==== end of the promise chain", err);
                     });
             }
 
