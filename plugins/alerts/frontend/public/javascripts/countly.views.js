@@ -262,7 +262,7 @@
                     "o",
                     "m",
                 ];
-                if(this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)){
+                if (this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) {
                     return false;
                 }
                 if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
@@ -278,7 +278,7 @@
                     "o",
                     "m",
                 ];
-                if(this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)){
+                if (this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) {
                     return false;
                 }
                 if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
