@@ -1235,7 +1235,7 @@
                                 oninput="this.value = this.value.toLowerCase();"\
                                 @keyup.enter.native="tryPush">\
                             </el-input>\
-                            <div class="bu-mt-2 color-red-100 text-small" v-show="hasError">\
+                            <div class="bu-mt-2 color-red-100 text-small" v-show="hasError && showError">\
                                 {{i18n("common.invalid-email-address", currentInput)}}\
                             </div>\
                         </template>\
@@ -1253,6 +1253,10 @@
                 type: String,
                 default: 'cly-select-email-test-id',
                 required: false
+            },
+            showError: {
+                type: Boolean,
+                default: true // Default to true to keep existing behavior if prop not provided
             }
         },
         data: function() {

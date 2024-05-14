@@ -277,6 +277,7 @@
                         <span class="bu-mx-3" style="line-height: 30px" data-test-id="is-label">is</span>
                         <div class="bu-is-flex-grow-1">
                             <cly-select-x
+                                :collapse-tags="false"
                                 test-id="alert-data-filter-key-crashes-select"
                                 v-if="Array.isArray(alertDataFilterValue)"
                                 v-model="alertDataFilterValue"
@@ -476,6 +477,15 @@
                         </span>
                     </div>
 
+                    <div class="bu-pt-2 bu-pb-3" v-if="drawerScope.editedObject.alertDataType==='crashes' && (Array.isArray(alertDataFilterValue) && alertDataFilterValue.length)">
+                        <span>
+                            <i class="cly-is cly-is-information-circle color-cool-gray-40 alert-drawer-inline-icon" style="line-height:16px;"></i>
+                                <div class="text-small color-cool-gray-50 alert-drawer-inline-icon">
+                                    {{i18n('alerts.crashes-icon')}}
+                                </div>
+                        </span>
+                    </div>
+
                     <div class="cly-vue-alert-drawer__line"></div>
 
                     <cly-form-field class="bu-pb-0">
@@ -507,7 +517,8 @@
                             test-id="email-address-select"
                             placeholder="Enter email address"
                             v-model="drawerScope.editedObject.alertValues"
-                            :collapse-tags="false">
+                            :collapse-tags="false"
+                            :showError="false">
                         </cly-select-email>
                     </cly-form-field>
 
