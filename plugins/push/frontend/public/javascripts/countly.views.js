@@ -2200,7 +2200,7 @@
             },
             isKeyEmpty: function(platform) {
                 if (platform === this.PlatformEnum.ANDROID) {
-                    return !this.viewModel[platform].firebaseKey;
+                    return !this.viewModel[platform].firebaseKey && !this.viewModel[platform].serviceAccountFile;
                 }
                 if (platform === this.PlatformEnum.IOS) {
                     if (this.iosAuthConfigType === countlyPushNotification.service.IOSAuthConfigTypeEnum.P8) {
