@@ -78,6 +78,12 @@
                 switch (command) {
                 case "edit":
                     this.titleDescription = {header: CV.i18n('populator.drawer-title-edit'), button: CV.i18n('populator.drawer-save-template')};
+                    if (template.events && template.events.length) {
+                        Vue.set(this.$refs.populatorTemplateDrawer.sectionActivity, 'events', true);
+                    }
+                    if (template.views && template.views.length) {
+                        Vue.set(this.$refs.populatorTemplateDrawer.sectionActivity, 'views', true);
+                    }
                     this.openDrawer("populatorTemplate", template);
                     break;
                 case "duplicate":
