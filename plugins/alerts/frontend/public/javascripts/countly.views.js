@@ -736,8 +736,10 @@
                 }
 
                 var target = settings.alertDataSubType;
-                var subTarget = this.alertDataSubType2Options
-                    .find(({value}) => value === settings.alertDataSubType2).label;
+                if (settings.alertDataSubType2) {
+                    var subTarget = this.alertDataSubType2Options
+                        .find(({value}) => value === settings.alertDataSubType2).label;
+                }
 
                 let describePeriod;
                 switch (settings.period) {
