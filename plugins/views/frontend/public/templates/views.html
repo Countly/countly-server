@@ -47,12 +47,20 @@
 			</div>
         </cly-section>
 		<cly-section>
-			<cly-datatable-n v-if="tableMode == 'selected'" resizable border :rows="selectedTableRows" :persist-key="tablePersistKey" :available-dynamic-cols="tableDynamicCols" >
+			<cly-datatable-n 
+				v-if="tableMode == 'selected'" 
+				resizable border 
+				:rows="selectedTableRows" 
+				:persist-key="tablePersistKey" 
+				:available-dynamic-cols="tableDynamicCols" 
+				ref="viewsTable" 
+				>
 				<template v-slot:header-left>
 					<el-select v-model="tableMode" class="bu-mr-2">
 						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
 					</el-select>
 					<a v-if="canUserDelete || canUserUpdate" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
+					<a class="el-button el-button--default" @click="deselectAll" >{{i18n('common.deselect-all')}}</a>
 				</template>
 				<template v-slot="scope">
 					<el-table-column width="65"  fixed="left" prop="selected">
@@ -85,12 +93,23 @@
 					</template>
 				</template>
 			</cly-datatable-n>
-			<cly-datatable-n v-else resizable border :force-loading="isTableLoading" :default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" :data-source="remoteTableDataSource" :export-query="getExportQuery"  ref="viewsTable" @selection-change="handleSelectionChange" >
+			<cly-datatable-n 
+				v-else resizable border 
+				:force-loading="isTableLoading" 
+				:default-sort="{prop: 'u', order: 'descending'}" 
+				:available-dynamic-cols="tableDynamicCols" 
+				:persist-key="tablePersistKey" 
+				:data-source="remoteTableDataSource" 
+				:export-query="getExportQuery" 
+				ref="viewsTable" 
+				@selection-change="handleSelectionChange" 
+				>
 				<template v-slot:header-left>
 					<el-select v-model="tableMode" class="bu-mr-2" >
 						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
 					</el-select>
 					<a v-if="canUserDelete || canUserUpdate" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
+					<a class="el-button el-button--default" @click="deselectAll" >{{i18n('common.deselect-all')}}</a>
 				</template>
 		
 				<template v-slot="scope">
