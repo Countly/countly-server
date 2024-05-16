@@ -426,11 +426,12 @@ function getPeriodObject(prmPeriod, bucket) {
             toDate = moment(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
         }
 
-        startTimestamp = fromDate.clone().startOf("day");
-        endTimestamp = toDate.clone().endOf("day");
+
         fromDate.tz(_appTimezone);
         toDate.tz(_appTimezone);
 
+        startTimestamp = fromDate.clone().startOf("day");
+        endTimestamp = toDate.clone().endOf("day");
         if (fromDate.valueOf() === toDate.valueOf()) { //single day
             cycleDuration = moment.duration(1, "day");
             Object.assign(periodObject, {

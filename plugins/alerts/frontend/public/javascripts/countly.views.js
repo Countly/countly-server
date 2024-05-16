@@ -261,11 +261,10 @@
                     "o",
                     "m",
                 ];
-                if (
-                    disabledMetrics.includes(
-                        this.$refs.drawerData.editedObject.alertDataSubType
-                    )
-                ) {
+                if (this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) {
+                    return false;
+                }
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
                     return false;
                 }
                 return true;
@@ -278,11 +277,10 @@
                     "o",
                     "m",
                 ];
-                if (
-                    disabledMetrics.includes(
-                        this.$refs.drawerData.editedObject.alertDataSubType
-                    )
-                ) {
+                if (this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) {
+                    return false;
+                }
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
                     return false;
                 }
                 return true;
@@ -437,6 +435,10 @@
             getMetrics: function() {
                 const formData = this.$refs.drawerData.editedObject;
                 this.alertDataSubType2Options = [];
+                if (formData.selectedApps === 'all') {
+                    formData.alertDataType = 'dataPoints';
+                    formData.alertDataSubType = 'total data points';
+                }
                 if (!formData.selectedApps) {
                     return;
                 }
@@ -734,7 +736,10 @@
                 }
 
                 var target = settings.alertDataSubType;
-                var subTarget = settings.alertDataSubType2;
+                if (settings.alertDataSubType2) {
+                    var subTarget = this.alertDataSubType2Options
+                        .find(({value}) => value === settings.alertDataSubType2).label;
+                }
 
                 let describePeriod;
                 switch (settings.period) {

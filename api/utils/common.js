@@ -217,7 +217,8 @@ common.dbUserMap = {
     'last_end_session_timestamp': 'lest',
     'has_ongoing_session': 'hos',
     'previous_events': 'pe',
-    'resolution': 'r'
+    'resolution': 'r',
+    'has_hinge': 'hh',
 };
 
 common.dbUniqueMap = {
@@ -2656,6 +2657,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set.lac = params.time.timestamp;
                 }
                 update.$set.last_sync = Math.round(Date.now() / 1000);
+                update.$set.lu = new Date();
             }
 
             if (!user.sdk) {

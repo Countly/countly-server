@@ -177,7 +177,9 @@ async function compileEmail(result) {
     }
     return EMAIL_TEMPLATE({
         title: `Countly Alert`,
-        subTitle: `Countly Alert: ` + alert.alertName,
+        alertName: alert.alertName,
+        alertDataType: alert.alertDataType,
+        subTitle: `Uh oh! It seems there's been some activity related to ` + alert.alertDataSubType + ` in the `,
         host,
         compareDescribe: alert.compareDescribe,
         apps: [{
@@ -205,7 +207,6 @@ async function trigger(result, log) {
     const emailBody = await compileEmail(result);
     const subject = `${alert.alertDataSubType} for ${app.name} has changed`;
 
-    console.log(subject, emailBody);
     for (let i = 0; i < audienceEmails.length; i++) {
         const email = audienceEmails[i];
         try {

@@ -132,6 +132,16 @@
             }
         },
         computed: {
+            leftPadding: function() {
+                if (this.hasDiff && this.isModal) {
+                    var dd = document.getElementById('cly-vue-sidebar').getBoundingClientRect();
+                    var value = dd.width || 272;
+                    return "left:" + value + 'px; width:calc(100% - ' + value + 'px)';
+                }
+                else {
+                    return "";
+                }
+            },
             hasDiff: function() {
                 return this.diff.length > 0;
             },
@@ -154,8 +164,8 @@
             }
         },
         template:
-				'<div :class="skinToApply" v-if="hasDiff">' +
-					'<div  v-if="isModal" class="cly-vue-diff-helper-modal bu-pl-2" >\n' +
+				'<div :class="skinToApply" v-if="hasDiff" :style="leftPadding" >' +
+					'<div  v-if="isModal" class="cly-vue-diff-helper-modal bu-pl-2">\n' +
 						'<slot name="main">\n' +
 							'<div class="message">\n' +
 								'<span class="text-dark">{{madeChanges}}</span>\n' +
@@ -464,7 +474,28 @@
     }));
 
     Vue.component("cly-app-select", {
-        template: '<cly-select-x :options="options" :auto-commit="mode !== \'multi-check\'" :mode="mode" :max-items="multipleLimit" v-bind="$attrs" v-on="$listeners"></cly-select-x>',
+        template: `
+        <cly-select-x
+            :options="options"
+            :auto-commit="mode !== \'multi-check\'"
+            :mode="mode"
+            :max-items="multipleLimit"
+            v-bind="$attrs"
+            v-on="$listeners">
+            <template
+                v-slot:option-prefix="option">
+                <div v-if="showAppImage && dropdownApps[option.value] && dropdownApps[option.value].image" class="cly-vue-dropdown__dropdown-icon bu-mt-1 bu-mr-1"
+                    :style="{backgroundImage: \'url(\' + dropdownApps[option.value].image + \')\'}">
+                </div>
+            </template>
+            <template
+                v-if="showAppImage && selectedApps && dropdownApps[selectedApps]"
+                v-slot:label-prefix>
+                <div class="cly-vue-dropdown__dropdown-icon bu-ml-1 bu-mr-1"
+                    :style="{backgroundImage: \'url(\' + dropdownApps[selectedApps].image + \')\'}">
+                </div>
+            </template>
+        </cly-select-x>`,
         props: {
             allowAll: {
                 type: Boolean,
@@ -487,6 +518,11 @@
                     return {};
                 },
                 required: false
+            },
+            showAppImage: {
+                type: Boolean,
+                default: false,
+                required: false
             }
         },
         computed: {
@@ -498,6 +534,9 @@
             },
             mode: function() {
                 return this.multiple ? "multi-check" : "single-list";
+            },
+            selectedApps: function() {
+                return this.$attrs.value;
             },
             apps: function() {
                 var apps = countlyGlobal.apps || {};
@@ -526,6 +565,11 @@
                     };
                 });
             }
+        },
+        data: function() {
+            return {
+                dropdownApps: countlyGlobal.apps || {}
+            };
         }
     });
 
