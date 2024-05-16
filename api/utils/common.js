@@ -2657,6 +2657,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set.lac = params.time.timestamp;
                 }
                 update.$set.last_sync = Math.round(Date.now() / 1000);
+                update.$set.lu = new Date();
             }
 
             if (!user.sdk) {

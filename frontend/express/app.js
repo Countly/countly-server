@@ -1086,7 +1086,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
                         countlyDb.collection('members').update(
                             { _id: common.db.ObjectID(member._id) },
-                            { $inc: { session_count: 1 } },
+                            {
+                                $inc: { session_count: 1 },
+                                $set: {
+                                    last_login: Math.round(new Date().getTime() / 1000),
+                                    lu: new Date()
+                                }
+                            }
                         );
 
                         if (member.global_admin) {
