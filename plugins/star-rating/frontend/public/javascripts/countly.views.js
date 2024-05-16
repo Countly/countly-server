@@ -165,7 +165,7 @@
                     submitted.finalText = submitted.links.finalText;
                     submitted.links = submitted.links.link;
                     submitted.links.forEach(function(link) {
-                        var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
+                        const separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
                         link.linkValue = link.linkValue + separator + 'cly_x_int=1';
                         delete link.text;
                         delete link.link;
