@@ -350,6 +350,12 @@
                 if (!countlyGlobal.plugins.includes("revenue")) {
                     alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "revenue");
                 }
+                if (!countlyGlobal.plugins.includes("cohorts")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "cohorts" && value !== "profile_groups");
+                }
+                if (!countlyGlobal.plugins.includes("users")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "users");
+                }
                 return alertDataTypeOptions;
             },
             alertDefine: function() {
