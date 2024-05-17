@@ -9,6 +9,10 @@ import {
 const stepElements = require("../../../../support/components/addFeedbackSteps");
 const { FEEDBACK_ADD_STEPS } = require('../../../../support/constants');
 const helper = require('../../../../support/helper');
+const getApiKey = require('../../../../api/getApiKey');
+const getApps = require('../../../../api/getApps');
+const getToken = require('../../../../api/createToken');
+const createRating = require('../../../../api/feedbackWidgetsCreate');
 
 const verifyEmptyPageElements = () => {
 
@@ -950,6 +954,30 @@ const clickBackToRatingWidgetLink = () => {
     cy.clickElement(feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_BACK_TO_RATING_WIDGETS_LINK);
 };
 
+const createRatingWithApi = (username, password, appName, widgetName) => {
+
+    let apiKey;
+    let appId;
+    let countlyToken;
+  
+    getApiKey.request(username, password)
+      .then((response) => {
+        apiKey = response;
+        return getApps.request(apiKey);
+      })
+      .then((response) => {
+        for (const key in response.admin_of) {
+          if (response.admin_of[key].name === appName) {
+            appId = response.admin_of[key]._id;
+          }
+        }
+        return getToken.request(apiKey);
+      })
+      .then((response) => {
+        countlyToken = response.result;
+        return createRating.request(countlyToken, appId, widgetName);
+      })
+  };
 
 module.exports = {
     verifyEmptyPageElements,
@@ -1013,5 +1041,6 @@ module.exports = {
     stopWidget,
     shouldBeWidgetStopped,
     clickBackToRatingWidgetLink,
-    clickEditWidgetButton
+    clickEditWidgetButton,
+    createRatingWithApi
 };

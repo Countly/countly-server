@@ -9,8 +9,10 @@ Cypress.Commands.add("clearInput", (element) => {
     cy.getElement(element).clear();
 });
 
-Cypress.Commands.add("typeSelectInput", (element, tag) => {
-    cy.getElement(element).type(tag + '{enter}', { force: true });
+Cypress.Commands.add("typeSelectInput", (element, ...tags) => {
+    for (var i = 0; i < tags.length; i++) {
+        cy.getElement(element).type(tags[i] + '{enter}', { force: true });
+    }
     cy.clickBody();
 });
 
@@ -30,11 +32,37 @@ Cypress.Commands.add("clickBody", () => {
 
 Cypress.Commands.add("selectOption", (element, option) => {
     cy.getElement(element).click();
-    cy.clickOption('.el-select-dropdown__item', option);
+    cy
+        .elementExists('.el-select-dropdown__item')
+        .then((isExists) => {
+            if (isExists) {
+                cy.clickOption('.el-select-dropdown__item', option);
+            } else {
+                cy.clickOption('.cly-vue-listbox__item-label', option);
+            }
+        });
+});
+
+Cypress.Commands.add("selectCheckboxOption", (element, ...options) => {
+    cy.getElement(element).click();
+    for (var i = 0; i < options.length; i++) {
+        cy.clickOption('.el-checkbox__label', options[i])
+    }
+    cy.clickBody();
 });
 
 Cypress.Commands.add("clickOption", (element, option) => {
     cy.getElement(element).contains(new RegExp("^" + option + "$", "g")).click();
+});
+
+Cypress.Commands.add("selectValue", (element, valueText) => {
+    cy.getElement(element).then(($select) => {
+        cy.wrap($select).find('option').contains(valueText).then(($option) => {
+            cy.wrap($option).invoke('val').then((value) => {
+                cy.wrap($select).select(value);
+            });
+        });
+    });
 });
 
 Cypress.Commands.add("selectColor", (element, colorCode) => {
