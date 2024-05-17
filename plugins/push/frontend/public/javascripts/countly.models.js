@@ -1764,6 +1764,7 @@
             },
             mapAndroidAppLevelConfig: function(dto) {
                 if (this.hasAppLevelPlatformConfig(dto, PlatformDtoEnum.ANDROID)) {
+                    console.log(dto[PlatformDtoEnum.ANDROID]);
                     return {
                         _id: dto[PlatformDtoEnum.ANDROID]._id || '',
                         firebaseKey: dto[PlatformDtoEnum.ANDROID].key,
