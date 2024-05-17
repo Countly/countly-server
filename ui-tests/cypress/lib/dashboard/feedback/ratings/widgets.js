@@ -959,25 +959,25 @@ const createRatingWithApi = (username, password, appName, widgetName) => {
     let apiKey;
     let appId;
     let countlyToken;
-  
+
     getApiKey.request(username, password)
-      .then((response) => {
-        apiKey = response;
-        return getApps.request(apiKey);
-      })
-      .then((response) => {
-        for (const key in response.admin_of) {
-          if (response.admin_of[key].name === appName) {
-            appId = response.admin_of[key]._id;
-          }
-        }
-        return getToken.request(apiKey);
-      })
-      .then((response) => {
-        countlyToken = response.result;
-        return createRating.request(countlyToken, appId, widgetName);
-      })
-  };
+        .then((response) => {
+            apiKey = response;
+            return getApps.request(apiKey);
+        })
+        .then((response) => {
+            for (const key in response.admin_of) {
+                if (response.admin_of[key].name === appName) {
+                    appId = response.admin_of[key]._id;
+                }
+            }
+            return getToken.request(apiKey);
+        })
+        .then((response) => {
+            countlyToken = response.result;
+            return createRating.request(countlyToken, appId, widgetName);
+        });
+};
 
 module.exports = {
     verifyEmptyPageElements,

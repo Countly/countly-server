@@ -11,8 +11,8 @@ const request = (apiKey) => {
             .then((response) => {
                 const data = response.body || response.requestBody;
                 return resolve(data);
-            })
-    })
+            });
+    });
 };
 
 module.exports = {

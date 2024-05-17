@@ -14,13 +14,13 @@ const {
 } = require('../../../../support/constants');
 
 describe('Create New Alert', () => {
-    beforeEach(function () {
+    beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
         navigationHelpers.goToAlertsPage();
     });
 
-    it('Should be added crashes alert', function () {
+    it('Should be added crashes alert', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -58,10 +58,10 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added crashes alert with adding filter', function () {
+    it('Should be added crashes alert with adding filter', function() {
 
         const alert = generateAlertFixture();
-        var injectionText = "\"><img src=# onerror=alert('POC')>"
+        var injectionText = "\"><img src=# onerror=alert('POC')>";
         let application = "";
 
         navigationHelpers.getAppNameFromSidebar().then((appName) => {
@@ -75,7 +75,7 @@ describe('Create New Alert', () => {
             alertsHelpers.selectApplication(application);
             alertsHelpers.selectDataType(FEATURE_TYPE.CRASHES);
             alertsHelpers.clickAddFilterButton();
-            alertsHelpers.selectFilterCrashesAppVersion(...["1.0", "22.02.0"])
+            alertsHelpers.selectFilterCrashesAppVersion(...["1.0", "22.02.0"]);
             alertsHelpers.selectTriggerMetric(TRIGGER_METRICS.FATAL_CRASHES_ERRORS_PER_SESSION);
             alertsHelpers.selectDoNotSendEmail();
             alertsHelpers.clickCreateButton();
@@ -95,7 +95,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added alert data points', function () {
+    it('Should be added alert data points', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -133,7 +133,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added events alert', function () {
+    it('Should be added events alert', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -172,7 +172,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added events alert with adding filter', function () {
+    it('Should be added events alert with adding filter', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -214,7 +214,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added sessions alert', function () {
+    it('Should be added sessions alert', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -252,7 +252,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added users alert', function () {
+    it('Should be added users alert', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -290,7 +290,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added views alert', function () {
+    it('Should be added views alert', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -329,7 +329,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added alert ratings', function () {
+    it('Should be added alert ratings', function() {
 
         const alert = generateAlertFixture();
         const widget = generateWidgetFixture();
@@ -370,7 +370,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it.only('Should be added alert ratings with adding filter', function () {
+    it('Should be added alert ratings with adding filter', function() {
 
         const alert = generateAlertFixture();
         const widget = generateWidgetFixture();
@@ -389,7 +389,7 @@ describe('Create New Alert', () => {
             alertsHelpers.selectDataType(FEATURE_TYPE.RATING);
             alertsHelpers.selectSubType(widget.widgetName);
             alertsHelpers.clickAddFilterButton();
-            alertsHelpers.selectFilterRatingPoints(...["1", "2", "3", "4", "5"])
+            alertsHelpers.selectFilterRatingPoints(...["1", "2", "3", "4", "5"]);
             alertsHelpers.selectTriggerMetric(TRIGGER_METRICS.NEW_RATING_RESPONSE);
             alertsHelpers.selectDoNotSendEmail();
             alertsHelpers.clickCreateButton();

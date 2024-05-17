@@ -33,8 +33,8 @@ const request = (countlyToken, appId, widgetName) => {
             internalName: "created by automation",
             app_id: appId
         },
-    })
-}
+    });
+};
 
 module.exports = {
     request,

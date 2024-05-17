@@ -15,7 +15,7 @@ export const alertsPageElements = {
     ALERTS_SENT_TODAY_NUMBER_LABEL: 'metric-card-alerts-sent-today-column-number',
 
     NOTIFICATION_ALERT_SAVED_MESSAGE: 'cly-notification-text'
-}
+};
 
 export const alertDrawerPageElements = {
     DRAWER_PAGE_TITLE: 'alert-drawer-header-title',
@@ -77,7 +77,7 @@ export const alertDrawerPageElements = {
     //RATING FILTER ELEMENTS
     DRAWER_FILTER_RATING_INPUT: 'alert-data-filter-key-rating-input',
     DRAWER_FILTER_RATING_SELECT: 'alert-data-filter-key-rating-select'
-}
+};
 
 const alertDataTableElements = (index = 0) => {
     return {

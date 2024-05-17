@@ -2,30 +2,30 @@ module.exports.FEEDBACK_TYPES = {
     SURVEYS: 'ias',
     NPS: 'nps',
     RATINGS: 'ratings',
-  };
-  
-  module.exports.RATING_SYMBOLS = {
+};
+
+module.exports.RATING_SYMBOLS = {
     EMOJIS: 'Emojis',
     THUMBS: 'Thumbs',
     STARS: 'Stars',
-  };
-  
-  module.exports.FEEDBACK_ADD_STEPS = {
+};
+
+module.exports.FEEDBACK_ADD_STEPS = {
     SETTINGS: 'Settings',
     APPEARANCE: 'Widget appearance',
     DEVICES_TARGETING: 'Devices & Targeting',
-  };
-  
-  module.exports.BEHAVIOUR_TYPES = {
+};
+
+module.exports.BEHAVIOUR_TYPES = {
     SESSIONS: 'Sessions',
     EVENTS: 'Events',
     VIEW: 'View',
     FEEDBACK: 'Feedback',
     CRASH: 'Crash',
     PUSH: 'Push'
-  };
-  
-  module.exports.COMPARISON_OPTIONS = {
+};
+
+module.exports.COMPARISON_OPTIONS = {
     AT_LEAST: 'At least',
     EQUAL_TO: 'Equal to',
     AT_MOST: 'At most',
@@ -39,17 +39,17 @@ module.exports.FEEDBACK_TYPES = {
     GREATER_THAN: 'greater than',
     LESS_THAN: 'less than',
     IN_THE_LAST: 'in the last'
-  };
-  
-  module.exports.TIME_PHRASES = {
+};
+
+module.exports.TIME_PHRASES = {
     IN_BETWEEN: 'In Between',
     BEFORE: 'Before',
     SINCE: 'Since',
     IN_THE_LAST: 'In the Last',
     ALL_TIME: 'All time'
-  };
-  
-  module.exports.TIME_UNITS = {
+};
+
+module.exports.TIME_UNITS = {
     DAYS: 'days',
     WEEKS: 'weeks',
     MONTHS: 'months',
@@ -57,33 +57,33 @@ module.exports.FEEDBACK_TYPES = {
     HOUR: 'hour',
     DAY: 'day',
     MONTH: 'month',
-  };
-  
-  module.exports.LOGICAL_OPERATORS = {
+};
+
+module.exports.LOGICAL_OPERATORS = {
     AND: 'And',
     OR: 'Or'
-  };
-  
-  module.exports.YES_NO_OPTIONS = {
+};
+
+module.exports.YES_NO_OPTIONS = {
     YES: 'Yes',
     NO: 'No'
-  };
-  
-  module.exports.APP_TYPE = {
+};
+
+module.exports.APP_TYPE = {
     MOBILE: 'Mobile',
     WEB: 'Web',
     DESKTOP: 'Desktop'
-  };
-  
-  module.exports.DATA_TYPE = {
+};
+
+module.exports.DATA_TYPE = {
     BANKING: 'Banking',
     HEALTHCARE: 'Healthcare',
     NAVIGATION: 'Navigation',
     ECOMMERCE: 'eCommerce',
     GAMING: 'Gaming'
-  };
-  
-  module.exports.FEATURE_TYPE = {
+};
+
+module.exports.FEATURE_TYPE = {
     CRASHES: 'Crashes',
     PROFILE_GROUPS: 'Profile Groups',
     DATA_POINTS: 'Data Points',
@@ -92,15 +92,15 @@ module.exports.FEEDBACK_TYPES = {
     SESSIONS: 'Sessions',
     USERS: 'Users',
     VIEWS: 'Views'
-  };
-  
-  module.exports.EMAIL_NOTIFICATION_TYPE = {
+};
+
+module.exports.EMAIL_NOTIFICATION_TYPE = {
     TO_SPECIFIC_ADDRESS: 'To specific address',
     TO_USERS_IN_A_GROUP: 'To users in a group',
     DO_NOT_SEND_FOR_THIS_ALERT: 'Don\'t send for this alert'
-  };
-  
-  module.exports.TRIGGER_METRICS = {
+};
+
+module.exports.TRIGGER_METRICS = {
     //CRASHES
     OF_CRASHES_ERRORS: '# of crashes/errors',
     NON_FATAL_CRASHES_ERRORS_PER_SESSION: 'non-fatal crashes/errors per session',
@@ -128,10 +128,10 @@ module.exports.FEEDBACK_TYPES = {
     //VIEWS
     BOUNCE_RATE: 'bounce rate',
     OF_PAGE_VIEWS: '# of page views',
-  };
-  
-  module.exports.TRIGGER_VARIABLE = {
+};
+
+module.exports.TRIGGER_VARIABLE = {
     INCREASED: 'increased',
     DECREASED: 'decreased',
     MORE: 'more'
-  };
+};

@@ -32,21 +32,18 @@ Cypress.Commands.add("clickBody", () => {
 
 Cypress.Commands.add("selectOption", (element, option) => {
     cy.getElement(element).click();
-    cy
-        .elementExists('.el-select-dropdown__item')
-        .then((isExists) => {
-            if (isExists) {
-                cy.clickOption('.el-select-dropdown__item', option);
-            } else {
-                cy.clickOption('.cly-vue-listbox__item-label', option);
-            }
-        });
+    cy.clickOption('.el-select-dropdown__item', option);
+});
+
+Cypress.Commands.add("selectListBoxItem", (element, item) => {
+    cy.getElement(element).click();
+    cy.clickOption('.cly-vue-listbox__item-label', item);
 });
 
 Cypress.Commands.add("selectCheckboxOption", (element, ...options) => {
     cy.getElement(element).click();
     for (var i = 0; i < options.length; i++) {
-        cy.clickOption('.el-checkbox__label', options[i])
+        cy.clickOption('.el-checkbox__label', options[i]);
     }
     cy.clickBody();
 });
