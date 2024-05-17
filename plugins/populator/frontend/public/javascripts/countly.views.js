@@ -611,12 +611,12 @@
             checkInputProbabilities: function(editedObject) {
                 let warningMessage = "";
                 let sectionsToVerify = ["users", "views", "events", "behavior"];
-
                 sectionsToVerify.forEach(function(sectionName) {
                     if (Array.isArray(editedObject[sectionName])) {
                         editedObject[sectionName].forEach(item => {
                             let sectionTotal = null;
                             let conditionTotal = null;
+                            let conditionValueText = null;
                             if (item.segmentations) {
                                 item.segmentations.forEach(segmentation => {
                                     sectionTotal = 0;
@@ -625,13 +625,20 @@
                                             sectionTotal += parseInt(value.probability, 10) || 0;
                                         });
                                     }
-                                    if (segmentation.condition) {
-                                        segmentation.condition.values.forEach(conditionValue => {
-                                            conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                    if (segmentation.conditions && segmentation.conditions.length) {
+                                        segmentation.conditions.forEach(condition => {
+                                            conditionTotal = 0;
+                                            conditionValueText = "If(" + condition.selectedKey + ")" + (condition.conditionType === 1 ? " = " : " ≠") + condition.selectedValue;
+                                            condition.values.forEach(conditionValue => {
+                                                conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                            });
+                                            if (conditionTotal && conditionTotal !== 100) {
+                                                warningMessage += CV.i18n('populator-template.warning-probability-validation-events-condition', sectionName, conditionValueText, segmentation.key) + "<br/></br>";
+                                            }
                                         });
                                     }
-                                    if (sectionTotal && sectionTotal !== 100 || conditionTotal && conditionTotal !== 100) {
-                                        warningMessage += CV.i18n('populator-template.warning-probability-validation', sectionName, segmentation.key) + "<br/></br>";
+                                    if (sectionTotal && sectionTotal !== 100) {
+                                        warningMessage += CV.i18n('populator-template.warning-probability-validation-events', sectionName, segmentation.key) + "<br/></br>";
                                     }
                                 });
                             }
@@ -639,19 +646,27 @@
                                 item.values.forEach(value => {
                                     sectionTotal += parseInt(value.probability, 10) || 0;
                                 });
-                                if (item.condition) {
-                                    item.condition.values.forEach(conditionValue => {
-                                        conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                if (item.conditions && item.conditions.length) {
+                                    item.conditions.forEach(condition => {
+                                        conditionTotal = 0;
+                                        conditionValueText = "If(" + condition.selectedKey + ")" + (condition.conditionType === 1 ? " = " : " ≠") + condition.selectedValue;
+                                        condition.values.forEach(conditionValue => {
+                                            conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                        });
+                                        if (conditionTotal !== 0 && conditionTotal && conditionTotal !== 100) {
+                                            warningMessage += CV.i18n('populator-template.warning-probability-validation-users-condition', conditionValueText, item.key) + "<br/></br>";
+                                        }
                                     });
                                 }
-                                if (sectionTotal && sectionTotal !== 100 || conditionTotal && conditionTotal !== 100) {
-                                    warningMessage += CV.i18n('populator-template.warning-probability-validation', sectionName, item.key) + "<br/></br>";
+                                if (sectionTotal && sectionTotal !== 100) {
+                                    warningMessage += CV.i18n('populator-template.warning-probability-validation-users', item.key) + "<br/></br>";
                                 }
                             }
                         });
                     }
                     else if (typeof editedObject[sectionName] === 'object') {
                         let sectionTotal = null;
+                        let conditionValueText = null;
                         if (editedObject[sectionName].sequences) {
                             sectionTotal = 0;
                             editedObject[sectionName].sequences.forEach(sequence => {
@@ -665,11 +680,12 @@
                             let conditionTotal = null;
                             editedObject[sectionName].sequenceConditions.forEach(condition => {
                                 conditionTotal = 0;
+                                conditionValueText = "If(" + condition.selectedKey + ")" + (condition.conditionType === 1 ? " = " : " ≠") + condition.selectedValue;
                                 condition.values.forEach(conditionValue => {
                                     conditionTotal += parseInt(conditionValue.probability, 10) || 0;
                                 });
                                 if (conditionTotal && conditionTotal !== 100) {
-                                    warningMessage += CV.i18n('populator-template.warning-probability-validation-behavior') + "<br/></br>";
+                                    warningMessage += CV.i18n('populator-template.warning-probability-validation-behavior-condition', conditionValueText) + "<br/></br>";
                                 }
                             });
                         }
@@ -711,15 +727,19 @@
                                 if (segmentation.values) {
                                     checkIfDuplicated(segmentation.values, sectionName);
                                 }
-                                if (segmentation.condition) {
-                                    checkIfDuplicated(segmentation.condition.values, sectionName);
+                                if (segmentation.conditions && segmentation.conditions.length) {
+                                    segmentation.conditions.forEach(condition => {
+                                        checkIfDuplicated(condition.values, sectionName);
+                                    });
                                 }
                             });
                         }
                         else if (item.values) {
                             checkIfDuplicated(item.values, sectionName);
-                            if (item.condition) {
-                                checkIfDuplicated(item.condition.values, sectionName);
+                            if (item.conditions && item.conditions.length) {
+                                item.conditions.forEach(condition => {
+                                    checkIfDuplicated(condition.values, sectionName);
+                                });
                             }
                         }
                     });

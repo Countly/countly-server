@@ -93,17 +93,17 @@
                             <el-button type="text" class="bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddAnotherValue(index, segmentIndex)">{{i18n('populator-template.add-another-value')}}</el-button>
                         </div>
                         <hr class="divider">
-                        <div v-if="segment.condition" class="populator-template__events--condition">
+                        <div v-for="(condition, conditionIndex) in segment.conditions" class="populator-template__events--condition">
                             <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-baseline">
                                 <div class="bu-mr-5"></div>
-                                <div class="text-smallish bu-has-text-weight-medium bu-ml-1 bu-mb-4 condition-label">{{ segment.condition.conditionType === 1 ? i18n('populator-template.condition-is', segment.condition.selectedKey, segment.condition.selectedValue) : i18n('populator-template.condition-is-not', segment.condition.selectedKey, segment.condition.selectedValue) }}</div>
-                                <el-button type="text" @click="onDeleteCondition(index, segmentIndex)" class="el-button text-smallish bu-pr-1 bu-has-text-weight-medium populator-template--btn-delete el-button--text"> {{i18n('populator-template.delete-condition')}} </el-button>
+                                <div class="text-smallish bu-has-text-weight-medium bu-ml-1 bu-mb-4 condition-label">{{ condition.conditionType === 1 ? i18n('populator-template.condition-is', condition.selectedKey, condition.selectedValue) : i18n('populator-template.condition-is-not', condition.selectedKey, condition.selectedValue) }}</div>
+                                <el-button type="text" @click="onDeleteCondition(index, segmentIndex, conditionIndex)" class="el-button text-smallish bu-pr-1 bu-has-text-weight-medium populator-template--btn-delete el-button--text"> {{i18n('populator-template.delete-condition')}} </el-button>
                             </div>
                             <div class="bu-is-flex bu-is-justify-content-flex-end">
                                 <div class="bu-mr-2">
                                     <span class="text-smallish bu-has-text-weight-medium">{{ i18n('populator-template.values') }}</span>
                                     <cly-tooltip-icon :tooltip="i18n('populator-template.condition-value-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
-                                    <div class="bu-mt-2" v-for="(segmentValue, segmentValueIndex) in segment.condition.values">
+                                    <div class="bu-mt-2" v-for="(segmentValue, segmentValueIndex) in condition.values">
                                         <el-input class="input" v-model="segmentValue.key" :placeholder="i18n('populator-template.empty-unset')"></el-input>
                                     </div>
                                 </div>
@@ -113,7 +113,7 @@
                                         <cly-tooltip-icon :tooltip="i18n('populator-template.probability-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                                     </div>
                                     <div>
-                                        <div class="bu-is-flex" v-for="(segmentValue, segmentValueIndex) in segment.condition.values">
+                                        <div class="bu-is-flex" v-for="(segmentValue, segmentValueIndex) in condition.values">
                                             <div class="bu-mt-2">
                                                 <validation-provider name="probability" rules="required|integer|min_value:0|max_value:100" v-slot="v">
                                                     <el-input class="input" v-model="segmentValue.probability" :class="{'is-error': v.errors.length > 0}">
@@ -124,23 +124,24 @@
                                                 </validation-provider>
                                             </div>
                                             <div class="override-buttons">
-                                                <i class="el-icon-close bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveConditionValue(index, segmentIndex, segmentValueIndex)"></i>
+                                                <i class="el-icon-close bu-has-text-weight-bold color-cool-gray-50 close-button" @click="onRemoveConditionValue(index, segmentIndex, segmentValueIndex, conditionIndex)"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="bu-is-flex bu-is-justify-content-center bu-mt-4 bu-mb-3 btn-another-value-wrapper override-buttons">
-                                <el-button type="text" class=" bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddAnotherConditionValue(index, segmentIndex)">{{i18n('populator-template.add-another-value')}}</el-button>
+                                <el-button type="text" class=" bu-p-0 text-smallish font-weight-bold color-blue-100 btn-another-value" @click="onAddAnotherConditionValue(index, segmentIndex, conditionIndex)">{{i18n('populator-template.add-another-value')}}</el-button>
                             </div>
+                            <hr class="divider">
                         </div>
-                        <div class="bu-mt-3 bu-is-flex bu-is-justify-content-center" v-if="!segment.condition">
+                        <div class="bu-mt-3 bu-is-flex bu-is-justify-content-center">
                             <cly-populator-condition-selector
                                 :disabled="events[index].segmentations.length > 1 ? false : true"
                                 :condition-properties="events[index].segmentations.filter(item=>item.key !== segment.key && item.key.length).map(item => item.key)"
                                 :condition-property-values="conditionPropertyValues"
                                 @selected-key-change="(param) => onConditionSelectedKeyChange(param, index)"
-                                v-model="segment.condition">
+                                v-model="segment.conditions">
                             </cly-populator-condition-selector>
                         </div>
                         <hr class="divider">
