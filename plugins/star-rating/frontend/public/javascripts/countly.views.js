@@ -1,7 +1,7 @@
 /*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyPlugins, countlyCommon,  CV, countlyVue, moment, countlyCohorts*/
 (function() {
     var FEATURE_NAME = 'star_rating';
-
+    var CLY_X_INT = 'cly_x_int';
     /**
     * Replace escaped characters
     * @param {string} str - string to replace
@@ -165,8 +165,8 @@
                     submitted.finalText = submitted.links.finalText;
                     submitted.links = submitted.links.link;
                     submitted.links.forEach(function(link) {
-                        const separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
-                        link.linkValue = link.linkValue + separator + 'cly_x_int=1';
+                        var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
+                        link.linkValue = link.linkValue + separator + CLY_X_INT + '=1';
                         delete link.text;
                         delete link.link;
                     });
@@ -243,7 +243,7 @@
                             link.text = "Another Link";
                             link.link = "https://otherlink.com";
                         }
-                        link.linkValue = link.linkValue.replace(new RegExp('[?&]' + 'cly_x_int' + '=[^&]*'), '').replace(/[?&]$/, '');
+                        link.linkValue = link.linkValue.replace(new RegExp('[?&]' + CLY_X_INT + '=[^&]*'), '').replace(/[?&]$/, '');
                     });
                     this.controls.initialEditedObject.links = {"link": this.controls.initialEditedObject.links, "finalText": this.controls.initialEditedObject.finalText};
                 }
@@ -1159,7 +1159,7 @@
                             link.text = "Another Link";
                             link.link = "https://otherlink.com";
                         }
-                        link.linkValue = link.linkValue.replace(new RegExp('[?&]' + 'cly_x_int' + '=[^&]*'), '').replace(/[?&]$/, '');
+                        link.linkValue = link.linkValue.replace(new RegExp('[?&]' + CLY_X_INT + '=[^&]*'), '').replace(/[?&]$/, '');
                     });
                     this.widget.links = {"link": this.widget.links, "finalText": this.widget.finalText};
                 }
