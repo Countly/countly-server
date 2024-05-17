@@ -407,7 +407,8 @@
                                     @input="handleChange($event.target)"
                                     class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
                                     placeholder="value"
-                                    type="text"
+                                    type="number"
+                                    min="1"
                                     v-model="drawerScope.editedObject.compareValue2"
                                     />
                             </cly-form-field>
