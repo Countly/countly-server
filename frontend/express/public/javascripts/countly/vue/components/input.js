@@ -314,7 +314,7 @@
                             </div>\
                         </div>\
                     </vue-scroll>\
-                    <div v-else class="cly-vue-listbox__no-data color-cool-gray-50 bu-pb-5" data-test-id="cly-listbox-no-match-found-label">\
+                    <div v-else class="cly-vue-listbox__no-data color-cool-gray-50 bu-pb-4 bu-has-text-weight-normal" data-test-id="cly-listbox-no-match-found-label">\
                         {{noMatchFoundPlaceholder}}\
                     </div>\
                 </div>'
@@ -1224,6 +1224,7 @@
                         ref="selectx"\
                         :noMatchFoundPlaceholder="i18n(\'common.no-email-addresses\')"\
                         class="cly-vue-select-email"\
+                        :test-id="testId"\
                         @input="handleInput">\
                         <template v-slot:header="selectScope">\
                             <el-input\
@@ -1234,7 +1235,7 @@
                                 oninput="this.value = this.value.toLowerCase();"\
                                 @keyup.enter.native="tryPush">\
                             </el-input>\
-                            <div class="bu-mt-2 color-red-100 text-small" v-show="hasError">\
+                            <div class="bu-mt-2 color-red-100 text-small" v-show="hasError && showError">\
                                 {{i18n("common.invalid-email-address", currentInput)}}\
                             </div>\
                         </template>\
@@ -1247,6 +1248,15 @@
                 type: String,
                 default: CV.i18n('common.enter-email-addresses'),
                 required: false
+            },
+            testId: {
+                type: String,
+                default: 'cly-select-email-test-id',
+                required: false
+            },
+            showError: {
+                type: Boolean,
+                default: true // Default to true to keep existing behavior if prop not provided
             }
         },
         data: function() {

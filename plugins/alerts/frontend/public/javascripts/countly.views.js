@@ -261,11 +261,10 @@
                     "o",
                     "m",
                 ];
-                if (
-                    disabledMetrics.includes(
-                        this.$refs.drawerData.editedObject.alertDataSubType
-                    )
-                ) {
+                if (this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) {
+                    return false;
+                }
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
                     return false;
                 }
                 return true;
@@ -278,11 +277,10 @@
                     "o",
                     "m",
                 ];
-                if (
-                    disabledMetrics.includes(
-                        this.$refs.drawerData.editedObject.alertDataSubType
-                    )
-                ) {
+                if (this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) {
+                    return false;
+                }
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
                     return false;
                 }
                 return true;
@@ -294,7 +292,9 @@
                     (this.$refs.drawerData.editedObject.alertDataType ===
                     "events" && (this.alertDataFilterValue)) ||
                     (this.$refs.drawerData.editedObject.alertDataType ===
-                    "nps" && ((typeof this.alertDataFilterValue) === "string"))
+                    "nps" && ((typeof this.alertDataFilterValue) === "string")) ||
+                    (this.$refs.drawerData.editedObject.alertDataType ===
+                    "events" && this.filterButton)
                 ) {
                     // The hour option is no longer available when the filter is added.
                     return this.defaultAlertTime.time.filter(
@@ -314,10 +314,6 @@
                         value: "cohorts",
                     },
                     {
-                        label: jQuery.i18n.map["alert.Profile-groups"],
-                        value: "profile_groups",
-                    },
-                    {
                         label: jQuery.i18n.map["alert.Data-points"],
                         value: "dataPoints",
                     },
@@ -326,6 +322,10 @@
                     {
                         label: jQuery.i18n.map["alert.Online-users"],
                         value: "onlineUsers",
+                    },
+                    {
+                        label: jQuery.i18n.map["alert.Profile-groups"],
+                        value: "profile_groups",
                     },
                     { label: jQuery.i18n.map["alert.Rating"], value: "rating" },
                     {
@@ -381,6 +381,17 @@
                     .join(",");
 
                 return key;
+            },
+            periodTooltipReminder: function() {
+                if (this.$refs.drawerData.editedObject.period === "hourly") {
+                    return jQuery.i18n.map["alerts.period-select-reminder-hourly"];
+                }
+                else if (this.$refs.drawerData.editedObject.period === "daily") {
+                    return jQuery.i18n.map["alerts.period-select-reminder-daily"];
+                }
+                else {
+                    return;
+                }
             },
         },
         props: {
@@ -645,6 +656,41 @@
                     ];
                 }
             },
+            subType2Padding: function(obj) {
+                if (this.showFilterButton(obj) && !this.showFilter) {
+                    return "bu-pb-2";
+                }
+            },
+            dataTypeIcons: function(dataType) {
+                switch (dataType) {
+                case "crashes":
+                    return "cly-io-16 cly-is cly-is-crashes";
+                case "cohorts":
+                    return "cly-io-16 cly-io cly-io-cohorts";
+                case "dataPoints":
+                    return "cly-io-16 cly-is cly-is-punchcard";
+                case "events":
+                    return "cly-io-16 cly-is cly-is-calendar";
+                case "nps":
+                    return "cly-io-16 cly-is cly-is-emoji-happy";
+                case "onlineUsers":
+                    return "cly-io-16 cly-is cly-is-user-circle";
+                case "profile_groups":
+                    return "cly-io-16 cly-is cly-is-user-group";
+                case "rating":
+                    return "cly-io-16 cly-is cly-is-star";
+                case "revenue":
+                    return "cly-io-16 cly-is cly-is-currency-dollar";
+                case "sessions":
+                    return "cly-io-16 cly-is cly-is-clock";
+                case "survey":
+                    return "cly-io-16 cly-is cly-is-clipboard-list";
+                case "users":
+                    return "cly-io-16 cly-is cly-is-users";
+                case "views":
+                    return "cly-io-16 cly-is cly-is-eye";
+                }
+            },
             handleFilterClosing: function() {
                 this.filterButton = false;
                 this.resetFilterCondition();
@@ -738,8 +784,10 @@
                 }
 
                 var target = settings.alertDataSubType;
-                var subTarget = this.alertDataSubType2Options
-                    .find(({value}) => value === settings.alertDataSubType2).label;
+                if (settings.alertDataSubType2) {
+                    var subTarget = this.alertDataSubType2Options
+                        .find(({value}) => value === settings.alertDataSubType2).label;
+                }
 
                 let describePeriod;
                 switch (settings.period) {
@@ -953,7 +1001,7 @@
                 // Set the background color of the element to green when a selection is made
                 element.style.backgroundColor = "#E1EFFF";
                 element.style.color = "#333C48";
-                element.style.fontWeight = "500";
+                element.style.fontWeight = "600";
             },
             resetColor(element) {
                 // Remove the inline background color style to reset to default

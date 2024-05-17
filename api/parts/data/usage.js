@@ -276,11 +276,11 @@ usage.getPredefinedMetrics = function(params, userProps) {
         }
         if (params.qstring.metrics._has_hinge) {
             var hasHingeValue = params.qstring.metrics._has_hinge;
-            if (hasHingeValue === "true") {
-                userProps[common.dbUserMap.has_hinge] = "hinged";
+            if (hasHingeValue === "true" || hasHingeValue === true || hasHingeValue === "hinged") {
+                params.qstring.metrics._has_hinge = "hinged";
             }
             else {
-                userProps[common.dbUserMap.has_hinge] = "not_hinged";
+                params.qstring.metrics._has_hinge = "not_hinged";
             }
         }
     }
