@@ -39,18 +39,23 @@
 }
 
 .ratings-drawer {
+
     &__consent {
+
         &__basis-text {
             flex-basis: 35%;
         }
+
         &__basis {
             flex-basis: 65%;
         }
+
         &__close-icon {
             line-height: 1;
             font-size: 24px;
         }
     }
+
     &__target-page-selector {
         width: 100%;
     }
@@ -345,21 +350,26 @@
     }
 
     &__consent {
+
         a {
             color: #0166d6;
             text-decoration: underline;
         }
+
         label {
             display: flex;
         }
+
         span {
             padding-top: 3px;
         }
+
         input[type="checkbox"] {
             margin-right: 8px;
             height: 16px;
             width: 16px;
         }
+
         font-size: 14px;
         color: #424243;
         font-weight: 400;
