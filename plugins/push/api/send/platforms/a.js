@@ -627,11 +627,14 @@ const CREDS = {
             const fcmKey = this?._data?.key
                 ? `FCM server key "${this._data.key.substr(0, 10)} ... ${this._data.key.substr(this._data.key.length - 10)}"`
                 : "";
+            const serviceAccountFile = this?._data?.serviceAccountFile
+                ? "service-account.json"
+                : "";
             return {
                 _id: this._id,
                 type: this._data.type,
                 key: fcmKey,
-                serviceAccountFile: "Service account file",
+                serviceAccountFile,
                 hash: this._data.hash,
             };
         }
