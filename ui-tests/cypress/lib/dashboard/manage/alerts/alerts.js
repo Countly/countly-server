@@ -550,13 +550,22 @@ const verifyAlertsDataFromTable = ({
 };
 
 const getActiveAlertsCount = () => {
-    return cy.getElement(alertsPageElements.ACTIVE_ALERTS_NUMBER_LABEL)
-        .invoke('text')
-        .then((text) => {
-            const activeAlertsCount = parseInt(text);
-            return activeAlertsCount;
+    return cy
+        .elementExists(alertsPageElements.EMPTY_TABLE_ADD_NEW_ALERT_LINK_BUTTON)
+        .then((isExists) => {
+            if (isExists) {
+                return 0;
+            }
+            else {
+                return cy.getElement(alertsPageElements.ACTIVE_ALERTS_NUMBER_LABEL)
+                    .invoke('text')
+                    .then((text) => {
+                        return parseInt(text);
+                    });
+            }
         });
 };
+
 
 module.exports = {
     verifyEmptyPageElements,
