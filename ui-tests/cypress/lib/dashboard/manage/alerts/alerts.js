@@ -482,7 +482,7 @@ const verifyAlertsDataFromTable = ({
     alertName,
     application,
     condition,
-    createdBy
+    createdBy = "devops+uitests@count.ly"
 }) => {
 
     cy.verifyElement({
@@ -554,13 +554,13 @@ const getActiveAlertsCount = () => {
         .elementExists(alertsPageElements.EMPTY_TABLE_ADD_NEW_ALERT_LINK_BUTTON)
         .then((isExists) => {
             if (isExists) {
-                return 0;
+                return cy.wrap(0);
             }
             else {
                 return cy.getElement(alertsPageElements.ACTIVE_ALERTS_NUMBER_LABEL)
                     .invoke('text')
                     .then((text) => {
-                        return parseInt(text);
+                        return cy.wrap(Number(text));
                     });
             }
         });

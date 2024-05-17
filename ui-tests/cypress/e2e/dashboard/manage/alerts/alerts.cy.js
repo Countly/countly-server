@@ -52,8 +52,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alert.alertName,
                 application: application,
-                condition: "new crash/error increased by " + alert.triggerValue + " % in the last hour",
-                createdBy: user.username
+                condition: "new crash/error increased by " + alert.triggerValue + " % in the last hour"
             });
         });
     });
@@ -89,8 +88,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: injectionText,
                 application: application,
-                condition: "fatal crashes/errors per session",
-                createdBy: user.username
+                condition: "fatal crashes/errors per session"
             });
         });
     });
@@ -127,8 +125,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alert.alertName,
                 application: application,
-                condition: "total data points decreased by " + alert.triggerValue + " % in the last month",
-                createdBy: user.username
+                condition: "total data points decreased by " + alert.triggerValue + " % in the last month"
             });
         });
     });
@@ -166,8 +163,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alert.alertName,
                 application: application,
-                condition: "Bill Payment count increased by " + alert.triggerValue + " % in the last hour",
-                createdBy: user.username
+                condition: "Bill Payment count increased by " + alert.triggerValue + " % in the last hour"
             });
         });
     });
@@ -208,8 +204,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alert.alertName,
                 application: application,
-                condition: "Login duration increased by " + alert.triggerValue + " % in the last day",
-                createdBy: user.username
+                condition: "Login duration increased by " + alert.triggerValue + " % in the last day"
             });
         });
     });
@@ -246,8 +241,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alert.alertName,
                 application: application,
-                condition: "# of sessions decreased by " + alert.triggerValue + " % in the last month",
-                createdBy: user.username
+                condition: "# of sessions decreased by " + alert.triggerValue + " % in the last month"
             });
         });
     });
@@ -284,8 +278,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alert.alertName,
                 application: application,
-                condition: "# of new users is increased more than " + alert.triggerValue + " in the last month",
-                createdBy: user.username
+                condition: "# of new users is increased more than " + alert.triggerValue + " in the last month"
             });
         });
     });
@@ -323,8 +316,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alert.alertName,
                 application: application,
-                condition: "Terms and Conditions # of page views increased by " + alert.triggerValue + " % in the last month",
-                createdBy: user.username
+                condition: "Terms and Conditions # of page views increased by " + alert.triggerValue + " % in the last month"
             });
         });
     });
@@ -364,8 +356,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alert.alertName,
                 application: application,
-                condition: widget.widgetName + " # of responses decreased by " + alert.triggerValue + " % in the last day",
-                createdBy: user.username
+                condition: widget.widgetName + " # of responses decreased by " + alert.triggerValue + " % in the last day"
             });
         });
     });
@@ -404,8 +395,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alert.alertName,
                 application: application,
-                condition: "new rating response",
-                createdBy: user.username
+                condition: "new rating response"
             });
         });
     });
