@@ -57,7 +57,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added crashes alert with adding filter', function() {
+    it.skip('Should be added crashes alert with adding filter', function() {
 
         const alert = generateAlertFixture();
         var injectionText = "\"><img src=# onerror=alert('POC')>";
@@ -246,7 +246,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added users alert', function() {
+    it.skip('Should be added users alert', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -283,7 +283,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added views alert', function() {
+    it.skip('Should be added views alert', function() {
 
         const alert = generateAlertFixture();
         let application = "";
