@@ -642,6 +642,16 @@
                     data: data,
                     dataType: "json",
                     success: function(response) {
+                        const notificationId = "legacy-fcm-warning";
+                        CountlyHelpers.removePersistentNotification(notificationId);
+                        if (typeof response?.legacyFcm === "boolean" && response.legacyFcm) {
+                            CountlyHelpers.notify({
+                                id: notificationId,
+                                message: CV.i18n("push-notification.legacy-fcm-warning"),
+                                type: "error",
+                                persistent: true
+                            });
+                        }
                         resolve(response);
                     },
                     error: function(error) {
