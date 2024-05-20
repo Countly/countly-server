@@ -28,7 +28,7 @@
                             <div v-if="item.key !== 'session'" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>
                             <div class="bu-is-flex bu-is-align-items-center bu-mb-2">
                                 <div class="step-field has-ellipsis" :style="[item.key === 'session' ? {'width': '140px'} : {}]">
-                                    <span class="text-smallish bu-is-capitalized" :class="{'color-cool-gray-50': item.disabled}" v-tooltip="(item.key.length + item.value.length) > 15 ? (item.key + ' ' + item.value) : null"> {{item.key}}  -  {{item.value}} </span>
+                                    <span class="text-smallish bu-is-capitalized" :class="{'color-cool-gray-50': item.disabled}" v-tooltip="(item.key.length + item.value.length) > 15 ? (item.key + ' - ' + item.value) : null"> {{item.key}}  -  {{item.value}} </span>
                                 </div>
                                 <div class="bu-is-flex probability-field">
                                     <div>

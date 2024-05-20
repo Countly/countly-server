@@ -74,6 +74,82 @@
                     this.getTemplateList(fromDrawer);
                 }
             },
+            unescapeCondition: function(prmConditions) {
+                let conditions = prmConditions;
+                conditions.forEach(function(condition) {
+                    condition.selectedKey = countlyCommon.unescapeHtml(condition.selectedKey);
+                    condition.selectedValue = countlyCommon.unescapeHtml(condition.selectedValue);
+                    condition.values.forEach(function(value) {
+                        value.key = countlyCommon.unescapeHtml(value.key);
+                    });
+                });
+                return conditions;
+            },
+            unescapSegmentations: function(prmSegmentations) {
+                var self = this;
+                let segmentations = prmSegmentations;
+                segmentations.forEach(function(segmentation) {
+                    segmentation.key = countlyCommon.unescapeHtml(segmentation.key);
+                    if (segmentation.values) {
+                        segmentation.values.forEach(function(value) {
+                            value.key = countlyCommon.unescapeHtml(value.key);
+                        });
+                    }
+                    if (segmentation.conditions) {
+                        segmentation.conditions = self.unescapeCondition(segmentation.conditions);
+                    }
+                });
+                return segmentations;
+            },
+            decodeHtmlEntities: function(obj) {
+                var self = this;
+                if (typeof obj === 'undefined' || obj === null) {
+                    return;
+                }
+                if (obj.users) {
+                    obj.users.forEach(function(user) {
+                        user.key = countlyCommon.unescapeHtml(user.key);
+                        if (user.values) {
+                            user.values.forEach(function(value) {
+                                value.key = countlyCommon.unescapeHtml(value.key);
+                            });
+                        }
+                        if (user.conditions) {
+                            user.conditions = self.unescapeCondition(user.conditions);
+                        }
+                    });
+                }
+                if (obj.events) {
+                    obj.events.forEach(function(event) {
+                        event.key = countlyCommon.unescapeHtml(event.key);
+                        if (event.segmentations && event.segmentations.length) {
+                            event.segmentations = self.unescapSegmentations(event.segmentations);
+                        }
+                    });
+                }
+                if (obj.views) {
+                    obj.views.forEach(function(view) {
+                        view.key = countlyCommon.unescapeHtml(view.key);
+                        if (view.segmentations && view.segmentations.length) {
+                            view.segmentation = self.unescapSegmentations(view.segmentations);
+                        }
+                    });
+                }
+                if (obj.sequences) {
+                    obj.sequences.forEach(function(sequence) {
+                        sequence.steps.forEach(function(step) {
+                            step.value = countlyCommon.unescapeHtml(step.value);
+                        });
+                    });
+                }
+                if (obj.behavior && obj.behavior.generalConditions) {
+                    obj.behavior.generalConditions = self.unescapeCondition(obj.behavior.generalConditions);
+                }
+                if (obj.behavior && obj.behavior.sequenceConditions) {
+                    obj.behavior.sequenceConditions = self.unescapeCondition(obj.behavior.sequenceConditions);
+                }
+                return obj;
+            },
             handleDrawerActions: function(command, template) {
                 switch (command) {
                 case "edit":
@@ -84,9 +160,11 @@
                     if (template.views && template.views.length) {
                         Vue.set(this.$refs.populatorTemplateDrawer.sectionActivity, 'views', true);
                     }
+                    template = this.decodeHtmlEntities(template);
                     this.openDrawer("populatorTemplate", template);
                     break;
                 case "duplicate":
+                    template = this.decodeHtmlEntities(template);
                     template.is_duplicate = true;
                     this.titleDescription = {header: CV.i18n('populator.drawer-title-duplicate'), button: CV.i18n('populator.duplicate')};
                     this.openDrawer("populatorTemplate", template);
