@@ -74,6 +74,82 @@
                     this.getTemplateList(fromDrawer);
                 }
             },
+            unescapeCondition: function(prmConditions) {
+                let conditions = prmConditions;
+                conditions.forEach(function(condition) {
+                    condition.selectedKey = countlyCommon.unescapeHtml(condition.selectedKey);
+                    condition.selectedValue = countlyCommon.unescapeHtml(condition.selectedValue);
+                    condition.values.forEach(function(value) {
+                        value.key = countlyCommon.unescapeHtml(value.key);
+                    });
+                });
+                return conditions;
+            },
+            unescapSegmentations: function(prmSegmentations) {
+                var self = this;
+                let segmentations = prmSegmentations;
+                segmentations.forEach(function(segmentation) {
+                    segmentation.key = countlyCommon.unescapeHtml(segmentation.key);
+                    if (segmentation.values) {
+                        segmentation.values.forEach(function(value) {
+                            value.key = countlyCommon.unescapeHtml(value.key);
+                        });
+                    }
+                    if (segmentation.conditions) {
+                        segmentation.conditions = self.unescapeCondition(segmentation.conditions);
+                    }
+                });
+                return segmentations;
+            },
+            decodeHtmlEntities: function(obj) {
+                var self = this;
+                if (typeof obj === 'undefined' || obj === null) {
+                    return;
+                }
+                if (obj.users) {
+                    obj.users.forEach(function(user) {
+                        user.key = countlyCommon.unescapeHtml(user.key);
+                        if (user.values) {
+                            user.values.forEach(function(value) {
+                                value.key = countlyCommon.unescapeHtml(value.key);
+                            });
+                        }
+                        if (user.conditions) {
+                            user.conditions = self.unescapeCondition(user.conditions);
+                        }
+                    });
+                }
+                if (obj.events) {
+                    obj.events.forEach(function(event) {
+                        event.key = countlyCommon.unescapeHtml(event.key);
+                        if (event.segmentations && event.segmentations.length) {
+                            event.segmentations = self.unescapSegmentations(event.segmentations);
+                        }
+                    });
+                }
+                if (obj.views) {
+                    obj.views.forEach(function(view) {
+                        view.key = countlyCommon.unescapeHtml(view.key);
+                        if (view.segmentations && view.segmentations.length) {
+                            view.segmentation = self.unescapSegmentations(view.segmentations);
+                        }
+                    });
+                }
+                if (obj.sequences) {
+                    obj.sequences.forEach(function(sequence) {
+                        sequence.steps.forEach(function(step) {
+                            step.value = countlyCommon.unescapeHtml(step.value);
+                        });
+                    });
+                }
+                if (obj.behavior && obj.behavior.generalConditions) {
+                    obj.behavior.generalConditions = self.unescapeCondition(obj.behavior.generalConditions);
+                }
+                if (obj.behavior && obj.behavior.sequenceConditions) {
+                    obj.behavior.sequenceConditions = self.unescapeCondition(obj.behavior.sequenceConditions);
+                }
+                return obj;
+            },
             handleDrawerActions: function(command, template) {
                 switch (command) {
                 case "edit":
@@ -84,9 +160,11 @@
                     if (template.views && template.views.length) {
                         Vue.set(this.$refs.populatorTemplateDrawer.sectionActivity, 'views', true);
                     }
+                    template = this.decodeHtmlEntities(template);
                     this.openDrawer("populatorTemplate", template);
                     break;
                 case "duplicate":
+                    template = this.decodeHtmlEntities(template);
                     template.is_duplicate = true;
                     this.titleDescription = {header: CV.i18n('populator.drawer-title-duplicate'), button: CV.i18n('populator.duplicate')};
                     this.openDrawer("populatorTemplate", template);
@@ -611,12 +689,12 @@
             checkInputProbabilities: function(editedObject) {
                 let warningMessage = "";
                 let sectionsToVerify = ["users", "views", "events", "behavior"];
-
                 sectionsToVerify.forEach(function(sectionName) {
                     if (Array.isArray(editedObject[sectionName])) {
                         editedObject[sectionName].forEach(item => {
                             let sectionTotal = null;
                             let conditionTotal = null;
+                            let conditionValueText = null;
                             if (item.segmentations) {
                                 item.segmentations.forEach(segmentation => {
                                     sectionTotal = 0;
@@ -625,13 +703,20 @@
                                             sectionTotal += parseInt(value.probability, 10) || 0;
                                         });
                                     }
-                                    if (segmentation.condition) {
-                                        segmentation.condition.values.forEach(conditionValue => {
-                                            conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                    if (segmentation.conditions && segmentation.conditions.length) {
+                                        segmentation.conditions.forEach(condition => {
+                                            conditionTotal = 0;
+                                            conditionValueText = "If(" + condition.selectedKey + ")" + (condition.conditionType === 1 ? " = " : " ≠") + condition.selectedValue;
+                                            condition.values.forEach(conditionValue => {
+                                                conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                            });
+                                            if (conditionTotal && conditionTotal !== 100) {
+                                                warningMessage += CV.i18n('populator-template.warning-probability-validation-events-condition', sectionName, conditionValueText, segmentation.key) + "<br/></br>";
+                                            }
                                         });
                                     }
-                                    if (sectionTotal && sectionTotal !== 100 || conditionTotal && conditionTotal !== 100) {
-                                        warningMessage += CV.i18n('populator-template.warning-probability-validation', sectionName, segmentation.key) + "<br/></br>";
+                                    if (sectionTotal && sectionTotal !== 100) {
+                                        warningMessage += CV.i18n('populator-template.warning-probability-validation-events', sectionName, segmentation.key) + "<br/></br>";
                                     }
                                 });
                             }
@@ -639,19 +724,27 @@
                                 item.values.forEach(value => {
                                     sectionTotal += parseInt(value.probability, 10) || 0;
                                 });
-                                if (item.condition) {
-                                    item.condition.values.forEach(conditionValue => {
-                                        conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                if (item.conditions && item.conditions.length) {
+                                    item.conditions.forEach(condition => {
+                                        conditionTotal = 0;
+                                        conditionValueText = "If(" + condition.selectedKey + ")" + (condition.conditionType === 1 ? " = " : " ≠") + condition.selectedValue;
+                                        condition.values.forEach(conditionValue => {
+                                            conditionTotal += parseInt(conditionValue.probability, 10) || 0;
+                                        });
+                                        if (conditionTotal !== 0 && conditionTotal && conditionTotal !== 100) {
+                                            warningMessage += CV.i18n('populator-template.warning-probability-validation-users-condition', conditionValueText, item.key) + "<br/></br>";
+                                        }
                                     });
                                 }
-                                if (sectionTotal && sectionTotal !== 100 || conditionTotal && conditionTotal !== 100) {
-                                    warningMessage += CV.i18n('populator-template.warning-probability-validation', sectionName, item.key) + "<br/></br>";
+                                if (sectionTotal && sectionTotal !== 100) {
+                                    warningMessage += CV.i18n('populator-template.warning-probability-validation-users', item.key) + "<br/></br>";
                                 }
                             }
                         });
                     }
                     else if (typeof editedObject[sectionName] === 'object') {
                         let sectionTotal = null;
+                        let conditionValueText = null;
                         if (editedObject[sectionName].sequences) {
                             sectionTotal = 0;
                             editedObject[sectionName].sequences.forEach(sequence => {
@@ -665,11 +758,12 @@
                             let conditionTotal = null;
                             editedObject[sectionName].sequenceConditions.forEach(condition => {
                                 conditionTotal = 0;
+                                conditionValueText = "If(" + condition.selectedKey + ")" + (condition.conditionType === 1 ? " = " : " ≠") + condition.selectedValue;
                                 condition.values.forEach(conditionValue => {
                                     conditionTotal += parseInt(conditionValue.probability, 10) || 0;
                                 });
                                 if (conditionTotal && conditionTotal !== 100) {
-                                    warningMessage += CV.i18n('populator-template.warning-probability-validation-behavior') + "<br/></br>";
+                                    warningMessage += CV.i18n('populator-template.warning-probability-validation-behavior-condition', conditionValueText) + "<br/></br>";
                                 }
                             });
                         }
@@ -711,15 +805,19 @@
                                 if (segmentation.values) {
                                     checkIfDuplicated(segmentation.values, sectionName);
                                 }
-                                if (segmentation.condition) {
-                                    checkIfDuplicated(segmentation.condition.values, sectionName);
+                                if (segmentation.conditions && segmentation.conditions.length) {
+                                    segmentation.conditions.forEach(condition => {
+                                        checkIfDuplicated(condition.values, sectionName);
+                                    });
                                 }
                             });
                         }
                         else if (item.values) {
                             checkIfDuplicated(item.values, sectionName);
-                            if (item.condition) {
-                                checkIfDuplicated(item.condition.values, sectionName);
+                            if (item.conditions && item.conditions.length) {
+                                item.conditions.forEach(condition => {
+                                    checkIfDuplicated(condition.values, sectionName);
+                                });
                             }
                         }
                     });

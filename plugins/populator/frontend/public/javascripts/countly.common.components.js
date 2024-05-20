@@ -25,7 +25,6 @@
                     "section-3": 0,
                     "section-4": 0
                 },
-                fireMouseWheeler: false,
             };
         },
         methods: {
@@ -43,48 +42,44 @@
                 }
             },
             handleScroll: function() {
-                if (this.fireMouseWheeler) {
-                    const headerHeight = 79;
-                    const windowHeight = window.innerHeight - headerHeight;
-                    const pageCenter = windowHeight / 2;
+                const headerHeight = 79;
+                const windowHeight = window.innerHeight - headerHeight;
+                const pageCenter = windowHeight / 2;
 
-                    for (let index = 0; index < Object.keys(this.sectionThresholds).length; index++) {
-                        const elementId = Object.keys(this.sectionThresholds)[index];
-                        const element = document.getElementById(elementId);
+                for (let index = 0; index < Object.keys(this.sectionThresholds).length; index++) {
+                    const elementId = Object.keys(this.sectionThresholds)[index];
+                    const element = document.getElementById(elementId);
 
-                        if (!element) {
-                            return;
-                        }
+                    if (!element) {
+                        return;
+                    }
 
-                        const elementDimension = element.getBoundingClientRect();
-                        const elementTop = elementDimension.top;
-                        const elementHeight = elementDimension.height;
+                    const elementDimension = element.getBoundingClientRect();
+                    const elementTop = elementDimension.top;
+                    const elementHeight = elementDimension.height;
 
-                        if (elementTop <= pageCenter && elementTop + elementHeight >= pageCenter) {
+                    if (elementTop <= pageCenter && elementTop + elementHeight >= pageCenter) {
 
-                            this.steps[index].isActive = true;
-                            this.steps.forEach((item, i) => {
-                                if (i !== index) {
-                                    item.isActive = false;
-                                }
-                            });
+                        this.steps[index].isActive = true;
+                        this.steps.forEach((item, i) => {
+                            if (i !== index) {
+                                item.isActive = false;
+                            }
+                        });
 
-                            return;
-                        }
+                        return;
                     }
                 }
             }
         },
+        mounted: function() {
+            window.addEventListener('mousewheel', this.handleScroll);
+        },
         created: function() {
             this.steps = this.data;
-            var self = this;
-            this.fireMouseWheeler = true;
-            window.addEventListener("mousewheel", function() {
-                self.handleScroll();
-            }, false);
         },
         destroyed: function() {
-            this.fireMouseWheeler = false;
+            window.removeEventListener('mousewheel', this.handleScroll);
         },
         template: '<div>\
                     <div v-for="(item, index) in this.steps">\
@@ -208,18 +203,29 @@
                 document.querySelector('[data-test-id="populator-template-form-header-title"]').click();
             },
             save: function() {
-                if (this.value && typeof this.value.length !== "undefined") { // if it is an array
+                if (this.value.length && this.value.filter(item => item.selectedKey === this.selectedProperty && item.selectedValue === this.selectedValue && item.conditionType === this.conditionType).length) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.condition-already-exists"),
+                        type: "warning",
+                    });
+                    return;
+                }
+                let conditions = this.value.length ? this.value : [];
+                const isBehaviorSection = this.$parent.$parent.behavior ? true : false;
+                if (isBehaviorSection) {
                     this.$emit('save-condition', this.type, this.selectedProperty, this.selectedValue, this.conditionType);
-                    this.close();
                 }
                 else {
-                    this.$emit('input', {
+                    conditions.push({
                         selectedKey: this.selectedProperty,
                         selectedValue: this.selectedValue,
                         conditionType: this.conditionType,
                         values: [{key: "", probability: 0}]
                     });
+                    this.$emit('input', conditions);
                 }
+
                 this.close();
             },
             onAddCondition: function() {
@@ -228,6 +234,7 @@
                 }
                 else {
                     this.selectedProperty = '';
+                    this.conditionPropertyValueItems = [];
                 }
                 this.$emit('selected-key-change', this.selectedProperty);
                 this.selectedValue = '';
@@ -375,8 +382,13 @@
             checkRemoveValue: function(key, value) {
                 let usedProperties = [];
                 this.users.forEach(function(item) {
-                    if (item.condition && item.condition.selectedKey === key && (value === undefined || item.condition.selectedValue === value)) {
-                        usedProperties.push("user");
+                    // check if it is used in user section
+                    if (item.conditions && item.conditions.length) {
+                        item.conditions.forEach(function(condition) {
+                            if (condition.selectedKey === key && (value === undefined || condition.selectedValue === value)) {
+                                usedProperties.push("user");
+                            }
+                        });
                     }
                 });
                 // check if it is used in behavior section
@@ -432,20 +444,17 @@
                     });
                 }
             },
-            onDeleteCondition: function(index) {
-                this.users[index].condition = undefined;
+            onDeleteCondition: function(index, conditionIndex) {
+                this.users[index].conditions.splice(conditionIndex, 1);
             },
-            onRemoveConditionValue: function(index, valueIndex) {
+            onRemoveConditionValue: function(index, valueIndex, conditionIndex) {
                 try {
-                    if (this.users[index].condition.values.length === 1) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-while-removing-condition"),
-                            type: "warning"
-                        });
-                        return;
+                    if (this.users[index].conditions[conditionIndex].values.length === 1) {
+                        this.users[index].conditions.splice(conditionIndex, 1);
                     }
-                    this.users[index].condition.values.splice(valueIndex, 1);
+                    else {
+                        this.users[index].conditions[conditionIndex].values.splice(valueIndex, 1);
+                    }
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -455,9 +464,9 @@
                     });
                 }
             },
-            onAddAnotherConditionValue: function(index) {
+            onAddAnotherConditionValue: function(index, conditionIndex) {
                 try {
-                    this.users[index].condition.values.push({key: "", probability: 0});
+                    this.users[index].conditions[conditionIndex].values.push({key: "", probability: 0});
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -472,7 +481,7 @@
                 if (item) {
                     this.conditionPropertyValues = item.values.map(valueItem => valueItem.key || null);
                 }
-            },
+            }
         },
         template: CV.T("/populator/templates/sections/users.html")
     });
@@ -540,8 +549,12 @@
                 let usedProperties = [];
                 if (this.value[index] && this.value[index].segmentations) {
                     this.value[index].segmentations.forEach(function(item) {
-                        if (item.condition && item.condition.selectedKey === key && item.condition.selectedValue === (value === "" ? "Empty/Unset" : value)) {
-                            usedProperties.push("event");
+                        if (item.conditions && item.conditions.length) {
+                            item.conditions.forEach(function(condition) {
+                                if (condition.selectedKey === key && (value === undefined || condition.selectedValue === value)) {
+                                    usedProperties.push("event");
+                                }
+                            });
                         }
                     });
                 }
@@ -607,20 +620,17 @@
                     });
                 }
             },
-            onAddAnotherConditionValue: function(index, segmentIndex) {
-                this.events[index].segmentations[segmentIndex].condition.values.push({key: "", probability: 0});
+            onAddAnotherConditionValue: function(index, segmentIndex, conditionIndex) {
+                this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.push({key: "", probability: 0});
             },
-            onRemoveConditionValue: function(index, segmentIndex, valueIndex) {
+            onRemoveConditionValue: function(index, segmentIndex, valueIndex, conditionIndex) {
                 try {
-                    if (this.events[index].segmentations[segmentIndex].condition.values.length === 1) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-while-removing-condition"),
-                            type: "warning"
-                        });
-                        return;
+                    if (this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.length === 1) {
+                        this.events[index].segmentations[segmentIndex].conditions.splice(conditionIndex, 1);
                     }
-                    this.events[index].segmentations[segmentIndex].condition.values.splice(valueIndex, 1);
+                    else {
+                        this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.splice(valueIndex, 1);
+                    }
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -630,8 +640,8 @@
                     });
                 }
             },
-            onDeleteCondition: function(index, segmentIndex) {
-                this.events[index].segmentations[segmentIndex].condition = undefined;
+            onDeleteCondition: function(index, segmentIndex, conditionIndex) {
+                this.events[index].segmentations[segmentIndex].conditions.splice(conditionIndex, 1);
             },
             onConditionSelectedKeyChange: function(selectedConditionProp, index) {
                 const item = this.events[index].segmentations.find(segment => segment.key === selectedConditionProp);
@@ -698,8 +708,12 @@
                 let usedProperties = [];
                 if (this.value[index] && this.value[index].segmentations) {
                     this.value[index].segmentations.forEach(function(item) {
-                        if (item.condition && item.condition.selectedKey === key && item.condition.selectedValue === (value === "" ? "Empty/Unset" : value)) {
-                            usedProperties.push("views");
+                        if (item.conditions && item.conditions.length) {
+                            item.conditions.forEach(function(condition) {
+                                if (condition.selectedKey === key && (value === undefined || condition.selectedValue === value)) {
+                                    usedProperties.push("views");
+                                }
+                            });
                         }
                     });
                 }
@@ -784,20 +798,17 @@
                     });
                 }
             },
-            onAddAnotherConditionValue: function(index, segmentIndex) {
-                this.views[index].segmentations[segmentIndex].condition.values.push({key: "", probability: 0});
+            onAddAnotherConditionValue: function(index, segmentIndex, conditionIndex) {
+                this.views[index].segmentations[segmentIndex].conditions[conditionIndex].values.push({key: "", probability: 0});
             },
-            onRemoveConditionValue: function(index, segmentIndex, valueIndex) {
+            onRemoveConditionValue: function(index, segmentIndex, valueIndex, conditionIndex) {
                 try {
-                    if (this.views[index].segmentations[segmentIndex].condition.values.length === 1) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-while-removing-condition"),
-                            type: "warning"
-                        });
-                        return;
+                    if (this.views[index].segmentations[segmentIndex].conditions[conditionIndex].values.length === 1) {
+                        this.views[index].segmentations[segmentIndex].conditions.splice(conditionIndex, 1);
                     }
-                    this.views[index].segmentations[segmentIndex].condition.values.splice(valueIndex, 1);
+                    else {
+                        this.views[index].segmentations[segmentIndex].conditions[conditionIndex].values.splice(valueIndex, 1);
+                    }
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -807,8 +818,8 @@
                     });
                 }
             },
-            onDeleteCondition: function(index, segmentIndex) {
-                this.views[index].segmentations[segmentIndex].condition = undefined;
+            onDeleteCondition: function(index, segmentIndex, conditionIndex) {
+                this.views[index].segmentations[segmentIndex].conditions.splice(conditionIndex, 1);
             },
             onConditionSelectedKeyChange: function(selectedConditionProp, index) {
                 const item = this.views[index].segmentations.find(segment => segment.key === selectedConditionProp);
@@ -1124,10 +1135,10 @@
                 }
             },
             behavior: {
-                deep: true,
                 handler: function(newValue) {
                     this.$emit('input', newValue);
-                }
+                },
+                deep: true,
             },
             deletedIndex: function(newValue) {
                 if (!newValue || !newValue.length) {
