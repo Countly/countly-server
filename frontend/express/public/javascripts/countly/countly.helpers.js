@@ -340,6 +340,7 @@
         payload.text = msg.message;
         payload.autoHide = !msg.sticky;
         payload.id = msg.id;
+        payload.width = msg.width;
         var colorToUse;
 
         if (countlyGlobal.ssr) {
