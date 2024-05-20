@@ -70,7 +70,7 @@ const addData = ({
                 }
             }
             return addDataApi.request({ appKey, appVersion, os: os, events });
-        })
+        });
 };
 
 export default {

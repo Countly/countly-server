@@ -18,7 +18,7 @@ const request = ({ appKey, appVersion, os, events }) => {
             .then((response) => {
                 const data = response.body || response.requestBody;
                 return resolve(data);
-            })
+            });
     });
 };
 
