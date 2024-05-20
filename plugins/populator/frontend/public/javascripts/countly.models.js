@@ -1777,7 +1777,10 @@
         templateUp.forEach(function(item) {
             if (item.conditions && item.conditions.length) {
                 item.conditions.forEach(function(condition) {
-                    if (up[condition.selectedKey] === condition.selectedValue) {
+                    if (condition.conditionType === 1 && up[condition.selectedKey] === condition.selectedValue) {
+                        modifiedUpOnConditions[item.key] = randomSelectByProbability(tryToParseJSON(condition.values));
+                    }
+                    else if (condition.conditionType === -1 && up[condition.selectedKey] !== condition.selectedValue) {
                         modifiedUpOnConditions[item.key] = randomSelectByProbability(tryToParseJSON(condition.values));
                     }
                 });
@@ -2326,9 +2329,14 @@
                 eventTemplate.segmentations.forEach(function(item) {
                     if (item.conditions && item.conditions.length) {
                         item.conditions.forEach(function(condition) {
-                            if (condition.selectedKey && condition.selectedValue && eventSegmentations[condition.selectedKey] === condition.selectedValue) {
-                                var values = condition.values;
-                                var key = item.key;
+                            if (condition.selectedKey && condition.selectedValue && condition.conditionType === 1 && eventSegmentations[condition.selectedKey] === condition.selectedValue) {
+                                let values = condition.values;
+                                let key = item.key;
+                                modifiedSegmentationsOnCondition[key] = randomSelectByProbability(tryToParseJSON(values));
+                            }
+                            else if (condition.selectedKey && condition.selectedValue && condition.conditionType === -1 && eventSegmentations[condition.selectedKey] !== condition.selectedValue) {
+                                let values = condition.values;
+                                let key = item.key;
                                 modifiedSegmentationsOnCondition[key] = randomSelectByProbability(tryToParseJSON(values));
                             }
                         });

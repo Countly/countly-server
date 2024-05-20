@@ -125,7 +125,7 @@
                         <div class="bu-mt-3 bu-is-flex bu-is-justify-content-center" v-if="!segment.condition">
                             <cly-populator-condition-selector
                                 :disabled="views[index].segmentations.length > 1 ? false : true"
-                                :condition-properties="views[index].segmentations.filter(item=>item.key !== segment.key && item.key.length).map(item => item.key)"
+                                :condition-properties="views[index].segmentations[segmentIndex].conditions && views[index].segmentations[segmentIndex].conditions.length && views[index].segmentations[segmentIndex].conditions[0] ? [views[index].segmentations[segmentIndex].conditions[0].selectedKey] : views[index].segmentations.filter(item=>item.key !== segment.key && item.key.length).map(item => item.key)"
                                 :condition-property-values="conditionPropertyValues"
                                 @selected-key-change="(param) => onConditionSelectedKeyChange(param, index)"
                                 v-model="segment.conditions">
