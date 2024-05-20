@@ -1076,13 +1076,13 @@ var pluginManager = function pluginManager() {
                     }
                 }
             }
-            
+
             for (var k = 0; k < plugins.length; k++) {
                 if (typeof pluginConfig[plugins[k]] === 'undefined') {
                     list.push(plugins[k]);
                 }
             }
-            
+
             return list;
         }
     };

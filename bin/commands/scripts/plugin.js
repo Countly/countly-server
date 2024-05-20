@@ -12,9 +12,9 @@ function save_changes(data, finalList) {
     manager.dbConnection().then((db) => {
         manager.loadConfigs(db, function() {
 
-                manager.updateConfigs(db, "plugins", data, function() {
-                    db.close();
-                });
+            manager.updateConfigs(db, "plugins", data, function() {
+                db.close();
+            });
 
             fs.writeFile(pluginsListPath, JSON.stringify(finalList), 'utf8', function() {
                 console.log("Changes saved");
