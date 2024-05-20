@@ -303,7 +303,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alert.alertName,
                 application: application,
-                condition: "Terms and Conditions # of page views increased by " + alert.triggerValue + " % in the last month"
+                condition: pageName + " # of page views increased by " + alert.triggerValue + " % in the last month"
             });
         });
     });
