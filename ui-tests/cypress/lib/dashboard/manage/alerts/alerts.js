@@ -554,18 +554,17 @@ const getActiveAlertsCount = () => {
         .elementExists(alertsPageElements.EMPTY_TABLE_ADD_NEW_ALERT_LINK_BUTTON)
         .then((isExists) => {
             if (isExists) {
-                return cy.wrap(0);
+                return 0;
             }
             else {
                 return cy.getElement(alertsPageElements.ACTIVE_ALERTS_NUMBER_LABEL)
                     .invoke('text')
                     .then((text) => {
-                        return cy.wrap(Number(text));
+                        return parseInt(text);
                     });
             }
         });
 };
-
 
 module.exports = {
     verifyEmptyPageElements,
