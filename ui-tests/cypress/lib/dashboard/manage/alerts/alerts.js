@@ -450,30 +450,36 @@ const verifyAlertSavedNotification = () => {
 
 const verifyAlertsMetricCardElements = ({
     activeAlertsNumber,
-    totalAlertsSentNumber = 0,
-    alertsSentTodayNumber = 0
+    totalAlertsSentNumber,
+    alertsSentTodayNumber
 }) => {
 
-    cy.verifyElement({
-        labelElement: alertsPageElements.ACTIVE_ALERTS_LABEL,
-        labelText: "Active Alerts",
-        element: alertsPageElements.ACTIVE_ALERTS_NUMBER_LABEL,
-        elementText: activeAlertsNumber
-    });
+    if (totalAlertsSentNumber != null) {
+        cy.verifyElement({
+            labelElement: alertsPageElements.ACTIVE_ALERTS_LABEL,
+            labelText: "Active Alerts",
+            element: alertsPageElements.ACTIVE_ALERTS_NUMBER_LABEL,
+            elementText: activeAlertsNumber
+        });
+    }
 
-    cy.verifyElement({
-        labelElement: alertsPageElements.TOTAL_ALERTS_SENT_LABEL,
-        labelText: "Total Alerts Sent",
-        element: alertsPageElements.TOTAL_ALERTS_SENT_NUMBER_LABEL,
-        elementText: totalAlertsSentNumber
-    });
+    if (totalAlertsSentNumber != null) {
+        cy.verifyElement({
+            labelElement: alertsPageElements.TOTAL_ALERTS_SENT_LABEL,
+            labelText: "Total Alerts Sent",
+            element: alertsPageElements.TOTAL_ALERTS_SENT_NUMBER_LABEL,
+            elementText: totalAlertsSentNumber
+        });
+    }
 
-    cy.verifyElement({
-        labelElement: alertsPageElements.ALERTS_SENT_TODAY_LABEL,
-        labelText: "Alerts Sent Today",
-        element: alertsPageElements.ALERTS_SENT_TODAY_NUMBER_LABEL,
-        elementText: alertsSentTodayNumber
-    });
+    if (alertsSentTodayNumber != null) {
+        cy.verifyElement({
+            labelElement: alertsPageElements.ALERTS_SENT_TODAY_LABEL,
+            labelText: "Alerts Sent Today",
+            element: alertsPageElements.ALERTS_SENT_TODAY_NUMBER_LABEL,
+            elementText: alertsSentTodayNumber
+        });
+    }
 };
 
 const verifyAlertsDataFromTable = ({
