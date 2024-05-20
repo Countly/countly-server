@@ -754,7 +754,7 @@ var pluginManager = function pluginManager() {
             try {
                 for (let i = 0, l = events[event].length; i < l; i++) {
                     var isEnabled = true;
-                    if (!pluginConfig[events[event][i].name]) {
+                    if (fullPluginsMap[events[event][i].name] && pluginConfig[events[event][i].name] === false) {
                         isEnabled = false;
                     }
 
