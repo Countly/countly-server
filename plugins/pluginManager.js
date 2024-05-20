@@ -46,6 +46,7 @@ var pluginManager = function pluginManager() {
     var expireList = [];
     var masking = {};
     var fullPluginsMap = {};
+    var coreList = ["api", "core"];
 
     /**
      *  Registered app types
@@ -676,8 +677,7 @@ var pluginManager = function pluginManager() {
         }
     };
     this.isPluginOn = function(name) {
-        var allPlugins = this.getPlugins();
-        if (allPlugins.indexOf(name) > -1) { //is one of plugins
+        if (coreList.indexOf(name) === -1) { //is one of plugins
             if (pluginConfig[name]) {
                 return true;
             }
@@ -1123,9 +1123,8 @@ var pluginManager = function pluginManager() {
     * @returns {boolean} if plugin is enabled
     **/
     this.isPluginEnabled = function(plugin) {
-        var allPlugins = this.getPlugins(true);
         var enabledPlugins = this.getPlugins();
-        if (allPlugins.indexOf(plugin) !== -1 && enabledPlugins.indexOf(plugin) === -1) { //it is plugin, but it is not enabled
+        if (coreList.indexOf(plugin) === -1 && enabledPlugins.indexOf(plugin) === -1) { //it is plugin, but it is not enabled
             return false;
         }
         return true;
