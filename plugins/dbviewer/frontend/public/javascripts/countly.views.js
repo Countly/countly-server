@@ -72,7 +72,6 @@
                     },
                     onError: function(context, error) {
                         if (error && error.status !== 0) {
-                            this.isFetching = true; // do not refresh recursively
                             CountlyHelpers.notify({
                                 message: error.responseJSON && error.responseJSON.result ? error.responseJSON.result : CV.i18n('dbviewer.server-error'),
                                 type: "error"
@@ -106,7 +105,6 @@
                     expandKeysHolder: [],
                     isRefresh: false,
                     isLoading: false,
-                    isFetching: true,
                     showFilterDialog: false,
                     showDetailDialog: false,
                     rowDetail: '{ "_id":"Document Detail", "name": "Index Detail" }'
@@ -214,13 +212,9 @@
                     if (force) {
                         this.isLoading = true;
                     }
-                    if (force || !this.isFetching) {
-                        this.isFetching = false;
-                        this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force}).then(function() {
-                            self.isLoading = false;
-                            self.isFetching = true;
-                        });
-                    }
+                    this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force}).then(function() {
+                        self.isLoading = false;
+                    });
                 },
                 getExportQuery: function() {
 
