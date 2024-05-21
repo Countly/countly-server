@@ -948,6 +948,7 @@
                 this.showCondition = false;
                 this.showConditionValue = false;
                 newState.selectedApps = newState.selectedApps[0];
+                newState.alertName = countlyCommon.unescapeHtml(newState.alertName);
                 // this.onAppChange(newState.selectedApps, true);
                 // this.alertDataSubTypeSelected(newState.alertDataSubType, true);
                 //this.resetAlertCondition();
