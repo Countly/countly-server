@@ -624,10 +624,10 @@ const CREDS = {
          * @returns {object} json without sensitive information
          */
         get view() {
-            const fcmKey = this?._data?.key
+            const fcmKey = this._data?.key
                 ? `FCM server key "${this._data.key.substr(0, 10)} ... ${this._data.key.substr(this._data.key.length - 10)}"`
                 : "";
-            const serviceAccountFile = this?._data?.serviceAccountFile
+            const serviceAccountFile = this._data?.serviceAccountFile
                 ? "service-account.json"
                 : "";
             return {
