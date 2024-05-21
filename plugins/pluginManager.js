@@ -1818,8 +1818,8 @@ var pluginManager = function pluginManager() {
          */
         function logDriver(eventName, logObject, logLevel) {
             logLevel = logLevel || "d";
-            if (eventName === "serverHeartbeatFailed") {
-                client.on(eventName, (event) => logObject[logLevel](event, util.inspect(event, { depth: Infinity })));
+            if (eventName === "serverHeartbeatFailed" || eventName === "topologyDescriptionChanged" || eventName === "serverDescriptionChanged" || eventName === "serverClosed") {
+                client.on(eventName, (event) => logObject[logLevel](eventName, util.inspect(event, { depth: Infinity })));
             }
             else {
                 client.on(eventName, () => logObject[logLevel](eventName));
