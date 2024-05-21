@@ -303,14 +303,15 @@ class FCM extends Splitter {
                             this.log.d('Token %s is invalid (%s)', pushes[i].t, r.error);
                             errorObject(ERROR.DATA_TOKEN_INVALID, r.error).addAffected(pushes[i]._id, one);
                         }
-                        else if (r.error === 'InvalidParameters') { // still hasn't figured out why this error is thrown, therefore not critical yet
-                            printBody = true;
-                            errorObject(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
-                        }
-                        else if (r.error === 'MessageTooBig' || r.error === 'InvalidDataKey' || r.error === 'InvalidTtl') {
-                            printBody = true;
-                            errorObject(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
-                        }
+                        // these are identical to "else" block:
+                        // else if (r.error === 'InvalidParameters') { // still hasn't figured out why this error is thrown, therefore not critical yet
+                        //     printBody = true;
+                        //     errorObject(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
+                        // }
+                        // else if (r.error === 'MessageTooBig' || r.error === 'InvalidDataKey' || r.error === 'InvalidTtl') {
+                        //     printBody = true;
+                        //     errorObject(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
+                        // }
                         else {
                             printBody = true;
                             errorObject(ERROR.DATA_PROVIDER, r.error).addAffected(pushes[i]._id, one);
@@ -632,10 +633,10 @@ const CREDS = {
                 : "";
             return {
                 _id: this._id,
-                type: this._data.type,
+                type: this._data?.type,
                 key: fcmKey,
                 serviceAccountFile,
-                hash: this._data.hash,
+                hash: this._data?.hash,
             };
         }
     },
