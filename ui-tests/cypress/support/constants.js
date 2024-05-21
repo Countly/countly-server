@@ -54,6 +54,9 @@ module.exports.TIME_UNITS = {
     WEEKS: 'weeks',
     MONTHS: 'months',
     YEARS: 'years',
+    HOUR: 'hour',
+    DAY: 'day',
+    MONTH: 'month',
 };
 
 module.exports.LOGICAL_OPERATORS = {
@@ -78,4 +81,57 @@ module.exports.DATA_TYPE = {
     NAVIGATION: 'Navigation',
     ECOMMERCE: 'eCommerce',
     GAMING: 'Gaming'
+};
+
+module.exports.FEATURE_TYPE = {
+    CRASHES: 'Crashes',
+    PROFILE_GROUPS: 'Profile Groups',
+    DATA_POINTS: 'Data Points',
+    EVENTS: 'Events',
+    RATING: 'Rating',
+    SESSIONS: 'Sessions',
+    USERS: 'Users',
+    VIEWS: 'Views'
+};
+
+module.exports.EMAIL_NOTIFICATION_TYPE = {
+    TO_SPECIFIC_ADDRESS: 'To specific address',
+    TO_USERS_IN_A_GROUP: 'To users in a group',
+    DO_NOT_SEND_FOR_THIS_ALERT: 'Don\'t send for this alert'
+};
+
+module.exports.TRIGGER_METRICS = {
+    //CRASHES
+    OF_CRASHES_ERRORS: '# of crashes/errors',
+    NON_FATAL_CRASHES_ERRORS_PER_SESSION: 'non-fatal crashes/errors per session',
+    FATAL_CRASHES_ERRORS_PER_SESSION: 'fatal crashes/errors per session',
+    NEW_CRASH_ERROR: 'new crash/error',
+    //PROFILE GROUPS
+    OF_USERS_IN_THE_PROFILE_GROUP: '# of users in the profile group',
+    //DATA POINTS
+    TOTAL_DATA_POINTS: 'total data points',
+    //EVENTS
+    COUNT: 'count',
+    SUM: 'sum',
+    DURATION: 'duration',
+    AVERAGE_SUM: 'average sum',
+    AVERAGE_DURATION: 'average duration',
+    //RATING
+    OF_RESPONSES: '# of responses',
+    NEW_RATING_RESPONSE: 'new rating response',
+    //SESSIONS
+    AVERAGE_SESSION_DURATION: 'average session duration',
+    OF_SESSIONS: '# of sessions',
+    //USERS
+    OF_USERS: '# of users',
+    OF_NEW_USERS: '# of new users',
+    //VIEWS
+    BOUNCE_RATE: 'bounce rate',
+    OF_PAGE_VIEWS: '# of page views',
+};
+
+module.exports.TRIGGER_VARIABLE = {
+    INCREASED: 'increased',
+    DECREASED: 'decreased',
+    MORE: 'more'
 };

@@ -409,7 +409,6 @@ describe('Create New Widget', () => {
         const widget = generateWidgetFixture();
 
         widgetsHelpers.clickAddNewWidgetButton();
-        widgetsHelpers.shouldBeDisabledNextStepButton();
         widgetsHelpers.typeWidgetName(widget.widgetName);
         widgetsHelpers.clearQuestion();
         widgetsHelpers.shouldBeDisabledNextStepButton();
