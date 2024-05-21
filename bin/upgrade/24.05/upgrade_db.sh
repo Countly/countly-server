@@ -33,10 +33,10 @@ then
     nodejs "$SCRIPTS/scripts/generate_crashgroup_app_version_list.js"
     nodejs "$SCRIPTS/scripts/merge_consent_histories.js"
     nodejs "$SCRIPTS/scripts/merge_flow_collections.js"
+    nodejs "$SCRIPTS/scripts/merge_times_of_day_collections.js"
     nodejs "$SCRIPTS/scripts/migrate_alerts_data.js"
     nodejs "$SCRIPTS/scripts/remove_old_consent_histories.js"
     nodejs "$SCRIPTS/scripts/remove_old_times_of_day_collections.js"
-    nodejs "$SCRIPTS/scripts/merge_times_of_day_collections.js"
     nodejs "$SCRIPTS/scripts/update_populator_templates.js"
     nodejs "$SCRIPTS/scripts/push_indexes.js"
 
