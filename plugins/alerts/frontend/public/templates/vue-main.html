@@ -519,7 +519,7 @@
                                 v-model="selectedRadioButton"
                                 :label="item.value"
                                 :key="idx"
-                                v-for="(item, idx) in emailOptions"
+                                v-for="(item, idx) in filteredEmailOptions"
                                 class="is-autosized"
                                 border>
                                     {{item.label}}
