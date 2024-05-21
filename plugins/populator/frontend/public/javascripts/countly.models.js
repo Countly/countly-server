@@ -2308,7 +2308,7 @@
             if (eventTemplate && eventTemplate.sum && eventTemplate.sum.isActive) {
                 event.sum = getRandomInt(parseInt(eventTemplate.sum.minSumValue, 10), parseInt(eventTemplate.sum.maxSumValue, 10) || 10);
             }
-            else if (eventTemplate && eventTemplate.segmentations && eventTemplate.segmentations.length) {
+            if (eventTemplate && eventTemplate.segmentations && eventTemplate.segmentations.length) {
                 event.segmentation = {};
                 var eventSegmentations = {};
                 var modifiedSegmentationsOnCondition = {};
