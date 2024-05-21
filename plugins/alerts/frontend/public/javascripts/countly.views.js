@@ -416,7 +416,7 @@
         },
         mounted: function() {
             var self = this;
-            if (countlyGlobal.plugins.includes("gropus")) {
+            if (countlyGlobal.plugins.includes("groups")) {
                 groupsModel.initialize().then(function() {
                     var groups = _.sortBy(groupsModel.data(), "name");
                     var userGroups = groups.map(function(g) {
