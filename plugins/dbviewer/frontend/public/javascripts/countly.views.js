@@ -73,7 +73,7 @@
                     onError: function(context, error) {
                         if (error && error.status !== 0) {
                             CountlyHelpers.notify({
-                                message: error.responseJSON && error.responseJSON.result ? error.responseJSON.result : CV.i18n('dbviewer.server-error'),
+                                message: error.statusText || CV.i18n('dbviewer.server-error'),
                                 type: "error"
                             });
                         }
