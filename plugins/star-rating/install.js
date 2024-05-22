@@ -20,12 +20,17 @@ pluginManager.dbConnection().then((countlyDb) => {
                 console.log("Adding ratings collections to " + app.name);
                 function cb() {
                     cnt++;
-                    if (cnt == 2) {
+                    if (cnt == 3) {
                         done();
                     }
                 }
                 countlyDb.collection('feedback' + app._id).ensureIndex({"uid": 1}, {background: true}, cb);
                 countlyDb.collection('feedback' + app._id).ensureIndex({"ts": 1}, {background: true}, cb);
+                countlyDb.collection('feedback' + app._id).ensureIndex(
+                    { '$**': 1 },
+                    { wildcardProjection: { comment: 1, email: 1 }, background: true, name: 'comment_*_email_*' },
+                    cb,
+                );
             }
             async.forEach(apps, upgrade, function() {
                 console.log("Ratings plugin installation finished");

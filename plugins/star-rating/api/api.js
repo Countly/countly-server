@@ -1426,6 +1426,11 @@ function uploadFile(myfile, id, callback) {
         common.db.collection('feedback' + appId).ensureIndex({
             "ts": 1
         }, function() {});
+        common.db.collection('feedback' + appId).ensureIndex(
+            { '$**': 1 },
+            { wildcardProjection: { comment: 1, email: 1 }, name: 'comment_*_email_*' },
+            () => {},
+        );
     });
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
@@ -1468,6 +1473,11 @@ function uploadFile(myfile, id, callback) {
             common.db.collection('feedback' + appId).ensureIndex({
                 "ts": 1
             }, function() {});
+            common.db.collection('feedback' + appId).ensureIndex(
+                { '$**': 1 },
+                { wildcardProjection: { comment: 1, email: 1 }, name: 'comment_*_email_*' },
+                () => {},
+            );
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if (common.drillDb) {
@@ -1487,6 +1497,11 @@ function uploadFile(myfile, id, callback) {
             common.db.collection('feedback' + appId).ensureIndex({
                 "ts": 1
             }, function() {});
+            common.db.collection('feedback' + appId).ensureIndex(
+                { '$**': 1 },
+                { wildcardProjection: { comment: 1, email: 1 }, name: 'comment_*_email_*' },
+                () => {},
+            );
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if (common.drillDb) {
