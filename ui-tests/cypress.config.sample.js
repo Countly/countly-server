@@ -20,7 +20,10 @@ module.exports = defineConfig({
                     );
                     if (!failures) {
                         // delete the video if the spec passed and no tests retried
-                        fs.unlinkSync(results.video);
+                        const videoPath = results.video;
+                        if (fs.existsSync(videoPath)) {
+                           fs.unlinkSync(videoPath);
+                        }
                     }
                 }
             });
