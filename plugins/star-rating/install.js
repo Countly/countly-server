@@ -26,11 +26,7 @@ pluginManager.dbConnection().then((countlyDb) => {
                 }
                 countlyDb.collection('feedback' + app._id).ensureIndex({"uid": 1}, {background: true}, cb);
                 countlyDb.collection('feedback' + app._id).ensureIndex({"ts": 1}, {background: true}, cb);
-                countlyDb.collection('feedback' + app._id).ensureIndex(
-                    { '$**': 1 },
-                    { wildcardProjection: { comment: 1, email: 1 }, background: true, name: 'comment_*_email_*' },
-                    cb,
-                );
+                countlyDb.collection('feedback' + app._id).ensureIndex({comment: 'text', email: 'text'}, {background: true}, cb);
             }
             async.forEach(apps, upgrade, function() {
                 console.log("Ratings plugin installation finished");
