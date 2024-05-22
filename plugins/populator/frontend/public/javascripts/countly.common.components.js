@@ -1153,6 +1153,15 @@
                         });
                     }
                 }
+                // re-indexing the sequences after deletion
+                this.behavior.sequences.filter(x=>x.key !== 'random').forEach((sequence, idx) => {
+                    sequence.key = "Sequence_" + (idx + 1);
+                });
+                this.behavior.sequenceConditions.forEach((item) => {
+                    item.values.filter(x=>x.key !== 'random').forEach((sequence, idx) => {
+                        sequence.key = "Sequence_" + (idx + 1);
+                    });
+                });
             },
             "parentData": {
                 deep: true,
