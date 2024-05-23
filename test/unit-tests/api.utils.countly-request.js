@@ -61,6 +61,15 @@ describe('Countly Request', () => {
 
     });
 
+    it('Makes get request', (done) => {
+        request.get('https://countly.com', (err, res) => {
+            should.not.exist(err);
+            should.exist(res);
+
+            done();
+        });
+    });
+
     it('Make post request', () => {
         request.post('https://countly', function(err, res/*, body*/) {
             should.not.exist(err);
