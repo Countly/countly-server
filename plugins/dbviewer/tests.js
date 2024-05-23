@@ -114,8 +114,8 @@ describe('Testing DBViewer', function() {
                     ob[0].collections.should.not.have.property("members");
                     ob[0].collections.should.not.have.property("plugins");
                     ob[0].collections.should.not.have.property("jobs");
-                    ob[0].collections.should.have.property("app_crashes(Test App)", "app_crashes" + APP_ID);
-                    ob[0].collections.should.have.property("app_users(Test App)", "app_users" + APP_ID);
+                    ob[0].collections.should.have.property("app_crashes(" + APP_NAME + ")", "app_crashes" + APP_ID);
+                    ob[0].collections.should.have.property("app_users(" + APP_NAME + ")", "app_users" + APP_ID);
                     done();
                 });
         });
