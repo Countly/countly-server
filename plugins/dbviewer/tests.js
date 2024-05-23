@@ -5,6 +5,7 @@ request = request(testUtils.url);
 
 var APP_KEY = "";
 var API_KEY_ADMIN = "";
+var APP_NAME = "Test";
 var APP_ID = "";
 var DEVICE_ID = "1234567890";
 
@@ -85,6 +86,15 @@ describe('Testing DBViewer', function() {
     });
 
     describe('Checking collection list when specific app_id selected', function() {
+        it('getting app name', function(done) {
+            db = testUtils.client.db("countly");
+            db.collection("apps").findOne({ _id: db.ObjectID(APP_ID) }, function(err, app) {
+                if (app) {
+                    APP_NAME = app.name;
+                }
+                done();
+            });
+        });
         it('should have our test app', function(done) {
             request
                 .get('/o/db?dbs=countly&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
