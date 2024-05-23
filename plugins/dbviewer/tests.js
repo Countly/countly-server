@@ -8,6 +8,7 @@ var API_KEY_ADMIN = "";
 var APP_NAME = "Test";
 var APP_ID = "";
 var DEVICE_ID = "1234567890";
+var db = "";
 
 describe('Testing DBViewer', function() {
     describe('Checking database and collections', function() {
