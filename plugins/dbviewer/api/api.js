@@ -520,7 +520,7 @@ var spawn = require('child_process').spawn,
             else {
                 if (params.member.global_admin) {
                     var query = params.qstring.app_id ? { "_id": common.db.ObjectID(params.qstring.app_id) } : {};
-                    common.db.collection('apps').find(query).toArray(function(err, apps) {
+                    common.db.collection('apps').find(query, {"name": 1, "_id": 1}).toArray(function(err, apps) {
                         if (err) {
                             console.error(err);
                         }
