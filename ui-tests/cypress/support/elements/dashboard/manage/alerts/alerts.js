@@ -53,6 +53,7 @@ export const alertDrawerPageElements = {
 
     DRAWER_EMAIL_NOTIF_TO_ADDRESS_EMAIL_SELECT: 'email-address-select',
     DRAWER_EMAIL_NOTIF_TO_ADDRESS_EMAIL_INPUT: 'search-email-input',
+    DRAWER_EDIT_EMAIL_NOTIF_TO_ADDRESS_EMAIL_INPUT: 'email-address-select-dropdown-el-select',
 
     DRAWER_EMAIL_NOTIF_TO_GROUP_GROUP_SELECT: 'choose-users-select-input',
     DRAWER_EMAIL_NOTIF_DO_NOT_SEND_INF_LABEL: 'set-the-user-group-permissions-tooltip',
