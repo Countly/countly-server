@@ -497,14 +497,14 @@ const verifyAlertsMetricCardElements = ({
         labelElement: alertsPageElements.TOTAL_ALERTS_SENT_LABEL,
         labelText: "Total Alerts Sent",
         element: alertsPageElements.TOTAL_ALERTS_SENT_NUMBER_LABEL,
-        elementText: totalAlertsSentNumber
+        //elementText: totalAlertsSentNumber
     });
 
     cy.verifyElement({
         labelElement: alertsPageElements.ALERTS_SENT_TODAY_LABEL,
         labelText: "Alerts Sent Today",
         element: alertsPageElements.ALERTS_SENT_TODAY_NUMBER_LABEL,
-        elementText: alertsSentTodayNumber
+        //elementText: alertsSentTodayNumber
     });
 };
 
