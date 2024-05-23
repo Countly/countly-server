@@ -450,7 +450,7 @@ const selectFilterCrashesAppVersion = (...appVersions) => {
 };
 
 const selectEventFilter = (filterType) => {
-    cy.selectOption(alertDrawerPageElements.DRAWER_FILTER_EVENT_SELECT, filterType);
+    cy.selectListBoxItem(alertDrawerPageElements.DRAWER_FILTER_EVENT_SELECT, filterType);
 };
 
 const typeEventFilterValue = (value) => {

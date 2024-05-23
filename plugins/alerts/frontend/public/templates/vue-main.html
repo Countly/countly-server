@@ -213,7 +213,7 @@
                                     :options="alertDataFilterKeyOptions"
                                 />
                             </div>
-                            <span class="bu-mx-3" style="line-height: 30px" data-test-id="trigger-is-label">is</span>
+                            <span class="bu-mx-3" style="line-height: 30px" data-test-id="is-label">is</span>
                             <div class="bu-is-flex-grow-1">
                                 <el-input
                                     test-id="alert-data-filter-value-input"
@@ -336,7 +336,7 @@
                                     </option>
                                 </select>
                             </cly-form-field>
-                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
+                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable" data-test-id="trigger-is-label">
                                 is
                             </span>
                             <!--Select operation for variable part in the trigger component.
