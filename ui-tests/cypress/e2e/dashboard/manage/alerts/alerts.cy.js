@@ -17,13 +17,13 @@ const {
 } = require('../../../../support/constants');
 
 describe('Create New Alert', () => {
-    beforeEach(function () {
+    beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
         navigationHelpers.goToAlertsPage();
     });
 
-    it('Should be added crashes alert and then update the alert data', function () {
+    it('Should be added crashes alert and then update the alert data', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -80,7 +80,7 @@ describe('Create New Alert', () => {
                 triggerTime: TIME_UNITS.HOUR,
                 emailNotificationType: EMAIL_NOTIFICATION_TYPE.TO_SPECIFIC_ADDRESS,
                 email: ['demo@count.ly', 'test@count.ly']
-            })
+            });
 
             alertsHelpers.typeAlertName(alertUpdated.alertName);
             alertsHelpers.selectDataType(FEATURE_TYPE.CRASHES);
@@ -95,7 +95,7 @@ describe('Create New Alert', () => {
                 activeAlertsNumber: currentActiveAlertsCount + 1
             });
 
-            alertsHelpers.searchAlertOnDataTable(alertUpdated.alertName)
+            alertsHelpers.searchAlertOnDataTable(alertUpdated.alertName);
             alertsHelpers.verifyAlertsDataFromTable({
                 index: 0,
                 isActive: true,
@@ -106,7 +106,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added crashes alert with adding filter', function () {
+    it('Should be added crashes alert with adding filter', function() {
 
         const alert = generateAlertFixture();
         var injectionText = "\"><img src=# onerror=alert('POC')>";
@@ -157,7 +157,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added alert data points', function () {
+    it('Should be added alert data points', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -194,7 +194,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added events alert', function () {
+    it('Should be added events alert', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -232,7 +232,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added events alert with adding filter', function () {
+    it('Should be added events alert with adding filter', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -273,7 +273,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added sessions alert', function () {
+    it('Should be added sessions alert', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -310,7 +310,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added views alert', function () {
+    it('Should be added views alert', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -355,7 +355,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added alert ratings', function () {
+    it('Should be added alert ratings', function() {
 
         const alert = generateAlertFixture();
         const widget = generateWidgetFixture();
@@ -395,7 +395,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added alert ratings with adding filter', function () {
+    it('Should be added alert ratings with adding filter', function() {
 
         const alert = generateAlertFixture();
         const widget = generateWidgetFixture();

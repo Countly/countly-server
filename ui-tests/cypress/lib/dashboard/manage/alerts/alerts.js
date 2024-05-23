@@ -17,7 +17,7 @@ const verifyStaticElementsOfPage = () => {
         element: alertsPageElements.ADD_NEW_ALERT_BUTTON,
         elementText: 'Add New Alert'
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -64,7 +64,8 @@ const verifyAlertDrawerPageElements = ({
             labelElement: alertDrawerPageElements.DRAWER_PAGE_TITLE,
             labelText: "Create new alert"
         });
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             labelElement: alertDrawerPageElements.DRAWER_PAGE_TITLE,
@@ -109,7 +110,8 @@ const verifyAlertDrawerPageElements = ({
                 value: subType,
                 elementPlaceHolder: "Select"
             });
-        } else if (FEATURE_TYPE.RATING) {
+        }
+        else if (FEATURE_TYPE.RATING) {
             cy.verifyElement({
                 labelElement: alertDrawerPageElements.DRAWER_SUB_TYPE_LABEL,
                 labelText: 'Widget Name',
@@ -146,7 +148,8 @@ const verifyAlertDrawerPageElements = ({
                 elementPlaceHolder: "Select",
                 value: filterValue,
             });
-        } else if (dataType == FEATURE_TYPE.EVENTS) {
+        }
+        else if (dataType == FEATURE_TYPE.EVENTS) {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_FILTER_EVENT_SELECT,
                 elementPlaceHolder: "Select",
@@ -158,7 +161,8 @@ const verifyAlertDrawerPageElements = ({
                 elementPlaceHolder: "String",
                 value: filterValue,
             });
-        } else if (dataType == FEATURE_TYPE.RATING) {
+        }
+        else if (dataType == FEATURE_TYPE.RATING) {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_FILTER_RATING_INPUT,
                 value: 'Rating',
@@ -170,7 +174,8 @@ const verifyAlertDrawerPageElements = ({
                 value: filterValue,
             });
         }
-    } else if (dataType == FEATURE_TYPE.CRASHES || dataType == FEATURE_TYPE.EVENTS || dataType == FEATURE_TYPE.RATING) {
+    }
+    else if (dataType == FEATURE_TYPE.CRASHES || dataType == FEATURE_TYPE.EVENTS || dataType == FEATURE_TYPE.RATING) {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_ADD_FILTER_BUTTON,
             elementText: "+ Add Filter"
@@ -212,7 +217,8 @@ const verifyAlertDrawerPageElements = ({
             element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
             value: triggerMetric,
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
             elementText: 'metric',
@@ -225,7 +231,8 @@ const verifyAlertDrawerPageElements = ({
             element: alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT,
             elementText: triggerVariable,
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT,
             elementText: 'variable',
@@ -239,7 +246,8 @@ const verifyAlertDrawerPageElements = ({
             elementPlaceHolder: 'value',
             value: triggerValue,
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_TRIGGER_VALUE_INPUT,
             elementPlaceHolder: 'value',
@@ -252,7 +260,8 @@ const verifyAlertDrawerPageElements = ({
             element: alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT,
             elementText: triggerTime,
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT,
             elementText: 'time',
@@ -301,7 +310,8 @@ const verifyAlertDrawerPageElements = ({
                 element: alertDrawerPageElements.DRAWER_EMAIL_NOTIF_TO_ADDRESS_EMAIL_SELECT,
                 elementPlaceHolder: 'Enter email address',
             });
-        } else {
+        }
+        else {
             email.forEach(emailAddress => {
                 cy.verifyElement({
                     element: alertDrawerPageElements.DRAWER_EDIT_EMAIL_NOTIF_TO_ADDRESS_EMAIL_INPUT,
@@ -311,7 +321,8 @@ const verifyAlertDrawerPageElements = ({
             });
         }
 
-    } else if (emailNotificationType == EMAIL_NOTIFICATION_TYPE.TO_USERS_IN_A_GROUP) {
+    }
+    else if (emailNotificationType == EMAIL_NOTIFICATION_TYPE.TO_USERS_IN_A_GROUP) {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_EMAIL_NOTIF_TO_ADDRESS_RADIO_BUTTON,
             isChecked: false
@@ -327,7 +338,8 @@ const verifyAlertDrawerPageElements = ({
             isChecked: false
         });
 
-    } else if (emailNotificationType == EMAIL_NOTIFICATION_TYPE.DO_NOT_SEND_FOR_THIS_ALERT) {
+    }
+    else if (emailNotificationType == EMAIL_NOTIFICATION_TYPE.DO_NOT_SEND_FOR_THIS_ALERT) {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_EMAIL_NOTIF_TO_ADDRESS_RADIO_BUTTON,
             isChecked: false
@@ -359,7 +371,8 @@ const verifyAlertDrawerPageElements = ({
             element: alertDrawerPageElements.DRAWER_CREATE_BUTTON,
             elementText: "Create"
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_CREATE_BUTTON,
             elementText: "Save Alert"
@@ -465,7 +478,7 @@ const verifyAlertSavedNotification = () => {
         labelElement: alertsPageElements.NOTIFICATION_ALERT_SAVED_MESSAGE,
         labelText: "Alert saved"
     });
-}
+};
 
 const verifyAlertsMetricCardElements = ({
     activeAlertsNumber,
