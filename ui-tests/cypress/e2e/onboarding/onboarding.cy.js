@@ -109,7 +109,7 @@ describe('Complete Onboarding', () => {
         initialSetupHelpers.completeOnboardingInitialSetup({
             isDemoApp: true,
             appType: APP_TYPE.MOBILE,
-            demoAppData: DATA_TYPE.HEALTHCARE,
+            demoAppData: DATA_TYPE.GAMING,
             timezone: 'Istanbul'
         });
 
@@ -191,8 +191,9 @@ describe('Complete Onboarding', () => {
         analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyEmptyPageElements();
-        //navigationHelpers.goToPushNotifications();
-        //messagingPageHelpers.verifyEmptyPageElements();
+        cy.wait(25000)
+        navigationHelpers.goToPushNotifications();
+        messagingPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyEmptyPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
