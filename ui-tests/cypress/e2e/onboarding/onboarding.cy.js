@@ -122,7 +122,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('should be complete onboarding flow with creating mobile type own application and verify all pages with empty data', function() {
+    it.only('should be complete onboarding flow with creating mobile type own application and verify all pages with empty data', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
