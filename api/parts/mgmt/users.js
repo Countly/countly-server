@@ -601,8 +601,9 @@ usersApi.deleteUser = function(params) {
     }
 
     for (var i = 0; i < userIds.length; i++) {
-        // Each user id should be 24 chars long and a user can't delete his own account
-        if (!userIds[i] || userIds[i] === params.member._id + "" || userIds[i].length !== 24) {
+        //a user can't delete his own account
+        //string id can also exist due to cognito so check for 24 chars long
+        if (!userIds[i] || userIds[i] === params.member._id + "") {
             continue;
         }
         else {
