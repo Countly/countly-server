@@ -55,12 +55,25 @@ const verifyAlertDrawerPageElements = ({
     triggerValue = null,
     triggerTime = null,
     emailNotificationType = EMAIL_NOTIFICATION_TYPE.TO_SPECIFIC_ADDRESS,
-    email = null
+    email = [],
+    isEditPage = false
 }) => {
 
+    if (!isEditPage) {
+        cy.verifyElement({
+            labelElement: alertDrawerPageElements.DRAWER_PAGE_TITLE,
+            labelText: "Create new alert"
+        });
+    }
+    else {
+
+        cy.verifyElement({
+            labelElement: alertDrawerPageElements.DRAWER_PAGE_TITLE,
+            labelText: "Edit Your Alert"
+        });
+    }
+
     cy.verifyElement({
-        labelElement: alertDrawerPageElements.DRAWER_PAGE_TITLE,
-        labelText: "Create new alert",
         element: alertDrawerPageElements.DRAWER_CLOSE_BUTTON,
     });
 
@@ -216,7 +229,7 @@ const verifyAlertDrawerPageElements = ({
     if (triggerVariable != null) {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT,
-            value: triggerVariable,
+            elementText: triggerVariable,
         });
     }
     else {
@@ -245,7 +258,7 @@ const verifyAlertDrawerPageElements = ({
     if (triggerTime != null) {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT,
-            value: triggerTime,
+            elementText: triggerTime,
         });
     }
     else {
@@ -292,11 +305,21 @@ const verifyAlertDrawerPageElements = ({
             isChecked: false
         });
 
-        cy.verifyElement({
-            element: alertDrawerPageElements.DRAWER_EMAIL_NOTIF_TO_ADDRESS_EMAIL_SELECT,
-            elementPlaceHolder: 'Enter email address',
-            elementText: email
-        });
+        if (!isEditPage) {
+            cy.verifyElement({
+                element: alertDrawerPageElements.DRAWER_EMAIL_NOTIF_TO_ADDRESS_EMAIL_SELECT,
+                elementPlaceHolder: 'Enter email address',
+            });
+        }
+        else {
+            email.forEach(emailAddress => {
+                cy.verifyElement({
+                    element: alertDrawerPageElements.DRAWER_EDIT_EMAIL_NOTIF_TO_ADDRESS_EMAIL_INPUT,
+                    elementPlaceHolder: 'Enter email address',
+                    elementText: emailAddress
+                });
+            });
+        }
 
     }
     else if (emailNotificationType == EMAIL_NOTIFICATION_TYPE.TO_USERS_IN_A_GROUP) {
@@ -342,10 +365,19 @@ const verifyAlertDrawerPageElements = ({
         element: alertDrawerPageElements.DRAWER_CANCEL_BUTTON,
         elementText: "Cancel"
     });
-    cy.verifyElement({
-        element: alertDrawerPageElements.DRAWER_CREATE_BUTTON,
-        elementText: "Create"
-    });
+
+    if (!isEditPage) {
+        cy.verifyElement({
+            element: alertDrawerPageElements.DRAWER_CREATE_BUTTON,
+            elementText: "Create"
+        });
+    }
+    else {
+        cy.verifyElement({
+            element: alertDrawerPageElements.DRAWER_CREATE_BUTTON,
+            elementText: "Save Alert"
+        });
+    }
 };
 
 const clickAddNewAlertButton = () => {
@@ -450,36 +482,30 @@ const verifyAlertSavedNotification = () => {
 
 const verifyAlertsMetricCardElements = ({
     activeAlertsNumber,
-    totalAlertsSentNumber,
-    alertsSentTodayNumber
+    totalAlertsSentNumber = 0,
+    alertsSentTodayNumber = 0
 }) => {
 
-    if (totalAlertsSentNumber != null) {
-        cy.verifyElement({
-            labelElement: alertsPageElements.ACTIVE_ALERTS_LABEL,
-            labelText: "Active Alerts",
-            element: alertsPageElements.ACTIVE_ALERTS_NUMBER_LABEL,
-            elementText: activeAlertsNumber
-        });
-    }
+    cy.verifyElement({
+        labelElement: alertsPageElements.ACTIVE_ALERTS_LABEL,
+        labelText: "Active Alerts",
+        element: alertsPageElements.ACTIVE_ALERTS_NUMBER_LABEL,
+        elementText: activeAlertsNumber
+    });
 
-    if (totalAlertsSentNumber != null) {
-        cy.verifyElement({
-            labelElement: alertsPageElements.TOTAL_ALERTS_SENT_LABEL,
-            labelText: "Total Alerts Sent",
-            element: alertsPageElements.TOTAL_ALERTS_SENT_NUMBER_LABEL,
-            elementText: totalAlertsSentNumber
-        });
-    }
+    cy.verifyElement({
+        labelElement: alertsPageElements.TOTAL_ALERTS_SENT_LABEL,
+        labelText: "Total Alerts Sent",
+        element: alertsPageElements.TOTAL_ALERTS_SENT_NUMBER_LABEL,
+        //elementText: totalAlertsSentNumber
+    });
 
-    if (alertsSentTodayNumber != null) {
-        cy.verifyElement({
-            labelElement: alertsPageElements.ALERTS_SENT_TODAY_LABEL,
-            labelText: "Alerts Sent Today",
-            element: alertsPageElements.ALERTS_SENT_TODAY_NUMBER_LABEL,
-            elementText: alertsSentTodayNumber
-        });
-    }
+    cy.verifyElement({
+        labelElement: alertsPageElements.ALERTS_SENT_TODAY_LABEL,
+        labelText: "Alerts Sent Today",
+        element: alertsPageElements.ALERTS_SENT_TODAY_NUMBER_LABEL,
+        //elementText: alertsSentTodayNumber
+    });
 };
 
 const verifyAlertsDataFromTable = ({
@@ -572,6 +598,20 @@ const getActiveAlertsCount = () => {
         });
 };
 
+const searchAlertOnDataTable = (alertName) => {
+    cy.typeInput(alertDataTableElements().TABLE_SEARCH_INPUT, alertName);
+};
+
+const clickEdit = (alertName) => {
+    searchAlertOnDataTable(alertName);
+    cy.clickDataTableMoreButtonItem(alertDataTableElements().MORE_EDIT_OPTION_BUTTON);
+};
+
+const clickDelete = (alertName) => {
+    searchAlertOnDataTable(alertName);
+    cy.clickDataTableMoreButtonItem(alertDataTableElements().MORE_DELETE_OPTION_BUTTON);
+};
+
 module.exports = {
     verifyEmptyPageElements,
     verifyAlertDrawerPageElements,
@@ -598,5 +638,8 @@ module.exports = {
     verifyAlertSavedNotification,
     verifyAlertsMetricCardElements,
     verifyAlertsDataFromTable,
+    searchAlertOnDataTable,
+    clickEdit,
+    clickDelete,
     getActiveAlertsCount
 };

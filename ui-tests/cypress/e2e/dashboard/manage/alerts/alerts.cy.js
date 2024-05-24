@@ -12,7 +12,8 @@ const {
     FEATURE_TYPE,
     TRIGGER_METRICS,
     TRIGGER_VARIABLE,
-    TIME_UNITS
+    TIME_UNITS,
+    EMAIL_NOTIFICATION_TYPE
 } = require('../../../../support/constants');
 
 describe('Create New Alert', () => {
@@ -22,13 +23,20 @@ describe('Create New Alert', () => {
         navigationHelpers.goToAlertsPage();
     });
 
-    it('Should be added crashes alert', function() {
+    it('Should be added crashes alert and then update the alert data', function() {
 
         const alert = generateAlertFixture();
         let application = "";
+        let appVersion = faker.number.int(10) + "." + faker.number.int(10) + "." + faker.number.int(10);
 
         navigationHelpers.getAppNameFromSidebar().then((appName) => {
             application = appName;
+            helper.addData({
+                username: user.username,
+                password: user.password,
+                appName: application,
+                appVersion: appVersion
+            });
         });
 
         alertsHelpers.getActiveAlertsCount().then((currentActiveAlertsCount) => {
@@ -55,6 +63,45 @@ describe('Create New Alert', () => {
                 alertName: alert.alertName,
                 application: application,
                 condition: "new crash/error increased by " + alert.triggerValue + " % in the last hour"
+            });
+
+            // UPDATE THE ALERT WITH NEW DATA
+            const alertUpdated = generateAlertFixture();
+
+            alertsHelpers.clickEdit(alert.alertName);
+            alertsHelpers.verifyAlertDrawerPageElements({
+                isEditPage: true,
+                alertName: alert.alertName,
+                application: application,
+                dataType: FEATURE_TYPE.CRASHES,
+                triggerMetric: TRIGGER_METRICS.NEW_CRASH_ERROR,
+                triggerVariable: TRIGGER_VARIABLE.INCREASED,
+                triggerValue: alert.triggerValue,
+                triggerTime: TIME_UNITS.HOUR,
+                emailNotificationType: EMAIL_NOTIFICATION_TYPE.TO_SPECIFIC_ADDRESS,
+                email: ['demo@count.ly', 'test@count.ly']
+            });
+
+            alertsHelpers.typeAlertName(alertUpdated.alertName);
+            alertsHelpers.selectDataType(FEATURE_TYPE.CRASHES);
+            alertsHelpers.clickAddFilterButton();
+            alertsHelpers.selectFilterCrashesAppVersion(...[appVersion]);
+            alertsHelpers.selectTriggerMetric(TRIGGER_METRICS.FATAL_CRASHES_ERRORS_PER_SESSION);
+            alertsHelpers.selectDoNotSendEmail();
+            alertsHelpers.clickCreateButton();
+            alertsHelpers.verifyAlertSavedNotification();
+
+            alertsHelpers.verifyAlertsMetricCardElements({
+                activeAlertsNumber: currentActiveAlertsCount + 1
+            });
+
+            alertsHelpers.searchAlertOnDataTable(alertUpdated.alertName);
+            alertsHelpers.verifyAlertsDataFromTable({
+                index: 0,
+                isActive: true,
+                alertName: alertUpdated.alertName,
+                application: application,
+                condition: "non-fatal crashes/errors per session"
             });
         });
     });
