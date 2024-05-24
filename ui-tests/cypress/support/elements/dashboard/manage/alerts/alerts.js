@@ -14,7 +14,12 @@ export const alertsPageElements = {
     ALERTS_SENT_TODAY_LABEL: 'metric-card-alerts-sent-today-column-label',
     ALERTS_SENT_TODAY_NUMBER_LABEL: 'metric-card-alerts-sent-today-column-number',
 
-    NOTIFICATION_ALERT_SAVED_MESSAGE: 'cly-notification-text'
+    NOTIFICATION_ALERT_SAVED_MESSAGE: 'cly-notification-text',
+
+    DELETE_ALERT_MODAL_TITLE: 'el-dialog-test-id-el-dialog-content-label',
+    DELETE_ALERT_MODAL_CONTINUE_BUTTON: 'cly-confirm-test-id-cly-confirm-dialog-danger-button',
+    DELETE_ALERT_MODAL_CANCEL_BUTTON: 'cly-confirm-test-id-cly-confirm-dialog-cancel-button',
+    DELETE_ALERT_MODAL_CLOSE_BUTTON: 'el-dialog-test-id-el-dialog-close-button',
 };
 
 export const alertDrawerPageElements = {
@@ -117,7 +122,12 @@ const alertDataTableElements = (index = 0) => {
         FIRST_PAGE_ARROW_BUTTON: 'alerts-table-first-page-arrow-button',
         PREVIOUS_PAGE_ARROW_BUTTON: 'alerts-table-previous-page-arrow-button',
         NEXT_PAGE_ARROW_BUTTON: 'alerts-table-next-page-arrow-button',
-        LAST_PAGE_ARROW_BUTTON: 'alerts-table-last-page-arrow-button'
+        LAST_PAGE_ARROW_BUTTON: 'alerts-table-last-page-arrow-button',
+
+        //EMPTY TABLE ELEMENTS
+        EMPTY_TABLE_ICON: 'alerts-table-empty-logo',
+        EMPTY_TABLE_TITLE: 'alerts-table-empty-title',
+        EMPTY_TABLE_SUBTITLE: 'alerts-table-empty-subtitle'
     };
 };
 

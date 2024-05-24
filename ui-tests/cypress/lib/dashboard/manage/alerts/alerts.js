@@ -43,6 +43,23 @@ const verifyEmptyPageElements = () => {
     });
 };
 
+const verifyEmptyTableElements = () => {
+
+    cy.verifyElement({
+        element: alertDataTableElements().EMPTY_TABLE_ICON,
+    });
+
+    cy.verifyElement({
+        labelElement: alertDataTableElements().EMPTY_TABLE_TITLE,
+        labelText: "...hmm, seems empty here",
+    });
+
+    cy.verifyElement({
+        labelElement: alertDataTableElements().EMPTY_TABLE_SUBTITLE,
+        labelText: "No data found",
+    });
+};
+
 const verifyAlertDrawerPageElements = ({
     alertName = null,
     application = null,
@@ -607,9 +624,25 @@ const clickEdit = (alertName) => {
     cy.clickDataTableMoreButtonItem(alertDataTableElements().MORE_EDIT_OPTION_BUTTON);
 };
 
-const clickDelete = (alertName) => {
+const deleteAlert = (alertName) => {
     searchAlertOnDataTable(alertName);
     cy.clickDataTableMoreButtonItem(alertDataTableElements().MORE_DELETE_OPTION_BUTTON);
+    cy.verifyElement({
+        labelElement: alertsPageElements.DELETE_ALERT_MODAL_TITLE,
+        labelText: "Confirm to delete this alert?",
+        element: alertsPageElements.DELETE_ALERT_MODAL_CLOSE_BUTTON,
+    });
+    cy.verifyElement({
+        element: alertsPageElements.DELETE_ALERT_MODAL_CONTINUE_BUTTON,
+        elementText: "Continue",
+    });
+
+    cy.verifyElement({
+        element: alertsPageElements.DELETE_ALERT_MODAL_CANCEL_BUTTON,
+        elementText: "Cancel",
+    });
+
+    cy.clickElement(alertsPageElements.DELETE_ALERT_MODAL_CONTINUE_BUTTON);
 };
 
 module.exports = {
@@ -638,8 +671,9 @@ module.exports = {
     verifyAlertSavedNotification,
     verifyAlertsMetricCardElements,
     verifyAlertsDataFromTable,
+    verifyEmptyTableElements,
     searchAlertOnDataTable,
     clickEdit,
-    clickDelete,
+    deleteAlert,
     getActiveAlertsCount
 };

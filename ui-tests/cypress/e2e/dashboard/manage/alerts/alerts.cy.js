@@ -232,7 +232,7 @@ describe('Create New Alert', () => {
         });
     });
 
-    it('Should be added events alert with adding filter', function() {
+    it('Should be added events alert with adding filter and delete the alert', function() {
 
         const alert = generateAlertFixture();
         let application = "";
@@ -270,6 +270,15 @@ describe('Create New Alert', () => {
                 application: application,
                 condition: "Login duration increased by " + alert.triggerValue + " % in the last day"
             });
+
+            // DELETE THE ALERT 
+            alertsHelpers.deleteAlert(alert.alertName);
+            alertsHelpers.verifyAlertsMetricCardElements({
+                activeAlertsNumber: currentActiveAlertsCount
+            });
+
+            alertsHelpers.searchAlertOnDataTable(alert.alertName);
+            alertsHelpers.verifyEmptyTableElements();
         });
     });
 
