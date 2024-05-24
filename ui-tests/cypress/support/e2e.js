@@ -21,7 +21,8 @@ require('cypress-failed-log');
 //This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
 //Open the below code block after the "Cannot read properties of undefined..." errors occurred.
 //But firstly open an issue about the error.
-// Cypress.on('uncaught:exception', (err, runnable) => {
-//     // returning false here prevents Cypress from failing the test
-//     return false;
-// });
+Cypress.on('uncaught:exception', (err, runnable) => {
+    console.error('Uncaught exception:', err.message);
+    // returning false here prevents Cypress from failing the test
+    return false;
+});
