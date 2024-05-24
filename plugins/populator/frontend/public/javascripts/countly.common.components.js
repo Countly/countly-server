@@ -1187,7 +1187,7 @@
                             this.behavior.sequences.push({key: 'Sequence_' + (this.behavior.sequences.length + 1), probability: 0});
                             if (this.behavior.sequenceConditions.length) {
                                 this.behavior.sequenceConditions.forEach((item) => {
-                                    item.values.push({key: 'Sequence_' + (this.behavior.sequences.length + 1), probability: 0});
+                                    item.values.push({key: 'Sequence_' + this.behavior.sequences.length, probability: 0});
                                 });
                             }
                         }
