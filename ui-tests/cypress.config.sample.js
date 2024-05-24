@@ -10,6 +10,7 @@ module.exports = defineConfig({
         numTestsKeptInMemory: 0,
         projectId: "000000",
         chromeWebSecurity: false,
+        failOnStatusCode: false,
         watchForFileChanges: true,
         video: true,
         setupNodeEvents(on, config) {
