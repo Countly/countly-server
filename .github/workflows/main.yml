@@ -283,6 +283,6 @@ jobs:
         run: |
           ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}.tar.gz"
           mkdir -p screenshots videos logs
-          mv cypress_onboarding.log logs/
+          [[ -f cypress_onboarding.log ]] && mv cypress_onboarding.log logs/
           tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos logs
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
