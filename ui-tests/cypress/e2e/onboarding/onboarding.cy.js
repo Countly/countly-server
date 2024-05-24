@@ -95,7 +95,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it.only('should be complete onboarding flow with creating mobile type demo application and enable tracking and subscribe to newsletter', function() {
+    it('should be complete onboarding flow with creating mobile type demo application and enable tracking and subscribe to newsletter', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
