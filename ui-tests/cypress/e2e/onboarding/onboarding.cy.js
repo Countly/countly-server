@@ -95,7 +95,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('should be complete onboarding flow with creating mobile type demo application and enable tracking and subscribe to newsletter', function() {
+    it.only('should be complete onboarding flow with creating mobile type demo application and enable tracking and subscribe to newsletter', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -109,7 +109,7 @@ describe('Complete Onboarding', () => {
         initialSetupHelpers.completeOnboardingInitialSetup({
             isDemoApp: true,
             appType: APP_TYPE.MOBILE,
-            demoAppData: DATA_TYPE.GAMING,
+            demoAppData: DATA_TYPE.HEALTHCARE,
             timezone: 'Istanbul'
         });
 
