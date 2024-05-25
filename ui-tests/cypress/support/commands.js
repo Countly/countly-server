@@ -1,5 +1,8 @@
 import 'cypress-file-upload';
 const helper = require('./helper');
+const fs = require('fs');
+const path = require('path');
+const networkLogPath = path.join(__dirname, '../logs/network.log');
 
 Cypress.Commands.add("typeInput", (element, tag) => {
     cy.getElement(element).clear().type(tag);
@@ -341,3 +344,13 @@ Cypress.Commands.add('getElement', (selector, parent = null) => {
         return cy.get(selector);
     }
 });
+
+Cypress.Commands.add('logRequest', (request) => {
+    const logEntry = `${new Date().toISOString()} - ${request.method} ${request.url}\n`;
+    fs.appendFileSync(networkLogPath, logEntry);
+  });
+  
+  Cypress.Commands.add('logResponse', (response) => {
+    const logEntry = `${new Date().toISOString()} - ${response.statusCode} ${response.url}\n`;
+    fs.appendFileSync(networkLogPath, logEntry);
+  });

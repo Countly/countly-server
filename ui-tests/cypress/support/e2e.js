@@ -16,6 +16,9 @@
 // Import commands.js using ES2015 syntax:
 import './commands';
 require('cypress-failed-log');
+const fs = require('fs');
+const path = require('path');
+const networkLogPath = path.join(__dirname, '../logs/network.log');
 
 //When Cypress detects uncaught errors originating from application it will automatically fail the current test.
 //This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
@@ -26,3 +29,13 @@ Cypress.on('uncaught:exception', (err, runnable) => {
     // returning false here prevents Cypress from failing the test
     return false;
 });
+
+if (fs.existsSync(networkLogPath)) {
+    fs.truncateSync(networkLogPath, 0);
+  }
+
+  
+Cypress.on('test:before:run', () => {
+    // Her testten önce log dosyasını temizle
+    fs.truncateSync(networkLogPath, 0);
+  });
