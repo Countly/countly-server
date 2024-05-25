@@ -63,6 +63,8 @@ describe('Complete Onboarding', () => {
     beforeEach(function() {
         navigationHelpers.goToLoginPage();
 
+        cy.task('clearNetworkLogs');
+        
         cy.intercept('GET', '**/message/**', (req) => {
             cy.logRequest(req);
       
