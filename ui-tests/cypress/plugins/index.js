@@ -12,10 +12,27 @@
 // This function is called when a project is opened or re-opened (e.g. due to
 // the project's config changing)
 
-/**
- * @type {Cypress.PluginConfig}
- */
+const fs = require('fs');
+const path = require('path');
+
+// Log dosyasının yolu
+const networkLogPath = path.join(__dirname, '../logs/network.log');
+
 module.exports = (on, config) => {
-    // `on` is used to hook into various events Cypress emits
-    // `config` is the resolved Cypress config
+  on('task', {
+    logNetworkRequest(logEntry) {
+      fs.appendFileSync(networkLogPath, logEntry);
+      return null;
+    },
+    logNetworkResponse(logEntry) {
+      fs.appendFileSync(networkLogPath, logEntry);
+      return null;
+    },
+    clearNetworkLogs() {
+      if (fs.existsSync(networkLogPath)) {
+        fs.truncateSync(networkLogPath, 0);
+      }
+      return null;
+    }
+  });
 };

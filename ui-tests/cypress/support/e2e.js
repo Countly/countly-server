@@ -28,28 +28,16 @@ Cypress.on('uncaught:exception', (err, runnable) => {
     return false;
 });
 
-const fs = require('fs');
-const path = require('path');
-
-// Log dosyasının yolu
-const networkLogPath = path.join(__dirname, '../logs/network.log');
-
-// Log dosyasını temizle (varsa)
-if (fs.existsSync(networkLogPath)) {
-  fs.truncateSync(networkLogPath, 0);
-}
-
-Cypress.on('test:before:run', () => {
-  // Her testten önce log dosyasını temizle
-  fs.truncateSync(networkLogPath, 0);
-});
-
 Cypress.Commands.add('logRequest', (request) => {
-  const logEntry = `${new Date().toISOString()} - ${request.method} ${request.url}\n`;
-  fs.appendFileSync(networkLogPath, logEntry);
+    const logEntry = `${new Date().toISOString()} - ${request.method} ${request.url}\n`;
+    cy.task('logNetworkRequest', logEntry);
 });
 
 Cypress.Commands.add('logResponse', (response) => {
-  const logEntry = `${new Date().toISOString()} - ${response.statusCode} ${response.url}\n`;
-  fs.appendFileSync(networkLogPath, logEntry);
+    const logEntry = `${new Date().toISOString()} - ${response.statusCode} ${response.url}\n`;
+    cy.task('logNetworkResponse', logEntry);
+});
+
+Cypress.on('test:before:run', () => {
+    cy.task('clearNetworkLogs');
 });
