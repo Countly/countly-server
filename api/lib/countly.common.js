@@ -790,7 +790,7 @@ countlyCommon.isValidPeriodParam = function(period) {
             return countlyCommon.isValidPeriodParam(period.period);
         }
         else {
-            return Object.prototype.hasOwnProperty.call(period, 'since')
+            return Object.prototype.hasOwnProperty.call(period, 'since');
         }
     }
 
