@@ -52,28 +52,8 @@
             <h3>{{i18n('push-notification.android-settings')}} </h3>
             <el-button type="danger" @click="onDeleteKey(PlatformEnum.ANDROID)" :disabled="isKeyEmpty(PlatformEnum.ANDROID)">{{i18n('push-notification.delete')}}</el-button>
         </div>     
-        <cly-inline-form-field :label="i18n('push-notification.firebase-key-legacy')">
+        <cly-inline-form-field :label="i18n('push-notification.firebase-key')">
             <el-input :value="viewModel[PlatformEnum.ANDROID].firebaseKey" @input="onInput('firebaseKey',$event,PlatformEnum.ANDROID)" autocomplete="off"></el-input>
-        </cly-inline-form-field>
-
-        <cly-inline-form-field :label="i18n('push-notification.firebase-service-account-json')">
-            <div class="bu-is-flex bu-is-flex-direction-column">
-                <div class="bu-is-flex">
-                    <el-input v-model="uploadedAndroidServiceAccountFilename" style="display:none" autocomplete="off"></el-input>
-                    <el-upload
-                        ref="serviceAccountFileUploader"
-                        action=""
-                        :multiple="false"
-                        :on-change="onServiceAccountFileChange"
-                        :auto-upload="false"
-                        :show-file-list="false"
-                        accept="p8, p12">
-                        <el-button size="small" type="text" class="bu-p-0">{{i18n('push-notification.choose-file')}}</el-button>
-                    </el-upload>
-                    <div class="bu-ml-5">{{uploadedAndroidServiceAccountFilename}}</div>
-                </div>
-                <div v-if="viewModel[PlatformEnum.ANDROID].hasServiceAccountFile"> {{i18n('push-notification.service-account-file-already-uploaded')}} </div>
-            </div>
         </cly-inline-form-field>
 
         <div class="bu-is-flex bu-is-justify-content-space-between bu-mt-5 bu-ml-6 bu-mr-5">

@@ -36,18 +36,6 @@ const widgetProperties = {
         required: false,
         type: "String"
     },
-    consent: {
-        required: false,
-        type: "Boolean"
-    },
-    links: {
-        required: false,
-        type: "Array"
-    },
-    finalText: {
-        required: false,
-        type: "String"
-    },
     popup_comment_callout: {
         required: false,
         type: "String"
@@ -128,10 +116,6 @@ const widgetProperties = {
         required: false,
         type: "Boolean"
     },
-    internalName: {
-        required: false,
-        type: "String"
-    },
     appearance: {
         required: false,
         type: "Object"
@@ -170,19 +154,6 @@ const widgetPropertyPreprocessors = {
         }
         catch (jsonParseError) {
             return null;
-        }
-    },
-    links: function(links) {
-        try {
-            return JSON.parse(links);
-        }
-        catch (jsonParseError) {
-            if (Array.isArray(links)) {
-                return links;
-            }
-            else {
-                return [];
-            }
         }
     },
     ratings_texts: function(ratingsTexts) {
@@ -1070,10 +1041,7 @@ function uploadFile(myfile, id, callback) {
             query.device_id = params.qstring.device_id;
         }
         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-            query.$or = [
-                { comment: {$regex: new RegExp(`.*${params.qstring.sSearch}.*`, 'i')} },
-                { email: {$regex: new RegExp(`.*${params.qstring.sSearch}.*`, 'i')} },
-            ];
+            query.$text = { $search: params.qstring.sSearch };
         }
         if (params.qstring.iSortCol_0) {
             try {
@@ -1455,6 +1423,9 @@ function uploadFile(myfile, id, callback) {
         common.db.collection('feedback' + appId).ensureIndex({
             "ts": 1
         }, function() {});
+        common.db.collection('feedback' + appId).ensureIndex({
+            comment: 'text', email: 'text'
+        }, () => {});
     });
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
@@ -1497,6 +1468,9 @@ function uploadFile(myfile, id, callback) {
             common.db.collection('feedback' + appId).ensureIndex({
                 "ts": 1
             }, function() {});
+            common.db.collection('feedback' + appId).ensureIndex({
+                comment: 'text', email: 'text'
+            }, () => {});
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if (common.drillDb) {
@@ -1516,6 +1490,9 @@ function uploadFile(myfile, id, callback) {
             common.db.collection('feedback' + appId).ensureIndex({
                 "ts": 1
             }, function() {});
+            common.db.collection('feedback' + appId).ensureIndex({
+                comment: 'text', email: 'text'
+            }, () => {});
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if (common.drillDb) {

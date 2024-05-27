@@ -592,6 +592,7 @@ module.exports.estimate = async params => {
         common.returnMessage(params, 400, {errors: ['No such app']}, null, true);
         return true;
     }
+
     for (let p of data.platforms) {
         let id = common.dot(app, `plugins.push.${p}._id`);
         if (!id || id === 'demo') {
@@ -599,23 +600,17 @@ module.exports.estimate = async params => {
         }
     }
 
-    const steps = await new Audience(log, new Message(data), app).steps({la: 1});
-    const cnt = await common.db.collection(`app_users${data.app}`)
-        .aggregate(steps.concat([{$count: 'count'}]))
-        .toArray();
-    const count = cnt[0] && cnt[0].count || 0;
-    const las = await common.db.collection(`app_users${data.app}`)
-        .aggregate(
-            steps.concat([
-                {$project: {_id: '$la'}},
-                {$group: {_id: '$_id', count: {$sum: 1}}}
-            ])
-        )
-        .toArray();
-    const locales = las.reduce((a, b) => {
-        a[b._id || 'default'] = b.count;
-        return a;
-    }, {default: 0});
+    let steps = await new Audience(log, new Message(data), app).steps({la: 1}),
+        cnt = await common.db.collection(`app_users${data.app}`).aggregate(steps.concat([{$count: 'count'}])).toArray(),
+        count = cnt[0] && cnt[0].count || 0,
+        las = await common.db.collection(`app_users${data.app}`).aggregate(steps.concat([
+            {$project: {_id: '$la'}},
+            {$group: {_id: '$_id', count: {$sum: 1}}}
+        ])).toArray(),
+        locales = las.reduce((a, b) => {
+            a[b._id || 'default'] = b.count;
+            return a;
+        }, {default: 0});
 
     common.returnOutput(params, {count, locales});
 };

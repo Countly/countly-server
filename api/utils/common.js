@@ -217,8 +217,7 @@ common.dbUserMap = {
     'last_end_session_timestamp': 'lest',
     'has_ongoing_session': 'hos',
     'previous_events': 'pe',
-    'resolution': 'r',
-    'has_hinge': 'hh',
+    'resolution': 'r'
 };
 
 common.dbUniqueMap = {
@@ -1112,31 +1111,6 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     else {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid JSON for " + arg);
-                            returnObj.result = false;
-                            argState = false;
-                        }
-                        else {
-                            return false;
-                        }
-                    }
-                }
-                else if (Array.isArray(argProperties[arg].type) && argProperties[arg].multiple) { //ALLOW MULTIPLE TYPES FOR ARGUMENT
-                    const argType = typeof args[arg];
-                    const allowedTypes = argProperties[arg].type.map(t => t.toLowerCase());
-
-                    if (!Array.isArray(args[arg]) && !allowedTypes.includes(argType)) {
-                        if (returnErrors) {
-                            returnObj.errors.push("Invalid type for " + arg);
-                            returnObj.result = false;
-                            argState = false;
-                        }
-                        else {
-                            return false;
-                        }
-                    }
-                    else if (Array.isArray(args[arg]) && !allowedTypes.includes('array')) {
-                        if (returnErrors) {
-                            returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
                             argState = false;
                         }
@@ -2657,7 +2631,6 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set.lac = params.time.timestamp;
                 }
                 update.$set.last_sync = Math.round(Date.now() / 1000);
-                update.$set.lu = new Date();
             }
 
             if (!user.sdk) {

@@ -53,13 +53,11 @@
 
     countlyDashboards.service = {
         dashboards: {
-            getAll: function(just_schema = false) {
+            getAll: function() {
                 return CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + "/dashboards/all",
-                    data: {
-                        "just_schema": just_schema,
-                    },
+                    data: {},
                     dataType: "json"
                 }, {disableAutoCatch: true});
             },
@@ -564,10 +562,8 @@
             /*
                 Public actions
             */
-            getAll: function(context, params = null) {
-                var just_schema = params && params.just_schema;
-
-                return countlyDashboards.service.dashboards.getAll(just_schema).then(function(res) {
+            getAll: function(context) {
+                return countlyDashboards.service.dashboards.getAll().then(function(res) {
                     var dashboards = res || [];
                     context.dispatch("setAll", dashboards);
                     return dashboards;

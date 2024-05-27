@@ -105,7 +105,6 @@ countlyVue.container.registerTab("/analytics/technology", {
     name: "resolutions",
     title: CV.i18n('resolutions.title'),
     route: "#/analytics/technology/resolutions",
-    dataTestId: "resolutions",
     component: AppResolutionView
 });
 

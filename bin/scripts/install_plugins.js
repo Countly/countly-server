@@ -7,10 +7,8 @@ if (process.argv && process.argv.length > 2 && process.argv[2] === '--force') {
     process.env.FORCE_NPM_INSTALL = true;
 }
 
-
-manager.connectToAllDatabases().then((dbs) => {
-    manager.loadConfigs(dbs[0], async() => {
-        plugins = manager.getPlugins(true);
+if (plugins.length > 0) {
+    manager.connectToAllDatabases().then(async() => {
         if (!manager.getConfig("api").offline_mode) {
             await asyncjs.eachSeries(plugins, function(plugin, done) {
                 manager.installPlugin(plugin, function() {
@@ -29,5 +27,4 @@ manager.connectToAllDatabases().then((dbs) => {
             process.exit(0);
         });
     });
-});
-
+}

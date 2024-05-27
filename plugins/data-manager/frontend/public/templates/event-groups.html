@@ -10,7 +10,7 @@
         @select="handleCurrentChange"
         :persist-key="eventsGroupTablePersistKey">
         <template v-slot:header-left>
-            <el-select v-model="selectedFilter" test-id="event-group">
+            <el-select v-model="selectedFilter" >
                 <el-option
                     :key="item.value"
                     :value="item.value"

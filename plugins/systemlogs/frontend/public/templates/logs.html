@@ -8,7 +8,7 @@
     </cly-header>
     <cly-main>
 		<cly-date-picker-g class="bu-mb-4"></cly-date-picker-g>
-		<cly-section class="bu-mt-4" data-test-id="table-audit-logs">
+		<cly-section class="bu-mt-4">
 			<cly-datatable-n :data-source="remoteTableDataSource" :export-api="getExportAPI" :default-sort="{prop: 'ts', order: 'descending'}" @row-click="handleTableRowClick" ref="table" :row-class-name="tableRowClassName">
                 <template v-slot="scope">
                     <el-table-column type="expand">
@@ -41,7 +41,6 @@
                 </template>
                 <template v-slot:header-left>
                     <cly-select-x
-                        test-id="action-select"
                         :search-placeholder="i18n('common.search')"
                         placeholder=""
                         v-model="selectAction"
@@ -49,7 +48,6 @@
                         :options="allActions">
                     </cly-select-x>
                     <cly-select-x
-                        test-id="user-select"
                         :search-placeholder="i18n('common.search')"
                         placeholder=""
                         v-model="selectUser"

@@ -220,30 +220,29 @@
                         </div>
                         <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.triggers-description')}}</div>
                         <div class="bu-is-flex bu-is-flex-direction-column">
-                            <el-radio
-                                class="is-autosized is-multiline bu-mt-2 bu-ml-0"
-                                v-model="pushNotificationUnderEdit.automatic.trigger"
+                            <line-radio-button-with-description
                                 :label="TriggerEnum.COHORT_ENTRY"
-                                border>
-                                <div class="cly-vue-push-notification-line-radio-button-with-description__title">{{i18n('push-notification.cohorts-entry')}}</div>
-                                <div class="text-small bu-has-text-grey bu-mt-1">{{i18n('push-notification.cohorts-entry-description')}}</div>
-                            </el-radio>
-                            <el-radio
-                                class="is-autosized is-multiline bu-mt-2 bu-ml-0"
                                 v-model="pushNotificationUnderEdit.automatic.trigger"
+                                :title="i18n('push-notification.cohorts-entry')"
+                                :description="i18n('push-notification.cohorts-entry-description')"
+                                v-if="pushNotificationUnderEdit.isCohorts"
+                                border>
+                            </line-radio-button-with-description>
+                            <line-radio-button-with-description
                                 :label="TriggerEnum.COHORT_EXIT"
-                                border>
-                                <div class="cly-vue-push-notification-line-radio-button-with-description__title">{{i18n('push-notification.cohorts-exit')}}</div>
-                                <div class="text-small bu-has-text-grey bu-mt-1">{{i18n('push-notification.cohorts-exit-description')}}</div>
-                            </el-radio>
-                            <el-radio
-                                class="is-autosized is-multiline bu-mt-2 bu-ml-0"
                                 v-model="pushNotificationUnderEdit.automatic.trigger"
-                                :label="TriggerEnum.EVENT"
+                                :title="i18n('push-notification.cohorts-exit')"
+                                :description="i18n('push-notification.cohorts-exit-description')"
+                                v-if="pushNotificationUnderEdit.isCohorts"
                                 border>
-                                <div class="cly-vue-push-notification-line-radio-button-with-description__title">{{i18n('push-notification.performed-events')}}</div>
-                                <div class="text-small bu-has-text-grey bu-mt-1">{{i18n('push-notification.performed-events-description')}}</div>
-                            </el-radio>
+                            </line-radio-button-with-description>
+                            <line-radio-button-with-description
+                                :label="TriggerEnum.EVENT"
+                                v-model="pushNotificationUnderEdit.automatic.trigger"
+                                :title="i18n('push-notification.performed-events')"
+                                :description="i18n('push-notification.performed-events-description')"
+                                border>
+                            </line-radio-button-with-description>
                         </div>
                     </div>
                     <template v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT">

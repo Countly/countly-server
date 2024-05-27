@@ -1,3 +1,30 @@
+## Version 23.11.22
+Features:
+- [views] Added deselect All button
+  
+Fixes:
+- [push] Fix for p12 file not being parsed correctly
+
+Enterprise Features:
+ - [ab-testing] Improved query to match experiments to users
+ - [cohorts] Optimization to not calculate full period buckets when loading cohort meta data. Speeds up meta-loading and reduces memory usage.
+   
+Enterprise Fixes:
+- [cohorts] Correctly preprocess drill query for cohort values.
+- [drill] Correct time interval for drill meta job.
+- [drill] Select users correctly when navigating from drill to user profiles
+- [retention] UI fixes
+
+## Version 23.11.21
+Fixes:
+- [sdks] Fix negative request queue
+- [server-stats] Fix for duplicated data points due to consolidation
+- [dbviewer] Cache beautified collection names to speed up loading dbviewer
+
+Enterprise Fixes:
+- [license-manager] Fix for multiple expire-today emails
+- [formulas] Fix for for formula percent not showing decimals
+
 ## Version 23.11.20
 Fixes:
 - [core] Nullcheck in data exports

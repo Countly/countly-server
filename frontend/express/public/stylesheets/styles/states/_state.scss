@@ -227,8 +227,4 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     vertical-align: middle;
-    &::after {
-        content: "";
-        display: block;
-      }
 }

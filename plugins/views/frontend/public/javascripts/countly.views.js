@@ -211,8 +211,7 @@
                 tableModes: [
                     {"key": "all", "label": CV.i18n('common.all')},
                     {"key": "selected", "label": CV.i18n('views.selected-views')}
-                ],
-                isSpecialPeriod: countlyCommon.periodObj.isSpecialPeriod,
+                ]
             };
         },
         mounted: function() {
@@ -297,6 +296,43 @@
                     }
                 });
             },
+            deselectAll: function() {
+                var self = this;
+                var selected = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
+
+                var highestTotalUserSelected = {total: 0, _id: null};
+                this.$refs.viewsTable.sourceRows.forEach(row => {
+                    if (row.selected && row.u > highestTotalUserSelected.total) {
+                        highestTotalUserSelected.total = row.u;
+                        highestTotalUserSelected._id = row._id;
+                    }
+                });
+                selected.splice(0, selected.length);
+                selected.push(highestTotalUserSelected._id);
+
+                var persistData = {};
+                persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = selected;
+                countlyCommon.setPersistentSettings(persistData);
+
+                if (this.$refs.viewsTable) {
+                    for (var k = 0; k < this.$refs.viewsTable.sourceRows.length; k++) {
+                        if (selected.indexOf(this.$refs.viewsTable.sourceRows[k]._id) === -1) {
+                            this.$refs.viewsTable.sourceRows[k].selected = false;
+                        }
+                    }
+                }
+
+                this.persistentSettings = selected;
+                this.$store.dispatch('countlyViews/onSetSelectedViews', selected).then(function() {
+                    self.isGraphLoading = true;
+                    self.$store.dispatch('countlyViews/fetchData').then(function() {
+                        self.calculateGraphSeries();
+                        self.isGraphLoading = false;
+                    });
+                });
+
+                this.refresh();
+            },
             handleSelectionChange: function(selectedRows) {
                 var self = this;
                 var selected = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
@@ -326,6 +362,7 @@
                         }
                     }
                 }
+
                 this.persistentSettings = selected;
                 this.$store.dispatch('countlyViews/onSetSelectedViews', selected).then(function() {
                     self.isGraphLoading = true;
@@ -478,9 +515,6 @@
                     return countlyCommon.formatSecond(value);
                 }
                 return countlyCommon.getShortNumber(value);
-            },
-            dateChanged: function() {
-                this.isSpecialPeriod = countlyCommon.periodObj.isSpecialPeriod;
             }
 
 
@@ -499,8 +533,7 @@
                         key: "segment",
                         items: this.chooseSegment,
                         default: "all",
-                        searchable: true,
-                        disabled: this.omittedSegments
+                        searchable: true
                     },
                     {
                         label: CV.i18n('views.segment-value'),
@@ -577,23 +610,7 @@
             },
             isLoading: function() {
                 return this.$store.state.countlyViews.isLoading;
-            },
-            omittedSegments: function() {
-                var omittedSegmentsObj = {
-                    label: CV.i18n("events.all.omitted.segments"),
-                    options: []
-                };
-                var omittedSegments = this.$store.getters['countlyViews/getOmittedSegments'];
-                if (omittedSegments) {
-                    omittedSegmentsObj.options = omittedSegments.map(function(item) {
-                        return {
-                            "label": item,
-                            "value": item
-                        };
-                    });
-                }
-                return omittedSegmentsObj;
-            },
+            }
         },
         mixins: [
             countlyVue.container.dataMixin({
@@ -751,7 +768,6 @@
         permission: FEATURE_NAME,
         title: CV.i18n('views-per-session.title'),
         route: "#/analytics/sessions/views-per-session",
-        dataTestId: "session-views-per-session",
         component: ViewsPerSessionView,
         vuex: [{
             clyModel: countlyViewsPerSession

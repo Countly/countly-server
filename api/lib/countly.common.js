@@ -384,16 +384,10 @@ function getPeriodObject(prmPeriod, bucket) {
 
     var period = prmPeriod || _period;
 
-    var excludeCurrentDay = period.excludeCurrentDay || false;
-
-    if (period.period) {
-        period = period.period;
-    }
-
-    endTimestamp = excludeCurrentDay ? _currMoment.clone().subtract(1, 'days').endOf('day') : _currMoment.clone().endOf('day');
+    endTimestamp = _currMoment.clone().endOf("day");
 
     if (period.since) {
-        period = [period.since, endTimestamp.clone().valueOf()];
+        period = [period.since, Date.now()];
     }
 
     if (period && typeof period === 'string' && period.indexOf(",") !== -1) {
@@ -426,12 +420,12 @@ function getPeriodObject(prmPeriod, bucket) {
             toDate = moment(period[1], ["DD-MM-YYYY HH:mm:ss", "DD-MM-YYYY"]);
         }
 
+        startTimestamp = fromDate.clone().startOf("day");
+        endTimestamp = toDate.clone().endOf("day");
 
         fromDate.tz(_appTimezone);
         toDate.tz(_appTimezone);
 
-        startTimestamp = fromDate.clone().startOf("day");
-        endTimestamp = toDate.clone().endOf("day");
         if (fromDate.valueOf() === toDate.valueOf()) { //single day
             cycleDuration = moment.duration(1, "day");
             Object.assign(periodObject, {
@@ -522,24 +516,6 @@ function getPeriodObject(prmPeriod, bucket) {
             periodMin: 0,
             activePeriod: yesterday.format("YYYY.M.D"),
             previousPeriod: yesterday.clone().subtract(1, "day").format("YYYY.M.D")
-        });
-    }
-    else if (/([1-9][0-9]*)minutes/.test(period)) {
-        let nMinutes = parseInt(/([1-9][0-9]*)minutes/.exec(period)[1]);
-        startTimestamp = _currMoment.clone().startOf("minute").subtract(nMinutes - 1, "minutes");
-        cycleDuration = moment.duration(nMinutes, "minutes");
-        Object.assign(periodObject, {
-            dateString: "HH:mm",
-            isSpecialPeriod: true
-        });
-    }
-    else if (/([1-9][0-9]*)hours/.test(period)) {
-        let nHours = parseInt(/([1-9][0-9]*)hours/.exec(period)[1]);
-        startTimestamp = _currMoment.clone().startOf("hour").subtract(nHours - 1, "hours");
-        cycleDuration = moment.duration(nHours, "hours");
-        Object.assign(periodObject, {
-            dateString: "HH:mm",
-            isSpecialPeriod: true
         });
     }
     else if (/([1-9][0-9]*)days/.test(period)) {
@@ -804,6 +780,7 @@ countlyCommon.isValidPeriodParam = function(period) {
         /([1-9][0-9]*)months/.test(period) ||
         /([1-9][0-9]*)years/.test(period);
 };
+
 
 // Public Properties
 /**

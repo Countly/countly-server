@@ -69,8 +69,8 @@
                         readonly="readonly" \
                         v-model="description"\
                         :placeholder="placeholder">\
-                        <template v-slot:prefix>\
-                            <slot name="prefix"></slot>\
+                        <template v-slot:prefix="scope">\
+                            <slot name="prefix" v-bind="scope"></slot>\
                         </template>\
                         <template slot="suffix" v-if="arrow">\
                             <i class="el-select__caret" :class="[iconClass]"></i>\
@@ -107,14 +107,6 @@
             },
             popClass: {
                 type: String
-            },
-            id: {
-                type: String
-            },
-            testId: {
-                type: String,
-                default: "cly-dropdown-default-test-id",
-                required: false
             }
         },
         inject: {
@@ -140,7 +132,7 @@
             };
         },
         template: '<div class="cly-vue-dropdown el-select"\
-                    v-click-outside="handleOutsideClick" :data-test-id="testId + \'-dropdown-el-select\'">\
+                    v-click-outside="handleOutsideClick">\
                     <trigger-proxy\
                         ref="reference"\
                         @click.native.stop="handleToggle"\
@@ -152,7 +144,6 @@
                         </slot>\
                     </trigger-proxy>\
                     <el-select-dropdown\
-                        :id="id"\
                         ref="popper"\
                         :width="width"\
                         :append-to-body="popperAppendToBody"\
@@ -364,9 +355,9 @@
                                         <el-button class="cly-multi-select__reset" :data-test-id="testId + \'-reset\'" @click="reset" type="text">{{resetLabel}}</el-button>\
                                     </div>\
                                     <table v-for="field in fields" :key="field.key">\
-                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field"><span :data-test-id="testId + \'-\' + field.label.toString().replaceAll(\' \', \'-\').toLowerCase() + \'-label\'">{{field.label}}</span></tr>\
+                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field"><span :data-test-id="testId + \'-\' + field.label.toString().replace(\' \', \'-\').toLowerCase() + \'-label\'">{{field.label}}</span></tr>\
                                         <tr v-if="\'items\' in field && showThis(field.key)">\
-                                            <cly-select-x :test-id="testId + \'-\' + field.label.toString().replaceAll(\' \', \'-\').toLowerCase() + \'-input\'" :options="field.items" :disabledOptions="field.disabled" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
+                                            <cly-select-x :test-id="testId + \'-\' + field.label.toString().replace(\' \', \'-\').toLowerCase() + \'-input\'" :options="field.items" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
                                             </cly-select-x>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\

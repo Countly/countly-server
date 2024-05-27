@@ -58,16 +58,6 @@ class InternalEventTrigger {
         }
         if (eventType === '/master') {
             this._rules = await common.db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray();
-            for (var z = 0; z < this._rules.length; z++) {
-                if (this._rules[z].trigger && this._rules[z].trigger.type === "InternalEventTrigger" && this._rules[z].trigger.configuration && this._rules[z].trigger.configuration.eventType) {
-                    if (this._rules[z].trigger.configuration.eventType === "/profile-group/enter") {
-                        this._rules[z].trigger.configuration.eventType = "/cohort/enter";
-                    }
-                    else if (this._rules[z].trigger.configuration.eventType === "/profile-group/exit") {
-                        this._rules[z].trigger.configuration.eventType = "/cohort/exit";
-                    }
-                }
-            }
         }
         rules = this._rules.filter((r) => {
             return r.trigger.configuration.eventType === eventType;
@@ -212,14 +202,6 @@ class InternalEventTrigger {
                 }
                 break;
             }
-            case "/alerts/trigger": {
-                this.pipeline({
-                    params: ob,
-                    rule: rule,
-                    eventType,
-                });
-                break;
-            }
             }
         });
     }
@@ -254,5 +236,4 @@ const InternalEvents = [
     "/i/app_users/update",
     "/i/app_users/delete",
     "/hooks/trigger",
-    "/alerts/trigger",
 ];

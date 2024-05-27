@@ -2268,10 +2268,7 @@
     initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.ANDROID] = {
         _id: "",
         firebaseKey: "",
-        serviceAccountFile: "",
-        type: "fcm",
-        hasServiceAccountFile: false,
-        hasUploadedServiceAccountFile: false,
+        type: "fcm"
     };
     initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.HUAWEI] = {
         _id: "",
@@ -2281,7 +2278,6 @@
     };
 
     var keyFileReader = new FileReader();
-    var serviceAccountFileReader = new FileReader();
 
     var initialTestUsersRows = {};
     initialTestUsersRows[countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID] = [];
@@ -2300,9 +2296,8 @@
                 viewModel: JSON.parse(JSON.stringify(initialAppLevelConfig)),
                 modelUnderEdit: Object.assign({}, { rate: "", period: ""}),
                 uploadedIOSKeyFilename: '',
-                uploadedAndroidServiceAccountFilename: '',
-                isIOSConfigTouched: false,
                 isHuaweiConfigTouched: false,
+                isIOSConfigTouched: false,
                 AddTestUserDefinitionTypeEnum: countlyPushNotification.service.AddTestUserDefinitionTypeEnum,
                 userIdOptions: [],
                 cohortOptions: [],
@@ -2355,7 +2350,6 @@
                 this.isHuaweiConfigTouched = false;
                 this.isIOSConfigTouched = false;
                 this.uploadedIOSKeyFilename = '';
-                this.uploadedAndroidServiceAccountFilename = '';
                 this.cohortOptions = [];
             },
             onIOSAuthTypeChange: function(value) {
@@ -2387,18 +2381,9 @@
                 this.modelUnderEdit[this.PlatformEnum.IOS].hasUploadedKeyFile = true;
                 this.isIOSConfigTouched = true;
             },
-            setServiceAccountFile: function(dataUrlFile) {
-                this.initializeModelPlatformIfNotFound(this.PlatformEnum.ANDROID);
-                this.modelUnderEdit[this.PlatformEnum.ANDROID].serviceAccountFile = dataUrlFile;
-                this.modelUnderEdit[this.PlatformEnum.ANDROID].hasUploadedServiceAccountFile = true;
-            },
             onKeyFileChange: function(file) {
                 this.uploadedIOSKeyFilename = file.name;
                 keyFileReader.readAsDataURL(file.raw);
-            },
-            onServiceAccountFileChange: function(file) {
-                this.uploadedAndroidServiceAccountFilename = file.name;
-                serviceAccountFileReader.readAsDataURL(file.raw);
             },
             resetIOSViewModelPlatform: function() {
                 var platform = this.PlatformEnum.IOS;
@@ -2460,7 +2445,7 @@
             },
             isKeyEmpty: function(platform) {
                 if (platform === this.PlatformEnum.ANDROID) {
-                    return !this.viewModel[platform].firebaseKey && !this.viewModel[platform].serviceAccountFile;
+                    return !this.viewModel[platform].firebaseKey;
                 }
                 if (platform === this.PlatformEnum.IOS) {
                     if (this.iosAuthConfigType === countlyPushNotification.service.IOSAuthConfigTypeEnum.P8) {
@@ -2549,16 +2534,6 @@
                 else {
                     this.dispatchAppLevelConfigChangeEvent('p12KeyFile', this.PlatformEnum.IOS);
                 }
-            },
-            addServiceAccountFileReaderLoadListener: function(callback) {
-                serviceAccountFileReader.addEventListener("load", callback);
-            },
-            removeServiceAccountFileReaderLoadListener: function(callback) {
-                serviceAccountFileReader.removeEventListener("load", callback);
-            },
-            onServiceAccountFileReady: function() {
-                this.setServiceAccountFile(serviceAccountFileReader.result);
-                this.dispatchAppLevelConfigChangeEvent('serviceAccountFile', this.PlatformEnum.ANDROID);
             },
             reconcilateViewModel: function(newModel) {
                 var self = this;
@@ -2739,13 +2714,11 @@
         },
         mounted: function() {
             this.addKeyFileReaderLoadListener(this.onKeyFileReady);
-            this.addServiceAccountFileReaderLoadListener(this.onServiceAccountFileReady);
             this.addDiscardEventListener(this.onDiscard);
             this.reconcilate();
         },
         beforeDestroy: function() {
             this.removeKeyFileReaderLoadListener(this.onKeyFileReady);
-            this.removeServiceAccountFileReaderLoadListener(this.onServiceAccountFileReady);
         }
     });
 

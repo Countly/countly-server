@@ -3,14 +3,6 @@
 }
 
 .ratings-popup .modal-content {
-  .hidden {
-    display: none;
-}
-
-.disabled {
-    cursor: auto !important;
-    opacity: 0.5;
-}
   border-radius: 13px;
   background-color: white;
   padding: 0px 25px 40px 25px;
@@ -49,21 +41,6 @@
 .ratings-popup .comment-area {
   width: 80%;
   font-size: 14px;
-}
-
-.ratings-popup .consent {
-    a {
-        color: #0166d6;
-        text-decoration: underline;
-    }
-
-    input[type=checkbox] {
-        margin-right: 5px;
-    }
-
-    font-size: 14px;
-    color: #424243;
-    font-weight: 400;
 }
 
 .ratings-popup #comment-section, .ratings-popup #contact-section {
