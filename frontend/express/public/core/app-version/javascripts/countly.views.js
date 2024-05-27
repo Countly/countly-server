@@ -94,7 +94,6 @@ countlyVue.container.registerTab("/analytics/technology", {
     permission: "core",
     title: CV.i18n('app-versions.title'),
     route: "#/analytics/technology/versions",
-    dataTestId: "technology-versions",
     component: AppVersionView
 });
 

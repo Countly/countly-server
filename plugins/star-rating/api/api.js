@@ -36,18 +36,6 @@ const widgetProperties = {
         required: false,
         type: "String"
     },
-    consent: {
-        required: false,
-        type: "Boolean"
-    },
-    links: {
-        required: false,
-        type: "Array"
-    },
-    finalText: {
-        required: false,
-        type: "String"
-    },
     popup_comment_callout: {
         required: false,
         type: "String"
@@ -128,10 +116,6 @@ const widgetProperties = {
         required: false,
         type: "Boolean"
     },
-    internalName: {
-        required: false,
-        type: "String"
-    },
     appearance: {
         required: false,
         type: "Object"
@@ -170,19 +154,6 @@ const widgetPropertyPreprocessors = {
         }
         catch (jsonParseError) {
             return null;
-        }
-    },
-    links: function(links) {
-        try {
-            return JSON.parse(links);
-        }
-        catch (jsonParseError) {
-            if (Array.isArray(links)) {
-                return links;
-            }
-            else {
-                return [];
-            }
         }
     },
     ratings_texts: function(ratingsTexts) {

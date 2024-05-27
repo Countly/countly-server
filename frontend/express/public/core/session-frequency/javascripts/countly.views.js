@@ -64,7 +64,6 @@ countlyVue.container.registerTab("/analytics/sessions", {
     permission: "core",
     title: CV.i18n('session-frequency.title'),
     route: "#/analytics/sessions/frequency",
-    dataTestId: "session-frequency",
     component: SessionFrequencyView,
     vuex: [{
         clyModel: countlySessionFrequency

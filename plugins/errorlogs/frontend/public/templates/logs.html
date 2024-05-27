@@ -12,14 +12,14 @@
                 </el-select>
             </div>
             <div class="bu-p-5">
-                <el-link v-on:click="clear" class="bu-is-underlined bu-is-pulled-right bu-ml-4" data-test-id="clear-log-button">
+                <el-link v-on:click="clear" class="bu-is-underlined bu-is-pulled-right bu-ml-4">
                     {{i18n('errorlogs.clear')}}
                 </el-link>
                 <a :href="downloadLink" target="_blank">
-                    <el-link class="bu-is-underlined bu-is-pulled-right" data-test-id="download-link-button">{{i18n('errorlogs.download')}}</el-link>
+                    <el-link class="bu-is-underlined bu-is-pulled-right">{{i18n('errorlogs.download')}}</el-link>
                 </a>
             </div>
-            <div data-test-id="table-logs" class="routename-errorlogs__scroll-down">
+            <div class="routename-errorlogs__scroll-down">
                 <pre class="bu-px-5 bu-pb-4">{{cachedLog.data}}</pre>
             </div>
 

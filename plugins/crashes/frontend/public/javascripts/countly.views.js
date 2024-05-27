@@ -292,17 +292,11 @@
                 };
 
                 var self = this;
-                var getAppVersions = function(query) {
-                    return new Promise(function(resolve) {
-                        // Get app versions from vuex because drill meta is not always up to date
-                        resolve(self.$store.getters["countlyCrashes/overview/appVersions"].reduce(function(acc, version) {
-                            var properVersion = version.replace(/:/g, ".");
-                            if (!query || properVersion.indexOf(query) > -1) {
-                                acc.push({ name: properVersion, value: properVersion });
-                            }
-
-                            return acc;
-                        }, []));
+                var getAppVersions = function() {
+                    // Get app versions from vuex because drill meta is not always up to date
+                    return self.$store.getters["countlyCrashes/overview/appVersions"].map(function(version) {
+                        var properVersion = version.replace(/:/g, ".");
+                        return { name: properVersion, value: properVersion };
                     });
                 };
 
@@ -310,18 +304,18 @@
 
                 if (window.countlyQueryBuilder) {
                     filterProperties.push({
-                        id: "app_version_list",
+                        id: "app_version",
                         name: "App Version",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
-                        searchRemoteList: getAppVersions,
+                        getValueList: getAppVersions
                     });
                     filterProperties.push({
                         id: "latest_version",
                         name: "Latest App Version",
-                        type: countlyQueryBuilder.PropertyType.LIST,
+                        type: countlyQueryBuilder.PropertyType.PREDEFINED,
                         group: "Detail",
-                        searchRemoteList: getAppVersions,
+                        getValueList: getAppVersions
                     });
                     filterProperties.push({
                         id: "opengl",
@@ -419,7 +413,7 @@
                     new countlyQueryBuilder.RowRule({
                         name: "cly.crashes.no-regex",
                         selector: function(row) {
-                            return row.property && !["app_version_list", "error", "latest_version"].includes(row.property.id);
+                            return row.property && row.property.id !== "error";
                         },
                         actions: [new countlyQueryBuilder.RowAction({
                             id: "disallowOperator",
@@ -536,17 +530,6 @@
                 var appType = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type;
                 return appType === 'mobile' ? CV.i18n('crashes.crash-group') : CV.i18n('crashes.error');
             },
-            singleAppVersionFilter: function() {
-                var currentFilter = this.$store.getters["countlyCrashes/overview/crashgroupsFilter"];
-
-                if (currentFilter.query) {
-                    if (currentFilter.query.app_version_list && currentFilter.query.app_version_list.$in && Array.isArray(currentFilter.query.app_version_list.$in) && currentFilter.query.app_version_list.$in.length === 1) {
-                        return currentFilter.query.app_version_list.$in[0];
-                    }
-                }
-
-                return '';
-            },
             isLoading: function() {
                 return this.$store.getters["countlyCrashes/overview/isLoading"];
             },
@@ -634,15 +617,6 @@
                 }
 
                 return item1.latest_version.localeCompare(item2.latest_version);
-            },
-            occurrenceSort: function(item1, item2) {
-                if (this.singleAppVersionFilter.length) {
-                    var appVersion = this.singleAppVersionFilter.replace(/\./g, ':');
-
-                    return item1.app_version[appVersion] - item2.app_version[appVersion];
-                }
-
-                return item1.reports - item2.reports;
             },
         },
         beforeCreate: function() {
@@ -1304,8 +1278,7 @@
                         "value": value,
                         "info": getUs[k].info,
                         "trend": data[getUs[k].prop].trend,
-                        "change": data[getUs[k].prop].change,
-                        "isEstimate": data[getUs[k].prop].isEstimate || false,
+                        "change": data[getUs[k].prop].change
                     });
                 }
 

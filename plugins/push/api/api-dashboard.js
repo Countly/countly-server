@@ -364,13 +364,6 @@ module.exports.dashboard = async function(params) {
             }
         }
 
-        // check if fcm configured for legacy api
-        let legacyFcm = false;
-        let cred = await common.db.collection("creds").findOne({ type: "fcm" });
-        if (cred && cred.key && !cred.serviceAccountFile) {
-            legacyFcm = true;
-        }
-
         common.returnOutput(params, {
             sent: events[0].m,
             sent_automated: events[0].a,
@@ -381,8 +374,7 @@ module.exports.dashboard = async function(params) {
             enabled,
             users: results[2] ? results[2] : 0,
             platforms: pltfms,
-            tokens,
-            legacyFcm
+            tokens
         });
     }
     catch (error) {

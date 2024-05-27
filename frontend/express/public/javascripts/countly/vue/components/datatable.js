@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge, Sortable */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge */
 
 (function(countlyVue, $) {
 
@@ -740,7 +740,7 @@
                             else {
                                 property = rows[r][columns[c].property];
                             }
-                            item[columns[c].label.toUpperCase()] = countlyCommon.unescapeHtml(property);
+                            item[columns[c].label.toUpperCase()] = property;
                         }
                         table.push(item);
                     }
@@ -943,10 +943,6 @@
                 type: String,
                 default: 'cly-datatable-n-test-id',
                 required: false
-            },
-            sortable: {
-                type: Boolean,
-                default: false
             }
         },
         data: function() {
@@ -1015,23 +1011,7 @@
                 };
             }
         },
-        template: CV.T('/javascripts/countly/vue/templates/datatable.html'),
-        mounted: function() {
-            var self = this;
-            if (this.sortable) {
-                const table = document.querySelector('.el-table__body-wrapper tbody');
-                Sortable.create(table, {
-                    animation: 150,
-                    handle: '.el-table__row',
-                    onStart({oldIndex}) {
-                        self.$emit('drag-start', oldIndex);
-                    },
-                    onEnd({ newIndex, oldIndex }) {
-                        self.$emit('drag-end', { newIndex, oldIndex });
-                    }
-                });
-            }
-        }
+        template: CV.T('/javascripts/countly/vue/templates/datatable.html')
     }));
 
     Vue.component("cly-datatable-undo-row", countlyBaseComponent.extend({

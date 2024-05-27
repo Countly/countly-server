@@ -31,18 +31,13 @@
         "status",
         "logo",
         "logoType",
-        "globalLogo",
-        "internalName",
-        "consent",
-        "links",
-        "finalText"
+        "globalLogo"
     ];
 
     var widgetJSONProperties = [
         "targeting",
         "ratings_texts",
-        "target_pages",
-        "links"
+        "target_pages"
     ];
 
     starRatingPlugin.extractWidgetProperties = function(props) {

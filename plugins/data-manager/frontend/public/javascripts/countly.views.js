@@ -1,4 +1,4 @@
-/*global app, countlyAuth, countlyVue, CV, countlyDataManager, countlyCommon, countlyEvent, moment, countlyGlobal, CountlyHelpers, _ */
+/*global app, countlyAuth, countlyVue, CV, countlyDataManager, countlyCommon, moment, countlyGlobal, CountlyHelpers, _ */
 
 (function() {
 
@@ -698,9 +698,7 @@
                 rows.forEach(function(row) {
                     events.push(row.key);
                 });
-                this.$store.dispatch('countlyDataManager/changeVisibility', { events: events, isVisible: isVisible }).then(function() {
-                    countlyEvent.refreshEvents();
-                });
+                this.$store.dispatch('countlyDataManager/changeVisibility', { events: events, isVisible: isVisible });
             },
             handleChangeStatus: function(command, rows) {
                 var events = [];
@@ -776,9 +774,7 @@
                     var delKey = row.key || row.e || row.name;
                     events.push(delKey);
                 });
-                this.$store.dispatch('countlyDataManager/deleteEvents', events).then(function() {
-                    countlyEvent.refreshEvents();
-                });
+                this.$store.dispatch('countlyDataManager/deleteEvents', events);
                 this.deleteQueue = null;
                 this.showDeleteDialog = false;
             },
@@ -1297,9 +1293,7 @@
                 this.showDeleteDialog = false;
             },
             submitDeleteForm: function() {
-                this.$store.dispatch('countlyDataManager/deleteEvents', [this.deleteElement]).then(function() {
-                    countlyEvent.refreshEvents();
-                });
+                this.$store.dispatch('countlyDataManager/deleteEvents', [this.deleteElement]);
                 this.showDeleteDialog = false;
                 app.navigate("#/manage/data-manager/events/events", true);
             },

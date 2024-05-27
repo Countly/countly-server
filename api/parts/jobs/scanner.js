@@ -13,7 +13,7 @@ module.exports = (db, filesObj, classesObj) => {
             });
         });
 
-        var jobs = manager.getPlugins(true);
+        var jobs = manager.getPlugins();
         if (!jobs) {
             log.e('Won\'t start jobs because no plugins.json exist');
             return reject('Won\'t start jobs because no plugins.json exist');

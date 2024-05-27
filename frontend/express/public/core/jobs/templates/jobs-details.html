@@ -34,7 +34,7 @@
                     </el-table-column>    
                     <el-table-column prop="dataAsString" :label="i18n('jobs.job-data')">
                         <template slot-scope="scope">
-                            <pre class="has-ellipsis" v-tooltip="scope.row.dataAsString">{{scope.row.dataAsString}}</pre>
+                            <pre>{{scope.row.dataAsString}}</pre>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="duration" :label="i18n('jobs.run-duration')">

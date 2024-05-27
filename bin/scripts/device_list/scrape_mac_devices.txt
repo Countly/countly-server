@@ -5,8 +5,6 @@ Mac Book Pro (https://support.apple.com/en-us/HT201300)
 Mac Book (https://support.apple.com/en-us/HT201608)
 Mac Book Air (https://support.apple.com/en-us/HT201862)
 Mac mini (https://support.apple.com/en-us/HT201894)
-Mac Studio (https://support.apple.com/en-us/102231)
-Apple TV (https://support.apple.com/en-us/101605)
 
 Load script:
 

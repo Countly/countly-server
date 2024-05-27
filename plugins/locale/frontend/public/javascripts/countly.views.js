@@ -114,7 +114,6 @@
         title: CV.i18n('sidebar.analytics.languages'),
         route: "#/analytics/geo/languages",
         component: LanguageView,
-        dataTestId: "languages",
         vuex: [{
             clyModel: countlyLanguage
         }]

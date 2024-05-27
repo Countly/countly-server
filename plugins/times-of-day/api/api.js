@@ -20,6 +20,7 @@ const FEATURE_NAME = 'times_of_day';
         }
 
         var appId = params.app_id;
+
         var events = [];
 
         if (!appId) {
@@ -46,7 +47,7 @@ const FEATURE_NAME = 'times_of_day';
 
         if (hasSession && params.qstring.hour && params.qstring.dow) {
             var sessionDate = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-            let id = appId + "_" + "[CLY]_session" + "_" + sessionDate.monthly.replace('.', ':');
+            let id = "[CLY]_session" + "_" + sessionDate.monthly.replace('.', ':');
 
             criteria = {
                 "_id": id
@@ -86,7 +87,7 @@ const FEATURE_NAME = 'times_of_day';
                 var timeStamp = events[i].timestamp || params.qstring.timestamp;
                 var eventDate = common.initTimeObj(params.appTimezone, timeStamp);
 
-                let id = appId + "_" + events[i].key + "_" + eventDate.monthly.replace('.', ':');
+                let id = events[i].key + "_" + eventDate.monthly.replace('.', ':');
 
                 criteria = {
                     "_id": id
@@ -127,7 +128,7 @@ const FEATURE_NAME = 'times_of_day';
             }
         }
 
-        var collectionName = "times_of_day";
+        var collectionName = "timesofday" + appId;
 
 
         if (query) {
@@ -178,7 +179,7 @@ const FEATURE_NAME = 'times_of_day';
         var params = ob.params;
 
         if (params.qstring.method === "times-of-day") {
-            // var appId = params.qstring.app_id;  can be deleted
+            var appId = params.qstring.app_id;
             var todType = params.qstring.tod_type;
 
             var criteria = {
@@ -189,7 +190,7 @@ const FEATURE_NAME = 'times_of_day';
                 criteria.m = { $in: params.qstring.date_range.split(',') };
             }
 
-            var collectionName = "times_of_day";
+            var collectionName = "timesofday" + appId;
 
             validateRead(params, FEATURE_NAME, function() {
                 fetchTodData(collectionName, criteria, function(err, result) {
@@ -239,18 +240,15 @@ const FEATURE_NAME = 'times_of_day';
     }
 
     plugins.register("/i/apps/clear_all", function(ob) {
-        var appId = ob.appId;
-        common.db.collection('times_of_day').deleteMany({"_id": { "$regex": appId + ".*" }}, function() {});
+        common.db.collection("timesofday" + ob.appId).drop(function() { });
     });
 
     plugins.register("/i/apps/reset", function(ob) {
-        var appId = ob.appId;
-        common.db.collection('times_of_day').deleteMany({"_id": { "$regex": appId + ".*" }}, function() {});
+        common.db.collection("timesofday" + ob.appId).drop(function() { });
     });
 
     plugins.register("/i/apps/delete", function(ob) {
-        var appId = ob.appId;
-        common.db.collection('times_of_day').deleteMany({"_id": { "$regex": appId + ".*" }}, function() {});
+        common.db.collection("timesofday" + ob.appId).drop(function() { });
     });
 
     plugins.register("/dashboard/data", function(ob) {
@@ -261,7 +259,7 @@ const FEATURE_NAME = 'times_of_day';
                 var collectionName = "";
                 var criteria = {};
 
-                // var appId = data.apps[0];  can be deleted 
+                var appId = data.apps[0];
                 var dataType = data.data_type;
                 let period = data.period;
 
@@ -283,7 +281,7 @@ const FEATURE_NAME = 'times_of_day';
                     criteria.m = { $in: periodRange.split(',') };
                 }
 
-                collectionName = "times_of_day";
+                collectionName = "timesofday" + appId;
                 fetchTodData(collectionName, criteria, function(err, result) {
                     data.dashData = {
                         data: result || []

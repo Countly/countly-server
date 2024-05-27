@@ -87,17 +87,6 @@ class Hooks {
         db && db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray(function(err, result) {
             log.d("Fetch rules:", result, err, process.pid);
             if (result) {
-                //change profile group triggers to cohorts triggers. There are no events which starts with /profile-group, in reality it is just cohort events 
-                for (var z = 0; z < result.length; z++) {
-                    if (result[z].trigger && result[z].trigger.type === "InternalEventTrigger" && result[z].trigger.configuration && result[z].trigger.configuration.eventType) {
-                        if (result[z].trigger.configuration.eventType === "/profile-group/enter") {
-                            result[z].trigger.configuration.eventType = "/cohort/enter";
-                        }
-                        else if (result[z].trigger.configuration.eventType === "/profile-group/exit") {
-                            result[z].trigger.configuration.eventType = "/cohort/exit";
-                        }
-                    }
-                }
                 self._cachedRules = result;
                 self.syncRulesWithTrigger();
             }

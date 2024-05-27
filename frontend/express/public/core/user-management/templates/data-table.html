@@ -76,7 +76,7 @@
             sortable="true"
             :label="i18n('management-users.role')">
             <template v-slot="rowScope">
-              <span class="text-medium" :data-test-id="'users-data-table-user-role-' + rowScope.$index">{{rowScope.row.dispRole}}</span>
+              <span class="text-medium">{{rowScope.row.dispRole}}</span>
             </template>
           </el-table-column>
           <el-table-column

@@ -688,7 +688,7 @@
 
     var NotificationToastsView = {
         template: '<div class="notification-toasts"> \
-                        <cly-notification v-for="(toast) in notificationToasts" :key="toast.id" :id="toast.id" :text="toast.text" :autoHide="toast.autoHide" :color="toast.color" :closable="true" :customWidth="toast.width" @close="onClose" class="notification-toasts__item"></cly-notification>\
+                        <cly-notification v-for="(toast) in notificationToasts" :key="toast.id" :id="toast.id" :text="toast.text" :autoHide="toast.autoHide" :color="toast.color" :closable="true" @close="onClose" class="notification-toasts__item"></cly-notification>\
                     </div>',
         store: _vuex.getGlobalStore(),
         computed: {
@@ -716,9 +716,7 @@
                             :test-id="dialog.testId"\
                             :saveButtonLabel="dialog.confirmLabel"\
                             :cancelButtonLabel="dialog.cancelLabel"\
-                            :title="dialog.title"\
-                            :show-close="dialog.showClose"\
-                            :alignCenter="dialog.alignCenter">\
+                            :title="dialog.title">\
                                 <template slot-scope="scope">\
                                     <div v-html="dialog.message"></div>\
                                 </template>\
@@ -786,8 +784,8 @@
     };
 
     var QuickstartPopoverView = {
-        template: '<div class="quickstart-popover-wrapper" data-test-id="quickstart-popover-wrapper">\
-            <div class="quickstart-popover-positioner" data-test-id="quickstart-popover-positioner">\
+        template: '<div class="quickstart-popover-wrapper">\
+            <div class="quickstart-popover-positioner">\
             <el-popover\
                 v-for="content in quickstartContent"\
                 popper-class="quickstart-popover-popover"\
@@ -797,7 +795,7 @@
                 :width="content.width"\
                 :key="content.id"\
                 :title="content.title">\
-                <i class="ion-close bu-is-size-7 quickstart-popover-close" data-test-id="quickstart-popover-close" @click="handleCloseClick(content.id)"></i>\
+                <i class="ion-close bu-is-size-7 quickstart-popover-close" @click="handleCloseClick(content.id)"></i>\
                 <div v-html="content.message"></div>\
             </el-popover>\
             </div>\

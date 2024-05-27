@@ -21,11 +21,6 @@
                 cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
                 closeFn: {type: Function},
                 hasCancelButton: {type: Boolean, required: false, default: true},
-                hasBackLink: {
-                    type: [Object, Boolean],
-                    default: false,
-                    required: false
-                },
                 toggleTransition: {
                     type: String,
                     default: 'stdt-slide-right'
@@ -40,16 +35,12 @@
                 testId: {
                     type: String,
                     default: "drawer-test-id",
-                },
-                id: {
-                    type: String
                 }
             },
             data: function() {
                 return {
                     isToggleable: true,
-                    sidecarContents: [],
-                    disableAutoClose: false,
+                    sidecarContents: []
                 };
             },
             computed: {
@@ -87,10 +78,6 @@
             },
             methods: {
                 doClose: function() {
-                    if (this.disableAutoClose) {
-                        this.disableAutoClose = false;
-                        return;
-                    }
                     this.$emit("close", this.name);
                     if (this.closeFn) {
                         this.closeFn();

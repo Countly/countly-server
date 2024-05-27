@@ -60,9 +60,7 @@
                 {
                     name: CV.i18n("common.unique-sessions"),
                     value: countlyCommon.formatNumber(dto.usage['unique-sessions'].total),
-                    tooltip: CV.i18n("common.unique-sessions-description"),
-                    isEstimate: dto.usage['unique-sessions'].isEstimate,
-                    estimateTooltip: CV.i18n("common.estimation")
+                    tooltip: CV.i18n("common.unique-sessions-description")
                 }
             ];
         },

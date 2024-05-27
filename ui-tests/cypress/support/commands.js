@@ -9,23 +9,13 @@ Cypress.Commands.add("clearInput", (element) => {
     cy.getElement(element).clear();
 });
 
-Cypress.Commands.add("typeSelectInput", (element, ...tags) => {
-    for (var i = 0; i < tags.length; i++) {
-        cy.getElement(element).type(tags[i] + '{enter}', { force: true });
-    }
+Cypress.Commands.add("typeSelectInput", (element, tag) => {
+    cy.getElement(element).type(tag + '{enter}', { force: true });
     cy.clickBody();
 });
 
 Cypress.Commands.add('getText', { prevSubject: true }, (subject) => {
     return cy.wrap(subject).invoke('text');
-});
-
-Cypress.Commands.add("clickDataTableMoreButtonItem", (element, rowIndex = 0) => {
-    cy.getElement("datatable-more-button-area")
-        .eq(rowIndex).invoke('show')
-        .trigger('mouseenter', { force: true });
-
-    cy.clickElement(element, true);
 });
 
 Cypress.Commands.add("clickElement", (element, isForce = false, index = 0) => {
@@ -43,31 +33,8 @@ Cypress.Commands.add("selectOption", (element, option) => {
     cy.clickOption('.el-select-dropdown__item', option);
 });
 
-Cypress.Commands.add("selectListBoxItem", (element, item) => {
-    cy.getElement(element).click();
-    cy.clickOption('.cly-vue-listbox__item-label', item);
-});
-
-Cypress.Commands.add("selectCheckboxOption", (element, ...options) => {
-    cy.getElement(element).click();
-    for (var i = 0; i < options.length; i++) {
-        cy.clickOption('.el-checkbox__label', options[i]);
-    }
-    cy.clickBody();
-});
-
 Cypress.Commands.add("clickOption", (element, option) => {
     cy.getElement(element).contains(new RegExp("^" + option + "$", "g")).click();
-});
-
-Cypress.Commands.add("selectValue", (element, valueText) => {
-    cy.getElement(element).then(($select) => {
-        cy.wrap($select).find('option').contains(valueText).then(($option) => {
-            cy.wrap($option).invoke('val').then((value) => {
-                cy.wrap($select).select(value);
-            });
-        });
-    });
 });
 
 Cypress.Commands.add("selectColor", (element, colorCode) => {
@@ -126,14 +93,6 @@ Cypress.Commands.add("shouldContainText", (element, text) => {
 
 Cypress.Commands.add("shouldNotContainText", (element, text) => {
     cy.getElement(element).eq(0).should("not.contain", text);
-});
-
-Cypress.Commands.add("shouldBeEqual", (element, text) => {
-    cy.getElement(element).should("equal", text);
-});
-
-Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
-    cy.getElement(element).should('not.equal', text);
 });
 
 Cypress.Commands.add("shouldPlaceholderContainText", (element, text) => {
@@ -198,16 +157,8 @@ Cypress.Commands.add('checkPaceActive', () => {
         });
 });
 
-Cypress.Commands.add("scrollPageToBottom", (element = '.main-view', index = 0) => {
+Cypress.Commands.add("scrollPageToBottom", (element, index = 0) => {
     cy.get(element).eq(index).scrollTo('bottom', { ensureScrollable: false });
-});
-
-Cypress.Commands.add("scrollPageToTop", (element = '.main-view', index = 0) => {
-    cy.get(element).eq(index).scrollTo('top', { ensureScrollable: false });
-});
-
-Cypress.Commands.add("scrollPageToCenter", (element = '.main-view', index = 0) => {
-    cy.get(element).eq(index).scrollTo('center', { ensureScrollable: false });
 });
 
 Cypress.Commands.add('verifyElement', ({
@@ -216,7 +167,6 @@ Cypress.Commands.add('verifyElement', ({
     tooltipElement,
     tooltipText,
     element,
-    isElementVisible = true,
     elementText,
     elementPlaceHolder,
     hrefContainUrl,
@@ -226,99 +176,65 @@ Cypress.Commands.add('verifyElement', ({
     unVisibleElement,
     selectedIconColor,
     selectedMainColor,
-    selectedFontColor,
-    attr,
-    attrText,
-    shouldNot = false
+    selectedFontColor
 }) => {
-
-    if (!shouldNot) {
-
-        if (labelElement != null && isElementVisible === true) {
-            cy.shouldBeVisible(labelElement);
-        }
-
-        if (labelText != null) {
-            cy.shouldContainText(labelElement, labelText);
-        }
-
-        if (tooltipElement != null) {
-            cy.shouldBeVisible(tooltipElement);
-        }
-
-        if (tooltipText != null) {
-            cy.shouldTooltipContainText(tooltipElement, tooltipText);
-        }
-
-        if (element != null && isElementVisible === true) {
-            cy.shouldBeVisible(element);
-        }
-
-        if (elementText != null) {
-            cy.shouldContainText(element, elementText);
-        }
-
-        if (elementPlaceHolder != null) {
-            cy.shouldPlaceholderContainText(element, elementPlaceHolder);
-        }
-
-        if (hrefContainUrl != null) {
-            cy.shouldHrefContainUrl(element, hrefContainUrl);
-        }
-
-        if (value != null) {
-            cy.shouldHaveValue(element, value);
-        }
-
-        if (isChecked != null) {
-            isChecked ? cy.shouldBeVisible(`[data-test-id="${element}"]` + '.is-checked') : cy.shouldNotExist(`[data-test-id="${element}"]` + '.is-checked');
-        }
-
-        if (isDisabled != null) {
-            isDisabled ? cy.shouldBeDisabled(element) : cy.shouldNotBeDisabled(element);
-        }
-
-        if (selectedIconColor != null) {
-            var selector;
-            unVisibleElement != null ? selector = unVisibleElement : selector = element;
-            cy.getElement(`[data-test-id="${selector}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedIconColor));
-        }
-
-        if (selectedFontColor != null) {
-            cy.getElement(`[data-test-id="${element}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedFontColor));
-        }
-
-        if (selectedMainColor != null) {
-            cy.getElement(`[data-test-id="${element}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedMainColor));
-        }
-
-        if (attr != null && attrText != null) {
-            cy.getElement(`[data-test-id="${element}"]`).invoke("attr", attr).should("contain", attrText);
-        }
+    if (labelElement != null) {
+        cy.shouldBeVisible(labelElement);
     }
-    else {
 
-        if (element != null && isElementVisible === true) {
-            cy.shouldBeVisible(element);
-        }
-
-        if (elementText != null) {
-            cy.shouldNotBeEqual(element, elementText);
-
-        }
-
-        if (labelElement != null && isElementVisible === true) {
-            cy.shouldBeVisible(labelElement);
-        }
-
-        if (labelText != null) {
-            cy.shouldNotBeEqual(labelElement, labelText);
-        }
+    if (labelText != null) {
+        cy.shouldContainText(labelElement, labelText);
     }
-});
 
-Cypress.Commands.add('dropMongoDatabase', () => {
-    cy.exec("mongosh mongodb/countly --eval 'db.dropDatabase()'");
+    if (tooltipElement != null) {
+        cy.shouldBeVisible(tooltipElement);
+    }
+
+    if (tooltipText != null) {
+        cy.shouldTooltipContainText(tooltipElement, tooltipText);
+    }
+
+    if (element != null) {
+        cy.shouldBeVisible(element);
+    }
+
+    if (elementText != null) {
+        cy.shouldContainText(element, elementText);
+    }
+
+    if (elementPlaceHolder != null) {
+        cy.shouldPlaceholderContainText(element, elementPlaceHolder);
+    }
+
+    if (hrefContainUrl != null) {
+        cy.shouldHrefContainUrl(element, hrefContainUrl);
+    }
+
+    if (value != null) {
+        cy.shouldHaveValue(element, value);
+    }
+
+    if (isChecked != null) {
+        isChecked ? cy.shouldBeVisible(`[data-test-id="${element}"]` + '.is-checked') : cy.shouldNotExist(`[data-test-id="${element}"]` + '.is-checked');
+    }
+
+    if (isDisabled != null) {
+        isDisabled ? cy.shouldBeDisabled(element) : cy.shouldNotBeDisabled(element);
+    }
+
+    if (selectedIconColor != null) {
+        var selector;
+        unVisibleElement != null ? selector = unVisibleElement : selector = element;
+        cy.getElement(`[data-test-id="${selector}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedIconColor));
+    }
+
+    if (selectedFontColor != null) {
+        cy.getElement(`[data-test-id="${element}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedFontColor));
+    }
+
+    if (selectedMainColor != null) {
+        cy.getElement(`[data-test-id="${element}"]`).invoke("attr", "style").should("contain", helper.hexToRgb(selectedMainColor));
+    }
 });
 
 Cypress.Commands.add('getElement', (selector, parent = null) => {

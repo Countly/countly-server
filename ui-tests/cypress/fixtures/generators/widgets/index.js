@@ -1,7 +1,6 @@
 const { faker } = require('@faker-js/faker');
 
 const generator = () => {
-    const widgetName = faker.lorem.words({ min: 3, max: 10 });
     const question = faker.lorem.words({ min: 3, max: 10 }) + '?';
     const emojiOneText = faker.lorem.words({ min: 1, max: 3 });
     const emojiTwoText = faker.lorem.words({ min: 1, max: 3 });
@@ -18,7 +17,6 @@ const generator = () => {
     const logoPath = '/testFiles/lowSizeTestImage.png';
 
     return {
-        widgetName,
         question,
         emojiOneText,
         emojiTwoText,

@@ -113,11 +113,6 @@
             maxHeight: {
                 type: String,
                 default: null
-            },
-            testId: {
-                type: String,
-                default: "cly-report-manager-table-default-test-id",
-                required: false
             }
         },
         computed: {
@@ -338,7 +333,7 @@
                 }
             },
             isReadyForRerun: function(row) {
-                return (row.type && row.type !== "profile group") && row.status !== "running" && row.status !== "rerunning" && row.request;
+                return row.status !== "running" && row.status !== "rerunning" && row.request;
             },
             handleCommand: function(command, row) {
                 var id = row._id,
@@ -398,7 +393,7 @@
                     else if (command === "view-task") {
                         self.$emit("view-task", row);
                         if (!this.disableAutoNavigationToTask) {
-                            if (row.dashboard_report || row.type === "profile group") {
+                            if (row.dashboard_report) {
                                 window.location = row.view;
                             }
                             else {

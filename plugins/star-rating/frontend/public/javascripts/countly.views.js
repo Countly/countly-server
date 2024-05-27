@@ -1,7 +1,7 @@
 /*global $, countlyReporting, countlyGlobal, CountlyHelpers, starRatingPlugin, app, jQuery, countlyPlugins, countlyCommon,  CV, countlyVue, moment, countlyCohorts*/
 (function() {
     var FEATURE_NAME = 'star_rating';
-    var CLY_X_INT = 'cly_x_int';
+
     /**
     * Replace escaped characters
     * @param {string} str - string to replace
@@ -14,59 +14,12 @@
         return str;
     }
 
-    var consentLink = countlyVue.views.create({
-        template: CV.T("/star-rating/templates/star-consent-link.html"),
-        props: {
-            value: {
-                type: Object,
-                default: false
-            },
-            maxLinks: {
-                type: Number,
-                default: 3
-            },
-            readOnly: {
-                type: Boolean,
-                default: false
-            }
-        },
-        methods: {
-            setFocusedChild: function(childId) {
-                this.$emit("update:focusedItemIdentifier", childId);
-            },
-            removeLinkAtIndex: function(index) {
-                this.$delete(this.links, index);
-            },
-            onDelete: function(id) {
-                if (this.value.link.length > 1 && this.value.link.length <= this.maxLinks) {
-                    this.value.link.splice(id, 1);
-                }
-            },
-            add: function() {
-                this.value.link.push({
-                    "text": "Another Link",
-                    "link": "https://otherlink.com",
-                    "textValue": "Another Link",
-                    "linkValue": "https://otherlink.com"
-                });
-            }
-        },
-        computed: {
-            newLinkAllowed: function() {
-                return !this.readOnly && this.value.link.length < this.maxLinks;
-            }
-        }
-    });
-
     var Drawer = countlyVue.views.create({
         mixins: [countlyVue.mixins.commonFormatters],
         template: CV.T("/star-rating/templates/drawer.html"),
         props: {
             settings: Object,
             controls: Object
-        },
-        components: {
-            "star-consent-link": consentLink
         },
         data: function() {
             return {
@@ -75,7 +28,6 @@
                 imageSrc: '',
                 logoType: 'default',
                 globalLogo: false,
-                consent: false,
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
                 // TODO: will be localized
@@ -115,36 +67,6 @@
         },
         methods: {
         // drawer event handlers
-            onConsentCheckbox: function(ev) {
-                ev.links = {
-                    "link": [
-                        {
-                            "text": "Terms and Conditions",
-                            "link": "https://termsandconditions.com",
-                            "textValue": "Terms and Conditions",
-                            "linkValue": "https://termsandconditions.com"
-                        },
-                        {
-                            "text": "Privacy Policy",
-                            "link": "https://privacyPolicy.com",
-                            "textValue": "Privacy Policy",
-                            "linkValue": "https://privacyPolicy.com"
-                        }
-                    ],
-                    "finalText": "I agree to the Terms and Conditions and Privacy Policy."
-
-                };
-            },
-            finalTxt: function(links) {
-                let finalText = links.finalText;
-
-                links.link.forEach(link => {
-                    const regex = new RegExp(`\\b${link.textValue}\\b`, 'g');
-                    finalText = finalText.replace(regex, `<a href="${link.linkValue}" target="_blank">${link.textValue}</a>`);
-                });
-
-                return finalText;
-            },
             onClose: function() {},
             setRatingItemActive: function(index) {
                 var self = this;
@@ -161,16 +83,7 @@
             },
             onSubmit: function(submitted, done) {
                 var self = this;
-                if (submitted.links) {
-                    submitted.finalText = submitted.links.finalText;
-                    submitted.links = submitted.links.link;
-                    submitted.links.forEach(function(link) {
-                        var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
-                        link.linkValue = link.linkValue + separator + CLY_X_INT + '=1';
-                        delete link.text;
-                        delete link.link;
-                    });
-                }
+
                 if (this.logoFile !== "") {
                     submitted.logo = this.logoFile;
                 }
@@ -185,6 +98,7 @@
                 if (!submitted.globalLogo) {
                     submitted.globalLogo = false;
                 }
+
                 if (this.cohortsEnabled) {
                     var finalizedTargeting = null;
                     var exported = this.$refs.ratingsSegmentation.export();
@@ -222,31 +136,6 @@
             onOpen: function() {
                 var self = this;
                 var loadImage = new Image();
-                if (this.controls.initialEditedObject.consent === true || this.controls.initialEditedObject.consent === "true") {
-                    this.controls.initialEditedObject.consent = true;
-                    this.consent = true;
-                }
-                else {
-                    this.controls.initialEditedObject.consent = false;
-                }
-                if (Array.isArray(this.controls.initialEditedObject.links)) {
-                    this.controls.initialEditedObject.links.forEach(function(link) {
-                        if (link.linkValue.indexOf('term')) {
-                            link.text = "Terms and Conditions";
-                            link.link = "https://termsandconditions.com";
-                        }
-                        else if (link.linkValue.indexOf('privacy')) {
-                            link.text = "Privacy Policy";
-                            link.link = "https://privacyPolicy.com";
-                        }
-                        else {
-                            link.text = "Another Link";
-                            link.link = "https://otherlink.com";
-                        }
-                        link.linkValue = link.linkValue.replace(new RegExp('[?&]' + CLY_X_INT + '=[^&]*'), '').replace(/[?&]$/, '');
-                    });
-                    this.controls.initialEditedObject.links = {"link": this.controls.initialEditedObject.links, "finalText": this.controls.initialEditedObject.finalText};
-                }
                 if (this.controls.initialEditedObject.logo) {
 
                     if (this.controls.initialEditedObject.logo.indexOf("feedback_logo") > -1
@@ -481,8 +370,8 @@
                 return table;
 
             },
-            goWidgetDetail: function(row) {
-                window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + row._id;
+            goWidgetDetail: function(id) {
+                window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + id;
             },
             parseTargeting: function(widget) {
                 if (widget.targeting) {
@@ -806,25 +695,6 @@
                     }
                 }
                 this.openDrawer("widget", {
-                    links: {
-                        "link": [
-                            {
-                                "text": "Terms and Conditions",
-                                "link": "https://termsandconditions.com",
-                                "textValue": "Terms and Conditions",
-                                "linkValue": "https://termsandconditions.com"
-                            },
-                            {
-                                "text": "Privacy Policy",
-                                "link": "https://privacyPolicy.com",
-                                "textValue": "Privacy Policy",
-                                "linkValue": "https://privacyPolicy.com"
-                            }
-                        ],
-                        "finalText": "I agree to the Terms and Conditions and Privacy Policy."
-
-                    },
-                    consent: false,
                     popup_header_text: 'What\'s your opinion about this page?',
                     popup_thanks_message: 'Thanks for your feedback!',
                     popup_button_callout: 'Submit Feedback',
@@ -856,7 +726,6 @@
                     target_page: false,
                     logoType: logoType,
                     globalLogo: globalLogo,
-                    internalName: ''
                 });
             },
             refresh: function(force) {
@@ -1143,44 +1012,6 @@
                     this.widget.targeting = {
                         user_segmentation: null,
                         steps: null
-                    };
-                }
-                if (Array.isArray(this.widget.links)) {
-                    this.widget.links.forEach(function(link) {
-                        if (link.linkValue.indexOf('term')) {
-                            link.text = "Terms and Conditions";
-                            link.link = "https://termsandconditions.com";
-                        }
-                        else if (link.linkValue.indexOf('text')) {
-                            link.text = "Privacy Policy";
-                            link.link = "https://privacyPolicy.com";
-                        }
-                        else {
-                            link.text = "Another Link";
-                            link.link = "https://otherlink.com";
-                        }
-                        link.linkValue = link.linkValue.replace(new RegExp('[?&]' + CLY_X_INT + '=[^&]*'), '').replace(/[?&]$/, '');
-                    });
-                    this.widget.links = {"link": this.widget.links, "finalText": this.widget.finalText};
-                }
-                if (!this.widget.links) {
-                    this.widget.links = {
-                        "link": [
-                            {
-                                "text": "Terms and Conditions",
-                                "link": "https://termsandconditions.com",
-                                "textValue": "Terms and Conditions",
-                                "linkValue": "https://termsandconditions.com"
-                            },
-                            {
-                                "text": "Privacy Policy",
-                                "link": "https://privacyPolicy.com",
-                                "textValue": "Privacy Policy",
-                                "linkValue": "https://privacyPolicy.com"
-                            }
-                        ],
-                        "finalText": "I agree to the Terms and Conditions and Privacy Policy."
-
                     };
                 }
                 if (!this.widget.rating_symbol) {

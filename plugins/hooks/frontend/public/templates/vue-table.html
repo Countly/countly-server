@@ -1,4 +1,4 @@
-<cly-section data-test-id="table-hooks">
+<cly-section>
     <cly-datatable-n
         :force-loading="!initialized"
         :persist-key="tablePersistKey"
@@ -10,9 +10,9 @@
         <template v-slot:header-left="scope">
             <div class="bu-mr-2">
                 <el-radio-group :plain="true" v-model="filterStatus">
-                    <el-radio-button test-id="all-hooks-radio-button" label="all">{{i18n('hooks.status-all')}}</el-radio-button>
-                    <el-radio-button test-id="enabled-hooks-radio-button" label="enabled">{{i18n('hooks.status-enabled')}}</el-radio-button>
-                    <el-radio-button test-id="disabled-hooks-radio-button" label="disabled">{{i18n('hooks.status-disabled')}}</el-radio-button> 
+                    <el-radio-button label="all">{{i18n('hooks.status-all')}}</el-radio-button>
+                    <el-radio-button label="enabled">{{i18n('hooks.status-enabled')}}</el-radio-button>
+                    <el-radio-button label="disabled">{{i18n('hooks.status-disabled')}}</el-radio-button> 
                 </el-radio-group>
             </div>
             <div class="hooks-table-app-selector">
