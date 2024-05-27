@@ -281,6 +281,7 @@ jobs:
         shell: bash
         working-directory: /opt/countly/ui-tests/cypress
         run: |
+          mkdir -p logs
           ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}.tar.gz"
           mkdir -p screenshots videos logs
           tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos logs
