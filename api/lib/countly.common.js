@@ -741,6 +741,47 @@ function getPeriodObject(prmPeriod, bucket) {
     return periodObject;
 }
 
+/**
+ * Checks if the period parameter is valid
+ * @param {string} period - period parameter
+ * @returns {boolean} true if period is valid, false if not
+*/
+countlyCommon.isValidPeriodParam = function(period) {
+
+    if (period && typeof period === 'string' && period.indexOf(",") !== -1) {
+        try {
+            period = JSON.parse(period);
+        }
+        catch (SyntaxError) {
+            return false;
+        }
+    }
+
+    if (Array.isArray(period)) {
+        return period.length === 2;
+    }
+
+    if (typeof period === 'object') {
+        if (Object.prototype.hasOwnProperty.call(period, 'period')) {
+            return countlyCommon.isValidPeriodParam(period.period);
+        }
+        else {
+            return Object.prototype.hasOwnProperty.call(period, 'since');
+        }
+    }
+
+    return period === 'month' ||
+        period === 'prevMonth' ||
+        period === 'day' ||
+        period === 'yesterday' ||
+        period === 'hour' ||
+        /([1-9][0-9]*)days/.test(period) ||
+        /([1-9][0-9]*)weeks/.test(period) ||
+        /([1-9][0-9]*)months/.test(period) ||
+        /([1-9][0-9]*)years/.test(period);
+};
+
+
 // Public Properties
 /**
 * Currently selected period
