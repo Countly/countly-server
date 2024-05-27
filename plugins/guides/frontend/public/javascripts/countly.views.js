@@ -133,6 +133,7 @@
         },
         data: function() {
             return {
+                neverInteracted: true,
                 isButtonVisible: false,
                 isDialogVisible: false,
                 guideData: {},
@@ -204,9 +205,15 @@
         beforeDestroy: function() {
             document.removeEventListener('keydown', this.handleEscapeKey);
         },
+        computed: {
+            dynamicClassGuideButton: function() {
+                return this.neverInteracted ? 'view-button-initial' : 'view-button';
+            }
+        },
         methods: {
             onClick: function() {
                 this.isDialogVisible = true;
+                this.neverInteracted = false;
                 let mainViewContainer = document.getElementById('main-views-container');
                 mainViewContainer.getElementsByClassName('main-view')[0].style.setProperty('overflow', 'hidden', 'important');
             },
