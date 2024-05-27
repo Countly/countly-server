@@ -341,3 +341,18 @@ Cypress.Commands.add('getElement', (selector, parent = null) => {
         return cy.get(selector);
     }
 });
+
+Cypress.Commands.add('logRequest', (alias, fileName) => {
+    cy.intercept(alias, (req) => {
+      req.continue((res) => {
+        const logEntry = {
+          url: req.url,
+          method: req.method,
+          status: res.statusCode,
+          response: res.body,
+        };
+        cy.writeFile(`logs/${fileName}.json`, JSON.stringify(logEntry, null, 2), { flag: 'a+' });
+      });
+    });
+  });
+  
