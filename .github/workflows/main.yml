@@ -74,7 +74,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:latest
+      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
 
@@ -130,7 +130,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:latest
+      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
 
@@ -176,7 +176,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:latest
+      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
 
@@ -228,7 +228,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:latest
+      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
 
