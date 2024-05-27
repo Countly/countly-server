@@ -790,6 +790,7 @@ countlyCommon.isValidPeriodParam = function(period) {
     }
 
     return period === 'month' ||
+        period === 'prevMonth' ||
         period === 'day' ||
         period === 'yesterday' ||
         period === 'hour' ||
