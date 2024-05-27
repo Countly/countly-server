@@ -15,36 +15,12 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
-require('cypress-failed-log');
 
 //When Cypress detects uncaught errors originating from application it will automatically fail the current test.
 //This behavior is configurable, and you can choose to turn this off by listening to the uncaught:exception event.
 //Open the below code block after the "Cannot read properties of undefined..." errors occurred.
 //But firstly open an issue about the error.
 Cypress.on('uncaught:exception', (err, runnable) => {
-    console.error('Uncaught exception:', err.message);
-    // Log hatayı dosyaya yaz
-    cy.writeFile('cypress/logs/errors.log', `${new Date().toISOString()} - Uncaught exception: ${err.message}\n`, { flag: 'a+' });
-    return false;
-});
-
-const fs = require('fs');
-const path = require('path');
-
-// Log dosyasının yolu
-const networkLogPath = path.join(__dirname, '../logs/network.log');
-
-// Log dosyasını temizle (varsa)
-if (fs.existsSync(networkLogPath)) {
-  fs.truncateSync(networkLogPath, 0);
-}
-
-Cypress.Commands.add('logRequest', (request) => {
-  const logEntry = `${new Date().toISOString()} - ${request.method} ${request.url}\n`;
-  cy.task('logNetworkRequest', logEntry);
-});
-
-Cypress.Commands.add('logResponse', (response) => {
-  const logEntry = `${new Date().toISOString()} - ${response.statusCode} ${response.url}\n`;
-  cy.task('logNetworkResponse', logEntry);
+  // returning false here prevents Cypress from failing the test
+  return false;
 });

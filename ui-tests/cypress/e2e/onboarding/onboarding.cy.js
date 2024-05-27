@@ -62,16 +62,6 @@ const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 describe('Complete Onboarding', () => {
     beforeEach(function() {
         navigationHelpers.goToLoginPage();
-
-        cy.task('clearNetworkLogs');
-        
-        cy.intercept('GET', '**/message/**', (req) => {
-            cy.logRequest(req);
-      
-            req.on('response', (res) => {
-              cy.logResponse(res);
-            });
-          });
     });
 
     afterEach(function() {
