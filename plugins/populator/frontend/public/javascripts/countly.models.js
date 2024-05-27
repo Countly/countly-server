@@ -2728,7 +2728,15 @@
                                     if (selectedSequenceStep.value === "start") {
                                         // this.hasSession = true;
                                         this.isRegistered = true;
-                                        req = {timestamp: this.ts, begin_session: 1, ignore_cooldown: '1'};
+                                        const differenceBetweenPreviousSession = this.ts - (endSessionTs || 0);
+                                        let sessionDuration = null;
+                                        if (differenceBetweenPreviousSession.toString().length >= 10) {
+                                            sessionDuration = getRandomInt(60, 240);
+                                        }
+                                        else {
+                                            sessionDuration = getRandomInt(60, differenceBetweenPreviousSession);
+                                        }
+                                        req = {timestamp: this.ts, begin_session: 1, ignore_cooldown: '1', session_duration: sessionDuration};
                                         if (!hasEnvironment) {
                                             req.metrics = this.metrics;
                                             req.user_details = this.userdetails;
