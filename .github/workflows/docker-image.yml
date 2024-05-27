@@ -129,4 +129,4 @@ jobs:
         with:
           push: true
           file: ./Dockerfile-core
-          tags: countly/countly-core:latest,countly/countly-core:${{ steps.vars.outputs.tag }}
+          tags: countly/countly-core:latest,countly/countly-core:${{ steps.vars.outputs.tag }},countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
