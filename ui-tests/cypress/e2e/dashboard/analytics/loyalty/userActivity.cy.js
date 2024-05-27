@@ -1,5 +1,5 @@
 import user from '../../../../fixtures/user.json';
-const loginHelpers = require('../../../../lib/login/login')
+const loginHelpers = require('../../../../lib/login/login');
 const navigationHelpers = require('../../../../support/navigations');
 const analyticsLoyaltyUserActivityHelpers = require('../../../../lib/dashboard/analytics/loyalty/userActivity');
 
