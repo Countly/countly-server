@@ -283,8 +283,8 @@ jobs:
         run: |
           ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}.tar.gz"
           mkdir -p screenshots videos logs
-          if [[ -f /opt/countly-server/log/countly-api.log ]]; then
-          cp /opt/countly-server/log/countly-api.log logs/
+          if [[ -f /opt/countly/log/countly-api.log ]]; then
+          cp /opt/countly/log/countly-api.log logs/
           fi
           tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos logs
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
