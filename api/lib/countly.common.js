@@ -786,7 +786,12 @@ countlyCommon.isValidPeriodParam = function(period) {
     }
 
     if (typeof period === 'object') {
-        return Object.prototype.hasOwnProperty.call(period, 'since') || Object.prototype.hasOwnProperty.call(period, 'period');
+        if (Object.prototype.hasOwnProperty.call(period, 'period')) {
+            return countlyCommon.isValidPeriodParam(period.period);
+        }
+        else {
+            return Object.prototype.hasOwnProperty.call(period, 'since')
+        }
     }
 
     return period === 'month' ||
