@@ -36,8 +36,8 @@ usersApi.getCurrentUser = function(params) {
 * @returns {boolean} true if fetched data from db
 **/
 usersApi.getUserById = function(params) {
-    if (!params.qstring.id || params.qstring.id.length !== 24) {
-        common.returnMessage(params, 401, 'Missing or incorrect user id parameter');
+    if (!params.qstring.id) {
+        common.returnMessage(params, 401, 'Missing user id parameter');
         return false;
     }
     common.db.collection('members').findOne({ _id: common.db.ObjectID(params.qstring.id) }, {
@@ -418,8 +418,6 @@ usersApi.updateUser = async function(params) {
             'user_id': {
                 'required': true,
                 'type': 'String',
-                'min-length': 24,
-                'max-length': 24,
                 'exclude-from-ret-obj': true
             },
             'full_name': {
