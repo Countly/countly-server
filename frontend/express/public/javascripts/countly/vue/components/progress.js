@@ -13,7 +13,8 @@
                     return val === 'simple' || val === 'advanced-tile';
                 }
             },
-            label: {type: String, required: false, default: ''}
+            label: {type: String, required: false, default: ''},
+            testId: {type: String, required: false, default: 'test-id'}
         },
         computed: {
             topClasses: function() {
@@ -24,10 +25,10 @@
             }
         },
         template: '<div :class="topClasses">\
-                    <el-progress :color="color" :percentage="percentage" type="circle" :width="56" stroke-linecap="butt" :stroke-width="9" :show-text="false"></el-progress>\
+                    <el-progress :data-test-id="\'el-progress-\' + testId" :color="color" :percentage="percentage" type="circle" :width="56" stroke-linecap="butt" :stroke-width="9" :show-text="false"></el-progress>\
                     <div v-if="mode === \'advanced-tile\'" class="bu-pl-5 bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
-                        <span class="text-medium"><slot>{{label}}</slot></span>\
-                        <h2>{{percentage}} %</h2>\
+                        <span class="text-medium" :data-test-id="\'el-progress-label-\' + testId"><slot>{{label}}</slot></span>\
+                        <h2 :data-test-id="\'el-progress-percentage-\' + testId">{{percentage}} %</h2>\
                     </div>\
                 </div>'
     }));

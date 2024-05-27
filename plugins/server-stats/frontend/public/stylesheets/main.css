@@ -46,3 +46,15 @@
 	width: 1px;
     white-space: nowrap;
 }
+
+.popover-title {
+	font-size: 10px;
+}
+
+.popover-key {
+	font-size: 12px;
+}
+
+.popover-value {
+	font-size: 14px;
+}

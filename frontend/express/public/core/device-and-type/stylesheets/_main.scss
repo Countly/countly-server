@@ -1,6 +1,7 @@
 .technology-analytics-wrapper .devices-date-picker-container {
     margin-bottom:32px;
 }
+
 .technology-analytics-wrapper .version-graph-block .version-graph-title {
     margin:0px;
     padding-bottom:4px;
@@ -19,17 +20,18 @@
     padding-right:0px;
 }
 
+.technology-analytics-wrapper .technology-pie-graphs .bu-level .bu-level-right {
+    padding-right:5px;
+}
+
 .technology-analytics-wrapper .technology-pie-graphs .bu-column:first-child .cly-vue-chart__echart {
 	.cly-vue-chart-legend__secondary {
         border-right: 1px solid #ececec;
     }
+
 	.bu-level .bu-level-right {
         border-right: 1px solid #ececec;
 	}
-}
-
-.technology-analytics-wrapper .technology-pie-graphs .bu-level .bu-level-right {
-    padding-right:5px;
 }
 
 .technology-analytics-wrapper .technology-pie-graphs .cly-vue-chart-legend__right .cly-vue-chart-legend__secondary .__vuescroll .__rail-is-vertical {

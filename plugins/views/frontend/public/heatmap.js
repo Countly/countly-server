@@ -6,11 +6,183 @@
         showHeatMap = Countly.passed_data.showHeatMap == false ? false : true,
         clickMap,
         scrollMap;
+
+    var logLevelEnums = {
+        ERROR: "[ERROR] ",
+        WARNING: "[WARNING] ",
+        INFO: "[INFO] ",
+        DEBUG: "[DEBUG] ",
+        VERBOSE: "[VERBOSE] "
+    };
+
+    /**
+     * Format function arguments for log
+     * @param {object} arg - function arguments
+     * @returns {Array} formatted function arguments
+     */
+    function formatArgs(args) {
+        return [].slice.call(args).reduce(function (acc, arg) {
+            if (typeof arg !== 'function') {
+                try {
+                    acc.push(JSON.stringify(arg));
+                }
+                catch (err) {
+                    acc.push(arg);
+                }
+            }
+
+            return acc;
+        }, []).join(', ');
+    }
+
+    /**
+     *  Logging stuff
+     * @param {string} level - log level (error, warning, info, debug, verbose)
+     * @param {string} message - any string message
+     */
+    function log(level, message) {
+        if (typeof console !== 'undefined') {
+            // parse the arguments into a string if it is an object
+            if (arguments[2] && typeof arguments[2] === "object") {
+                arguments[2] = JSON.stringify(arguments[2]);
+            }
+            // if the provided level is not a proper log level re-assign it as [DEBUG]
+            if (!level) {
+                level = logLevelEnums.DEBUG;
+            }
+            // append level, message and args
+            var extraArguments = "";
+            for (var i = 2; i < arguments.length; i++) {
+                extraArguments += arguments[i];
+            }
+            // eslint-disable-next-line no-shadow
+            var content = level + "[Countly] [Heatmap] " + message + extraArguments;
+            // decide on the console
+            if (level === logLevelEnums.ERROR) {
+                // eslint-disable-next-line no-console
+                console.error(content);
+            } else if (level === logLevelEnums.WARNING) {
+                // eslint-disable-next-line no-console
+                console.warn(content);
+            } else if (level === logLevelEnums.INFO) {
+                // eslint-disable-next-line no-console
+                console.info(content);
+            } else if (level === logLevelEnums.VERBOSE) {
+                // eslint-disable-next-line no-console
+                console.log(content);
+            }
+            // if none of the above must be [DEBUG]
+            else {
+                // eslint-disable-next-line no-console
+                console.debug(content);
+            }
+        }
+    }
+
+    /**
+     *  Load external file
+     *  @param {String} tag - Tag/node name to load file in
+     *  @param {String} attr - Attribute name for type
+     *  @param {String} type - Type value
+     *  @param {String} src - Attribute name for file path
+     *  @param {String} data - File path
+     *  @param {Function} callback - callback when done
+     */
+    function loadFile(tag, attr, type, src, data, callback) {
+        log(logLevelEnums.INFO, '[loadFile] ' + formatArgs(arguments));
+        var fileRef = document.createElement(tag);
+        var loaded;
+        fileRef.setAttribute(attr, type);
+        fileRef.setAttribute(src, data);
+        var callbackFunction = function callbackFunction() {
+            if (!loaded) {
+                callback();
+            }
+            loaded = true;
+        };
+        if (callback) {
+            fileRef.onreadystatechange = callbackFunction;
+            fileRef.onload = callbackFunction;
+        }
+        document.getElementsByTagName("head")[0].appendChild(fileRef);
+    }
+
+    /**
+     *  Get height of whole document
+     *  @returns {Number} height in pixels
+     */
+    function getDocHeight() {
+        var D = document;
+        var result = Math.max(Math.max(D.body.scrollHeight, D.documentElement.scrollHeight), Math.max(D.body.offsetHeight, D.documentElement.offsetHeight), Math.max(D.body.clientHeight, D.documentElement.clientHeight));
+
+        log(logLevelEnums.DEBUG, '[getDocHeight] ' + result);
+        return result;
+    }
+
+    /**
+     *  Get width of whole document
+     *  @returns {Number} width in pixels
+     */
+    function getDocWidth() {
+        var D = document;
+        var result = Math.max(Math.max(D.body.scrollWidth, D.documentElement.scrollWidth), Math.max(D.body.offsetWidth, D.documentElement.offsetWidth), Math.max(D.body.clientWidth, D.documentElement.clientWidth));
+
+        log(logLevelEnums.DEBUG, '[getDocWidth] ' + result);
+        return result;
+    }
+
+    /**
+     *  Get height of viewable area
+     *  @returns {Number} height in pixels
+     */
+    function getViewportHeight() {
+        var D = document;
+        var result = Math.min(Math.min(D.body.clientHeight, D.documentElement.clientHeight), Math.min(D.body.offsetHeight, D.documentElement.offsetHeight), window.innerHeight);
+
+        log(logLevelEnums.DEBUG, '[getViewportHeight] ' + result);
+        return result;
+    }
         
+    /**
+     *  Listen to specific browser event
+     *  @param {HTMLElement} element - HTML element that should listen to event
+     *  @param {String} type - event name or action
+     *  @param {Function} listener - callback when event is fired
+     */
+    function add_event_listener(element, type, listener) {
+        log(logLevelEnums.INFO, '[add_event_listener] ', formatArgs(arguments));
+        // element can be null so lets check it first
+        if (element === null || typeof element === "undefined") {
+            log(logLevelEnums.WARNING, "[add_event_listener] Can't bind [" + type + "] event to nonexisting element");
+            return;
+        }
+        if (typeof element.addEventListener !== "undefined") {
+            element.addEventListener(type, listener, false);
+        }
+        // for old browser use attachEvent instead
+        else {
+            element.attachEvent("on" + type, listener);
+        }
+    }
+
+    /**
+     *  Convert JSON object to URL encoded query parameter string
+     *  @param {Object} params - object with query parameters
+     *  @returns {String} URL encode query string
+     */
+    function prepareParams(params) {
+        log(logLevelEnums.INFO, '[prepareParams] ' + formatArgs(arguments));
+        var str = [];
+        for (var i in params) {
+            str.push(i + "=" + encodeURIComponent(params[i]));
+        }
+        return str.join("&");
+    }
+
     Countly.passed_data.url = Countly.passed_data.url || Countly.url;
 
-    Countly._internals.loadCSS(Countly.passed_data.url + "/stylesheets/ionicons/css/ionicons.min.css", function() {
-        Countly._internals.loadCSS(Countly.passed_data.url + "/views/stylesheets/heatmap.css", function() {
+    loadFile('link', 'rel', 'stylesheet', 'href', Countly.passed_data.url + "/stylesheets/ionicons/css/ionicons.min.css", function() {
+        loadFile('link', 'rel', 'stylesheet', 'href', Countly.passed_data.url + "/views/stylesheets/heatmap.css", function() {
             document.body.style.position = "relative";
             var origtop = document.body.style.top;
             var toppx = 59;
@@ -84,16 +256,16 @@
             document.body.appendChild(topbar);
 
             if (currentDevice.length) {
-                pageWidth = Countly._internals.getDocWidth();
+                pageWidth = getDocWidth();
                 pageWidth = Math.min(currentDevice[0].maxWidth, pageWidth);
                 document.body.style.width = pageWidth + "px";
                 document.body.style.marginLeft = "auto";
                 document.body.style.marginRight = "auto";
-                pageHeight = Countly._internals.getDocHeight() - toppx;
+                pageHeight = getDocHeight() - toppx;
             }
             else {
-                pageWidth = Countly._internals.getDocWidth();
-                pageHeight = Countly._internals.getDocHeight() - toppx;
+                pageWidth = getDocWidth();
+                pageHeight = getDocHeight() - toppx;
             }
 
             for (var i = 0; i < allDevices.length; i++) {
@@ -159,7 +331,7 @@
                 tag.setAttribute('class', 'cly-heatmap-item');
                 tag.setAttribute('data-value', map);
                 tag.innerHTML = capitalize(map) + " Map";
-                Countly._internals.add_event_listener(tag, "click", function(e) {
+                add_event_listener(tag, "click", function(e) {
                     var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
 
                     if (dropdowns.length) {
@@ -239,20 +411,20 @@
 
                 deviceListDiv.appendChild(tag);
 
-                Countly._internals.add_event_listener(tag, "click", function(e) {
+                add_event_listener(tag, "click", function(e) {
                     document.body.style.width = "100%";
                     var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
                     if (grdMap) {
                         grdMap.parentNode.removeChild(grdMap);
                     }
-                    pageWidth = Countly._internals.getDocWidth();
+                    pageWidth = getDocWidth();
                     canvas.setAttribute("width", "0px");
                     canvas.setAttribute("height", "0px");
                     pageWidth = Math.min(device.maxWidth, pageWidth);
                     document.body.style.width = pageWidth + "px";
                     document.body.style.marginLeft = "auto";
                     document.body.style.marginRight = "auto";
-                    pageHeight = Countly._internals.getDocHeight() - toppx;
+                    pageHeight = getDocHeight() - toppx;
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
 
@@ -316,7 +488,7 @@
             mainDiv.appendChild(deviceDropdown);
             mainDiv.appendChild(refresh);
 
-            Countly._internals.add_event_listener(refresh, "click", function() {
+            add_event_listener(refresh, "click", function() {
                 dataCache = {};
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
@@ -348,7 +520,7 @@
             canvas.id = "cly-heatmap-canvas-map";
             document.body.appendChild(canvas);
 
-            Countly._internals.add_event_listener(window, "resize", function() {
+            add_event_listener(window, "resize", function() {
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
                 var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
@@ -357,8 +529,8 @@
                 }
                 setTimeout(function() {
                     document.body.style.width = "100%";
-                    pageWidth = Countly._internals.getDocWidth();
-                    pageHeight = Countly._internals.getDocHeight() - toppx;
+                    pageWidth = getDocWidth();
+                    pageHeight = getDocHeight() - toppx;
                     var updatedDevice = devices.filter((deviceObj) => {
                         if (currentDevice[0].type == "all") {
                             return deviceObj.type == "all";
@@ -404,7 +576,7 @@
             shLabel.appendChild(shInput);
             shLabel.appendChild(shSpan);
             showHide.appendChild(shLabel);
-            Countly._internals.add_event_listener(shInput, "click", function() {
+            add_event_listener(shInput, "click", function() {
                 showHeatMap = shInput.checked;
                 addDataToWindow([{ "key": "showHeatMap", "value": showHeatMap }]);
 
@@ -430,7 +602,7 @@
 
             topbar.appendChild(showHide);
 
-            Countly._internals.add_event_listener(document.body, "click", function(e) {
+            add_event_listener(document.body, "click", function(e) {
                 var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
                 if (dropdowns.length) {
                     Object.keys(dropdowns).forEach((drop) => {
@@ -458,6 +630,7 @@
             });
 
             function listenDropdownEvent(event, element) {
+                log(logLevelEnums.INFO, '[listenDropdownEvent] ' + formatArgs(arguments));
                 element.addEventListener(event, function(e) {
                     var wasActive = element.classList.contains("cly-heatmap-clicked");
                     var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
@@ -482,6 +655,7 @@
     });
 
     function addDataToWindow(dataArray) {
+        log(logLevelEnums.INFO, '[addDataToWindow] ' + formatArgs(arguments));
         var dataCLY = {};
         var prefix = "";
         if (window.name && window.name.indexOf("cly:") === 0) {
@@ -501,6 +675,7 @@
     }
 
     function loadClickMap(cb) {
+        log(logLevelEnums.INFO, '[loadClickMap] ' + formatArgs(arguments));
         var map,
             curRadius = 1,
             curBlur = 1,
@@ -511,7 +686,7 @@
             period = Countly.passed_data.period || "30days",
             dataCache = {};
 
-        Countly._internals.loadJS(Countly.passed_data.url + "/views/javascripts/simpleheat.js", function() {
+        loadFile('script', 'type', 'text/javascript', 'src', Countly.passed_data.url + "/views/javascripts/simpleheat.js", function() {
             map = simpleheat("cly-heatmap-canvas-map");
             return cb(function(eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
@@ -525,7 +700,12 @@
                 function checkCache() {
                     if (showHeatMap) {
                         if (dataCache[currentDevice[0].type]) {
-                            drawData();
+                            try {
+                                drawData();
+                            }
+                            catch (err) {
+                                log(logLevelEnums.ERROR, '[loadClickmap] [checkCache] ' + err);
+                            }
                         }
                         else {
                             loadData();
@@ -534,10 +714,15 @@
                 }
 
                 function loadData() {
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: (Countly.getViewUrl) ? Countly.getViewUrl() : Countly._internals.getLastView() || window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, clicks) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: (Countly.getViewUrl) ? Countly.getViewUrl() : window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, clicks) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = clicks.data;
-                            drawData();
+                            try {
+                                drawData();
+                            }
+                            catch (err) {
+                                log(logLevelEnums.ERROR, '[loadClickmap] [loadData] ' + err);
+                            }
                         }
                     });
                 }
@@ -554,6 +739,9 @@
                             heat.push([parseInt((point.x / point.width) * width), parseInt((point.y / point.height) * height), data[i].c]);
                         }
                     }
+
+                    log(logLevelEnums.INFO, "[loadClickMap] [drawData] Heat data ", { heat: heat });
+
                     map.clear();
                     map.data(heat);
                     baseRadius = Math.max((48500 - 35 * data.length) / 900, 5);
@@ -569,17 +757,18 @@
     }
 
     function loadScrollMap(cb) {
+        log(logLevelEnums.INFO, '[loadScrollMap] ' + formatArgs(arguments));
         var map,
             actionType = "scroll",
             apiPath = "/o/actions",
             period = Countly.passed_data.period || "30days",
             dataCache = {};
 
-        Countly._internals.loadJS(Countly.passed_data.url + "/views/javascripts/simpleheat.js", function() {
+        loadFile('script', 'type', 'text/javascript', 'src', Countly.passed_data.url + "/views/javascripts/simpleheat.js", function() {
             map = simpleheat("cly-heatmap-canvas-map");
             return cb(function(eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
-                map.viewPortSize({ height: Countly._internals.getViewportHeight() });
+                map.viewPortSize({ height: getViewportHeight() });
 
                 if (eventType == "refresh") {
                     dataCache = {};
@@ -590,7 +779,12 @@
                 function checkCache() {
                     if (showHeatMap) {
                         if (dataCache[currentDevice[0].type]) {
-                            drawData();
+                            try {
+                                drawData();
+                            }
+                            catch (err) {
+                                log(logLevelEnums.ERROR, '[loadScrollmap] [checkCache] ' + err);
+                            }
                         }
                         else {
                             loadData();
@@ -599,10 +793,15 @@
                 }
 
                 function loadData() {
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: (Countly.getViewUrl) ? Countly.getViewUrl() : Countly._internals.getLastView() || window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, scrolls) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: (Countly.getViewUrl) ? Countly.getViewUrl() : window.location.pathname, period: period, device: JSON.stringify(currentDevice[0]), actionType: actionType }, apiPath, function(err, scrolls) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = scrolls.data;
-                            drawData();
+                            try {
+                                drawData();
+                            }
+                            catch (err) {
+                                log(logLevelEnums.ERROR, '[loadScrollmap] [loadData] ' + err);
+                            }
                         }
                     });
                 }
@@ -649,6 +848,8 @@
                         }
                     }
 
+                    log(logLevelEnums.INFO, "[loadScrollMap] [drawData] Heat data ", { totalViews: totalViews, highestViews: highestViews });
+
                     map.clear();
                     map.max(totalViews);
                     map.highest(highestViews);
@@ -661,7 +862,7 @@
                     map.addMarkers();
 
                     //GRADIENT MAP
-                    var totalPageWidth = Countly._internals.getDocWidth();
+                    var totalPageWidth = getDocWidth();
                     var resolutionXOffest = totalPageWidth - map._width;
                     var grdMapX = map._width + (resolutionXOffest / 2) - 70;
                     var grdMapY = map._viewPortHeight - 200;
@@ -711,10 +912,12 @@
     }
 
     function capitalize(str) {
+        log(logLevelEnums.INFO, '[capitalize] ' + formatArgs(arguments));
         return str[0].toUpperCase() + str.slice(1);
     }
 
     function readBody(xhr) {
+        log(logLevelEnums.INFO, '[readBody] ' + formatArgs(arguments));
         var data;
         if (!xhr.responseType || xhr.responseType === "text") {
             data = xhr.responseText;
@@ -730,35 +933,24 @@
 
     function sendXmlHttpRequest(params, apiPath, callback) {
         try {
-            Countly._internals.log("Sending XML HTTP request");
+            log(logLevelEnums.INFO, '[sendXmlHttpRequest] Sending XML HTTP request ' + JSON.stringify(params) + ' ' + apiPath);
             var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : null;
 
-            var data = Countly._internals.prepareParams(params);
-            var method = "GET";
-            if (data.length >= 2000) {
-                method = "POST";
-            }
-            else if (Countly.force_post) {
-                method = "POST";
-            }
+            var data = prepareParams(params);
 
-            if (method === "GET") {
-                xhr.open('GET', Countly.passed_data.url + apiPath + "?" + data, true);
-            }
-            else {
-                xhr.open('POST', Countly.passed_data.url + apiPath, true);
-                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            }
-            xhr.setRequestHeader("countly-token", Countly._internals.getToken());
+            xhr.open('POST', Countly.passed_data.url + apiPath, true);
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhr.setRequestHeader("countly-token", Countly._internals.getValueFromStorage('cly_token'));
 
             // fallback on error
             xhr.onreadystatechange = function() {
                 if (this.readyState == this.HEADERS_RECEIVED) {
                     try {
-                        Countly._internals.setToken(xhr.getResponseHeader("content-language"));
+                        Countly._internals.removeValueFromStorage('cly_token');
+                        Countly._internals.setValueInStorage('cly_token', xhr.getResponseHeader("content-language"));
                     }
                     catch (ex) {
-                        Countly._internals.log("failed, trying fallback header");
+                        log(logLevelEnums.ERROR, "[sendXmlHttpRequest] Failed setting token to storage, storing token to sdk instance");
                         Countly.token = xhr.getResponseHeader("content-language");
                     }
                 }
@@ -768,22 +960,18 @@
                     }
                 }
                 else if (this.readyState === 4) {
-                    Countly._internals.log("Failed Server XML HTTP request", this.status);
+                    log(logLevelEnums.ERROR, "[sendXmlHttpRequest] Failed Server XML HTTP request", this.status, JSON.parse(readBody(xhr)));
                     if (typeof callback === 'function') {
                         callback(true, params);
                     }
                 }
             };
-            if (method == "GET") {
-                xhr.send();
-            }
-            else {
-                xhr.send(data);
-            }
+
+            xhr.send(data);
         }
         catch (e) {
             // fallback
-            Countly._internals.log("Failed XML HTTP request", e);
+            log(logLevelEnums.ERROR, "[sendXmlHttpRequest] Failed XML HTTP request", e);
             if (typeof callback === 'function') {
                 callback(true, params);
             }

@@ -887,12 +887,18 @@
                     .then(function(res) {
                         if (res) {
                             context.commit("setAllEventsData", res);
-                            if (!context.state.selectedEventName) {
+                            if ((!context.state.selectedEventName) || (res.map && res.map[context.state.selectedEventName] && !res.map[context.state.selectedEventName].is_visible) || (res.list && res.list.indexOf(context.state.selectedEventName) === -1)) {
                                 var appId = countlyCommon.ACTIVE_APP_ID;
                                 var eventKeyForStorage = {};
-                                eventKeyForStorage[appId] = res.list[0];
+                                var eventKey = res.list[0];
+                                if (res.map && res.map[context.state.selectedEventName]) {
+                                    eventKey = res.list.find(function(item) {
+                                        return !(res.map[item] && res.map[item].is_visible === false);
+                                    });
+                                }
+                                eventKeyForStorage[appId] = eventKey;
                                 localStorage.setItem("eventKey", JSON.stringify(eventKeyForStorage));
-                                context.commit('setSelectedEventName', res.list[0]);
+                                context.commit('setSelectedEventName', eventKey);
                             }
                             context.commit("setCurrentCategory", countlyAllEvents.helpers.getCurrentCategory(context));
                             context.commit("setOmittedSegments", countlyAllEvents.helpers.getOmittedSegments(context.state.selectedEventName, res));

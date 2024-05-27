@@ -99,23 +99,20 @@
 
                 countlyPopulator.setSelectedTemplate(self.newApp.appTemplate);
                 countlyPopulator.getTemplate(self.newApp.appTemplate, function(template) {
-                    countlyPopulator.generateUsers(self.populatorMaxTime * 4, template);
-                });
-                var startTime = Math.round(Date.now() / 1000);
-                var progressBar = setInterval(function() {
-                    if (parseInt(self.populatorProgress, 10) < 100) {
-                        self.populatorProgress = parseFloat((Math.round(Date.now() / 1000) - startTime) / self.populatorMaxTime) * 100;
-                        if (self.populatorProgress > 100) {
-                            self.populatorProgress = 100;
+                    countlyPopulator.generateUsers(10, template);
+                    self.populatorProgress = 0;
+                    self.progressBar = setInterval(function() {
+                        if (countlyPopulator.isGenerating()) {
+                            self.populatorProgress = countlyPopulator.getCompletedRequestCount() / (template.uniqueUserCount) * 100;
                         }
-                    }
-                    else {
-                        self.populatorProgress = 100;
-                        countlyPopulator.stopGenerating(true);
-                        window.clearInterval(progressBar);
-                        self.isPopulatorFinished = true;
-                    }
-                }, 1000);
+                        else {
+                            self.populatorProgress = 100;
+                            countlyPopulator.stopGenerating(true);
+                            window.clearInterval(self.progressBar);
+                            self.isPopulatorFinished = true;
+                        }
+                    }, 1000);
+                });
             },
             handleSubmit: function(doc) {
                 var self = this;
