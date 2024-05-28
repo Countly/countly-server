@@ -53,7 +53,7 @@ class InternalEventTrigger {
      */
     async process(ob, eventType) {
         let rules = [];
-        if (ob.is_mock === true) {
+        if (ob !== undefined && ob.is_mock === true) {
             return ob;
         }
         if (eventType === '/master') {
