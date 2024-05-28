@@ -689,7 +689,7 @@ function uploadFile(myfile, id, callback) {
             common.db.collection("feedback_widgets").findAndModify({"_id": widgetId }, {}, {$set: changes}, function(err, widget) {
                 if (!err && widget) {
                     widget = widget.value;
-                    if (cohortsEnabled && (widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting)) {
+                    if (cohortsEnabled && ((widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting))) {
                         if (widget.cohortID) {
                             if (changes.targeting) { //we are not setting to empty one
                                 //changes.targeting.app_id = widget.app_id + "";
@@ -1777,6 +1777,7 @@ function uploadFile(myfile, id, callback) {
             newAtt.cohort_name = "[CLY]_" + type + id;
 
             if (!newAtt.user_segmentation || !newAtt.user_segmentation.query) {
+                newAtt.user_segmentation = newAtt.user_segmentation || {};
                 newAtt.user_segmentation.query = "{}";
                 newAtt.user_segmentation.queryText = "{}";
             }
