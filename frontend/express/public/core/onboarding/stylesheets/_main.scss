@@ -34,7 +34,7 @@
 }
 
 .setup-radio .el-radio__input {
-    display: none;
+    display: none !important;
 }
 
 .setup-radio .el-radio__label {
@@ -80,24 +80,28 @@
     background-image: url('../../../images/dashboard/onboarding/app-type-desktop.svg');
 }
 
-.setup-radio-icon--app-template-banking {
+.setup-radio-icon--app-template-finance {
     background-image: url('../../../images/dashboard/onboarding/app-template-banking.svg');
 }
 
-.setup-radio-icon--app-template-ecommerce {
+.setup-radio-icon--app-template-e-commerce {
     background-image: url('../../../images/dashboard/onboarding/app-template-ecommerce.svg');
 }
 
-.setup-radio-icon--app-template-education {
-    background-image: url('../../../images/dashboard/onboarding/app-template-education.svg');
+.setup-radio-icon--app-template-entertainment {
+    background-image: url('../../../images/dashboard/onboarding/app-template-entertainment.svg');
 }
 
 .setup-radio-icon--app-template-healthcare {
     background-image: url('../../../images/dashboard/onboarding/app-template-healthcare.svg');
 }
 
-.setup-radio-icon--app-template-gaming {
-    background-image: url('../../../images/dashboard/onboarding/app-template-gaming.svg');
+.setup-radio-icon--app-template-b2b-saas {
+    background-image: url('../../../images/dashboard/onboarding/app-template-saas.svg');
+}
+
+.setup-radio-icon--app-template-social {
+    background-image: url('../../../images/dashboard/onboarding/app-template-social.svg');
 }
 
 .is-checked .setup-radio-icon {

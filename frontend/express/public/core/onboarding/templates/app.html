@@ -77,7 +77,7 @@
                                     border>
                                     <div class="setup-radio-item">
                                         <div class="setup-radio-icon-bg bu-mr-2">
-                                            <div class="setup-radio-icon" :data-test-id="`app-template-${appTemplate.name.toLowerCase()}-icon`" :class="'setup-radio-icon--app-template-' + appTemplate.name.toLowerCase()"></div>
+                                            <div class="setup-radio-icon" :data-test-id="`app-template-${appTemplate.name.toLowerCase()}-icon`" :class="'setup-radio-icon--app-template-' + appTemplate.name.toLowerCase().replace(' ', '-')"></div>
                                         </div>
                                         <div>
                                             <div class="text-medium bu-is-capitalized">{{appTemplate.name}}</div>
