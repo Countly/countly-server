@@ -155,7 +155,10 @@
             }
         },
         onReady: function(context, rows) {
-            var selected = context.rootState.countlyViews.selectedViews || [];
+            var selected = [];
+            if (context && context.rootState && context.rootState.countlyViews) {
+                context.rootState.countlyViews.selectedViews || [];
+            }
             var addSelected = 0;
             var addedSelected = [];
             if (selected.length === 0 && (context && context.state && context.state.params && context.state.params.page && context.state.params.page === 1)) { //if first page and nothing selected
