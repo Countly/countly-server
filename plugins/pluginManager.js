@@ -1948,7 +1948,6 @@ var pluginManager = function pluginManager() {
             process.exit(1);
             return;
         }
-        console.log("New DB connection established to with pool size", maxPoolSize, "for pid", process.pid);
 
         /**
          * Log driver debug logs
