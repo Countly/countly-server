@@ -155,6 +155,41 @@
             handleContinueClick: function() {
                 app.navigate('#/initial-consent', true);
             },
+            getIconClass: function(appName) {
+                let className = 'cly-io cly-io-';
+                switch (appName) {
+                case 'entertainment':
+                    className += 'video-camera';
+                    break;
+                case 'finance':
+                    className += 'currency-dollar';
+                    break;
+                case 'b2b-saas':
+                    className += 'presentation-chart-line';
+                    break;
+                case 'healthcare':
+                    className += 'heart';
+                    break;
+                case 'e-commerce':
+                    className += 'shopping-bag';
+                    break;
+                case 'social':
+                    className += 'emoji-happy';
+                    break;
+                case 'mobile':
+                    className += 'device-mobile';
+                    break;
+                case 'desktop':
+                    className += 'desktop-computer';
+                    break;
+                case 'web':
+                    className = 'cly-is cly-is-globe-alt';
+                    break;
+                default:
+                    break;
+                }
+                return className;
+            }
         },
     });
 

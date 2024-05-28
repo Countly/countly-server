@@ -44,6 +44,7 @@
 .setup-radio-item {
     display: flex;
     align-items: center;
+    font-size: 24px;
 }
 
 .setup-radio-icon-bg {
@@ -58,6 +59,7 @@
 
 .is-checked .setup-radio-icon-bg {
     background-color: #0166D6;
+    color: white;
 }
 
 .setup-radio-icon {
@@ -78,30 +80,6 @@
 
 .setup-radio-icon--app-type-desktop {
     background-image: url('../../../images/dashboard/onboarding/app-type-desktop.svg');
-}
-
-.setup-radio-icon--app-template-finance {
-    background-image: url('../../../images/dashboard/onboarding/app-template-banking.svg');
-}
-
-.setup-radio-icon--app-template-e-commerce {
-    background-image: url('../../../images/dashboard/onboarding/app-template-ecommerce.svg');
-}
-
-.setup-radio-icon--app-template-entertainment {
-    background-image: url('../../../images/dashboard/onboarding/app-template-entertainment.svg');
-}
-
-.setup-radio-icon--app-template-healthcare {
-    background-image: url('../../../images/dashboard/onboarding/app-template-healthcare.svg');
-}
-
-.setup-radio-icon--app-template-b2b-saas {
-    background-image: url('../../../images/dashboard/onboarding/app-template-saas.svg');
-}
-
-.setup-radio-icon--app-template-social {
-    background-image: url('../../../images/dashboard/onboarding/app-template-social.svg');
 }
 
 .is-checked .setup-radio-icon {
@@ -142,7 +120,7 @@
 
 .quickstart-link, .quickstart-link:visited {
     color: #0166D6;
-}
+} 
 
 .quickstart-link:hover {
     color: #333c48;
