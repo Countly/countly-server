@@ -157,7 +157,7 @@
         onReady: function(context, rows) {
             var selected = [];
             if (context && context.rootState && context.rootState.countlyViews) {
-                context.rootState.countlyViews.selectedViews || [];
+                selected = context.rootState.countlyViews.selectedViews;
             }
             var addSelected = 0;
             var addedSelected = [];
