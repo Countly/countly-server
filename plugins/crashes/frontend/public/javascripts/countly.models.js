@@ -206,6 +206,14 @@ function transformAppVersion(inpVersion) {
                 dashboard.crtf[prop] = (dashboard.cr_s[prop] === 0) ? 0 : (Math.round(Math.min(dashboard.crf[prop] / dashboard.cr_s[prop], 1) * 100) / 100);
                 dashboard.crtnf[prop] = (dashboard.cr_s[prop] === 0) ? 0 : (Math.round(Math.min(dashboard.crnf[prop] / dashboard.cr_s[prop], 1) * 100) / 100);
 
+                // these are added to rebalance the value of session and user
+                if (dashboard.cr_s[prop] < (dashboard.crfses[prop] + dashboard.crnfses[prop])) {
+                    dashboard.cr_s[prop] += dashboard.crfses[prop] + dashboard.crnfses[prop];
+                }
+
+                if (dashboard.cr_u[prop] < (dashboard.crauf[prop] + dashboard.craunf[prop])) {
+                    dashboard.cr_u[prop] += dashboard.crauf[prop] + dashboard.craunf[prop];
+                }
             });
 
             ["cr-session", "crtf", "crtnf"].forEach(function(metric) {
@@ -1253,6 +1261,17 @@ function transformAppVersion(inpVersion) {
                 var newKey = splitKey[0] + '.' + splitKey.slice(1).join(':');
 
                 resultQuery[newKey] = inpQuery[key];
+            }
+            else if (['app_version_list', 'error', 'latest_version'].includes(key)) {
+                if (inpQuery[key].rgxntc) {
+                    resultQuery[key] = { $not: { $regex: inpQuery[key].rgxntc } };
+                }
+                else if (inpQuery[key].rgxbw) {
+                    resultQuery[key] = { $regex: '^' + inpQuery[key].rgxbw };
+                }
+                else {
+                    resultQuery[key] = inpQuery[key];
+                }
             }
             else if (key.startsWith('is_hidden')) {
                 Object.keys(inpQuery[key]).forEach(function(innerKey) {

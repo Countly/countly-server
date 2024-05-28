@@ -1348,7 +1348,7 @@ plugins.setConfigs("dashboards", {
                         owner: report.user,
                         purpose: "LoginAuthToken",
                         temporary: true,
-                        ttl: 300, //5 minutes
+                        ttl: 540, //9 minutes
                         callback: function(er, token) {
                             if (er) {
                                 return resolve();
@@ -1366,7 +1366,7 @@ plugins.setConfigs("dashboards", {
                                 options.dimensions = {width: 800, padding: 100};
                                 options.token = token;
                                 options.source = "dashboards/" + imageName;
-                                options.timeout = 120000;
+                                options.timeout = 240000;
                                 options.cbFn = function(opt) {
                                     var rep = opt.report || {};
                                     var reportDateRange = rep.date_range || "30days";
@@ -1389,7 +1389,7 @@ plugins.setConfigs("dashboards", {
                                 //$(".funnels table colgroup col:last-child").width("80px");
                                 //};
 
-                                options.waitForRegex = new RegExp(/o\/dashboards?/gi);
+                                options.waitForRegex = new RegExp(/o\/dashboards?/i);
 
                                 options.id = "#content";
 
@@ -1511,9 +1511,9 @@ plugins.setConfigs("dashboards", {
         });
     });
 
-    plugins.register("/i/users/delete", function(ob) {
+    plugins.register("/i/users/delete", async function(ob) {
         var email = ob.data.email + "";
-        common.db.collection('dashboards').update({}, {$pull: {shared_email_edit: email, shared_email_view: email}}, {multi: true}, function() {});
+        await common.db.collection('dashboards').update({}, {$pull: {shared_email_edit: email, shared_email_view: email}}, {multi: true}, function() {});
     });
 
     /**

@@ -1,5 +1,5 @@
 const { DoFinish } = require('./do_finish'),
-    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR, MAX_RUNS } = require('../../send');
+    { State, Status, Creds, pools, FRAME, PushError, SendError, ERROR, MAX_RUNS } = require('../../send');
 
 /**
  * Stream responsible for handling sending results:
@@ -118,8 +118,9 @@ class Connector extends DoFinish {
             return;
         }
         else if (!message) {
-            let query = Message.filter(new Date(), this.state.cfg.sendAhead);
-            query._id = push.m;
+            // let query = Message.filter(new Date(), this.state.cfg.sendAhead);
+            // query._id = push.m;
+            let query = { _id: push.m };
             this.db.collection('messages').findOne(query).then(msg => {
                 if (msg) {
                     this.log.d('sending message %s, %j', push.m, msg);

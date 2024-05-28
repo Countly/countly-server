@@ -10,16 +10,18 @@ class StreamWrapper extends PassThrough {
      * Stream constructor
      * 
      * @param {Object} col mongo collection object
+     * @param {Object} filter object to filter push records
      * @param {number} sendAhead include notifications scheduled this far in the future
      * @param {number} timeout timeout to restart stream
      * @param {number} maxErrors maximum number of underlying stream errors including timeouts before ending the stream
      */
-    constructor(col, sendAhead = 0, timeout = 10000, maxErrors = 10) {
+    constructor(col, filter = {}, sendAhead = 0, timeout = 10000, maxErrors = 10) {
         super({
             objectMode: true,
             emitClose: true
         });
         this.col = col;
+        this.filter = filter;
         this.sendAhead = sendAhead;
         this.timeout = timeout;
         this.maxErrors = maxErrors;
@@ -36,7 +38,7 @@ class StreamWrapper extends PassThrough {
      */
     newStream() {
         let less = dbext.oidBlankWithDate(new Date(Date.now() + this.sendAhead)),
-            stream = this.col.find({_id: {$lte: less, $gt: this.last}}).stream(),
+            stream = this.col.find({ ...this.filter, _id: {$lte: less, $gt: this.last} }).stream(),
             /** periodic function for checking for timeout */
             check = () => {
                 if (this.lastEmited === null) {

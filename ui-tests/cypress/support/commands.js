@@ -9,13 +9,23 @@ Cypress.Commands.add("clearInput", (element) => {
     cy.getElement(element).clear();
 });
 
-Cypress.Commands.add("typeSelectInput", (element, tag) => {
-    cy.getElement(element).type(tag + '{enter}', { force: true });
+Cypress.Commands.add("typeSelectInput", (element, ...tags) => {
+    for (var i = 0; i < tags.length; i++) {
+        cy.getElement(element).type(tags[i] + '{enter}', { force: true });
+    }
     cy.clickBody();
 });
 
 Cypress.Commands.add('getText', { prevSubject: true }, (subject) => {
     return cy.wrap(subject).invoke('text');
+});
+
+Cypress.Commands.add("clickDataTableMoreButtonItem", (element, rowIndex = 0) => {
+    cy.getElement("datatable-more-button-area")
+        .eq(rowIndex).invoke('show')
+        .trigger('mouseenter', { force: true });
+
+    cy.clickElement(element, true);
 });
 
 Cypress.Commands.add("clickElement", (element, isForce = false, index = 0) => {
@@ -33,8 +43,31 @@ Cypress.Commands.add("selectOption", (element, option) => {
     cy.clickOption('.el-select-dropdown__item', option);
 });
 
+Cypress.Commands.add("selectListBoxItem", (element, item) => {
+    cy.getElement(element).click();
+    cy.clickOption('.cly-vue-listbox__item-label', item);
+});
+
+Cypress.Commands.add("selectCheckboxOption", (element, ...options) => {
+    cy.getElement(element).click();
+    for (var i = 0; i < options.length; i++) {
+        cy.clickOption('.el-checkbox__label', options[i]);
+    }
+    cy.clickBody();
+});
+
 Cypress.Commands.add("clickOption", (element, option) => {
     cy.getElement(element).contains(new RegExp("^" + option + "$", "g")).click();
+});
+
+Cypress.Commands.add("selectValue", (element, valueText) => {
+    cy.getElement(element).then(($select) => {
+        cy.wrap($select).find('option').contains(valueText).then(($option) => {
+            cy.wrap($option).invoke('val').then((value) => {
+                cy.wrap($select).select(value);
+            });
+        });
+    });
 });
 
 Cypress.Commands.add("selectColor", (element, colorCode) => {
@@ -165,15 +198,15 @@ Cypress.Commands.add('checkPaceActive', () => {
         });
 });
 
-Cypress.Commands.add("scrollPageToBottom", (element, index = 0) => {
+Cypress.Commands.add("scrollPageToBottom", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('bottom', { ensureScrollable: false });
 });
 
-Cypress.Commands.add("scrollPageToTop", (element, index = 0) => {
+Cypress.Commands.add("scrollPageToTop", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('top', { ensureScrollable: false });
 });
 
-Cypress.Commands.add("scrollPageToCenter", (element, index = 0) => {
+Cypress.Commands.add("scrollPageToCenter", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('center', { ensureScrollable: false });
 });
 
@@ -198,6 +231,7 @@ Cypress.Commands.add('verifyElement', ({
     attrText,
     shouldNot = false
 }) => {
+
     if (!shouldNot) {
 
         if (labelElement != null && isElementVisible === true) {

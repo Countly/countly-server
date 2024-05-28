@@ -43,3 +43,4 @@ frontend/express/public/stylesheets/vue/clyvue.css.map
 log/
 log/supervisord/
 plugins/plugins.json.*
+.sdk

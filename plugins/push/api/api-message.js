@@ -1,4 +1,5 @@
 const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES, Template, PLATFORM } = require('./send'),
+    crypto = require("crypto"),
     { DEFAULTS, RecurringType } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
@@ -6,6 +7,7 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
     { request } = require('./proxy'),
     {ObjectId} = require("mongodb");
 
+const countlyFetch = require("../../../api/parts/data/fetch.js");
 
 /**
  * Validate data & construct message out of it, throw in case of error
@@ -149,7 +151,7 @@ async function validate(args, draft = false) {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/test Message / test
- * @apiName message/test
+ * @apiName message test
  * @apiDescription Send push notification to test users specified in application plugin configuration
  * @apiGroup Push Notifications
  *
@@ -256,7 +258,7 @@ module.exports.test = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/create Message / create
- * @apiName message/create
+ * @apiName message create
  * @apiDescription Create push notification.
  * Set status to "draft" to create a draft, leave it unspecified otherwise.
  * @apiGroup Push Notifications
@@ -308,7 +310,7 @@ module.exports.create = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/update Message / update
- * @apiName message/update
+ * @apiName message update
  * @apiDescription Update push notification
  * @apiGroup Push Notifications
  *
@@ -383,7 +385,7 @@ module.exports.update = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/remove Message / remove
- * @apiName message/remove
+ * @apiName message remove
  * @apiDescription Remove message by marking it as deleted (it stays in the database for consistency)
  * @apiGroup Push Notifications
  *
@@ -441,7 +443,7 @@ module.exports.remove = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/toggle Message / API or Automated / toggle
- * @apiName message/toggle
+ * @apiName message toggle
  * @apiDescription Stop active or start inactive API or automated message
  * @apiGroup Push Notifications
  *
@@ -525,7 +527,7 @@ module.exports.toggle = async params => {
  * @param {object} params params object
  * 
  * @api {POST} o/push/message/estimate Message / estimate audience
- * @apiName message/estimate
+ * @apiName message estimate
  * @apiDescription Estimate message audience
  * @apiGroup Push Notifications
  *
@@ -590,7 +592,6 @@ module.exports.estimate = async params => {
         common.returnMessage(params, 400, {errors: ['No such app']}, null, true);
         return true;
     }
-
     for (let p of data.platforms) {
         let id = common.dot(app, `plugins.push.${p}._id`);
         if (!id || id === 'demo') {
@@ -598,17 +599,23 @@ module.exports.estimate = async params => {
         }
     }
 
-    let steps = await new Audience(log, new Message(data), app).steps({la: 1}),
-        cnt = await common.db.collection(`app_users${data.app}`).aggregate(steps.concat([{$count: 'count'}])).toArray(),
-        count = cnt[0] && cnt[0].count || 0,
-        las = await common.db.collection(`app_users${data.app}`).aggregate(steps.concat([
-            {$project: {_id: '$la'}},
-            {$group: {_id: '$_id', count: {$sum: 1}}}
-        ])).toArray(),
-        locales = las.reduce((a, b) => {
-            a[b._id || 'default'] = b.count;
-            return a;
-        }, {default: 0});
+    const steps = await new Audience(log, new Message(data), app).steps({la: 1});
+    const cnt = await common.db.collection(`app_users${data.app}`)
+        .aggregate(steps.concat([{$count: 'count'}]))
+        .toArray();
+    const count = cnt[0] && cnt[0].count || 0;
+    const las = await common.db.collection(`app_users${data.app}`)
+        .aggregate(
+            steps.concat([
+                {$project: {_id: '$la'}},
+                {$group: {_id: '$_id', count: {$sum: 1}}}
+            ])
+        )
+        .toArray();
+    const locales = las.reduce((a, b) => {
+        a[b._id || 'default'] = b.count;
+        return a;
+    }, {default: 0});
 
     common.returnOutput(params, {count, locales});
 };
@@ -619,7 +626,7 @@ module.exports.estimate = async params => {
  * @param {object} params params object
  * 
  * @api {GET} o/push/message/mime Message / attachment MIME
- * @apiName message/mime
+ * @apiName message mime
  * @apiDescription Get MIME information of the URL specified by sending HEAD request and then GET if HEAD doesn't work. Respects proxy setting, follows redirects and returns end URL along with content type & length.
  * @apiGroup Push Notifications
  *
@@ -686,7 +693,7 @@ module.exports.mime = async params => {
  * @param {object} params params object
  * 
  * @api {GET} o/push/message/GET Message / GET
- * @apiName message/GET
+ * @apiName message
  * @apiDescription Get message by ID
  * @apiGroup Push Notifications
  *
@@ -721,6 +728,114 @@ module.exports.one = async params => {
     }
 
     common.returnOutput(params, msg.json);
+    return true;
+};
+
+/**
+ * Get periodic message stats
+ * @param {object} params params object
+ * 
+ * @api {GET} o/push/message/stats Get periodic message stats
+ * @apiName message-stats
+ * @apiDescription Get sent and actioned event counts for a single message
+ * @apiGroup Push Notifications
+ * 
+ * @apiQuery {ObjectID} _id Message ID
+ * @apiQuery {String} period Period of the stats. Possible values are: 30days, 24weeks, 12months
+ * 
+ * @apiSuccess {Object} Event type indexed periodical event counts
+ * @apiSuccessExample {json} Success-Response
+ *      HTTP/1.1 200 Success
+ *      {
+ *          "sent": [
+ *              [ "2024-03-04T21:00:00.000Z", 23  ],
+ *              [ "2024-03-05T21:00:00.000Z", 41  ],
+ *              [ "2024-03-06T21:00:00.000Z", 8   ],
+ *              [ "2024-03-07T21:00:00.000Z", 142 ],
+ *              [ "2024-03-08T21:00:00.000Z", 12  ],
+ *              [ "2024-03-09T21:00:00.000Z", 412 ]
+ *          ],
+ *          "action": [
+ *              [ "2024-03-04T21:00:00.000Z", 23  ],
+ *              [ "2024-03-05T21:00:00.000Z", 41  ],
+ *              [ "2024-03-06T21:00:00.000Z", 8   ],
+ *              [ "2024-03-07T21:00:00.000Z", 142 ],
+ *              [ "2024-03-08T21:00:00.000Z", 12  ],
+ *              [ "2024-03-09T21:00:00.000Z", 412 ]
+ *          ]
+ *      }
+ */
+module.exports.periodicStats = async params => {
+    const dateDeltaMap = {
+        "30days": [30, "day"],
+        "24weeks": [24, "week"],
+        "12months": [12, "month"]
+    };
+    const validation = common.validateArgs(params.qstring, {
+        _id: { type: "ObjectID", required: true },
+        period: { type: 'String', required: false, in: Object.keys(dateDeltaMap) },
+    }, true);
+    if (!validation?.result) {
+        const errors = validation?.errors || ["Invalid parameters"];
+        common.returnMessage(params, 400, { errors }, null, true);
+        return true;
+    }
+    const { _id: messageId, period } = validation.obj;
+    const delta = dateDeltaMap[period];
+    const message = await common.db.collection("messages").findOne({ _id: ObjectId(messageId) });
+    const app = await common.db.collection("apps").findOne({ _id: message?.app });
+    if (!message || !app || !delta) {
+        common.returnMessage(params, 400, { errors: ["Invalid or missing parameters"] }, null, true);
+        return true;
+    }
+    const app_id = message.app.toString();
+    const cols = {
+        sent: 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + app_id).digest('hex'),
+        action: 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_action') + app_id).digest('hex')
+    };
+    const endDate = moment().tz(app.timezone).toDate();
+    const startDate = moment(endDate).subtract(...delta);
+    const dateRange = periodicDateRange(startDate, endDate, app.timezone, delta[1]);
+    const ob = { app_id, appTimezone: app.timezone, qstring: { period, segmentation: "i" } };
+    const results = {};
+    for (const colName in cols) {
+        results[colName] = await new Promise(res => {
+            countlyFetch.getTimeObjForEvents(cols[colName], ob, (doc) => {
+                const result = [];
+                if (delta[1] === "week") {
+                    for (const startDayOfTheWeek of dateRange) {
+                        const daysOfTheWeek = periodicDateRange(
+                            startDayOfTheWeek,
+                            moment(startDayOfTheWeek).tz(app.timezone).endOf("isoWeek").toDate(),
+                            app.timezone,
+                            "day"
+                        );
+                        let weekValue = 0;
+                        for (const date of daysOfTheWeek) {
+                            const { months, date: days, years } = moment(date).tz(app.timezone).toObject();
+                            const value = doc?.[years]?.[months + 1]?.[days]?.[messageId]?.c;
+                            if (value) {
+                                weekValue += value;
+                            }
+                        }
+                        result.push([startDayOfTheWeek, weekValue]);
+                    }
+                }
+                else {
+                    for (const date of dateRange) {
+                        const { months, date: days, years } = moment(date).tz(app.timezone).toObject();
+                        let context = doc?.[years]?.[months + 1];
+                        if (delta[1] === "day") {
+                            context = context?.[days];
+                        }
+                        result.push([date, context?.[messageId]?.c || 0]);
+                    }
+                }
+                res(result.map(([ date, value]) => ([ date.toISOString(), value ])));
+            });
+        });
+    }
+    common.returnOutput(params, results);
     return true;
 };
 
@@ -1023,7 +1138,7 @@ module.exports.notificationsForUser = async params => {
  * @returns {Promise} resolves to true
  * 
  * @api {GET} o/push/message/all Message / find
- * @apiName message/all
+ * @apiName message all
  * @apiDescription Get messages
  * Returns one of three groups: one time messages (neither auto, nor api params set or set to false), automated messages (auto = "true"), API messages (api = "true")
  * @apiGroup Push Notifications
@@ -1209,6 +1324,29 @@ module.exports.all = async params => {
 
     return true;
 };
+
+/**
+ * Returns the starting days of the given period between the given start and end dates.
+ * @param   {Date}   start    Start date
+ * @param   {Date}   end      End date
+ * @param   {String} timezone End date
+ * @param   {String} period   Period interval: day|month|week|year
+ * @returns {Date[]}          Array of dates in between start and end (both start and end included)
+ */
+function periodicDateRange(start, end, timezone, period = "day") {
+    const startFrom = period === "week" ? "isoWeek" : period;
+    const startObj = moment(start).tz(timezone).startOf("day").startOf(startFrom);
+    const endObj = moment(end).tz(timezone).startOf("day").startOf(startFrom);
+    const result = [];
+    if (startObj.isAfter(endObj)) {
+        return [];
+    }
+    while (startObj.isSameOrBefore(endObj, period)) {
+        result.push(startObj.toDate());
+        startObj.add(1, period);
+    }
+    return result;
+}
 
 /**
  * Generate demo data for populator

@@ -180,6 +180,7 @@ usage.processSessionDuration = function(params, callback) {
         session_duration_limit = parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
 
     if (session_duration) {
+        var original_duration = session_duration;
         if (session_duration_limit && session_duration > session_duration_limit) {
             session_duration = session_duration_limit;
         }
@@ -200,7 +201,8 @@ usage.processSessionDuration = function(params, callback) {
         if (!params.qstring.begin_session) {
             plugins.dispatch("/session/duration", {
                 params: params,
-                session_duration: session_duration
+                session_duration: session_duration,
+                od: original_duration
             });
         }
 
@@ -229,31 +231,9 @@ usage.getPredefinedMetrics = function(params, userProps) {
                 params.is_os_processed = true;
             }
             else {
-                var value;
-                var length;
-                for (var key in common.os_mapping) {
-                    if (params.qstring.metrics._os.toLowerCase().startsWith(key)) {
-                        if (value) {
-                            if (length < key.length) {
-                                value = common.os_mapping[key];
-                                length = key.length;
-                            }
-                        }
-                        else {
-                            value = common.os_mapping[key];
-                            length = key.length;
-                        }
-                    }
-                }
-
-                if (!value) {
-                    params.qstring.metrics._os_version = params.qstring.metrics._os[0].toLowerCase() + params.qstring.metrics._os_version;
-                    params.is_os_processed = true;
-                }
-                else {
-                    params.qstring.metrics._os_version = value + params.qstring.metrics._os_version;
-                    params.is_os_processed = true;
-                }
+                params.qstring.metrics._os = params.qstring.metrics._os.replace(/\[|\]/g, '');
+                params.qstring.metrics._os_version = "[" + params.qstring.metrics._os + "]" + params.qstring.metrics._os_version;
+                params.is_os_processed = true;
             }
         }
         if (params.qstring.metrics._app_version) {
@@ -292,6 +272,15 @@ usage.getPredefinedMetrics = function(params, userProps) {
             }
             else if (params.qstring.metrics._os === "macOS") {
                 params.qstring.metrics._manufacturer = "Apple";
+            }
+        }
+        if (params.qstring.metrics._has_hinge) {
+            var hasHingeValue = params.qstring.metrics._has_hinge;
+            if (hasHingeValue === "true" || hasHingeValue === true || hasHingeValue === "hinged") {
+                params.qstring.metrics._has_hinge = "hinged";
+            }
+            else {
+                params.qstring.metrics._has_hinge = "not_hinged";
             }
         }
     }
@@ -347,6 +336,11 @@ usage.getPredefinedMetrics = function(params, userProps) {
                     name: "_resolution",
                     set: "resolutions",
                     short_code: common.dbUserMap.resolution
+                },
+                {
+                    name: "_has_hinge",
+                    set: "has_hinge",
+                    short_code: common.dbUserMap.has_hinge
                 }
             ]
         },

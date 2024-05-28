@@ -4,7 +4,6 @@
     jQuery(function() {
         if (window.countlyQueryBuilder) {
             var indexedProps = [
-                "app_version",
                 "background",
                 "cpu",
                 "device",
@@ -28,9 +27,6 @@
                             ? row.value.data
                             : [row.value.data]
                         ).forEach(function(v) {
-                            if (row.property.id === "app_version") {
-                                v = (v + "").replace(/\./g, ":");
-                            }
                             subquery[row.property.id + "." + v] = {
                                 $exists: !negateValue,
                             };
@@ -45,7 +41,8 @@
                             "cly.=": "$in",
                             "cly.!=": "$nin",
                             "cly.contains": "$regex",
-                            "cly.beginswith": "$regex",
+                            "cly.notcontain": "rgxntc",
+                            "cly.beginswith": "rgxbw",
                             "cly.between": function(r) {
                                 return {
                                     $gte: r.value.data[0],
@@ -162,9 +159,6 @@
                                 var dotIndex = key.indexOf(".");
                                 var propertyId = key.slice(0, dotIndex);
                                 var value = key.slice(dotIndex + 1, key.length);
-                                if (propertyId === "app_version") {
-                                    value = (value + "").replace(/:/g, ".");
-                                }
                                 return {
                                     propertyId: propertyId,
                                     operatorId: data ? "cly.=" : "cly.!=",
@@ -176,6 +170,18 @@
                             $regex: function(data) {
                                 return {
                                     operatorId: "cly.contains",
+                                    valueData: data,
+                                };
+                            },
+                            rgxntc: function(data) {
+                                return {
+                                    operatorId: 'cly.notcontain',
+                                    valueData: data,
+                                };
+                            },
+                            rgxbw: function(data) {
+                                return {
+                                    operatorId: 'cly.beginswith',
                                     valueData: data,
                                 };
                             },

@@ -271,6 +271,7 @@
                         <form>\
                             <el-input\
                                 :disabled="disabled"\
+                                test-id="cly-listbox-search-input"\
                                 autocomplete="off"\
                                 v-model="searchQuery"\
                                 :placeholder="searchPlaceholder">\
@@ -301,7 +302,7 @@
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
                                             <slot name="option-label" v-bind="option">\
-                                              <div :data-test-id="testId + \'-item-\' + (option.label ? option.label.replace(\' \', \'-\').toLowerCase() : \' \')" class="cly-vue-listbox__item-label" v-tooltip="option.label">{{decodeHtml(option.label)}}</div>\
+                                              <div :data-test-id="testId + \'-item-\' + (option.label ? option.label.replaceAll(\' \', \'-\').toLowerCase() : \' \')" class="cly-vue-listbox__item-label" v-tooltip="option.label">{{decodeHtml(option.label)}}</div>\
                                             </slot>\
                                         </div>\
                                         <div class="bu-level-right" v-if="hasRemovableOptions || !!$scopedSlots[\'option-suffix\']">\
@@ -313,7 +314,7 @@
                             </div>\
                         </div>\
                     </vue-scroll>\
-                    <div v-else class="cly-vue-listbox__no-data">\
+                    <div v-else class="cly-vue-listbox__no-data color-cool-gray-50 bu-pb-4 bu-has-text-weight-normal" data-test-id="cly-listbox-no-match-found-label">\
                         {{noMatchFoundPlaceholder}}\
                     </div>\
                 </div>'
@@ -493,7 +494,7 @@
                                     :key="option.value"\
                                     v-for="option in sortedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
-                                    <el-checkbox :test-id="testId + \'-\' + (option.label ? option.label.replace(\' \', \'-\').toLowerCase() : \'el-checkbox\')" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
+                                    <el-checkbox :test-id="testId + \'-\' + (option.label ? option.label.replaceAll(\' \', \'-\').toLowerCase() : \'el-checkbox\')" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\
                                 </draggable>\
                             </el-checkbox-group>\
@@ -517,7 +518,17 @@
             allPlaceholder: {type: String, default: 'All'},
             hideAllOptionsTab: {type: Boolean, default: false},
             onlySelectedOptionsTab: {type: Boolean, default: false},
-            prefixLabelWithTabId: {type: Boolean, default: false}
+            prefixLabelWithTabId: {type: Boolean, default: false},
+            disabledOptions: {
+                type: Object,
+                default: function() {
+                    return {
+                        label: null,
+                        options: {}
+                    };
+                },
+                required: false
+            },
         },
         data: function() {
             return {
@@ -632,6 +643,9 @@
             },
             hasSelectedOptionsTab: function() {
                 return this.onlySelectedOptionsTab || (this.isMultiple && this.remote && this.value && this.value.length > 0);
+            },
+            hasDisabledOptions: function() {
+                return Object.keys(this.disabledOptions.options).length !== 0;
             },
             showTabs: function() {
                 if (this.onlySelectedOptionsTab) {
@@ -1019,6 +1033,11 @@
                 skin: { default: "switch", type: String},
                 disabled: {type: Boolean, default: false}
             },
+            data: function() {
+                return {
+                    active: this.value
+                };
+            },
             computed: {
                 topClasses: function() {
                     var classes = [];
@@ -1055,21 +1074,26 @@
                         }
                     }
                     else if (this.skin === "star") {
-                        classes.push("fa fa-star");
-                        if (value) {
-                            classes.push("color-yellow-100");
+                        classes.push("fa");
+                        if (value || this.active) {
+                            classes.push("fa-star color-yellow-100");
                         }
                         else {
-                            classes.push("color-cool-gray-50");
+                            classes.push("fa-star-o color-cool-gray-50");
                         }
                     }
                     return classes;
+                },
+                mouseOver: function() {
+                    if (!this.disabled) {
+                        this.active = !this.active;
+                    }
                 }
             },
             template: '<div class="cly-vue-check" v-bind:class="topClasses">\n' +
                             '<div class="check-wrapper text-clickable">\n' +
                                 '<input type="checkbox" class="check-checkbox" :checked="value">\n' +
-                                '<i v-bind:class="labelClass" @click.stop="setValue(!value)"></i>\n' +
+                                '<i v-bind:class="labelClass" @mouseover="mouseOver" @mouseleave="mouseOver" @click.stop="setValue(!value)"></i>\n' +
                                 '<span v-if="label" class="check-text" @click.stop="setValue(!value)">{{label}}</span>\n' +
                             '</div>\n' +
                         '</div>'
@@ -1145,22 +1169,22 @@
         template: '<div class="cly-vue-radio-block" v-bind:class="topClasses" style="height: 100%; overflow: auto; border-right: 1px solid #ececec">\n' +
                              '<div :class="wrapperClasses" style="height: 100%">\n' +
                                 '<div @click="setValue(item.value)" v-for="(item, i) in items" :key="i"  :class="buttonClasses" :style="buttonStyles" >\n' +
-                                    '<div :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex bu-is-justify-content-center bu-is-align-items-center" style="height: 100%;" :data-test-id="`cly-radio-button-box-${item.label.replace(\' \', \'-\').toLowerCase()}`">\
-                                        <div class="bu-is-flex" :data-test-id="`cly-radio-box-container-${item.label.replace(\' \', \'-\').toLowerCase()}`">\
-                                            <div class="box" :data-test-id="`cly-radio-box-${item.label.replace(\' \', \'-\').toLowerCase()}`"></div>\
+                                    '<div :class="{\'selected\': value == item.value}" class="radio-button bu-is-flex bu-is-justify-content-center bu-is-align-items-center" style="height: 100%;" :data-test-id="`cly-radio-button-box-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`">\
+                                        <div class="bu-is-flex" :data-test-id="`cly-radio-box-container-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`">\
+                                            <div class="box" :data-test-id="`cly-radio-box-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`"></div>\
                                             <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">\
                                                 <div>\
-                                                    <span class="text-medium" :data-test-id="`cly-radio-label-${item.label.replace(\' \', \'-\').toLowerCase()}`">{{item.label}}</span>\
-                                                    <span v-if="item.description" :data-test-id="`cly-radio-description-${item.label.replace(\' \', \'-\').toLowerCase()}`" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span>\
+                                                    <span class="text-medium" :data-test-id="`cly-radio-label-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`">{{item.label}}</span>\
+                                                    <span v-if="item.description" :data-test-id="`cly-radio-description-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span>\
                                                 </div>\
                                                 <div class="bu-is-flex bu-is-align-items-center number">\
-                                                    <h2 v-if="item.isEstimate" class="is-estimate" v-tooltip="item.estimateTooltip" :data-test-id="`cly-radio-number-${item.label.replace(\' \', \'-\').toLowerCase()}`">~{{item.number}}</h2>\
-                                                    <h2 v-else :data-test-id="`cly-radio-number-${item.label.replace(\' \', \'-\').toLowerCase()}`">{{item.number}}</h2>\
-                                                    <div v-if="item.trend == \'u\'" class="cly-trend-up bu-ml-2" :data-test-id="`cly-radio-trend-${item.label.replace(\' \', \'-\').toLowerCase()}`">\
-                                                        <i class="cly-trend-up-icon ion-android-arrow-up" :data-test-id="`cly-radio-trend-icon-${item.label.replace(\' \', \'-\').toLowerCase()}`"></i><span :data-test-id="`cly-radio-trend-value-${item.label.replace(\' \', \'-\').toLowerCase()}`">{{item.trendValue}}</span>\
+                                                    <h2 v-if="item.isEstimate" class="is-estimate" v-tooltip="item.estimateTooltip" :data-test-id="`cly-radio-number-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`">~{{item.number}}</h2>\
+                                                    <h2 v-else :data-test-id="`cly-radio-number-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`">{{item.number}}</h2>\
+                                                    <div v-if="item.trend == \'u\'" class="cly-trend-up bu-ml-2" :data-test-id="`cly-radio-trend-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`">\
+                                                        <i class="cly-trend-up-icon ion-android-arrow-up" :data-test-id="`cly-radio-trend-icon-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`"></i><span :data-test-id="`cly-radio-trend-value-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`">{{item.trendValue}}</span>\
                                                     </div>\
-                                                    <div v-if="item.trend == \'d\'" class="cly-trend-down bu-ml-2" :data-test-id="`cly-radio-trend-${item.label.replace(\' \', \'-\').toLowerCase()}`">\
-                                                        <i class="cly-trend-down-icon ion-android-arrow-down" :data-test-id="`cly-radio-trend-icon-${item.label.replace(\' \', \'-\').toLowerCase()}`"></i><span :data-test-id="`cly-radio-trend-value-${item.label.replace(\' \', \'-\').toLowerCase()}`">{{item.trendValue}}</span>\
+                                                    <div v-if="item.trend == \'d\'" class="cly-trend-down bu-ml-2" :data-test-id="`cly-radio-trend-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`">\
+                                                        <i class="cly-trend-down-icon ion-android-arrow-down" :data-test-id="`cly-radio-trend-icon-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`"></i><span :data-test-id="`cly-radio-trend-value-${item.label.replaceAll(\' \', \'-\').toLowerCase()}`">{{item.trendValue}}</span>\
                                                     </div>\
                                                 </div>\
                                             </div>\
@@ -1200,16 +1224,18 @@
                         ref="selectx"\
                         :noMatchFoundPlaceholder="i18n(\'common.no-email-addresses\')"\
                         class="cly-vue-select-email"\
+                        :test-id="testId"\
                         @input="handleInput">\
                         <template v-slot:header="selectScope">\
                             <el-input\
+                                test-id="search-email-input"\
                                 v-model="currentInput"\
                                 :class="{\'is-error\': hasError}"\
                                 :placeholder="i18n(\'common.email-example\')"\
                                 oninput="this.value = this.value.toLowerCase();"\
                                 @keyup.enter.native="tryPush">\
                             </el-input>\
-                            <div class="bu-mt-2 color-red-100 text-small" v-show="hasError">\
+                            <div class="bu-mt-2 color-red-100 text-small" v-show="hasError && showError">\
                                 {{i18n("common.invalid-email-address", currentInput)}}\
                             </div>\
                         </template>\
@@ -1222,6 +1248,15 @@
                 type: String,
                 default: CV.i18n('common.enter-email-addresses'),
                 required: false
+            },
+            testId: {
+                type: String,
+                default: 'cly-select-email-test-id',
+                required: false
+            },
+            showError: {
+                type: Boolean,
+                default: true // Default to true to keep existing behavior if prop not provided
             }
         },
         data: function() {

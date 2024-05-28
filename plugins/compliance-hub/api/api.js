@@ -1,4 +1,5 @@
 var plugin = {},
+    crypto = require('crypto'),
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     appUsers = require('../../../api/parts/mgmt/app_users.js'),

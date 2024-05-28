@@ -1,0 +1,60 @@
+<div v-bind:class="[componentId]">
+    <cly-header
+        :title="i18n('management.preset')"
+    >
+        <cly-back-link slot="header-top" link="/" :title="i18n('management.preset.back-to-home')"></cly-back-link>
+        <template v-slot:header-right>
+            <el-button type="success" icon="el-icon-circle-plus" @click="createNewPreset">{{i18n('management.preset.create-button')}}</el-button>
+        </template>
+    </cly-header>
+
+    <cly-main class="preset-table">
+        <cly-datatable-n 
+            :rows="rows" 
+            :resizable="true" 
+            :force-loading="isLoading" 
+            :hide-top="true"
+            :hide-bottom="true"
+            :sortable="true"
+            :default-sort="{prop: 'sort_order', order: 'ascending'}"
+            @drag-start="onDragStart"
+            @drag-end="reorderPresets"
+        >
+            <template v-slot="scope">
+                <el-table-column prop="drag-icon" width="32" class-name="drag-icon">
+                    <template v-slot="rowScope">
+                        <img class="drag-icon" v-if="rowScope.row.hover" src="images/drill/drag-icon.svg" />
+                    </template>
+                </el-table-column>
+                <el-table-column prop="name" :label="i18n('management.preset.column.name')">
+                    <template v-slot="rowScope">
+                        <div class="bu-is-flex">
+                            <span class="has-ellipsis bu-has-text-weight-medium">{{ unescapeHtml(rowScope.row.name) }}</a></span>
+                            <cly-check
+                                class="bu-pl-1"
+                                element-loading-spinner="el-icon-loading"
+                                @input="toggleFav(scope, rowScope.row)"
+                                :value="rowScope.row.fav"
+                                skin="star">
+                            </cly-check>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="range_label" :label="i18n('management.preset.column.range')"></el-table-column>
+                <el-table-column prop="owner_name" :label="i18n('management.preset.column.owner')"></el-table-column>
+                <el-table-column prop="share_with" :formatter="sharingOption" :label="i18n('management.preset.column.visibility')"></el-table-column>
+                <el-table-column type="options" width="90">
+                    <template v-slot="rowScope">
+                        <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, rowScope.row)">
+                            <el-dropdown-item v-if="hasWritePermissions(rowScope.row)" command="edit">{{ i18n('common.edit') }}</el-dropdown-item>
+                            <el-dropdown-item v-if="hasWritePermissions(rowScope.row)" command="duplicate">{{ i18n('common.duplicate') }}</el-dropdown-item>
+                            <el-dropdown-item v-if="hasWritePermissions(rowScope.row)" command="delete">{{ i18n('common.delete') }}</el-dropdown-item>
+                        </cly-more-options>
+                    </template>
+                </el-table-column>
+            </template>
+        </cly-datatable-n>
+    </cly-main>
+    
+    <preset-drawer :controls="drawers['preset']" @refresh-presets="refresh"></preset-drawer>
+</div>

@@ -1,0 +1,20 @@
+export default {
+    PAGE_TITLE: 'header-title',
+    PAGE_TITLE_VIEW_GUIDE_BUTTON: 'view-guide-button',
+    PAGE_SUB_TITLE: 'events-overview-subheading-event-metrics-label',
+    PAGE_SUB_TITLE_TOOLTIP: 'events-overview-subheading-event-metrics-tooltip',
+    EXPORT_BUTTON: 'cly-datatable-n-test-id-export-as-button',
+    DATATABLE_SEARCH_BUTTON: 'cly-datatable-n-test-id-datatable-search-input',
+    EMPTY_TABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
+    EMPTY_TABLE_TITLE: 'cly-datatable-n-test-id-empty-title',
+    EMPTY_TABLE_SUBTITLE: 'cly-datatable-n-test-id-empty-subtitle',
+    MONITOR_EVENTS_LABEL: 'events-overview-subheading-monitor-events-label',
+    MONITOR_EVENTS_TOOLTIP: 'events-overview-subheading-monitor-events-tooltip',
+    CONFIGURE_EVENTS_BUTTON: 'events-overview-configure-events-button',
+    TIME_PERIOD_LABEL: 'events-overview-time-period-label',
+    FILTER_DATE_PICKER: 'events-overview-time-period-pseudo-input-label',
+    EMPTY_MONITOR_EVENTS_TABLE_ICON: 'events-overview-monitor-events-empty-logo',
+    EMPTY_MONITOR_EVENTS_TABLE_TITLE: 'events-overview-monitor-events-empty-title',
+    EMPTY_MONITOR_EVENTS_TABLE_SUBTITLE: 'events-overview-monitor-events-empty-subtitle',
+    CONFIGURE_EVENTS_LINK_BUTTON: 'events-overview-configure-events-link-button'
+};

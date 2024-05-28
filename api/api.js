@@ -13,6 +13,7 @@ const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
 const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
+const moment = require("moment");
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
@@ -81,6 +82,7 @@ plugins.connectToAllDatabases().then(function() {
         //batch_read_on_master: false,
         batch_read_ttl: 600,
         batch_read_period: 60,
+        user_merge_paralel: 1,
         trim_trailing_ending_spaces: false
     });
 
@@ -280,8 +282,12 @@ plugins.connectToAllDatabases().then(function() {
         for (let i = 0; i < workerCount; i++) {
             // there's no way to define inspector port of a worker in the code. So if we don't
             // pick a unique port for each worker, they conflict with each other.
-            const inspectorPort = i + 1 + (common?.config?.masterInspectorPort || 9229);
-            const worker = cluster.fork({ NODE_OPTIONS: "--inspect-port=" + inspectorPort });
+            let nodeOptions = {};
+            if (countlyConfig?.symlinked !== true) { // countlyConfig.symlinked is passed when running in a symlinked setup
+                const inspectorPort = i + 1 + (common?.config?.masterInspectorPort || 9229);
+                nodeOptions = { NODE_OPTIONS: "--inspect-port=" + inspectorPort };
+            }
+            const worker = cluster.fork(nodeOptions);
             workers.push(worker);
         }
 
@@ -309,6 +315,19 @@ plugins.connectToAllDatabases().then(function() {
             jobs.job('api:userMerge').replace().schedule('every 10 minutes');
             //jobs.job('api:appExpire').replace().schedule('every 1 day');
         }, 10000);
+
+        //Record as restarted
+
+        var utcMoment = moment.utc();
+
+        var incObj = {};
+        incObj.r = 1;
+        incObj[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.r`] = 1;
+        common.db.collection("diagnostic").updateOne({"_id": "no-segment_" + utcMoment.format("YYYY:M")}, {"$set": {"m": utcMoment.format("YYYY:M")}, "$inc": incObj}, {"upsert": true}, function(err) {
+            if (err) {
+                log.e(err);
+            }
+        });
     }
     else {
         console.log("Starting worker", process.pid, "parent:", process.ppid);

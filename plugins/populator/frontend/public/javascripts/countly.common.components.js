@@ -110,6 +110,11 @@
             activeColorCode: {
                 type: String,
                 default: '#0166D6'
+            },
+            testId: {
+                type: String,
+                required: false,
+                default: 'cly-populator-number-selector-default-test-id'
             }
         },
         data: function() {
@@ -130,7 +135,7 @@
                         <div class="bu-is-flex populator-number-selector">\
                             <div v-for="(item, index) in items" :key="item.value" class="populator-number-selector__each-box-wrapper">\
                                 <div :class="{ \'populator-number-selector__active \': item.value === selectedValue, \'populator-number-selector__first\' : index === 0, \'populator-number-selector__last\' : index === (items.length - 1) }" class="populator-number-selector__each" @click="numberChange(item.value)">\
-                                    <span class="text-medium">{{ item.text }}</span>\
+                                    <span class="text-medium" :data-test-id="testId + \'-item-\' + item.text.toString().replaceAll(\' \', \'-\').toLowerCase()">{{ item.text }}</span>\
                                 </div>\
                             </div>\
                         </div>\

@@ -31,6 +31,7 @@
         };
     </script>
     <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css?<%= countlyVersion %>" />
+	 <link rel="stylesheet" href="<%- cdn %>stylesheets/countly-icons/style.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/ionicons/css/ionicons.min.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/material/material-icons.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/vue/element-ui.css?<%= countlyVersion %>" />
@@ -1740,11 +1741,6 @@
             </div>
         </div>
 	</script>
-<% if (!offline_mode) { %>
-    <% if (use_google) { %>
-        <script language="javascript" type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <% } %>
-<% } %>
 <% if (production) { %>
 	    <!-- PRODUCTION -->
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
@@ -1854,6 +1850,8 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/version-history/javascripts/countly.views.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/onboarding/javascripts/countly.models.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>core/onboarding/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/date-presets/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>core/date-presets/javascripts/countly.models.js?<%= countlyVersion %>"></script>
 
         <% if (javascripts) { %>
 			<% for(var i=0, l=javascripts.length; i<l; i++) {%>
@@ -2014,7 +2012,7 @@
     <% } %>
     <script type='text/javascript'>
     app.recordEvent = function (event) {
-        if (typeof Countly !== "undefined" && Countly.add_event) {
+        if (typeof Countly !== "undefined" && Countly.i && Countly.i[countlyGlobal.frontend_app] && Countly.add_event) {
             Countly.add_event(event);
         }
     };

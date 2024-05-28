@@ -27,8 +27,8 @@ Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) 
     else {
         console.log("Validating app list: ");
         getAppList({db: countlyDb}, function(err, apps) {
-            console.log(apps.length + " apps found");
             if (apps && apps.length > 0) {
+                console.log(apps.length + " apps found");
                 Promise.each(apps, function(app) {
                     return new Promise(function(resolve) {
                         console.log("processing app:" + app.name);

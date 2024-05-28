@@ -220,29 +220,30 @@
                         </div>
                         <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.triggers-description')}}</div>
                         <div class="bu-is-flex bu-is-flex-direction-column">
-                            <line-radio-button-with-description
+                            <el-radio
+                                class="is-autosized is-multiline bu-mt-2 bu-ml-0"
+                                v-model="pushNotificationUnderEdit.automatic.trigger"
                                 :label="TriggerEnum.COHORT_ENTRY"
-                                v-model="pushNotificationUnderEdit.automatic.trigger"
-                                :title="i18n('push-notification.cohorts-entry')"
-                                :description="i18n('push-notification.cohorts-entry-description')"
-                                v-if="pushNotificationUnderEdit.isCohorts"
                                 border>
-                            </line-radio-button-with-description>
-                            <line-radio-button-with-description
+                                <div class="cly-vue-push-notification-line-radio-button-with-description__title">{{i18n('push-notification.cohorts-entry')}}</div>
+                                <div class="text-small bu-has-text-grey bu-mt-1">{{i18n('push-notification.cohorts-entry-description')}}</div>
+                            </el-radio>
+                            <el-radio
+                                class="is-autosized is-multiline bu-mt-2 bu-ml-0"
+                                v-model="pushNotificationUnderEdit.automatic.trigger"
                                 :label="TriggerEnum.COHORT_EXIT"
-                                v-model="pushNotificationUnderEdit.automatic.trigger"
-                                :title="i18n('push-notification.cohorts-exit')"
-                                :description="i18n('push-notification.cohorts-exit-description')"
-                                v-if="pushNotificationUnderEdit.isCohorts"
                                 border>
-                            </line-radio-button-with-description>
-                            <line-radio-button-with-description
+                                <div class="cly-vue-push-notification-line-radio-button-with-description__title">{{i18n('push-notification.cohorts-exit')}}</div>
+                                <div class="text-small bu-has-text-grey bu-mt-1">{{i18n('push-notification.cohorts-exit-description')}}</div>
+                            </el-radio>
+                            <el-radio
+                                class="is-autosized is-multiline bu-mt-2 bu-ml-0"
+                                v-model="pushNotificationUnderEdit.automatic.trigger"
                                 :label="TriggerEnum.EVENT"
-                                v-model="pushNotificationUnderEdit.automatic.trigger"
-                                :title="i18n('push-notification.performed-events')"
-                                :description="i18n('push-notification.performed-events-description')"
                                 border>
-                            </line-radio-button-with-description>
+                                <div class="cly-vue-push-notification-line-radio-button-with-description__title">{{i18n('push-notification.performed-events')}}</div>
+                                <div class="text-small bu-has-text-grey bu-mt-1">{{i18n('push-notification.performed-events-description')}}</div>
+                            </el-radio>
                         </div>
                     </div>
                     <template v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT">
@@ -962,6 +963,14 @@
                                 :label="i18n('push-notification.subtitle')"
                                 :placeholder="i18n('push-notification.enter-your-subtitle')"
                                 :description="i18n('push-notification.subtitle-description')">
+                            </message-setting-element>
+                            <message-setting-element 
+                                :toggle="settings.ios.isContentAvailableSet"
+                                rules="required"
+                                @onToggle="function(value){onSettingToggle(PlatformEnum.IOS,'isContentAvailableSet',value)}"
+                                :label="i18n('push-notification.set-content-available')"
+                                :description="i18n('push-notification.set-content-available-description')">
+                                <span></span>
                             </message-setting-element>
                             <message-setting-element 
                                 v-if="pushNotificationUnderEdit.messageType === MessageTypeEnum.CONTENT"
