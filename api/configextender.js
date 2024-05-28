@@ -52,7 +52,8 @@ const OVERRIDES = {
     FILESTORAGE: 'fileStorage',
     RELOADCONFIGAFTER: 'reloadConfigAfter',
     PREVENTJOBS: 'preventJobs',
-    SHARED_CONNECTION: 'shared_connection'
+    SHARED_CONNECTION: 'shared_connection',
+    PREVENT_JOBS: 'preventJobs'
 };
 
 /**
