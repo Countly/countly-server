@@ -1,7 +1,7 @@
 import user from '../../../../fixtures/user.json';
-const loginHelpers = require('../../../../lib/login');
+const loginHelpers = require('../../../../lib/login/login');
 const navigationHelpers = require('../../../../support/navigations');
-const analyticsLoyaltyUserActivityHelpers = require('../../../../lib/analytics/loyalty/userActivity');
+const analyticsLoyaltyUserActivityHelpers = require('../../../../lib/dashboard/analytics/loyalty/userActivity');
 
 describe('Visitor Activity', () => {
     beforeEach(function() {
