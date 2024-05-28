@@ -55,7 +55,7 @@ class ScheduledTrigger {
         if (!rule) {
             return false;
         }
-        if (ob.is_mock === true) {
+        if (ob !== undefined && ob.is_mock === true) {
             return ob;
         }
 
