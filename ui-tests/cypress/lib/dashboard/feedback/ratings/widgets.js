@@ -696,21 +696,17 @@ const shouldNotBeDisabledNextStepButton = () => {
     cy.shouldNotBeHasDisabledClass(feedbackRatingWidgetsPageElements.NEXT_STEP_BUTTON);
 };
 
+const searchWidgetOnDataTable = (widgetName) => {
+    cy.typeInput(widgetsDataTableElements().TABLE_SEARCH_INPUT, widgetName);
+};
+
 const getWidgetIdFromDataTable = (index) => {
     return cy.getElement(widgetsDataTableElements(index).WIDGET_ID).eq(0).getText();
 };
 
 const navigateToWidgetsDetailPage = (question) => {
-    cy.getElement(widgetsDataTableElements().TABLE_ROWS).its('length').then((count) => {
-        for (var index = 0; index <= (count / 2) - 1; index++) {
-            cy.getElement(widgetsDataTableElements(index).WIDGET_QUESTION).eq(0).getText().then((inputText) => {
-                if (inputText.trim() === question) {
-                    cy.clickElement(widgetsDataTableElements(index).WIDGET_QUESTION, true);
-                }
-            });
-            break;
-        }
-    });
+    searchWidgetOnDataTable(question);
+    cy.clickElement(widgetsDataTableElements().WIDGET_QUESTION, true);
 };
 
 const verifyWidgetDetailsPageElements = ({
@@ -1036,6 +1032,7 @@ module.exports = {
     getWidgetIdFromDataTable,
     shouldBeDisabledNextStepButton,
     shouldNotBeDisabledNextStepButton,
+    searchWidgetOnDataTable,
     navigateToWidgetsDetailPage,
     verifyWidgetDetailsPageElements,
     deleteWidget,
