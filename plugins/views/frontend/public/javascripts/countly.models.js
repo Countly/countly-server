@@ -826,8 +826,8 @@
 
             //if refresh
             for (var i = 0; i < _selectedViews.length; i++) {
-                if (periodIsOk && ((_segment === "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]]['_no-segment'] && Object.keys(_graphDataObj[_selectedViews[i]]['_no-segment']) !== 0) ||
-                    (_segment !== "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]][_segment] && Object.keys(_graphDataObj[_selectedViews[i]][_segment]) !== 0))
+                if (periodIsOk && ((_segment === "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]]['_no-segment'] && Object.keys(_graphDataObj[_selectedViews[i]]['_no-segment']).length !== 0) ||
+                    (_segment !== "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]][_segment] && Object.keys(_graphDataObj[_selectedViews[i]][_segment]).length !== 0))
                 ) {
                     selected.push({'view': _selectedViews[i], "action": "refresh"});
                 }
