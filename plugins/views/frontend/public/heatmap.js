@@ -814,7 +814,7 @@
                     var data = dataCache[currentDevice[0].type];
 
                     for (var i = 0; i < data.length; i++) {
-                        offset = data[i].sg;
+                        var offset = data[i].sg;
                         if (offset.type == actionType) {
                             var obj = {
                                 y: parseInt((offset.y / offset.height) * height),
