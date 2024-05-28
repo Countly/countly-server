@@ -735,6 +735,8 @@ const verifyWidgetDetailsPageElements = ({
         percentages
     } = ratingsTable;
 
+    let index = 0;
+
     cy.verifyElement({
         element: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_BACK_TO_RATING_WIDGETS_LINK_ICON,
     });
@@ -844,21 +846,21 @@ const verifyWidgetDetailsPageElements = ({
 
     if (commentsTable.ratings != null && commentsTable.ratings.length > 0) {
         cy.scrollPageToBottom('.main-view');
-        for (var index = 0; index < ratingsTable.numberOfRatings.length; index++) {
+        for (index = 0; index < ratingsTable.numberOfRatings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_RATING,
                 labelText: index + 1,
             });
         }
 
-        for (var index = 0; index < ratingsTable.numberOfRatings.length; index++) {
+        for (index = 0; index < ratingsTable.numberOfRatings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_NUMBER_OF_RATINGS,
                 labelText: ratingsTable.numberOfRatings[index],
             });
         }
 
-        for (var index = 0; index < ratingsTable.percentages.length; index++) {
+        for (index = 0; index < ratingsTable.percentages.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_PERCENTAGE,
                 labelText: ratingsTable.percentages[index],
@@ -888,28 +890,28 @@ const verifyWidgetDetailsPageElements = ({
             labelText: "E-mail",
         });
 
-        for (var index = 0; index < commentsTable.ratings.length; index++) {
+        for (index = 0; index < commentsTable.ratings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_RATING,
                 labelText: commentsTable.ratings[index],
             });
         }
 
-        for (var index = 0; index < commentsTable.ratings.length; index++) {
+        for (index = 0; index < commentsTable.ratings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_TIME,
                 labelText: commentsTable.times,
             });
         }
 
-        for (var index = 0; index < commentsTable.comments.length; index++) {
+        for (index = 0; index < commentsTable.comments.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_COMMENT,
                 labelText: commentsTable.comments[index],
             });
         }
 
-        for (var index = 0; index < commentsTable.emails.length; index++) {
+        for (index = 0; index < commentsTable.emails.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_EMAIL,
                 labelText: commentsTable.emails[index],
