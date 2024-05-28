@@ -146,7 +146,7 @@
      */
     starRatingPlugin.requestFeedbackData = function(filterObj) {
         var data = {app_id: countlyCommon.ACTIVE_APP_ID};
-        if (filterObj.period) {
+        if (filterObj && filterObj.period) {
             if (filterObj.period !== 'noperiod') {
                 data.period = filterObj.period;
             }
