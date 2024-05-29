@@ -20,7 +20,7 @@
     "template"
   ],
   "dependencies": {
-    "v8-sandbox": "3.2.10"
+    "v8-sandbox": "3.2.12"
   },
   "private": true
 }
