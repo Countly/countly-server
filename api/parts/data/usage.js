@@ -553,7 +553,7 @@ function processUserSession(dbAppUser, params, done) {
             uniqueLevelsMonth.push(params.time.day);
         }
 
-        if (userLastSeenDate.year() === params.time.yearly &&
+        if ((userLastSeenDate.year() + "") === (params.time.yearly + "") &&
                 Math.ceil(userLastSeenDate.format("DDD") / 7) < params.time.weekly) {
             uniqueLevels[uniqueLevels.length] = params.time.yearly + ".w" + params.time.weekly;
             uniqueLevelsZero.push("w" + params.time.weekly);
