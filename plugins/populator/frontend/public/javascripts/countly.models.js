@@ -1195,6 +1195,8 @@
                     var endSessionTs = null;
                     var req = {};
                     let selectedSequence = null;
+                    let sessionDuration = null;
+
                     // process every sequence
                     while (runCount > 0) {
                         // select random sequence from behavior
@@ -1226,15 +1228,7 @@
                                     if (selectedSequenceStep.value === "start") {
                                         // this.hasSession = true;
                                         this.isRegistered = true;
-                                        const differenceBetweenPreviousSession = this.ts - (endSessionTs || 0);
-                                        let sessionDuration = null;
-                                        if (differenceBetweenPreviousSession.toString().length >= 10) {
-                                            sessionDuration = getRandomInt(60, 240);
-                                        }
-                                        else {
-                                            sessionDuration = getRandomInt(60, differenceBetweenPreviousSession);
-                                        }
-                                        req = {timestamp: this.ts, begin_session: 1, ignore_cooldown: '1', session_duration: sessionDuration};
+                                        req = {timestamp: this.ts, begin_session: 1, ignore_cooldown: '1'};
                                         if (!hasEnvironment) {
                                             req.metrics = this.metrics;
                                             req.user_details = this.userdetails;
@@ -1286,9 +1280,20 @@
                         var randomSeconds = randomHours * 3600;
                         this.ts = this.ts + randomSeconds;
                         if (runCount === 0) {
-                            req = {timestamp: endSessionTs, end_session: 1, ignore_cooldown: '1'};
+                            req = {timestamp: endSessionTs, end_session: 1, ignore_cooldown: '1', session_duration: getRandomInt(60, 240)};
                             this.request(req);
                             resolve(bulk);
+                        }
+                        else {
+                            const differenceBetweenPreviousSession = this.ts - (endSessionTs || 0);
+                            if (differenceBetweenPreviousSession.toString().length >= 10) {
+                                sessionDuration = getRandomInt(60, 240);
+                            }
+                            else {
+                                sessionDuration = getRandomInt(60, differenceBetweenPreviousSession);
+                            }
+                            req = {timestamp: this.ts, session_duration: sessionDuration};
+                            this.request(req);
                         }
                     }
                 }
