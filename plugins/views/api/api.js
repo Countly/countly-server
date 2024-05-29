@@ -2192,7 +2192,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (lastViewTimestamp < (params.time.timestamp - secInHour)) {
                         tmpTimeObjMonth['d.' + params.time.day + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
-                    if (lastViewDate.year() === params.time.yearly && lastMoment.isoWeek() < params.time.weeklyISO) {
+                    if ((lastViewDate.year() + "") === (params.time.yearly + "") && lastMoment.isoWeek() < params.time.weeklyISO) {
                         tmpTimeObjZero["d.w" + params.time.weeklyISO + '.' + escapedMetricVal + common.dbMap.unique] = 1;
                     }
 
