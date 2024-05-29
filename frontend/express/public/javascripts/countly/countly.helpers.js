@@ -4067,329 +4067,331 @@ $.extend(Template.prototype, {
 });
 
 
-$.widget("cly.datepickerExtended", {
-    _init: function() {
-        var self = this;
+if ($.widget) {
+    $.widget("cly.datepickerExtended", {
+        _init: function() {
+            var self = this;
 
-        if (this.options.range === true) {
-            this._initRangeSelection();
-        }
-        else {
-            this._initDateSelection();
-        }
-
-        $(this.element).addClass("datepicker-extended");
-
-        this.baseInstance = this.element.datepicker(this.options);
-
-        if (this.options.textEdit === true) {
-            this._initTextEdit();
-        }
-        setTimeout(function() {
-            self._finalizeInit();
-        }, 0);
-    },
-
-    // Private, range picker
-    _initRangeSelection: function() {
-        var self = this,
-            originalOnSelect = this.options.onSelect,
-            originalBeforeShowDay = this.options.beforeShowDay || function() {
-                return [true, "", ""];
-            },
-            currentFirst = null,
-            currentSecond = null,
-            $el = this.element;
-
-        this.committedRange = null;
-        this.temporaryRange = null;
-        this.isSelectingSecond = false;
-
-        /**
-         * Wraps onSelect callback of jQuery UI Datepicker and 
-         * injects the necessary business logic needed for range picking
-         * @param {String} dateText Date as string, passed by Datepicker 
-         * @param {Object} inst Instance object, passed by Datepicker
-         */
-        function _onSelect(dateText, inst) {
-            var point = self.isSelectingSecond ? "second" : "first";
-            if (originalOnSelect) {
-                originalOnSelect.apply($($el), [dateText, inst, point]);
-            }
-
-            var instance = $($el).data("datepicker");
-            var parsedDate = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, dateText, instance.settings);
-            parsedDate.setHours(0, 0, 0, 0);
-            var reset = false;
-
-            if (self.isSelectingSecond && parsedDate < currentFirst) {
-                self.isSelectingSecond = false;
-                reset = true;
-                // reset
-            }
-
-            if (self.isSelectingSecond) {
-                currentSecond = parsedDate;
-                self.temporaryRange = null;
-                self._commitRange(currentFirst, currentSecond, true);
-                $($el).find(".text-fields input").removeClass("focused");
+            if (this.options.range === true) {
+                this._initRangeSelection();
             }
             else {
-                currentFirst = parsedDate;
-                $($el).find(".input-1").addClass("focused");
+                this._initDateSelection();
             }
-            self.isSelectingSecond = !self.isSelectingSecond;
-            if (reset) {
-                self._onTemporaryRangeUpdate(currentFirst, null);
-            }
-        }
 
-        /**
-         * Wraps beforeShowDay callback of jQuery UI Datepicker and 
-         * injects the necessary business logic needed for highlighting
-         * the current and temporary range.
-         * @param {Date} date Date as Date, passed by Datepicker 
-         * @returns {Array} Array structure requested by Datepicker UI
-         */
-        function _beforeShowDay(date) {
-            var returned = originalBeforeShowDay.apply($($el), [date]);
-            var targetRange = self.committedRange;
-            if (self.isSelectingSecond) {
-                targetRange = self.temporaryRange;
+            $(this.element).addClass("datepicker-extended");
+
+            this.baseInstance = this.element.datepicker(this.options);
+
+            if (this.options.textEdit === true) {
+                this._initTextEdit();
             }
-            if (targetRange) {
-                if (targetRange[0] < date && date < targetRange[1]) {
-                    return [returned[0], returned[1] + " in-range", returned[2]];
+            setTimeout(function() {
+                self._finalizeInit();
+            }, 0);
+        },
+
+        // Private, range picker
+        _initRangeSelection: function() {
+            var self = this,
+                originalOnSelect = this.options.onSelect,
+                originalBeforeShowDay = this.options.beforeShowDay || function() {
+                    return [true, "", ""];
+                },
+                currentFirst = null,
+                currentSecond = null,
+                $el = this.element;
+
+            this.committedRange = null;
+            this.temporaryRange = null;
+            this.isSelectingSecond = false;
+
+            /**
+             * Wraps onSelect callback of jQuery UI Datepicker and 
+             * injects the necessary business logic needed for range picking
+             * @param {String} dateText Date as string, passed by Datepicker 
+             * @param {Object} inst Instance object, passed by Datepicker
+             */
+            function _onSelect(dateText, inst) {
+                var point = self.isSelectingSecond ? "second" : "first";
+                if (originalOnSelect) {
+                    originalOnSelect.apply($($el), [dateText, inst, point]);
                 }
-                if (targetRange[0].getTime() === date.getTime() || date.getTime() === targetRange[1].getTime()) {
-                    return [returned[0], returned[1] + " point", returned[2]];
+
+                var instance = $($el).data("datepicker");
+                var parsedDate = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, dateText, instance.settings);
+                parsedDate.setHours(0, 0, 0, 0);
+                var reset = false;
+
+                if (self.isSelectingSecond && parsedDate < currentFirst) {
+                    self.isSelectingSecond = false;
+                    reset = true;
+                    // reset
                 }
-            }
-            return returned;
-        }
 
-        this.options.beforeShowDay = _beforeShowDay;
-        this.options.onSelect = _onSelect;
-
-        $($el).addClass("datepicker-range");
-
-        $($el).on("mouseover", ".ui-state-default", function() {
-            self._onTemporaryRangeUpdate(currentFirst, self._cellToDate($(this).parent()));
-        });
-
-        $($el).on("mouseout", ".ui-state-default", function() {
-            self._onTemporaryRangeUpdate(currentFirst, null);
-        });
-    },
-    _onTemporaryRangeUpdate: function(currentFirst, temporarySecond) {
-        var self = this;
-        if (!self.isSelectingSecond) {
-            return;
-        }
-        if (temporarySecond && currentFirst <= temporarySecond) {
-            self.temporaryRange = [currentFirst, temporarySecond];
-        }
-        else {
-            self.temporaryRange = [currentFirst, currentFirst];
-        }
-        self._syncWith("picker", 0);
-        self._syncWith("picker", 1);
-        self._refreshCellStates();
-    },
-    _commitRange: function(dateFirst, dateSecond, fireOnCommit) {
-        var self = this,
-            $el = this.element;
-
-        self.committedRange = [dateFirst, dateSecond].sort(function(a, b) {
-            return a - b;
-        });
-
-        var minDate = self.baseInstance.datepicker("option", "minDate"),
-            maxDate = self.baseInstance.datepicker("option", "maxDate");
-
-        minDate = minDate ? moment(minDate, "MM/DD/YYYY").toDate() : false;
-        maxDate = maxDate ? moment(maxDate, "MM/DD/YYYY").toDate() : false;
-
-        if (minDate && minDate - self.committedRange[0] > 0) {
-            self.committedRange[0] = new Date(minDate.getTime());
-        }
-
-        if (maxDate && self.committedRange[1] - maxDate > 0) {
-            self.committedRange[1] = new Date(maxDate.getTime());
-        }
-
-        self.committedRange[0].setHours(0, 0, 0, 0);
-        self.committedRange[1].setHours(0, 0, 0, 0);
-
-        if (fireOnCommit && self.options.onCommit) {
-            self.options.onCommit.apply($($el), self.committedRange);
-        }
-        self._syncWith("picker", 0, { onlyCommitted: true });
-        self._syncWith("picker", 1, { onlyCommitted: true });
-    },
-
-    // Private, generic
-    _initDateSelection: function() {
-        var self = this,
-            originalOnSelect = this.options.onSelect,
-            $el = this.element;
-
-        /**
-         * Wraps onSelect callback of jQuery UI Datepicker and 
-         * injects the necessary business logic needed for picker -> text field
-         * data binding.
-         * @param {String} dateText Date as string, passed by Datepicker 
-         * @param {Object} inst Instance object, passed by Datepicker
-         */
-        function _onSelect(dateText, inst) {
-            originalOnSelect.apply($($el), [dateText, inst]);
-            self._syncWith("picker", 0);
-        }
-
-        this.options.onSelect = _onSelect;
-    },
-    _initTextEdit: function() {
-        var $el = this.element,
-            self = this;
-
-        $($el).addClass("datepicker-text-edit");
-        $($el).prepend("<div class='text-fields'></div>");
-
-        $el.find(".text-fields").append('<input type="text" class="calendar-input-field input-0" data-input="0"></input>');
-        if (this.options.range === true) {
-            $el.find(".text-fields").append('<input type="text" class="calendar-input-field input-1" data-input="1"></input>');
-        }
-
-        $($el).on("keyup", ".text-fields input", function(event) {
-            if (event.keyCode === 13) {
-                var date = moment($(this).val(), "MM/DD/YYYY");
-                var inputIdx = parseInt($(this).data("input"), 10);
-
-                if (date.isValid()) {
-                    // update the picker value
-                    self._syncWith("text", inputIdx, {isDOMEvent: true});
+                if (self.isSelectingSecond) {
+                    currentSecond = parsedDate;
+                    self.temporaryRange = null;
+                    self._commitRange(currentFirst, currentSecond, true);
+                    $($el).find(".text-fields input").removeClass("focused");
                 }
                 else {
-                    // revert back to the original value
-                    self._syncWith("picker", inputIdx);
+                    currentFirst = parsedDate;
+                    $($el).find(".input-1").addClass("focused");
+                }
+                self.isSelectingSecond = !self.isSelectingSecond;
+                if (reset) {
+                    self._onTemporaryRangeUpdate(currentFirst, null);
                 }
             }
-        });
-    },
-    _syncWith: function(source, inputIdx, syncOptions) {
 
-        if (!this.options.textEdit) {
-            return;
-        }
-
-        syncOptions = syncOptions || {};
-
-        var $el = this.element,
-            self = this;
-
-        if (source === "text") {
-            var parsedDate = moment($($el).find(".text-fields .input-" + inputIdx).val(), "MM/DD/YYYY").toDate();
-            if (self.options.range !== true && inputIdx === 0) {
-                self.setDate(parsedDate);
-                if (syncOptions.isDOMEvent) {
-                    // manually trigger onSelect
-                    self.baseInstance.find('.ui-datepicker-current-day').click(); // represents the current day
-                }
-            }
-            else if (self.options.range === true) {
-                if (self.isSelectingSecond) {
-                    self.isSelectingSecond = false;
-                    // abort the ongoing picking
-                }
-                if (inputIdx === 0) {
-                    self._commitRange(parsedDate, self.committedRange[1], syncOptions.isDOMEvent);
-                }
-                else if (inputIdx === 1) {
-                    self._commitRange(self.committedRange[0], parsedDate, syncOptions.isDOMEvent);
-                }
-                this.baseInstance.datepicker("setDate", parsedDate);
-                this.baseInstance.datepicker("refresh");
-            }
-        }
-        else if (source === "picker") {
-            if (self.options.range !== true && inputIdx === 0) {
-                $($el).find(".text-fields .input-" + inputIdx).val(moment(self.getDate()).format("MM/DD/YYYY"));
-            }
-            else if (self.options.range === true) {
+            /**
+             * Wraps beforeShowDay callback of jQuery UI Datepicker and 
+             * injects the necessary business logic needed for highlighting
+             * the current and temporary range.
+             * @param {Date} date Date as Date, passed by Datepicker 
+             * @returns {Array} Array structure requested by Datepicker UI
+             */
+            function _beforeShowDay(date) {
+                var returned = originalBeforeShowDay.apply($($el), [date]);
                 var targetRange = self.committedRange;
-                if (self.isSelectingSecond && !syncOptions.onlyCommitted) {
+                if (self.isSelectingSecond) {
                     targetRange = self.temporaryRange;
                 }
-                var selectedDate = targetRange[inputIdx];
-                $($el).find(".text-fields .input-" + inputIdx).val(moment(selectedDate).format("MM/DD/YYYY"));
+                if (targetRange) {
+                    if (targetRange[0] < date && date < targetRange[1]) {
+                        return [returned[0], returned[1] + " in-range", returned[2]];
+                    }
+                    if (targetRange[0].getTime() === date.getTime() || date.getTime() === targetRange[1].getTime()) {
+                        return [returned[0], returned[1] + " point", returned[2]];
+                    }
+                }
+                return returned;
             }
-        }
-    },
-    _finalizeInit: function() {
-        if (this.options.range === true) {
-            if (this.options.defaultRange) {
-                this.setRange(this.options.defaultRange);
+
+            this.options.beforeShowDay = _beforeShowDay;
+            this.options.onSelect = _onSelect;
+
+            $($el).addClass("datepicker-range");
+
+            $($el).on("mouseover", ".ui-state-default", function() {
+                self._onTemporaryRangeUpdate(currentFirst, self._cellToDate($(this).parent()));
+            });
+
+            $($el).on("mouseout", ".ui-state-default", function() {
+                self._onTemporaryRangeUpdate(currentFirst, null);
+            });
+        },
+        _onTemporaryRangeUpdate: function(currentFirst, temporarySecond) {
+            var self = this;
+            if (!self.isSelectingSecond) {
+                return;
+            }
+            if (temporarySecond && currentFirst <= temporarySecond) {
+                self.temporaryRange = [currentFirst, temporarySecond];
             }
             else {
-                this.setRange([moment().subtract(8, "d").startOf("d").toDate(), moment().subtract(1, "d").startOf("d").toDate()]);
+                self.temporaryRange = [currentFirst, currentFirst];
             }
-        }
-    },
-    _cellToDate: function(element) {
-        var day = parseInt($(element).find("a").text(), 10);
-        var month = parseInt($(element).data("month"), 10);
-        var year = parseInt($(element).data("year"), 10);
-        if (Number.isInteger(day) && Number.isInteger(month) && Number.isInteger(year)) {
-            return new Date(year, month, day, 0, 0, 0, 0);
-        }
-        else {
-            return null;
-        }
-    },
-    _refreshCellStates: function() {
-        var self = this,
-            $el = this.element;
+            self._syncWith("picker", 0);
+            self._syncWith("picker", 1);
+            self._refreshCellStates();
+        },
+        _commitRange: function(dateFirst, dateSecond, fireOnCommit) {
+            var self = this,
+                $el = this.element;
 
-        $($el).find(".ui-datepicker-calendar td").each(function() {
-            var parsedDate = self._cellToDate($(this));
-            if (parsedDate) {
-                var returned = self.options.beforeShowDay(parsedDate);
-                $(this).attr('class', returned[1]);
+            self.committedRange = [dateFirst, dateSecond].sort(function(a, b) {
+                return a - b;
+            });
+
+            var minDate = self.baseInstance.datepicker("option", "minDate"),
+                maxDate = self.baseInstance.datepicker("option", "maxDate");
+
+            minDate = minDate ? moment(minDate, "MM/DD/YYYY").toDate() : false;
+            maxDate = maxDate ? moment(maxDate, "MM/DD/YYYY").toDate() : false;
+
+            if (minDate && minDate - self.committedRange[0] > 0) {
+                self.committedRange[0] = new Date(minDate.getTime());
             }
-        });
-    },
 
-    // Public
-    abortRangePicking: function() {
-        if (this.options.range === true) {
-            this.isSelectingSecond = false;
-            this._syncWith("picker", 0);
-            this._syncWith("picker", 1);
-            this.temporaryRange = null;
-            $(this.element).find(".text-fields input").removeClass("focused");
-            this.baseInstance.datepicker("refresh");
-        }
-    },
-    getRange: function() {
-        return this.committedRange;
-    },
-    getDate: function() {
-        if (this.options.range === true) {
-            return this.getRange();
-        }
-        return this.baseInstance.datepicker("getDate");
-    },
-    setRange: function(dateRange) {
-        this._commitRange(dateRange[0], dateRange[1]);
-        this.baseInstance.datepicker("setDate", dateRange[1]);
-    },
-    setDate: function(date) {
-        if (this.options.range === true) {
-            this.setRange(date);
-        }
-        else {
-            this.baseInstance.datepicker("setDate", date);
-            this._syncWith("picker", 0);
-        }
-    },
-});
+            if (maxDate && self.committedRange[1] - maxDate > 0) {
+                self.committedRange[1] = new Date(maxDate.getTime());
+            }
+
+            self.committedRange[0].setHours(0, 0, 0, 0);
+            self.committedRange[1].setHours(0, 0, 0, 0);
+
+            if (fireOnCommit && self.options.onCommit) {
+                self.options.onCommit.apply($($el), self.committedRange);
+            }
+            self._syncWith("picker", 0, { onlyCommitted: true });
+            self._syncWith("picker", 1, { onlyCommitted: true });
+        },
+
+        // Private, generic
+        _initDateSelection: function() {
+            var self = this,
+                originalOnSelect = this.options.onSelect,
+                $el = this.element;
+
+            /**
+             * Wraps onSelect callback of jQuery UI Datepicker and 
+             * injects the necessary business logic needed for picker -> text field
+             * data binding.
+             * @param {String} dateText Date as string, passed by Datepicker 
+             * @param {Object} inst Instance object, passed by Datepicker
+             */
+            function _onSelect(dateText, inst) {
+                originalOnSelect.apply($($el), [dateText, inst]);
+                self._syncWith("picker", 0);
+            }
+
+            this.options.onSelect = _onSelect;
+        },
+        _initTextEdit: function() {
+            var $el = this.element,
+                self = this;
+
+            $($el).addClass("datepicker-text-edit");
+            $($el).prepend("<div class='text-fields'></div>");
+
+            $el.find(".text-fields").append('<input type="text" class="calendar-input-field input-0" data-input="0"></input>');
+            if (this.options.range === true) {
+                $el.find(".text-fields").append('<input type="text" class="calendar-input-field input-1" data-input="1"></input>');
+            }
+
+            $($el).on("keyup", ".text-fields input", function(event) {
+                if (event.keyCode === 13) {
+                    var date = moment($(this).val(), "MM/DD/YYYY");
+                    var inputIdx = parseInt($(this).data("input"), 10);
+
+                    if (date.isValid()) {
+                        // update the picker value
+                        self._syncWith("text", inputIdx, {isDOMEvent: true});
+                    }
+                    else {
+                        // revert back to the original value
+                        self._syncWith("picker", inputIdx);
+                    }
+                }
+            });
+        },
+        _syncWith: function(source, inputIdx, syncOptions) {
+
+            if (!this.options.textEdit) {
+                return;
+            }
+
+            syncOptions = syncOptions || {};
+
+            var $el = this.element,
+                self = this;
+
+            if (source === "text") {
+                var parsedDate = moment($($el).find(".text-fields .input-" + inputIdx).val(), "MM/DD/YYYY").toDate();
+                if (self.options.range !== true && inputIdx === 0) {
+                    self.setDate(parsedDate);
+                    if (syncOptions.isDOMEvent) {
+                        // manually trigger onSelect
+                        self.baseInstance.find('.ui-datepicker-current-day').click(); // represents the current day
+                    }
+                }
+                else if (self.options.range === true) {
+                    if (self.isSelectingSecond) {
+                        self.isSelectingSecond = false;
+                        // abort the ongoing picking
+                    }
+                    if (inputIdx === 0) {
+                        self._commitRange(parsedDate, self.committedRange[1], syncOptions.isDOMEvent);
+                    }
+                    else if (inputIdx === 1) {
+                        self._commitRange(self.committedRange[0], parsedDate, syncOptions.isDOMEvent);
+                    }
+                    this.baseInstance.datepicker("setDate", parsedDate);
+                    this.baseInstance.datepicker("refresh");
+                }
+            }
+            else if (source === "picker") {
+                if (self.options.range !== true && inputIdx === 0) {
+                    $($el).find(".text-fields .input-" + inputIdx).val(moment(self.getDate()).format("MM/DD/YYYY"));
+                }
+                else if (self.options.range === true) {
+                    var targetRange = self.committedRange;
+                    if (self.isSelectingSecond && !syncOptions.onlyCommitted) {
+                        targetRange = self.temporaryRange;
+                    }
+                    var selectedDate = targetRange[inputIdx];
+                    $($el).find(".text-fields .input-" + inputIdx).val(moment(selectedDate).format("MM/DD/YYYY"));
+                }
+            }
+        },
+        _finalizeInit: function() {
+            if (this.options.range === true) {
+                if (this.options.defaultRange) {
+                    this.setRange(this.options.defaultRange);
+                }
+                else {
+                    this.setRange([moment().subtract(8, "d").startOf("d").toDate(), moment().subtract(1, "d").startOf("d").toDate()]);
+                }
+            }
+        },
+        _cellToDate: function(element) {
+            var day = parseInt($(element).find("a").text(), 10);
+            var month = parseInt($(element).data("month"), 10);
+            var year = parseInt($(element).data("year"), 10);
+            if (Number.isInteger(day) && Number.isInteger(month) && Number.isInteger(year)) {
+                return new Date(year, month, day, 0, 0, 0, 0);
+            }
+            else {
+                return null;
+            }
+        },
+        _refreshCellStates: function() {
+            var self = this,
+                $el = this.element;
+
+            $($el).find(".ui-datepicker-calendar td").each(function() {
+                var parsedDate = self._cellToDate($(this));
+                if (parsedDate) {
+                    var returned = self.options.beforeShowDay(parsedDate);
+                    $(this).attr('class', returned[1]);
+                }
+            });
+        },
+
+        // Public
+        abortRangePicking: function() {
+            if (this.options.range === true) {
+                this.isSelectingSecond = false;
+                this._syncWith("picker", 0);
+                this._syncWith("picker", 1);
+                this.temporaryRange = null;
+                $(this.element).find(".text-fields input").removeClass("focused");
+                this.baseInstance.datepicker("refresh");
+            }
+        },
+        getRange: function() {
+            return this.committedRange;
+        },
+        getDate: function() {
+            if (this.options.range === true) {
+                return this.getRange();
+            }
+            return this.baseInstance.datepicker("getDate");
+        },
+        setRange: function(dateRange) {
+            this._commitRange(dateRange[0], dateRange[1]);
+            this.baseInstance.datepicker("setDate", dateRange[1]);
+        },
+        setDate: function(date) {
+            if (this.options.range === true) {
+                this.setRange(date);
+            }
+            else {
+                this.baseInstance.datepicker("setDate", date);
+                this._syncWith("picker", 0);
+            }
+        },
+    });
+}
