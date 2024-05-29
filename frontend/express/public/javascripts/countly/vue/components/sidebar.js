@@ -108,7 +108,7 @@
                     this.$emit("close");
                 },
                 onChange: function(id) {
-                    this.$store.dispatch("countlySidebar/updateGuidesButton", '');
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                     var selectedApp = this.allApps.find(function(a) {
                         return a._id === id;
                     });
@@ -191,7 +191,7 @@
                     });
                 },
                 unselectCountlyGuides: function() {
-                    this.$store.dispatch("countlySidebar/updateGuidesButton", '');
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                 }
             }
         });
@@ -319,7 +319,6 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
-                    this.$store.dispatch("countlySidebar/updateGuidesButton", '');
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -454,7 +453,6 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
-                    this.$store.dispatch("countlySidebar/updateGuidesButton", '');
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -737,14 +735,13 @@
                     if (!option.noSelect) {
                         this.selectedMenuOptionLocal = option.name;
                         this.showMainMenu = true;
-                        this.$store.dispatch("countlySidebar/updateGuidesButton", '');
                     }
 
                     if (option.name === "toggle") {
                         this.onToggleClick();
                     }
                     else if (option.name === "countly-guides") {
-                        this.$store.dispatch("countlySidebar/updateGuidesButton", 'selected');
+                        this.$store.dispatch("countlySidebar/selectGuidesButton");
                         this.showMainMenu = true;
                     }
                 },
@@ -933,7 +930,7 @@
                     countlyCMS.fetchEntry("server-guide-config").then(function(config) {
                         self.enableGuides = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
                     });
-                    this.$store.dispatch("countlySidebar/updateGuidesButton", 'hover');
+                    this.$store.dispatch("countlySidebar/highlightGuidesButton");
                 }
             }
         });

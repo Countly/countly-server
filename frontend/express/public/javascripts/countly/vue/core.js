@@ -560,11 +560,23 @@
                     }
                 },
                 actions: {
-                    updateSelectedMenuItem: function(context, payload) {
-                        context.commit('setSelectedMenuItem', payload);
+                    updateSelectedMenuItem: function({dispatch, commit}, payload) {
+                        commit('setSelectedMenuItem', payload);
+                        if (Object.keys(payload.item).length !== 0) {
+                            dispatch('deselectGuidesButton');
+                        }
                     },
-                    updateGuidesButton: function(context, payload) {
-                        context.commit('setGuidesButton', payload);
+                    selectGuidesButton: function(context) {
+                        context.commit('setGuidesButton', 'selected');
+                    },
+                    deselectGuidesButton: ({ getters, commit }) => {
+                        const buttonState = getters.getGuidesButton;
+                        if (buttonState !== 'hover') {
+                            commit('setGuidesButton', '');
+                        }
+                    },
+                    highlightGuidesButton: function(context) {
+                        context.commit('setGuidesButton', 'hover');
                     }
                 }
             }
