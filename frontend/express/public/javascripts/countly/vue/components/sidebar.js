@@ -108,6 +108,7 @@
                     this.$emit("close");
                 },
                 onChange: function(id) {
+                    this.$store.dispatch("countlySidebar/updateGuidesButton", '');
                     var selectedApp = this.allApps.find(function(a) {
                         return a._id === id;
                     });
@@ -188,6 +189,9 @@
                         message: this.errorMessage,
                         type: "error"
                     });
+                },
+                unselectCountlyGuides: function() {
+                    this.$store.dispatch("countlySidebar/updateGuidesButton", '');
                 }
             }
         });
@@ -315,6 +319,7 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
+                    this.$store.dispatch("countlySidebar/updateGuidesButton", '');
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -449,6 +454,7 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
+                    this.$store.dispatch("countlySidebar/updateGuidesButton", '');
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -637,10 +643,10 @@
                 otherMenuOptions: function() {
                     var menuOptions = [
                         {
-                            name: "help-center",
-                            icon: "cly-icon-sidebar-help-center",
+                            name: this.enableGuides ? "countly-guides" : "help-center",
+                            icon: this.enableGuides ? "cly-icon-sidebar-countly-guides" : "cly-icon-sidebar-help-center",
                             noSelect: true,
-                            tooltip: "Help Center"
+                            tooltip: this.enableGuides ? "Countly Guides" : "Help Center"
                         },
                         {
                             name: "user",
@@ -707,6 +713,18 @@
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
                     return selected && selected.menu;
                 },
+                guidesButtonDynamicClass: function() {
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state === 'selected') {
+                        return 'cly-vue-sidebar__menu-option--selected';
+                    }
+                    else if (state === 'hover') {
+                        return 'hover';
+                    }
+                    else {
+                        return '';
+                    }
+                },
                 helpCenterLink: function() {
                     return this.enableGuides ? '#/guides' : "https://support.count.ly";
                 },
@@ -719,10 +737,15 @@
                     if (!option.noSelect) {
                         this.selectedMenuOptionLocal = option.name;
                         this.showMainMenu = true;
+                        this.$store.dispatch("countlySidebar/updateGuidesButton", '');
                     }
 
                     if (option.name === "toggle") {
                         this.onToggleClick();
+                    }
+                    else if (option.name === "countly-guides") {
+                        this.$store.dispatch("countlySidebar/updateGuidesButton", 'selected');
+                        this.showMainMenu = true;
                     }
                 },
                 onToggleClick: function() {
@@ -910,6 +933,7 @@
                     countlyCMS.fetchEntry("server-guide-config").then(function(config) {
                         self.enableGuides = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
                     });
+                    this.$store.dispatch("countlySidebar/updateGuidesButton", 'hover');
                 }
             }
         });

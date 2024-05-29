@@ -450,6 +450,21 @@ $bg-color: #24292e;
                 }
             }
 
+            &-countly-guides {
+                background-image: url("../../../images/sidebar/default/book-open.svg");
+                height: 25px;
+                width: 20px;
+
+                &:hover,
+                &.hover {
+                    background-image: url("../../../images/sidebar/hover/book-open.svg");
+                }
+
+                &.cly-vue-sidebar__menu-option--selected {
+                    background-image: url("../../../images/sidebar/selected/book-open.svg");
+                }
+            }
+
             &-help-center {
                 background-image: url("../../../images/sidebar/default/help-center.svg");
                 height: 25px;

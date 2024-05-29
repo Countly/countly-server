@@ -540,21 +540,31 @@
             countlySidebar: {
                 namespaced: true,
                 state: {
-                    selectedMenuItem: {}
+                    selectedMenuItem: {},
+                    guidesButton: '',
                 },
                 getters: {
                     getSelectedMenuItem: function(state) {
                         return state.selectedMenuItem;
+                    },
+                    getGuidesButton: function(state) {
+                        return state.guidesButton;
                     }
                 },
                 mutations: {
                     setSelectedMenuItem: function(state, payload) {
                         state.selectedMenuItem = payload;
+                    },
+                    setGuidesButton: function(state, payload) {
+                        state.guidesButton = payload;
                     }
                 },
                 actions: {
                     updateSelectedMenuItem: function(context, payload) {
                         context.commit('setSelectedMenuItem', payload);
+                    },
+                    updateGuidesButton: function(context, payload) {
+                        context.commit('setGuidesButton', payload);
                     }
                 }
             }
