@@ -689,7 +689,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.COUNTRIES.TOTAL_SESSIONS_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -706,7 +706,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.COUNTRIES.TOTAL_USERS_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -722,7 +722,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.COUNTRIES.NEW_USERS_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.scrollPageToBottom('.main-view');
@@ -740,7 +740,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.TOTAL_CRASHES_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -756,7 +756,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.UNIQUE_CRASHES_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({

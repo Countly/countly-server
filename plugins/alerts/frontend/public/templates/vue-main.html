@@ -96,7 +96,6 @@
                         </template>
                     </el-table-column>
 
-
                     <el-table-column type="options" test-id="more-button-area">
                         <template v-slot="rowScope">
                             <cly-more-options :test-id="'row-' + rowScope.$index" v-if="rowScope.row.hover && (rowScope.row._canUpdate || rowScope.row._canDelete)" size="small" @command="handleAlertEditCommand($event,rowScope)">
