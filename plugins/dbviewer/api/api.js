@@ -7,6 +7,8 @@ var common = require('../../../api/utils/common.js'),
     taskManager = require('../../../api/utils/taskmanager.js'),
     { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight } = require('../../../api/utils/rights.js'),
     exported = {};
+const { MongoInvalidArgumentError } = require('mongodb');
+
 const { EJSON } = require('bson');
 
 const FEATURE_NAME = 'dbviewer';
@@ -178,9 +180,20 @@ var spawn = require('child_process').spawn,
             }
 
             if (dbs[dbNameOnParam]) {
-                var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, { projection });
-                if (Object.keys(sort).length > 0) {
-                    cursor.sort(sort);
+                try {
+                    var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, { projection });
+                    if (Object.keys(sort).length > 0) {
+                        cursor.sort(sort);
+                    }
+                }
+                catch (error) {
+                    if (error instanceof MongoInvalidArgumentError && error.message.includes("Collection names must not contain '$'")) {
+                        common.returnMessage(params, 400, "Invalid collection name: Collection names can not contain '$' or other invalid characters");
+                    }
+                    else {
+                        common.returnMessage(params, 500, "An unexpected error occurred.");
+                    }
+                    return false;
                 }
                 try {
                     var total = await cursor.count();
@@ -507,7 +520,7 @@ var spawn = require('child_process').spawn,
             else {
                 if (params.member.global_admin) {
                     var query = params.qstring.app_id ? { "_id": common.db.ObjectID(params.qstring.app_id) } : {};
-                    common.db.collection('apps').find(query).toArray(function(err, apps) {
+                    common.db.collection('apps').find(query, {"name": 1, "_id": 1}).toArray(function(err, apps) {
                         if (err) {
                             console.error(err);
                         }

@@ -29,7 +29,7 @@ then
     nodejs "$DIR/scripts/add_indexes.js"
 
     #run upgrade scripts
-    nodejs "$SCRIPTS/scripts/scripts/ab_test_cohort_period_fix.js"
+    nodejs "$SCRIPTS/scripts/ab_test_cohort_period_fix.js"
     nodejs "$SCRIPTS/scripts/generate_crashgroup_app_version_list.js"
     nodejs "$SCRIPTS/scripts/merge_consent_histories.js"
     nodejs "$SCRIPTS/scripts/merge_flow_collections.js"

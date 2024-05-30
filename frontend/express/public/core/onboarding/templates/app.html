@@ -35,7 +35,7 @@
                                     border>
                                     <div class="setup-radio-item">
                                         <div class="setup-radio-icon-bg bu-mr-2">
-                                            <div class="setup-radio-icon" :data-test-id="`initial-setup-${type}-icon`" :class="'setup-radio-icon--app-type-' + type"></div>
+                                            <i :data-test-id="`initial-setup-${type}-icon`" :class="getIconClass(type)"></i>
                                         </div>
                                         <div>
                                             <div class="text-medium bu-is-capitalized" :data-test-id="`initial-setup-${type}-label`">{{type}}</div>
@@ -77,7 +77,7 @@
                                     border>
                                     <div class="setup-radio-item">
                                         <div class="setup-radio-icon-bg bu-mr-2">
-                                            <div class="setup-radio-icon" :data-test-id="`app-template-${appTemplate.name.toLowerCase()}-icon`" :class="'setup-radio-icon--app-template-' + appTemplate.name.toLowerCase()"></div>
+                                            <i :data-test-id="`app-template-${appTemplate.name.toLowerCase().replace(' ', '-')}-icon`" :class="getIconClass(appTemplate.name.toLowerCase().replace(' ', '-'))"></i>
                                         </div>
                                         <div>
                                             <div class="text-medium bu-is-capitalized">{{appTemplate.name}}</div>
