@@ -37,7 +37,7 @@ export const usersOverviewPageElements = {
     CHART_RETURNING_USERS_VALUE: 'user-analytics-overview-legend-returning-users-value',
     CHART_RETURNING_USERS_TREND_ICON: 'user-analytics-overview-legend-returning-users-trend-icon',
     CHART_RETURNING_USERS_PERCENTAGE: 'user-analytics-overview-legend-returning-users-percentage',
-}
+};
 
 const usersOverviewDataTableElements = (index = 0) => {
     return {

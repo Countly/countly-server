@@ -15,7 +15,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: usersOverviewPageElements.FILTER_DATE_PICKER,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -27,7 +27,7 @@ const verifyEmptyPageElements = () => {
 
     verifyUsersOverviewDataFromTable = ({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -40,7 +40,7 @@ const verifyFullDataPageElements = () => {
 
     verifyUsersOverviewDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifyUsersOverviewChart = ({
@@ -67,7 +67,8 @@ const verifyUsersOverviewChart = ({
             labelElement: usersOverviewPageElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: usersOverviewPageElements.CHART_USERS_OVERVIEW,
         });

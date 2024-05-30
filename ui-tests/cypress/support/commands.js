@@ -135,7 +135,7 @@ Cypress.Commands.add("shouldBeEqual", (element, text) => {
 Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
     cy.getElement(element).invoke('text').then((actualText) => {
         expect(actualText.trim()).not.to.equal(text.trim());
-      });
+    });
 });
 
 Cypress.Commands.add("shouldPlaceholderContainText", (element, text) => {
