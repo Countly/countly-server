@@ -263,7 +263,7 @@ class Manager {
                     continue;
                 }
                 var splittedName = job.name.split(':');
-                if (!manager.isPluginOn(splittedName[0])) {
+                if (!manager.isPluginEnabled(splittedName[0])) {
                     continue; //skipping this job as plugin is disabled
                 }
 

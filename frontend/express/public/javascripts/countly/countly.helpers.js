@@ -340,6 +340,7 @@
         payload.text = msg.message;
         payload.autoHide = !msg.sticky;
         payload.id = msg.id;
+        payload.width = msg.width;
         var colorToUse;
 
         if (countlyGlobal.ssr) {
@@ -731,7 +732,9 @@
 
             var cancelLabel = countlyVue.i18n('common.cancel'),
                 confirmLabel = countlyVue.i18n('common.continue'),
-                convertedType = "danger"; // Default type is "danger"
+                convertedType = "danger", // Default type is "danger"
+                showClose = moreData && moreData.showClose !== false,
+                alignCenter = moreData && moreData.alignCenter !== false;
 
             if (buttonText && buttonText.length === 2) {
                 cancelLabel = buttonText[0];
@@ -754,6 +757,8 @@
                 cancelLabel: cancelLabel,
                 title: moreData && moreData.title,
                 image: moreData && moreData.image,
+                showClose: showClose,
+                alignCenter: alignCenter,
                 callback: callback,
                 testId: testId
             };

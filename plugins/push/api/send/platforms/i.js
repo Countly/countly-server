@@ -162,12 +162,24 @@ const CREDS = {
 
                             var tpks = safeBag.cert.getExtension({id: '1.2.840.113635.100.6.3.6'});
                             if (tpks) {
-                                tpks = tpks.value.replace(/0[\x00-\x1f\(\)!]/gi, '') //eslint-disable-line no-useless-escape
-                                    .replace('\f\f', '\f')
-                                    .split('\f')
-                                    .map(s => s.replace(/[^A-Za-z\-\.]/gi, '').trim()); //eslint-disable-line  no-useless-escape
-                                tpks.shift();
+                                tpks = tpks.value.replace(/0[\x00-\x1f\(\)!]/gi, ''); //eslint-disable-line no-useless-escape
+                                tpks = tpks.replace('\f\f', '\f');
+                                tpks = tpks.split('\f');
+                                tpks = tpks.map(s => s.replace(/[^A-Za-z\-\.]/gi, '').trim()); //eslint-disable-line  no-useless-escape
 
+                                // TODO: next line is a workaround for a p12 file not being parsed
+                                // correctly. find a better extension parsing method and remove it
+                                // (also remove the other string replacement stuff here). in the
+                                // problematic file, first topic was starting with a "-". full
+                                // value of the extension was something like this:
+                                //   - 0\x82\x01\x05\f-ly.count.CountlySwift0\x07\f
+                                //   - \x05topic\f2ly.count.CountlySwift.voip0\x06\
+                                //   - f\x04voip\f:ly.count.CountlySwift.complicati
+                                //   - on0\x0E\f\fcomplication\f6ly.count.CountlySw
+                                //   - ift.voip-ptt0\x0B\f\t.voip-ptt
+                                tpks = tpks.map(s => s.replace(/^[^A-Za-z\.]/, "").trim());
+
+                                tpks.shift();
                                 for (var i = 0; i < tpks.length; i++) {
                                     for (var j = 0; j < tpks.length; j++) {
                                         if (i !== j && tpks[j].indexOf(tpks[i]) === 0) {

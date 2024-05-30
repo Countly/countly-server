@@ -72,15 +72,22 @@
                     },
                     onError: function(context, error) {
                         if (error && error.status !== 0) {
+                            self.isFetching = true; // do not refresh recursively
                             CountlyHelpers.notify({
-                                message: error.statusText || CV.i18n('dbviewer.server-error'),
+                                message: error.responseJSON && error.responseJSON.result ? error.responseJSON.result : CV.i18n('dbviewer.server-error'),
                                 type: "error"
                             });
                         }
                     },
                     onReady: function(context, rows) {
                         if (rows.length) {
-                            self.projectionOptions = Object.keys(rows[0]);
+                            self.projectionOptions = Object.keys(rows[0]).sort();
+                            self.projectionOptions = self.projectionOptions.map(function(item) {
+                                return {
+                                    "label": item,
+                                    "value": item
+                                };
+                            });
                         }
                         return rows;
                     }
@@ -96,7 +103,7 @@
                     sortEnabled: false,
                     projection: [],
                     sort: "",
-                    projectionOptions: [],
+                    projectionOptions: {},
                     isDescentSort: false,
                     isIndexRequest: false,
                     searchQuery: "",
@@ -105,6 +112,7 @@
                     expandKeysHolder: [],
                     isRefresh: false,
                     isLoading: false,
+                    isFetching: false,
                     showFilterDialog: false,
                     showDetailDialog: false,
                     rowDetail: '{ "_id":"Document Detail", "name": "Index Detail" }'
@@ -212,9 +220,13 @@
                     if (force) {
                         this.isLoading = true;
                     }
-                    this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force}).then(function() {
-                        self.isLoading = false;
-                    });
+                    if (force || !this.isFetching) {
+                        this.isFetching = true;
+                        this.tableStore.dispatch("fetchDbviewerTable", {_silent: !force}).then(function() {
+                            self.isLoading = false;
+                            self.isFetching = false;
+                        });
+                    }
                 },
                 getExportQuery: function() {
 
@@ -484,6 +496,9 @@
                 backToDBViewer: function() {
                     window.location = '#/manage/db/' + this.db + '/' + this.collection;
                 },
+                decodeHtml: function(str) {
+                    return countlyCommon.unescapeHtml(str);
+                },
                 executeQuery: function() {
                     var self = this;
 
@@ -493,9 +508,15 @@
                         countlyDBviewer.executeAggregation(this.db, this.collection, query, countlyGlobal.ACTIVE_APP_ID, null, function(err, res) {
                             self.updatePath(self.query);
                             if (res) {
+                                var map = [];
+                                res.aaData.forEach(row => {
+                                    Object.keys(row).forEach(key => {
+                                        map[key] = true;
+                                    });
+                                });
                                 self.aggregationResult = res.aaData;
                                 if (res.aaData.length) {
-                                    self.fields = Object.keys(res.aaData[0]);
+                                    self.fields = Object.keys(map);
                                 }
                             }
                             if (err) {
