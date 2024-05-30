@@ -1,5 +1,7 @@
 import 'cypress-file-upload';
 const helper = require('./helper');
+const chai = require('chai');
+const expect = chai.expect;
 
 Cypress.Commands.add("typeInput", (element, tag) => {
     cy.getElement(element).clear().type(tag);
