@@ -21,11 +21,11 @@ const verifyEmptyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
-    verifyUsersOverviewChart ({
+    verifyUsersOverviewChart({
         isEmpty: true,
     });
 
-    verifyUsersOverviewDataFromTable ({
+    verifyUsersOverviewDataFromTable({
         isEmpty: true,
     });
 };
