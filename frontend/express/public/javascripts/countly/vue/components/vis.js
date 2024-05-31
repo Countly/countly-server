@@ -2096,9 +2096,9 @@
                                 :class="[\'cly-vue-chart-legend__s-series\',\
                                         {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
                                 @click="onClick(item, index)">\
-                                <div :data-test-id="testId + \'-legend-icon\'" class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div :data-test-id="testId + \'-legend-label\'" class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
-                                <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replace(\' \', \'-\').toLowerCase() + \'-legend-icon\'" class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replace(\' \', \'-\').toLowerCase() + \'-legend-label\'" class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replace(\' \', \'-\').toLowerCase() + \'-legend-percentage\'" class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                             </div>\
                         </vue-scroll>\
                     </div>'
@@ -2699,7 +2699,7 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles" :data-test-id="testId + \'-chart\'">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
                             <chart-header :chart-type="\'bar\'" ref="header" v-if="!isChartEmpty" :test-id="testId" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
