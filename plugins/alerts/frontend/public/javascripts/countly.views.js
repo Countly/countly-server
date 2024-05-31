@@ -379,6 +379,16 @@
                 }
                 return alertDataSubTypeOptions;
             },
+            alertDataVariableOptions: function() {
+                var alertDataVariableOptions;
+                if (this.$refs.drawerData.editedObject.alertDataType === "onlineUsers") {
+                    alertDataVariableOptions = this.onlineUsersAlertVariable.condition;
+                }
+                else {
+                    alertDataVariableOptions = this.defaultAlertVariable.condition;
+                }
+                return alertDataVariableOptions;
+            },
             elSelectKey: function() {
                 var key = this.allGroups
                     .map(function(g) {
@@ -984,24 +994,35 @@
                 this.title = jQuery.i18n.map["alert.Create_New_Alert"];
                 this.saveButtonLabel = jQuery.i18n.map["alert.save"];
             },
+            calculateWidth(value) {
+                if (!value || !this.$refs?.alertDataSubTypeSelect?.$el) {
+                    return;
+                }
+                let tempSelect = document.createElement("select"),
+                    tempOption = document.createElement("option");
+                tempOption.textContent = value;
+                tempSelect.style.cssText = `
+                    visibility: hidden;
+                    position: fixed;
+                    padding: 8px;
+                    font-size: 13px;
+                    font-family: Inter !important;
+                    box-sizing: border-box;
+                    font-weight: 600;
+                `;
+                tempSelect.appendChild(tempOption);
+                document.body.appendChild(tempSelect);
+                const tempSelectWidth = tempSelect.getBoundingClientRect().width;
+                tempSelect.remove();
+                //this.changeColor(this.$refs.alertDataSubTypeSelect.$el); 
+                return tempSelectWidth;
+            },
             // Handle the change event of the element
             handleChange(element) {
                 this.changeColor(element);
                 if (element.nodeName !== "SELECT") {
                     return;
                 }
-                let tempSelect = document.createElement("element"),
-                    tempOption = document.createElement("option");
-                tempOption.textContent =
-                    element.options[element.selectedIndex].text;
-                tempSelect.style.cssText +=
-                    "visibility:hidden;position:fixed;font-weight:500;padding:6px;font-size:13px";
-                tempSelect.appendChild(tempOption);
-                element.after(tempSelect);
-                const tempSelectWidth =
-                    tempSelect.getBoundingClientRect().width;
-                element.style.width = `${tempSelectWidth}px`;
-                tempSelect.remove();
             },
             changeColor(element) {
                 // Set the background color of the element to green when a selection is made
