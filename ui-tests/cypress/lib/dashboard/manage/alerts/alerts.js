@@ -231,63 +231,63 @@ const verifyAlertDrawerPageElements = ({
             labelElement: alertDrawerPageElements.DRAWER_TRIGGER_DOT_LABEL,
             labelText: '.'
         });
-    }
 
-    if (triggerMetric != null) {
-        cy.verifyElement({
-            element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
-            value: triggerMetric,
-        });
-    }
-    else {
-        cy.verifyElement({
-            element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
-            elementText: 'metric',
-            value: null
-        });
-    }
+        if (triggerMetric != null) {
+            cy.verifyElement({
+                element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
+                value: triggerMetric,
+            });
+        }
+        else {
+            cy.verifyElement({
+                element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
+                elementText: 'metric',
+                value: null
+            });
+        }
 
-    if (triggerVariable != null) {
-        cy.verifyElement({
-            element: alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT,
-            elementText: triggerVariable,
-        });
-    }
-    else {
-        cy.verifyElement({
-            element: alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT,
-            elementText: 'variable',
-            value: null
-        });
-    }
+        if (triggerVariable != null) {
+            cy.verifyElement({
+                element: alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT,
+                elementText: triggerVariable,
+            });
+        }
+        else {
+            cy.verifyElement({
+                element: alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT,
+                elementText: 'variable',
+                value: null
+            });
+        }
 
-    if (triggerValue != null) {
-        cy.verifyElement({
-            element: alertDrawerPageElements.DRAWER_TRIGGER_VALUE_INPUT,
-            elementPlaceHolder: 'value',
-            value: triggerValue,
-        });
-    }
-    else {
-        cy.verifyElement({
-            element: alertDrawerPageElements.DRAWER_TRIGGER_VALUE_INPUT,
-            elementPlaceHolder: 'value',
-            value: '',
-        });
-    }
+        if (triggerValue != null) {
+            cy.verifyElement({
+                element: alertDrawerPageElements.DRAWER_TRIGGER_VALUE_INPUT,
+                elementPlaceHolder: 'value',
+                value: triggerValue,
+            });
+        }
+        else {
+            cy.verifyElement({
+                element: alertDrawerPageElements.DRAWER_TRIGGER_VALUE_INPUT,
+                elementPlaceHolder: 'value',
+                value: '',
+            });
+        }
 
-    if (triggerTime != null) {
-        cy.verifyElement({
-            element: alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT,
-            elementText: triggerTime,
-        });
-    }
-    else {
-        cy.verifyElement({
-            element: alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT,
-            elementText: 'time',
-            value: null
-        });
+        if (triggerTime != null) {
+            cy.verifyElement({
+                element: alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT,
+                elementText: triggerTime,
+            });
+        }
+        else {
+            cy.verifyElement({
+                element: alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT,
+                elementText: 'time',
+                value: null
+            });
+        }
     }
 
     cy.verifyElement({
