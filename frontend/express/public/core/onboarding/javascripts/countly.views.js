@@ -40,6 +40,7 @@
                 populatorMaxTime: 60,
                 isPopulatorFinished: false,
                 isCountlyEE: countlyGlobal.plugins.includes('drill'),
+                selectedAppTemplate: null,
             };
         },
         computed: {
@@ -93,12 +94,12 @@
             populateApp: function() {
                 var self = this;
                 self.populatorProgress = 0;
+                const selectedAppTemplate = self.selectedAppTemplate || self.newApp.appTemplate;
 
                 countlyPopulator.setStartTime(countlyCommon.periodObj.start / 1000);
                 countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
-
-                countlyPopulator.setSelectedTemplate(self.newApp.appTemplate);
-                countlyPopulator.getTemplate(self.newApp.appTemplate, function(template) {
+                countlyPopulator.setSelectedTemplate(selectedAppTemplate);
+                countlyPopulator.getTemplate(selectedAppTemplate, function(template) {
                     countlyPopulator.generateUsers(10, template);
                     self.populatorProgress = 0;
                     self.progressBar = setInterval(function() {
@@ -119,7 +120,7 @@
                 if (this.isDemoApp) {
                     this.$store.dispatch('countlyOnboarding/fetchIntroVideos');
                 }
-
+                self.selectedAppTemplate = doc.appTemplate;
                 delete doc.appTemplate;
 
                 this.$store.dispatch('countlyOnboarding/createApp', doc)
@@ -155,6 +156,21 @@
             handleContinueClick: function() {
                 app.navigate('#/initial-consent', true);
             },
+            getIconClass: function(appName) {
+                let clyIo = 'cly-io cly-io-';
+                let classMapper = {
+                    'entertainment': 'video-camera',
+                    'finance': 'currency-dollar',
+                    'b2b-saas': 'presentation-chart-line',
+                    'healthcare': 'heart',
+                    'e-commerce': 'shopping-bag',
+                    'social': 'emoji-happy',
+                    'mobile': 'device-mobile',
+                    'desktop': 'desktop-computer',
+                    'web': 'globe-alt',
+                };
+                return clyIo + classMapper[appName];
+            }
         },
     });
 
