@@ -1,5 +1,6 @@
 <cly-dropdown
     class="cly-vue-select-x"
+    :test-id="testId"
     ref="dropdown"
     :width="width"
     :placeholder="placeholder"
@@ -41,6 +42,9 @@
                 :placeholder="placeholder"
                 :arrow="arrow"
                 :selected-options="selectedOptions">
+                <template v-slot:prefix>
+                    <slot name="label-prefix" v-bind:options="selectedOptions"></slot>
+                </template>
             </cly-input-dropdown-trigger>
         </slot>
     </template>

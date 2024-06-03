@@ -36,8 +36,8 @@ usersApi.getCurrentUser = function(params) {
 * @returns {boolean} true if fetched data from db
 **/
 usersApi.getUserById = function(params) {
-    if (!params.qstring.id || params.qstring.id.length !== 24) {
-        common.returnMessage(params, 401, 'Missing or incorrect user id parameter');
+    if (!params.qstring.id) {
+        common.returnMessage(params, 401, 'Missing user id parameter');
         return false;
     }
     common.db.collection('members').findOne({ _id: common.db.ObjectID(params.qstring.id) }, {
@@ -418,8 +418,6 @@ usersApi.updateUser = async function(params) {
             'user_id': {
                 'required': true,
                 'type': 'String',
-                'min-length': 24,
-                'max-length': 24,
                 'exclude-from-ret-obj': true
             },
             'full_name': {
@@ -602,8 +600,9 @@ usersApi.deleteUser = async function(params) {
     }
 
     for (var i = 0; i < userIds.length; i++) {
-        // Each user id should be 24 chars long and a user can't delete his own account
-        if (!userIds[i] || userIds[i] === params.member._id + "" || userIds[i].length !== 24) {
+        //a user can't delete his own account
+        //string id can also exist due to cognito, so no check for 24 chars length
+        if (!userIds[i] || userIds[i] === params.member._id + "") {
             continue;
         }
         else {
@@ -631,6 +630,7 @@ usersApi.deleteUser = async function(params) {
                             await common.db.collection('auth_tokens').remove({ 'owner': userIds[i] });
                             await usersApi.deleteUserNotes({ member: { _id: userIds[i] } });
                             await common.db.collection('members').remove({_id: common.db.ObjectID(userIds[i])});
+                            deleteUserPresets(userIds[i]);
                             resolve(true);
                         }
                     });
@@ -761,6 +761,16 @@ function verifyMemberArgon2Hash(username, password, callback) {
     });
 }
 
+/**
+ * Delete user's date presets
+ * @param {string} memberId | User id
+ */
+function deleteUserPresets(memberId) {
+    common.db.collection("date_presets").remove({owner: memberId + ""}, function() {
+        //handle errors
+    });
+}
+
 // END of reused functions 
 
 
@@ -784,6 +794,7 @@ usersApi.deleteOwnAccount = function(params) {
                     try {
                         await common.db.collection('members').remove({_id: common.db.ObjectID(member._id + "")});
                         killAllSessionForUser(member._id);
+                        deleteUserPresets(member._id);
                         common.returnMessage(params, 200, 'Success');
                     }
                     catch (err1) {

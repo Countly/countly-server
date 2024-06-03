@@ -4,6 +4,7 @@
     countlyAlerts,
     jQuery,
     countlyVue,
+    countlyCommon,
     app,
     countlyAuth,
     CV,
@@ -32,7 +33,6 @@
                 saveButtonLabel: "",
                 apps: [""],
                 allowAll: false,
-                showFilter: false,
                 filterButton: false,
                 showSubType1: true,
                 showSubType2: false,
@@ -172,6 +172,14 @@
                             },
                         ],
                     },
+                    profile_groups: {
+                        target: [
+                            {
+                                value: "# of users in the profile group",
+                                label: "# of users in the profile group",
+                            },
+                        ],
+                    },
                     revenue: {
                         target: [
                             { value: "total revenue", label: "total revenue" },
@@ -253,11 +261,10 @@
                     "o",
                     "m",
                 ];
-                if (
-                    disabledMetrics.includes(
-                        this.$refs.drawerData.editedObject.alertDataSubType
-                    )
-                ) {
+                if (this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) {
+                    return false;
+                }
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
                     return false;
                 }
                 return true;
@@ -270,21 +277,26 @@
                     "o",
                     "m",
                 ];
-                if (
-                    disabledMetrics.includes(
-                        this.$refs.drawerData.editedObject.alertDataSubType
-                    )
-                ) {
+                if (this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) {
+                    return false;
+                }
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
                     return false;
                 }
                 return true;
             },
             alertTimeOptions() {
                 if (
-                    this.$refs.drawerData.editedObject.alertDataType ===
-                    "rating"
+                    (this.$refs.drawerData.editedObject.alertDataType ===
+                    "rating" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) ||
+                    (this.$refs.drawerData.editedObject.alertDataType ===
+                    "events" && (this.alertDataFilterValue)) ||
+                    (this.$refs.drawerData.editedObject.alertDataType ===
+                    "nps" && ((typeof this.alertDataFilterValue) === "string")) ||
+                    (this.$refs.drawerData.editedObject.alertDataType ===
+                    "events" && this.filterButton)
                 ) {
-                    // Filter out the "hour" option if the alert data type is "rating"
+                    // The hour option is no longer available when the filter is added.
                     return this.defaultAlertTime.time.filter(
                         (periodItem) => periodItem.value !== "hourly"
                     );
@@ -311,6 +323,10 @@
                         label: jQuery.i18n.map["alert.Online-users"],
                         value: "onlineUsers",
                     },
+                    {
+                        label: jQuery.i18n.map["alert.Profile-groups"],
+                        value: "profile_groups",
+                    },
                     { label: jQuery.i18n.map["alert.Rating"], value: "rating" },
                     {
                         label: jQuery.i18n.map["alert.Revenue"],
@@ -324,7 +340,7 @@
                     { label: jQuery.i18n.map["alert.User"], value: "users" },
                     { label: jQuery.i18n.map["alert.View"], value: "views" },
                 ];
-                // disable enterprise plugins if they're not available
+                // disable enterprise plugins if they are not available
                 if (!countlyGlobal.plugins.includes("concurrent_users")) {
                     alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "onlineUsers");
                 }
@@ -333,6 +349,12 @@
                 }
                 if (!countlyGlobal.plugins.includes("revenue")) {
                     alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "revenue");
+                }
+                if (!countlyGlobal.plugins.includes("cohorts")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "cohorts" && value !== "profile_groups");
+                }
+                if (!countlyGlobal.plugins.includes("users")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "users");
                 }
                 return alertDataTypeOptions;
             },
@@ -366,6 +388,17 @@
 
                 return key;
             },
+            periodTooltipReminder: function() {
+                if (this.$refs.drawerData.editedObject.period === "hourly") {
+                    return jQuery.i18n.map["alerts.period-select-reminder-hourly"];
+                }
+                else if (this.$refs.drawerData.editedObject.period === "daily") {
+                    return jQuery.i18n.map["alerts.period-select-reminder-daily"];
+                }
+                else {
+                    return;
+                }
+            },
         },
         props: {
             placeholder: { type: String, default: "Select" },
@@ -396,6 +429,8 @@
                     return "View";
                 case "cohorts":
                     return "Cohort";
+                case "profile_groups":
+                    return "Profile Group";
                 case "survey":
                     return "Widget Name";
                 case "nps":
@@ -419,6 +454,10 @@
             getMetrics: function() {
                 const formData = this.$refs.drawerData.editedObject;
                 this.alertDataSubType2Options = [];
+                if (formData.selectedApps === 'all') {
+                    formData.alertDataType = 'dataPoints';
+                    formData.alertDataSubType = 'total data points';
+                }
                 if (!formData.selectedApps) {
                     return;
                 }
@@ -428,7 +467,7 @@
                         (viewList) => {
                             this.alertDataSubType2Options = viewList.map(
                                 (v) => {
-                                    return { value: v.value, label: v.name };
+                                    return { value: v.value, label: countlyCommon.unescapeHtml(v.name) };
                                 }
                             );
                         }
@@ -439,7 +478,7 @@
                         formData.selectedApps,
                         ({ events, segments }) => {
                             this.alertDataSubType2Options = events.map((e) => {
-                                return { value: e.value, label: e.name };
+                                return { value: e.value, label: countlyCommon.unescapeHtml(e.name) };
                             });
                             this.alertDataFilterObject = segments;
                         }
@@ -449,8 +488,34 @@
                     countlyAlerts.getCohortsForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((c) => {
-                                return { value: c._id, label: c.name };
+                            var filtered = data.filter(function(c) {
+                                if (c.type !== "manual") {
+                                    return true;
+                                }
+                                else {
+                                    return false;
+                                }
+                            });
+                            this.alertDataSubType2Options = filtered.map((c) => {
+                                return { value: c._id, label: countlyCommon.unescapeHtml(c.name) };
+                            });
+                        }
+                    );
+                }
+                if (formData.alertDataType === "profile_groups") {
+                    countlyAlerts.getCohortsForApp(
+                        formData.selectedApps,
+                        (data) => {
+                            var filtered = data.filter(function(c) {
+                                if (c.type === "manual") {
+                                    return true;
+                                }
+                                else {
+                                    return false;
+                                }
+                            });
+                            this.alertDataSubType2Options = filtered.map((c) => {
+                                return { value: c._id, label: countlyCommon.unescapeHtml(c.name) };
                             });
                         }
                     );
@@ -460,7 +525,7 @@
                         formData.selectedApps,
                         (data) => {
                             this.alertDataSubType2Options = data.map((s) => {
-                                return { value: s._id, label: s.name };
+                                return { value: s._id, label: countlyCommon.unescapeHtml(s.name) };
                             });
                         }
                     );
@@ -470,7 +535,7 @@
                         formData.selectedApps,
                         (data) => {
                             this.alertDataSubType2Options = data.map((n) => {
-                                return { value: n._id, label: n.name };
+                                return { value: n._id, label: countlyCommon.unescapeHtml(n.name) };
                             });
                         }
                     );
@@ -482,7 +547,7 @@
                             this.alertDataSubType2Options = data.map((r) => {
                                 return {
                                     value: r._id,
-                                    label: r.popup_header_text,
+                                    label: countlyCommon.unescapeHtml(r.popup_header_text),
                                 };
                             });
                         }
@@ -501,23 +566,12 @@
                 if (val === "crashes" || val === "rating" || val === "nps") {
                     this.setFilterValueOptions();
                 }
-                var validDataTypesForFilter = [
-                    "events",
-                    "crashes",
-                    "nps",
-                    "rating",
-                ];
-                if (validDataTypesForFilter.includes(val)) {
-                    this.showFilter = true;
-                }
-                else {
-                    this.showFilter = false;
-                }
 
                 var validDataTypesForSubType2 = [
                     "events",
                     "views",
                     "cohorts",
+                    "profile_groups",
                     "survey",
                     "nps",
                     "rating",
@@ -599,13 +653,48 @@
                     ];
                 }
                 if (formData.alertDataType === "nps") {
-                    this.alertDataFilterValue = [];
+                    this.alertDataFilterValue = "";
                     this.alertDataFilterKey = "NPS scale";
                     this.alertDataFilterValueOptions = [
                         { label: "detractor", value: "detractor" },
                         { label: "passive", value: "passive" },
                         { label: "promoter", value: "promoter" },
                     ];
+                }
+            },
+            subType2Padding: function(obj) {
+                if (this.showFilterButton(obj) && !this.showFilter) {
+                    return "bu-pb-2";
+                }
+            },
+            dataTypeIcons: function(dataType) {
+                switch (dataType) {
+                case "crashes":
+                    return "cly-io-16 cly-is cly-is-crashes";
+                case "cohorts":
+                    return "cly-io-16 cly-io cly-io-cohorts";
+                case "dataPoints":
+                    return "cly-io-16 cly-is cly-is-punchcard";
+                case "events":
+                    return "cly-io-16 cly-is cly-is-calendar";
+                case "nps":
+                    return "cly-io-16 cly-is cly-is-emoji-happy";
+                case "onlineUsers":
+                    return "cly-io-16 cly-is cly-is-user-circle";
+                case "profile_groups":
+                    return "cly-io-16 cly-is cly-is-user-group";
+                case "rating":
+                    return "cly-io-16 cly-is cly-is-star";
+                case "revenue":
+                    return "cly-io-16 cly-is cly-is-currency-dollar";
+                case "sessions":
+                    return "cly-io-16 cly-is cly-is-clock";
+                case "survey":
+                    return "cly-io-16 cly-is cly-is-clipboard-list";
+                case "users":
+                    return "cly-io-16 cly-is cly-is-users";
+                case "views":
+                    return "cly-io-16 cly-is cly-is-eye";
                 }
             },
             handleFilterClosing: function() {
@@ -653,7 +742,6 @@
                 this.showSubType2 = false;
                 this.showCondition = true;
                 this.showConditionValue = true;
-                this.showFilter = false;
                 this.filterButton = false;
             },
             resetFilterCondition: function() {
@@ -690,13 +778,22 @@
                         }
                     }
                 }
-                if (this.alertDataFilterValue) {
+                const validFilter = (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)
+                    || (!Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue);
+                if (validFilter) {
                     settings.filterKey = this.alertDataFilterKey;
                     settings.filterValue = this.alertDataFilterValue;
                 }
+                else {
+                    settings.filterKey = null;
+                    settings.filterValue = null;
+                }
 
                 var target = settings.alertDataSubType;
-                var subTarget = settings.alertDataSubType2;
+                if (settings.alertDataSubType2) {
+                    var subTarget = this.alertDataSubType2Options
+                        .find(({value}) => value === settings.alertDataSubType2).label;
+                }
 
                 let describePeriod;
                 switch (settings.period) {
@@ -855,11 +952,34 @@
                 // this.alertDataSubTypeSelected(newState.alertDataSubType, true);
                 //this.resetAlertCondition();
                 this.getMetrics();
+                this.setFilterKeyOptions();
+                this.setFilterValueOptions();
 
                 if (newState._id !== null) {
                     this.title = jQuery.i18n.map["alert.Edit_Your_Alert"];
                     this.saveButtonLabel = jQuery.i18n.map["alert.save-alert"];
+                    this.filterButton = Array.isArray(newState.filterValue)
+                        ? !!newState.filterValue.length
+                        : !!newState.filterValue;
+                    this.alertDataFilterKey = newState.filterKey;
+                    this.alertDataFilterValue = newState.filterValue;
+
+                    if (newState.alertBy === "email") {
+                        if (newState?.allGroups?.length) {
+                            this.selectedRadioButton = "toGroup";
+                        }
+                        if (newState?.alertValues?.length) {
+                            this.selectedRadioButton = "specificAddress";
+                        }
+                    }
+                    else if (newState.alertBy === "hook") {
+                        this.selectedRadioButton = "dontSend";
+                    }
+
                     return;
+                }
+                else {
+                    this.resetAlertConditionShow();
                 }
                 this.title = jQuery.i18n.map["alert.Create_New_Alert"];
                 this.saveButtonLabel = jQuery.i18n.map["alert.save"];
@@ -887,7 +1007,7 @@
                 // Set the background color of the element to green when a selection is made
                 element.style.backgroundColor = "#E1EFFF";
                 element.style.color = "#333C48";
-                element.style.fontWeight = "500";
+                element.style.fontWeight = "600";
             },
             resetColor(element) {
                 // Remove the inline background color style to reset to default

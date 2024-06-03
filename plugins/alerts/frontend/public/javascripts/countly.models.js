@@ -49,8 +49,7 @@
             url: countlyCommon.API_PARTS.data.r,
             data: {
                 app_id: appId,
-                method: "get_cohorts",
-                type: "auto"
+                method: "get_cohorts"
             },
             dataType: "json",
             success: function(res) {
@@ -480,7 +479,7 @@
                                 appNameList = _.map(
                                     alertsList[i].selectedApps,
                                     function(appID) {
-                                        if (appID === "all-apps") {
+                                        if (appID === "all") {
                                             return "All apps";
                                         }
                                         return (

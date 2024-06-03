@@ -25,7 +25,6 @@
                     "section-3": 0,
                     "section-4": 0
                 },
-                fireMouseWheeler: false,
             };
         },
         methods: {
@@ -43,48 +42,44 @@
                 }
             },
             handleScroll: function() {
-                if (this.fireMouseWheeler) {
-                    const headerHeight = 79;
-                    const windowHeight = window.innerHeight - headerHeight;
-                    const pageCenter = windowHeight / 2;
+                const headerHeight = 79;
+                const windowHeight = window.innerHeight - headerHeight;
+                const pageCenter = windowHeight / 2;
 
-                    for (let index = 0; index < Object.keys(this.sectionThresholds).length; index++) {
-                        const elementId = Object.keys(this.sectionThresholds)[index];
-                        const element = document.getElementById(elementId);
+                for (let index = 0; index < Object.keys(this.sectionThresholds).length; index++) {
+                    const elementId = Object.keys(this.sectionThresholds)[index];
+                    const element = document.getElementById(elementId);
 
-                        if (!element) {
-                            return;
-                        }
+                    if (!element) {
+                        return;
+                    }
 
-                        const elementDimension = element.getBoundingClientRect();
-                        const elementTop = elementDimension.top;
-                        const elementHeight = elementDimension.height;
+                    const elementDimension = element.getBoundingClientRect();
+                    const elementTop = elementDimension.top;
+                    const elementHeight = elementDimension.height;
 
-                        if (elementTop <= pageCenter && elementTop + elementHeight >= pageCenter) {
+                    if (elementTop <= pageCenter && elementTop + elementHeight >= pageCenter) {
 
-                            this.steps[index].isActive = true;
-                            this.steps.forEach((item, i) => {
-                                if (i !== index) {
-                                    item.isActive = false;
-                                }
-                            });
+                        this.steps[index].isActive = true;
+                        this.steps.forEach((item, i) => {
+                            if (i !== index) {
+                                item.isActive = false;
+                            }
+                        });
 
-                            return;
-                        }
+                        return;
                     }
                 }
             }
         },
+        mounted: function() {
+            window.addEventListener('mousewheel', this.handleScroll);
+        },
         created: function() {
             this.steps = this.data;
-            var self = this;
-            this.fireMouseWheeler = true;
-            window.addEventListener("mousewheel", function() {
-                self.handleScroll();
-            }, false);
         },
         destroyed: function() {
-            this.fireMouseWheeler = false;
+            window.removeEventListener('mousewheel', this.handleScroll);
         },
         template: '<div>\
                     <div v-for="(item, index) in this.steps">\
@@ -115,6 +110,11 @@
             activeColorCode: {
                 type: String,
                 default: '#0166D6'
+            },
+            testId: {
+                type: String,
+                required: false,
+                default: 'cly-populator-number-selector-default-test-id'
             }
         },
         data: function() {
@@ -135,7 +135,7 @@
                         <div class="bu-is-flex populator-number-selector">\
                             <div v-for="(item, index) in items" :key="item.value" class="populator-number-selector__each-box-wrapper">\
                                 <div :class="{ \'populator-number-selector__active \': item.value === selectedValue, \'populator-number-selector__first\' : index === 0, \'populator-number-selector__last\' : index === (items.length - 1) }" class="populator-number-selector__each" @click="numberChange(item.value)">\
-                                    <span class="text-medium">{{ item.text }}</span>\
+                                    <span class="text-medium" :data-test-id="testId + \'-item-\' + item.text.toString().replaceAll(\' \', \'-\').toLowerCase()">{{ item.text }}</span>\
                                 </div>\
                             </div>\
                         </div>\
@@ -203,18 +203,29 @@
                 document.querySelector('[data-test-id="populator-template-form-header-title"]').click();
             },
             save: function() {
-                if (this.value && typeof this.value.length !== "undefined") { // if it is an array
+                if (this.value.length && this.value.filter(item => item.selectedKey === this.selectedProperty && item.selectedValue === this.selectedValue && item.conditionType === this.conditionType).length) {
+                    CountlyHelpers.notify({
+                        title: CV.i18n("common.error"),
+                        message: CV.i18n("populator-template.condition-already-exists"),
+                        type: "warning",
+                    });
+                    return;
+                }
+                let conditions = this.value.length ? this.value : [];
+                const isBehaviorSection = this.$parent.$parent.behavior ? true : false;
+                if (isBehaviorSection) {
                     this.$emit('save-condition', this.type, this.selectedProperty, this.selectedValue, this.conditionType);
-                    this.close();
                 }
                 else {
-                    this.$emit('input', {
+                    conditions.push({
                         selectedKey: this.selectedProperty,
                         selectedValue: this.selectedValue,
                         conditionType: this.conditionType,
                         values: [{key: "", probability: 0}]
                     });
+                    this.$emit('input', conditions);
                 }
+
                 this.close();
             },
             onAddCondition: function() {
@@ -223,10 +234,9 @@
                 }
                 else {
                     this.selectedProperty = '';
+                    this.conditionPropertyValueItems = [];
                 }
-                // if (this.value && typeof this.value.length !== "undefined") { // if it is an array
                 this.$emit('selected-key-change', this.selectedProperty);
-                // }
                 this.selectedValue = '';
             },
             onSelectedKeyChange: function() {
@@ -372,8 +382,13 @@
             checkRemoveValue: function(key, value) {
                 let usedProperties = [];
                 this.users.forEach(function(item) {
-                    if (item.condition && item.condition.selectedKey === key && (value === undefined || item.condition.selectedValue === value)) {
-                        usedProperties.push("user");
+                    // check if it is used in user section
+                    if (item.conditions && item.conditions.length) {
+                        item.conditions.forEach(function(condition) {
+                            if (condition.selectedKey === key && (value === undefined || condition.selectedValue === value)) {
+                                usedProperties.push("user");
+                            }
+                        });
                     }
                 });
                 // check if it is used in behavior section
@@ -429,20 +444,17 @@
                     });
                 }
             },
-            onDeleteCondition: function(index) {
-                this.users[index].condition = undefined;
+            onDeleteCondition: function(index, conditionIndex) {
+                this.users[index].conditions.splice(conditionIndex, 1);
             },
-            onRemoveConditionValue: function(index, valueIndex) {
+            onRemoveConditionValue: function(index, valueIndex, conditionIndex) {
                 try {
-                    if (this.users[index].condition.values.length === 1) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-while-removing-condition"),
-                            type: "warning"
-                        });
-                        return;
+                    if (this.users[index].conditions[conditionIndex].values.length === 1) {
+                        this.users[index].conditions.splice(conditionIndex, 1);
                     }
-                    this.users[index].condition.values.splice(valueIndex, 1);
+                    else {
+                        this.users[index].conditions[conditionIndex].values.splice(valueIndex, 1);
+                    }
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -452,9 +464,9 @@
                     });
                 }
             },
-            onAddAnotherConditionValue: function(index) {
+            onAddAnotherConditionValue: function(index, conditionIndex) {
                 try {
-                    this.users[index].condition.values.push({key: "", probability: 0});
+                    this.users[index].conditions[conditionIndex].values.push({key: "", probability: 0});
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -469,7 +481,7 @@
                 if (item) {
                     this.conditionPropertyValues = item.values.map(valueItem => valueItem.key || null);
                 }
-            },
+            }
         },
         template: CV.T("/populator/templates/sections/users.html")
     });
@@ -537,8 +549,12 @@
                 let usedProperties = [];
                 if (this.value[index] && this.value[index].segmentations) {
                     this.value[index].segmentations.forEach(function(item) {
-                        if (item.condition && item.condition.selectedKey === key && item.condition.selectedValue === (value === "" ? "Empty/Unset" : value)) {
-                            usedProperties.push("event");
+                        if (item.conditions && item.conditions.length) {
+                            item.conditions.forEach(function(condition) {
+                                if (condition.selectedKey === key && (value === undefined || condition.selectedValue === value)) {
+                                    usedProperties.push("event");
+                                }
+                            });
                         }
                     });
                 }
@@ -604,20 +620,17 @@
                     });
                 }
             },
-            onAddAnotherConditionValue: function(index, segmentIndex) {
-                this.events[index].segmentations[segmentIndex].condition.values.push({key: "", probability: 0});
+            onAddAnotherConditionValue: function(index, segmentIndex, conditionIndex) {
+                this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.push({key: "", probability: 0});
             },
-            onRemoveConditionValue: function(index, segmentIndex, valueIndex) {
+            onRemoveConditionValue: function(index, segmentIndex, valueIndex, conditionIndex) {
                 try {
-                    if (this.events[index].segmentations[segmentIndex].condition.values.length === 1) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-while-removing-condition"),
-                            type: "warning"
-                        });
-                        return;
+                    if (this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.length === 1) {
+                        this.events[index].segmentations[segmentIndex].conditions.splice(conditionIndex, 1);
                     }
-                    this.events[index].segmentations[segmentIndex].condition.values.splice(valueIndex, 1);
+                    else {
+                        this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.splice(valueIndex, 1);
+                    }
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -627,8 +640,8 @@
                     });
                 }
             },
-            onDeleteCondition: function(index, segmentIndex) {
-                this.events[index].segmentations[segmentIndex].condition = undefined;
+            onDeleteCondition: function(index, segmentIndex, conditionIndex) {
+                this.events[index].segmentations[segmentIndex].conditions.splice(conditionIndex, 1);
             },
             onConditionSelectedKeyChange: function(selectedConditionProp, index) {
                 const item = this.events[index].segmentations.find(segment => segment.key === selectedConditionProp);
@@ -639,6 +652,15 @@
         },
         created() {
             this.events = this.value;
+            if (this.parentData && this.parentData.length) {
+                this.parentData.forEach((item) => {
+                    item.steps.forEach((step) => {
+                        if (step.key === "events" && step.disabled) {
+                            this.$parent.isSectionActive = false;
+                        }
+                    });
+                });
+            }
         },
         template: CV.T("/populator/templates/sections/events.html")
     });
@@ -686,8 +708,12 @@
                 let usedProperties = [];
                 if (this.value[index] && this.value[index].segmentations) {
                     this.value[index].segmentations.forEach(function(item) {
-                        if (item.condition && item.condition.selectedKey === key && item.condition.selectedValue === (value === "" ? "Empty/Unset" : value)) {
-                            usedProperties.push("views");
+                        if (item.conditions && item.conditions.length) {
+                            item.conditions.forEach(function(condition) {
+                                if (condition.selectedKey === key && (value === undefined || condition.selectedValue === value)) {
+                                    usedProperties.push("views");
+                                }
+                            });
                         }
                     });
                 }
@@ -772,20 +798,17 @@
                     });
                 }
             },
-            onAddAnotherConditionValue: function(index, segmentIndex) {
-                this.views[index].segmentations[segmentIndex].condition.values.push({key: "", probability: 0});
+            onAddAnotherConditionValue: function(index, segmentIndex, conditionIndex) {
+                this.views[index].segmentations[segmentIndex].conditions[conditionIndex].values.push({key: "", probability: 0});
             },
-            onRemoveConditionValue: function(index, segmentIndex, valueIndex) {
+            onRemoveConditionValue: function(index, segmentIndex, valueIndex, conditionIndex) {
                 try {
-                    if (this.views[index].segmentations[segmentIndex].condition.values.length === 1) {
-                        CountlyHelpers.notify({
-                            title: CV.i18n("common.error"),
-                            message: CV.i18n("populator-template.warning-while-removing-condition"),
-                            type: "warning"
-                        });
-                        return;
+                    if (this.views[index].segmentations[segmentIndex].conditions[conditionIndex].values.length === 1) {
+                        this.views[index].segmentations[segmentIndex].conditions.splice(conditionIndex, 1);
                     }
-                    this.views[index].segmentations[segmentIndex].condition.values.splice(valueIndex, 1);
+                    else {
+                        this.views[index].segmentations[segmentIndex].conditions[conditionIndex].values.splice(valueIndex, 1);
+                    }
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -795,8 +818,8 @@
                     });
                 }
             },
-            onDeleteCondition: function(index, segmentIndex) {
-                this.views[index].segmentations[segmentIndex].condition = undefined;
+            onDeleteCondition: function(index, segmentIndex, conditionIndex) {
+                this.views[index].segmentations[segmentIndex].conditions.splice(conditionIndex, 1);
             },
             onConditionSelectedKeyChange: function(selectedConditionProp, index) {
                 const item = this.views[index].segmentations.find(segment => segment.key === selectedConditionProp);
@@ -807,6 +830,15 @@
         },
         created() {
             this.views = this.value;
+            if (this.parentData && this.parentData.length) {
+                this.parentData.forEach((item) => {
+                    item.steps.forEach((step) => {
+                        if (step.key === "views" && step.disabled) {
+                            this.$parent.isSectionActive = false;
+                        }
+                    });
+                });
+            }
         },
         template: CV.T("/populator/templates/sections/views.html")
     });
@@ -823,6 +855,9 @@
             },
             parentData: {
                 type: [Object, Array],
+            },
+            sectionActivity: {
+                type: Object
             }
         },
         data: function() {
@@ -834,14 +869,129 @@
                     {name: "Event", value: "events"},
                     {name: "View", value: "views"}
                 ],
-                sequenceStepValues: {}
+                sequenceStepValues: {},
+                linkedSectionActivity: false
             };
         },
         watch: {
             "parentData": {
                 deep: true,
                 handler: function(newValue) {
+                    const eventsHasValue = this.sectionActivity.events && newValue.events && newValue.events.length && newValue.events.filter(x => x.name).length;
+                    const viewsHasValue = this.sectionActivity.views && newValue.views && newValue.views.length && newValue.views.filter(x => x.name).length;
+                    if (newValue && eventsHasValue || viewsHasValue) {
+                        this.linkedSectionActivity = true;
+                    }
+                    else {
+                        this.linkedSectionActivity = false;
+                    }
                     this.sequenceStepValues = newValue;
+                }
+            },
+            "sectionActivity": {
+                deep: true,
+                handler: function(newValue) {
+                    if (!newValue.events && !newValue.views) { // if both events and views are disabled
+                        this.linkedSectionActivity = false;
+                        this.sequences.forEach((sequence) => {
+                            sequence.steps = sequence.steps.map(step => {
+                                if (step.key === "events" || step.key === "views") {
+                                    step.disabled = true;
+                                }
+                                return step;
+                            });
+                        });
+
+                        this.sequenceStepProperties.map((item) => {
+                            item.disabled = true;
+                        });
+                    }
+                    if (newValue.events) {
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "events") {
+                                delete item.disabled;
+                            }
+                        });
+                    }
+                    if (newValue.views) {
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "views") {
+                                delete item.disabled;
+                            }
+                        });
+                    }
+                }
+            },
+            "sectionActivity.events": {
+                deep: true,
+                handler: function(newValue) {
+                    if (!newValue) { // if disabled events section
+                        this.sequences.forEach((sequence) => {
+                            sequence.steps = sequence.steps.map(step => {
+                                if (step.key === "events") {
+                                    step.disabled = true;
+                                }
+                                return step;
+                            });
+                        });
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "events") {
+                                item.disabled = true;
+                            }
+                        });
+                    }
+                    if (newValue && this.parentData.events.length) {
+                        this.linkedSectionActivity = true;
+                        this.sequences.forEach((sequence) => {
+                            sequence.steps = sequence.steps.map(step => {
+                                if (step.key === "events") {
+                                    delete step.disabled;
+                                }
+                                return step;
+                            });
+                        });
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "events") {
+                                delete item.disabled;
+                            }
+                        });
+                    }
+                }
+            },
+            "sectionActivity.views": {
+                deep: true,
+                handler: function(newValue) {
+                    if (!newValue) { // if disabled views section
+                        this.sequences.forEach((sequence) => {
+                            sequence.steps = sequence.steps.map(step => {
+                                if (step.key === "views") {
+                                    step.disabled = true;
+                                }
+                                return step;
+                            });
+                        });
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "views") {
+                                item.disabled = true;
+                            }
+                        });
+                    }
+                    if (newValue && this.parentData.views.length) {
+                        this.linkedSectionActivity = true;
+                        this.sequences.forEach((sequence) => {
+                            sequence.steps = sequence.steps.map(step => {
+                                if (step.key === "views") {
+                                    delete step.disabled;
+                                }
+                                return step;
+                            });
+                        });
+                        this.sequenceStepProperties.map((item) => {
+                            if (item.value === "views") {
+                                delete item.disabled;
+                            }
+                        });
+                    }
                 }
             },
             sequences: {
@@ -912,11 +1062,20 @@
         created: function() {
             if (this.value && Object.keys(this.value).length) {
                 this.sequences = this.value;
+                this.linkedSectionActivity = true;
             }
             else {
                 this.$parent.isSectionActive = false;
+                this.linkedSectionActivity = false;
             }
             this.sequenceStepValues = this.parentData;
+            if (this.parentData && this.parentData.behavior && this.parentData.behavior.sequences && this.parentData.behavior.sequences.length) {
+                this.parentData.behavior.sequences.forEach((item) => {
+                    if (item && item.disabled) {
+                        this.$parent.isSectionActive = false;
+                    }
+                });
+            }
         },
         template: CV.T("/populator/templates/sections/sequences.html")
     });
@@ -937,13 +1096,49 @@
             deletedIndex: {
                 type: String,
             },
+            sectionActivity: {
+                type: [Boolean, Object]
+            }
         },
         watch: {
+            "sectionActivity": {
+                deep: true,
+                handler: function(newValue) {
+                    if (!newValue) { // if disabled sequences section
+                        this.behavior.sequences.forEach((item, index) => {
+                            if (item.key !== "random") {
+                                this.behavior.sequences[index].disabled = true;
+                            }
+                        });
+                        this.behavior.sequenceConditions.forEach((item, index) => {
+                            item.values.forEach((valueItem, valueIndex) => {
+                                if (valueItem.key !== "random") {
+                                    this.behavior.sequenceConditions[index].values[valueIndex].disabled = true;
+                                }
+                            });
+                        });
+                    }
+                    else { // if enabled sequences section
+                        this.behavior.sequences.forEach((item, index) => {
+                            if (item.key !== "random") {
+                                delete this.behavior.sequences[index].disabled;
+                            }
+                        });
+                        this.behavior.sequenceConditions.forEach((item, index) => {
+                            item.values.forEach((valueItem, valueIndex) => {
+                                if (valueItem.key !== "random") {
+                                    delete this.behavior.sequenceConditions[index].values[valueIndex].disabled;
+                                }
+                            });
+                        });
+                    }
+                }
+            },
             behavior: {
                 handler: function(newValue) {
                     this.$emit('input', newValue);
                 },
-                deep: true
+                deep: true,
             },
             deletedIndex: function(newValue) {
                 if (!newValue || !newValue.length) {
@@ -951,12 +1146,27 @@
                 }
                 const index = parseInt(newValue.split("_")[0], 10);
                 this.behavior.sequences.splice(index, 1);
+                this.behavior.sequenceConditions.forEach((item) => {
+                    item.values.splice(index, 1);
+                });
                 if (!this.behavior.sequences.length) {
                     const indexToRemove = this.behavior.sequences.findIndex(item => item.key === "random");
                     if (indexToRemove !== -1) {
                         this.behavior.sequences.splice(indexToRemove, 1);
+                        this.behavior.sequenceConditions.forEach((item) => {
+                            item.values.splice(indexToRemove, 1);
+                        });
                     }
                 }
+                // re-indexing the sequences after deletion
+                this.behavior.sequences.filter(x=>x.key !== 'random').forEach((sequence, idx) => {
+                    sequence.key = "Sequence_" + (idx + 1);
+                });
+                this.behavior.sequenceConditions.forEach((item) => {
+                    item.values.filter(x=>x.key !== 'random').forEach((sequence, idx) => {
+                        sequence.key = "Sequence_" + (idx + 1);
+                    });
+                });
             },
             "parentData": {
                 deep: true,
@@ -975,11 +1185,26 @@
                             const indexToRemove = this.behavior.sequences.findIndex(item => item.key === "random");
                             if (indexToRemove !== -1) {
                                 this.behavior.sequences.splice(indexToRemove, 1);
+                                this.behavior.sequenceConditions.forEach((item) => {
+                                    item.values.splice(indexToRemove, 1);
+                                });
                             }
                             this.behavior.sequences.push({key: 'Sequence_' + (this.behavior.sequences.length + 1), probability: 0});
+                            if (this.behavior.sequenceConditions.length) {
+                                this.behavior.sequenceConditions.forEach((item) => {
+                                    item.values.push({key: 'Sequence_' + this.behavior.sequences.length, probability: 0});
+                                });
+                            }
                         }
                         if (!this.behavior.sequences.find(item => item.key === 'random')) {
                             this.behavior.sequences.push({key: 'random', probability: 0});
+                        }
+                        if (this.behavior.sequenceConditions.length) {
+                            this.behavior.sequenceConditions.forEach((item) => {
+                                if (!item.values.find(valueItem => valueItem.key === 'random')) {
+                                    item.values.push({key: 'random', probability: 0});
+                                }
+                            });
                         }
                     }
                 },
@@ -993,7 +1218,7 @@
                     SEQUENCE: "sequence"
                 },
                 conditionPropertyValues: [],
-                isConditionDisabled: false
+                isConditionDisabled: false,
             };
         },
         methods: {
@@ -1007,9 +1232,6 @@
                 if (type === this.behaviourSectionEnum.GENERAL) {
                     this.behavior.generalConditions.splice(index, 1);
                 }
-                // else if (type === this.behaviourSectionEnum.SEQUENCE) { // in case of implemented later
-                //     this.behavior.sequenceConditions.splice(index, 1);
-                // }
                 else {
                     CountlyHelpers.notify({
                         title: CV.i18n("common.error"),
@@ -1075,6 +1297,10 @@
                 default: false,
                 required: false
             },
+            sectionActivity: {
+                type: [Object, Boolean],
+                required: false
+            },
             title: {
                 type: String,
                 default: '',
@@ -1088,7 +1314,7 @@
             },
             deletedIndex: {
                 type: String,
-            }
+            },
         },
         data: function() {
             return {
@@ -1102,10 +1328,17 @@
                 },
                 description: '',
                 userProperties: [],
-                disableSwitch: false,
                 sectionIndex: -1,
-                disableSwitchMessage: CV.i18n('populator-template.disabled-switch-message'),
             };
+        },
+        watch: {
+            isSectionActive: {
+                handler: function(newValue) {
+                    if (this.hasSwitch) {
+                        this.$emit('section-activity-change', newValue);
+                    }
+                }
+            }
         },
         methods: {
             setDeletedIndex: function(index) {
@@ -1113,7 +1346,10 @@
             }
         },
         created: function() {
-            this.description = CV.i18n('populator-template.select-settings', this.descriptionEnum[this.type]);
+            this.description = CV.i18n('populator-template.select-settings', this.descriptionEnum[this.type], '');
+            if (this.descriptionEnum[this.type] === 'sequence') {
+                this.description = CV.i18n('populator-template.select-settings', this.descriptionEnum[this.type], CV.i18n('populator-template.select-settings-' + this.descriptionEnum[this.type]));
+            }
             const keys = Object.keys(this.descriptionEnum);
             this.sectionIndex = keys.indexOf(this.type);
         },
@@ -1126,11 +1362,11 @@
         },
         template: '<div class="bu-is-flex bu-is-flex-direction-column">\
                     <div class="bu-mb-2">\
-                        <el-switch v-if="hasSwitch" v-tooltip="disableSwitch ? disableSwitchMessage : null" :disabled="disableSwitch" v-model="isSectionActive" class="bu-mr-2"></el-switch>\
+                        <el-switch v-if="hasSwitch" v-model="isSectionActive" class="bu-mr-2"></el-switch>\
                         <span class="text-big bu-has-text-weight-medium" :id="\'section-\' + sectionIndex + \'-title\'">{{title}}</span>\
                     </div>\
                     <div class="text-smallish color-cool-gray-50 bu-mb-4">{{description}}</div>\
-                    <component :is-open="isSectionActive" v-model="value" :parent-data="parentData" @input="(payload) => { $emit(\'input\', payload) }" :is="type" @deleted-index="setDeletedIndex" :deleted-index="deletedIndex" >\
+                    <component :is-open="isSectionActive" v-model="value" :parent-data="parentData" @input="(payload) => { $emit(\'input\', payload) }" :is="type" @deleted-index="setDeletedIndex" :deleted-index="deletedIndex" :section-activity="sectionActivity" >\
                         <template slot="default">\
                             <slot name="default"></slot>\
                         </template>\

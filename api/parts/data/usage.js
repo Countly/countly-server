@@ -274,6 +274,15 @@ usage.getPredefinedMetrics = function(params, userProps) {
                 params.qstring.metrics._manufacturer = "Apple";
             }
         }
+        if (params.qstring.metrics._has_hinge) {
+            var hasHingeValue = params.qstring.metrics._has_hinge;
+            if (hasHingeValue === "true" || hasHingeValue === true || hasHingeValue === "hinged") {
+                params.qstring.metrics._has_hinge = "hinged";
+            }
+            else {
+                params.qstring.metrics._has_hinge = "not_hinged";
+            }
+        }
     }
 
     var predefinedMetrics = [
@@ -327,6 +336,11 @@ usage.getPredefinedMetrics = function(params, userProps) {
                     name: "_resolution",
                     set: "resolutions",
                     short_code: common.dbUserMap.resolution
+                },
+                {
+                    name: "_has_hinge",
+                    set: "has_hinge",
+                    short_code: common.dbUserMap.has_hinge
                 }
             ]
         },
@@ -531,7 +545,7 @@ function processUserSession(dbAppUser, params, done) {
             uniqueLevelsMonth.push(params.time.day);
         }
 
-        if (userLastSeenDate.year() === params.time.yearly &&
+        if ((userLastSeenDate.year() + "") === (params.time.yearly + "") &&
                 Math.ceil(userLastSeenDate.format("DDD") / 7) < params.time.weekly) {
             uniqueLevels[uniqueLevels.length] = params.time.yearly + ".w" + params.time.weekly;
             uniqueLevelsZero.push("w" + params.time.weekly);

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth,countlyGraphNotesCommon, moment*/
+/* global countlyVue,countlyPlugins,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth,countlyGraphNotesCommon, moment*/
 
 (function() {
 
@@ -136,7 +136,7 @@
                 selectedLocalizationFilter: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 isConfirmed: false,
                 expandedPlatformSettings: [],
-                settings: JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState)),
+                settings: this.getInitialPushNotificationDrawerSettingsState(),
                 userPropertiesIdCounter: 0,
                 selectedUserPropertyId: null,
                 isAddUserPropertyPopoverOpen: {
@@ -342,6 +342,14 @@
             },
         },
         methods: {
+            getInitialPushNotificationDrawerSettingsState: function() {
+                const _InitialPushNotificationDrawerSettingsState = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
+                const settings = countlyPlugins.getConfigsData();
+                if (settings.push && settings.push.default_content_available) {
+                    _InitialPushNotificationDrawerSettingsState.ios.isContentAvailableSet = true;
+                }
+                return _InitialPushNotificationDrawerSettingsState;
+            },
             previewCohorts: function(cohorts) {
                 var selectedCohorts = this.cohortOptions.filter(function(cohort) {
                     return cohorts.some(function(selectedCohortId) {
@@ -728,7 +736,7 @@
                     title: false,
                     content: false
                 };
-                this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
+                this.settings = this.getInitialPushNotificationDrawerSettingsState();
                 this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
             },
             onClose: function() {
@@ -1786,6 +1794,11 @@
                         title: CV.i18n('push-notification-details.errors-tab'),
                         name: "errors",
                         component: countlyPushNotificationComponent.DetailsErrorsTab
+                    },
+                    {
+                        title: CV.i18n('push-notification-details.stats-tab'),
+                        name: "stats",
+                        component: countlyPushNotificationComponent.DetailsStatsTab
                     }
                 ],
                 usersTargetedOptionsXAxis: {
@@ -2255,7 +2268,10 @@
     initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.ANDROID] = {
         _id: "",
         firebaseKey: "",
-        type: "fcm"
+        serviceAccountFile: "",
+        type: "fcm",
+        hasServiceAccountFile: false,
+        hasUploadedServiceAccountFile: false,
     };
     initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.HUAWEI] = {
         _id: "",
@@ -2265,6 +2281,7 @@
     };
 
     var keyFileReader = new FileReader();
+    var serviceAccountFileReader = new FileReader();
 
     var initialTestUsersRows = {};
     initialTestUsersRows[countlyPushNotification.service.AddTestUserDefinitionTypeEnum.USER_ID] = [];
@@ -2283,8 +2300,9 @@
                 viewModel: JSON.parse(JSON.stringify(initialAppLevelConfig)),
                 modelUnderEdit: Object.assign({}, { rate: "", period: ""}),
                 uploadedIOSKeyFilename: '',
-                isHuaweiConfigTouched: false,
+                uploadedAndroidServiceAccountFilename: '',
                 isIOSConfigTouched: false,
+                isHuaweiConfigTouched: false,
                 AddTestUserDefinitionTypeEnum: countlyPushNotification.service.AddTestUserDefinitionTypeEnum,
                 userIdOptions: [],
                 cohortOptions: [],
@@ -2337,6 +2355,7 @@
                 this.isHuaweiConfigTouched = false;
                 this.isIOSConfigTouched = false;
                 this.uploadedIOSKeyFilename = '';
+                this.uploadedAndroidServiceAccountFilename = '';
                 this.cohortOptions = [];
             },
             onIOSAuthTypeChange: function(value) {
@@ -2368,9 +2387,18 @@
                 this.modelUnderEdit[this.PlatformEnum.IOS].hasUploadedKeyFile = true;
                 this.isIOSConfigTouched = true;
             },
+            setServiceAccountFile: function(dataUrlFile) {
+                this.initializeModelPlatformIfNotFound(this.PlatformEnum.ANDROID);
+                this.modelUnderEdit[this.PlatformEnum.ANDROID].serviceAccountFile = dataUrlFile;
+                this.modelUnderEdit[this.PlatformEnum.ANDROID].hasUploadedServiceAccountFile = true;
+            },
             onKeyFileChange: function(file) {
                 this.uploadedIOSKeyFilename = file.name;
                 keyFileReader.readAsDataURL(file.raw);
+            },
+            onServiceAccountFileChange: function(file) {
+                this.uploadedAndroidServiceAccountFilename = file.name;
+                serviceAccountFileReader.readAsDataURL(file.raw);
             },
             resetIOSViewModelPlatform: function() {
                 var platform = this.PlatformEnum.IOS;
@@ -2432,7 +2460,7 @@
             },
             isKeyEmpty: function(platform) {
                 if (platform === this.PlatformEnum.ANDROID) {
-                    return !this.viewModel[platform].firebaseKey;
+                    return !this.viewModel[platform].firebaseKey && !this.viewModel[platform].serviceAccountFile;
                 }
                 if (platform === this.PlatformEnum.IOS) {
                     if (this.iosAuthConfigType === countlyPushNotification.service.IOSAuthConfigTypeEnum.P8) {
@@ -2521,6 +2549,16 @@
                 else {
                     this.dispatchAppLevelConfigChangeEvent('p12KeyFile', this.PlatformEnum.IOS);
                 }
+            },
+            addServiceAccountFileReaderLoadListener: function(callback) {
+                serviceAccountFileReader.addEventListener("load", callback);
+            },
+            removeServiceAccountFileReaderLoadListener: function(callback) {
+                serviceAccountFileReader.removeEventListener("load", callback);
+            },
+            onServiceAccountFileReady: function() {
+                this.setServiceAccountFile(serviceAccountFileReader.result);
+                this.dispatchAppLevelConfigChangeEvent('serviceAccountFile', this.PlatformEnum.ANDROID);
             },
             reconcilateViewModel: function(newModel) {
                 var self = this;
@@ -2701,11 +2739,13 @@
         },
         mounted: function() {
             this.addKeyFileReaderLoadListener(this.onKeyFileReady);
+            this.addServiceAccountFileReaderLoadListener(this.onServiceAccountFileReady);
             this.addDiscardEventListener(this.onDiscard);
             this.reconcilate();
         },
         beforeDestroy: function() {
             this.removeKeyFileReaderLoadListener(this.onKeyFileReady);
+            this.removeServiceAccountFileReaderLoadListener(this.onServiceAccountFileReady);
         }
     });
 
