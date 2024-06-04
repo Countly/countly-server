@@ -80,7 +80,7 @@
                     <td style="padding: 30px 0px 30px 0px;" class="logo" align="center">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" >
                             <tr>
-                                <td bgcolor="#ffffff" width="100" align="left"><a href="<%= version.page %>" target="_blank"><img alt="Logo" src="<%= host %>/images/pre-login/countly-logo-dark.png" width="150" style="display: block; font-family: Helvetica, Arial, sans-serif; color: #666666; font-size: 16px;" border="0"></a></td>
+                                <td bgcolor="#ffffff" width="100" align="left"><a href="<%= version.page %>" target="_blank"><img alt="Logo" src="<%= typeof localhost !== 'undefined' ? localhost : host %>/images/pre-login/countly-logo-dark.png" width="150" style="display: block; font-family: Helvetica, Arial, sans-serif; color: #666666; font-size: 16px;" border="0"></a></td>
                             </tr>
                         </table>
                     </td>
@@ -99,7 +99,7 @@
                     <td>
                         <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
                             <tr>
-                                <td align="center" style="padding-top: 0px;" ><img alt="Dashboard" src="<%= host %>/dashboards/images/screenshots/<%= image.name %>" width="750" style="display: block;" border="0"></img></td>
+                                <td align="center" style="padding-top: 0px;" ><img alt="Dashboard" src="<%= typeof localhost !== 'undefined' ? localhost : host %>/dashboards/images/screenshots/<%= image.name %>" width="750" style="display: block;" border="0"></img></td>
                             </tr>
                         </table>
                     </td>

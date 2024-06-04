@@ -11,14 +11,11 @@ var myArgs = process.argv.slice(2);
 function save_changes(data, finalList) {
     manager.dbConnection().then((db) => {
         manager.loadConfigs(db, function() {
-            if (manager.getConfig("api").sync_plugins) {
-                manager.updateConfigs(db, "plugins", data, function() {
-                    db.close();
-                });
-            }
-            else {
+
+            manager.updateConfigs(db, "plugins", data, function() {
                 db.close();
-            }
+            });
+
             fs.writeFile(pluginsListPath, JSON.stringify(finalList), 'utf8', function() {
                 console.log("Changes saved");
             });
@@ -80,7 +77,7 @@ manager.dbConnection().then((db) => {
         db.close();
         if (myArgs[0] == "enable" && myArgs[1]) {
             let pluginName = myArgs[1];
-            if (plugins.indexOf(pluginName) == -1) {
+            if (!manager.isPluginEnabled(pluginName)) {
                 let {dpcs} = dependencies.getDependencies(plugins.concat(pluginName), {
                     discoveryStrategy: "enableParents",
                     env: "cli"
@@ -131,7 +128,7 @@ manager.dbConnection().then((db) => {
         }
         else if (myArgs[0] == "disable" && myArgs[1]) {
             let pluginName = myArgs[1];
-            if (plugins.indexOf(pluginName) > -1) {
+            if (manager.isPluginEnabled(pluginName)) {
                 let {dpcs} = dependencies.getDependencies(plugins.concat(pluginName), {
                     discoveryStrategy: "enableParents",
                     env: "cli"

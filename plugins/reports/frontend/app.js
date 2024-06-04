@@ -3,6 +3,7 @@ const countlyConfig = require('../../../frontend/express/config');
 const common = require('../../../api/utils/common.js');
 const reports = require('../api/reports');
 const localize = require('../../../api/utils/localization.js');
+const plugins = require('../../../plugins/pluginManager');
 
 (function(plugin) {
     plugin.init = function(app, countlyDb) {
@@ -60,8 +61,11 @@ const localize = require('../../../api/utils/localization.js');
                 const data = JSON.parse(req.query.data);
                 const parsedData = reports.decryptUnsubscribeCode(data);
                 const {reportID, email} = parsedData;
-                countlyDb.collection('reports').findOneAndUpdate({_id: common.db.ObjectID(reportID)}, { $pull: {'emails': email}}, function(err, result) {
-                    render(res, countlyDb, true, result && result.value);
+                countlyDb.collection('reports').findOne({_id: common.db.ObjectID(reportID)}, function(err, report) {
+                    countlyDb.collection('reports').findOneAndUpdate({_id: common.db.ObjectID(reportID)}, { $pull: {'emails': email}}, {returnDocument: "after"}, function(errUpdate, result) {
+                        plugins.callMethod("logAction", {req: req, user: {email}, action: "reports_unsubscribe", data: {before: {emails: report.emails}, update: {emails: result && result.value && result.value.emails}}});
+                        render(res, countlyDb, true, result && result.value);
+                    });
                 });
             }
             catch (e) {
@@ -77,8 +81,11 @@ const localize = require('../../../api/utils/localization.js');
                 const data = JSON.parse(req.query.data);
                 const parsedData = reports.decryptUnsubscribeCode(data);
                 const {reportID, email} = parsedData;
-                countlyDb.collection('reports').findOneAndUpdate({_id: common.db.ObjectID(reportID)}, { $addToSet: {'emails': email}}, function(err, result) {
-                    render(res, countlyDb, false, result && result.value);
+                countlyDb.collection('reports').findOne({_id: common.db.ObjectID(reportID)}, function(err, report) {
+                    countlyDb.collection('reports').findOneAndUpdate({_id: common.db.ObjectID(reportID)}, { $addToSet: {'emails': email}}, {returnDocument: "after"}, function(errUpdate, result) {
+                        plugins.callMethod("logAction", {req: req, user: {email}, action: "reports_subscribe", data: {before: report.emails, update: {emails: result && result.value && result.value.emails}}});
+                        render(res, countlyDb, false, result && result.value);
+                    });
                 });
             }
             catch (e) {

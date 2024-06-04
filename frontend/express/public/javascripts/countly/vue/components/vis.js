@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon */
+/* global Vue, countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon, countlyAuth */
 // _mergeWith is Lodash mergeWith - /frontend/express/public/javascripts/utils/lodash.mergeWith.js
 
 (function(countlyVue) {
@@ -926,6 +926,11 @@
                 type: String,
                 required: false,
                 default: "weekly"
+            },
+            testId: {
+                type: String,
+                required: false,
+                default: "test-id"
             }
         },
         data: function() {
@@ -1764,6 +1769,10 @@
                 type: String,
                 default: 'line'
             },
+            testId: {
+                required: false,
+                default: 'test-id'
+            }
         },
         mixins: [
             countlyVue.mixins.i18n
@@ -1784,11 +1793,11 @@
                 }
             }
         },
-        template: '<div class="chart-type-toggle-wrapper">\
-                        <el-select v-model="selSwitch" class="chart-type-toggle-wrapper__select">\
-                            <div class="chart-type-toggle-wrapper__title"><span class="text-smaller font-weight-bold bu-is-uppercase">{{i18n("common.chart-type")}}</span></div>\
-                            <el-option value="line" label="Line"><i class="ion-ios-pulse-strong bu-mr-2"></i><span class="chart-type-toggle-wrapper__type">Line Chart</span></el-option>\
-                            <el-option value="bar" label="Bar"><i class="ion-stats-bars bu-mr-3"></i><span class="chart-type-toggle-wrapper__type">Bar</span></el-option>\
+        template: '<div class="chart-type-toggle-wrapper" :data-test-id="testId + \'-chart-type-toggle-wrapper\'">\
+                        <el-select v-model="selSwitch" class="chart-type-toggle-wrapper__select" :test-id="testId">\
+                            <div class="chart-type-toggle-wrapper__title" :data-test-id="testId + \'-chart-type-toggle-wrapper-title\'"><span class="text-smaller font-weight-bold bu-is-uppercase" :data-test-id="testId + \'-chart-type-label\'">{{i18n("common.chart-type")}}</span></div>\
+                            <el-option value="line" label="Line" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-line\'"><i class="ion-ios-pulse-strong bu-mr-2"></i><span class="chart-type-toggle-wrapper__type" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-line-text\'">Line Chart</span></el-option>\
+                            <el-option value="bar" label="Bar" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-bar\'"><i class="ion-stats-bars bu-mr-3"></i><span class="chart-type-toggle-wrapper__type" :data-test-id="testId + \'-chart-type-toggle-wrapper-el-option-bar-text\'">Bar</span></el-option>\
                         </el-select>\
                     </div>'
     });
@@ -1862,6 +1871,14 @@
                 },
             };
         },
+        computed: {
+            hasCreateRight: function() {
+                return countlyAuth.validateCreate("core");
+            },
+            hasUpdateRight: function() {
+                return countlyAuth.validateUpdate("core");
+            }
+        },
         methods: {
             refresh: function() {
                 this.$emit('refresh');
@@ -1877,9 +1894,9 @@
                         <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
                     </el-button>\
                     <el-dropdown-menu slot="dropdown">\
-                        <el-dropdown-item command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
+                        <el-dropdown-item v-if="hasCreateRight" command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
                         <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
-                        <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item v-if="hasUpdateRight" command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
                     </el-dropdown-menu>\
                 </el-dropdown>\
                 <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>\
@@ -1998,7 +2015,7 @@
         template: '<div class="bu-level">\
                         <div class="bu-level-left">\
                             <div class="bu-level-item" v-if="showToggle && !isZoom">\
-                                <chart-toggle :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
+                                <chart-toggle :test-id="testId" :chart-type="chartType" @series-toggle="onSeriesChange" v-on="$listeners"></chart-toggle>\
                             </div>\
                             <slot v-if="!isZoom" name="chart-left" v-bind:echart="echartRef"></slot>\
 							<slot name="chart-header-left-input"></slot>\
@@ -2114,7 +2131,8 @@
                                 </div>\
                             </div>\
                             <div class="cly-vue-chart-legend__second-row">\
-                                <div class="cly-vue-chart-legend__p-number">{{item.value}}</div>\
+                                <div class="cly-vue-chart-legend__p-number is-estimate" v-if="item.isEstimate" v-tooltip="item.estimateTooltip">~{{item.value}}</div>\
+                                <div class="cly-vue-chart-legend__p-number" v-else>{{item.value}}</div>\
                                 <div\
                                     :class="[\'cly-vue-chart-legend__p-trend\', \
                                             {\'cly-vue-chart-legend__p-trend--trend-up\': item.trend === \'up\'}, \
@@ -2437,6 +2455,11 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            testId: {
+                type: String,
+                default: 'cly-chart-line-default-test-id',
+                required: false
             }
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
@@ -2460,7 +2483,7 @@
                                 @datazoom="onDataZoom">\
                             </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
+                                    <cly-empty-chart :test-id="testId" :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -2472,7 +2495,6 @@
                         </custom-legend>\
                     </div>'
     }));
-
 
     Vue.component("cly-chart-time", BaseLineChart.extend({
         data: function() {
@@ -2501,6 +2523,11 @@
             noHourly: {
                 type: Boolean,
                 default: false,
+                required: false
+            },
+            testId: {
+                type: String,
+                default: 'cly-chart-time-default-test-id',
                 required: false
             }
         },
@@ -2601,7 +2628,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                            <chart-header ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
+                        <chart-header :test-id="testId + \'-header\'" ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -2618,7 +2645,7 @@
                                     :autoresize="autoresize"\
                                     @datazoom="onDataZoom"/>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
+                                    <cly-empty-chart :test-id="testId" :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -2706,6 +2733,13 @@
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
+        props: {
+            testId: {
+                type: String,
+                default: "cly-chart-pie-test-id",
+                required: false
+            }
+        },
         components: {
             'chart-header': ChartHeader,
             'custom-legend': CustomLegend
@@ -2743,7 +2777,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1" style="height: 100%">\
-                            <chart-header ref="header" :chart-type="\'pie\'" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
+                            <chart-header ref="header" :chart-type="\'pie\'" v-if="!isChartEmpty" :test-id="testId" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -2776,7 +2810,7 @@
 									</div>\
 								</div>\
                                 <div class="bu-column bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
+                                    <cly-empty-chart :test-id="testId" :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\

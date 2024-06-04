@@ -150,6 +150,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/drawer.js',
                     'frontend/express/public/core/notes/javascripts/countly.models.js',
                     'frontend/express/public/core/notes/javascripts/countly.common.notes.js',
+                    'frontend/express/public/core/date-presets/javascripts/countly.models.js',
+                    'frontend/express/public/core/date-presets/javascripts/countly.views.js',
                     'frontend/express/public/javascripts/countly/vue/components/vis.js',
                     'frontend/express/public/javascripts/countly/vue/components/helpers.js',
                     'frontend/express/public/javascripts/countly/vue/components/sidebar.js',

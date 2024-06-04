@@ -278,7 +278,8 @@
                         badgeNumber: "",
                         onClickURL: "",
                         json: null,
-                        userData: []
+                        userData: [],
+                        setContentAvailable: false,
                     },
                     android: {
                         mediaURL: "",
@@ -704,6 +705,24 @@
                 }, {disableAutoCatch: true});
             });
         },
+        fetchMessageStats: function(_id, period = "30days") {
+            return new Promise(function(resolve, reject) {
+                CV.$.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r + "/push/message/stats",
+                    data: { _id, period },
+                    dataType: "json",
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        var errorMessage = countlyPushNotification.helper.getErrorMessage(error);
+                        reject(new Error(errorMessage));
+                    },
+                }, {disableAutoCatch: true});
+            });
+        },
         getDashboard: function(echo) {
             var data = {
                 app_id: countlyCommon.ACTIVE_APP_ID
@@ -718,6 +737,16 @@
                     data: data,
                     dataType: "json",
                     success: function(response) {
+                        const notificationId = "legacy-fcm-warning";
+                        CountlyHelpers.removePersistentNotification(notificationId);
+                        if (typeof response?.legacyFcm === "boolean" && response.legacyFcm) {
+                            CountlyHelpers.notify({
+                                id: notificationId,
+                                message: CV.i18n("push-notification.legacy-fcm-warning"),
+                                type: "error",
+                                persistent: true
+                            });
+                        }
                         resolve(response);
                     },
                     error: function(error) {
@@ -1257,9 +1286,19 @@
                 };
             },
             mapIOSSettings: function(iosSettingsDto) {
+                let subtitle, setContentAvailable;
+                if (iosSettingsDto && Array.isArray(iosSettingsDto.specific)) {
+                    let subtitleItem = iosSettingsDto.specific.find(i => i.subtitle !== undefined);
+                    if (subtitleItem) {
+                        subtitle = countlyPushNotification.helper.decodeMessage(subtitleItem.subtitle || "");
+                    }
+                    let contentAvailableItem = iosSettingsDto.specific.find(i => i.setContentAvailable !== undefined);
+                    setContentAvailable = contentAvailableItem.setContentAvailable;
+                }
                 return {
                     // NOte: subtitle will reside at index zero for now. There are no other platform specifics
-                    subtitle: iosSettingsDto && iosSettingsDto.specific && iosSettingsDto.specific[0] && countlyPushNotification.helper.decodeMessage(iosSettingsDto.specific[0].subtitle || ""),
+                    subtitle,
+                    setContentAvailable,
                     soundFilename: iosSettingsDto && iosSettingsDto.sound || "",
                     badgeNumber: iosSettingsDto && iosSettingsDto.badge && iosSettingsDto.badge.toString(),
                     json: iosSettingsDto && iosSettingsDto.data || null,
@@ -1735,10 +1774,14 @@
             },
             mapAndroidAppLevelConfig: function(dto) {
                 if (this.hasAppLevelPlatformConfig(dto, PlatformDtoEnum.ANDROID)) {
+                    console.log(dto[PlatformDtoEnum.ANDROID]);
                     return {
                         _id: dto[PlatformDtoEnum.ANDROID]._id || '',
                         firebaseKey: dto[PlatformDtoEnum.ANDROID].key,
-                        type: dto[PlatformDtoEnum.ANDROID].type
+                        serviceAccountFile: dto[PlatformDtoEnum.ANDROID].serviceAccountFile,
+                        type: dto[PlatformDtoEnum.ANDROID].type,
+                        hasServiceAccountFile: !!dto[PlatformDtoEnum.ANDROID].serviceAccountFile,
+                        hasUploadedServiceAccountFile: false
                     };
                 }
                 return null;
@@ -1916,11 +1959,20 @@
                     result.url = countlyCommon.decodeHtml(iosSettings.onClickURL);
                 }
                 if (iosSettings.subtitle && options.settings[PlatformEnum.IOS].isSubtitleEnabled) {
-                    result.specific = [{subtitle: iosSettings.subtitle}];
+                    if (!result.specific) {
+                        result.specific = [];
+                    }
+                    result.specific.push({ subtitle: iosSettings.subtitle });
                 }
                 if (model.settings[PlatformEnum.IOS].mediaURL && options.settings[PlatformEnum.IOS].isMediaURLEnabled && model.messageType === MessageTypeEnum.CONTENT) {
                     result.media = countlyCommon.decodeHtml(model.settings[PlatformEnum.IOS].mediaURL);
                     result.mediaMime = model.settings[PlatformEnum.IOS].mediaMime;
+                }
+                if (options.settings[PlatformEnum.IOS].isContentAvailableSet) {
+                    if (!result.specific) {
+                        result.specific = [];
+                    }
+                    result.specific.push({ setContentAvailable: options.settings[PlatformEnum.IOS].isContentAvailableSet });
                 }
                 return result;
             },
@@ -2300,9 +2352,15 @@
             mapAndroidAppLevelConfig: function(model) {
                 if (model[PlatformEnum.ANDROID]) {
                     var result = {
-                        key: model[PlatformEnum.ANDROID].firebaseKey,
-                        type: model[PlatformEnum.ANDROID].type
+                        type: model[PlatformEnum.ANDROID].type,
                     };
+                    if (model[PlatformEnum.ANDROID].hasUploadedServiceAccountFile) {
+                        result.serviceAccountFile = model[PlatformEnum.ANDROID].serviceAccountFile;
+                    }
+                    else {
+                        result.key = model[PlatformEnum.ANDROID].firebaseKey;
+                    }
+
                     if (model[PlatformEnum.ANDROID]._id) {
                         result._id = model[PlatformEnum.ANDROID]._id;
                     }
@@ -2872,6 +2930,10 @@
         messageSettings[PlatformEnum.ANDROID] = {};
         return {
             pushNotification: countlyPushNotification.helper.getInitialModel(TypeEnum.ONE_TIME),
+            messageStats: {
+                sent: [],
+                action: []
+            },
             platformFilter: null,
             platformFilterOptions: [],
             localeFilter: null,
@@ -2897,6 +2959,19 @@
                     console.error(error);
                     context.dispatch('onFetchError', {error: error, useLoader: true});
                 });
+        },
+        fetchMessageStats: function(context, { messageId, period }) {
+            context.dispatch('onFetchInit', {useLoader: true});
+            countlyPushNotification.api.fetchMessageStats(messageId, period)
+                .then(function(model) {
+                    context.commit('setMessageStats', model);
+                    context.dispatch('onFetchSuccess', {useLoader: true});
+                })
+                .catch(function(error) {
+                    console.error(error);
+                    context.dispatch('onFetchError', {error: error, useLoader: true});
+                });
+
         },
         onUserCommand: function(context, payload) {
             context.commit('setUserCommand', payload);
@@ -2976,6 +3051,9 @@
     var detailsMutations = {
         setPushNotification: function(state, value) {
             state.pushNotification = value;
+        },
+        setMessageStats: function(state, value) {
+            state.messageStats = value;
         },
         setUserCommand: function(state, value) {
             state.userCommand = value;

@@ -246,6 +246,9 @@
             hasSegments: function() {
                 return this.$store.getters["countlyAllEvents/hasSegments"];
             },
+            hasOmittedSegments: function() {
+                return this.omittedSegments.options.length > 0;
+            },
             category: function() {
                 return this.$store.getters["countlyAllEvents/currentCategory"];
             },
@@ -392,6 +395,7 @@
         title: "Event Stats",
         route: "#/analytics/events",
         component: AllEventsView,
+        dataTestId: "event-stats",
         vuex: [{
             clyModel: countlyAllEvents
         }],
