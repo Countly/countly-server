@@ -132,6 +132,6 @@ elif ! mongosh admin --eval "printjson(db.adminCommand( { getParameter: 1, featu
     echo "mongosh admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"7.0\\\" } )\""
 else
     mongosh admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))"
-    mongosh admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"7.0\" } )"
+    mongosh admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"7.0\", confirm: true } )"
     echo "Finished upgrading script"
 fi
