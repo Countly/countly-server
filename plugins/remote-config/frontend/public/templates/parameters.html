@@ -4,7 +4,7 @@
   >
     <template v-slot:header-right>
       <div class="bu-level-item" v-if="hasCreateRight">
-        <el-button :disabled="isParamterLimitExceeded" @click="create" type="success" size="small" icon="el-icon-circle-plus">{{i18n('remote-config.add-parameter-title')}}</el-button>
+        <el-button :disabled="isParamterLimitExceeded" @click="create" type="success" size="small" icon="el-icon-circle-plus" data-test-id="add-parameter-button">{{i18n('remote-config.add-parameter-title')}}</el-button>
       </div>
     </template>
   </cly-header>

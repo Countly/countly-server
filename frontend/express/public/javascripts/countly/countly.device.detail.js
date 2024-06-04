@@ -28,7 +28,7 @@
     };
 
     countlyDeviceDetails.checkOS = function(os, data, osName) {
-        return new RegExp("^" + osName + "([0-9]+|unknown)").test(data);
+        return new RegExp("^" + "\\[" + osName + "\\]").test(data);
     };
 
     countlyDeviceDetails.getPlatformData = function() {
@@ -175,13 +175,10 @@
             if (countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) {
                 osName = countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].short;
             }
-            else {
-                osName = osSegmentation.toLowerCase()[0];
-            }
         }
 
         if (oSVersionData.chartData) {
-            var regTest = new RegExp("^" + osName + "[0-9]");
+            var regTest = new RegExp("^" + osName);
             var reg = new RegExp("^" + osName);
             for (var i = 0; i < oSVersionData.chartData.length; i++) {
                 var shouldDelete = true;
@@ -193,6 +190,7 @@
                     }
                 }
                 else if (countlyDeviceDetails.checkOS && countlyDeviceDetails.checkOS(osSegmentation, oSVersionData.chartData[i][segment], osName)) {
+                    oSVersionData.chartData[i][segment] = oSVersionData.chartData[i][segment].replace("[" + osName + "]", "");
                     shouldDelete = false;
                 }
                 if (!shouldDelete) {

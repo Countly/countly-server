@@ -5,7 +5,7 @@
         :tooltip="{description: i18n('reports.tips'), placement: 'top-center'}"
     >
         <template v-slot:header-right>
-            <el-button id="create-report-button" type="success" icon="el-icon-circle-plus" v-if="canUserCreate" @click="createReport">{{i18n('reports.create')}}</el-button>
+            <el-button id="create-report-button" type="success" icon="el-icon-circle-plus" v-if="canUserCreate" @click="createReport" data-test-id="create-new-report-button">{{i18n('reports.create')}}</el-button>
         </template>
     </cly-header>
 

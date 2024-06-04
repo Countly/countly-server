@@ -130,9 +130,12 @@
                 "frontend/express/public/core/*/javascripts/countly.*.js",
                 "plugins/*/frontend/public/javascripts/countly.*.js"
             ],
+            "parserOptions": {
+                "ecmaVersion": 2020
+            },
             "env": {
                 "browser": true,
-                "es6": true
+                "es2020": true
             },
             "rules": {
                 "valid-jsdoc": [
@@ -205,7 +208,7 @@
             ],
             "excludedFiles": "plugins/*/frontend/public/**/*.js",
             "env": {
-                "es6": true,
+                "es2020": true,
                 "node": true
             },
             "parserOptions": {
@@ -285,7 +288,7 @@
             ],
             "excludedFiles": "plugins/*/tests.js",
             "env": {
-                "es6": true,
+                "es2020": true,
                 "node": true
             },
             "parserOptions": {
@@ -302,7 +305,7 @@
                 "plugins/*/tests.js"
             ],
             "env": {
-                "es6": true,
+                "es2020": true,
                 "node": true,
                 "mocha": true
             },
@@ -321,7 +324,7 @@
                 "ui-tests/**/*.js"
             ],
             "env": {
-                "es6": true,
+                "es2020": true,
                 "node": true,
                 "mocha": true
             },

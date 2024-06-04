@@ -1,5 +1,5 @@
 <div class="guide-dialog-wrapper">
-    <div v-if="isButtonVisible" class="view-button" @click="onClick">
+    <div v-if="isButtonVisible" data-test-id="view-guide-button" class="view-button" @click="onClick">
         <span class="icon">
             <img src="images/icons/book-open.svg" alt="Icon"/>
         </span>
@@ -8,9 +8,9 @@
     
     <cly-tooltip-icon 
         v-else-if="tooltip && tooltip.description" 
+        :data-test-id="`${testId}-tooltip`"
         :tooltip="tooltip.description" 
-        icon="ion ion-help-circled" 
-        style="margin-left:8px" 
+        icon="ion ion-help-circled"
         :placement="tooltip.placement">
     </cly-tooltip-icon>
 
