@@ -60,7 +60,13 @@ if [ -x "$(command -v mongosh)" ]; then
         fi
         exit 0;
     elif echo "$VER" | grep -q -i "6.0" ; then
-        echo "Upgrading to MongoDB 7.0";
+        if echo "$FEATVER" | grep -q -i "5.0" ; then
+            echo "run this command before upgrading to 7.0";
+            echo "mongosh admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"6.0\\\" } )\"";
+            exit 0;
+        else
+            echo "Upgrading to MongoDB 7.0";
+        fi
     else
         echo "Unsupported MongodB version $VER";
         echo "Upgrade to MongoDB 6.0 first and then run this script";
@@ -126,6 +132,6 @@ elif ! mongosh admin --eval "printjson(db.adminCommand( { getParameter: 1, featu
     echo "mongosh admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\"7.0\\\" } )\""
 else
     mongosh admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))"
-    mongosh admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"7.0\" } )"
+    mongosh admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"7.0\", confirm: true } )"
     echo "Finished upgrading script"
 fi
