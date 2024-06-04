@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>StreamedCollection - Documentation</title>
+    <title>api/parts/mgmt/date_presets - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -37,7 +37,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">StreamedCollection</h1>
+    <h1 class="page-title">api/parts/mgmt/date_presets</h1>
     
 
     
@@ -49,15 +49,6 @@
 
 <header>
     
-        <h2>
-        
-            StreamedCollection
-        
-        </h2>
-        
-            <div class="class-description usertext"><p>Class encapsulating a capped collection watching a particular cache modifications.</p></div>
-        
-    
 </header>
 
 <article>
@@ -66,27 +57,16 @@
         
             
 
-    
-    <h2>Constructor</h2>
-    
-
-    <h4 class="name" id="StreamedCollection"><span class="type-signature"></span>new StreamedCollection<span class="signature">(db, name, handler)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Constructor</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>This module is meant for handling date presets.</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_cache.js.html">parts/data/cache.js</a>, <a href="parts_data_cache.js.html#line945">line 945</a>
+        <a href="parts_mgmt_date_presets.js.html">parts/mgmt/date_presets.js</a>, <a href="parts_mgmt_date_presets.js.html#line1">line 1</a>
     </li></ul></dd>
     
 
@@ -124,130 +104,11 @@
 
 
 
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
             
-                <td class="name"><code>db</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Mongo</span>
-
-
-
-            
-            </td>
-
+                <div class="description usertext"><p>This module is meant for handling date presets.</p></div>
             
 
             
-
-            <td class="description last"><p>db object</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>collection name</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>handler</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>a function handling IPC requests</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         
         </div>
     
@@ -274,7 +135,7 @@
 
     
 
-    <h4 class="name" id="close"><span class="type-signature"></span>close<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".create"><span class="type-signature type-signature-static">(static) </span>create<span class="signature">(params)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 
@@ -284,98 +145,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Close change stream</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Add new preset</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_cache.js.html">parts/data/cache.js</a>, <a href="parts_data_cache.js.html#line1043">line 1043</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id="put"><span class="type-signature"></span>put<span class="signature">(o, g, k, d)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Add a record to the collection</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_cache.js.html">parts/data/cache.js</a>, <a href="parts_data_cache.js.html#line1059">line 1059</a>
+        <a href="parts_mgmt_date_presets.js.html">parts/mgmt/date_presets.js</a>, <a href="parts_mgmt_date_presets.js.html#line160">line 160</a>
     </li></ul></dd>
     
 
@@ -447,13 +223,13 @@
 
         <tr>
             
-                <td class="name"><code>o</code></td>
+                <td class="name"><code>params</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">int</span>
+<span class="param-type"><a href="global.html#params">params</a></span>
 
 
 
@@ -464,79 +240,7 @@
 
             
 
-            <td class="description last"><p>operation type (see OP above)</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>g</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>group name</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>k</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>key - document key</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>d</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>data</p></td>
+            <td class="description last"><p>params object</p></td>
         </tr>
 
     
@@ -562,7 +266,7 @@
 
         
 <div class="param-desc">
-    <p>resolves to the inserted change document</p>
+    <p>true if successful</p>
 </div>
 
 
@@ -573,7 +277,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise</span>
+<span class="param-type">boolean</span>
 
 
 
@@ -589,7 +293,7 @@
 
     
 
-    <h4 class="name" id="start"><span class="type-signature type-signature-async">(async) </span>start<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".delete"><span class="type-signature type-signature-static">(static) </span>delete<span class="signature">(params)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 
@@ -599,13 +303,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Start change stream</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get presets</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_cache.js.html">parts/data/cache.js</a>, <a href="parts_data_cache.js.html#line962">line 962</a>
+        <a href="parts_mgmt_date_presets.js.html">parts/mgmt/date_presets.js</a>, <a href="parts_mgmt_date_presets.js.html#line582">line 582</a>
     </li></ul></dd>
     
 
@@ -652,6 +356,54 @@
 
 
 
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>params object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -666,6 +418,31 @@
 
 
 
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>true if successful</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -674,7 +451,7 @@
 
     
 
-    <h4 class="name" id="stop"><span class="type-signature"></span>stop<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".getAll"><span class="type-signature type-signature-static">(static) </span>getAll<span class="signature">(params)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
 
     
 
@@ -684,13 +461,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Close change stream</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get presets</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="parts_data_cache.js.html">parts/data/cache.js</a>, <a href="parts_data_cache.js.html#line1035">line 1035</a>
+        <a href="parts_mgmt_date_presets.js.html">parts/mgmt/date_presets.js</a>, <a href="parts_mgmt_date_presets.js.html#line15">line 15</a>
     </li></ul></dd>
     
 
@@ -737,6 +514,54 @@
 
 
 
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>params object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -751,6 +576,189 @@
 
 
 
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>true if successful</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id=".update"><span class="type-signature type-signature-static">(static) </span>update<span class="signature">(params)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Update preset</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="parts_mgmt_date_presets.js.html">parts/mgmt/date_presets.js</a>, <a href="parts_mgmt_date_presets.js.html#line327">line 327</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#params">params</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>params object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>true if successful</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+
+    </dd>
+</dl>
+
+    
 
 
 
