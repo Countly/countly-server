@@ -1090,7 +1090,7 @@
                     cellHeight: 80,
                     margin: 8,
                     animate: true,
-                    float: false
+                    float: false,
                 });
 
                 this.updateAllWidgetsGeography();
@@ -1389,7 +1389,10 @@
                 return dashboard;
             },
             canUpdateGrid: function() {
-                return !!this.dashboard.is_editable;
+                // this will return true if is_editable is undefined
+                // to  not lock grid when  it should not be
+                // we lock only when is_editable is explicitly set to false
+                return this.dashboard.is_editable ?? true;
             },
             canUpdateDashboard: function() {
                 return !!(AUTHENTIC_GLOBAL_ADMIN || this.dashboard.is_owner);
