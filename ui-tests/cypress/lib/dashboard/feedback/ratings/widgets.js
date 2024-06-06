@@ -696,21 +696,17 @@ const shouldNotBeDisabledNextStepButton = () => {
     cy.shouldNotBeHasDisabledClass(feedbackRatingWidgetsPageElements.NEXT_STEP_BUTTON);
 };
 
+const searchWidgetOnDataTable = (widgetName) => {
+    cy.typeInput(widgetsDataTableElements().TABLE_SEARCH_INPUT, widgetName);
+};
+
 const getWidgetIdFromDataTable = (index) => {
     return cy.getElement(widgetsDataTableElements(index).WIDGET_ID).eq(0).getText();
 };
 
 const navigateToWidgetsDetailPage = (question) => {
-    cy.getElement(widgetsDataTableElements().TABLE_ROWS).its('length').then((count) => {
-        for (var index = 0; index <= (count / 2) - 1; index++) {
-            cy.getElement(widgetsDataTableElements(index).WIDGET_QUESTION).eq(0).getText().then((inputText) => {
-                if (inputText.trim() === question) {
-                    cy.clickElement(widgetsDataTableElements(index).WIDGET_QUESTION, true);
-                }
-            });
-            break;
-        }
-    });
+    searchWidgetOnDataTable(question);
+    cy.clickElement(widgetsDataTableElements().WIDGET_QUESTION, true);
 };
 
 const verifyWidgetDetailsPageElements = ({
@@ -734,6 +730,8 @@ const verifyWidgetDetailsPageElements = ({
         numberOfRatings,
         percentages
     } = ratingsTable;
+
+    let index = 0;
 
     cy.verifyElement({
         element: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_BACK_TO_RATING_WIDGETS_LINK_ICON,
@@ -844,21 +842,21 @@ const verifyWidgetDetailsPageElements = ({
 
     if (commentsTable.ratings != null && commentsTable.ratings.length > 0) {
         cy.scrollPageToBottom('.main-view');
-        for (var index = 0; index < ratingsTable.numberOfRatings.length; index++) {
+        for (index = 0; index < ratingsTable.numberOfRatings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_RATING,
                 labelText: index + 1,
             });
         }
 
-        for (var index = 0; index < ratingsTable.numberOfRatings.length; index++) {
+        for (index = 0; index < ratingsTable.numberOfRatings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_NUMBER_OF_RATINGS,
                 labelText: ratingsTable.numberOfRatings[index],
             });
         }
 
-        for (var index = 0; index < ratingsTable.percentages.length; index++) {
+        for (index = 0; index < ratingsTable.percentages.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsRatingsDataTableElements(index).ROW_PERCENTAGE,
                 labelText: ratingsTable.percentages[index],
@@ -888,28 +886,28 @@ const verifyWidgetDetailsPageElements = ({
             labelText: "E-mail",
         });
 
-        for (var index = 0; index < commentsTable.ratings.length; index++) {
+        for (index = 0; index < commentsTable.ratings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_RATING,
                 labelText: commentsTable.ratings[index],
             });
         }
 
-        for (var index = 0; index < commentsTable.ratings.length; index++) {
+        for (index = 0; index < commentsTable.ratings.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_TIME,
                 labelText: commentsTable.times,
             });
         }
 
-        for (var index = 0; index < commentsTable.comments.length; index++) {
+        for (index = 0; index < commentsTable.comments.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_COMMENT,
                 labelText: commentsTable.comments[index],
             });
         }
 
-        for (var index = 0; index < commentsTable.emails.length; index++) {
+        for (index = 0; index < commentsTable.emails.length; index++) {
             cy.verifyElement({
                 labelElement: feedbackRatingWidgetDetailsCommentsDataTableElements(index).ROW_EMAIL,
                 labelText: commentsTable.emails[index],
@@ -1034,6 +1032,7 @@ module.exports = {
     getWidgetIdFromDataTable,
     shouldBeDisabledNextStepButton,
     shouldNotBeDisabledNextStepButton,
+    searchWidgetOnDataTable,
     navigateToWidgetsDetailPage,
     verifyWidgetDetailsPageElements,
     deleteWidget,

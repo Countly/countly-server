@@ -97,7 +97,7 @@
                     </el-table-column>
 
 
-                    <el-table-column type="options">
+                    <el-table-column type="options" test-id="more-button-area">
                         <template v-slot="rowScope">
                             <cly-more-options :test-id="'row-' + rowScope.$index" v-if="rowScope.row.hover && (rowScope.row._canUpdate || rowScope.row._canDelete)" size="small" @command="handleAlertEditCommand($event,rowScope)">
                                 <el-dropdown-item :data-test-id="'datatable-edit-button-' + rowScope.$index" v-if="rowScope.row._canUpdate" icon="el-icon-document-copy" command="edit-comment">
@@ -316,7 +316,7 @@
 
                     <div :key="drawerScope.editedObject.alertDataType" v-if="drawerScope.editedObject.alertDataType" class="cly-vue-alert-drawer__card alert-trigger">
                         <div v-if="showSubType1">
-                            <span class="groupcard-text mediumtextNormal-20px" v-if="isCompareTypeSelectAvailable" data-test-id="send-alert-if-label">
+                            <span class="groupcard-text mediumtextNormal-20px" v-if="isCompareTypeSelectAvailable" data-test-id="trigger-send-alert-if-label">
                                 Send alert if
                             </span>
                             <span class="groupcard-text mediumtextNormal-14px" data-test-id="send-alert-if-there-is-a-label" v-else>
@@ -339,8 +339,7 @@
                                     placeholder="metric">
                                 </cly-select-x>
                             </cly-form-field>
-
-                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
+                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable" data-test-id="trigger-is-label">
                                 is
                             </span>
                             <!--Select operation for variable part in the trigger component.
@@ -362,7 +361,7 @@
                                     placeholder="variable">
                                 </cly-select-x>
                             </cly-form-field>
-                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
+                            <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable" data-test-id="trigger-by-label">
                                 {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "than" : "by" }}
                             </span>
                             <cly-form-field rules="required" style="display:inline-block" v-if="isCompareTypeSelectAvailable">
@@ -494,7 +493,7 @@
                         </span>
                     </div>
 
-                    <div class="bu-pt-2 bu-pb-3" v-if="drawerScope.editedObject.alertDataType==='crashes' && (Array.isArray(alertDataFilterValue) && alertDataFilterValue.length)">
+                    <div class="bu-pt-2 bu-pb-3" v-if="drawerScope.editedObject.alertDataSubType==='new crash/error'">
                         <span>
                             <i class="cly-is cly-is-information-circle color-cool-gray-40 alert-drawer-inline-icon" style="line-height:16px;"></i>
                                 <div class="text-small color-cool-gray-50 alert-drawer-inline-icon">

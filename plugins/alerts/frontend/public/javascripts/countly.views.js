@@ -258,6 +258,7 @@
                     "new survey response",
                     "new NPS response",
                     "new rating response",
+                    "new crash/error",
                     "o",
                     "m",
                 ];
@@ -274,6 +275,7 @@
                     "new survey response",
                     "new NPS response",
                     "new rating response",
+                    "new crash/error",
                     "o",
                     "m",
                 ];

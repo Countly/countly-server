@@ -111,7 +111,7 @@ countly_upgrade (){
     countly_root ;
     if [ $# -eq 0 ]
     then
-        INOFFLINEMODE=$(countly config 'api.offline_mode' | awk -F'= ' '{print $2}')
+        INOFFLINEMODE=$(countly config 'api.offline_mode' | awk '/=/{print $NF}')
 
         if [ "$INOFFLINEMODE" == "false" ]
         then
