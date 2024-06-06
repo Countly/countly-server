@@ -1,4 +1,8 @@
 #alerts-view {
+    .alert-drawer-trigger-select-and-input input::placeholder {
+        color: #0166d6;
+    }
+    
     .alerts-table-app-selector .el-input input::placeholder { 
         color: #333C48;
         opacity: 1;
@@ -87,6 +91,7 @@
     .alert-drawer-trigger-select-and-input:focus,
     .alert-drawer-trigger-select-and-input:hover {
         color: #81868D;
+
         &::placeholder {
             color: #81868D;
         }
@@ -129,10 +134,6 @@
         color: #333C48;
     }
 
-    .alert-drawer-trigger-select-and-input input::placeholder {
-        color: #0166d6;
-    }
-    
     .alert-drawer-trigger-select-and-input:hover {
         background-color: #f8fafd;
     }
