@@ -3,24 +3,24 @@
 // This script will take all of the keys from the object above and store it into an array
 // With the array, it will be possible to query crashgroup with partial app version, e.g. the query '4.2' will get crashgroups that have app version '4.2.0', '4.2.1', etc
 
-const asyncjs = require('async');
-
 const pluginManager = require('../../../../plugins/pluginManager.js');
 
 console.log('Updating crashgroup data');
 
-pluginManager.dbConnection().then((countlyDb) => {
+pluginManager.dbConnection().then(async (countlyDb) => {
     const BATCH_SIZE = 200;
 
-    countlyDb.collection('apps').find({}).toArray(function(err, apps) {
-        function update(app, done) {
-            console.log(`Updating crashes for ${app.name}`);
+    countlyDb.collection('apps').find({}).toArray(async (err, apps) => {
+        async function update(app) {
+            console.log(`Updating crashgroup for ${app.name}`);
 
-            const cursor = countlyDb.collection(`app_crashgroups${app._id}`)
+            const cursor = await countlyDb.collection(`app_crashgroups${app._id}`)
                 .find({ _id: { $ne: 'meta' } }, { fields: { _id: 1, app_version: 1 } });
             let requests = [];
 
-            cursor.forEach(function(crashgroup) { 
+            while (await cursor.hasNext()) {
+                const crashgroup = await cursor.next();
+
                 requests.push({ 
                     updateOne: {
                         filter: { _id: crashgroup._id },
@@ -35,30 +35,34 @@ pluginManager.dbConnection().then((countlyDb) => {
                 });
 
                 if (requests.length === BATCH_SIZE) {
-                    countlyDb.collection(`app_crashgroups${app._id}`).bulkWrite(requests, function(err){
-                        if (err) {
-                            console.error(err);
-                        }
-                    });
+                    try {
+                        await countlyDb.collection(`app_crashgroups${app._id}`).bulkWrite(requests);
+                    }
+                    catch (err) {
+                        console.error(err);
+                    }
+
                     requests = [];
                 }
-            }, function() {
-                if(requests.length > 0) {
-                    countlyDb.collection(`app_crashgroups${app._id}`).bulkWrite(requests, function(err){
-                        if (err) {
-                            console.error(err);
-                        }
-                        done();
-                    });
+            }
+
+            if(requests.length > 0) {
+                try {
+                    await countlyDb.collection(`app_crashgroups${app._id}`).bulkWrite(requests);
                 }
-                else {
-                    done();
+                catch (err) {
+                    console.error(err);
                 }
-            });
+            }
+
+            console.warn(`${app.name} done`);
         }
-        asyncjs.eachSeries(apps, update, function() {
-            console.log("Crashgroup data update finished");
-            countlyDb.close();
-        });
+
+        for (idx = 0; idx < apps.length; idx += 1) {
+            await update(apps[idx]);
+        }
+
+        console.log("Crashgroup data update finished");
+        countlyDb.close();
     });
 });
