@@ -2096,9 +2096,9 @@
                                 :class="[\'cly-vue-chart-legend__s-series\',\
                                         {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
                                 @click="onClick(item, index)">\
-                                <div :data-test-id="testId + \'-\' + item.name.replace(\' \', \'-\').toLowerCase() + \'-legend-icon\'" class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div :data-test-id="testId + \'-\' + item.name.replace(\' \', \'-\').toLowerCase() + \'-legend-label\'" class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
-                                <div :data-test-id="testId + \'-\' + item.name.replace(\' \', \'-\').toLowerCase() + \'-legend-percentage\'" class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replaceAll(\' \', \'-\').toLowerCase() + \'-legend-icon\'" class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replaceAll(\' \', \'-\').toLowerCase() + \'-legend-label\'" class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replaceAll(\' \', \'-\').toLowerCase() + \'-legend-percentage\'" class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                             </div>\
                         </vue-scroll>\
                     </div>'
