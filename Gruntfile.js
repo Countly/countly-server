@@ -327,7 +327,16 @@ module.exports = function(grunt) {
     grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'cssmin']);
 
     grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
-        var plugins = require('./plugins/plugins.json'), js = [], css = [], img = [], fs = require('fs'), path = require('path');
+        var plugins = [require('./plugins/plugins.json')], js = [], css = [], img = [], fs = require('fs'), path = require('path');
+
+        var pluginFolderPath = path.join(__dirname, 'plugins');
+        //read all folder names
+        plugins = fs.readdirSync(pluginFolderPath);
+        //filter out only folders
+        plugins = plugins.filter(function(file) {
+            return fs.statSync(path.join(pluginFolderPath, file)).isDirectory();
+        });
+
         console.log('Preparing production files for following plugins: %j', plugins);
 
         if (plugins.indexOf('drill') !== -1 && plugins.indexOf('users') !== -1 && plugins.indexOf('push') !== -1) {
@@ -439,6 +448,15 @@ module.exports = function(grunt) {
 
     grunt.registerTask('locales', 'Concat all locale files into one', function() {
         var plugins = require('./plugins/plugins.json'), locales = {}, fs = require('fs'), path = require('path');
+
+        var pluginFolderPath = path.join(__dirname, 'plugins');
+        //read all folder names
+        plugins = fs.readdirSync(pluginFolderPath);
+        //filter out only folders
+        plugins = plugins.filter(function(file) {
+            return fs.statSync(path.join(pluginFolderPath, file)).isDirectory();
+        });
+
         console.log('Preparing locale files for core & plugins: %j', plugins);
 
         var pushLocaleFile = function(name, path) {
