@@ -998,22 +998,20 @@
                 if (!value || !this.$refs?.alertDataSubTypeSelect?.$el) {
                     return;
                 }
-                let tempSelect = document.createElement("select"),
-                    tempOption = document.createElement("option");
-                tempOption.textContent = value;
-                tempSelect.style.cssText = `
+                let tmpEl = document.createElement("span");
+                tmpEl.textContent = value;
+                tmpEl.style.cssText = `
                     visibility: hidden;
                     position: fixed;
-                    padding: 8px;
                     font-size: 13px;
                     font-family: Inter !important;
                     box-sizing: border-box;
                     font-weight: 600;
+                    padding: 8px
                 `;
-                tempSelect.appendChild(tempOption);
-                document.body.appendChild(tempSelect);
-                const tempSelectWidth = tempSelect.getBoundingClientRect().width;
-                tempSelect.remove();
+                document.body.appendChild(tmpEl);
+                const tempSelectWidth = tmpEl.getBoundingClientRect().width;
+                tmpEl.remove();
                 //this.changeColor(this.$refs.alertDataSubTypeSelect.$el); 
                 return tempSelectWidth;
             },

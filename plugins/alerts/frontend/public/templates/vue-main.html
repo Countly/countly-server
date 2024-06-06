@@ -314,8 +314,8 @@
                         {{i18n('alert.Alert_Trigger')}}
                     </div>
 
-                    <div :key="drawerScope.editedObject.alertDataType" v-if="drawerScope.editedObject.alertDataType" class="bu-py-4 cly-vue-alert-drawer__card alert-trigger">
-                        <div class="bu-px-4" v-if="showSubType1">
+                    <div :key="drawerScope.editedObject.alertDataType" v-if="drawerScope.editedObject.alertDataType" class="cly-vue-alert-drawer__card alert-trigger">
+                        <div v-if="showSubType1">
                             <span class="groupcard-text mediumtextNormal-20px" v-if="isCompareTypeSelectAvailable" data-test-id="send-alert-if-label">
                                 Send alert if
                             </span>
@@ -339,6 +339,7 @@
                                     placeholder="metric">
                                 </cly-select-x>
                             </cly-form-field>
+
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable">
                                 is
                             </span>
