@@ -996,6 +996,16 @@
                 this.title = jQuery.i18n.map["alert.Create_New_Alert"];
                 this.saveButtonLabel = jQuery.i18n.map["alert.save"];
             },
+            isNumberKeyPressEvent(evt) {
+                evt = (evt) ? evt : window.event;
+                var charCode = (evt.which) ? evt.which : evt.keyCode;
+                if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
+                    evt.preventDefault();
+                }
+                else {
+                    return true;
+                }
+            },
             calculateWidth(value) {
                 if (!value || !this.$refs?.alertDataSubTypeSelect?.$el) {
                     return;
@@ -1005,11 +1015,11 @@
                 tmpEl.style.cssText = `
                     visibility: hidden;
                     position: fixed;
-                    font-size: 14px;
+                    font-size: 13px;
                     font-family: Arial, sans-serif !important;
                     box-sizing: border-box;
                     font-weight: 600;
-                    padding: 8px
+                    padding: 10px
                 `;
                 document.body.appendChild(tmpEl);
                 const tempSelectWidth = tmpEl.getBoundingClientRect().width;

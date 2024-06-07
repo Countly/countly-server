@@ -372,6 +372,7 @@
                                     placeholder="value"
                                     type="number"
                                     v-model="drawerScope.editedObject.compareValue"
+                                    @keypress="isNumberKeyPressEvent($event)"
                                     />
                             </cly-form-field>
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable" data-test-id="trigger-percentage-label">
@@ -405,6 +406,7 @@
                                     placeholder="value"
                                     type="number"
                                     min="1"
+                                    @keypress="isNumberKeyPressEvent($event)"
                                     v-model="drawerScope.editedObject.compareValue2"
                                     />
                             </cly-form-field>
