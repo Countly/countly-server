@@ -25,7 +25,7 @@
                 </cly-date-picker>
             </cly-form-field>
 
-            <cly-form-field v-if="showExcludeCurrentDay(drawerScope.editedObject.range)" name="exclude-current-day" style="padding-top: 0;">
+            <cly-form-field v-if="showExcludeCurrentDay(drawerScope.editedObject.range)" name="exclude-current-day" style="padding-top: 0; display:none;">
                 <el-checkbox v-model="drawerScope.editedObject.exclude_current_day">{{i18n('management.preset.exclude-current-day')}}</el-checkbox>
                 <div class="text-small  color-cool-gray-50 bu-mt-1 bu-pl-5">
                     {{i18n('management.preset.exclude-current-day.description')}}
