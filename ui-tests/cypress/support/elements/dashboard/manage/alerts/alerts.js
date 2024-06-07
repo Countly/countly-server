@@ -38,6 +38,7 @@ export const alertDrawerPageElements = {
 
     DRAWER_TRIGGER_LABEL: 'trigger-label',
     DRAWER_TRIGGER_SEND_ALERT_IF_LABEL: 'trigger-send-alert-if-label',
+    DRAWER_TRIGGER_SEND_ALERT_IF_THERE_IS_A_LABEL: 'send-alert-if-there-is-a-label',
     DRAWER_TRIGGER_METRIC_SELECT: 'trigger-metric-select',
     DRAWER_TRIGGER_IS_LABEL: 'trigger-is-label',
     DRAWER_TRIGGER_VARIABLE_SELECT: 'trigger-variable-select',

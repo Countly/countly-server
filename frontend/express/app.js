@@ -980,7 +980,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     config: req.config,
                     security: plugins.getConfig("security"),
                     plugins: plugins.getPlugins(),
-                    pluginsFull: plugins.getPlugins(),
+                    pluginsFull: plugins.getPlugins(true),
                     path: countlyConfig.path || "",
                     cdn: countlyConfig.cdn || "",
                     message: req.flash("message"),
