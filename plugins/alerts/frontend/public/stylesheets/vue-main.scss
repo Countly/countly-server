@@ -67,8 +67,8 @@
         border-width: 0px;
         background-color: #f8fafd;
         border-radius: 4px;
-        font-size: 13px;
-        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-family: Arial !important;
         box-shadow: 0 0px 0px rgba(0, 0, 0, 0);
         font-weight: 500;
         color: #0166d6;
@@ -76,15 +76,15 @@
     }
 
     .alert-drawer-trigger-select-and-input.metric {
-        width: 80px;
+        width: 60px;
     }
 
     .alert-drawer-trigger-select-and-input.variable {
-        width: 90px;
+        width: 70px;
     }
 
     .alert-drawer-trigger-select-and-input.time {
-        width: 66px;
+        width: 48px;
     }
 
     .alert-drawer-trigger-select-and-input:active,
@@ -102,7 +102,7 @@
     }
 
     .alert-drawer-trigger-select-and-input input {
-        font-weight: 500;
+        font-weight: 600;
         border: 1px solid rgba(0, 0, 0, 0);
         background-color: #f8fafd;
         color: #333c48;
@@ -110,6 +110,7 @@
         font-size: 13px;
         text-align: center;
         padding: 0;
+        font-family: Arial !important;
     }
 
     .alert-drawer-trigger-select-and-input input:not(:placeholder-shown) {
@@ -149,7 +150,7 @@
     
     .alert-drawer-trigger-input::placeholder {
         cursor: pointer;
-        font-weight: 500;
+        font-weight: 600;
         opacity: 1;
         color:#0166D6;
     }

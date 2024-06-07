@@ -1005,8 +1005,8 @@
                 tmpEl.style.cssText = `
                     visibility: hidden;
                     position: fixed;
-                    font-size: 13px;
-                    font-family: Inter !important;
+                    font-size: 14px;
+                    font-family: Arial !important;
                     box-sizing: border-box;
                     font-weight: 600;
                     padding: 8px
