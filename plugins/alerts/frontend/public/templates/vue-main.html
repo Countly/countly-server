@@ -314,8 +314,8 @@
                         {{i18n('alert.Alert_Trigger')}}
                     </div>
 
-                    <div v-if="drawerScope.editedObject.alertDataType" class="bu-py-4 cly-vue-alert-drawer__card alert-trigger">
-                        <div class="bu-px-4" v-if="showSubType1">
+                    <div :key="drawerScope.editedObject.alertDataType" v-if="drawerScope.editedObject.alertDataType" class="cly-vue-alert-drawer__card alert-trigger">
+                        <div v-if="showSubType1">
                             <span class="groupcard-text mediumtextNormal-20px" v-if="isCompareTypeSelectAvailable" data-test-id="trigger-send-alert-if-label">
                                 Send alert if
                             </span>
@@ -324,17 +324,20 @@
                             </span>
 
                             <cly-form-field rules="required" style="display:inline-block">
-                                <select
+                                <cly-select-x
+                                    width="auto"
+                                    :arrow="false"
+                                    ref="alertDataSubTypeSelect"
+                                    :style="{width:calculateWidth(drawerScope.editedObject.alertDataSubType) + 'px' , fontWeight: '600'}"
                                     data-test-id="trigger-metric-select"
-                                    style="width: 70px;"
-                                    @change="handleChange($event.target)"
-                                    class="alert-drawer-trigger-select-and-input"
-                                    v-model="drawerScope.editedObject.alertDataSubType">
-                                    <option :value="null" hidden>metric</option>
-                                    <option v-for="(metricItem, index) in defaultAlertDefine[drawerScope.editedObject.alertDataType].target" :key="index" :value="metricItem.value">
-                                        {{ metricItem.label }}
-                                    </option>
-                                </select>
+                                    :class="{
+                                        'alert-drawer-trigger-select-and-input metric': true,
+                                        'alert-drawer-trigger-select-active':!!drawerScope.editedObject.alertDataSubType
+                                    }"
+                                    v-model="drawerScope.editedObject.alertDataSubType"
+                                    :options="alertDataSubTypeOptions"
+                                    placeholder="metric">
+                                </cly-select-x>
                             </cly-form-field>
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable" data-test-id="trigger-is-label">
                                 is
@@ -343,30 +346,20 @@
                                 Selected data binding into compareType property which is defifen in model.js file-->
 
                             <cly-form-field rules="required" style="display:inline-block" v-if="isCompareTypeSelectAvailable">    
-                                <select
-                                data-test-id="trigger-variable-select"
-                                    @change="handleChange($event.target)"
+                                <cly-select-x
+                                    data-test-id="trigger-variable-select"
+                                    width="auto"
+                                    :arrow="false"
+                                    ref="alertDataSubTypeSelect"
+                                    :style="{width:calculateWidth(drawerScope.editedObject.compareType) + 'px' , fontWeight: '600'}"
+                                    :class="{
+                                        'alert-drawer-trigger-select-and-input variable': true,
+                                        'alert-drawer-trigger-select-active':!!drawerScope.editedObject.compareType
+                                    }"
                                     v-model="drawerScope.editedObject.compareType"
-                                    class="alert-drawer-trigger-select-and-input">
-                                    <!--Placeholder for variable selection -->
-                                    <option :value="null" hidden>variable</option>
-                                    <!-- Variable selection without online-users data type-->
-                                    <option
-                                        v-if="drawerScope.editedObject.alertDataSubType !== 't'"
-                                        v-for="(variableItem, index) in defaultAlertVariable.condition"
-                                        :key="index"
-                                        :value="variableItem.value">
-                                        {{ variableItem.label }}
-                                    </option>
-                                    <!-- Variable selection(only for '# of online users' variable) for online-users data type -->
-                                    <option
-                                        v-if="drawerScope.editedObject.alertDataSubType === 't'"
-                                        v-for="(variableItem, index) in onlineUsersAlertVariable.condition"
-                                        :key="index"
-                                        :value="variableItem.value">
-                                        {{ variableItem.label }}
-                                    </option>
-                                </select>
+                                    :options="alertDataVariableOptions"
+                                    placeholder="variable">
+                                </cly-select-x>
                             </cly-form-field>
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable" data-test-id="trigger-by-label">
                                 {{ drawerScope.editedObject.compareType === "more" || drawerScope.editedObject.compareType === "less" ? "than" : "by" }}
@@ -379,6 +372,7 @@
                                     placeholder="value"
                                     type="number"
                                     v-model="drawerScope.editedObject.compareValue"
+                                    @keypress="isNumberKeyPressEvent($event)"
                                     />
                             </cly-form-field>
                             <span class="groupcard-text mediumtextNormal-14px" v-if="isCompareTypeSelectAvailable" data-test-id="trigger-percentage-label">
@@ -389,18 +383,21 @@
                                 in the last
                             </span>
                             <cly-form-field v-if="isPeriodSelectAvailable && drawerScope.editedObject.alertDataSubType !== 't'" rules="required" style="display:inline-block">
-                                <select
+                                <cly-select-x
+                                    width="auto"
                                     data-test-id="trigger-time-select"
-                                    @change="handleChange($event.target)"
+                                    :arrow="false"
+                                    ref="alertDataSubTypeSelect"
+                                    :style="{width:calculateWidth(drawerScope.editedObject.period) + 'px'}"
+                                    :class="{
+                                        'alert-drawer-trigger-select-and-input time': true,
+                                        'alert-drawer-trigger-select-active':!!drawerScope.editedObject.period
+                                    }"
                                     v-model="drawerScope.editedObject.period"
-                                    class="alert-drawer-trigger-select-and-input"
                                     v-tooltip=" { content: periodTooltipReminder }"
-                                    >
-                                    <option :value="null" hidden>time</option>
-                                    <option v-for="(periodItem, index) in alertTimeOptions" :key="index" :value="periodItem.value">
-                                        {{ periodItem.label }}
-                                    </option>
-                                </select>
+                                    :options="alertTimeOptions"
+                                    placeholder="time">
+                                </cly-select-x>
                             </cly-form-field>
                             <cly-form-field rules="required" style="display:inline-block" v-if="drawerScope.editedObject.alertDataSubType === 't'">
                                 <input
@@ -409,6 +406,7 @@
                                     placeholder="value"
                                     type="number"
                                     min="1"
+                                    @keypress="isNumberKeyPressEvent($event)"
                                     v-model="drawerScope.editedObject.compareValue2"
                                     />
                             </cly-form-field>
@@ -424,24 +422,24 @@
                         <span class="groupcard-text mediumtextNormal-20px" data-test-id="trigger-send-alert-if-label">
                             Send alert if
                         </span>
-                        <select
+                        <cly-select-x
                             data-test-id="trigger-metric-select"
-                            @change="handleChange($event.target)"
-                            class="alert-drawer-trigger-select-and-input">
-                            <option :value="null" hidden>metric</option>
-                            <option :value="null"></option>
-                        </select>
+                            :arrow="false"
+                            width="auto"
+                            class="alert-drawer-trigger-select-and-input metric"
+                            placeholder="metric">
+                        </cly-select-x>
                         <span class="groupcard-text mediumtextNormal-14px" data-test-id="trigger-is-label">
                             is
                         </span>
 
-                        <select
+                        <cly-select-x
                             data-test-id="trigger-variable-select"
-                            @change="handleChange($event.target)"
-                            class="alert-drawer-trigger-select-and-input">
-                            <option :value="null" hidden data-test-id="trigger-variable-label">variable</option>
-                            <option :value="null"></option>
-                        </select>
+                            :arrow="false"
+                            width="auto"
+                            class="alert-drawer-trigger-select-and-input variable"
+                            placeholder="variable">
+                        </cly-select-x>
 
                         <span class="groupcard-text mediumtextNormal-14px" data-test-id="trigger-by-label">
                             by
@@ -456,13 +454,13 @@
                         <span class="groupcard-text mediumtextNormal-14px" data-test-id="trigger-in-the-last-label">
                             in the last
                         </span>
-                        <select
+                        <cly-select-x
                             data-test-id="trigger-time-select"
-                            @change="handleChange($event.target)"
-                            class="alert-drawer-trigger-select-and-input">
-                            <option :value="null" data-test-id="empty-trigger-time-label" hidden>time</option>
-                            <option :value="null"></option>
-                        </select>
+                            :arrow="false"
+                            width="auto"
+                            class="alert-drawer-trigger-select-and-input time"
+                            placeholder="time">
+                        </cly-select-x>
                         <span class="groupcard-text mediumtextNormal-14px" data-test-id="trigger-dot-label">.</span>
                     </div>
 
