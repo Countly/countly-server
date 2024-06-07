@@ -1006,7 +1006,7 @@
                     visibility: hidden;
                     position: fixed;
                     font-size: 14px;
-                    font-family: Arial !important;
+                    font-family: Arial, sans-serif !important;
                     box-sizing: border-box;
                     font-weight: 600;
                     padding: 8px
