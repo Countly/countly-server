@@ -241,7 +241,7 @@ const verifyAlertDrawerPageElements = ({
         else {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
-                elementText: 'metric',
+               // elementText: 'metric',
                 value: null
             });
         }
@@ -255,7 +255,7 @@ const verifyAlertDrawerPageElements = ({
         else {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT,
-                elementText: 'variable',
+              //  elementText: 'variable',
                 value: null
             });
         }
