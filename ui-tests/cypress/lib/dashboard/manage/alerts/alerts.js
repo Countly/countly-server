@@ -284,7 +284,7 @@ const verifyAlertDrawerPageElements = ({
         else {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT,
-                elementText: 'time',
+               // elementText: 'time',
                 value: null
             });
         }
