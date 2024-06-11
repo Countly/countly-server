@@ -2637,9 +2637,10 @@
         });
 
         if (typeof foundDefault !== "undefined") {
-            // this should never happen
+            callback({err: "Invalid template ID. Template update failed. Please refresh page and try again."});
         }
         else {
+            newTemplate.app_id = countlyCommon.ACTIVE_APP_ID;
             $.ajax({
                 type: "POST",
                 url: countlyCommon.API_URL + "/i/populator/templates/edit",
