@@ -20,6 +20,14 @@ Cypress.Commands.add('getText', { prevSubject: true }, (subject) => {
     return cy.wrap(subject).invoke('text');
 });
 
+Cypress.Commands.add("clickDataTableMoreButtonItem", (element, rowIndex = 0) => {
+    cy.getElement("datatable-more-button-area")
+        .eq(rowIndex).invoke('show')
+        .trigger('mouseenter', { force: true });
+
+    cy.clickElement(element, true);
+});
+
 Cypress.Commands.add("clickElement", (element, isForce = false, index = 0) => {
     cy.getElement(element).eq(index).click({ force: isForce });
     cy.checkPaceRunning();

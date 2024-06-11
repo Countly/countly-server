@@ -76,11 +76,12 @@ module.exports.APP_TYPE = {
 };
 
 module.exports.DATA_TYPE = {
-    BANKING: 'Banking',
+    ENTERTAINMENT: 'Entertainment',
+    FINANCE: 'Finance',
+    B2BSAAS: 'B2B SaaS',
     HEALTHCARE: 'Healthcare',
-    NAVIGATION: 'Navigation',
-    ECOMMERCE: 'eCommerce',
-    GAMING: 'Gaming'
+    ECOMMERCE: 'E-commerce',
+    SOCIAL: 'Social',
 };
 
 module.exports.FEATURE_TYPE = {

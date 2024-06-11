@@ -47,6 +47,8 @@ var pluginManager = function pluginManager() {
     var masking = {};
     var fullPluginsMap = {};
     var coreList = ["api", "core"];
+    var dependencyMap = {};
+
 
     /**
      *  Registered app types
@@ -82,6 +84,19 @@ var pluginManager = function pluginManager() {
         countly_fs: "PLUGINFS"
     };
 
+    this.loadDependencyMap = function() {
+        var pluginNames = [];
+        var pluginsList = fs.readdirSync(path.resolve(__dirname, './')); //all plugins in folder
+        //filter out just folders
+        for (var z = 0; z < pluginsList.length; z++) {
+            var p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+            if (p.isDirectory() || p.isSymbolicLink()) {
+                pluginNames.push(pluginsList[z]);
+            }
+        }
+        dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
+    };
+
     /**
     * Initialize api side plugins
     **/
@@ -95,6 +110,8 @@ var pluginManager = function pluginManager() {
                 pluginNames.push(pluginsList[z]);
             }
         }
+        dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
+
 
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             fullPluginsMap[pluginNames[i]] = true;
@@ -213,6 +230,7 @@ var pluginManager = function pluginManager() {
     };
 
     this.reloadEnabledPluginList = function(db, callback) {
+        this.loadDependencyMap();
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
             if (Object.keys(fullPluginsMap).length > 0) {
                 for (var pp in res.plugins) {
@@ -1040,6 +1058,38 @@ var pluginManager = function pluginManager() {
         }, {});
     };
 
+    this.fixOrderBasedOnDependency = function(plugs_list) {
+        var map0 = {};
+        var new_list = [];
+        for (var z = 0; z < plugs_list.length; z++) {
+            map0[plugs_list[z]] = true;
+        }
+        /**
+         * 
+         * @param {string} pluginName - pluginName 
+         */
+        function add_Me(pluginName) {
+            if (dependencyMap) {
+                if (dependencyMap && dependencyMap.dpcs && dependencyMap.dpcs[pluginName] && dependencyMap.dpcs[pluginName].up) {
+                    for (var z1 = 0; z1 < dependencyMap.dpcs[pluginName].up.length; z1++) {
+                        if (map0[dependencyMap.dpcs[pluginName].up[z1]]) {
+                            add_Me(dependencyMap.dpcs[pluginName].up[z1]);
+                        }
+                    }
+                }
+            }
+            if (map0[pluginName]) {
+                new_list.push(pluginName);
+                map0[pluginName] = false;
+            }
+        }
+
+        for (var plugname in map0) {
+            add_Me(plugname);
+        }
+        return new_list;
+    };
+
     /**
     * Get array of enabled plugin names
 	* @param {boolean} returnFullList  - if true will return all available plugins
@@ -1066,7 +1116,7 @@ var pluginManager = function pluginManager() {
                     }
                 }
             }
-            return list;
+            return this.fixOrderBasedOnDependency(list);
         }
         else {
             if (pluginConfig && Object.keys(pluginConfig).length > 0) {
@@ -1083,7 +1133,7 @@ var pluginManager = function pluginManager() {
                 }
             }
 
-            return list;
+            return this.fixOrderBasedOnDependency(list);
         }
     };
 
@@ -1898,7 +1948,6 @@ var pluginManager = function pluginManager() {
             process.exit(1);
             return;
         }
-        console.log("New DB connection established to with pool size", maxPoolSize, "for pid", process.pid);
 
         /**
          * Log driver debug logs

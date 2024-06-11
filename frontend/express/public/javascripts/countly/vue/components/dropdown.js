@@ -110,6 +110,11 @@
             },
             id: {
                 type: String
+            },
+            testId: {
+                type: String,
+                default: "cly-dropdown-default-test-id",
+                required: false
             }
         },
         inject: {
@@ -135,7 +140,7 @@
             };
         },
         template: '<div class="cly-vue-dropdown el-select"\
-                    v-click-outside="handleOutsideClick">\
+                    v-click-outside="handleOutsideClick" :data-test-id="testId + \'-dropdown-el-select\'">\
                     <trigger-proxy\
                         ref="reference"\
                         @click.native.stop="handleToggle"\

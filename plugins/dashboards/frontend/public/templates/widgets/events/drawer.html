@@ -6,5 +6,5 @@
     <clyd-breakdown v-model="scope.editedObject.breakdowns" type="events" v-if="showBreakdown" :event="scope.editedObject.events[0]"></clyd-breakdown>
     <clyd-metric v-model="scope.editedObject.metrics" :metrics="metrics" :multiple="isMultipleMetric"></clyd-metric>
     <clyd-title v-model="scope.editedObject.title"></clyd-title>
-	<clyd-period v-if="showPeriod" v-model="scope.editedObject.custom_period"></clyd-period>
+	<clyd-period v-if="showPeriod" v-model="scope.editedObject.custom_period" :disabledShortcuts="['0days']"></clyd-period>
 </div>

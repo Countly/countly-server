@@ -671,10 +671,7 @@
                 if (selectedMenuItem && selectedMenuItem.item && selectedMenuItem.item.title) {
                     sectionName = this.i18n(selectedMenuItem.item.title);
                 }
-                var appName = "";
-                if (this.$store.getters["countlyCommon/getActiveApp"]) {
-                    appName = this.$store.getters["countlyCommon/getActiveApp"].name;
-                }
+                var appName = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name;
                 var date = countlyCommon.getDateRangeForCalendar();
 
                 var filename = siteName + " - " + appName + " - " + sectionName + " " + "(" + date + ")";

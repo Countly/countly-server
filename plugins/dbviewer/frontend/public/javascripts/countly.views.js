@@ -72,8 +72,9 @@
                     },
                     onError: function(context, error) {
                         if (error && error.status !== 0) {
+                            self.isFetching = true; // do not refresh recursively
                             CountlyHelpers.notify({
-                                message: error.statusText || CV.i18n('dbviewer.server-error'),
+                                message: error.responseJSON && error.responseJSON.result ? error.responseJSON.result : CV.i18n('dbviewer.server-error'),
                                 type: "error"
                             });
                         }

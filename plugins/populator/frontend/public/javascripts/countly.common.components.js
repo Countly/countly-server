@@ -1146,12 +1146,27 @@
                 }
                 const index = parseInt(newValue.split("_")[0], 10);
                 this.behavior.sequences.splice(index, 1);
+                this.behavior.sequenceConditions.forEach((item) => {
+                    item.values.splice(index, 1);
+                });
                 if (!this.behavior.sequences.length) {
                     const indexToRemove = this.behavior.sequences.findIndex(item => item.key === "random");
                     if (indexToRemove !== -1) {
                         this.behavior.sequences.splice(indexToRemove, 1);
+                        this.behavior.sequenceConditions.forEach((item) => {
+                            item.values.splice(indexToRemove, 1);
+                        });
                     }
                 }
+                // re-indexing the sequences after deletion
+                this.behavior.sequences.filter(x=>x.key !== 'random').forEach((sequence, idx) => {
+                    sequence.key = "Sequence_" + (idx + 1);
+                });
+                this.behavior.sequenceConditions.forEach((item) => {
+                    item.values.filter(x=>x.key !== 'random').forEach((sequence, idx) => {
+                        sequence.key = "Sequence_" + (idx + 1);
+                    });
+                });
             },
             "parentData": {
                 deep: true,
@@ -1170,11 +1185,26 @@
                             const indexToRemove = this.behavior.sequences.findIndex(item => item.key === "random");
                             if (indexToRemove !== -1) {
                                 this.behavior.sequences.splice(indexToRemove, 1);
+                                this.behavior.sequenceConditions.forEach((item) => {
+                                    item.values.splice(indexToRemove, 1);
+                                });
                             }
                             this.behavior.sequences.push({key: 'Sequence_' + (this.behavior.sequences.length + 1), probability: 0});
+                            if (this.behavior.sequenceConditions.length) {
+                                this.behavior.sequenceConditions.forEach((item) => {
+                                    item.values.push({key: 'Sequence_' + this.behavior.sequences.length, probability: 0});
+                                });
+                            }
                         }
                         if (!this.behavior.sequences.find(item => item.key === 'random')) {
                             this.behavior.sequences.push({key: 'random', probability: 0});
+                        }
+                        if (this.behavior.sequenceConditions.length) {
+                            this.behavior.sequenceConditions.forEach((item) => {
+                                if (!item.values.find(valueItem => valueItem.key === 'random')) {
+                                    item.values.push({key: 'random', probability: 0});
+                                }
+                            });
                         }
                     }
                 },
