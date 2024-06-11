@@ -433,11 +433,11 @@ const selectSubType = (subType) => {
 };
 
 const selectTriggerMetric = (metricType) => {
-    cy.selectValue(alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT, metricType);
+    cy.selectListBoxItem(alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT, metricType);
 };
 
 const selectTriggerVariable = (variableType) => {
-    cy.selectValue(alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT, variableType);
+    cy.selectListBoxItem(alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT, variableType);
 };
 
 const typeTriggerValue = (value) => {
@@ -445,7 +445,7 @@ const typeTriggerValue = (value) => {
 };
 
 const selectTriggerTime = (timeType) => {
-    cy.selectValue(alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT, timeType);
+    cy.selectListBoxItem(alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT, timeType);
 };
 
 const selectToSpecificAddress = (...emailAddress) => {
