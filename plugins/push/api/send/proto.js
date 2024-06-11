@@ -4,8 +4,6 @@
 
 const { TextDecoder, TextEncoder } = require('util');
 
-/* global BigInt */
-
 // const std = {o: null, t: "df_OCowGSp-xLnbdqM1xLd:APA91bFZzdItrP2ia7jGk41Q0LxAev7p6lvq4NhFR0NKWw0_Az9yfjbGyKGggJ-22E650MYQEA8rPAKlDdcIjz5n5fwz8ap7mizWqnLhBV1qR3qyG_OkuKxRoOe7xB7OA-Eb-JLP4r0V", n: "5fbb9360b758", d: 1606129072150};
 // const pers = {o: {'custom.data': 'Some string'}, t: "df_OCowGSp-xLnbdqM1xLd:APA91bFZzdItrP2ia7jGk41Q0LxAev7p6lvq4NhFR0NKWw0_Az9yfjbGyKGggJ-22E650MYQEA8rPAKlDdcIjz5n5fwz8ap7mizWqnLhBV1qR3qyG_OkuKxRoOe7xB7OA-Eb-JLP4r0V", n: "5fbb960b7358", d: 1606129072150};
 // const data = Array.from(new Array(1000)).map(() => Math.random() > .3 ? std : pers);

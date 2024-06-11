@@ -199,6 +199,10 @@
         mounted: function() {
             const link = this.$el.querySelector('.feedback__link');
             link.addEventListener('click', this.fetchAndDisplayWidget);
+            document.addEventListener('keydown', this.handleEscapeKey);
+        },
+        beforeDestroy: function() {
+            document.removeEventListener('keydown', this.handleEscapeKey);
         },
         methods: {
             onClick: function() {
@@ -256,6 +260,11 @@
                     const segmentation = { guide: self.guideData.sectionID || "" };
                     COUNTLY_STATS.present_feedback_widget(countlyFeedbackWidget, selectorId, null, segmentation);
                 });
+            },
+            handleEscapeKey: function(event) {
+                if (event.keyCode === 27 || event.key === 'Escape') {
+                    this.onClose();
+                }
             },
         },
     }));

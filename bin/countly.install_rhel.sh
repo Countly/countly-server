@@ -60,7 +60,7 @@ sudo dnf install -y alsa-lib.x86_64 atk.x86_64 cups-libs.x86_64 gtk3.x86_64 libX
 sudo dnf update -y nss
 
 #install nodejs
-sudo dnf module install -y nodejs:18/common
+sudo dnf module install -y nodejs:20/common
 
 set +e
 NODE_JS_CMD=$(which nodejs)
@@ -87,7 +87,7 @@ sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exi
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
-( cd "$DIR/.."; npm install -g npm@6.14.13; npm install sqlite3 --build-from-source; npm install; npm install argon2 --build-from-source; )
+( cd "$DIR/.."; npm install argon2; npm install sqlite3 --build-from-source; npm install; )
 
 #install numactl
 sudo dnf install -y numactl
