@@ -16,7 +16,7 @@ const {
     EMAIL_NOTIFICATION_TYPE
 } = require('../../../../support/constants');
 
-describe.skip('Create New Alert', () => {
+describe('Create New Alert', () => {
     beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
