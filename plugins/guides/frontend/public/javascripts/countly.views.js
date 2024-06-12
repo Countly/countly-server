@@ -133,7 +133,6 @@
         },
         data: function() {
             return {
-                neverInteracted: true,
                 isButtonVisible: false,
                 isDialogVisible: false,
                 guideData: {},
@@ -177,6 +176,7 @@
                         keepShow: false,
                     }
                 },
+                viewedGuides: countlyGlobal.member.viewedGuides,
             };
         },
         created: function() {
@@ -207,15 +207,23 @@
         },
         computed: {
             dynamicClassGuideButton: function() {
-                return this.neverInteracted ? 'view-button-initial' : 'view-button';
+                var highlightGuidesButton = true;
+                if (this.viewedGuides === true) {
+                    highlightGuidesButton = false;
+                }
+                return highlightGuidesButton ? 'view-button-initial' : 'view-button';
             }
         },
         methods: {
             onClick: function() {
                 this.isDialogVisible = true;
-                this.neverInteracted = false;
                 let mainViewContainer = document.getElementById('main-views-container');
                 mainViewContainer.getElementsByClassName('main-view')[0].style.setProperty('overflow', 'hidden', 'important');
+
+                if (!this.viewedGuides && this.viewedGuides !== true) {
+                    countlyGuides.memberViewedGuides(countlyGlobal.member._id);
+                    this.viewedGuides = countlyGlobal.member.viewedGuides = true;
+                }
             },
             onClose: function() {
                 this.isDialogVisible = false;
