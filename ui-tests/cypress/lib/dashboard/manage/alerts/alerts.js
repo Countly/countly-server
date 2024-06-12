@@ -241,7 +241,7 @@ const verifyAlertDrawerPageElements = ({
         else {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
-               elementPlaceHolder: 'metric',
+                elementPlaceHolder: 'metric',
                 value: null
             });
         }
