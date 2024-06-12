@@ -714,13 +714,13 @@
                 guidesButtonDynamicClass: function() {
                     var state = this.$store.getters["countlySidebar/getGuidesButton"];
                     if (state === 'selected') {
-                        return 'cly-vue-sidebar__menu-option--selected';
+                        return 'color:#12AF51;';
                     }
                     else if (state === 'hover') {
-                        return 'hover';
+                        return 'color:white;';
                     }
                     else {
-                        return '';
+                        return 'color:#A7AEB8;';
                     }
                 },
                 helpCenterLink: function() {
