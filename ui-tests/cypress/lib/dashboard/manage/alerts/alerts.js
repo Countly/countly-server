@@ -241,7 +241,7 @@ const verifyAlertDrawerPageElements = ({
         else {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
-               // elementText: 'metric',
+               elementPlaceHolder: 'metric',
                 value: null
             });
         }
@@ -255,7 +255,7 @@ const verifyAlertDrawerPageElements = ({
         else {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT,
-              //  elementText: 'variable',
+                elementPlaceHolder: 'variable',
                 value: null
             });
         }
@@ -284,7 +284,7 @@ const verifyAlertDrawerPageElements = ({
         else {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT,
-               // elementText: 'time',
+                elementPlaceHolder: 'time',
                 value: null
             });
         }
