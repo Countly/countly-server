@@ -95,7 +95,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alertUpdated.alertName,
                 application: application,
-                condition: "non-fatal crashes/errors per session"
+                condition: "fatal crashes/errors per session"
             });
         });
     });
