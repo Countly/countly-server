@@ -56,14 +56,11 @@
 
             tableData = tableData.chartData || [];
 
-            // EMRE: method for merging unknown carriers
-            var unknownCarriers = ["--", "null", "unknown"],
+            var unknownCarriers = ["--", "null", "unknown", ""],
                 newTableData = [],
-                pushUnknownOb = false,
                 unknownOb = {carriers: "Unknown", n: 0, t: 0, u: 0};
             for (let index = 0; index < tableData.length; index++) {
-                if (unknownCarriers.includes(tableData[index].carriers.toLowerCase())) {
-                    pushUnknownOb = true;
+                if (unknownCarriers.includes(tableData[index].carriers.trim().toLowerCase())) {
                     unknownOb.n += tableData[index].n;
                     unknownOb.t += tableData[index].t;
                     unknownOb.u += tableData[index].u;
@@ -72,11 +69,10 @@
                     newTableData.push(tableData[index]);
                 }
             }
-            if (pushUnknownOb) {
+            if (unknownOb.n !== 0 || unknownOb.t !== 0 || unknownOb.u !== 0) {
                 newTableData.push(unknownOb);
             }
             tableData = newTableData;
-            // EMRE: end of method
 
             var graphs = {"newUsers": [], "totalSessions": []};
             var totals = {"totalSessions": 0, "newUsers": 0, "totalUsers": 0};
