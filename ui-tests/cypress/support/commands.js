@@ -214,6 +214,14 @@ Cypress.Commands.add("scrollPageToCenter", (element = '.main-view', index = 0) =
     cy.get(element).eq(index).scrollTo('center', { ensureScrollable: false });
 });
 
+Cypress.Commands.add("scrollDataTableToRight", (element = '.el-table__body-wrapper', index = 0) => {
+    cy.get(element).eq(index).scrollTo('right', { ensureScrollable: false });
+});
+
+Cypress.Commands.add("scrollDataTableToLeft", (element = '.el-table__body-wrapper', index = 0) => {
+    cy.get(element).eq(index).scrollTo('left', { ensureScrollable: false });
+});
+
 Cypress.Commands.add('verifyElement', ({
     labelElement,
     labelText,

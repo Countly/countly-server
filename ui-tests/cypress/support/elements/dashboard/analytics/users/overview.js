@@ -2,11 +2,13 @@ export const usersOverviewPageElements = {
     PAGE_TITLE: 'header-title',
     PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
     FILTER_DATE_PICKER: 'cly-datepicker-test-id-pseudo-input-label',
+}
+
+export const usersOverviewEChartElements = {
     EMPTY_PAGE_ICON: 'user-analytics-overview-empty-logo',
     EMPTY_PAGE_TITLE: 'user-analytics-overview-empty-title',
     EMPTY_PAGE_SUBTITLE: 'user-analytics-overview-empty-subtitle',
 
-    //EChart component
     CHART_USERS_OVERVIEW: 'user-analytics-overview-chart',
     CHART_TYPE_SELECT: 'user-analytics-overview-header-select-input',
     CHART_ANNOTATION_BUTTON: 'chart-type-annotation-button',
@@ -37,7 +39,7 @@ export const usersOverviewPageElements = {
     CHART_RETURNING_USERS_VALUE: 'user-analytics-overview-legend-returning-users-value',
     CHART_RETURNING_USERS_TREND_ICON: 'user-analytics-overview-legend-returning-users-trend-icon',
     CHART_RETURNING_USERS_PERCENTAGE: 'user-analytics-overview-legend-returning-users-percentage',
-};
+}
 
 const usersOverviewDataTableElements = (index = 0) => {
     return {
@@ -76,5 +78,6 @@ const usersOverviewDataTableElements = (index = 0) => {
 
 module.exports = {
     usersOverviewPageElements,
+    usersOverviewEChartElements,
     usersOverviewDataTableElements
 };
