@@ -721,7 +721,12 @@ exports.dbUserHasAccessToCollection = function(params, collection, app_id, callb
         }
     }
     if (app_id) {
-        apps = apps.filter(id => id + "" === app_id + "");
+        if (params.member.global_admin) {
+            apps = [app_id];
+        }
+        else {
+            apps = apps.filter(id => id + "" === app_id + "");
+        }
     }
     var appList = [];
     if (collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0) {
