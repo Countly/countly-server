@@ -55,6 +55,29 @@
             ], metric);
 
             tableData = tableData.chartData || [];
+
+            // EMRE: method for merging unknown carriers
+            var unknownCarriers = ["--", "null", "unknown"],
+                newTableData = [],
+                pushUnknownOb = false,
+                unknownOb = {carriers: "Unknown", n: 0, t: 0, u: 0};
+            for (let index = 0; index < tableData.length; index++) {
+                if (unknownCarriers.includes(tableData[index].carriers.toLowerCase())) {
+                    pushUnknownOb = true;
+                    unknownOb.n += tableData[index].n;
+                    unknownOb.t += tableData[index].t;
+                    unknownOb.u += tableData[index].u;
+                }
+                else {
+                    newTableData.push(tableData[index]);
+                }
+            }
+            if (pushUnknownOb) {
+                newTableData.push(unknownOb);
+            }
+            tableData = newTableData;
+            // EMRE: end of method
+
             var graphs = {"newUsers": [], "totalSessions": []};
             var totals = {"totalSessions": 0, "newUsers": 0, "totalUsers": 0};
             for (var k = 0; k < tableData.length; k++) {
