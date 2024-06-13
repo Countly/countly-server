@@ -2467,9 +2467,9 @@
                 required: false
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles" :data-test-id="testId + \'-chart\'">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                        <chart-header :chart-type="\'line\'" :category="this.category" :hide-notation="this.hideNotation" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
+                        <chart-header :test-id="testId + \'-header\'" :chart-type="\'line\'" :category="this.category" :hide-notation="this.hideNotation" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -2494,6 +2494,7 @@
                         </div>\
                         <custom-legend\
                             ref="legend"\
+                            :test-id="testId + \'-legend\'"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
                             v-if="legendOptions.show && !isChartEmpty">\

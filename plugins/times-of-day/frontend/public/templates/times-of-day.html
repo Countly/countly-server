@@ -10,7 +10,7 @@
                 <div class="bu-mr-1 times-of-day__results-text" data-test-id="results-for-label">{{i18n('times-of-day.results-for')}}</div>               
                 <cly-event-select test-id="results-for-select" v-model="selectedFilter" :blacklistedEvents="['[CLY]_view','feedback','[CLY]_crash']"></cly-event-select>
             </div>
-            <el-select :value="selectedDateBucketValue" @change="onSelectDateBucket"> 
+            <el-select test-id="time" :value="selectedDateBucketValue" @change="onSelectDateBucket"> 
                 <el-option
                     v-for="item in dateBuckets"
                     :key="item.value"
