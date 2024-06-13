@@ -169,7 +169,7 @@ const verifySessionDurationDataFromTable = ({
 
         cy.verifyElement({
             element: sessionDurationsDataTableElements(0).SESSION_DURATION,
-            elementText: "0 - 10 seconds"
+            elementText: "31 - 60 seconds"
         });
         cy.verifyElement({
             element: sessionDurationsDataTableElements(1).SESSION_DURATION,
