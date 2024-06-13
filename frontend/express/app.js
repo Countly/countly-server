@@ -8,7 +8,19 @@ process.title = "countly: dashboard node " + process.argv[1];
 
 var fs = require('fs');
 var path = require('path');
-var IS_FLEX = true;
+var IS_FLEX = false;
+
+if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
+    const deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
+    try {
+        if (JSON.parse(deploymentConf).DEPLOYMENT_ID) {
+            IS_FLEX = true;
+        }
+    }
+    catch (e) {
+        IS_FLEX = false;
+    }
+}
 
 var versionInfo = require('./version.info'),
     pack = require('../../package.json'),
