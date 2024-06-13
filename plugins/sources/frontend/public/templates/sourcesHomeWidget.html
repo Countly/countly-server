@@ -2,10 +2,10 @@
 	<clyd-home-widget-header :widget="headerData"></clyd-home-widget-header>
 	<cly-section>
 		<cly-metric-cards :multiline="false" v-loading="isLoading"  style="min-height:100px;">
-			<cly-metric-card :is-percentage="true" :box-type="5" :label="item.name" :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in sourceItems">			
+			<cly-metric-card :is-percentage="true" :test-id="'sources-index-' + idx" :box-type="5" :label="item.name" :color="item.color" :number="item.percent" :key="idx" v-for="(item, idx) in sourceItems">			
 			</cly-metric-card>
-			<div v-if="sourceItems.length <1 && !isLoading" class="technology-analytics-wrapper__empty-card" >
-				<div class="text-medium">{{i18n('common.table.no-data')}}</div>
+			<div v-if="sourceItems.length <1 && !isLoading" data-test-id="sources-wrapper-empty-card" class="technology-analytics-wrapper__empty-card" >
+				<div class="text-medium" data-test-id="sources-wrapper-empty-card-label">{{i18n('common.table.no-data')}}</div>
 			</div>
 		</cly-metric-cards>
 	</cly-section>

@@ -211,7 +211,8 @@
                 tableModes: [
                     {"key": "all", "label": CV.i18n('common.all')},
                     {"key": "selected", "label": CV.i18n('views.selected-views')}
-                ]
+                ],
+                isSpecialPeriod: countlyCommon.periodObj.isSpecialPeriod,
             };
         },
         mounted: function() {
@@ -515,6 +516,9 @@
                     return countlyCommon.formatSecond(value);
                 }
                 return countlyCommon.getShortNumber(value);
+            },
+            dateChanged: function() {
+                this.isSpecialPeriod = countlyCommon.periodObj.isSpecialPeriod;
             }
 
 
@@ -533,7 +537,8 @@
                         key: "segment",
                         items: this.chooseSegment,
                         default: "all",
-                        searchable: true
+                        searchable: true,
+                        disabled: this.omittedSegments
                     },
                     {
                         label: CV.i18n('views.segment-value'),
@@ -610,7 +615,23 @@
             },
             isLoading: function() {
                 return this.$store.state.countlyViews.isLoading;
-            }
+            },
+            omittedSegments: function() {
+                var omittedSegmentsObj = {
+                    label: CV.i18n("events.all.omitted.segments"),
+                    options: []
+                };
+                var omittedSegments = this.$store.getters['countlyViews/getOmittedSegments'];
+                if (omittedSegments) {
+                    omittedSegmentsObj.options = omittedSegments.map(function(item) {
+                        return {
+                            "label": item,
+                            "value": item
+                        };
+                    });
+                }
+                return omittedSegmentsObj;
+            },
         },
         mixins: [
             countlyVue.container.dataMixin({
@@ -768,6 +789,7 @@
         permission: FEATURE_NAME,
         title: CV.i18n('views-per-session.title'),
         route: "#/analytics/sessions/views-per-session",
+        dataTestId: "session-views-per-session",
         component: ViewsPerSessionView,
         vuex: [{
             clyModel: countlyViewsPerSession

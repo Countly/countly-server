@@ -2020,7 +2020,25 @@ fetch.alljobs = async function(metric, params) {
     total = total.length > 0 ? total[0].total : 0;
     const pipeline = [
         {
+            $addFields: {
+                sortKey: {
+                    $cond: {
+                        if: { $eq: ["$status", 0] },
+                        then: 0,
+                        else: {
+                            $cond: {
+                                if: { $eq: ["$status", 7] },
+                                then: 1,
+                                else: 2
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
             $sort: {
+                sortKey: 1,
                 finished: -1
             }
         },

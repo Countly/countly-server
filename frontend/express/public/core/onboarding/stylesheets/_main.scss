@@ -33,8 +33,8 @@
     margin-left: 0 !important;
 }
 
-.setup-radio .el-radio__input {
-    display: none;
+.setup-radio .is-autosized.is-bordered .el-radio__input {
+    display: none !important;
 }
 
 .setup-radio .el-radio__label {
@@ -44,6 +44,7 @@
 .setup-radio-item {
     display: flex;
     align-items: center;
+    font-size: 24px;
 }
 
 .setup-radio-icon-bg {
@@ -58,6 +59,7 @@
 
 .is-checked .setup-radio-icon-bg {
     background-color: #0166D6;
+    color: white;
 }
 
 .setup-radio-icon {
@@ -78,26 +80,6 @@
 
 .setup-radio-icon--app-type-desktop {
     background-image: url('../../../images/dashboard/onboarding/app-type-desktop.svg');
-}
-
-.setup-radio-icon--app-template-banking {
-    background-image: url('../../../images/dashboard/onboarding/app-template-banking.svg');
-}
-
-.setup-radio-icon--app-template-ecommerce {
-    background-image: url('../../../images/dashboard/onboarding/app-template-ecommerce.svg');
-}
-
-.setup-radio-icon--app-template-education {
-    background-image: url('../../../images/dashboard/onboarding/app-template-education.svg');
-}
-
-.setup-radio-icon--app-template-healthcare {
-    background-image: url('../../../images/dashboard/onboarding/app-template-healthcare.svg');
-}
-
-.setup-radio-icon--app-template-gaming {
-    background-image: url('../../../images/dashboard/onboarding/app-template-gaming.svg');
 }
 
 .is-checked .setup-radio-icon {
@@ -138,7 +120,7 @@
 
 .quickstart-link, .quickstart-link:visited {
     color: #0166D6;
-}
+} 
 
 .quickstart-link:hover {
     color: #333c48;

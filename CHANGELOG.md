@@ -1,3 +1,58 @@
+## Version 24.05
+Features:
+- [alerts] Alerts plugin revamp
+- [core] Ensure consistency when deleting dashboard user
+- [crashes] Contains operator for (App Version) filter on the Crash Overview page
+- [crashes] Sort crashes by filtered results
+- [dashboard] Show in UI which values are estimated
+- [dashboards] Improve dashboard list loading time
+- [data-manager] Add option to delete source events when merging
+- [date-picker] Date picker presets
+- [dev] Remote process profiling option
+- [events] Ensure consistency when deleting an event
+- [plugins] Dynamic plugins including docker
+- [populator] Crash and Symbolication examples
+- [populator] New Data Populator
+- [push] Move to new FCM API
+- [versions] View to display history of upgrades for server
+- [views] Visualize omitted views just like we visualize omited events in events section
+
+Enterprise Features:
+- [data-manager] Delete user property value
+- [data-manager] Transformation to copy event segmentation to user custom properties
+- [date-picker] Add "hours" and "minutes" options to "in the last" filtering
+- [flows] Allow disabling flows
+- [flows] Merge Flow plugin collections into single one
+- [license] Improve license emails
+- [surveys] Add "Internal Label" field to Surveys and Ratings
+- [surveys] Add custom properties to surveys
+- [surveys] Add optional ToC and Privacy Policy checkbox with URLs to feedback widgets
+- [surveys] Faster table loading through server side tables
+- [surveys] Removing connect.sid cookie in case of nps
+- [surveys] Responsiveness for survey/NPS/rating widget contents
+- [users] Profile Groups
+- [users] Purging user profiles in bulk
+- [users] Record hinge as user property 
+- [users] Select/deselect users
+- [users] User Profiles widget in dashboards
+
+## Version 23.11.22
+Features:
+- [views] Added deselect All button
+  
+Fixes:
+- [push] Fix for p12 file not being parsed correctly
+
+Enterprise Features:
+ - [ab-testing] Improved query to match experiments to users
+ - [cohorts] Optimization to not calculate full period buckets when loading cohort meta data. Speeds up meta-loading and reduces memory usage.
+   
+Enterprise Fixes:
+- [cohorts] Correctly preprocess drill query for cohort values.
+- [drill] Correct time interval for drill meta job.
+- [drill] Select users correctly when navigating from drill to user profiles
+- [retention] UI fixes
+
 ## Version 23.11.21
 Fixes:
 - [sdks] Fix negative request queue

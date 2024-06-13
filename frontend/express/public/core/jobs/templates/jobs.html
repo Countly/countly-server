@@ -4,7 +4,7 @@
     >
     </cly-header>
     <cly-main>
-		<cly-section>
+		<cly-section data-test-id="table-jobs">
 			<cly-datatable-n :data-source="remoteTableDataSource" v-on:row-click="goTo" :isClickable="true" :default-sort="{prop: 'name', order: 'ascending'}">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="name" :label="i18n('jobs.job-name')" type="clickable">
