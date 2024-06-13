@@ -820,6 +820,12 @@
                     break;
                 }
 
+                if (!this.isCompareTypeSelectAvailable) {
+                    settings.compareType = null;
+                    settings.compareValue = null;
+                    settings.period = null;
+                }
+
                 if (settings.period) {
                     if (subTarget) {
                         if (settings.compareType === "more") {
