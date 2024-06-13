@@ -6,7 +6,7 @@ export const analyticsSessionOverviewPageElements = {
     TAB_SESSION_DURATIONS: 'tab-session-durations-title',
     TAB_SESSION_FREQUENCY: 'tab-session-frequency-title',
     TAB_SESSION_VIEWS_PER_SESSION: 'tab-session-views-per-session-title'
-}
+};
 
 export const analyticsSessionOverviewEChartElements = {
     EMPTY_PAGE_ICON: 'analytics-session-overview-empty-logo',
@@ -41,7 +41,7 @@ export const analyticsSessionOverviewEChartElements = {
     CHART_UNIQUE_SESSIONS_LABEL: 'analytics-session-overview-legend-unique-sessions-label',
     CHART_UNIQUE_SESSIONS_TOOLTIP: 'analytics-session-overview-legend-unique-sessions-tooltip',
     CHART_UNIQUE_SESSIONS_VALUE: 'analytics-session-overview-legend-unique-sessions-value',
-}
+};
 
 const analyticsSessionOverviewDataTableElements = (index = 0) => {
     return {

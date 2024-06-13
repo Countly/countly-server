@@ -6,7 +6,7 @@ export const sessionViewsPerSessionElements = {
     TAB_SESSION_DURATIONS: 'tab-session-durations-title',
     TAB_SESSION_FREQUENCY: 'tab-session-frequency-title',
     TAB_SESSION_VIEWS_PER_SESSION: 'tab-session-views-per-session-title'
-}
+};
 
 export const sessionViewsPerSessionEChartElements = {
     EMPTY_PAGE_ICON: 'chart-views-per-session-empty-logo',
@@ -20,7 +20,7 @@ export const sessionViewsPerSessionEChartElements = {
 
     CHART_VIEWS_PER_SESSION_ICON: 'chart-views-per-session-views-per-session-legend-icon',
     CHART_VIEWS_PER_SESSION_LABEL: 'chart-views-per-session-views-per-session-legend-label',
-}
+};
 
 const sessionViewsPerSessionDataTableElements = (index = 0) => {
     return {

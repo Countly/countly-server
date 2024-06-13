@@ -76,7 +76,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: sessionViewsPerSessionDataTableElements().COLUMN_NAME_PERCENT_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -88,7 +88,7 @@ const verifyEmptyPageElements = () => {
 
     verifyViewsPerSessionDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -101,7 +101,7 @@ const verifyFullDataPageElements = () => {
 
     verifyViewsPerSessionDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifyViewsPerSessionChart = ({
@@ -122,7 +122,8 @@ const verifyViewsPerSessionChart = ({
             labelElement: sessionViewsPerSessionEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: sessionViewsPerSessionEChartElements.CHART_SESSION_VIEWS_PER_SESSION,
@@ -163,7 +164,8 @@ const verifyViewsPerSessionDataFromTable = ({
             labelElement: sessionViewsPerSessionDataTableElements().EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: sessionViewsPerSessionDataTableElements(0).VIEWS_PER_SESSION,

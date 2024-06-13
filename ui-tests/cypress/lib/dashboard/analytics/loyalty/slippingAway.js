@@ -67,7 +67,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: slippingAwayDataTableElements().COLUMN_NAME_PERCENTAGE_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -79,7 +79,7 @@ const verifyEmptyPageElements = () => {
 
     verifySlippingAwayDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -92,7 +92,7 @@ const verifyFullDataPageElements = () => {
 
     verifySlippingAwayDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifySlippingAwayChart = ({
@@ -113,7 +113,8 @@ const verifySlippingAwayChart = ({
             labelElement: slippingAwayEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: slippingAwayEChartElements.CHART_SLIPPING_AWAY_CHART,
@@ -167,7 +168,7 @@ const verifySlippingAwayDataFromTable = ({
 
     if (isEmpty) {
         let i = 0;
-        cy.scrollPageToBottom()
+        cy.scrollPageToBottom();
 
         for (i = 0; i < 5; i++) {
             cy.verifyElement({
@@ -182,7 +183,8 @@ const verifySlippingAwayDataFromTable = ({
                 elementText: '0.00%'
             });
         }
-    } else {
+    }
+    else {
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: slippingAwayDataTableElements(index).SLIPPING_AWAY_USER_COUNT,
@@ -194,7 +196,7 @@ const verifySlippingAwayDataFromTable = ({
             element: slippingAwayDataTableElements(index).PERCENTAGE_VALUE,
             elementText: percentage
         });
-    };
+    }
 };
 
 const clickUserActivityTab = () => {

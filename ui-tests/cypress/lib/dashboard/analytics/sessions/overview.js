@@ -87,7 +87,7 @@ const verifyStaticElementsOfPage = () => {
         element: analyticsSessionOverviewPageElements.TAB_SESSION_VIEWS_PER_SESSION,
         elementText: "Views per Session",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -99,7 +99,7 @@ const verifyEmptyPageElements = () => {
 
     verifySessionsOverviewDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -112,7 +112,7 @@ const verifyFullDataPageElements = () => {
 
     verifySessionsOverviewDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifySessionsOverviewChart = ({
@@ -138,7 +138,8 @@ const verifySessionsOverviewChart = ({
             labelElement: analyticsSessionOverviewEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: analyticsSessionOverviewEChartElements.CHART_SESSION_OVERVIEW,
         });
@@ -242,30 +243,31 @@ const verifySessionsOverviewDataFromTable = ({
             element: analyticsSessionOverviewDataTableElements(index).TOTAL_SESSIONS,
             elementText: "0"
         });
-    
+
         cy.verifyElement({
             element: analyticsSessionOverviewDataTableElements(index).NEW_SESSIONS,
             elementText: "0"
         });
-    
+
         cy.verifyElement({
             element: analyticsSessionOverviewDataTableElements(index).UNIQUE_SESSIONS,
             elementText: "0"
         });
 
-    } else {
+    }
+    else {
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: analyticsSessionOverviewDataTableElements(index).TOTAL_SESSIONS,
             elementText: totalUsers
         });
-    
+
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: analyticsSessionOverviewDataTableElements(index).NEW_SESSIONS,
             elementText: newUsers
         });
-    
+
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: analyticsSessionOverviewDataTableElements(index).UNIQUE_SESSIONS,

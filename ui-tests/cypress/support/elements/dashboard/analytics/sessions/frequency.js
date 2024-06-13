@@ -6,7 +6,7 @@ export const sessionFrequencyPageElements = {
     TAB_SESSION_DURATIONS: 'tab-session-durations-title',
     TAB_SESSION_FREQUENCY: 'tab-session-frequency-title',
     TAB_SESSION_VIEWS_PER_SESSION: 'tab-session-views-per-session-title'
-}
+};
 
 export const sessionFrequencyEChartElements = {
     EMPTY_PAGE_ICON: 'chart-session-frequency-empty-logo',
@@ -20,7 +20,7 @@ export const sessionFrequencyEChartElements = {
 
     CHART_SESSION_FREQUENCY_ICON: 'chart-session-frequency-session-frequency-legend-icon',
     CHART_SESSION_FREQUENCY_LABEL: 'chart-session-frequency-session-frequency-legend-label',
-}
+};
 
 const sessionFrequencyDataTableElements = (index = 0) => {
     return {

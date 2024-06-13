@@ -2,12 +2,12 @@ export const timesOfDayPageElements = {
     PAGE_TITLE: 'header-title',
     PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
     TAB_USER_ACTIVITY: 'tab-user-activity-title',
-	TAB_SLIPPING_AWAY: 'tab-slipping-away-title',
-	TAB_TIMES_OF_DAY: 'tab-times-of-day-title',
+    TAB_SLIPPING_AWAY: 'tab-slipping-away-title',
+    TAB_TIMES_OF_DAY: 'tab-times-of-day-title',
     RESULTS_FOR_LABEL: 'results-for-label',
     RESULTS_FOR_SELECT: 'results-for-select-pseudo-input-label',
     TIME_SELECT: 'results-for-select-pseudo-input-label'
-}
+};
 
 export const timesOfDayEChartElements = {
     EMPTY_PAGE_ICON: 'cly-empty-view-empty-logo',
@@ -18,7 +18,7 @@ export const timesOfDayEChartElements = {
     CHART_MORE_BUTTON: 'cly-chart-header-test-id-cly-chart-more-dropdown-more-option-button',
     CHART_MORE_DOWNLOAD_ITEM: 'cly-chart-header-test-id-download-button',
     CHART_MORE_ZOOM_ITEM: 'cly-chart-header-test-id-more-zoom-button',
-}
+};
 
 const timesOfDayDataTableElements = (index = 0) => {
     return {

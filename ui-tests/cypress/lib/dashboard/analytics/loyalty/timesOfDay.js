@@ -76,7 +76,7 @@ const verifyStaticElementsOfPage = () => {
         isElementVisible: false,
         labelText: "Sunday",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -88,7 +88,7 @@ const verifyEmptyPageElements = () => {
 
     verifyTimesOfDayDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -101,7 +101,7 @@ const verifyFullDataPageElements = () => {
 
     verifyTimesOfDayDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifyTimesOfDayChart = ({
@@ -122,7 +122,8 @@ const verifyTimesOfDayChart = ({
             labelElement: timesOfDayEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: timesOfDayEChartElements.CHART_SLIPPING_AWAY_CHART,
@@ -193,7 +194,7 @@ const verifyTimesOfDayDataFromTable = ({
     if (isEmpty) {
 
         let i = 0;
-        cy.scrollPageToBottom()
+        cy.scrollPageToBottom();
 
         for (i = 0; i < 10; i++) {
             cy.verifyElement({
@@ -246,9 +247,10 @@ const verifyTimesOfDayDataFromTable = ({
             });
         }
 
-    } else {
+    }
+    else {
 
-        cy.scrollPageToBottom()
+        cy.scrollPageToBottom();
 
         cy.verifyElement({
             shouldNot: !isEmpty,
@@ -293,21 +295,21 @@ const verifyTimesOfDayDataFromTable = ({
             element: timesOfDayDataTableElements(index).SUNDAY,
             elementText: sunday
         });
-    };
+    }
 };
 
 const clickUserActivityTab = () => {
-    cy.clickElement(analyticsLoyaltyTimesOfDayPageElements.TAB_USER_ACTIVITY);
+    cy.clickElement(timesOfDayPageElements.TAB_USER_ACTIVITY);
 };
 
 const clickSlippingAwayTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(analyticsLoyaltyTimesOfDayPageElements.TAB_SLIPPING_AWAY);
+    cy.clickElement(timesOfDayPageElements.TAB_SLIPPING_AWAY);
 };
 
 const clickTimesOfDayTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(analyticsLoyaltyTimesOfDayPageElements.TAB_TIMES_OF_DAY);
+    cy.clickElement(timesOfDayPageElements.TAB_TIMES_OF_DAY);
 };
 
 module.exports = {

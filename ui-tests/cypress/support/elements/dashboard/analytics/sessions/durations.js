@@ -2,7 +2,7 @@ export default {
     PAGE_TITLE: 'header-title',
     PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
     FILTER_DATE_PICKER: 'cly-datepicker-test-id-pseudo-input-label',
-}
+};
 
 export const sessionDurationsPageElements = {
     PAGE_TITLE: 'header-title',
@@ -11,7 +11,7 @@ export const sessionDurationsPageElements = {
     TAB_SESSION_DURATIONS: 'tab-session-durations-title',
     TAB_SESSION_FREQUENCY: 'tab-session-frequency-title',
     TAB_SESSION_VIEWS_PER_SESSION: 'tab-session-views-per-session-title'
-}
+};
 
 export const sessionDurationsEChartElements = {
     EMPTY_PAGE_ICON: 'chart-session-durations-empty-logo',
@@ -25,7 +25,7 @@ export const sessionDurationsEChartElements = {
 
     CHART_SESSION_DURATIONS_ICON: 'chart-session-durations-session-durations-legend-icon',
     CHART_SESSION_DURATIONS_LABEL: 'chart-session-durations-session-durations-legend-label',
-}
+};
 
 const sessionDurationsDataTableElements = (index = 0) => {
     return {

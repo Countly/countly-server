@@ -65,7 +65,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: usersOverviewDataTableElements().COLUMN_NAME_RETURNING_USERS_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -77,7 +77,7 @@ const verifyEmptyPageElements = () => {
 
     verifyUsersOverviewDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -90,7 +90,7 @@ const verifyFullDataPageElements = () => {
 
     verifyUsersOverviewDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifyUsersOverviewChart = ({
@@ -117,7 +117,8 @@ const verifyUsersOverviewChart = ({
             labelElement: usersOverviewEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: usersOverviewEChartElements.CHART_USERS_OVERVIEW,
         });
@@ -229,7 +230,7 @@ const verifyUsersOverviewDataFromTable = ({
     if (isEmpty) {
 
         let i = 0;
-        cy.scrollPageToBottom()
+        cy.scrollPageToBottom();
 
         for (i = 0; i < 10; i++) {
             cy.verifyElement({
@@ -252,7 +253,8 @@ const verifyUsersOverviewDataFromTable = ({
             });
         }
 
-    } else {
+    }
+    else {
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: usersOverviewDataTableElements(index).TOTAL_USERS,

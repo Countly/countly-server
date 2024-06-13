@@ -76,7 +76,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: sessionDurationsDataTableElements().COLUMN_NAME_PERCENT_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -88,7 +88,7 @@ const verifyEmptyPageElements = () => {
 
     verifySessionDurationDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -101,7 +101,7 @@ const verifyFullDataPageElements = () => {
 
     verifySessionDurationDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifySessionDurationChart = ({
@@ -122,7 +122,8 @@ const verifySessionDurationChart = ({
             labelElement: sessionDurationsEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: sessionDurationsEChartElements.CHART_USER_ACTIVITY,
@@ -163,7 +164,8 @@ const verifySessionDurationDataFromTable = ({
             labelElement: sessionDurationsDataTableElements().EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: sessionDurationsDataTableElements(0).SESSION_DURATION,

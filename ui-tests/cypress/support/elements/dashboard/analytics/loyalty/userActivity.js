@@ -4,7 +4,7 @@ export const userActivityPageElements = {
     TAB_USER_ACTIVITY: 'tab-user-activity-title',
     TAB_SLIPPING_AWAY: 'tab-slipping-away-title',
     TAB_TIMES_OF_DAY: 'tab-times-of-day-title',
-}
+};
 
 export const userActivityEChartElements = {
     EMPTY_PAGE_ICON: 'user-activity-empty-logo',
@@ -22,7 +22,7 @@ export const userActivityEChartElements = {
     CHART_ACTIVE_USERS_SEVEN_DAYS_LABEL: 'user-activity-active-users-(7-days)-legend-label',
     CHART_ACTIVE_USERS_THIRTY_DAYS_ICON: 'user-activity-active-users-(30-days)-legend-icon',
     CHART_ACTIVE_USERS_THIRTY_DAYS_LABEL: 'user-activity-active-users-(30-days)-legend-label',
-}
+};
 
 const userActivityDataTableElements = (index = 0) => {
     return {

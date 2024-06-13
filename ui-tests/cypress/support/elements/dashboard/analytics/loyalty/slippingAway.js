@@ -4,7 +4,7 @@ export const slippingAwayPageElements = {
     TAB_USER_ACTIVITY: 'tab-user-activity-title',
     TAB_SLIPPING_AWAY: 'tab-slipping-away-title',
     TAB_TIMES_OF_DAY: 'tab-times-of-day-title'
-}
+};
 
 export const slippingAwayEChartElements = {
     EMPTY_PAGE_ICON: 'slipping-away-empty-logo',
@@ -16,7 +16,7 @@ export const slippingAwayEChartElements = {
     CHART_MORE_ZOOM_ITEM: 'slipping-away-more-zoom-button',
     CHART_CHART_DESC_ICON: 'slipping-away-users-who-haven\'t-had-a-session-for-more-than-legend-icon',
     CHART_CHART_DESC_LABEL: 'slipping-away-users-who-haven\'t-had-a-session-for-more-than-legend-label',
-}
+};
 
 const slippingAwayDataTableElements = (index = 0) => {
     return {

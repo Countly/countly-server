@@ -2,7 +2,7 @@ export const usersOverviewPageElements = {
     PAGE_TITLE: 'header-title',
     PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
     FILTER_DATE_PICKER: 'cly-datepicker-test-id-pseudo-input-label',
-}
+};
 
 export const usersOverviewEChartElements = {
     EMPTY_PAGE_ICON: 'user-analytics-overview-empty-logo',
@@ -39,7 +39,7 @@ export const usersOverviewEChartElements = {
     CHART_RETURNING_USERS_VALUE: 'user-analytics-overview-legend-returning-users-value',
     CHART_RETURNING_USERS_TREND_ICON: 'user-analytics-overview-legend-returning-users-trend-icon',
     CHART_RETURNING_USERS_PERCENTAGE: 'user-analytics-overview-legend-returning-users-percentage',
-}
+};
 
 const usersOverviewDataTableElements = (index = 0) => {
     return {
