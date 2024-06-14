@@ -348,7 +348,7 @@
 
                             <cly-form-field rules="required" style="display:inline-block" v-if="isCompareTypeSelectAvailable">    
                                 <cly-select-x
-                                    data-test-id="trigger-variable-select"
+                                    test-id="trigger-variable-select"
                                     width="auto"
                                     :arrow="false"
                                     ref="alertDataSubTypeSelect"
@@ -386,7 +386,7 @@
                             <cly-form-field v-if="isPeriodSelectAvailable && drawerScope.editedObject.alertDataSubType !== 't'" rules="required" style="display:inline-block">
                                 <cly-select-x
                                     width="auto"
-                                    data-test-id="trigger-time-select"
+                                    test-id="trigger-time-select"
                                     :arrow="false"
                                     ref="alertDataSubTypeSelect"
                                     :style="{width:calculateWidth(drawerScope.editedObject.period) + 'px'}"
@@ -424,7 +424,7 @@
                             Send alert if
                         </span>
                         <cly-select-x
-                            data-test-id="trigger-metric-select"
+                            test-id="trigger-metric-select"
                             :arrow="false"
                             width="auto"
                             class="alert-drawer-trigger-select-and-input metric"
@@ -435,7 +435,7 @@
                         </span>
 
                         <cly-select-x
-                            data-test-id="trigger-variable-select"
+                            test-id="trigger-variable-select"
                             :arrow="false"
                             width="auto"
                             class="alert-drawer-trigger-select-and-input variable"
@@ -456,7 +456,7 @@
                             in the last
                         </span>
                         <cly-select-x
-                            data-test-id="trigger-time-select"
+                            test-id="trigger-time-select"
                             :arrow="false"
                             width="auto"
                             class="alert-drawer-trigger-select-and-input time"
