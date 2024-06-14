@@ -169,13 +169,13 @@ const verifySessionDurationDataFromTable = ({
 
         let i = 0;
 
-        for (i = 0; i < (sessionDurationsDataTableElements().TABLE_ROWS.length / 2) - 1; i++) {
+        for (i = 0; i < 5; i++) {
             cy.verifyElement({
                 element: sessionDurationsDataTableElements(i).SESSION_DURATION,
             });
         }
 
-        for (i = 0; i < (sessionDurationsDataTableElements().TABLE_ROWS.length / 2) - 1; i++) {
+        for (i = 0; i < 5; i++) {
             cy.verifyElement({
                 element: sessionDurationsDataTableElements(i).PERCENT_PROGRESS_BAR,
             });
