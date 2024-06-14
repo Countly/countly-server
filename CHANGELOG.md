@@ -1,3 +1,18 @@
+## Version 24.05.1
+Fixes:
+- [populator] Bugfix for - Can't edit populator template
+- [surveys] fix nps/survey background color
+- [alerts] fix for old data remains when the alerts metric is updated 
+- [star-rating] tooltips updates  
+- [populator] fix for correctly checking if different plugins enabled
+  
+Enterprise fixes:
+- [formulas] null checks
+- [surveys] survey/nps tooltips updates
+- [surveys] fix for nps/survey color hover
+- [surveys] Fix submit button
+- [users] add hinge back in user
+
 ## Version 24.05
 Features:
 - [alerts] Alerts plugin revamp
