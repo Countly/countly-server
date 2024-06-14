@@ -2777,7 +2777,7 @@ common.processCarrier = function(metrics) {
         var carrier = metrics._carrier + "";
 
         //random hash without spaces
-        if (carrier === "--" || carrier.length === 16 && carrier.indexOf(" ") === -1) {
+        if (carrier === "--" || (carrier.length === 16 && carrier.indexOf(" ") === -1)) {
             delete metrics._carrier;
             return;
         }
