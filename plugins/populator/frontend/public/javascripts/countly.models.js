@@ -1957,7 +1957,7 @@
      * @param {callback} callback - callback method
      **/
     function generateCampaigns(callback) {
-        if (typeof countlyAttribution === "undefined") {
+        if (!CountlyHelpers.isPluginEnabled("attribution") || typeof countlyAttribution === "undefined") {
             callback();
             return;
         }
@@ -2346,7 +2346,7 @@
 
         var template = this.currentTemplate || {};
 
-        if (typeof countlyCohorts !== "undefined" && countlyAuth.validateCreate('cohorts')) {
+        if (CountlyHelpers.isPluginEnabled("cohorts") && typeof countlyCohorts !== "undefined" && countlyAuth.validateCreate('cohorts')) {
             if (template.events && template.events.length) {
                 var firstEventKey = template.events[getRandomInt(0, template.events.length - 1)].key;
 
@@ -2469,7 +2469,7 @@
             });
         }
 
-        if (typeof countlyFunnel !== "undefined" && countlyAuth.validateCreate('funnels')) {
+        if (CountlyHelpers.isPluginEnabled("funnels") && typeof countlyFunnel !== "undefined" && countlyAuth.validateCreate('funnels')) {
 
             let pages = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile" ? viewSegments.name : getPageTemplates(countlyPopulator.getSelectedTemplate().substr(7).toLowerCase());
             let page1 = pages[getRandomInt(0, pages.length - 1)];
@@ -2555,9 +2555,11 @@
             });
         }
 
-        createMessage(messages[0]);
-        createMessage(messages[1]);
-        createMessage(messages[2]);
+        if (CountlyHelpers.isPluginEnabled("push")) {
+            createMessage(messages[0]);
+            createMessage(messages[1]);
+            createMessage(messages[2]);
+        }
     };
 
     countlyPopulator.getSelectedTemplate = function() {
@@ -2637,9 +2639,10 @@
         });
 
         if (typeof foundDefault !== "undefined") {
-            // this should never happen
+            callback({err: "Invalid template ID. Template update failed. Please refresh page and try again."});
         }
         else {
+            newTemplate.app_id = countlyCommon.ACTIVE_APP_ID;
             $.ajax({
                 type: "POST",
                 url: countlyCommon.API_URL + "/i/populator/templates/edit",
