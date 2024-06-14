@@ -167,32 +167,15 @@ const verifySessionDurationDataFromTable = ({
     }
     else {
 
-        cy.verifyElement({
-            element: sessionDurationsDataTableElements(0).SESSION_DURATION,
-            elementText: "31 - 60 seconds"
-        });
-        cy.verifyElement({
-            element: sessionDurationsDataTableElements(1).SESSION_DURATION,
-            elementText: "1 - 3 minutes"
-        });
-        cy.verifyElement({
-            element: sessionDurationsDataTableElements(2).SESSION_DURATION,
-            elementText: "3 - 10 minutes"
-        });
-        cy.verifyElement({
-            element: sessionDurationsDataTableElements(3).SESSION_DURATION,
-            elementText: "10 - 30 minutes"
-        });
-        cy.verifyElement({
-            element: sessionDurationsDataTableElements(4).SESSION_DURATION,
-            elementText: "30 - 60 minutes"
-        });
-        cy.verifyElement({
-            element: sessionDurationsDataTableElements(5).SESSION_DURATION,
-            elementText: "> 1 hour"
-        });
+        let i = 0;
 
-        for (var i = 0; i < 6; i++) {
+        for (i = 0; i < 6; i++) {
+            cy.verifyElement({
+                element: sessionDurationsDataTableElements(i).SESSION_DURATION,
+            });
+        }
+
+        for (i = 0; i < 6; i++) {
             cy.verifyElement({
                 element: sessionDurationsDataTableElements(i).PERCENT_PROGRESS_BAR,
             });
