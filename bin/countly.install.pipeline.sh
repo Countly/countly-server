@@ -58,5 +58,8 @@ nodejs "$DIR/scripts/loadCitiesInDb.js"
 #get web sdk
 sudo countly update sdk-web
 
+#Change files ownership
+sudo bash "$DIR/config/countly_user.sh"
+
 #finally start countly api and dashboard
 sudo countly start
