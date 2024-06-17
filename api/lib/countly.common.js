@@ -384,7 +384,7 @@ function getPeriodObject(prmPeriod, bucket) {
 
     var period = prmPeriod || _period;
 
-    if (period && typeof period === 'string' && period.indexOf(",") !== -1) {
+    if (typeof period === 'string' && period.indexOf(",") !== -1) {
         try {
             period = JSON.parse(period);
         }

@@ -4749,6 +4749,7 @@
         */
         countlyCommon.getPeriodRange = function(period, baseTimeStamp) {
             var periodRange;
+            period = period || countlyCommon.DEFAULT_PERIOD;
 
             var excludeCurrentDay = false;
             if (period.period) {
@@ -4762,7 +4763,7 @@
             if (period.since) {
                 period = [period.since, endTimeStamp];
             }
-            else if (period && period.indexOf(",") !== -1) {
+            else if (period.indexOf(",") !== -1) {
                 try {
                     period = JSON.parse(period);
                 }

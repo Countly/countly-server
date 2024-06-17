@@ -57,7 +57,7 @@
             },
             period: {
                 get: function() {
-                    return {period: this.$refs.drawerScope.editedObject.range, exclude_current_day: this.$refs.drawerScope.editedObject.exclude_current_day};  
+                    return {period: this.$refs.drawerScope.editedObject.range, exclude_current_day: this.$refs.drawerScope.editedObject.exclude_current_day};
                 },
                 set: function(value) {
                     this.$refs.drawerScope.editedObject.range = value;
