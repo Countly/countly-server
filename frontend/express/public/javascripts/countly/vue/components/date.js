@@ -1071,11 +1071,7 @@
                 type: Boolean,
                 default: true
             },
-            excludeCurrentDayProp: {
-                type: Boolean,
-                default: false
-            },
-            labelMode: {
+            labelModeProp: {
                 type: String,
                 default: "mixed",
                 validator: function(value) {
@@ -1129,9 +1125,6 @@
                 this.inTheLastInput.raw.level = newVal;
                 this.tableType = this.tableTypeMapper[newVal];
             },
-            'excludeCurrentDayProp': function() {
-                this.loadValue(this.value);
-            },
             'label': function() {
                 this.$emit("change-label", {
                     label: this.label
@@ -1149,8 +1142,11 @@
                 });
             },
             valueToInputState: function(value) {
-
-                var excludeCurrentDay = this.excludeCurrentDayProp;
+                var excludeCurrentDay = false;
+                if (value.period) {
+                    excludeCurrentDay = value.exclude_current_day;
+                    value = value.period;
+                }
                 if (this.allowPresets) {
                     if (this.selectedPreset) {
                         excludeCurrentDay = this.selectedPreset.exclude_current_day;
@@ -1291,7 +1287,7 @@
                     };
                 }
                 state.minTime = new Date(state.minDate.getTime());
-                state.labelMode = this.labelMode;
+                state.labelMode = excludeCurrentDay ? "absolute" : this.labelModeProp;
                 return state;
             },
             handleDropdownHide: function(aborted) {
@@ -1557,7 +1553,8 @@
                         ],
                         isShortcut: isShortcut,
                         value: submittedVal,
-                        label: this.label
+                        label: this.label,
+                        excludeCurrentDay: this.selectedPreset ? this.selectedPreset.exclude_current_day : false
                     });
 
                     if (this.isGlobalDatePicker) {
