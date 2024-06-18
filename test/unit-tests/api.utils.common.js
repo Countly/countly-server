@@ -36,14 +36,14 @@ describe("Common API utility functions", function() {
         it('should validate ObjectId', () => {
             let id = new mongodb.ObjectId(),
                 scheme = {
-                    id: { type: 'ObjectId', required: true },
-                    idstr: { type: 'ObjectId', required: true }
+                    id: { type: 'ObjectID', required: true },
+                    idstr: { type: 'ObjectID', required: true }
                 };
 
             should.deepEqual(common.validateArgs({id, idstr: id.toString()}, scheme), {id, idstr: id});
             should.deepEqual(common.validateArgs({id, idstr: id.toString()}, scheme, true), {errors: [], result: true, obj: {id, idstr: id}});
             should.deepEqual(common.validateArgs({id}, scheme, true), {errors: ['Missing idstr argument'], result: false});
-            should.deepEqual(common.validateArgs({id: 'asd', idstr: id.toString()}, scheme, true), {errors: ['Incorrect ObjectId for id'], result: false});
+            should.deepEqual(common.validateArgs({id: 'asd', idstr: id.toString()}, scheme, true), {errors: ['Incorrect ObjectID for id'], result: false});
             should.deepEqual(common.validateArgs({id: id.toString(), idstr: id.toString()}, scheme, true), {errors: [], result: true, obj: {id: id, idstr: id}});
         });
 
@@ -51,7 +51,7 @@ describe("Common API utility functions", function() {
             let id1 = new mongodb.ObjectId(),
                 id2 = new mongodb.ObjectId(),
                 scheme = {
-                    ids: { type: 'ObjectId[]', required: true },
+                    ids: { type: 'ObjectID[]', required: true },
                 };
 
             should.deepEqual(common.validateArgs({ids: []}, scheme), {ids: []});
@@ -62,25 +62,25 @@ describe("Common API utility functions", function() {
             should.deepEqual(common.validateArgs({ids: id1}, scheme, true), {errors: ['Invalid type for ids'], result: false});
             should.deepEqual(common.validateArgs({ids: 123}, scheme, true), {errors: ['Invalid type for ids'], result: false});
             should.deepEqual(common.validateArgs({ids: id1.toString()}, scheme, true), {errors: ['Invalid type for ids'], result: false});
-            should.deepEqual(common.validateArgs({ids: ['a']}, scheme, true), {errors: ['ids: Incorrect ObjectId for 0'], result: false});
-            should.deepEqual(common.validateArgs({ids: [id1, id2.toString(), 'a']}, scheme, true), {errors: ['ids: Incorrect ObjectId for 2'], result: false});
+            should.deepEqual(common.validateArgs({ids: ['a']}, scheme, true), {errors: ['ids: Incorrect ObjectID for 0'], result: false});
+            should.deepEqual(common.validateArgs({ids: [id1, id2.toString(), 'a']}, scheme, true), {errors: ['ids: Incorrect ObjectID for 2'], result: false});
         });
 
         it('should validate inner scheme', () => {
             let id = new mongodb.ObjectId(),
                 scheme = {
-                    _id: { type: 'ObjectId', required: true },
+                    _id: { type: 'ObjectID', required: true },
                     num: { type: 'Number' },
                     object: {
                         type: {
                             str: { type: 'String', required: true },
-                            ids: { type: 'ObjectId[]' }
+                            ids: { type: 'ObjectID[]' }
                         }
                     },
                     array: {
                         type: {
                             str: { type: 'String', required: true },
-                            ids: { type: 'ObjectId[]' }
+                            ids: { type: 'ObjectID[]' }
                         },
                         array: true
                     },
@@ -103,7 +103,7 @@ describe("Common API utility functions", function() {
                 }
             }, scheme, true), {
                 result: false,
-                errors: ['object: ids: Incorrect ObjectId for 1']
+                errors: ['object: ids: Incorrect ObjectID for 1']
             });
             should.deepEqual(common.validateArgs({
                 _id: id,
@@ -113,7 +113,7 @@ describe("Common API utility functions", function() {
                 }]
             }, scheme, true), {
                 result: false,
-                errors: ['array: 0: ids: Incorrect ObjectId for 1']
+                errors: ['array: 0: ids: Incorrect ObjectID for 1']
             });
             should.deepEqual(common.validateArgs({
                 _id: id,
