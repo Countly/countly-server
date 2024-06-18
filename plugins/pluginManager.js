@@ -2351,6 +2351,10 @@ var pluginManager = function pluginManager() {
                         options = options || {};
                     }
 
+                    if (typeof options.includeResultMetadata !== "undefined") {
+                        options.includeResultMetadata = true;
+                    }
+
                     mngr.dispatch("/db/update", {
                         db: dbName,
                         operation: name,
