@@ -34,7 +34,7 @@ describe("Common API utility functions", function() {
         };
 
         it('should validate ObjectId', () => {
-            let id = mongodb.ObjectId(),
+            let id = new mongodb.ObjectId(),
                 scheme = {
                     id: { type: 'ObjectId', required: true },
                     idstr: { type: 'ObjectId', required: true }
@@ -48,8 +48,8 @@ describe("Common API utility functions", function() {
         });
 
         it('should validate ObjectId[]', () => {
-            let id1 = mongodb.ObjectId(),
-                id2 = mongodb.ObjectId(),
+            let id1 = new mongodb.ObjectId(),
+                id2 = new mongodb.ObjectId(),
                 scheme = {
                     ids: { type: 'ObjectId[]', required: true },
                 };
@@ -67,7 +67,7 @@ describe("Common API utility functions", function() {
         });
 
         it('should validate inner scheme', () => {
-            let id = mongodb.ObjectId(),
+            let id = new mongodb.ObjectId(),
                 scheme = {
                     _id: { type: 'ObjectId', required: true },
                     num: { type: 'Number' },
