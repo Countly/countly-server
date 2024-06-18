@@ -2351,7 +2351,7 @@ var pluginManager = function pluginManager() {
                         options = options || {};
                     }
 
-                    if (typeof options.includeResultMetadata !== "undefined") {
+                    if (typeof options.includeResultMetadata === "undefined") {
                         options.includeResultMetadata = true;
                     }
 
