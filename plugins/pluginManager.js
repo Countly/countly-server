@@ -2156,7 +2156,7 @@ var pluginManager = function pluginManager() {
         if (!countlyDb.ObjectID) {
             countlyDb.ObjectID = function(id) {
                 try {
-                    return mongodb.ObjectId(id);
+                    return new mongodb.ObjectId(id);
                 }
                 catch (ex) {
                     logDbRead.i("Incorrect Object ID %j", ex);
