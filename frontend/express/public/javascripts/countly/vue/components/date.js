@@ -933,6 +933,11 @@
             },
             setMinuteAndHourStyle: function() {
                 return { display: this.tableType === 'minute' || this.tableType === 'hour' ? 'none' : '' };
+            },
+            customStyle: function() {
+                return {
+                    height: (this.isVisible && (this.customRangeSelection || this.presetSelection)) ? "447px" : "auto",
+                };                    
             }
         },
         props: {
