@@ -21,5 +21,7 @@
             </el-option>
         </el-select>
     </cly-form-field>
-    <clyd-title v-model="scope.editedObject.title"></clyd-title>
+    <cly-form-field-group :label="i18n('dashboards.additional-settings')">
+        <clyd-title v-model="scope.editedObject.title"></clyd-title>
+    </cly-form-field-group>
 </div>
