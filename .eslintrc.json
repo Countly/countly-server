@@ -237,9 +237,6 @@
                 "for-direction": [
                     "off"
                 ],
-                "no-console": [
-                    "off"
-                ],
                 "no-control-regex": [
                     "off"
                 ],
