@@ -346,9 +346,8 @@ plugins.setConfigs("logger", {
         if (params.qstring.method === 'collection_info') {
             validateRead(params, FEATURE_NAME, async function(parameters) {
                 try {
-                    var isCapped = await common.db.collection('logs' + parameters.app_id).isCapped();
-                    var capMax = await common.db.collection('logs' + parameters.app_id).aggregate([ { $collStats: { count: { } } } ]).toArray();
-                    common.returnOutput(parameters, {capped: isCapped, max: capMax && capMax[0] && capMax[0].count || 0} || {});
+                    var stats = await common.db.collection('logs' + parameters.app_id).aggregate([ { $collStats: { storageStats: { } } } ]).toArray()[0];
+                    common.returnOutput(parameters, {capped: stats?.storageStats?.capped, max: stats?.storageStats?.max});
                 }
                 catch (ex) {
                     console.log("Failed fetching logs collection info: ", ex);
