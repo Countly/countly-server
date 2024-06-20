@@ -226,6 +226,8 @@ function punchCard(db, filter, options) {
  *  @param {db} db - database object
  *  @param {object} filter - to filter documents
  *  @param {object} options - array with periods
+ *  @param {boolean} options.monthlyBreakdown - if true, will calculate monthly data points breakdown for all apps (used to get license metric)
+ *  @param {string} options.license_hosting - client hosting type, could be countly hosted or self hosted. This will determine how consolidated data points should be added to total data points
  *  @param {function} callback - callback
  */
 function fetchDatapoints(db, filter, options, callback) {
