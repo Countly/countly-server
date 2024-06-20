@@ -1,0 +1,11 @@
+<div v-bind:class="[componentId]">
+    <cly-header
+        title="Library"
+    >
+        <template v-slot:header-tabs>
+            <cly-dynamic-tabs :no-history=true v-model="currentSecondaryTab" :tabs="secondaryTabs" skin="secondary" :hideSingleTab="false"></cly-dynamic-tabs>
+      </template>
+      <template v-slot:header-right>
+    </template>
+    </cly-header>
+</div>

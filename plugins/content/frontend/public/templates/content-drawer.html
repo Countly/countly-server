@@ -1,0 +1,43 @@
+<cly-drawer
+    ref="addContentDrawer"
+    :title="settings.title"
+    :requires-async-submit="true"
+    :saveButtonLabel="settings.saveButtonLabel"
+    :size="6"
+    @submit="handleSubmit"
+    v-bind="controls">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="add-license">
+            <div class="bu-py-3">
+                <div class="text-small text-heading">Contenet Manager <cly-tooltip-icon :tooltip="'za world'" icon="ion ion-help-circled" placement="bottom-end"></cly-tooltip-icon></div>
+                <validation-provider ref="licenseFileValidator" name="licenseFile" rules="license-file" v-slot="v">
+                    <el-upload
+                        class="license-file-uploader"
+                        ref="fileUploader"
+                        drag
+                        action="/"
+                        :auto-upload="false"
+                        :multiple="false"
+                        :on-change="handleUploaderEvent"
+                        :on-remove="handleUploaderEvent"
+                        :show-file-list="true">
+                        <div class="el-upload__folder-preview-content bu-mb-2 bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center"><i class="fas fa-folder"></i></div>
+                        <div class="el-upload__text bu-mb-2">
+                            <span class="text-medium color-cool-gray-50">{{i18n("license.drag-drop-file-instruction") + " "}}</span>
+                            <span class="text-medium font-weight-medium color-blue-100">{{ i18n("license.browse-file-instruction")}}</span>
+                        </div>
+                        <div slot="file" slot-scope="{file}">
+                                <div class="el-upload-list__item-name el-upload-list__item-name--success bu-is-flex bu-is-align-items-center">
+                                    <span class="el-upload-list__item-preview bu-ml-4"><i class="cly-io-16 cly-io cly-io-document-text uploaded-file-icon"></i></span>
+                                    <span>{{file.name}}</span>
+                                    <span @click="handleRemove(file)" class="el-upload-list__item-remove text-small color-red-100 font-weight-bold bu-mt-1">
+                                        Remove
+                                    </span>
+                                </div>
+                        </div>
+                    </el-upload>
+                </validation-provider>
+            </div>
+        </cly-form-step>
+    </template>
+</cly-drawer>
