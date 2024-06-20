@@ -880,6 +880,21 @@
                 type: [Array, Boolean],
                 default: false,
                 required: false,
+            },
+            allowCustomRange: {
+                type: Boolean,
+                default: true,
+                required: false
+            },
+            showRelativeModes: {
+                type: Boolean,
+                default: true,
+                required: false
+            },
+            showCheckbox: {
+                type: Boolean,
+                default: true,
+                required: false
             }
         },
         data: function() {
@@ -903,7 +918,7 @@
                         return this.titleCheckbox;
                     }
 
-                    if (this.value) {
+                    if (this.value || !this.showCheckbox) {
                         return true;
                     }
 
@@ -919,6 +934,13 @@
                     }
 
                     this.titleCheckbox = v;
+                }
+            }
+        },
+        methods: {
+            onCustomPeriodChange: function(periodObj) {
+                if (periodObj.excludeCurrentDay && periodObj.value) {
+                    this.customPeriod = {period: periodObj.value, exclude_current_day: true};
                 }
             }
         }
@@ -1009,6 +1031,9 @@
         },
         methods: {
             formatPeriodString: function(period) {
+                if (Object.prototype.hasOwnProperty.call(period, "period")) {
+                    period = countlyCommon.getPeriodRange(period, Date.now());
+                }
                 if (Array.isArray(period)) {
                     if ((period[0] + '').length === 10) {
                         period[0] = period[0] * 1000;
