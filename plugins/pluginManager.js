@@ -1953,7 +1953,12 @@ var pluginManager = function pluginManager() {
          */
         function logDriver(eventName, logObject, logLevel) {
             logLevel = logLevel || "d";
-            client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
+            if (eventName === "serverHeartbeatFailed" || eventName === "topologyDescriptionChanged" || eventName === "serverDescriptionChanged" || eventName === "serverClosed") {
+                client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));;
+            }
+            else {
+                client.on(eventName, () => logObject[logLevel](eventName));
+            }
         }
 
         //connection pool
