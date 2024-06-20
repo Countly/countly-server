@@ -438,9 +438,6 @@
                     }
                 }
             },
-            containerHeight: function() {
-                return this.presets.length > 5 ? "450px" : "auto";
-            },
             isLoading: function() {
                 return this.$store.getters["countlyPresets/isLoading"];
             },
