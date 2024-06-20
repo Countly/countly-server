@@ -48,7 +48,7 @@ class Sender {
         // last date this job sends notifications for
         this.last = Date.now() + cfg.sendAhead;
 
-        let plugins = await common.db.collection('plugins').findOne({});
+        let plugins = await common.db.collection('plugins').findOne({_id: "plugins"});
         if (!plugins) {
             throw new PushError('No plugins configuration', ERROR.DATA_COUNTLY);
         }
