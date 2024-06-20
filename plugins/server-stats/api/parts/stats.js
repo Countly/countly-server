@@ -241,6 +241,35 @@ function fetchDatapoints(db, filter, options, callback) {
             return callback(toReturn);
         }
 
+        if (options.monthlyBreakdown) {
+            const dataPoints = result
+                .reduce((acc, current) => {
+                    let dp = current.e + current.s;
+
+                    if (/^\[CLY\]_consolidated/.test(current._id)) {
+                        // do not count consolidated dp for countly hosted clients
+                        if (options.license_hosting === 'Countly-Hosted') {
+                            dp = 0;
+                        }
+                        // subtract consolidated dp for self hosted clients to get natural dp
+                        else {
+                            dp *= -1;
+                        }
+                    }
+
+                    if (current.m in acc) {
+                        acc[current.m] += dp;
+                    }
+                    else {
+                        acc[current.m] = dp;
+                    }
+
+                    return acc;
+                }, {});
+
+            return callback(dataPoints);
+        }
+
         for (let i = 0; i < result.length; i++) {
             if (!toReturn[result[i].a]) {
                 toReturn[result[i].a] = {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0, "crash": 0, "views": 0, "actions": 0, "nps": 0, "surveys": 0, "ratings": 0, "apm": 0, "custom": 0};
