@@ -1410,7 +1410,11 @@ var pluginManager = function pluginManager() {
                 resolve(errors);
             }
             else if (!self.getConfig("api").offline_mode) {
-                const cmd = spawn('npm', ["install"], {cwd: cwd});
+                var args = ["install"];
+                if (apiCountlyConfig.symlinked === true) {
+                    args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                }
+                const cmd = spawn('npm', args, {cwd: cwd});
                 var error2 = "";
 
                 cmd.stdout.on('data', (data) => {
