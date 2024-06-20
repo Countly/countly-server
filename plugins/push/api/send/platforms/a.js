@@ -95,7 +95,7 @@ class FCM extends Splitter {
                 ? firebaseAdmin.app(appName)
                 : firebaseAdmin.initializeApp({
                     credential: firebaseAdmin.credential.cert(serviceAccountObject, this.agent),
-                    agent: this.agent
+                    httpAgent: this.agent
                 }, appName);
             this.firebaseMessaging = firebaseApp.messaging();
         }
