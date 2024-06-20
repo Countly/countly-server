@@ -1954,7 +1954,7 @@ var pluginManager = function pluginManager() {
         function logDriver(eventName, logObject, logLevel) {
             logLevel = logLevel || "d";
             if (eventName === "serverHeartbeatFailed" || eventName === "topologyDescriptionChanged" || eventName === "serverDescriptionChanged" || eventName === "serverClosed") {
-                client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));;
+                client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
             }
             else {
                 client.on(eventName, () => logObject[logLevel](eventName));
