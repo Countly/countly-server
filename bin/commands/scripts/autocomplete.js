@@ -92,7 +92,8 @@ var commands = {
         plugins: null,
         locales: null,
         default: null,
-        dist: null
+        dist: null,
+        sass: null
     },
     api: {
         pretty: null
