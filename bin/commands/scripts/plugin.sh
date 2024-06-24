@@ -3,6 +3,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
+NODE_ARGS=""
+if [[ "$COUNTLY_CONFIG__SYMLINKED" == "true" ]]; then
+    NODE_ARGS="--preserve-symlinks --preserve-symlinks-main"
+fi
 usage (){
     echo "";
     echo "countly plugin usage:";
@@ -13,7 +17,7 @@ usage (){
     echo "    countly plugin upgrade <pluginname>   # run plugin install script";
     echo "    countly plugin status <pluginname>    # status of plugin";
     echo "    countly plugin version <pluginname>   # version of plugin";
-} 
+}
 
 if [ "$1" = "list" ]; then
     for d in "$DIR"/../../../plugins/*/; do
@@ -58,11 +62,11 @@ elif [ "$1" = "new" ]; then
     fi
 elif [ -d "$DIR/../../../plugins/$2" ]; then
     if [ "$1" = "enable" ]; then
-        nodejs "$DIR/plugin.js" enable "$2" ;
+        nodejs "$NODE_ARGS" "$DIR/plugin.js" enable "$2" ;
     elif [ "$1" = "disable" ]; then
-        nodejs "$DIR/plugin.js" disable "$2" ;
+        nodejs "$NODE_ARGS" "$DIR/plugin.js" disable "$2" ;
     elif [ "$1" = "upgrade" ]; then
-        nodejs "$DIR/plugin.js" upgrade "$2" ;
+        nodejs "$NODE_ARGS" "$DIR/plugin.js" upgrade "$2" ;
     elif [ "$1" = "status" ]; then
         if grep -Fq "\"$2\"" "$DIR/../../../plugins/plugins.json"
         then
@@ -75,7 +79,7 @@ elif [ -d "$DIR/../../../plugins/$2" ]; then
     elif [ "$1" = "test" ]; then
         countly plugin lint "$2";
         shift;
-        nodejs "$DIR/plugin.js" test "$@" ;
+        nodejs "$NODE_ARGS" "$DIR/plugin.js" test "$@" ;
     elif [ "$1" = "lint" ]; then
         cd "$DIR/../../../";
         "$DIR/../../../node_modules/eslint/bin/eslint.js" -c "$DIR/../../../.eslintrc.json" --ignore-path "$DIR/../../../.eslintignore" "$DIR/../../../plugins/$2/." ;
