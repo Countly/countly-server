@@ -4,19 +4,12 @@ var exported = {},
 
 (function() {
     plugins.register("/i/guides/viewed", function(ob) {
-        var params = ob.params;
-        updateMemberViewedGuides(common.db, params.qstring.user_id, params);
-    });
+        var db = common.db,
+            user_id = ob.params.qstring.user_id,
+            update = {"viewedGuides": true};
 
-    /**
-    * @param {object} db - database connection for countly db
-    * @param {string} user_id - user for which to update settings
-    * @param {object} params - params object
-    */
-    function updateMemberViewedGuides(db, user_id) {
-        var callback = callback || null;
-        var update = {"viewedGuides": true};
-        db.collection("members").update({ _id: db.ObjectID(user_id) }, { $set: update }, { upsert: true }, async function(err, res) {
+        // check for rights and what we do for table updates persistent settings etc in other places
+        db.collection("members").update({ _id: db.ObjectID(user_id) }, { $set: update }, { upsert: true }, function(err, res) {
             if (err) {
                 common.returnMessage(err, 503, 'Failed to update member');
             }
@@ -24,7 +17,7 @@ var exported = {},
                 common.returnMessage(res, 200, 'Succesfuly updated member');
             }
         });
-    }
+    });
 }(exported));
 
 module.exports = exported;
