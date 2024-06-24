@@ -4,6 +4,7 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js');
 const FEATURE_NAME = 'content';
 const fs = require('fs');
+const sharp = require('sharp');
 
 plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);
@@ -71,18 +72,21 @@ function uploadAssetToGridFs(myname, myfile, metadata) {
             reject(Error('File Size exceeds 1.5MB'));
         }
         else {
-            fs.readFile(tmp_path, (err, data) => {
+            fs.readFile(tmp_path, async(err, data) => {
                 if (err) {
                     reject(Error(err));
                 }
                 //convert file to data
                 if (data) {
                     try {
-                        var data_uri_prefix = "data:" + type + ";base64,";
-                        var buf = Buffer.from(data);
-                        var image = buf.toString('base64');
-                        image = data_uri_prefix + image;
-                        countlyFs.gridfs.saveData("content_assets", myname, image, {metadata}, function(err2) {
+                        // var data_uri_prefix = "data:" + type + ";base64,";
+                        // var buf = Buffer.from(data);
+                        // var image = buf.toString('base64');
+                        //image = data_uri_prefix + image;
+                        let thumbnail = await sharp(data).resize(200).toBuffer();
+                        metadata.thumbnail = thumbnail;
+                        metadata.mimeType = type;
+                        countlyFs.gridfs.saveData("content_assets", myname, data, {metadata}, function(err2) {
                             fs.unlink(tmp_path, function() {});
                             if (err2) {
                                 return reject(err2);

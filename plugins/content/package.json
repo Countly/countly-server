@@ -19,6 +19,8 @@
         "plugins",
         "template"
     ],
-    "dependencies": {},
+    "dependencies": {
+        "sharp": "^0.33.4"
+    },
     "private": true
 }

@@ -153,7 +153,15 @@
         computed: {
             assetList: {
                 get: function() {
-                    return this.$store.getters['countlyContentBuilder/assets'];
+                    var assets = this.$store.getters['countlyContentBuilder/assets'];
+                    return assets.map(function(asset) {
+                        var mimeType = asset.metadata.mimeType;
+                        var thumbnail = `data:${mimeType};base64,${asset.metadata.thumbnail}`;
+                        return {
+                            name: asset.filename,
+                            thumbnail,
+                        };
+                    });
                 },
                 cache: false
 
