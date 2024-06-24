@@ -220,7 +220,7 @@
                 let mainViewContainer = document.getElementById('main-views-container');
                 mainViewContainer.getElementsByClassName('main-view')[0].style.setProperty('overflow', 'hidden', 'important');
 
-                if (!this.viewedGuides && this.viewedGuides !== true) {
+                if (this.viewedGuides !== true) {
                     countlyGuides.memberViewedGuides(countlyGlobal.member._id);
                     this.viewedGuides = countlyGlobal.member.viewedGuides = true;
                 }
