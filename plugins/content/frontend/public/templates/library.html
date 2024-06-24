@@ -1,8 +1,12 @@
 <div v-bind:class="[componentId]">
     <el-select v-model="assetFilter">
         <el-option v-for="item in filterAssestOption" :key="item.value" :label="item.label" :value="item.value"></el-option>
-    </el-select>
+    </el-select
+    
+    <div v-for="asset of assetList">
+        {{asset.filename}}
+    </div>
 
     <el-button type="success" size="small" @click="onClickAddAsset">Add Asset</el-button>
-
+    <cly-content-asset-upload-drawer @symbols-changed="refresh" ref="crashSymbolDrawer" :controls="drawers.crashSymbol"></cly-content-asset-upload-drawer>
 </div>

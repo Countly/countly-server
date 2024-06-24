@@ -1,7 +1,80 @@
-/*global app, countlyVue, CV, CountlyHelpers, countlyCommon*/
+/*global app, countlyVue, CV, CountlyHelpers, countlyCommon, Vue, jQuery, countlyContentBuilder*/
 
 (function() {
     var FEATURE_NAME = "content";
+
+    Vue.component("cly-content-asset-upload-drawer", countlyVue.views.create({
+        props: {
+            controls: {type: Object}
+        },
+        data: function() {
+
+
+            return {
+                appId: countlyCommon.ACTIVE_APP_ID,
+                platformOptions: [],
+                assetFiles: [],
+                filterByPlatformOptions: 'platforms',
+                filterByPlatform: "all",
+                tags: ['blue', 'calm', 'happy'],
+            };
+        },
+        computed: {
+            title: function() {
+                return 'Asset Upload';
+            },
+        },
+        methods: {
+            handleUploaderEvent: function(_, fileList) {
+                this.assetFiles = fileList.map(function(fileEntry) {
+                    return fileEntry.raw;
+                });
+            },
+            handleRemove: function(file) {
+                this.assetFiles = this.assetFiles.filter(function(f) {
+                    return f !== file;
+                });
+            },
+
+            handleClose: function() {
+                this.assetFiles = [];
+            },
+            onSubmit: function(editedObject) {
+
+                var formData = new FormData(),
+                    self = this;
+
+                formData.append("app_id", this.appId);
+
+                if (editedObject.tags) {
+                    if (!Array.isArray(editedObject.tags)) {
+                        editedObject.tags = [editedObject.tags];
+                    }
+                    formData.append('tags', editedObject.tags);
+                }
+
+                this.assetFiles.forEach(function(file) {
+                    formData.append("assets", file);
+                });
+
+                jQuery.ajax({
+                    url: countlyCommon.API_PARTS.data.w + "/content/asset-upload",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    type: "POST",
+                    success: function() {
+                        self.$emit("assets-changed");
+                    },
+                    error: function(xhr) {
+                        CountlyHelpers.alert(xhr.responseJSON.result, "red");
+                    }
+                });
+
+            }
+        },
+        template: countlyVue.T("/content/templates/asset-drawer.html")
+    }));
 
     var ContentDrawer = countlyVue.views.create({
         template: CV.T("/license/templates/content-drawer.html"),
@@ -58,7 +131,7 @@
 
     var ContentLibraryTabView = countlyVue.views.create({
         template: CV.T("/content/templates/library.html"),
-        mixins: [],
+        mixins: [countlyVue.mixins.hasDrawers("crashSymbol")],
         data: function() {
 
             return {
@@ -68,13 +141,27 @@
                     { value: 'nameAsc', label: 'Name Ascending' },
                     { value: 'nameDec', label: 'Name Descending' }
                 ],
-                assetFilter: "dateDec"
+                assetFilter: "dateDec",
+                assets: [],
             };
         },
         methods: {
             onClickAddAsset: function() {
-                return 'TODO OPEN DRAWER';
+                this.openDrawer("crashSymbol", {});
             }
+        },
+        computed: {
+            assetList: {
+                get: function() {
+                    return this.$store.getters['countlyContentBuilder/assets'];
+                },
+                cache: false
+
+            }
+        },
+        mounted: function() {
+            this.$store.dispatch('countlyContentBuilder/fetchAssets');
+
         }
     });
 
@@ -172,10 +259,15 @@
         }));
     });
 
+
+    var vuex = [{
+        clyModel: countlyContentBuilder
+    }];
+
     var getMainView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: ContentIndexView,
-            vuex: [],
+            vuex: vuex,
             //templates: defaultTemplates,
         });
     };

@@ -1,0 +1,58 @@
+<cly-drawer ref="drawer" @submit="onSubmit" @close="handleClose" class="crash-symbol-drawer" v-bind="$props.controls"
+    name="crashSymbol" :title="title" saveButtonLabel="Save" :size="6">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="create-symbol-step" style="margin-left: 32px; margin-right: 32px;">
+            <div class="cly-vue-drawer-step__section">
+                <div class="text-small text-heading">Select Tags</div>
+                <div class="text-small text-heading">These tags will be applied to all the below assets</div>
+                <validation-provider name="tags" rules="required" v-slot="v">
+                    <el-select class="bu-is-shadowless" :multiple="true"
+                        :class="{'is-error': v.errors.length > 0}" v-model="drawerScope.editedObject.tags">
+                        <el-option v-for="item in tags" :key="item"  :label="item"
+                            :value="item"></el-option>
+                    </el-select>
+                    <template v-if="v.errors.length > 0">
+                        <div v-for="error in v.errors" :key="error">{{error}}</div>
+                    </template>
+                </validation-provider>
+            </div>
+
+            <div class="cly-vue-drawer-step__section">
+                <div class="text-small text-heading">Asset(s)</div>
+                <div class="text-small text-heading">TODO: Add option to rename files</div>
+                <validation-provider name="assetFile" rules="" v-slot="v">
+                    <el-upload class="crash-symbol-file-upload"
+                        :class="{'is-error': v.errors.length > 0}"
+                        ref="fileUploader"
+                        drag
+                        action="/"
+                        :auto-upload="false"
+                        :show-file-list="true"
+                        :file-list="assetFiles"
+                        :on-change="handleUploaderEvent"
+                        :on-remove="handleUploaderEvent">
+                        <div class="el-upload__folder-preview-content bu-mb-2 bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center"><i class="fas fa-folder"></i></div>
+                        <div class="el-upload__text bu-has-text-grey-light bu-mb-2">Add photos/videos</div>
+                        <div class="el-upload__text bu-mb-2">{{i18n('crash_symbolication.drag-drop')}} <em>{{i18n('crash_symbolication.browse')}}</em></div>
+                        <div class="el-upload__text bu-has-text-grey-light">Upload your Assets</div>
+                        <div slot="file" slot-scope="{file}">
+                            <div class="el-upload-list__item-name el-upload-list__item-name--success bu-is-flex bu-is-align-items-center">
+                                <img class="el-upload-list__item-thumbnail" :src="file.src" alt="">
+                                <span class="el-upload-list__item-preview bu-ml-4"><i class="cly-io-16 cly-io cly-io-document-text uploaded-file-icon"></i></span>
+                                <span>{{file.name}}</span>
+                                <span @click="handleRemove(file)" class="el-upload-list__item-remove text-small color-red-100 font-weight-bold bu-mt-1">
+                                    Remove
+                                </span>
+                            </div>
+                    </div>
+                    </el-upload>
+                    <div class="validation-error" v-if="v.errors.length > 0">
+                        <cly-notification :text="v.errors[0]"></cly-notification>
+                    </div>
+                </validation-provider>
+            </div>
+
+            </div>
+        </cly-form-step>
+    </template>
+</cly-drawer>
