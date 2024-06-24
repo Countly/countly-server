@@ -132,13 +132,23 @@
                         this.projection = [];
                         this.sortEnabled = false;
                         this.sort = "";
-                        app.navigate("#/manage/db/" + this.localDb + "/" + newVal, false);
+                        if (this.index) {
+                            app.navigate("#/manage/db/indexes/" + this.localDb + "/" + newVal, false);
+                        }
+                        else {
+                            app.navigate("#/manage/db/" + this.localDb + "/" + newVal, false);
+                        }
                         this.tableStore.dispatch("fetchDbviewerTable", {_silent: false});
                         store.set('dbviewer_app_filter', this.appFilter);
                     }
                     else {
                         this.localCollection = newVal;
-                        app.navigate("#/manage/db/" + this.localDb + "/" + newVal + "/" + this.$route.params.query, false);
+                        if (this.index) {
+                            app.navigate("#/manage/db/indexes/" + this.localDb + "/" + newVal + "/" + this.$route.params.query, false);
+                        }
+                        else {
+                            app.navigate("#/manage/db/" + this.localDb + "/" + newVal + "/" + this.$route.params.query, false);
+                        }
                         this.tableStore.dispatch("fetchDbviewerTable", {_silent: false});
                         store.set('dbviewer_app_filter', this.appFilter);
                     }
