@@ -2,15 +2,234 @@ var plugin = {},
     common = require('../../../api/utils/common.js'),
     tracker = require('../../../api/parts/mgmt/tracker.js'),
     plugins = require('../../pluginManager.js'),
-    systemUtility = require('./system.utility');
+    systemUtility = require('./system.utility'),
+    log = common.log('system-utility:api'),
+    cluster = require("cluster");
+
+const processName = (cluster.isMaster ? "master" : "worker") + "-" + process.pid;
+const profilerCmds = ["startProfiler", "stopProfiler", "startInspector", "stopInspector"];
+let numberOfWorkers;
+
+/**
+ * Checks if the message is sent from profiler/inspector endpoints
+ * @param {object} msg IPC message object contains a "cmd" key
+ * @returns {boolean} true if an inspector/profiler message
+ */
+function isInspectorMessage(msg) {
+    return typeof msg === "object" && profilerCmds.includes(msg.cmd);
+}
+
+/**
+ * Handles IPC messages sent by profiler and inspector endpoints.
+ * @param {object} msg should contain at least "cmd" and "msgId" key
+ */
+function handleMessage(msg) {
+    if (isInspectorMessage(msg)) {
+        let args = msg.args || [];
+        // each process will have their own processName. So we can't pass
+        // that from the main process:
+        if (msg.cmd === "stopProfiler" || msg.cmd === "startProfiler") {
+            args = [processName];
+        }
+
+        systemUtility[msg.cmd](...args).catch(err => {
+            log.e(err);
+            console.error(err);
+        });
+    }
+    else if (typeof msg === "object" && msg.cmd === "setNumberOfWorkers") {
+        numberOfWorkers = msg.params.numberOfWorkers;
+    }
+}
+
+// Handle messages broadcasted from master to worker.
+process.on("message", msg => handleMessage(msg));
+
+// Handle messages sent from worker to master.
+plugins.register("/master", () => {
+    const workers = Object.values(cluster.workers);
+
+    workers.forEach(worker => {
+        // set the numberOfWorkers variable on each worker
+        worker.on("listening", () => {
+            worker.send({
+                cmd: "setNumberOfWorkers",
+                params: { numberOfWorkers: workers.length }
+            });
+        });
+
+        // listen workers for inspector/profiler messages
+        worker.on("message", msg => {
+            if (isInspectorMessage(msg)) {
+                // handle on master
+                handleMessage(msg);
+
+                // broadcast to all workers except for "startInspector".
+                // running startInspector on master also starts worker's inspectors.
+                if (!["startInspector"].includes(msg.cmd)) {
+                    workers.forEach(_worker => _worker.send(msg));
+                }
+            }
+        });
+    });
+});
+
+// helper functions to start/stop with a timeout.
+let timeouts = { Profiler: null, Inspector: null };
+/**
+ * Sends a "startInspector" or "startProfiler" message to main process.
+ * Sets a timeout callback to stop the same operation.
+ * @param {string} type Inspector|Profiler
+ */
+function startWithTimeout(type) {
+    if (timeouts[type]) {
+        throw new Error("Already started");
+    }
+    process.send({ cmd: "start" + type });
+    timeouts[type] = setTimeout(() => stopWithTimeout(type, true), 2 * 60 * 60 * 1000);
+}
+/**
+ * Sends a "stopInspector" or "stopProfiler" message to main process.
+ * @param {string} type Inspector|Profiler
+ * @param {boolean} fromTimeout true if its being stoped because of the timeout
+ */
+function stopWithTimeout(type, fromTimeout = false) {
+    if (!timeouts[type]) {
+        throw new Error(type + " needs to be started");
+    }
+    process.send({ cmd: "stop" + type });
+    if (!fromTimeout) {
+        clearTimeout(timeouts[type]);
+    }
+    timeouts[type] = null;
+}
 
 (function() {
-    //write api call
-    /*
-	plugins.register("/i", function(ob){
-		
-	});
-	*/
+    plugins.register("/i/inspector", function(ob) {
+        var params = ob.params,
+            path = ob.paths[3].toLowerCase(),
+            validate = ob.validateUserForGlobalAdmin;
+
+        switch (path) {
+        case "start":
+            validate(params, () => {
+                const masterPort = common.config?.api?.masterInspectorPort ?? 9229;
+                try {
+                    startWithTimeout("Inspector");
+                    common.returnMessage(params, 200, {
+                        workers: numberOfWorkers,
+                        ports: [masterPort, masterPort + numberOfWorkers]
+                    });
+                }
+                catch (err) {
+                    log.e(err);
+                    common.returnMessage(params, 500, err.toString());
+                }
+            });
+            return true;
+
+        case "stop":
+            validate(params, () => {
+                try {
+                    stopWithTimeout("Inspector");
+                    common.returnMessage(params, 200, "Stoping inspector for all processes");
+                }
+                catch (err) {
+                    log.e(err);
+                    common.returnMessage(params, 500, err.toString());
+                }
+            });
+            return true;
+
+        default:
+            return false;
+        }
+    });
+
+    plugins.register("/i/profiler", function(ob) {
+        var params = ob.params,
+            path = ob.paths[3].toLowerCase(),
+            validate = ob.validateUserForGlobalAdmin;
+
+        switch (path) {
+        case 'start':
+            validate(params, () => {
+                try {
+                    startWithTimeout("Profiler");
+                    common.returnMessage(params, 200, "Starting profiler for all processes");
+                }
+                catch (err) {
+                    log.e(err);
+                    common.returnMessage(params, 500, err.toString());
+                }
+            });
+            return true;
+
+        case 'stop':
+            validate(params, () => {
+                try {
+                    stopWithTimeout("Profiler");
+                    common.returnMessage(params, 200, "Stoping profiler for all processes");
+                }
+                catch (err) {
+                    log.e(err);
+                    common.returnMessage(params, 500, err.toString());
+                }
+            });
+            return true;
+
+        case 'list-files':
+            validate(params, () => {
+                systemUtility.listProfilerFiles()
+                    .then(res => common.returnMessage(params, 200, res))
+                    .catch(err => {
+                        log.e(err);
+                        common.returnMessage(params, 404, "Profiler files not found");
+                    });
+            });
+            return true;
+
+        case 'download':
+            validate(params, () => {
+                systemUtility.downloadProfilerFile(params.qstring.filename)
+                    .then(({ data, filename }) => {
+                        common.returnRaw(params, 200, data, {
+                            'Content-Type': 'plain/text; charset=utf-8',
+                            'Content-disposition': 'attachment; filename=' + filename
+                        });
+                    })
+                    .catch(err => {
+                        log.e(err);
+                        common.returnMessage(params, 404, "File not found");
+                    });
+            });
+            return true;
+
+        case 'download-all':
+            validate(params, async() => {
+                try {
+                    const tarStream = await systemUtility.profilerFilesTarStream();
+                    params.res.writeHead(200, {
+                        "Content-Type": "plain/text; charset=utf-8",
+                        "Content-Disposition": "attachment; filename=profiler.tar"
+                    });
+                    tarStream.on("end", () => params.res.end());
+                    tarStream.pipe(params.res);
+                }
+                catch (err) {
+                    log.e(err);
+                    console.error(err);
+                    common.returnMessage(params, 500, "Server error");
+                }
+            });
+            return true;
+
+        default:
+            return false;
+        }
+    });
+
+
 
     plugins.register("/o/system", function(ob) {
 

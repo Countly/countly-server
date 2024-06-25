@@ -5,7 +5,8 @@
     <clyd-sourceapps v-model="scope.editedObject.apps" :multiple="scope.editedObject.app_count === 'multiple'"></clyd-sourceapps>
     <clyd-visualization v-model="scope.editedObject.visualization" :enabled-types="enabledVisualizationTypes"></clyd-visualization>
     <clyd-metric v-model="scope.editedObject.metrics" :metrics="metrics" :multiple="isMultipleMetric"></clyd-metric>
-	
-    <clyd-title v-model="scope.editedObject.title"></clyd-title>
-	<clyd-period v-model="scope.editedObject.custom_period"></clyd-period>
+    <cly-form-field-group :label="i18n('dashboards.additional-settings')">
+        <clyd-title v-model="scope.editedObject.title"></clyd-title>
+        <clyd-period v-model="scope.editedObject.custom_period"></clyd-period>
+    </cly-form-field-group>
 </div>

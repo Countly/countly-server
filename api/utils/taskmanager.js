@@ -956,15 +956,19 @@ taskmanager.rerunTask = function(options, callback) {
                                 errored: true,
                                 request: reqData
                             }, body);
-
                         }
+                    }
+                    if (options.autoUpdate) { //as it is auto from task, do callback only after finishing calculations.
+                        callback1(null, "Success");
                     }
                 }
             };
             if (common.processRequest) {
                 common.processRequest(params);
             }
-            callback1(null, "Success");
+            if (!options.autoUpdate) {
+                callback1(null, "Success");
+            }
         });
     }
 

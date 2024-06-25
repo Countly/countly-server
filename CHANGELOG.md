@@ -1,3 +1,128 @@
+## Version 24.05.2
+Fixes:
+- [dashboards] Disable intercom for custom dashboards
+- [data-manager] Fix duplicate Create Event Group button
+- [push] Push config is not being loaded properly
+- [push] Push FCM SDK is not using proxy while sending messages
+- [core] Fix height inconsistency in datepicker popup
+- [core] Fixes to prevent scheduling duplicated jobs
+- [core] Making sure "Exclude current day" works everywhere
+- [dashboards] Fix issues in note widget
+- [flows] Nullcheck in default flows creation function.
+
+  Enterprise fixes:
+- [flows] Nullcheck in default flows creation function
+- [drill] Nullcheck when fetching snapshots data
+
+## Version 24.05.1
+Fixes:
+- [populator] Bugfix for - Can't edit populator template
+- [surveys] fix nps/survey background color
+- [alerts] fix for old data remains when the alerts metric is updated 
+- [star-rating] tooltips updates  
+- [populator] fix for correctly checking if different plugins enabled
+  
+Enterprise fixes:
+- [formulas] null checks
+- [surveys] survey/nps tooltips updates
+- [surveys] fix for nps/survey color hover
+- [surveys] Fix submit button
+- [users] add hinge back in user
+
+## Version 24.05
+Features:
+- [alerts] Alerts plugin revamp
+- [core] Ensure consistency when deleting dashboard user
+- [crashes] Contains operator for (App Version) filter on the Crash Overview page
+- [crashes] Sort crashes by filtered results
+- [dashboard] Show in UI which values are estimated
+- [dashboards] Improve dashboard list loading time
+- [data-manager] Add option to delete source events when merging
+- [date-picker] Date picker presets
+- [dev] Remote process profiling option
+- [events] Ensure consistency when deleting an event
+- [plugins] Dynamic plugins including docker
+- [populator] Crash and Symbolication examples
+- [populator] New Data Populator
+- [push] Move to new FCM API
+- [versions] View to display history of upgrades for server
+- [views] Visualize omitted views just like we visualize omited events in events section
+
+Enterprise Features:
+- [data-manager] Delete user property value
+- [data-manager] Transformation to copy event segmentation to user custom properties
+- [date-picker] Add "hours" and "minutes" options to "in the last" filtering
+- [flows] Allow disabling flows
+- [flows] Merge Flow plugin collections into single one
+- [license] Improve license emails
+- [surveys] Add "Internal Label" field to Surveys and Ratings
+- [surveys] Add custom properties to surveys
+- [surveys] Add optional ToC and Privacy Policy checkbox with URLs to feedback widgets
+- [surveys] Faster table loading through server side tables
+- [surveys] Removing connect.sid cookie in case of nps
+- [surveys] Responsiveness for survey/NPS/rating widget contents
+- [users] Profile Groups
+- [users] Purging user profiles in bulk
+- [users] Record hinge as user property 
+- [users] Select/deselect users
+- [users] User Profiles widget in dashboards
+
+## Version 23.11.22
+Features:
+- [views] Added deselect All button
+  
+Fixes:
+- [push] Fix for p12 file not being parsed correctly
+
+Enterprise Features:
+ - [ab-testing] Improved query to match experiments to users
+ - [cohorts] Optimization to not calculate full period buckets when loading cohort meta data. Speeds up meta-loading and reduces memory usage.
+   
+Enterprise Fixes:
+- [cohorts] Correctly preprocess drill query for cohort values.
+- [drill] Correct time interval for drill meta job.
+- [drill] Select users correctly when navigating from drill to user profiles
+- [retention] UI fixes
+
+## Version 23.11.21
+Fixes:
+- [sdks] Fix negative request queue
+- [server-stats] Fix for duplicated data points due to consolidation
+- [dbviewer] Cache beautified collection names to speed up loading dbviewer
+
+Enterprise Fixes:
+- [license-manager] Fix for multiple expire-today emails
+- [formulas] Fix for for formula percent not showing decimals
+
+## Version 23.11.20
+Fixes:
+- [core] Nullcheck in data exports
+- [events] changed formatSecond to show decimals
+  
+Enterprise Fixes:
+- [core] missing proxy setting added for  enterprise features
+- [drill] fix for select users correctly when navigating from drill to user
+
+## Version 23.11.19
+Features:
+- [core] Increase log level for specific mongodb driver events
+- [reports] log subscribe/unsubscribe to audit logs
+- [scripts] Additions to checking data per cd in drill
+- [scripts] Additional crash deletion scripts
+  
+Fixes:
+- [core] Date picker fixes
+- [data-points] Correct counting data points to do not include events that are discarded from recording or only update user properties.
+  
+Enterprise Features:
+- [drill] Outputing extra columns in drill byval download with unformatted values.
+  
+Enterprise Fixes:
+- [block] Check for valid rule in block
+- [drill] Added missing columns in byval table download
+- [funnels] Localization value fixes
+- [users] Fixed bug - when the session is selected, the event timeline dropdown is not working. 
+  
 ## Version 23.11.18
 Fixes:
 - [scripts] Create script for deleting old crashgroups

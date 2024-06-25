@@ -12,6 +12,7 @@ var endDate = new Date("2024-04-3T00:00:00");
 var apps = []; //Put in your APP ID like ["3469834986y34968y206y2"]
 
 var internal_events = [];
+var verbose = true;
 
 var Promise = require("bluebird");
 var crypto = require('crypto');
@@ -85,6 +86,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     countlyDb.collection("events").findOne({"_id": app._id}, {"list": 1}, function(err, events) {
                         events = events || [];
                         var list = events.list || [];
+                        if (verbose) {
+                            console.log(list.length + " events found");
+                        }
                         for (var z = 0; z < internal_events.length; z++) {
                             if (list.indexOf(internal_events[z]) === -1) {
                                 list.push(internal_events[z]);
@@ -94,11 +98,17 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             return new Promise(function(resolve2) {
                                 //get hashed drill collection name
                                 let collection = "drill_events" + crypto.createHash('sha1').update(event + app._id).digest('hex');
+                                if (verbose) {
+                                    console.log(collection);
+                                }
                                 var pipeline = [
                                     {"$match": {"cd": {"$gte": startDate, "$lt": endDate}}},
                                     {"$group": {"_id": "$d", "c": {"$sum": 1}}}
                                 ];
                                 drillDb.collection(collection).aggregate(pipeline, {"allowDiskUse": true}).toArray(function(err, data) {
+                                    if (err) {
+                                        console.log(err);
+                                    }
                                     if (data.length > 0) {
                                         results["_total"] = results["_total"] || {};
                                         results[event] = {};
@@ -120,7 +130,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             output_data(dates, results);
                             resolve();
                         }).catch(function(err) {
-
                             output_data(dates, results);
                             console.log(err);
                             resolve();

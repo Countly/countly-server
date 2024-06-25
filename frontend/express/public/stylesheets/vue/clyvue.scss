@@ -599,17 +599,25 @@
             width: 144px;
             padding: 8px;
             vertical-align: top;
+            flex: 1;
         }
 
         &__calendars-col {
             width: 341px;
         }
         
-        &__shortcuts-col {
-            + .cly-vue-daterp__calendars-col {
-                border-left: 1px #EBEBEF solid;
-                margin-left:-5px;
+        &__tab-list {
+            div[role="tablist"] {
+                left: 24px;
+                padding-right: 24px;
             }
+        }
+
+        &__shortcuts-col {
+            border-right: 1px #EBEBEF solid;
+            // + .cly-vue-daterp__calendars-col {
+            //     margin-left:-5px;
+            // }
         }
 
         &__calendars-wrapper {
@@ -676,6 +684,11 @@
             &--custom {
                 margin-bottom: 24px;
             }
+            
+            &--custom--override {
+                margin-bottom: unset !important;
+            }
+
             i {
                 color: #808081;
                 float: right;
@@ -691,6 +704,10 @@
             margin: 0;
             padding: 16px;
             align-items: center;
+
+            .in-the-last-start-date {
+                width: 147px;
+            }
         }
 
         &__input-wrapper-content {
@@ -1674,7 +1691,7 @@
         }
 
         &__sidecars-view {
-            background-color: #A7AEB8;
+            background-color: #81868d;
             overflow-y: scroll;
             position: absolute;
             left: 0;
@@ -1812,9 +1829,11 @@
             color: #81868D;
             transition: color 1s;
             cursor: pointer;
-            width: 30px;
+            //width: 30px;
             height: 15px;
-            margin-block: auto;
+            //margin-block: auto;
+            margin-right: 32px;
+            margin-top: 24px;
             &:hover {
                 color: #333;
                 transition: color 1s;
@@ -2053,16 +2072,26 @@
     {
 		.el-dialog {
 			width: 400px;
+            border-radius: 4px;
 			&__header {
 				padding: 24px 24px 12px 24px;
 			}
 			&__body {
-				padding: 12px 24px 12px 24px;
+				padding: 12px 24px 32px 24px;
 				word-break:normal;
 			}
 			&__footer {
 				padding: 12px 24px 24px 24px;
 			}
+            .el-button {
+                font-weight: 500;
+            }
+            &--centered {
+                margin-top: 0!important;
+                position: relative;
+                top: 50%;
+                transform: translateY(-50%);
+            }
 		}
 
         &__title {
@@ -3746,6 +3775,48 @@
         }
     }
 
+	.cly-vue-diff-helper-modal-wrapper {
+		position: fixed;
+		bottom: 6px;
+		width: calc(100% - 272px);
+		text-align: center;
+		left: 272px;
+		z-index: 99;
+	}
+    .cly-vue-diff-helper-modal {
+        display:inline-block;
+        height: 48px;
+        z-index: 9999;
+
+        background: #ffffff;
+        border: 1px solid #d0d0d0;
+        box-sizing: border-box;
+        box-shadow: 0px 7px 14px rgba(0, 0, 0, 0.21539);
+        border-radius: 6px;
+
+        .message {
+            float: left;
+            padding: 22px 24px;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 20px;
+            .text-dark {
+                color: #333C48;
+            }
+            .text-light {
+                color: #636363;
+            }
+        }
+        .buttons {
+            float: right;
+            padding: 16px 24px;
+            .cly-vue-button {
+                padding: 8px 14px;
+            }
+        }
+    }
+
     .cly-vue-empty-home {
         height: 430px;
         display: flex;
@@ -4014,6 +4085,10 @@
     outline: none;
     font-size: 13px;
     font-weight: 500;
+	border-radius:4px;
+	&-small {
+		padding:4px;
+	}
     &--gray {
         color: map.get(c.$colors, "text-secondary");
     }
@@ -4023,7 +4098,7 @@
         opacity: 0.7;
     }
     &:hover {
-        background-color: transparent;
+        background-color: #E6F0FB;
     }
 }
 

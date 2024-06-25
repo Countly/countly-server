@@ -221,6 +221,17 @@ class Manager {
 
         log.d('Looking for jobs ...');
         this.collection.find(find).sort({next: 1}).limit(MAXIMUM_IN_LINE_JOBS_PER_NAME).toArray((err, jobs) => {
+            //filter out duplicates except for alerts one.
+            var map = {};
+            var newJobs = [];
+            //filter out if there is more than 1 scheduled for this name except alerts
+            for (var z = 0; z < jobs.length; z++) {
+                if (jobs[z].name && (jobs[z].name === "alerts:monitor" || !map[jobs[z].name])) {
+                    newJobs.push(jobs[z]);
+                    map[jobs[z].name] = true;
+                }
+            }
+            jobs = newJobs;
             if (err) {
                 log.e('Error while looking for jobs: %j', err);
                 this.checkAfterDelay();
@@ -263,7 +274,7 @@ class Manager {
                     continue;
                 }
                 var splittedName = job.name.split(':');
-                if (!manager.isPluginOn(splittedName[0])) {
+                if (!manager.isPluginEnabled(splittedName[0])) {
                     continue; //skipping this job as plugin is disabled
                 }
 

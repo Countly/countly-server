@@ -221,11 +221,17 @@ exports.output = function(params, data, filename, type) {
 * @param {object} value - any value
 * @param {string} key - key
 * @param {object} mapper - object with information how to transform data
+* @param {object} doc - original document
 * @returns {string} transformed value
 */
-function transformValue(value, key, mapper) {
+function transformValue(value, key, mapper, doc) {
     if (mapper && mapper.fields && mapper.fields[key]) {
         //if we need we can easy add later different transformations and pass other params for them
+        if (mapper.fields[key].formula) {
+            if (mapper.fields[key].formula.$eq) {
+                value = doc[mapper.fields[key].formula.$eq];
+            }
+        }
         if (mapper.fields[key].to && mapper.fields[key].to === "time") {
             if (value) {
                 if (Math.round(value).toString().length === 10) {
@@ -268,8 +274,14 @@ function transformValue(value, key, mapper) {
 * @returns {object} object with transformed data
 */
 function transformValuesInObject(doc, mapper) {
+    var docOrig = JSON.parse(JSON.stringify(doc));
     for (var z in doc) {
-        doc[z] = transformValue(doc[z], z, mapper);
+        doc[z] = transformValue(doc[z], z, mapper, docOrig);
+    }
+    if (mapper && mapper.calculated_fields) {
+        for (var n = 0; n < mapper.calculated_fields.length; n++) {
+            doc[mapper.calculated_fields[n]] = transformValue(0, mapper.calculated_fields[n], mapper, docOrig);
+        }
     }
     return doc;
 }
@@ -284,13 +296,14 @@ function transformValuesInObject(doc, mapper) {
 function getValues(values, valuesMap, paramList, doc, options) {
     if (options && options.collectProp) {
         doc = flattenObject(doc);
+        var docOrig = JSON.parse(JSON.stringify(doc));
         var keys = Object.keys(doc);
         for (var z = 0; z < keys.length; z++) {
             valuesMap[keys[z]] = false;
         }
         for (var p = 0; p < paramList.length; p++) {
             if (doc[paramList[p]]) {
-                values.push(transformValue(doc[paramList[p]], paramList[p], options.mapper));
+                values.push(transformValue(doc[paramList[p]], paramList[p], options.mapper, docOrig));
             }
             else {
                 values.push("");
@@ -299,7 +312,7 @@ function getValues(values, valuesMap, paramList, doc, options) {
         }
         for (var k in valuesMap) {
             if (valuesMap[k] === false) {
-                values.push(transformValue(doc[k], k, options.mapper));
+                values.push(transformValue(doc[k], k, options.mapper, docOrig));
                 paramList.push(k);
             }
         }
@@ -308,7 +321,7 @@ function getValues(values, valuesMap, paramList, doc, options) {
         for (var kz = 0; kz < paramList.length; kz++) {
             var value = common.getDescendantProp(doc, paramList[kz]) || "";
             if (typeof value === 'object' || Array.isArray(value)) {
-                values.push(JSON.stringify(transformValue(value, paramList[kz], options.mapper)));
+                values.push(JSON.stringify(transformValue(value, paramList[kz], options.mapper, docOrig)));
             }
             else {
                 values.push(transformValue(value, paramList[kz], options.mapper));

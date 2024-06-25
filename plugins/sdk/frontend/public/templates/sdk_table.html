@@ -1,5 +1,5 @@
 <cly-section>
-	<cly-datatable-n  :rows="sdkRows" :resizable="true" :force-loading="isLoading">
+	<cly-datatable-n test-id="table-sdks" :rows="sdkRows" :resizable="true" :force-loading="isLoading">
 		<template v-slot="scope">
 			<el-table-column sortable="custom" prop="sdks" label="SDK"></el-table-column>
 			<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
