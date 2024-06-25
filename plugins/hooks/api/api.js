@@ -275,6 +275,11 @@ plugins.register("/i/hook/save", function(ob) {
 
 
     validateCreate(ob.params, FEATURE_NAME, function(params) {
+        if (!hookConfig) {
+            common.returnMessage(params, 400, 'Invalid hookConfig');
+            return true;
+        }
+
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
@@ -284,7 +289,7 @@ plugins.register("/i/hook/save", function(ob) {
                 return true;
             }
 
-            if (hookConfig && hookConfig.effects && !validateEffects(hookConfig.effects)) {
+            if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
                 common.returnMessage(params, 400, 'Invalid configuration for effects');
                 return true;
             }
@@ -561,6 +566,11 @@ plugins.register("/i/hook/test", function(ob) {
     const paramsInstance = ob.params;
 
     validateCreate(paramsInstance, FEATURE_NAME, async(params) => {
+        if (!hookConfig) {
+            common.returnMessage(params, 400, 'Invalid hookConfig');
+            return true;
+        }
+
         let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
@@ -571,7 +581,7 @@ plugins.register("/i/hook/test", function(ob) {
                 common.returnMessage(params, 403, "hook config invalid");
             }
 
-            if (hookConfig && hookConfig.effects && !validateEffects(hookConfig.effects)) {
+            if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
                 common.returnMessage(params, 400, 'Config invalid');
                 return true;
             }
