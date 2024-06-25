@@ -6,6 +6,7 @@
             <cly-back-link :title="i18n('guides.back-to-guides')" link="#/guides/overview"></cly-back-link>
         </template>
         <template v-slot:header-right class="cly-vue-listbox__header bu-p-3">
+            <form>
             <el-input
                 ref="searchBox"
                 autocomplete="off"
@@ -17,6 +18,7 @@
                 <i slot="prefix" class="el-input__icon el-icon-search"></i>
                 <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch"></i>
             </el-input>
+            </form>
         </template>
     </cly-header>
     <cly-main>
