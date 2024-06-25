@@ -1,171 +1,208 @@
 <div v-bind:class="[componentId]">
-    <cly-header
-		:title="i18n('views.title')"
-		:tooltip="{description}"
-	>
+	<cly-header :title="i18n('views.title')" :tooltip="{description}">
 		<template v-slot:header-right>
-          <cly-more-options test-id="analytics-views" v-if="topDropdown" size="small">
-            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-			  <!--<span :class="item.icon"></span>-->
-              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
-            </el-dropdown-item>
-          </cly-more-options>
-        </template>
-    </cly-header>
-    <cly-main>
+			<cly-more-options test-id="analytics-views" v-if="topDropdown" size="small">
+				<el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
+					<!--<span :class="item.icon"></span>-->
+					<a :href="item.value" class="bu-ml-1">{{item.label}}</a>
+				</el-dropdown-item>
+			</cly-more-options>
+		</template>
+	</cly-header>
+	<cly-main>
 		<cly-date-picker-g class="views-date-picker-container"></cly-date-picker-g>
-		<cly-notification :text="totalViewCountWarning" v-if="showViewCountWarning" color="light-destructive" class="bu-mb-5">
-			<template v-slot:close><a href="/dashboard#/manage/configurations/views" style="color: #0166D6;" class="el-button el-button--text">{{i18n('common.adjust-limit')}}</a></template>
+		<cly-notification :text="totalViewCountWarning" v-if="showViewCountWarning" color="light-destructive"
+			class="bu-mb-5">
+			<template v-slot:close><a href="/dashboard#/manage/configurations/views" style="color: #0166D6;"
+					class="el-button el-button--text">{{i18n('common.adjust-limit')}}</a></template>
 		</cly-notification>
 		<cly-section v-loading="isGraphLoading">
 			<cly-metric-cards :multiline="false">
-                <cly-metric-card :test-id="item.name.toLowerCase().replaceAll(' ', '-')" :number="item.percent" :label="item.name" :tooltip="item.description" :color="item.color" :is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in totalCards">
+				<cly-metric-card :test-id="item.name.toLowerCase().replaceAll(' ', '-')" :number="item.percent"
+					:label="item.name" :tooltip="item.description" :color="item.color"
+					:is-percentage="item.isPercentage" :key="idx" v-for="(item, idx) in totalCards">
 					<template v-slot:number>{{item.value}}</template>
-                </cly-metric-card>
-            </cly-metric-cards>
+				</cly-metric-card>
+			</cly-metric-cards>
 		</cly-section>
 		<div class="bu-columns bu-is-gapless">
 			<h4 class="bu-pt-1" data-test-id="views-based-on-label">{{i18n('views.based-on')}}</h4>
-			<div class ="bu-pl-1 bu-pr-1">
+			<div class="bu-pl-1 bu-pr-1">
 				<el-select test-id="views-based-on" v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
-                    <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
-                </el-select>
+					<el-option :key="item.value" :value="item.value" :label="item.name"
+						v-for="item in chooseProperties"></el-option>
+				</el-select>
 			</div>
 			<h4 class="bu-pt-1" data-test-id="for-label">{{i18n('views.for')}}</h4>
-			<div class ="bu-pl-1">
-				<cly-multi-select test-id="filter-parameter" ref="selectSegmentValue" @change="segmentChosen" :dependantFields="true" v-model="filter" :fields="filterFields"></cly-multi-select>
+			<div class="bu-pl-1">
+				<cly-multi-select test-id="filter-parameter" ref="selectSegmentValue" @change="segmentChosen"
+					:dependantFields="true" v-model="filter" :fields="filterFields"></cly-multi-select>
 			</div>
-        </div>
+		</div>
 		<cly-section class="pageViews_chart">
 			<div v-if="lineOptions.series.length < 3">
-				<cly-chart-time test-id="chart-analytics-views" :option="lineOptions" :legend="{position: 'bottom'}"  v-loading="isGraphLoading" ref="viewsGraph" :val-formatter="formatChartValue" category="views">
+				<cly-chart-time test-id="chart-analytics-views" :option="lineOptions" :legend="{position: 'bottom'}"
+					v-loading="isGraphLoading" ref="viewsGraph" :val-formatter="formatChartValue" category="views">
 				</cly-chart-time>
 			</div>
-            <div v-else>
-				<cly-chart-time test-id="chart-analytics-views" :option="lineOptions" :legend="{position: 'right'}" v-loading="isGraphLoading" ref="viewsGraph" :val-formatter="formatChartValue" category="views">
+			<div v-else>
+				<cly-chart-time test-id="chart-analytics-views" :option="lineOptions" :legend="{position: 'right'}"
+					v-loading="isGraphLoading" ref="viewsGraph" :val-formatter="formatChartValue" category="views">
 				</cly-chart-time>
 			</div>
-        </cly-section>
+		</cly-section>
 		<cly-section>
-			<cly-datatable-n 
-				v-if="tableMode == 'selected'" 
-				test-id="datatable-analytics-views"
-				resizable border 
-				:rows="selectedTableRows" 
-				:persist-key="tablePersistKey" 
-				:available-dynamic-cols="tableDynamicCols" 
-				ref="viewsTable" 
-				>
+			<cly-datatable-n v-if="tableMode == 'selected'" test-id="datatable-analytics-views" resizable border
+				:rows="selectedTableRows" :persist-key="tablePersistKey" :available-dynamic-cols="tableDynamicCols"
+				ref="viewsTable">
 				<template v-slot:header-left>
 					<el-select test-id="filter-views" v-model="tableMode" class="bu-mr-2">
-						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
+						<el-option :key="item.key" :value="item.key" :label="item.label"
+							v-for="item in tableModes"></el-option>
 					</el-select>
-					<a v-if="canUserDelete || canUserUpdate" data-test-id="edit-views-button" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
-					<a class="el-button el-button--default" data-test-id="deselect-all-button" @click="deselectAll" >{{i18n('common.deselect-all')}}</a>
+					<a v-if="canUserDelete || canUserUpdate" data-test-id="edit-views-button"
+						href="#/analytics/views/manage"
+						class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
+					<a class="el-button el-button--default" data-test-id="deselect-all-button"
+						@click="deselectAll">{{i18n('common.deselect-all')}}</a>
 				</template>
 				<template v-slot="scope">
-					<el-table-column width="65"  fixed="left" prop="selected">
+					<el-table-column width="65" fixed="left" prop="selected">
 						<template slot-scope="scope">
-							<el-checkbox :test-id="'datatable-analytics-views-' + scope.$index" :disabled="persistentSettings.length === 1 && scope.row.selected" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
+							<el-checkbox :test-id="'datatable-analytics-views-' + scope.$index"
+								:disabled="persistentSettings.length === 1 && scope.row.selected"
+								:value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
 						</template>
 					</el-table-column>
-					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('views.table.view')" fixed="left">
+					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true"
+						:label="i18n('views.table.view')" fixed="left">
 						<template slot-scope="scope">
-							<div :data-test-id="'datatable-analytics-views-view-' + scope.$index">{{scope.row.view}}</div>	
+							<div :data-test-id="'datatable-analytics-views-view-' + scope.$index">{{scope.row.view}}
+							</div>
 						</template>
 					</el-table-column>
 					<template v-for="(col,idx) in scope.dynamicCols">
-						<el-table-column :min-width="col.width" v-if="col.value === 'd'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
-						<template slot-scope="scope">
-							<div :data-test-id="'datatable-analytics-views-d-calc-' + scope.$index">{{scope.row.dCalc}}</div>	
-							</template>
-						</el-table-column>
-						<el-table-column :min-width="col.width" v-else-if="col.value === 'scr'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+						<el-table-column :min-width="col.width" v-if="col.value === 'd'" sortable="custom" :key="idx"
+							:prop="col.value" :label="col.label">
 							<template slot-scope="scope">
-								<div :data-test-id="'datatable-analytics-views-scr-calc-' + scope.$index">{{scope.row.scrCalc}}</div>
+								<div :data-test-id="'datatable-analytics-views-d-calc-' + scope.$index">
+									{{scope.row.dCalc}}</div>
 							</template>
 						</el-table-column>
-						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'scr'" sortable="custom"
+							:key="idx" :prop="col.value" :label="col.label">
 							<template slot-scope="scope">
-								<div :data-test-id="'datatable-analytics-views-br-' + scope.$index">{{formatNumber(scope.row.br)}}%</div>
+								<div :data-test-id="'datatable-analytics-views-scr-calc-' + scope.$index">
+									{{scope.row.scrCalc}}</div>
 							</template>
 						</el-table-column>
-						<el-table-column :min-width="col.width" v-else-if="col.value === 'u'" :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value">
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom"
+							:key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								<div :data-test-id="'datatable-analytics-views-br-' + scope.$index">
+									{{formatNumber(scope.row.br)}}%</div>
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'u'" :key="idx"
+							:formatter="numberFormatter" sortable="custom" :prop="col.value">
 							<template v-slot:header>
-								<span  v-if="isSpecialPeriod" data-test-id="analytics-views-label-total-users-tilde">~</span>
+								<span v-if="isSpecialPeriod"
+									data-test-id="analytics-views-label-total-users-tilde">~</span>
 								<span data-test-id="analytics-views-label-total-users">{{col.label}}</span>
-								<cly-tooltip-icon data-test-id="analytics-views-label-total-users-tooltip" v-if="isSpecialPeriod" :tooltip="i18n('common.estimation')" icon="ion ion-help-circled"></cly-tooltip-icon>
+								<cly-tooltip-icon data-test-id="analytics-views-label-total-users-tooltip"
+									v-if="isSpecialPeriod" :tooltip="i18n('common.estimation')"
+									icon="ion ion-help-circled"></cly-tooltip-icon>
+							</template>
+							<template slot-scope="scope">
+								<div :data-test-id="'datatable-analytics-views-u-' + scope.$index">{{scope.row.u}}</div>
 							</template>
 						</el-table-column>
-						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label">
+						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter"
+							sortable="custom" :prop="col.value" :label="col.label">
 							<template slot-scope="scope">
-								<div :data-test-id="'datatable-analytics-views-' + col.value + '-' + scope.$index">{{scope.row[col.value]}}</div>
+								<div :data-test-id="'datatable-analytics-views-' + col.value + '-' + scope.$index">
+									{{scope.row[col.value]}}</div>
 							</template>
 						</el-table-column>
 					</template>
 				</template>
 			</cly-datatable-n>
-			<cly-datatable-n 
-				v-else resizable border 
-				:force-loading="isTableLoading" 
-				test-id="datatable-analytics-views"
-				:default-sort="{prop: 'u', order: 'descending'}" 
-				:available-dynamic-cols="tableDynamicCols" 
-				:persist-key="tablePersistKey" 
-				:data-source="remoteTableDataSource" 
-				:export-query="getExportQuery" 
-				ref="viewsTable" 
-				@selection-change="handleSelectionChange" 
-				>
+			<cly-datatable-n v-else resizable border :force-loading="isTableLoading" test-id="datatable-analytics-views"
+				:default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols"
+				:persist-key="tablePersistKey" :data-source="remoteTableDataSource" :export-query="getExportQuery"
+				ref="viewsTable" @selection-change="handleSelectionChange">
 				<template v-slot:header-left>
-					<el-select test-id="filter-views" v-model="tableMode" class="bu-mr-2" >
-						<el-option :key="item.key" :value="item.key" :label="item.label" v-for="item in tableModes"></el-option>
+					<el-select test-id="filter-views" v-model="tableMode" class="bu-mr-2">
+						<el-option :key="item.key" :value="item.key" :label="item.label"
+							v-for="item in tableModes"></el-option>
 					</el-select>
-					<a v-if="canUserDelete || canUserUpdate" data-test-id="edit-views-button" href="#/analytics/views/manage" class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
-					<a class="el-button el-button--default" data-test-id="deselect-all-button" @click="deselectAll" >{{i18n('common.deselect-all')}}</a>
+					<a v-if="canUserDelete || canUserUpdate" data-test-id="edit-views-button"
+						href="#/analytics/views/manage"
+						class="el-button el-button--default">{{i18n('views.table.edit-views')}}</a>
+					<a class="el-button el-button--default" data-test-id="deselect-all-button"
+						@click="deselectAll">{{i18n('common.deselect-all')}}</a>
 				</template>
-		
+
 				<template v-slot="scope">
-					<el-table-column width="65"  fixed="left" prop="selected">
+					<el-table-column width="65" fixed="left" prop="selected">
 						<template slot-scope="scope">
-							<el-checkbox :test-id="'datatable-analytics-views-' + scope.$index" :disabled="persistentSettings.length === 1 && scope.row.selected" :value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
+							<el-checkbox :test-id="'datatable-analytics-views-' + scope.$index"
+								:disabled="persistentSettings.length === 1 && scope.row.selected"
+								:value=scope.row.selected @input="handleSelectionChange(scope.row._id)"></el-checkbox>
 						</template>
 					</el-table-column>
-					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true" :label="i18n('views.table.view')" fixed="left">
+					<el-table-column min-width="200" sortable="custom" prop="name" :show-overflow-tooltip="true"
+						:label="i18n('views.table.view')" fixed="left">
 						<template slot-scope="scope">
-							<div :data-test-id="'datatable-analytics-views-view-' + scope.$index">{{scope.row.view}}</div>						
+							<div :data-test-id="'datatable-analytics-views-view-' + scope.$index">{{scope.row.view}}
+							</div>
 						</template>
 					</el-table-column>
 					<template v-for="(col,idx) in scope.dynamicCols">
-						<el-table-column :min-width="col.width" v-if="col.value === 'd'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
-						<template slot-scope="scope">
-							<div :data-test-id="'datatable-analytics-views-d-calc-' + scope.$index">{{scope.row.dCalc}}</div>
-							</template>
-						</el-table-column>
-						<el-table-column :min-width="col.width" v-else-if="col.value === 'scr'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+						<el-table-column :min-width="col.width" v-if="col.value === 'd'" sortable="custom" :key="idx"
+							:prop="col.value" :label="col.label">
 							<template slot-scope="scope">
-								<div :data-test-id="'datatable-analytics-views-scr-calc-' + scope.$index">{{scope.row.scrCalc}}</div>
+								<div :data-test-id="'datatable-analytics-views-d-calc-' + scope.$index">
+									{{scope.row.dCalc}}</div>
 							</template>
 						</el-table-column>
-						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom" :key="idx" :prop="col.value" :label="col.label">
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'scr'" sortable="custom"
+							:key="idx" :prop="col.value" :label="col.label">
 							<template slot-scope="scope">
-								<div :data-test-id="'datatable-analytics-views-br-' + scope.$index">{{formatNumber(scope.row.br)}}</div>
+								<div :data-test-id="'datatable-analytics-views-scr-calc-' + scope.$index">
+									{{scope.row.scrCalc}}</div>
 							</template>
 						</el-table-column>
-						<el-table-column :min-width="col.width" v-else-if="col.value === 'u'" :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value">
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'br'" sortable="custom"
+							:key="idx" :prop="col.value" :label="col.label">
+							<template slot-scope="scope">
+								<div :data-test-id="'datatable-analytics-views-br-' + scope.$index">
+									{{formatNumber(scope.row.br)}}</div>
+							</template>
+						</el-table-column>
+						<el-table-column :min-width="col.width" v-else-if="col.value === 'u'" :key="idx"
+							:formatter="numberFormatter" sortable="custom" :prop="col.value">
 							<template v-slot:header>
-								<span v-if="isSpecialPeriod" data-test-id="analytics-views-label-total-users-tilde">~</span>
+								<span v-if="isSpecialPeriod"
+									data-test-id="analytics-views-label-total-users-tilde">~</span>
 								<span data-test-id="analytics-views-label-total-users">{{col.label}}</span>
-								<cly-tooltip-icon data-test-id="analytics-views-label-total-users-tooltip" v-if="isSpecialPeriod" :tooltip="i18n('common.estimation')" icon="ion ion-help-circled"></cly-tooltip-icon>
+								<cly-tooltip-icon data-test-id="analytics-views-label-total-users-tooltip"
+									v-if="isSpecialPeriod" :tooltip="i18n('common.estimation')"
+									icon="ion ion-help-circled"></cly-tooltip-icon>
+							</template>
+							<template slot-scope="scope">
+								<div :data-test-id="'datatable-analytics-views-u-' + scope.$index">{{scope.row.u}}</div>
 							</template>
 						</el-table-column>
-						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter" sortable="custom" :prop="col.value" :label="col.label">
+						<el-table-column :min-width="col.width" v-else :key="idx" :formatter="numberFormatter"
+							sortable="custom" :prop="col.value" :label="col.label">
 							<template slot-scope="scope">
-								<div :data-test-id="'datatable-analytics-views-' + col.value + '-' + scope.$index">{{scope.row[col.value]}}</div>
+								<div :data-test-id="'datatable-analytics-views-' + col.value + '-' + scope.$index">
+									{{scope.row[col.value]}}</div>
 						</el-table-column>
 					</template>
 				</template>
 			</cly-datatable-n>
 		</cly-section>
-    </cly-main>
+	</cly-main>
 </div>
