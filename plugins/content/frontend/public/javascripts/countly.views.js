@@ -153,7 +153,7 @@
         },
     });
 
-    var ContentLibraryTabView = countlyVue.views.create({
+    var ContentLibraryAssetsTabView = countlyVue.views.create({
         template: CV.T("/content/templates/library.html"),
         mixins: [countlyVue.mixins.hasDrawers("crashSymbol")],
         data: function() {
@@ -193,8 +193,41 @@
         },
         mounted: function() {
             this.$store.dispatch('countlyContentBuilder/fetchAssets');
-
         }
+    });
+
+    var ContentBlocksTabView = countlyVue.views.create({
+        template: CV.T("/content/templates/content-blocks-tab.html"),
+        data: function() {
+            return {
+                contentBlocksData: [
+                    // To-do: get rows by using datasource
+                    { name: "Annual Survey 2023", type: "Push Notifications", screens: 5, journeysInUse: "Feedback 2023, My first flow, Another survey, One more survey, and One more survey", createdBy: "Countly Builder" },
+                    { name: "Annual Survey 2023", type: "Push Notifications", screens: 5, journeysInUse: "Feedback 2023, My first flow", createdBy: "Countly Builder" },
+                    { name: "Annual Survey 2023", type: "Push Notifications", screens: 5, journeysInUse: "", createdBy: "Countly Builder" },
+                ],
+                contentBlocksTypes: [
+                    // To-do: change these dummy datas
+                    { value: 'all', label: 'All types' },
+                    { value: 'push', label: 'Push Notifications' },
+                    { value: 'inapp', label: 'In-app' },
+                    { value: 'surveys', label: 'Surveys' },
+                ],
+                selectedContentBlocksType: 'all',
+            };
+        },
+        methods: {
+            toggleFav: function(scope, row) {
+                row.fav = !row.fav;
+                if (row.fav) {
+                    row.sort_order = 0;
+                }
+                // To-do: Update the state
+            },
+            onClickNewBlock: function() {
+                // To-do: Open drawer
+            }
+        },
     });
 
     var ContentView = countlyVue.views.create({
@@ -204,23 +237,22 @@
             var localTabs = [];
             localTabs.push(
                 {
-                    title: 'Assets',
-                    priority: 1,
-                    name: "Assetss",
-                    component: ContentLibraryTabView,
+                    title: 'Content Blocks',
+                    priority: 2,
+                    name: "Content Blocks",
+                    component: ContentBlocksTabView,
                     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/content/content/library"
                 }
             );
             localTabs.push(
                 {
-                    title: 'Dummy',
-                    priority: 2,
-                    name: "Dummy",
-                    component: ContentLibraryTabView,
+                    title: 'Assets',
+                    priority: 1,
+                    name: "Assetss",
+                    component: ContentLibraryAssetsTabView,
                     route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/content/content/library"
                 }
             );
-
             return {
                 currentSecondaryTab: (this.$route.params && this.$route.params.secondaryTab) || "content",
                 localTabs
@@ -231,6 +263,13 @@
                 return this.localTabs;
             }
         }
+    });
+
+    var JourneysView = countlyVue.views.create({
+        template: CV.T("/content/templates/journeys.html"),
+        data: function() {
+            return {};
+        },
     });
 
     var ContentIndexView = countlyVue.views.create({
@@ -248,18 +287,17 @@
         ],
         data: function() {
             var localTabs = [];
-
+            localTabs.push({
+                priority: 2,
+                title: 'Journeys',
+                name: "Journeys",
+                component: JourneysView,
+                route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/content/journeys",
+            });
             localTabs.push({
                 priority: 1,
                 title: 'Library',
                 name: "Library",
-                component: ContentView,
-                route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/content/content",
-            });
-            localTabs.push({
-                priority: 2,
-                title: 'Dummy',
-                name: "Dummy",
                 component: ContentView,
                 route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/content/content",
             });

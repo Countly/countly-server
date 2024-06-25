@@ -1,0 +1,50 @@
+<div>
+    <cly-main class="content-blocks-table preset-table">
+        <div>
+            <div class="bu-pt-3 bu-level">
+                <div class="bu-level-left">
+                    <el-select v-model="selectedContentBlocksType">
+                        <el-option v-for="item in contentBlocksTypes" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                    </el-select>
+                </div>
+                <div class="bu-level-right">
+                    <el-button icon="el-icon-circle-plus" type="success" size="small" @click="onClickNewBlock"> {{ i18n('content-builder.new-block') }} </el-button>
+                </div>
+            </div>
+            <div class="bu-pt-5">
+                <cly-datatable-n 
+                    class=""
+                    :rows="contentBlocksData" 
+                    :resizable="true" 
+                    :hide-top="true"
+                    :hide-bottom="true"
+                >
+                    <template v-slot="scope">
+                        <el-table-column prop="name" :label="i18n('content-builder.name')">
+                            <template v-slot="rowScope">
+                                <div class="bu-is-flex">
+                                    <span class="has-ellipsis bu-has-text-weight-medium">{{ unescapeHtml(rowScope.row.name) }}</a></span>
+                                    <cly-check
+                                        class="bu-pl-1"
+                                        element-loading-spinner="el-icon-loading"
+                                        @input="toggleFav(scope, rowScope.row)"
+                                        :value="rowScope.row.fav"
+                                        skin="star">
+                                    </cly-check>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="type" :label="i18n('content-builder.type')"></el-table-column>
+                        <el-table-column prop="screens" :label="i18n('content-builder.screens')"></el-table-column>
+                        <el-table-column prop="journeysInUse" width="400" :label="i18n('content-builder.journeys-in-use')">
+                            <template v-slot="rowScope">
+                                <span class="has-ellipsis" v-tooltip="rowScope.row.journeysInUse">{{ unescapeHtml(rowScope.row.journeysInUse) }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="createdBy" :label="i18n('content-builder.created-by')"></el-table-column>
+                    </template>
+                </cly-datatable-n>
+            </div>
+        </div>
+    </cly-main>
+</div>
