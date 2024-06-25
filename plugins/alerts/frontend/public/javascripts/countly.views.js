@@ -536,7 +536,7 @@
                     countlyAlerts.getSurveysForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((s) => {
+                            this.alertDataSubType2Options = data.filter(s => s.status).map((s) => {
                                 return { value: s._id, label: countlyCommon.unescapeHtml(s.name) };
                             });
                         }
@@ -546,7 +546,7 @@
                     countlyAlerts.getNPSForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((n) => {
+                            this.alertDataSubType2Options = data.filter(n => n.status).map((n) => {
                                 return { value: n._id, label: countlyCommon.unescapeHtml(n.name) };
                             });
                         }
@@ -556,7 +556,7 @@
                     countlyAlerts.getRatingForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((r) => {
+                            this.alertDataSubType2Options = data.filter(r => r.is_active === 'true').map((r) => {
                                 return {
                                     value: r._id,
                                     label: countlyCommon.unescapeHtml(r.popup_header_text),
