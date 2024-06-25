@@ -31,7 +31,7 @@ plugins.register('/i/content/asset-upload', async function(ob) {
         let assets = params.files.assets;
         let myname = assets.name;
 
-        await uploadAssetToGridFs(myname, params.files.assets, metadata);
+        await uploadAssetToGridFs(myname, params.files.assets, metadata, params.qstring.thumbnail);
         common.returnOutput(ob.params, 'Success');
     }
     catch (error) {
@@ -61,13 +61,15 @@ function getAssets() {
     * @param {string} myname - input name
     * @param {object} myfile - file object
     * @param {object} metadata - metadata object
+    * @param {object} b64Thumbnail - thumbnail Base64String
     * @returns {object} Promise
     **/
-function uploadAssetToGridFs(myname, myfile, metadata) {
+function uploadAssetToGridFs(myname, myfile, metadata, b64Thumbnail) {
     return new Promise(function(resolve, reject) {
         var tmp_path = myfile.path;
         var type = myfile.type;
-        if (myfile.size > 1.5 * 1024 * 1024) {
+        if (false) {
+            /TODO:decide on file size limit
             fs.unlink(tmp_path, function() {});
             reject(Error('File Size exceeds 1.5MB'));
         }
@@ -79,11 +81,15 @@ function uploadAssetToGridFs(myname, myfile, metadata) {
                 //convert file to data
                 if (data) {
                     try {
-                        // var data_uri_prefix = "data:" + type + ";base64,";
-                        // var buf = Buffer.from(data);
-                        // var image = buf.toString('base64');
-                        //image = data_uri_prefix + image;
-                        let thumbnail = await sharp(data).resize(200).toBuffer();
+                        let thumbnail;
+                        if (b64Thumbnail) {
+                            //video file
+                            const buffer = Buffer.from(b64Thumbnail.split(",")[1], 'base64');
+                            thumbnail = await sharp(buffer).resize(200).toBuffer();
+                        }
+                        else {
+                            thumbnail = await sharp(data).resize(200).toBuffer();
+                        }
                         metadata.thumbnail = thumbnail;
                         metadata.mimeType = type;
                         countlyFs.gridfs.saveData("content_assets", myname, data, {metadata}, function(err2) {
@@ -105,8 +111,6 @@ function uploadAssetToGridFs(myname, myfile, metadata) {
         }
     });
 }
-
-
 
 /*
 block{
