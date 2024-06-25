@@ -275,12 +275,12 @@ plugins.register("/i/hook/save", function(ob) {
 
 
     validateCreate(ob.params, FEATURE_NAME, function(params) {
+        let hookConfig = params.qstring.hook_config;
         if (!hookConfig) {
             common.returnMessage(params, 400, 'Invalid hookConfig');
             return true;
         }
 
-        let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
@@ -566,12 +566,12 @@ plugins.register("/i/hook/test", function(ob) {
     const paramsInstance = ob.params;
 
     validateCreate(paramsInstance, FEATURE_NAME, async(params) => {
+        let hookConfig = params.qstring.hook_config;
         if (!hookConfig) {
             common.returnMessage(params, 400, 'Invalid hookConfig');
             return true;
         }
 
-        let hookConfig = params.qstring.hook_config;
         try {
             hookConfig = JSON.parse(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
