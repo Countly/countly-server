@@ -10,7 +10,7 @@ function capitalize(text) {
 }
 
 function toSlug(text) {
-    return text.toLowerCase().replace('\'', '').replace('/', '').replace(' ', '-');
+    return text.toLowerCase().replaceAll('\'', '').replaceAll('/', '').replaceAll(' ', '-');
 }
 
 function hexToRgb(hex) {

@@ -95,7 +95,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('should be complete onboarding flow with creating mobile type demo application and enable tracking and subscribe to newsletter', function() {
+    it('should be complete onboarding flow with creating mobile type demo application and do not enable tracking and subscribe to newsletter', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -109,7 +109,7 @@ describe('Complete Onboarding', () => {
         initialSetupHelpers.completeOnboardingInitialSetup({
             isDemoApp: true,
             appType: APP_TYPE.MOBILE,
-            demoAppData: DATA_TYPE.GAMING,
+            demoAppData: DATA_TYPE.ENTERTAINMENT,
             timezone: 'Istanbul'
         });
 
@@ -285,7 +285,7 @@ describe('Complete Onboarding', () => {
         quickstartPopoeverHelpers.verifyDefaultPageElements();
     });
 
-    it('should be complete onboarding flow with creating mobile type demo application and verify home page with Banking data', function() {
+    it('should be complete onboarding flow with creating mobile type demo application and verify home page with Finance data', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -299,14 +299,14 @@ describe('Complete Onboarding', () => {
         initialSetupHelpers.completeOnboardingInitialSetup({
             isDemoApp: true,
             appType: APP_TYPE.MOBILE,
-            demoAppData: DATA_TYPE.BANKING,
+            demoAppData: DATA_TYPE.FINANCE,
             timezone: 'Troll'
         });
 
         initialConsentHelpers.verifyDefaultPageElements();
         initialConsentHelpers.completeOnboardingInitialConsent({
-            isEnableTacking: false,
-            isSubscribeToNewsletter: false
+            isEnableTacking: true,
+            isSubscribeToNewsletter: true
         });
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.closeQuickStartPopover();

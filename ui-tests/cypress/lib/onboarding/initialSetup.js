@@ -28,20 +28,23 @@ const selectTimezone = (timezone) => {
 };
 
 const selectDataType = (dataType) => {
-    if (dataType === DATA_TYPE.BANKING) {
-        cy.clickElement(initialSetupPageElements.DATA_TYPE_BANKING_RADIO_BUTTON);
+    if (dataType === DATA_TYPE.ENTERTAINMENT) {
+        cy.clickElement(initialSetupPageElements.DATA_TYPE_ENTERTAINMENT_RADIO_BUTTON);
+    }
+    else if (dataType === DATA_TYPE.FINANCE) {
+        cy.clickElement(initialSetupPageElements.DATA_TYPE_FINANCE_RADIO_BUTTON);
+    }
+    else if (dataType === DATA_TYPE.B2BSAAS) {
+        cy.clickElement(initialSetupPageElements.DATA_TYPE_B2B_SAAS_RADIO_BUTTON);
     }
     else if (dataType === DATA_TYPE.HEALTHCARE) {
         cy.clickElement(initialSetupPageElements.DATA_TYPE_HEALTHCARE_RADIO_BUTTON);
     }
-    else if (dataType === DATA_TYPE.NAVIGATION) {
-        cy.clickElement(initialSetupPageElements.DATA_TYPE_NAVIGATION_RADIO_BUTTON);
-    }
     else if (dataType === DATA_TYPE.ECOMMERCE) {
         cy.clickElement(initialSetupPageElements.DATA_TYPE_ECOMMERCE_RADIO_BUTTON);
     }
-    else if (dataType === DATA_TYPE.GAMING) {
-        cy.clickElement(initialSetupPageElements.DATA_TYPE_GAMING_RADIO_BUTTON);
+    else if (dataType === DATA_TYPE.SOCIAL) {
+        cy.clickElement(initialSetupPageElements.DATA_TYPE_SOCIAL_RADIO_BUTTON);
     }
 };
 
@@ -61,9 +64,21 @@ const verifyDefaultPageElements = (isDemoApp) => {
         });
 
         cy.verifyElement({
-            element: initialSetupPageElements.DATA_TYPE_BANKING_RADIO_BUTTON_ICON,
-            labelElement: initialSetupPageElements.DATA_TYPE_BANKING_RADIO_BUTTON_LABEL,
-            labelText: DATA_TYPE.BANKING
+            element: initialSetupPageElements.DATA_TYPE_ENTERTAINMENT_RADIO_BUTTON_ICON,
+            labelElement: initialSetupPageElements.DATA_TYPE_ENTERTAINMENT_RADIO_BUTTON_LABEL,
+            labelText: DATA_TYPE.ENTERTAINMENT
+        });
+
+        cy.verifyElement({
+            element: initialSetupPageElements.DATA_TYPE_FINANCE_RADIO_BUTTON_ICON,
+            labelElement: initialSetupPageElements.DATA_TYPE_FINANCE_RADIO_BUTTON_LABEL,
+            labelText: DATA_TYPE.FINANCE
+        });
+
+        cy.verifyElement({
+            element: initialSetupPageElements.DATA_TYPE_B2B_SAAS_RADIO_BUTTON_ICON,
+            labelElement: initialSetupPageElements.DATA_TYPE_B2B_SAAS_RADIO_BUTTON_LABEL,
+            labelText: DATA_TYPE.B2BSAAS
         });
 
         cy.verifyElement({
@@ -73,21 +88,15 @@ const verifyDefaultPageElements = (isDemoApp) => {
         });
 
         cy.verifyElement({
-            element: initialSetupPageElements.DATA_TYPE_NAVIGATION_RADIO_BUTTON_ICON,
-            labelElement: initialSetupPageElements.DATA_TYPE_NAVIGATION_RADIO_BUTTON_LABEL,
-            labelText: DATA_TYPE.NAVIGATION
-        });
-
-        cy.verifyElement({
             element: initialSetupPageElements.DATA_TYPE_ECOMMERCE_RADIO_BUTTON_ICON,
             labelElement: initialSetupPageElements.DATA_TYPE_ECOMMERCE_RADIO_BUTTON_LABEL,
             labelText: DATA_TYPE.ECOMMERCE
         });
 
         cy.verifyElement({
-            element: initialSetupPageElements.DATA_TYPE_GAMING_RADIO_BUTTON_ICON,
-            labelElement: initialSetupPageElements.DATA_TYPE_GAMING_RADIO_BUTTON_LABEL,
-            labelText: DATA_TYPE.GAMING
+            element: initialSetupPageElements.DATA_TYPE_SOCIAL_RADIO_BUTTON_ICON,
+            labelElement: initialSetupPageElements.DATA_TYPE_SOCIAL_RADIO_BUTTON_LABEL,
+            labelText: DATA_TYPE.SOCIAL
         });
 
         cy.verifyElement({
@@ -180,12 +189,11 @@ const checkPopulatorProgressBar = () => {
         .then((isExists) => {
             if (isExists) {
                 cy.verifyElement({
-                    //TODO 
-                    //element: initialSetupPageElements.DATA_POP_PROGRESS_BAR_IMG,
+                    element: initialSetupPageElements.DATA_POP_PROGRESS_BAR_IMG,
                     labelElement: initialSetupPageElements.DATA_POP_PROGRESS_BAR_TEXT,
                     labelText: 'Populating data for your app'
                 });
-                cy.wait(50000);
+                cy.wait(30000);
                 cy.shouldNotExist(initialSetupPageElements.DATA_POP_PROGRESS_BAR);
             }
         });
