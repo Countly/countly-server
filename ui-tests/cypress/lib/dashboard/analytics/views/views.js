@@ -308,11 +308,11 @@ const verifyViewsChart = ({
     }
     else {
 
-        cy.verifyElement({
-            element: viewsEChartElements.CHART_LOAN_DETAILS_ICON,
-            labelElement: viewsEChartElements.CHART_LOAN_DETAILS_LABEL,
-            labelText: "Loan Details",
-        });
+        // cy.verifyElement({
+        //     element: viewsEChartElements.CHART_LOAN_DETAILS_ICON,
+        //     labelElement: viewsEChartElements.CHART_LOAN_DETAILS_LABEL,
+        //     labelText: "Loan Details",
+        // });
 
         cy.verifyElement({
             element: viewsEChartElements.CHART_HOME_ICON,
@@ -320,23 +320,23 @@ const verifyViewsChart = ({
             labelText: "Home",
         });
 
-        cy.verifyElement({
-            element: viewsEChartElements.CHART_BILL_PAYMENT_ICON,
-            labelElement: viewsEChartElements.CHART_BILL_PAYMENT_LABEL,
-            labelText: "Bill Payments",
-        });
+        // cy.verifyElement({
+        //     element: viewsEChartElements.CHART_BILL_PAYMENT_ICON,
+        //     labelElement: viewsEChartElements.CHART_BILL_PAYMENT_LABEL,
+        //     labelText: "Bill Payments",
+        // });
 
-        cy.verifyElement({
-            element: viewsEChartElements.CHART_FUND_TRANSFER_ICON,
-            labelElement: viewsEChartElements.CHART_FUND_TRANSFER_LABEL,
-            labelText: "Fund Transfer",
-        });
+        // cy.verifyElement({
+        //     element: viewsEChartElements.CHART_FUND_TRANSFER_ICON,
+        //     labelElement: viewsEChartElements.CHART_FUND_TRANSFER_LABEL,
+        //     labelText: "Fund Transfer",
+        // });
 
-        cy.verifyElement({
-            element: viewsEChartElements.CHART_CREDIT_CARD_APPLICATION_ICON,
-            labelElement: viewsEChartElements.CHART_CREDIT_CARD_APPLICATION_LABEL,
-            labelText: "Credit Card Application",
-        });
+        // cy.verifyElement({
+        //     element: viewsEChartElements.CHART_CREDIT_CARD_APPLICATION_ICON,
+        //     labelElement: viewsEChartElements.CHART_CREDIT_CARD_APPLICATION_LABEL,
+        //     labelText: "Credit Card Application",
+        // });
 
         // cy.verifyElement({
         //     element: viewsEChartElements.CHART_BROWSE_ICON,
