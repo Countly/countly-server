@@ -328,8 +328,8 @@ describe('Complete Onboarding', () => {
         analyticsSessionFrequencyPageHelpers.verifyFullDataPageElements();
         analyticsSessionFrequencyPageHelpers.clickViewsPerSessionTab();
         analyticsViewsPerSessionPageHelpers.verifyFullDataPageElements();
-        //navigationHelpers.goToAnalyticsViews();
-        //analyticsViewsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToAnalyticsViews();
+        analyticsViewsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToAnalyticsSources();
         //analyticsSourcesPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToAnalyticsTechnologyPlatforms();
