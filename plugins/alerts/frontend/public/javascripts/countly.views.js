@@ -411,6 +411,14 @@
                     return;
                 }
             },
+            filteredEmailOptions: function() {
+                if (!countlyGlobal.plugins.includes("groups")) {
+                    return this.emailOptions.filter(
+                        (option) => option.value !== "toGroup"
+                    );
+                }
+                return this.emailOptions;
+            }
         },
         props: {
             placeholder: { type: String, default: "Select" },
@@ -420,17 +428,19 @@
         },
         mounted: function() {
             var self = this;
-            groupsModel.initialize().then(function() {
-                var groups = _.sortBy(groupsModel.data(), "name");
-                var userGroups = groups.map(function(g) {
-                    return {
-                        name: g.name,
-                        value: g._id,
-                        users: g.users,
-                    };
+            if (countlyGlobal.plugins.includes("groups")) {
+                groupsModel.initialize().then(function() {
+                    var groups = _.sortBy(groupsModel.data(), "name");
+                    var userGroups = groups.map(function(g) {
+                        return {
+                            name: g.name,
+                            value: g._id,
+                            users: g.users,
+                        };
+                    });
+                    self.allGroups = userGroups;
                 });
-                self.allGroups = userGroups;
-            });
+            }
         },
         methods: {
             subType2Label: function(obj) {
