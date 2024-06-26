@@ -46,9 +46,6 @@ describe('Create New Alert', () => {
             alertsHelpers.selectApplication(application);
             alertsHelpers.selectDataType(FEATURE_TYPE.CRASHES);
             alertsHelpers.selectTriggerMetric(TRIGGER_METRICS.NEW_CRASH_ERROR);
-            alertsHelpers.selectTriggerVariable(TRIGGER_VARIABLE.INCREASED);
-            alertsHelpers.typeTriggerValue(alert.triggerValue);
-            alertsHelpers.selectTriggerTime(TIME_UNITS.HOUR);
             alertsHelpers.selectToSpecificAddress(...["demo@count.ly", "test@count.ly"]);
             alertsHelpers.clickCreateButton();
             alertsHelpers.verifyAlertSavedNotification();
@@ -62,7 +59,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alert.alertName,
                 application: application,
-                condition: "new crash/error increased by " + alert.triggerValue + " % in the last hour"
+                condition: "new crash/error"
             });
 
             // UPDATE THE ALERT WITH NEW DATA
@@ -75,9 +72,6 @@ describe('Create New Alert', () => {
                 application: application,
                 dataType: FEATURE_TYPE.CRASHES,
                 triggerMetric: TRIGGER_METRICS.NEW_CRASH_ERROR,
-                triggerVariable: TRIGGER_VARIABLE.INCREASED,
-                triggerValue: alert.triggerValue,
-                triggerTime: TIME_UNITS.HOUR,
                 emailNotificationType: EMAIL_NOTIFICATION_TYPE.TO_SPECIFIC_ADDRESS,
                 email: ['demo@count.ly', 'test@count.ly']
             });
@@ -101,7 +95,7 @@ describe('Create New Alert', () => {
                 isActive: true,
                 alertName: alertUpdated.alertName,
                 application: application,
-                condition: "non-fatal crashes/errors per session"
+                condition: "fatal crashes/errors per session"
             });
         });
     });

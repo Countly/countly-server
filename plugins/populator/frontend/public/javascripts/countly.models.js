@@ -1195,6 +1195,8 @@
                     var endSessionTs = null;
                     var req = {};
                     let selectedSequence = null;
+                    let sessionDuration = null;
+
                     // process every sequence
                     while (runCount > 0) {
                         // select random sequence from behavior
@@ -1226,15 +1228,7 @@
                                     if (selectedSequenceStep.value === "start") {
                                         // this.hasSession = true;
                                         this.isRegistered = true;
-                                        const differenceBetweenPreviousSession = this.ts - (endSessionTs || 0);
-                                        let sessionDuration = null;
-                                        if (differenceBetweenPreviousSession.toString().length >= 10) {
-                                            sessionDuration = getRandomInt(60, 240);
-                                        }
-                                        else {
-                                            sessionDuration = getRandomInt(60, differenceBetweenPreviousSession);
-                                        }
-                                        req = {timestamp: this.ts, begin_session: 1, ignore_cooldown: '1', session_duration: sessionDuration};
+                                        req = {timestamp: this.ts, begin_session: 1, ignore_cooldown: '1'};
                                         if (!hasEnvironment) {
                                             req.metrics = this.metrics;
                                             req.user_details = this.userdetails;
@@ -1286,9 +1280,20 @@
                         var randomSeconds = randomHours * 3600;
                         this.ts = this.ts + randomSeconds;
                         if (runCount === 0) {
-                            req = {timestamp: endSessionTs, end_session: 1, ignore_cooldown: '1'};
+                            req = {timestamp: endSessionTs, end_session: 1, ignore_cooldown: '1', session_duration: getRandomInt(60, 240)};
                             this.request(req);
                             resolve(bulk);
+                        }
+                        else {
+                            const differenceBetweenPreviousSession = this.ts - (endSessionTs || 0);
+                            if (differenceBetweenPreviousSession.toString().length >= 10) {
+                                sessionDuration = getRandomInt(60, 240);
+                            }
+                            else {
+                                sessionDuration = getRandomInt(60, differenceBetweenPreviousSession);
+                            }
+                            req = {timestamp: this.ts, session_duration: sessionDuration};
+                            this.request(req);
                         }
                     }
                 }
@@ -1952,7 +1957,7 @@
      * @param {callback} callback - callback method
      **/
     function generateCampaigns(callback) {
-        if (typeof countlyAttribution === "undefined") {
+        if (!CountlyHelpers.isPluginEnabled("attribution") || typeof countlyAttribution === "undefined") {
             callback();
             return;
         }
@@ -2341,7 +2346,7 @@
 
         var template = this.currentTemplate || {};
 
-        if (typeof countlyCohorts !== "undefined" && countlyAuth.validateCreate('cohorts')) {
+        if (CountlyHelpers.isPluginEnabled("cohorts") && typeof countlyCohorts !== "undefined" && countlyAuth.validateCreate('cohorts')) {
             if (template.events && template.events.length) {
                 var firstEventKey = template.events[getRandomInt(0, template.events.length - 1)].key;
 
@@ -2464,7 +2469,7 @@
             });
         }
 
-        if (typeof countlyFunnel !== "undefined" && countlyAuth.validateCreate('funnels')) {
+        if (CountlyHelpers.isPluginEnabled("funnels") && typeof countlyFunnel !== "undefined" && countlyAuth.validateCreate('funnels')) {
 
             let pages = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile" ? viewSegments.name : getPageTemplates(countlyPopulator.getSelectedTemplate().substr(7).toLowerCase());
             let page1 = pages[getRandomInt(0, pages.length - 1)];
@@ -2550,9 +2555,11 @@
             });
         }
 
-        createMessage(messages[0]);
-        createMessage(messages[1]);
-        createMessage(messages[2]);
+        if (CountlyHelpers.isPluginEnabled("push")) {
+            createMessage(messages[0]);
+            createMessage(messages[1]);
+            createMessage(messages[2]);
+        }
     };
 
     countlyPopulator.getSelectedTemplate = function() {
@@ -2632,9 +2639,10 @@
         });
 
         if (typeof foundDefault !== "undefined") {
-            // this should never happen
+            callback({err: "Invalid template ID. Template update failed. Please refresh page and try again."});
         }
         else {
+            newTemplate.app_id = countlyCommon.ACTIVE_APP_ID;
             $.ajax({
                 type: "POST",
                 url: countlyCommon.API_URL + "/i/populator/templates/edit",
