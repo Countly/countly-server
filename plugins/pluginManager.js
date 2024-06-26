@@ -5,7 +5,7 @@ var pluginDependencies = require('./pluginDependencies.js'),
         "overwrite": path.resolve(__dirname, './plugins.json')
     }),
     pluginsApis = {},
-    mongodb = require('mongodb'),
+    mongodb = require('mongodb-legacy'),
     cluster = require('cluster'),
     countlyConfig = require('../frontend/express/config', 'dont-enclose'),
     apiCountlyConfig = require('../api/config', 'dont-enclose'),
@@ -1864,15 +1864,11 @@ var pluginManager = function pluginManager() {
         var dbOptions = {
             maxPoolSize: maxPoolSize,
             noDelay: true,
-            keepAlive: true,
-            keepAliveInitialDelay: 30000,
             connectTimeoutMS: 999999999,
             socketTimeoutMS: 999999999,
             serverSelectionTimeoutMS: 999999999,
             maxIdleTimeMS: 0,
-            waitQueueTimeoutMS: 0,
-            useNewUrlParser: true,
-            useUnifiedTopology: true
+            waitQueueTimeoutMS: 0
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);
@@ -1961,7 +1957,12 @@ var pluginManager = function pluginManager() {
          */
         function logDriver(eventName, logObject, logLevel) {
             logLevel = logLevel || "d";
-            client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
+            if (eventName === "serverHeartbeatFailed" || eventName === "topologyDescriptionChanged" || eventName === "serverDescriptionChanged" || eventName === "serverClosed") {
+                client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
+            }
+            else {
+                client.on(eventName, () => logObject[logLevel](eventName));
+            }
         }
 
         //connection pool
@@ -2164,7 +2165,7 @@ var pluginManager = function pluginManager() {
         if (!countlyDb.ObjectID) {
             countlyDb.ObjectID = function(id) {
                 try {
-                    return mongodb.ObjectId(id);
+                    return new mongodb.ObjectId(id);
                 }
                 catch (ex) {
                     logDbRead.i("Incorrect Object ID %j", ex);
@@ -2357,6 +2358,10 @@ var pluginManager = function pluginManager() {
                     }
                     else {
                         options = options || {};
+                    }
+
+                    if (typeof options.includeResultMetadata === "undefined") {
+                        options.includeResultMetadata = true;
                     }
 
                     mngr.dispatch("/db/update", {
