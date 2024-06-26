@@ -1,0 +1,23 @@
+<div v-bind:class="[componentId]">
+    <cly-main>
+        <div>
+            <div class="bu-pt-3 bu-level">
+                <div class="bu-level-left">
+                    <el-select v-model="assetFilter" class="p-2">
+                        <el-option v-for="item in filterAssestOption" :key="item.value" :label="item.label" :value="item.value"></el-option>
+                    </el-select>
+                </div>
+                <div class="bu-level-right">
+                    <el-button type="success" size="small" @click="onClickAddAsset">Add Asset</el-button>
+                </div>
+            </div>
+            <cly-sub-section style="display: flex; column-gap: 1rem; row-gap: 1rem; flex-wrap: wrap;" class="bu-pt-5">
+                <div v-for="asset in assetList" :key="asset.name">
+                    <img :src="asset.thumbnail" alt="" style="height: 173px; width: 173px; object-fit: cover;">
+                    <p style="width: 173px; text-overflow: ellipsis; text-wrap: nowrap; overflow: hidden; font-size: 14px;">{{asset.name}}</p>
+                </div>
+            </cly-sub-section>
+        </div>
+        <cly-content-asset-upload-drawer ref="crashSymbolDrawer" :controls="drawers.crashSymbol"></cly-content-asset-upload-drawer>
+    </cly-main>
+</div>

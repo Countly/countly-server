@@ -154,7 +154,7 @@
     });
 
     var ContentLibraryAssetsTabView = countlyVue.views.create({
-        template: CV.T("/content/templates/library.html"),
+        template: CV.T("/content/templates/content-assets-tab.html"),
         mixins: [countlyVue.mixins.hasDrawers("crashSymbol")],
         data: function() {
 
@@ -248,9 +248,9 @@
                 {
                     title: 'Assets',
                     priority: 1,
-                    name: "Assetss",
+                    name: "Assets",
                     component: ContentLibraryAssetsTabView,
-                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/content/content/library"
+                    route: "#/" + countlyCommon.ACTIVE_APP_ID + "/manage/content/content/assets"
                 }
             );
             return {

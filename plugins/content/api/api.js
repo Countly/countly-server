@@ -69,7 +69,7 @@ function uploadAssetToGridFs(myname, myfile, metadata, b64Thumbnail) {
         var tmp_path = myfile.path;
         var type = myfile.type;
         if (false) {
-            /TODO:decide on file size limit
+            //TODO:decide on file size limit and formats
             fs.unlink(tmp_path, function() {});
             reject(Error('File Size exceeds 1.5MB'));
         }
