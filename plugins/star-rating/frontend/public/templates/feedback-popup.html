@@ -235,11 +235,14 @@
                     links = JSON.parse(response.links);
                 }
                 if(consent && links && finalText){
-links.forEach(function(link) {
-    var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
-    finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
-});
-
+                    //sanitize the text and links
+                    finalText = $("<p>").text(finalText).text();
+                    links.forEach(function (link) {
+                        link.linkValue = $("<p>").text(link.linkValue).text();
+                        link.textValue = $("<p>").text(link.textValue).text();
+                        var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
+                        finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
+                    });
                 }
                 if(consent){
                                 contentEl.removeClass("hidden");
