@@ -10,7 +10,7 @@ Fixes:
 - [dashboards] Fix issues in note widget
 - [flows] Nullcheck in default flows creation function.
 
-  Enterprise fixes:
+Enterprise fixes:
 - [flows] Nullcheck in default flows creation function
 - [drill] Nullcheck when fetching snapshots data
 
