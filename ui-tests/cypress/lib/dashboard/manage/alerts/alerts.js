@@ -232,7 +232,7 @@ const verifyAlertDrawerPageElements = ({
     } else {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
-            elementText: 'metric',
+            elementPlaceHolder: 'metric',
             value: null
         });
     }
