@@ -4,7 +4,6 @@ import {
     viewsEChartElements,
     viewsDataTableElements
 } from "../../../../support/elements/dashboard/analytics/views/views";
-const helper = require('../../../../support/helper');
 
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
