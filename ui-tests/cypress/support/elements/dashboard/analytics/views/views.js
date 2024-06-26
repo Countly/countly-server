@@ -3,7 +3,7 @@ export const viewsPageElements = {
     PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
     VIEWS_MORE_OPTION: 'analytics-views-more-option-button',
     FILTER_DATE_PICKER: 'cly-datepicker-test-id-pseudo-input-label',
-}
+};
 
 export const viewsMetricCardElements = {
     TOTAL_VIEWS_LABEL: 'metric-card-total-views-column-label',
@@ -16,7 +16,7 @@ export const viewsMetricCardElements = {
     BOUNCE_RATE_VALUE: 'metric-card-bounce-rate-column-number',
     BOUNCE_RATE_TOOLTIP: 'metric-card-bounce-rate-column-tooltip',
     BOUNCE_RATE_PROGRESS_CIRCLE: 'el-progress-metric-card-bounce-rate-column',
-}
+};
 
 export const viewsEChartElements = {
     EMPTY_PAGE_ICON: 'chart-analytics-views-empty-logo',
@@ -46,7 +46,15 @@ export const viewsEChartElements = {
     CHART_ABOUT_LABEL: 'chart-analytics-views-legend-about-legend-label',
     CHART_TERMS_AND_CONDITIONS_ICON: 'chart-analytics-views-legend-terms-and-conditions-legend-icon',
     CHART_TERMS_AND_CONDITIONS_LABEL: 'chart-analytics-views-legend-terms-and-conditions-legend-label',
-}
+    CHART_LOAN_DETAILS_ICON: 'chart-analytics-views-legend-loan-details-legend-icon',
+    CHART_LOAN_DETAILS_LABEL: 'chart-analytics-views-legend-loan-details-legend-label',
+    CHART_BILL_PAYMENT_ICON: 'chart-analytics-views-legend-bill-payments-legend-icon',
+    CHART_BILL_PAYMENT_LABEL: 'chart-analytics-views-legend-bill-payments-legend-label',
+    CHART_FUND_TRANSFER_ICON: 'chart-analytics-views-legend-fund-transfer-legend-icon',
+    CHART_FUND_TRANSFER_LABEL: 'chart-analytics-views-legend-fund-transfer-legend-label',
+    CHART_CREDIT_CARD_APPLICATION_ICON: 'chart-analytics-views-legend-credit-card-application-legend-icon',
+    CHART_CREDIT_CARD_APPLICATION_LABEL: 'chart-analytics-views-legend-credit-card-application-legend-label',
+};
 
 const viewsDataTableElements = (index = 0) => {
     return {
@@ -57,7 +65,7 @@ const viewsDataTableElements = (index = 0) => {
         TABLE_ROWS: '.el-table__row',
         VIEWS_FILTER: 'filter-views-select-input',
         EDIT_VIEWS_BUTTON: 'edit-views-button',
-        DESELECT_ALL_BUTTON: 'deselect-all-button', 
+        DESELECT_ALL_BUTTON: 'deselect-all-button',
         EDIT_COLOMNS_BUTTON: 'datatable-analytics-views-edit-columns-button',
         EXPORT_AS_BUTTON: 'datatable-analytics-views-export-as-button',
         TABLE_SEARCH_INPUT: 'datatable-analytics-views-datatable-search-input',

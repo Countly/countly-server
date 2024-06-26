@@ -183,7 +183,7 @@ const verifyStaticElementsOfPage = () => {
         isElementVisible: false,
         element: viewsDataTableElements().COLUMN_NAME_UNIQUE_VIEWS_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -199,7 +199,7 @@ const verifyEmptyPageElements = () => {
 
     verifyViewsDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -216,7 +216,7 @@ const verifyFullDataPageElements = () => {
 
     verifyViewsDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifyViewsMetricCard = ({
@@ -265,7 +265,8 @@ const verifyViewsMetricCard = ({
             elementText: "0%"
         });
 
-    } else {
+    }
+    else {
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: viewsMetricCardElements.TOTAL_VIEWS_VALUE,
@@ -304,7 +305,15 @@ const verifyViewsChart = ({
             labelElement: viewsEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
+
+        cy.verifyElement({
+            element: viewsEChartElements.CHART_LOAN_DETAILS_ICON,
+            labelElement: viewsEChartElements.CHART_LOAN_DETAILS_LABEL,
+            labelText: "Loan Details",
+        });
+
         cy.verifyElement({
             element: viewsEChartElements.CHART_HOME_ICON,
             labelElement: viewsEChartElements.CHART_HOME_LABEL,
@@ -312,22 +321,40 @@ const verifyViewsChart = ({
         });
 
         cy.verifyElement({
-            element: viewsEChartElements.CHART_BROWSE_ICON,
-            labelElement: viewsEChartElements.CHART_BROWSE_LABEL,
-            labelText: "Browse",
+            element: viewsEChartElements.CHART_BILL_PAYMENT_ICON,
+            labelElement: viewsEChartElements.CHART_BILL_PAYMENT_LABEL,
+            labelText: "Bill Payments",
         });
 
         cy.verifyElement({
-            element: viewsEChartElements.CHART_ACCOUNT_DETAILS_ICON,
-            labelElement: viewsEChartElements.CHART_ACCOUNT_DETAILS_LABEL,
-            labelText: "Account Details",
+            element: viewsEChartElements.CHART_FUND_TRANSFER_ICON,
+            labelElement: viewsEChartElements.CHART_FUND_TRANSFER_LABEL,
+            labelText: "Fund Transfer",
         });
 
         cy.verifyElement({
-            element: viewsEChartElements.CHART_SETTINGS_ICON,
-            labelElement: viewsEChartElements.CHART_SETTINGS_LABEL,
-            labelText: "Settings",
+            element: viewsEChartElements.CHART_CREDIT_CARD_APPLICATION_ICON,
+            labelElement: viewsEChartElements.CHART_CREDIT_CARD_APPLICATION_LABEL,
+            labelText: "Credit Card Application",
         });
+
+        // cy.verifyElement({
+        //     element: viewsEChartElements.CHART_BROWSE_ICON,
+        //     labelElement: viewsEChartElements.CHART_BROWSE_LABEL,
+        //     labelText: "Browse",
+        // });
+
+        // cy.verifyElement({
+        //     element: viewsEChartElements.CHART_ACCOUNT_DETAILS_ICON,
+        //     labelElement: viewsEChartElements.CHART_ACCOUNT_DETAILS_LABEL,
+        //     labelText: "Account Details",
+        // });
+
+        // cy.verifyElement({
+        //     element: viewsEChartElements.CHART_SETTINGS_ICON,
+        //     labelElement: viewsEChartElements.CHART_SETTINGS_LABEL,
+        //     labelText: "Settings",
+        // });
 
         // cy.verifyElement({
         //     element: viewsEChartElements.CHART_TERMS_AND_CONDITIONS_ICON,
@@ -335,11 +362,11 @@ const verifyViewsChart = ({
         //     labelText: "Terms and Conditions",
         // });
 
-        cy.verifyElement({
-             element: viewsEChartElements.CHART_ABOUT_ICON,
-             labelElement: viewsEChartElements.CHART_ABOUT_LABEL,
-             labelText: "About",
-         });
+        // cy.verifyElement({
+        //      element: viewsEChartElements.CHART_ABOUT_ICON,
+        //      labelElement: viewsEChartElements.CHART_ABOUT_LABEL,
+        //      labelText: "About",
+        //  });
 
         cy.verifyElement({
             element: viewsEChartElements.CHART_VIEWS,
@@ -392,7 +419,8 @@ const verifyViewsDataFromTable = ({
             labelText: "No data found",
         });
 
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: viewsDataTableElements(index).VIEW_CHECKBOX,
