@@ -1023,7 +1023,7 @@
                 }
             },
             calculateWidth(value) {
-                if (!value || !this.$refs?.alertDataSubTypeSelect?.$el) {
+                if (!value) {
                     return;
                 }
                 let tmpEl = document.createElement("span");
