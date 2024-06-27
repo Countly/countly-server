@@ -7,11 +7,11 @@ const getApps = require('../api/getApps');
 function capitalize(text) {
     text = text.toLowerCase();
     return text[0].toUpperCase() + text.slice(1);
-};
+}
 
 function toSlug(text) {
     return text.toLowerCase().replaceAll('\'', '').replaceAll('/', '').replaceAll(' ', '-');
-};
+}
 
 function hexToRgb(hex) {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -21,7 +21,7 @@ function hexToRgb(hex) {
     const rgbColor = 'rgb(' + r + ', ' + g + ', ' + b + ')';
 
     return rgbColor;
-};
+}
 
 function calculatePercentageRatings(...ratings) {
     const counts = [0, 0, 0, 0, 0];
@@ -40,15 +40,15 @@ function calculatePercentageRatings(...ratings) {
         counts,
         percentages
     };
-};
+}
 
 function getCurrentDate() {
     return moment().format('ddd, D MMM YYYY');
-};
+}
 
 function getCurrentMonth() {
     return moment().format('MMM');
-};
+}
 
 const addData = ({
     username,
