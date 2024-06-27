@@ -122,17 +122,16 @@ const verifyTimesOfDayChart = ({
             labelElement: timesOfDayEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    }
-    else {
 
-        cy.verifyElement({
-            element: timesOfDayEChartElements.CHART_SLIPPING_AWAY_CHART,
-        });
-
-        cy.verifyElement({
-            element: timesOfDayEChartElements.CHART_MORE_BUTTON,
-        });
+        return;
     }
+    cy.verifyElement({
+        element: timesOfDayEChartElements.CHART_SLIPPING_AWAY_CHART,
+    });
+
+    cy.verifyElement({
+        element: timesOfDayEChartElements.CHART_MORE_BUTTON,
+    });
 };
 
 const verifyTimesOfDayDataFromTable = ({
