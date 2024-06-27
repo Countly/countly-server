@@ -19,8 +19,8 @@
                                     v-for="key in group.list" :key="key"
                                     class="bu-columns bu-is-vcentered bu-p-5 config-section">
                                     <div class="bu-column bu-is-7">
-                                        <p class="bu-has-text-weight-medium" :data-test-id="getData[key].name.toLowerCase().replace(' ', '-') + '-title-label'">{{getData[key].name}}</p>
-                                        <p class="bu-has-text-weight-normal bu-mt-2" :data-test-id="getData[key].name.toLowerCase().replace(' ', '-') + '-description-label'" v-html="getData[key].description" v-if="getData[key].description"></p>
+                                        <p class="bu-has-text-weight-medium" :data-test-id="getData[key].name.toLowerCase().replaceAll(' ', '-') + '-title-label'">{{getData[key].name}}</p>
+                                        <p class="bu-has-text-weight-normal bu-mt-2" :data-test-id="getData[key].name.toLowerCase().replaceAll(' ', '-') + '-description-label'" v-html="getData[key].description" v-if="getData[key].description"></p>
                                     </div>
                                     <div class="bu-column bu-is-2"></div>
                                     <div class="bu-column bu-is-3 bu-is-flex bu-is-justify-content-end">
@@ -56,7 +56,7 @@
                                             </el-button>
                                             <el-switch 
                                                 v-else-if="getData[key].type === 'switch'"
-                                                :test-id="getData[key].name.toLowerCase().replace(' ', '-')"
+                                                :test-id="getData[key].name.toLowerCase().replaceAll(' ', '-')"
                                                 @change="onChange(key, $event)"
                                                 v-model="getData[key].value"
                                                 v-bind="getData[key].attrs">

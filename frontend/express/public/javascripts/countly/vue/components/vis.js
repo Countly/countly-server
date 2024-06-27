@@ -2128,24 +2128,24 @@
                                     {\'cly-vue-chart-legend__p-series--deselected\': item.status === \'off\'}]"\
                             @click="onClick(item, index)">\
                             <div class="cly-vue-chart-legend__first-row">\
-                                <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replace(\' \', \'-\').toLowerCase()) + \'-icon\'"></div>\
-                                <div class="cly-vue-chart-legend__p-title" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replace(\' \', \'-\').toLowerCase()) + \'-label\'">{{item.label || item.name}}</div>\
+                                <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-icon\'"></div>\
+                                <div class="cly-vue-chart-legend__p-title" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-label\'">{{item.label || item.name}}</div>\
                                 <div class="cly-vue-chart-legend__p-tooltip" v-if="item.tooltip">\
-                                    <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replace(\' \', \'-\').toLowerCase()) + \'-tooltip\'"></cly-tooltip-icon>\
+                                    <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-tooltip\'"></cly-tooltip-icon>\
                                 </div>\
                             </div>\
                             <div class="cly-vue-chart-legend__second-row">\
-                                <div class="cly-vue-chart-legend__p-number is-estimate" v-if="item.isEstimate" v-tooltip="item.estimateTooltip" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replace(\' \', \'-\').toLowerCase()) + \'-value\'">~{{item.value}}</div>\
-                                <div class="cly-vue-chart-legend__p-number" v-else :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replace(\' \', \'-\').toLowerCase()) + \'-value\'">{{item.value}}</div>\
+                                <div class="cly-vue-chart-legend__p-number is-estimate" v-if="item.isEstimate" v-tooltip="item.estimateTooltip" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-value\'">~{{item.value}}</div>\
+                                <div class="cly-vue-chart-legend__p-number" v-else :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-value\'">{{item.value}}</div>\
                                 <div\
                                     :class="[\'cly-vue-chart-legend__p-trend\', \
                                             {\'cly-vue-chart-legend__p-trend--trend-up\': item.trend === \'up\'}, \
                                             {\'cly-vue-chart-legend__p-trend--trend-down\': item.trend === \'down\'}]"\
                                 >\
-                                    <i class="cly-trend-up-icon ion-android-arrow-up" v-if="item.trend === \'up\'" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replace(\' \', \'-\').toLowerCase()) + \'-trend-icon\'"\></i>\
-                                    <i class="cly-trend-down-icon ion-android-arrow-down" v-if="item.trend === \'down\'" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replace(\' \', \'-\').toLowerCase()) + \'-trend-icon\'"\></i>\
-                                    <span v-if="typeof item.percentage === \'number\' && !isNaN(item.percentage)" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replace(\' \', \'-\').toLowerCase()) + \'-percentage\'">{{item.percentage}}%</span>\
-                                    <span v-if="typeof item.percentage === \'string\' && item.percentage.length" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replace(\' \', \'-\').toLowerCase()) + \'-percentage\'">{{item.percentage}}</span>\
+                                    <i class="cly-trend-up-icon ion-android-arrow-up" v-if="item.trend === \'up\'" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-trend-icon\'"\></i>\
+                                    <i class="cly-trend-down-icon ion-android-arrow-down" v-if="item.trend === \'down\'" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-trend-icon\'"\></i>\
+                                    <span v-if="typeof item.percentage === \'number\' && !isNaN(item.percentage)" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-percentage\'">{{item.percentage}}%</span>\
+                                    <span v-if="typeof item.percentage === \'string\' && item.percentage.length" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-percentage\'">{{item.percentage}}</span>\
                                 </div>\
                             </div>\
                         </div>\
