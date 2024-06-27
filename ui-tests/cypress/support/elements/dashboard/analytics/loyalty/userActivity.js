@@ -29,7 +29,6 @@ const userActivityDataTableElements = (index = 0) => {
         EMPTY_TABLE_ICON: 'user-activity-empty-logo',
         EMPTY_TABLE_TITLE: 'user-activity-empty-title',
         EMPTY_TABLE_SUBTITLE: 'user-activity-empty-subtitle',
-
         TABLE_ROWS: '.el-table__row',
         EXPORT_AS_BUTTON: 'user-activity-export-as-button',
         TABLE_SEARCH_INPUT: 'user-activity-datatable-search-input',

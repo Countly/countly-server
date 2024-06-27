@@ -113,8 +113,7 @@ const verifySlippingAwayChart = ({
             labelElement: slippingAwayEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    }
-    else {
+    } else {
 
         cy.verifyElement({
             element: slippingAwayEChartElements.CHART_SLIPPING_AWAY_CHART,
@@ -183,8 +182,7 @@ const verifySlippingAwayDataFromTable = ({
                 elementText: '0.00%'
             });
         }
-    }
-    else {
+    } else {
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: slippingAwayDataTableElements(index).SLIPPING_AWAY_USER_COUNT,

@@ -104,8 +104,7 @@ const verifyDefaultPageElements = (isDemoApp) => {
             elementText: "Continue with data population",
             isDisabled: false
         });
-    }
-    else {
+    } else {
         cy.verifyElement({
             labelElement: initialSetupPageElements.PAGE_TITLE,
             labelText: "Let's add your first application"
@@ -229,8 +228,7 @@ const completeOnboardingInitialSetup = ({
         if (appKey != null) {
             typeAppKey(appKey);
         }
-    }
-    else {
+    } else {
         selectDataType(demoAppData);
     }
 

@@ -117,8 +117,7 @@ const verifyUsersOverviewChart = ({
             labelElement: usersOverviewEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    }
-    else {
+    } else {
         cy.verifyElement({
             element: usersOverviewEChartElements.CHART_USERS_OVERVIEW,
         });
@@ -253,8 +252,7 @@ const verifyUsersOverviewDataFromTable = ({
             });
         }
 
-    }
-    else {
+    } else {
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: usersOverviewDataTableElements(index).TOTAL_USERS,

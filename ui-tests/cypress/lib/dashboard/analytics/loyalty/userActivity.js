@@ -123,8 +123,7 @@ const verifyUserActivityChart = ({
             labelElement: userActivityEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    }
-    else {
+    } else {
 
         cy.verifyElement({
             element: userActivityEChartElements.CHART_USER_ACTIVITY,
@@ -180,8 +179,7 @@ const verifyUserActivityDataFromTable = ({
             labelElement: userActivityDataTableElements().EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
-    }
-    else {
+    } else {
 
         cy.verifyElement({
             shouldNot: !isEmpty,

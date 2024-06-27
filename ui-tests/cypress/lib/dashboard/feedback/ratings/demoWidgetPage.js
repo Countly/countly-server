@@ -127,8 +127,7 @@ const verifyDemoPageElementsAndRate = ({
         cy.verifyElement({
             element: demoPageElements.LOGO_IMAGE,
         });
-    }
-    else {
+    } else {
         cy.shouldNotExist(demoPageElements.LOGO_IMAGE);
     }
 
@@ -153,8 +152,7 @@ const verifyDemoPageElementsAndRate = ({
         cy.verifyElement({
             element: demoPageElements.LOGO_IMAGE,
         });
-    }
-    else {
+    } else {
         cy.shouldNotExist(demoPageElements.LOGO_IMAGE);
     }
 };

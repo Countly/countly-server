@@ -81,8 +81,7 @@ const verifyAlertDrawerPageElements = ({
             labelElement: alertDrawerPageElements.DRAWER_PAGE_TITLE,
             labelText: "Create new alert"
         });
-    }
-    else {
+    } else {
 
         cy.verifyElement({
             labelElement: alertDrawerPageElements.DRAWER_PAGE_TITLE,
@@ -209,8 +208,7 @@ const verifyAlertDrawerPageElements = ({
             labelElement: alertDrawerPageElements.DRAWER_TRIGGER_SEND_ALERT_IF_THERE_IS_A_LABEL,
             labelText: 'Send alert if there is a'
         });
-    }
-    else {
+    } else {
         cy.verifyElement({
             labelElement: alertDrawerPageElements.DRAWER_TRIGGER_SEND_ALERT_IF_LABEL,
             labelText: 'Send alert if'
@@ -237,8 +235,7 @@ const verifyAlertDrawerPageElements = ({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
                 value: triggerMetric,
             });
-        }
-        else {
+        } else {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_METRIC_SELECT,
                 elementPlaceHolder: 'metric',
@@ -251,8 +248,7 @@ const verifyAlertDrawerPageElements = ({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT,
                 elementText: triggerVariable,
             });
-        }
-        else {
+        } else {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_VARIABLE_SELECT,
                 elementPlaceHolder: 'variable',
@@ -266,8 +262,7 @@ const verifyAlertDrawerPageElements = ({
                 elementPlaceHolder: 'value',
                 value: triggerValue,
             });
-        }
-        else {
+        } else {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_VALUE_INPUT,
                 elementPlaceHolder: 'value',
@@ -280,8 +275,7 @@ const verifyAlertDrawerPageElements = ({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT,
                 elementText: triggerTime,
             });
-        }
-        else {
+        } else {
             cy.verifyElement({
                 element: alertDrawerPageElements.DRAWER_TRIGGER_TIME_SELECT,
                 elementPlaceHolder: 'time',
@@ -321,8 +315,7 @@ const verifyAlertDrawerPageElements = ({
                 element: alertDrawerPageElements.DRAWER_EMAIL_NOTIF_TO_ADDRESS_EMAIL_SELECT,
                 elementPlaceHolder: 'Enter email address',
             });
-        }
-        else {
+        } else {
             email.forEach(emailAddress => {
                 cy.verifyElement({
                     element: alertDrawerPageElements.DRAWER_EDIT_EMAIL_NOTIF_TO_ADDRESS_EMAIL_INPUT,
@@ -360,8 +353,7 @@ const verifyAlertDrawerPageElements = ({
             element: alertDrawerPageElements.DRAWER_CREATE_BUTTON,
             elementText: "Create"
         });
-    }
-    else {
+    } else {
         cy.verifyElement({
             element: alertDrawerPageElements.DRAWER_CREATE_BUTTON,
             elementText: "Save Alert"
@@ -376,8 +368,7 @@ const clickAddNewAlertButton = () => {
             if (isExists) {
                 verifyEmptyPageElements();
                 cy.clickElement(alertsPageElements.EMPTY_TABLE_ADD_NEW_ALERT_LINK_BUTTON);
-            }
-            else {
+            } else {
                 cy.clickElement(alertsPageElements.ADD_NEW_ALERT_BUTTON);
             }
         });
@@ -572,8 +563,7 @@ const getActiveAlertsCount = () => {
         .then((isExists) => {
             if (isExists) {
                 return 0;
-            }
-            else {
+            } else {
                 return cy.getElement(alertsPageElements.ACTIVE_ALERTS_NUMBER_LABEL)
                     .invoke('text')
                     .then((text) => {

@@ -350,8 +350,7 @@ const clickAddNewWidgetButton = () => {
             if (isExists) {
                 verifyEmptyPageElements();
                 cy.clickElement(feedbackRatingWidgetsPageElements.RATINGS_WIDGETS_EMPTY_PAGE_ADD_NEW_WIDGET_BUTTON);
-            }
-            else {
+            } else {
                 cy.clickElement(feedbackRatingWidgetsPageElements.ADD_NEW_WIDGET_BUTTON);
             }
         });
@@ -623,8 +622,7 @@ const verifyPreviewRatingsPopUpElements = ({
         cy.verifyElement({
             element: feedbackRatingWidgetsPageElements.RATINGS_POPUP_POWEREDBY_LOGO,
         });
-    }
-    else {
+    } else {
         cy.shouldNotExist(feedbackRatingWidgetsPageElements.RATINGS_POPUP_POWEREDBY_LOGO);
     }
 };
@@ -655,8 +653,7 @@ const verifyPreviewThankYouMessagePopUpElements = ({
         cy.verifyElement({
             element: feedbackRatingWidgetsPageElements.RATINGS_POPUP_THANK_YOU_MESSAGE_POWEREDBY_LOGO,
         });
-    }
-    else {
+    } else {
         cy.shouldNotExist(feedbackRatingWidgetsPageElements.RATINGS_POPUP_THANK_YOU_MESSAGE_POWEREDBY_LOGO);
     }
 };
@@ -752,8 +749,7 @@ const verifyWidgetDetailsPageElements = ({
             element: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_STATUS_LABEL,
             elementText: "Running"
         });
-    }
-    else {
+    } else {
         cy.verifyElement({
             element: feedbackRatingWidgetDetailsPageElements.RATINGS_WIDGET_DETAILS_START_WIDGET_BUTTON,
             elementText: "Start Widget"

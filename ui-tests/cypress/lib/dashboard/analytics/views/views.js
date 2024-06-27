@@ -264,8 +264,7 @@ const verifyViewsMetricCard = ({
             elementText: "0%"
         });
 
-    }
-    else {
+    } else {
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: viewsMetricCardElements.TOTAL_VIEWS_VALUE,
@@ -304,8 +303,7 @@ const verifyViewsChart = ({
             labelElement: viewsEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    }
-    else {
+    } else {
 
         // cy.verifyElement({
         //     element: viewsEChartElements.CHART_LOAN_DETAILS_ICON,
@@ -418,8 +416,7 @@ const verifyViewsDataFromTable = ({
             labelText: "No data found",
         });
 
-    }
-    else {
+    } else {
 
         cy.verifyElement({
             element: viewsDataTableElements(index).VIEW_CHECKBOX,

@@ -243,8 +243,7 @@ const generateData = ({
     }
     else if (numberOfRuns === '50') {
         clickNumberOfRunsAs50();
-    }
-    else {
+    } else {
         clickNumberOfRunsAs10();
     }
 
