@@ -170,10 +170,10 @@ async function compileEmail(result) {
     const host = await new Promise((res, rej) => mail.lookup((err, _host) => err ? rej(err) : res(_host)));
     const metrics = [];
     if (metricValue) {
-        metrics.push({ key: "Value now", value: metricValue });
+        metrics.push({ key: "Value now", value: formatMetricValue(metricValue) });
     }
     if (metricValueBefore) {
-        metrics.push({ key: "Value before", value: metricValueBefore });
+        metrics.push({ key: "Value before", value: formatMetricValue(metricValueBefore) });
     }
     return EMAIL_TEMPLATE({
         title: `Countly Alert`,
@@ -188,6 +188,15 @@ async function compileEmail(result) {
             data: metrics
         }]
     });
+}
+
+function formatMetricValue(value) {
+    if (typeof value === 'number' && value === parseFloat(value.toFixed(2))) {
+        return value;
+    } else if (typeof value === 'number') {
+        return parseFloat(value.toFixed(2));
+    }
+    return value;
 }
 
 /**
