@@ -86,51 +86,50 @@ export const alertDrawerPageElements = {
     DRAWER_FILTER_RATING_SELECT: 'alert-data-filter-key-rating-select'
 };
 
-const alertDataTableElements = (index = 0) => {
-    return {
-        TABLE_ROWS: '.el-table__row',
-        TABLE_APPLICATION_SELECT: 'select-app-combobox',
-        EXPORT_AS_BUTTON: 'alerts-table-export-as-button',
-        TABLE_SEARCH_INPUT: 'alerts-table-datatable-search-input',
+const alertDataTableElements = (index = 0) => ({
 
-        COLUMN_NAME_ALERT_NAME_LABEL: 'alerts-table-label-alert-name',
-        COLUMN_NAME_ALERT_NAME_SORTABLE_ICON: 'alerts-table-sortable-icon-alert-name',
-        COLUMN_NAME_APPLICATION_LABEL: 'alerts-table-label-application',
-        COLUMN_NAME_APPLICATION_SORTABLE_ICON: 'alerts-table-sortable-icon-application',
-        COLUMN_NAME_CONDITION_LABEL: 'alerts-table-label-condition',
-        COLUMN_NAME_CONDITION_SORTABLE_ICON: 'alerts-table-sortable-icon-condition',
-        COLUMN_NAME_CREATED_BY_LABEL: 'alerts-table-label-created-by',
-        COLUMN_NAME_CREATED_BY_SORTABLE_ICON: 'alerts-table-sortable-icon-created-by',
+    TABLE_ROWS: '.el-table__row',
+    TABLE_APPLICATION_SELECT: 'select-app-combobox',
+    EXPORT_AS_BUTTON: 'alerts-table-export-as-button',
+    TABLE_SEARCH_INPUT: 'alerts-table-datatable-search-input',
 
-        //Columns' Rows' Datas Elements 
-        STATUS_SWITCH_WRAPPER: 'status-row-' + index + '-el-switch-wrapper',
-        STATUS_SWITCH_INPUT: 'status-row-' + index + '-el-switch-input',
-        ALERT_NAME: 'datatable-alert-name-' + index,
-        APPLICATION: 'datatable-application-' + index,
-        CONDITION: 'datatable-condition-' + index,
-        CREATED_BY: 'datatable-created-by-' + index,
-        MORE_OPTION_BUTTON: 'row-' + index + '-more-option-button',
-        MORE_EDIT_OPTION_BUTTON: 'datatable-edit-button-' + index,
-        MORE_DELETE_OPTION_BUTTON: 'datatable-delete-button-' + index,
+    COLUMN_NAME_ALERT_NAME_LABEL: 'alerts-table-label-alert-name',
+    COLUMN_NAME_ALERT_NAME_SORTABLE_ICON: 'alerts-table-sortable-icon-alert-name',
+    COLUMN_NAME_APPLICATION_LABEL: 'alerts-table-label-application',
+    COLUMN_NAME_APPLICATION_SORTABLE_ICON: 'alerts-table-sortable-icon-application',
+    COLUMN_NAME_CONDITION_LABEL: 'alerts-table-label-condition',
+    COLUMN_NAME_CONDITION_SORTABLE_ICON: 'alerts-table-sortable-icon-condition',
+    COLUMN_NAME_CREATED_BY_LABEL: 'alerts-table-label-created-by',
+    COLUMN_NAME_CREATED_BY_SORTABLE_ICON: 'alerts-table-sortable-icon-created-by',
 
-        //PAGINATION ELEMENTS
-        ITEMS_PER_PAGE_LABEL: 'alerts-table-items-per-page-label',
-        PER_PAGE_COUNT_SELECT: 'alerts-table-items-per-page-count-select-input-pseudo-input-label',
-        PER_PAGE_COUNT_SELECT_ICON: 'alerts-table-items-per-page-count-select-icon',
-        PER_PAGE_COUNT_LABEL: 'alerts-table-items-per-page-count-select',
-        PAGE_NUMBER_SELECT: 'alerts-table-page-number-select-input-pseudo-input-label',
-        PAGE_NUMBER_SELECT_ICON: 'alerts-table-page-number-select-icon',
-        FIRST_PAGE_ARROW_BUTTON: 'alerts-table-first-page-arrow-button',
-        PREVIOUS_PAGE_ARROW_BUTTON: 'alerts-table-previous-page-arrow-button',
-        NEXT_PAGE_ARROW_BUTTON: 'alerts-table-next-page-arrow-button',
-        LAST_PAGE_ARROW_BUTTON: 'alerts-table-last-page-arrow-button',
+    //Columns' Rows' Datas Elements 
+    STATUS_SWITCH_WRAPPER: 'status-row-' + index + '-el-switch-wrapper',
+    STATUS_SWITCH_INPUT: 'status-row-' + index + '-el-switch-input',
+    ALERT_NAME: 'datatable-alert-name-' + index,
+    APPLICATION: 'datatable-application-' + index,
+    CONDITION: 'datatable-condition-' + index,
+    CREATED_BY: 'datatable-created-by-' + index,
+    MORE_OPTION_BUTTON: 'row-' + index + '-more-option-button',
+    MORE_EDIT_OPTION_BUTTON: 'datatable-edit-button-' + index,
+    MORE_DELETE_OPTION_BUTTON: 'datatable-delete-button-' + index,
 
-        //EMPTY TABLE ELEMENTS
-        EMPTY_TABLE_ICON: 'alerts-table-empty-logo',
-        EMPTY_TABLE_TITLE: 'alerts-table-empty-title',
-        EMPTY_TABLE_SUBTITLE: 'alerts-table-empty-subtitle'
-    };
-};
+    //PAGINATION ELEMENTS
+    ITEMS_PER_PAGE_LABEL: 'alerts-table-items-per-page-label',
+    PER_PAGE_COUNT_SELECT: 'alerts-table-items-per-page-count-select-input-pseudo-input-label',
+    PER_PAGE_COUNT_SELECT_ICON: 'alerts-table-items-per-page-count-select-icon',
+    PER_PAGE_COUNT_LABEL: 'alerts-table-items-per-page-count-select',
+    PAGE_NUMBER_SELECT: 'alerts-table-page-number-select-input-pseudo-input-label',
+    PAGE_NUMBER_SELECT_ICON: 'alerts-table-page-number-select-icon',
+    FIRST_PAGE_ARROW_BUTTON: 'alerts-table-first-page-arrow-button',
+    PREVIOUS_PAGE_ARROW_BUTTON: 'alerts-table-previous-page-arrow-button',
+    NEXT_PAGE_ARROW_BUTTON: 'alerts-table-next-page-arrow-button',
+    LAST_PAGE_ARROW_BUTTON: 'alerts-table-last-page-arrow-button',
+
+    //EMPTY TABLE ELEMENTS
+    EMPTY_TABLE_ICON: 'alerts-table-empty-logo',
+    EMPTY_TABLE_TITLE: 'alerts-table-empty-title',
+    EMPTY_TABLE_SUBTITLE: 'alerts-table-empty-subtitle'
+});
 
 module.exports = {
     alertsPageElements,

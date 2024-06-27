@@ -4,8 +4,8 @@ export const userManagementPageElements = {
     FILTER_USER_TYPE_SELECT: 'cly-input-dropdown-trigger-pseudo-input-label',
 };
 
-const usersDataTableElements = (index = 0) => {
-    return {
+const usersDataTableElements = (index = 0) => ({
+
         TABLE_ROWS: '.el-table__row',
         EDIT_COLUMNS_BUTTON: 'cly-datatable-n-test-id-edit-columns-button',
         EXPORT_AS_BUTTON: 'cly-datatable-n-test-id-export-as-button',
@@ -33,8 +33,7 @@ const usersDataTableElements = (index = 0) => {
         PREVIOUS_PAGE_ARROW_BUTTON: 'cly-datatable-n-test-id-previous-page-arrow-button',
         NEXT_PAGE_ARROW_BUTTON: 'cly-datatable-n-test-id-next-page-arrow-button',
         LAST_PAGE_ARROW_BUTTON: 'cly-datatable-n-test-id-last-page-arrow-button'
-    };
-};
+});
 
 module.exports = {
     userManagementPageElements,
