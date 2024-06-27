@@ -450,6 +450,7 @@
                             class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
                             placeholder="value"
                             type="text"
+                            @keypress="isNumberKeyPressEvent($event)"
                             />
                         <span class="groupcard-text mediumtextNormal-14px" data-test-id="trigger-in-the-last-label">
                             in the last
