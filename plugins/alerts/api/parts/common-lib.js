@@ -200,9 +200,11 @@ async function compileEmail(result) {
 function formatMetricValue(value) {
     if (typeof value === 'number' && value === parseFloat(value.toFixed(2))) {
         return value;
-    } else if (typeof value === 'number') {
+    } 
+    else if (typeof value === 'number') {
         return parseFloat(value.toFixed(2));
-    } else {
+    } 
+    else {
         return value;
     }
 }
