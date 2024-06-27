@@ -18,38 +18,36 @@ export const slippingAwayEChartElements = {
     CHART_CHART_DESC_LABEL: 'slipping-away-users-who-haven\'t-had-a-session-for-more-than-legend-label',
 };
 
-const slippingAwayDataTableElements = (index = 0) => {
-    return {
-        TABLE_ROWS: '.el-table__row',
-        EXPORT_AS_BUTTON: 'slipping-away-export-as-button',
-        TABLE_SEARCH_INPUT: 'slipping-away-datatable-search-input',
+const slippingAwayDataTableElements = (index = 0) => ({
+    TABLE_ROWS: '.el-table__row',
+    EXPORT_AS_BUTTON: 'slipping-away-export-as-button',
+    TABLE_SEARCH_INPUT: 'slipping-away-datatable-search-input',
 
-        COLUMN_NAME_NO_SESSION_IN_LABEL: 'slipping-away-label-no-sessions-in-(days)',
-        COLUMN_NAME_NO_SESSION_IN_SORTABLE_ICON: 'slipping-away-sortable-icon-no-sessions-in-(days)',
-        COLUMN_NAME_SLIPPING_AWAY_USER_COUNT_LABEL: 'slipping-away-label-slipping-away-user-count',
-        COLUMN_NAME_SLIPPING_AWAY_USER_COUNT_SORTABLE_ICON: 'slipping-away-sortable-icon-slipping-away-user-count',
-        COLUMN_NAME_PERCENTAGE_LABEL: 'slipping-away-label-percentage',
-        COLUMN_NAME_PERCENTAGE_SORTABLE_ICON: 'slipping-away-sortable-icon-percentage',
+    COLUMN_NAME_NO_SESSION_IN_LABEL: 'slipping-away-label-no-sessions-in-(days)',
+    COLUMN_NAME_NO_SESSION_IN_SORTABLE_ICON: 'slipping-away-sortable-icon-no-sessions-in-(days)',
+    COLUMN_NAME_SLIPPING_AWAY_USER_COUNT_LABEL: 'slipping-away-label-slipping-away-user-count',
+    COLUMN_NAME_SLIPPING_AWAY_USER_COUNT_SORTABLE_ICON: 'slipping-away-sortable-icon-slipping-away-user-count',
+    COLUMN_NAME_PERCENTAGE_LABEL: 'slipping-away-label-percentage',
+    COLUMN_NAME_PERCENTAGE_SORTABLE_ICON: 'slipping-away-sortable-icon-percentage',
 
-        //Columns' Rows' Datas Elements 
-        NO_SESSION_IN: 'datatable-no-sessions-in-' + index,
-        SLIPPING_AWAY_USER_COUNT: 'datatable-slipping-away-user-count-' + index,
-        PERCENTAGE_VALUE: 'datatable-percentage-' + index,
-        PERCENTAGE_PROGRESS_BAR: 'datatable-percentage-progress-bar-' + index,
+    //Columns' Rows' Datas Elements 
+    NO_SESSION_IN: 'datatable-no-sessions-in-' + index,
+    SLIPPING_AWAY_USER_COUNT: 'datatable-slipping-away-user-count-' + index,
+    PERCENTAGE_VALUE: 'datatable-percentage-' + index,
+    PERCENTAGE_PROGRESS_BAR: 'datatable-percentage-progress-bar-' + index,
 
-        //PAGINATION ELEMENTS
-        ITEMS_PER_PAGE_LABEL: 'slipping-away--items-per-page-label',
-        PER_PAGE_COUNT_SELECT: 'slipping-away-items-per-page-count-select-input-pseudo-input-label',
-        PER_PAGE_COUNT_SELECT_ICON: 'slipping-away-overview-items-per-page-count-select-icon',
-        PER_PAGE_COUNT_LABEL: 'slipping-away-overview-items-per-page-count-select',
-        PAGE_NUMBER_SELECT: 'slipping-away-overview-page-number-select-input-pseudo-input-label',
-        PAGE_NUMBER_SELECT_ICON: 'slipping-away-overview-page-number-select-icon',
-        FIRST_PAGE_ARROW_BUTTON: 'slipping-away-overview-first-page-arrow-button',
-        PREVIOUS_PAGE_ARROW_BUTTON: 'slipping-away-overview-previous-page-arrow-button',
-        NEXT_PAGE_ARROW_BUTTON: 'slipping-away-overview-next-page-arrow-button',
-        LAST_PAGE_ARROW_BUTTON: 'slipping-away-overview-last-page-arrow-button'
-    };
-};
+    //PAGINATION ELEMENTS
+    ITEMS_PER_PAGE_LABEL: 'slipping-away--items-per-page-label',
+    PER_PAGE_COUNT_SELECT: 'slipping-away-items-per-page-count-select-input-pseudo-input-label',
+    PER_PAGE_COUNT_SELECT_ICON: 'slipping-away-overview-items-per-page-count-select-icon',
+    PER_PAGE_COUNT_LABEL: 'slipping-away-overview-items-per-page-count-select',
+    PAGE_NUMBER_SELECT: 'slipping-away-overview-page-number-select-input-pseudo-input-label',
+    PAGE_NUMBER_SELECT_ICON: 'slipping-away-overview-page-number-select-icon',
+    FIRST_PAGE_ARROW_BUTTON: 'slipping-away-overview-first-page-arrow-button',
+    PREVIOUS_PAGE_ARROW_BUTTON: 'slipping-away-overview-previous-page-arrow-button',
+    NEXT_PAGE_ARROW_BUTTON: 'slipping-away-overview-next-page-arrow-button',
+    LAST_PAGE_ARROW_BUTTON: 'slipping-away-overview-last-page-arrow-button'
+});
 
 module.exports = {
     slippingAwayPageElements,

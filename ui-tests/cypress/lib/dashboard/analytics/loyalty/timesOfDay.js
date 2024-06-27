@@ -245,56 +245,53 @@ const verifyTimesOfDayDataFromTable = ({
                 elementText: '0'
             });
         }
-
+        return;
     }
-    else {
+    cy.scrollPageToBottom();
 
-        cy.scrollPageToBottom();
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: timesOfDayDataTableElements(index).MONDAY,
+        elementText: monday
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: timesOfDayDataTableElements(index).MONDAY,
-            elementText: monday
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: timesOfDayDataTableElements(index).TUESDAY,
+        elementText: tuesday
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: timesOfDayDataTableElements(index).TUESDAY,
-            elementText: tuesday
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: timesOfDayDataTableElements(index).WEDNESDAY,
+        elementText: wednesday
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: timesOfDayDataTableElements(index).WEDNESDAY,
-            elementText: wednesday
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: timesOfDayDataTableElements(index).THURSDAY,
+        elementText: thursday
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: timesOfDayDataTableElements(index).THURSDAY,
-            elementText: thursday
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: timesOfDayDataTableElements(index).FRIDAY,
+        elementText: friday
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: timesOfDayDataTableElements(index).FRIDAY,
-            elementText: friday
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: timesOfDayDataTableElements(index).SATURDAY,
+        elementText: saturday
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: timesOfDayDataTableElements(index).SATURDAY,
-            elementText: saturday
-        });
+    cy.scrollDataTableToRight();
 
-        cy.scrollDataTableToRight();
-
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: timesOfDayDataTableElements(index).SUNDAY,
-            elementText: sunday
-        });
-    }
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: timesOfDayDataTableElements(index).SUNDAY,
+        elementText: sunday
+    });
 };
 
 const clickUserActivityTab = () => {

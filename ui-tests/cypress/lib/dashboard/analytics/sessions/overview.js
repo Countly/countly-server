@@ -138,88 +138,88 @@ const verifySessionsOverviewChart = ({
             labelElement: analyticsSessionOverviewEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
+        return;
     }
-    else {
-        cy.verifyElement({
-            element: analyticsSessionOverviewEChartElements.CHART_SESSION_OVERVIEW,
-        });
+    
+    cy.verifyElement({
+        element: analyticsSessionOverviewEChartElements.CHART_SESSION_OVERVIEW,
+    });
 
-        cy.verifyElement({
-            element: analyticsSessionOverviewEChartElements.CHART_TYPE_SELECT,
-            elementPlaceHolder: "Select",
-            value: "Line",
-        });
+    cy.verifyElement({
+        element: analyticsSessionOverviewEChartElements.CHART_TYPE_SELECT,
+        elementPlaceHolder: "Select",
+        value: "Line",
+    });
 
-        cy.verifyElement({
-            element: analyticsSessionOverviewEChartElements.CHART_ANNOTATION_BUTTON,
-        });
+    cy.verifyElement({
+        element: analyticsSessionOverviewEChartElements.CHART_ANNOTATION_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: analyticsSessionOverviewEChartElements.CHART_MORE_BUTTON,
-        });
+    cy.verifyElement({
+        element: analyticsSessionOverviewEChartElements.CHART_MORE_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_ICON,
-            labelElement: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_LABEL,
-            labelText: "Total Sessions",
-            tooltipElement: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_TOOLTIP,
-            tooltipText: "Number of times your application is opened, by new or returning users, in the selected time period.",
-        });
+    cy.verifyElement({
+        element: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_ICON,
+        labelElement: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_LABEL,
+        labelText: "Total Sessions",
+        tooltipElement: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_TOOLTIP,
+        tooltipText: "Number of times your application is opened, by new or returning users, in the selected time period.",
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_VALUE,
-            elementText: totalSessionsValue,
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_VALUE,
+        elementText: totalSessionsValue,
+    });
 
-        cy.verifyElement({
-            element: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_TREND_ICON,
-        });
+    cy.verifyElement({
+        element: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_TREND_ICON,
+    });
 
-        // cy.verifyElement({
-        //     shouldNot: !isEmpty,
-        //     element: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_PERCENTAGE,
-        //     elementText: totalSessionsPercentage,
-        // });
+    // cy.verifyElement({
+    //     shouldNot: !isEmpty,
+    //     element: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_PERCENTAGE,
+    //     elementText: totalSessionsPercentage,
+    // });
 
-        cy.verifyElement({
-            element: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_ICON,
-            labelElement: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_LABEL,
-            labelText: "New Sessions",
-            tooltipElement: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_TOOLTIP,
-            tooltipText: "Number of times your application is opened by a new user, in the selected time period. It is equal to the number of New Users and it only counts the first session the user had.",
-        });
+    cy.verifyElement({
+        element: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_ICON,
+        labelElement: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_LABEL,
+        labelText: "New Sessions",
+        tooltipElement: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_TOOLTIP,
+        tooltipText: "Number of times your application is opened by a new user, in the selected time period. It is equal to the number of New Users and it only counts the first session the user had.",
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_VALUE,
-            elementText: newSessionsValue,
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_VALUE,
+        elementText: newSessionsValue,
+    });
 
-        cy.verifyElement({
-            element: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_TREND_ICON,
-        });
+    cy.verifyElement({
+        element: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_TREND_ICON,
+    });
 
-        // cy.verifyElement({
-        //     shouldNot: !isEmpty,
-        //     element: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_PERCENTAGE,
-        //     elementText: newSessionsPercentage,
-        // });
+    // cy.verifyElement({
+    //     shouldNot: !isEmpty,
+    //     element: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_PERCENTAGE,
+    //     elementText: newSessionsPercentage,
+    // });
 
-        cy.verifyElement({
-            element: analyticsSessionOverviewEChartElements.CHART_UNIQUE_SESSIONS_ICON,
-            labelElement: analyticsSessionOverviewEChartElements.CHART_UNIQUE_SESSIONS_LABEL,
-            labelText: "Unique Sessions",
-            tooltipElement: analyticsSessionOverviewEChartElements.CHART_UNIQUE_SESSIONS_TOOLTIP,
-            tooltipText: "Number of times your application is opened by a new or returning user from a unique device, in the selected time period. It is equal to the number of Total Users.",
-        });
+    cy.verifyElement({
+        element: analyticsSessionOverviewEChartElements.CHART_UNIQUE_SESSIONS_ICON,
+        labelElement: analyticsSessionOverviewEChartElements.CHART_UNIQUE_SESSIONS_LABEL,
+        labelText: "Unique Sessions",
+        tooltipElement: analyticsSessionOverviewEChartElements.CHART_UNIQUE_SESSIONS_TOOLTIP,
+        tooltipText: "Number of times your application is opened by a new or returning user from a unique device, in the selected time period. It is equal to the number of Total Users.",
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: analyticsSessionOverviewEChartElements.CHART_UNIQUE_SESSIONS_VALUE,
-            elementText: uniqueSessionsValue,
-        });
-    }
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: analyticsSessionOverviewEChartElements.CHART_UNIQUE_SESSIONS_VALUE,
+        elementText: uniqueSessionsValue,
+    });
 };
 
 const verifySessionsOverviewDataFromTable = ({
@@ -254,26 +254,26 @@ const verifySessionsOverviewDataFromTable = ({
             elementText: "0"
         });
 
-    }
-    else {
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: analyticsSessionOverviewDataTableElements(index).TOTAL_SESSIONS,
-            elementText: totalUsers
-        });
+        return;
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: analyticsSessionOverviewDataTableElements(index).NEW_SESSIONS,
-            elementText: newUsers
-        });
-
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: analyticsSessionOverviewDataTableElements(index).UNIQUE_SESSIONS,
-            elementText: returningUsers
-        });
     }
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: analyticsSessionOverviewDataTableElements(index).TOTAL_SESSIONS,
+        elementText: totalUsers
+    });
+
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: analyticsSessionOverviewDataTableElements(index).NEW_SESSIONS,
+        elementText: newUsers
+    });
+
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: analyticsSessionOverviewDataTableElements(index).UNIQUE_SESSIONS,
+        elementText: returningUsers
+    });
 };
 
 const clickSessionOverviewTab = () => {

@@ -122,23 +122,22 @@ const verifySessionDurationChart = ({
             labelElement: sessionDurationsEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
+        return;
     }
-    else {
 
-        cy.verifyElement({
-            element: sessionDurationsEChartElements.CHART_USER_ACTIVITY,
-        });
+    cy.verifyElement({
+        element: sessionDurationsEChartElements.CHART_USER_ACTIVITY,
+    });
 
-        cy.verifyElement({
-            element: sessionDurationsEChartElements.CHART_MORE_BUTTON,
-        });
+    cy.verifyElement({
+        element: sessionDurationsEChartElements.CHART_MORE_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: sessionDurationsEChartElements.CHART_SESSION_DURATIONS_ICON,
-            labelElement: sessionDurationsEChartElements.CHART_SESSION_DURATIONS_LABEL,
-            labelText: "Session Durations",
-        });
-    }
+    cy.verifyElement({
+        element: sessionDurationsEChartElements.CHART_SESSION_DURATIONS_ICON,
+        labelElement: sessionDurationsEChartElements.CHART_SESSION_DURATIONS_LABEL,
+        labelText: "Session Durations",
+    });
 };
 
 const verifySessionDurationDataFromTable = ({
@@ -164,35 +163,35 @@ const verifySessionDurationDataFromTable = ({
             labelElement: sessionDurationsDataTableElements().EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
+
+        return;
     }
-    else {
 
-        let i = 0;
+    let i = 0;
 
-        for (i = 0; i < 5; i++) {
-            cy.verifyElement({
-                element: sessionDurationsDataTableElements(i).SESSION_DURATION,
-            });
-        }
-
-        for (i = 0; i < 5; i++) {
-            cy.verifyElement({
-                element: sessionDurationsDataTableElements(i).PERCENT_PROGRESS_BAR,
-            });
-        }
-
+    for (i = 0; i < 5; i++) {
         cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: sessionDurationsDataTableElements(index).NUMBER_OF_SESSIONS,
-            elementText: numberOfSessions
-        });
-
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: sessionDurationsDataTableElements(index).PERCENT_VALUE,
-            elementText: percent
+            element: sessionDurationsDataTableElements(i).SESSION_DURATION,
         });
     }
+
+    for (i = 0; i < 5; i++) {
+        cy.verifyElement({
+            element: sessionDurationsDataTableElements(i).PERCENT_PROGRESS_BAR,
+        });
+    }
+
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: sessionDurationsDataTableElements(index).NUMBER_OF_SESSIONS,
+        elementText: numberOfSessions
+    });
+
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: sessionDurationsDataTableElements(index).PERCENT_VALUE,
+        elementText: percent
+    });
 };
 
 const clickSessionOverviewTab = () => {

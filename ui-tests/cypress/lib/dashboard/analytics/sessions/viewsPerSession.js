@@ -122,23 +122,22 @@ const verifyViewsPerSessionChart = ({
             labelElement: sessionViewsPerSessionEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
+        return;
     }
-    else {
 
-        cy.verifyElement({
-            element: sessionViewsPerSessionEChartElements.CHART_SESSION_VIEWS_PER_SESSION,
-        });
+    cy.verifyElement({
+        element: sessionViewsPerSessionEChartElements.CHART_SESSION_VIEWS_PER_SESSION,
+    });
 
-        cy.verifyElement({
-            element: sessionViewsPerSessionEChartElements.CHART_MORE_BUTTON,
-        });
+    cy.verifyElement({
+        element: sessionViewsPerSessionEChartElements.CHART_MORE_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: sessionViewsPerSessionEChartElements.CHART_VIEWS_PER_SESSION_ICON,
-            labelElement: sessionViewsPerSessionEChartElements.CHART_VIEWS_PER_SESSION_LABEL,
-            labelText: "Views per Session",
-        });
-    }
+    cy.verifyElement({
+        element: sessionViewsPerSessionEChartElements.CHART_VIEWS_PER_SESSION_ICON,
+        labelElement: sessionViewsPerSessionEChartElements.CHART_VIEWS_PER_SESSION_LABEL,
+        labelText: "Views per Session",
+    });
 };
 
 const verifyViewsPerSessionDataFromTable = ({
@@ -164,36 +163,36 @@ const verifyViewsPerSessionDataFromTable = ({
             labelElement: sessionViewsPerSessionDataTableElements().EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
+
+        return;
     }
-    else {
 
-        cy.verifyElement({
-            element: sessionViewsPerSessionDataTableElements(0).VIEWS_PER_SESSION,
-            elementText: "1 - 2 views"
-        });
-        cy.verifyElement({
-            element: sessionViewsPerSessionDataTableElements(1).VIEWS_PER_SESSION,
-            elementText: "3 - 5 views"
-        });
+    cy.verifyElement({
+        element: sessionViewsPerSessionDataTableElements(0).VIEWS_PER_SESSION,
+        elementText: "1 - 2 views"
+    });
+    cy.verifyElement({
+        element: sessionViewsPerSessionDataTableElements(1).VIEWS_PER_SESSION,
+        elementText: "3 - 5 views"
+    });
 
-        for (var i = 0; i < 2; i++) {
-            cy.verifyElement({
-                element: sessionViewsPerSessionDataTableElements(i).PERCENT_PROGRESS_BAR,
-            });
-        }
-
+    for (var i = 0; i < 2; i++) {
         cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: sessionViewsPerSessionDataTableElements(index).NUMBER_OF_SESSIONS,
-            elementText: numberOfSessions
-        });
-
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: sessionViewsPerSessionDataTableElements(index).PERCENT_VALUE,
-            elementText: percent
+            element: sessionViewsPerSessionDataTableElements(i).PERCENT_PROGRESS_BAR,
         });
     }
+
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: sessionViewsPerSessionDataTableElements(index).NUMBER_OF_SESSIONS,
+        elementText: numberOfSessions
+    });
+
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: sessionViewsPerSessionDataTableElements(index).PERCENT_VALUE,
+        elementText: percent
+    });
 };
 
 const clickSessionOverviewTab = () => {

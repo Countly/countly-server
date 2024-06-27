@@ -117,98 +117,98 @@ const verifyUsersOverviewChart = ({
             labelElement: usersOverviewEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
+        return;
     }
-    else {
-        cy.verifyElement({
-            element: usersOverviewEChartElements.CHART_USERS_OVERVIEW,
-        });
 
-        cy.verifyElement({
-            element: usersOverviewEChartElements.CHART_TYPE_SELECT,
-            elementPlaceHolder: "Select",
-            value: "Line",
-        });
+    cy.verifyElement({
+        element: usersOverviewEChartElements.CHART_USERS_OVERVIEW,
+    });
 
-        cy.verifyElement({
-            element: usersOverviewEChartElements.CHART_ANNOTATION_BUTTON,
-        });
+    cy.verifyElement({
+        element: usersOverviewEChartElements.CHART_TYPE_SELECT,
+        elementPlaceHolder: "Select",
+        value: "Line",
+    });
 
-        cy.verifyElement({
-            element: usersOverviewEChartElements.CHART_MORE_BUTTON,
-        });
+    cy.verifyElement({
+        element: usersOverviewEChartElements.CHART_ANNOTATION_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: usersOverviewEChartElements.CHART_TOTAL_USERS_ICON,
-            labelElement: usersOverviewEChartElements.CHART_TOTAL_USERS_LABEL,
-            labelText: "Total Users",
-            tooltipElement: usersOverviewEChartElements.CHART_TOTAL_USERS_TOOLTIP,
-            tooltipText: "The number of users (unique devices/IDs) who have opened your application in the selected time period.",
-        });
+    cy.verifyElement({
+        element: usersOverviewEChartElements.CHART_MORE_BUTTON,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: usersOverviewEChartElements.CHART_TOTAL_USERS_VALUE,
-            elementText: totalUsersValue,
-        });
+    cy.verifyElement({
+        element: usersOverviewEChartElements.CHART_TOTAL_USERS_ICON,
+        labelElement: usersOverviewEChartElements.CHART_TOTAL_USERS_LABEL,
+        labelText: "Total Users",
+        tooltipElement: usersOverviewEChartElements.CHART_TOTAL_USERS_TOOLTIP,
+        tooltipText: "The number of users (unique devices/IDs) who have opened your application in the selected time period.",
+    });
 
-        cy.verifyElement({
-            element: usersOverviewEChartElements.CHART_TOTAL_USERS_TREND_ICON,
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: usersOverviewEChartElements.CHART_TOTAL_USERS_VALUE,
+        elementText: totalUsersValue,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: usersOverviewEChartElements.CHART_TOTAL_USERS_PERCENTAGE,
-            elementText: totalUsersPercentage,
-        });
+    cy.verifyElement({
+        element: usersOverviewEChartElements.CHART_TOTAL_USERS_TREND_ICON,
+    });
 
-        cy.verifyElement({
-            element: usersOverviewEChartElements.CHART_NEW_USERS_ICON,
-            labelElement: usersOverviewEChartElements.CHART_NEW_USERS_LABEL,
-            labelText: "New Users",
-            tooltipElement: usersOverviewEChartElements.CHART_NEW_USERS_TOOLTIP,
-            tooltipText: "The number of first-time users (unique devices/IDs) in the selected time period.",
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: usersOverviewEChartElements.CHART_TOTAL_USERS_PERCENTAGE,
+        elementText: totalUsersPercentage,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: usersOverviewEChartElements.CHART_NEW_USERS_VALUE,
-            elementText: newUsersValue,
-        });
+    cy.verifyElement({
+        element: usersOverviewEChartElements.CHART_NEW_USERS_ICON,
+        labelElement: usersOverviewEChartElements.CHART_NEW_USERS_LABEL,
+        labelText: "New Users",
+        tooltipElement: usersOverviewEChartElements.CHART_NEW_USERS_TOOLTIP,
+        tooltipText: "The number of first-time users (unique devices/IDs) in the selected time period.",
+    });
 
-        cy.verifyElement({
-            element: usersOverviewEChartElements.CHART_NEW_USERS_TREND_ICON,
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: usersOverviewEChartElements.CHART_NEW_USERS_VALUE,
+        elementText: newUsersValue,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: usersOverviewEChartElements.CHART_NEW_USERS_PERCENTAGE,
-            elementText: newUsersPercentage,
-        });
+    cy.verifyElement({
+        element: usersOverviewEChartElements.CHART_NEW_USERS_TREND_ICON,
+    });
 
-        cy.verifyElement({
-            element: usersOverviewEChartElements.CHART_RETURNING_USERS_ICON,
-            labelElement: usersOverviewEChartElements.CHART_RETURNING_USERS_LABEL,
-            labelText: "Returning Users",
-            tooltipElement: usersOverviewEChartElements.CHART_RETURNING_USERS_TOOLTIP,
-            tooltipText: "Number of users using your application for the second or later time, in the selected time period, calculated as Total Users (less) New Users.",
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: usersOverviewEChartElements.CHART_NEW_USERS_PERCENTAGE,
+        elementText: newUsersPercentage,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: usersOverviewEChartElements.CHART_RETURNING_USERS_VALUE,
-            elementText: returningUsersValue,
-        });
+    cy.verifyElement({
+        element: usersOverviewEChartElements.CHART_RETURNING_USERS_ICON,
+        labelElement: usersOverviewEChartElements.CHART_RETURNING_USERS_LABEL,
+        labelText: "Returning Users",
+        tooltipElement: usersOverviewEChartElements.CHART_RETURNING_USERS_TOOLTIP,
+        tooltipText: "Number of users using your application for the second or later time, in the selected time period, calculated as Total Users (less) New Users.",
+    });
 
-        cy.verifyElement({
-            element: usersOverviewEChartElements.CHART_RETURNING_USERS_TREND_ICON,
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: usersOverviewEChartElements.CHART_RETURNING_USERS_VALUE,
+        elementText: returningUsersValue,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: usersOverviewEChartElements.CHART_RETURNING_USERS_PERCENTAGE,
-            elementText: returningUsersPercentage,
-        });
-    }
+    cy.verifyElement({
+        element: usersOverviewEChartElements.CHART_RETURNING_USERS_TREND_ICON,
+    });
+
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: usersOverviewEChartElements.CHART_RETURNING_USERS_PERCENTAGE,
+        elementText: returningUsersPercentage,
+    });
 };
 
 const verifyUsersOverviewDataFromTable = ({
@@ -252,27 +252,25 @@ const verifyUsersOverviewDataFromTable = ({
                 elementText: '0'
             });
         }
-
+        return;
     }
-    else {
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: usersOverviewDataTableElements(index).TOTAL_USERS,
-            elementText: totalUsers
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: usersOverviewDataTableElements(index).TOTAL_USERS,
+        elementText: totalUsers
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: usersOverviewDataTableElements(index).NEW_USERS,
-            elementText: newUsers
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: usersOverviewDataTableElements(index).NEW_USERS,
+        elementText: newUsers
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: usersOverviewDataTableElements(index).RETURNING_USERS,
-            elementText: returningUsers
-        });
-    }
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: usersOverviewDataTableElements(index).RETURNING_USERS,
+        elementText: returningUsers
+    });
 };
 
 module.exports = {

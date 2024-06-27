@@ -123,35 +123,34 @@ const verifyUserActivityChart = ({
             labelElement: userActivityEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
+        return;
     }
-    else {
+    
+    cy.verifyElement({
+        element: userActivityEChartElements.CHART_USER_ACTIVITY,
+    });
 
-        cy.verifyElement({
-            element: userActivityEChartElements.CHART_USER_ACTIVITY,
-        });
+    cy.verifyElement({
+        element: userActivityEChartElements.CHART_MORE_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: userActivityEChartElements.CHART_MORE_BUTTON,
-        });
+    cy.verifyElement({
+        element: userActivityEChartElements.CHART_ALL_USERS_ICON,
+        labelElement: userActivityEChartElements.CHART_ALL_USERS_LABEL,
+        labelText: "All Users",
+    });
 
-        cy.verifyElement({
-            element: userActivityEChartElements.CHART_ALL_USERS_ICON,
-            labelElement: userActivityEChartElements.CHART_ALL_USERS_LABEL,
-            labelText: "All Users",
-        });
+    cy.verifyElement({
+        element: userActivityEChartElements.CHART_ACTIVE_USERS_SEVEN_DAYS_ICON,
+        labelElement: userActivityEChartElements.CHART_ACTIVE_USERS_SEVEN_DAYS_LABEL,
+        labelText: "Active Users (7 days)",
+    });
 
-        cy.verifyElement({
-            element: userActivityEChartElements.CHART_ACTIVE_USERS_SEVEN_DAYS_ICON,
-            labelElement: userActivityEChartElements.CHART_ACTIVE_USERS_SEVEN_DAYS_LABEL,
-            labelText: "Active Users (7 days)",
-        });
-
-        cy.verifyElement({
-            element: userActivityEChartElements.CHART_ACTIVE_USERS_THIRTY_DAYS_ICON,
-            labelElement: userActivityEChartElements.CHART_ACTIVE_USERS_THIRTY_DAYS_LABEL,
-            labelText: "Active Users (30 days)",
-        });
-    }
+    cy.verifyElement({
+        element: userActivityEChartElements.CHART_ACTIVE_USERS_THIRTY_DAYS_ICON,
+        labelElement: userActivityEChartElements.CHART_ACTIVE_USERS_THIRTY_DAYS_LABEL,
+        labelText: "Active Users (30 days)",
+    });
 };
 
 const verifyUserActivityDataFromTable = ({
@@ -180,75 +179,75 @@ const verifyUserActivityDataFromTable = ({
             labelElement: userActivityDataTableElements().EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
+
+        return;
     }
-    else {
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: userActivityDataTableElements(index).SESSION_COUNT,
-            elementText: sessionCount
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: userActivityDataTableElements(index).SESSION_COUNT,
+        elementText: sessionCount
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: userActivityDataTableElements(index).ALL_USERS_VALUE,
-            elementText: allUsersValue
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: userActivityDataTableElements(index).ALL_USERS_VALUE,
+        elementText: allUsersValue
+    });
 
-        cy.verifyElement({
-            element: userActivityDataTableElements(index).ALL_USERS_DIVIDER,
-        });
+    cy.verifyElement({
+        element: userActivityDataTableElements(index).ALL_USERS_DIVIDER,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: userActivityDataTableElements(index).ALL_USERS_PERCENTAGE,
-            elementText: allUsersPercentage
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: userActivityDataTableElements(index).ALL_USERS_PERCENTAGE,
+        elementText: allUsersPercentage
+    });
 
-        cy.verifyElement({
-            element: userActivityDataTableElements(index).ALL_USERS_PROGRESS_BAR,
-        });
+    cy.verifyElement({
+        element: userActivityDataTableElements(index).ALL_USERS_PROGRESS_BAR,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: userActivityDataTableElements(index).ACTIVE_USERS_THIRTY_DAYS_VALUE,
-            elementText: activeUsersThirtyDaysValue
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: userActivityDataTableElements(index).ACTIVE_USERS_THIRTY_DAYS_VALUE,
+        elementText: activeUsersThirtyDaysValue
+    });
 
-        cy.verifyElement({
-            element: userActivityDataTableElements(index).ACTIVE_USERS_THIRTY_DAYS_DIVIDER,
-        });
+    cy.verifyElement({
+        element: userActivityDataTableElements(index).ACTIVE_USERS_THIRTY_DAYS_DIVIDER,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: userActivityDataTableElements(index).ACTIVE_USERS_THIRTY_DAYS_PERCENTAGE,
-            elementText: activeUsersThirtyDaysPercentage
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: userActivityDataTableElements(index).ACTIVE_USERS_THIRTY_DAYS_PERCENTAGE,
+        elementText: activeUsersThirtyDaysPercentage
+    });
 
-        cy.verifyElement({
-            element: userActivityDataTableElements(index).ACTIVE_USERS_THIRTY_DAYS_PROGRESS_BAR,
-        });
+    cy.verifyElement({
+        element: userActivityDataTableElements(index).ACTIVE_USERS_THIRTY_DAYS_PROGRESS_BAR,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: userActivityDataTableElements(index).ACTIVE_USERS_SEVEN_DAYS_VALUE,
-            elementText: activeUsersSevenDaysValue
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: userActivityDataTableElements(index).ACTIVE_USERS_SEVEN_DAYS_VALUE,
+        elementText: activeUsersSevenDaysValue
+    });
 
-        cy.verifyElement({
-            element: userActivityDataTableElements(index).ACTIVE_USERS_SEVEN_DAYS_DIVIDER,
-        });
+    cy.verifyElement({
+        element: userActivityDataTableElements(index).ACTIVE_USERS_SEVEN_DAYS_DIVIDER,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: userActivityDataTableElements(index).ACTIVE_USERS_SEVEN_DAYS_PERCENTAGE,
-            elementText: activeUsersSevenDaysPercentage
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: userActivityDataTableElements(index).ACTIVE_USERS_SEVEN_DAYS_PERCENTAGE,
+        elementText: activeUsersSevenDaysPercentage
+    });
 
-        cy.verifyElement({
-            element: userActivityDataTableElements(index).ACTIVE_USERS_SEVEN_DAYS_PROGRESS_BAR,
-        });
-    }
+    cy.verifyElement({
+        element: userActivityDataTableElements(index).ACTIVE_USERS_SEVEN_DAYS_PROGRESS_BAR,
+    });
 };
 
 const clickUserActivityTab = () => {

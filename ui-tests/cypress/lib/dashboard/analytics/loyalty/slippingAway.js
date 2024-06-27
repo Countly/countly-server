@@ -113,23 +113,22 @@ const verifySlippingAwayChart = ({
             labelElement: slippingAwayEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
+
+        return;
     }
-    else {
+    cy.verifyElement({
+        element: slippingAwayEChartElements.CHART_SLIPPING_AWAY_CHART,
+    });
 
-        cy.verifyElement({
-            element: slippingAwayEChartElements.CHART_SLIPPING_AWAY_CHART,
-        });
+    cy.verifyElement({
+        element: slippingAwayEChartElements.CHART_MORE_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: slippingAwayEChartElements.CHART_MORE_BUTTON,
-        });
-
-        cy.verifyElement({
-            element: slippingAwayEChartElements.CHART_CHART_DESC_ICON,
-            labelElement: slippingAwayEChartElements.CHART_CHART_DESC_LABEL,
-            labelText: "Users who haven't had a session for more than",
-        });
-    }
+    cy.verifyElement({
+        element: slippingAwayEChartElements.CHART_CHART_DESC_ICON,
+        labelElement: slippingAwayEChartElements.CHART_CHART_DESC_LABEL,
+        labelText: "Users who haven't had a session for more than",
+    });
 };
 
 const verifySlippingAwayDataFromTable = ({
@@ -183,20 +182,20 @@ const verifySlippingAwayDataFromTable = ({
                 elementText: '0.00%'
             });
         }
+        return;
     }
-    else {
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: slippingAwayDataTableElements(index).SLIPPING_AWAY_USER_COUNT,
-            elementText: slippingAwayUserCount
-        });
+    
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: slippingAwayDataTableElements(index).SLIPPING_AWAY_USER_COUNT,
+        elementText: slippingAwayUserCount
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: slippingAwayDataTableElements(index).PERCENTAGE_VALUE,
-            elementText: percentage
-        });
-    }
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: slippingAwayDataTableElements(index).PERCENTAGE_VALUE,
+        elementText: percentage
+    });
 };
 
 const clickUserActivityTab = () => {

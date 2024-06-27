@@ -122,22 +122,22 @@ const verifySessionFrequencyChart = ({
             labelElement: sessionFrequencyEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
+        return;
     }
-    else {
-        cy.verifyElement({
-            element: sessionFrequencyEChartElements.CHART_SESSION_FREQUENCY,
-        });
+    
+    cy.verifyElement({
+        element: sessionFrequencyEChartElements.CHART_SESSION_FREQUENCY,
+    });
 
-        cy.verifyElement({
-            element: sessionFrequencyEChartElements.CHART_MORE_BUTTON,
-        });
+    cy.verifyElement({
+        element: sessionFrequencyEChartElements.CHART_MORE_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: sessionFrequencyEChartElements.CHART_SESSION_FREQUENCY_ICON,
-            labelElement: sessionFrequencyEChartElements.CHART_SESSION_FREQUENCY_LABEL,
-            labelText: "Session Frequency",
-        });
-    }
+    cy.verifyElement({
+        element: sessionFrequencyEChartElements.CHART_SESSION_FREQUENCY_ICON,
+        labelElement: sessionFrequencyEChartElements.CHART_SESSION_FREQUENCY_LABEL,
+        labelText: "Session Frequency",
+    });
 };
 
 const verifySessionFrequencyDataFromTable = ({
@@ -163,9 +163,9 @@ const verifySessionFrequencyDataFromTable = ({
             labelElement: sessionFrequencyDataTableElements().EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
-    }
-    else {
 
+        return;
+    }
         cy.verifyElement({
             element: sessionFrequencyDataTableElements(0).TIME_SINCE_LAST_SESSION,
             elementText: "First Session"
@@ -196,7 +196,6 @@ const verifySessionFrequencyDataFromTable = ({
             element: sessionFrequencyDataTableElements(index).PERCENT_VALUE,
             elementText: percent
         });
-    }
 };
 
 const clickSessionOverviewTab = () => {
