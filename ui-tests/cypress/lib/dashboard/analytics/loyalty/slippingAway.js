@@ -184,7 +184,7 @@ const verifySlippingAwayDataFromTable = ({
         }
         return;
     }
-    
+
     cy.verifyElement({
         shouldNot: !isEmpty,
         element: slippingAwayDataTableElements(index).SLIPPING_AWAY_USER_COUNT,

@@ -27,42 +27,41 @@ export const sessionDurationsEChartElements = {
     CHART_SESSION_DURATIONS_LABEL: 'chart-session-durations-session-durations-legend-label',
 };
 
-const sessionDurationsDataTableElements = (index = 0) => {
-    return {
-        EMPTY_TABLE_ICON: 'datatable-session-durations-empty-logo',
-        EMPTY_TABLE_TITLE: 'datatable-session-durations-empty-title',
-        EMPTY_TABLE_SUBTITLE: 'datatable-session-durations-empty-subtitle',
+const sessionDurationsDataTableElements = (index = 0) => ({
 
-        TABLE_ROWS: '.el-table__row',
-        EXPORT_AS_BUTTON: 'datatable-session-durations-export-as-button',
-        TABLE_SEARCH_INPUT: 'datatable-session-durations-datatable-search-input',
+    EMPTY_TABLE_ICON: 'datatable-session-durations-empty-logo',
+    EMPTY_TABLE_TITLE: 'datatable-session-durations-empty-title',
+    EMPTY_TABLE_SUBTITLE: 'datatable-session-durations-empty-subtitle',
 
-        COLUMN_NAME_SESSION_DURATION_LABEL: 'datatable-session-durations-label-session-duration',
-        COLUMN_NAME_SESSION_DURATION_SORTABLE_ICON: 'datatable-session-durations-sortable-icon-session-duration',
-        COLUMN_NAME_NUMBER_OF_SESSIONS_LABEL: 'datatable-session-durations-label-number-of-sessions',
-        COLUMN_NAME_NUMBER_OF_SESSIONS_SORTABLE_ICON: 'datatable-session-durations-sortable-icon-number-of-sessions',
-        COLUMN_NAME_PERCENT_LABEL: 'datatable-session-durations-label-percent',
-        COLUMN_NAME_PERCENT_SORTABLE_ICON: 'datatable-session-durations-sortable-icon-percent',
+    TABLE_ROWS: '.el-table__row',
+    EXPORT_AS_BUTTON: 'datatable-session-durations-export-as-button',
+    TABLE_SEARCH_INPUT: 'datatable-session-durations-datatable-search-input',
 
-        //Columns' Rows' Datas Elements 
-        SESSION_DURATION: 'datatable-session-durations-session-duration-' + index,
-        NUMBER_OF_SESSIONS: 'datatable-session-durations-session-duration-' + index,
-        PERCENT_VALUE: 'datatable-session-durations-percent-' + index,
-        PERCENT_PROGRESS_BAR: 'datatable-session-durations-progress-bar-' + index,
+    COLUMN_NAME_SESSION_DURATION_LABEL: 'datatable-session-durations-label-session-duration',
+    COLUMN_NAME_SESSION_DURATION_SORTABLE_ICON: 'datatable-session-durations-sortable-icon-session-duration',
+    COLUMN_NAME_NUMBER_OF_SESSIONS_LABEL: 'datatable-session-durations-label-number-of-sessions',
+    COLUMN_NAME_NUMBER_OF_SESSIONS_SORTABLE_ICON: 'datatable-session-durations-sortable-icon-number-of-sessions',
+    COLUMN_NAME_PERCENT_LABEL: 'datatable-session-durations-label-percent',
+    COLUMN_NAME_PERCENT_SORTABLE_ICON: 'datatable-session-durations-sortable-icon-percent',
 
-        //PAGINATION ELEMENTS
-        ITEMS_PER_PAGE_LABEL: 'datatable-session-durations-items-per-page-label',
-        PER_PAGE_COUNT_SELECT: 'datatable-session-durations-items-per-page-count-select-input-pseudo-input-label',
-        PER_PAGE_COUNT_SELECT_ICON: 'datatable-session-durations-items-per-page-count-select-icon',
-        PER_PAGE_COUNT_LABEL: 'datatable-session-durations-items-per-page-count-select',
-        PAGE_NUMBER_SELECT: 'datatable-session-durations-page-number-select-input-pseudo-input-label',
-        PAGE_NUMBER_SELECT_ICON: 'datatable-session-durations-page-number-select-icon',
-        FIRST_PAGE_ARROW_BUTTON: 'datatable-session-durations-first-page-arrow-button',
-        PREVIOUS_PAGE_ARROW_BUTTON: 'datatable-session-durations-previous-page-arrow-button',
-        NEXT_PAGE_ARROW_BUTTON: 'datatable-session-durations-next-page-arrow-button',
-        LAST_PAGE_ARROW_BUTTON: 'datatable-session-durations-last-page-arrow-button'
-    };
-};
+    //Columns' Rows' Datas Elements 
+    SESSION_DURATION: 'datatable-session-durations-session-duration-' + index,
+    NUMBER_OF_SESSIONS: 'datatable-session-durations-session-duration-' + index,
+    PERCENT_VALUE: 'datatable-session-durations-percent-' + index,
+    PERCENT_PROGRESS_BAR: 'datatable-session-durations-progress-bar-' + index,
+
+    //PAGINATION ELEMENTS
+    ITEMS_PER_PAGE_LABEL: 'datatable-session-durations-items-per-page-label',
+    PER_PAGE_COUNT_SELECT: 'datatable-session-durations-items-per-page-count-select-input-pseudo-input-label',
+    PER_PAGE_COUNT_SELECT_ICON: 'datatable-session-durations-items-per-page-count-select-icon',
+    PER_PAGE_COUNT_LABEL: 'datatable-session-durations-items-per-page-count-select',
+    PAGE_NUMBER_SELECT: 'datatable-session-durations-page-number-select-input-pseudo-input-label',
+    PAGE_NUMBER_SELECT_ICON: 'datatable-session-durations-page-number-select-icon',
+    FIRST_PAGE_ARROW_BUTTON: 'datatable-session-durations-first-page-arrow-button',
+    PREVIOUS_PAGE_ARROW_BUTTON: 'datatable-session-durations-previous-page-arrow-button',
+    NEXT_PAGE_ARROW_BUTTON: 'datatable-session-durations-next-page-arrow-button',
+    LAST_PAGE_ARROW_BUTTON: 'datatable-session-durations-last-page-arrow-button'
+});
 
 module.exports = {
     sessionDurationsPageElements,

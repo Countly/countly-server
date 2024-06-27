@@ -140,7 +140,7 @@ const verifySessionsOverviewChart = ({
         });
         return;
     }
-    
+
     cy.verifyElement({
         element: analyticsSessionOverviewEChartElements.CHART_SESSION_OVERVIEW,
     });

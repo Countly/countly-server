@@ -125,7 +125,7 @@ const verifyUserActivityChart = ({
         });
         return;
     }
-    
+
     cy.verifyElement({
         element: userActivityEChartElements.CHART_USER_ACTIVITY,
     });

@@ -41,40 +41,39 @@ export const usersOverviewEChartElements = {
     CHART_RETURNING_USERS_PERCENTAGE: 'user-analytics-overview-legend-returning-users-percentage',
 };
 
-const usersOverviewDataTableElements = (index = 0) => {
-    return {
-        TABLE_ROWS: '.el-table__row',
-        EXPORT_AS_BUTTON: 'user-analytics-overview-export-as-button',
-        TABLE_SEARCH_INPUT: 'user-analytics-overview-datatable-search-input',
+const usersOverviewDataTableElements = (index = 0) => ({
 
-        COLUMN_NAME_DATE_LABEL: 'user-analytics-overview-label-date',
-        COLUMN_NAME_DATE_SORTABLE_ICON: 'user-analytics-overview-sortable-icon-date',
-        COLUMN_NAME_TOTAL_USERS_LABEL: 'user-analytics-overview-label-total-users',
-        COLUMN_NAME_TOTAL_USERS_SORTABLE_ICON: 'user-analytics-overview-sortable-icon-total-users',
-        COLUMN_NAME_NEW_USERS_LABEL: 'user-analytics-overview-label-new-users',
-        COLUMN_NAME_NEW_USERS_SORTABLE_ICON: 'user-analytics-overview-sortable-icon-new-users',
-        COLUMN_NAME_RETURNING_USERS_LABEL: 'user-analytics-overview-label-returning-users',
-        COLUMN_NAME_RETURNING_USERS_SORTABLE_ICON: 'user-analytics-overview-sortable-icon-returning-users',
+    TABLE_ROWS: '.el-table__row',
+    EXPORT_AS_BUTTON: 'user-analytics-overview-export-as-button',
+    TABLE_SEARCH_INPUT: 'user-analytics-overview-datatable-search-input',
 
-        //Columns' Rows' Datas Elements 
-        DATE: 'datatable-user-analytics-overview-date-' + index,
-        TOTAL_USERS: 'datatable-user-analytics-overview-total-users-' + index,
-        NEW_USERS: 'datatable-user-analytics-overview-new-users-' + index,
-        RETURNING_USERS: 'datatable-user-analytics-overview-returning-users-' + index,
+    COLUMN_NAME_DATE_LABEL: 'user-analytics-overview-label-date',
+    COLUMN_NAME_DATE_SORTABLE_ICON: 'user-analytics-overview-sortable-icon-date',
+    COLUMN_NAME_TOTAL_USERS_LABEL: 'user-analytics-overview-label-total-users',
+    COLUMN_NAME_TOTAL_USERS_SORTABLE_ICON: 'user-analytics-overview-sortable-icon-total-users',
+    COLUMN_NAME_NEW_USERS_LABEL: 'user-analytics-overview-label-new-users',
+    COLUMN_NAME_NEW_USERS_SORTABLE_ICON: 'user-analytics-overview-sortable-icon-new-users',
+    COLUMN_NAME_RETURNING_USERS_LABEL: 'user-analytics-overview-label-returning-users',
+    COLUMN_NAME_RETURNING_USERS_SORTABLE_ICON: 'user-analytics-overview-sortable-icon-returning-users',
 
-        //PAGINATION ELEMENTS
-        ITEMS_PER_PAGE_LABEL: 'user-analytics-overview-items-per-page-label',
-        PER_PAGE_COUNT_SELECT: 'user-analytics-overview-items-per-page-count-select-input-pseudo-input-label',
-        PER_PAGE_COUNT_SELECT_ICON: 'user-analytics-overview-items-per-page-count-select-icon',
-        PER_PAGE_COUNT_LABEL: 'user-analytics-overview-items-per-page-count-select',
-        PAGE_NUMBER_SELECT: 'user-analytics-overview-page-number-select-input-pseudo-input-label',
-        PAGE_NUMBER_SELECT_ICON: 'user-analytics-overview-page-number-select-icon',
-        FIRST_PAGE_ARROW_BUTTON: 'user-analytics-overview-first-page-arrow-button',
-        PREVIOUS_PAGE_ARROW_BUTTON: 'user-analytics-overview-previous-page-arrow-button',
-        NEXT_PAGE_ARROW_BUTTON: 'user-analytics-overview-next-page-arrow-button',
-        LAST_PAGE_ARROW_BUTTON: 'user-analytics-overview-last-page-arrow-button'
-    };
-};
+    //Columns' Rows' Datas Elements 
+    DATE: 'datatable-user-analytics-overview-date-' + index,
+    TOTAL_USERS: 'datatable-user-analytics-overview-total-users-' + index,
+    NEW_USERS: 'datatable-user-analytics-overview-new-users-' + index,
+    RETURNING_USERS: 'datatable-user-analytics-overview-returning-users-' + index,
+
+    //PAGINATION ELEMENTS
+    ITEMS_PER_PAGE_LABEL: 'user-analytics-overview-items-per-page-label',
+    PER_PAGE_COUNT_SELECT: 'user-analytics-overview-items-per-page-count-select-input-pseudo-input-label',
+    PER_PAGE_COUNT_SELECT_ICON: 'user-analytics-overview-items-per-page-count-select-icon',
+    PER_PAGE_COUNT_LABEL: 'user-analytics-overview-items-per-page-count-select',
+    PAGE_NUMBER_SELECT: 'user-analytics-overview-page-number-select-input-pseudo-input-label',
+    PAGE_NUMBER_SELECT_ICON: 'user-analytics-overview-page-number-select-icon',
+    FIRST_PAGE_ARROW_BUTTON: 'user-analytics-overview-first-page-arrow-button',
+    PREVIOUS_PAGE_ARROW_BUTTON: 'user-analytics-overview-previous-page-arrow-button',
+    NEXT_PAGE_ARROW_BUTTON: 'user-analytics-overview-next-page-arrow-button',
+    LAST_PAGE_ARROW_BUTTON: 'user-analytics-overview-last-page-arrow-button'
+});
 
 module.exports = {
     usersOverviewPageElements,

@@ -124,7 +124,7 @@ const verifySessionFrequencyChart = ({
         });
         return;
     }
-    
+
     cy.verifyElement({
         element: sessionFrequencyEChartElements.CHART_SESSION_FREQUENCY,
     });
@@ -166,36 +166,36 @@ const verifySessionFrequencyDataFromTable = ({
 
         return;
     }
-        cy.verifyElement({
-            element: sessionFrequencyDataTableElements(0).TIME_SINCE_LAST_SESSION,
-            elementText: "First Session"
-        });
-        cy.verifyElement({
-            element: sessionFrequencyDataTableElements(1).TIME_SINCE_LAST_SESSION,
-            elementText: "1-24 hours"
-        });
-        cy.verifyElement({
-            element: sessionFrequencyDataTableElements(2).TIME_SINCE_LAST_SESSION,
-            elementText: "1 day"
-        });
+    cy.verifyElement({
+        element: sessionFrequencyDataTableElements(0).TIME_SINCE_LAST_SESSION,
+        elementText: "First Session"
+    });
+    cy.verifyElement({
+        element: sessionFrequencyDataTableElements(1).TIME_SINCE_LAST_SESSION,
+        elementText: "1-24 hours"
+    });
+    cy.verifyElement({
+        element: sessionFrequencyDataTableElements(2).TIME_SINCE_LAST_SESSION,
+        elementText: "1 day"
+    });
 
-        for (var i = 0; i < 3; i++) {
-            cy.verifyElement({
-                element: sessionFrequencyDataTableElements(i).PERCENT_PROGRESS_BAR,
-            });
-        }
-
+    for (var i = 0; i < 3; i++) {
         cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: sessionFrequencyDataTableElements(index).NUMBER_OF_SESSIONS,
-            elementText: numberOfSessions
+            element: sessionFrequencyDataTableElements(i).PERCENT_PROGRESS_BAR,
         });
+    }
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: sessionFrequencyDataTableElements(index).PERCENT_VALUE,
-            elementText: percent
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: sessionFrequencyDataTableElements(index).NUMBER_OF_SESSIONS,
+        elementText: numberOfSessions
+    });
+
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: sessionFrequencyDataTableElements(index).PERCENT_VALUE,
+        elementText: percent
+    });
 };
 
 const clickSessionOverviewTab = () => {

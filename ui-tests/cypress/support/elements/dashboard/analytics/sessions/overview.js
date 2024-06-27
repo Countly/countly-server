@@ -43,40 +43,39 @@ export const analyticsSessionOverviewEChartElements = {
     CHART_UNIQUE_SESSIONS_VALUE: 'analytics-session-overview-legend-unique-sessions-value',
 };
 
-const analyticsSessionOverviewDataTableElements = (index = 0) => {
-    return {
-        TABLE_ROWS: '.el-table__row',
-        EXPORT_AS_BUTTON: 'analytics-session-overview-export-as-button',
-        TABLE_SEARCH_INPUT: 'analytics-session-overview-datatable-search-input',
+const analyticsSessionOverviewDataTableElements = (index = 0) => ({
 
-        COLUMN_NAME_DATE_LABEL: 'analytics-session-overview-label-date',
-        COLUMN_NAME_DATE_SORTABLE_ICON: 'analytics-session-overview-sortable-icon-date',
-        COLUMN_NAME_TOTAL_SESSIONS_LABEL: 'analytics-session-overview-label-total-sessions',
-        COLUMN_NAME_TOTAL_SESSIONS_SORTABLE_ICON: 'analytics-session-overview-sortable-icon-total-sessions',
-        COLUMN_NAME_NEW_SESSIONS_LABEL: 'analytics-session-overview-label-new-sessions',
-        COLUMN_NAME_NEW_SESSIONS_SORTABLE_ICON: 'analytics-session-overview-sortable-icon-new-sessions',
-        COLUMN_NAME_UNIQUE_SESSIONS_LABEL: 'analytics-session-overview-label-unique-sessions',
-        COLUMN_NAME_UNIQUE_SESSIONS_SORTABLE_ICON: 'analytics-session-overview-sortable-icon-unique-sessions',
+    TABLE_ROWS: '.el-table__row',
+    EXPORT_AS_BUTTON: 'analytics-session-overview-export-as-button',
+    TABLE_SEARCH_INPUT: 'analytics-session-overview-datatable-search-input',
 
-        //Columns' Rows' Datas Elements 
-        DATE: 'datatable-analytics-session-overview-date-' + index,
-        TOTAL_SESSIONS: 'datatable-analytics-session-overview-total-sessions-' + index,
-        NEW_SESSIONS: 'datatable-analytics-session-overview-new-sessions-' + index,
-        UNIQUE_SESSIONS: 'datatable-analytics-session-overview-unique-sessions-' + index,
+    COLUMN_NAME_DATE_LABEL: 'analytics-session-overview-label-date',
+    COLUMN_NAME_DATE_SORTABLE_ICON: 'analytics-session-overview-sortable-icon-date',
+    COLUMN_NAME_TOTAL_SESSIONS_LABEL: 'analytics-session-overview-label-total-sessions',
+    COLUMN_NAME_TOTAL_SESSIONS_SORTABLE_ICON: 'analytics-session-overview-sortable-icon-total-sessions',
+    COLUMN_NAME_NEW_SESSIONS_LABEL: 'analytics-session-overview-label-new-sessions',
+    COLUMN_NAME_NEW_SESSIONS_SORTABLE_ICON: 'analytics-session-overview-sortable-icon-new-sessions',
+    COLUMN_NAME_UNIQUE_SESSIONS_LABEL: 'analytics-session-overview-label-unique-sessions',
+    COLUMN_NAME_UNIQUE_SESSIONS_SORTABLE_ICON: 'analytics-session-overview-sortable-icon-unique-sessions',
 
-        //PAGINATION ELEMENTS
-        ITEMS_PER_PAGE_LABEL: 'analytics-session-overview-items-per-page-label',
-        PER_PAGE_COUNT_SELECT: 'analytics-session-overview-items-per-page-count-select-input-pseudo-input-label',
-        PER_PAGE_COUNT_SELECT_ICON: 'analytics-session-overview-items-per-page-count-select-icon',
-        PER_PAGE_COUNT_LABEL: 'analytics-session-overview-items-per-page-count-select',
-        PAGE_NUMBER_SELECT: 'analytics-session-overview-page-number-select-input-pseudo-input-label',
-        PAGE_NUMBER_SELECT_ICON: 'analytics-session-overview-page-number-select-icon',
-        FIRST_PAGE_ARROW_BUTTON: 'analytics-session-overview-first-page-arrow-button',
-        PREVIOUS_PAGE_ARROW_BUTTON: 'analytics-session-overview-previous-page-arrow-button',
-        NEXT_PAGE_ARROW_BUTTON: 'analytics-session-overview-next-page-arrow-button',
-        LAST_PAGE_ARROW_BUTTON: 'analytics-session-overview-last-page-arrow-button'
-    };
-};
+    //Columns' Rows' Datas Elements 
+    DATE: 'datatable-analytics-session-overview-date-' + index,
+    TOTAL_SESSIONS: 'datatable-analytics-session-overview-total-sessions-' + index,
+    NEW_SESSIONS: 'datatable-analytics-session-overview-new-sessions-' + index,
+    UNIQUE_SESSIONS: 'datatable-analytics-session-overview-unique-sessions-' + index,
+
+    //PAGINATION ELEMENTS
+    ITEMS_PER_PAGE_LABEL: 'analytics-session-overview-items-per-page-label',
+    PER_PAGE_COUNT_SELECT: 'analytics-session-overview-items-per-page-count-select-input-pseudo-input-label',
+    PER_PAGE_COUNT_SELECT_ICON: 'analytics-session-overview-items-per-page-count-select-icon',
+    PER_PAGE_COUNT_LABEL: 'analytics-session-overview-items-per-page-count-select',
+    PAGE_NUMBER_SELECT: 'analytics-session-overview-page-number-select-input-pseudo-input-label',
+    PAGE_NUMBER_SELECT_ICON: 'analytics-session-overview-page-number-select-icon',
+    FIRST_PAGE_ARROW_BUTTON: 'analytics-session-overview-first-page-arrow-button',
+    PREVIOUS_PAGE_ARROW_BUTTON: 'analytics-session-overview-previous-page-arrow-button',
+    NEXT_PAGE_ARROW_BUTTON: 'analytics-session-overview-next-page-arrow-button',
+    LAST_PAGE_ARROW_BUTTON: 'analytics-session-overview-last-page-arrow-button'
+});
 
 module.exports = {
     analyticsSessionOverviewPageElements,
