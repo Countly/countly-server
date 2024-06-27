@@ -122,7 +122,8 @@ const verifySessionFrequencyChart = ({
             labelElement: sessionFrequencyEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: sessionFrequencyEChartElements.CHART_SESSION_FREQUENCY,
         });
@@ -162,7 +163,8 @@ const verifySessionFrequencyDataFromTable = ({
             labelElement: sessionFrequencyDataTableElements().EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: sessionFrequencyDataTableElements(0).TIME_SINCE_LAST_SESSION,

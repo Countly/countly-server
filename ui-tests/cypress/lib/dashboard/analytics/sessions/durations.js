@@ -122,7 +122,8 @@ const verifySessionDurationChart = ({
             labelElement: sessionDurationsEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: sessionDurationsEChartElements.CHART_USER_ACTIVITY,
@@ -163,7 +164,8 @@ const verifySessionDurationDataFromTable = ({
             labelElement: sessionDurationsDataTableElements().EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
 
         let i = 0;
 

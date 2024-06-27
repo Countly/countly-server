@@ -138,7 +138,8 @@ const verifySessionsOverviewChart = ({
             labelElement: analyticsSessionOverviewEChartElements.EMPTY_PAGE_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: analyticsSessionOverviewEChartElements.CHART_SESSION_OVERVIEW,
         });
@@ -253,7 +254,8 @@ const verifySessionsOverviewDataFromTable = ({
             elementText: "0"
         });
 
-    } else {
+    }
+    else {
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: analyticsSessionOverviewDataTableElements(index).TOTAL_SESSIONS,

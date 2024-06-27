@@ -307,7 +307,8 @@ Cypress.Commands.add('verifyElement', ({
         if (attr != null && attrText != null) {
             cy.getElement(`[data-test-id="${element}"]`).invoke("attr", attr).should("contain", attrText);
         }
-    } else {
+    }
+    else {
 
         if (element != null && isElementVisible === true) {
             cy.shouldBeVisible(element);
@@ -337,15 +338,18 @@ Cypress.Commands.add('getElement', (selector, parent = null) => {
     if (!selector.includes('[data-test-id=')) {
         if (selector[0].includes('.') || selector[0].includes('#')) {
             return cy.get(selector);
-        } else {
+        }
+        else {
             if (parent !== null) {
                 selector = `${parent} [data-test-id="${selector}"]`;
-            } else {
+            }
+            else {
                 selector = `[data-test-id="${selector}"]`;
             }
             return cy.get(selector);
         }
-    } else {
+    }
+    else {
         return cy.get(selector);
     }
 });
