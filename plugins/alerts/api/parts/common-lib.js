@@ -189,14 +189,22 @@ async function compileEmail(result) {
         }]
     });
 }
-
+/**
+ * Formats the metric value to ensure it maintains its type.
+ * If the value is a number, it rounds to 2 decimal places if necessary.
+ * Otherwise, it returns the value as is.
+ * 
+ * @param {number|string} value - The value to be formatted.
+ * @returns {number|string} The formatted value, maintaining the original type.
+ */
 function formatMetricValue(value) {
     if (typeof value === 'number' && value === parseFloat(value.toFixed(2))) {
         return value;
     } else if (typeof value === 'number') {
         return parseFloat(value.toFixed(2));
+    } else {
+        return value;
     }
-    return value;
 }
 
 /**
