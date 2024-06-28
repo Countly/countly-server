@@ -474,7 +474,7 @@
             app.navigate("/not-responded-consent", true);
         }
     }
-    else if (hasNewsLetter && (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0))) {
+    else if (hasNewsLetter && (typeof countlyGlobal.member.subscribe_newsletter !== 'boolean' && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0))) {
         if (Backbone.history.fragment !== '/not-subscribed-newsletter' && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.navigate("/not-subscribed-newsletter", true);
         }
