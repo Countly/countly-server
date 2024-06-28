@@ -304,65 +304,12 @@ const verifyViewsChart = ({
         });
         return;
     }
-    // cy.verifyElement({
-    //     element: viewsEChartElements.CHART_LOAN_DETAILS_ICON,
-    //     labelElement: viewsEChartElements.CHART_LOAN_DETAILS_LABEL,
-    //     labelText: "Loan Details",
-    // });
 
     cy.verifyElement({
         element: viewsEChartElements.CHART_HOME_ICON,
         labelElement: viewsEChartElements.CHART_HOME_LABEL,
         labelText: "Home",
     });
-
-    // cy.verifyElement({
-    //     element: viewsEChartElements.CHART_BILL_PAYMENT_ICON,
-    //     labelElement: viewsEChartElements.CHART_BILL_PAYMENT_LABEL,
-    //     labelText: "Bill Payments",
-    // });
-
-    // cy.verifyElement({
-    //     element: viewsEChartElements.CHART_FUND_TRANSFER_ICON,
-    //     labelElement: viewsEChartElements.CHART_FUND_TRANSFER_LABEL,
-    //     labelText: "Fund Transfer",
-    // });
-
-    // cy.verifyElement({
-    //     element: viewsEChartElements.CHART_CREDIT_CARD_APPLICATION_ICON,
-    //     labelElement: viewsEChartElements.CHART_CREDIT_CARD_APPLICATION_LABEL,
-    //     labelText: "Credit Card Application",
-    // });
-
-    // cy.verifyElement({
-    //     element: viewsEChartElements.CHART_BROWSE_ICON,
-    //     labelElement: viewsEChartElements.CHART_BROWSE_LABEL,
-    //     labelText: "Browse",
-    // });
-
-    // cy.verifyElement({
-    //     element: viewsEChartElements.CHART_ACCOUNT_DETAILS_ICON,
-    //     labelElement: viewsEChartElements.CHART_ACCOUNT_DETAILS_LABEL,
-    //     labelText: "Account Details",
-    // });
-
-    // cy.verifyElement({
-    //     element: viewsEChartElements.CHART_SETTINGS_ICON,
-    //     labelElement: viewsEChartElements.CHART_SETTINGS_LABEL,
-    //     labelText: "Settings",
-    // });
-
-    // cy.verifyElement({
-    //     element: viewsEChartElements.CHART_TERMS_AND_CONDITIONS_ICON,
-    //     labelElement: viewsEChartElements.CHART_TERMS_AND_CONDITIONS_LABEL,
-    //     labelText: "Terms and Conditions",
-    // });
-
-    // cy.verifyElement({
-    //      element: viewsEChartElements.CHART_ABOUT_ICON,
-    //      labelElement: viewsEChartElements.CHART_ABOUT_LABEL,
-    //      labelText: "About",
-    //  });
 
     cy.verifyElement({
         element: viewsEChartElements.CHART_VIEWS,

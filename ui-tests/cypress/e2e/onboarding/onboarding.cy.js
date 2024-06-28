@@ -330,6 +330,7 @@ describe('Complete Onboarding', () => {
         analyticsViewsPerSessionPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToAnalyticsViews();
         analyticsViewsPageHelpers.verifyFullDataPageElements();
+        //TODO: Add the cases of the following pages
         //navigationHelpers.goToAnalyticsSources();
         //analyticsSourcesPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToAnalyticsTechnologyPlatforms();
