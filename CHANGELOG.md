@@ -1,3 +1,19 @@
+## Version 24.05.2
+Fixes:
+- [dashboards] Disable intercom for custom dashboards
+- [data-manager] Fix duplicate Create Event Group button
+- [push] Push config is not being loaded properly
+- [push] Push FCM SDK is not using proxy while sending messages
+- [core] Fix height inconsistency in datepicker popup
+- [core] Fixes to prevent scheduling duplicated jobs
+- [core] Making sure "Exclude current day" works everywhere
+- [dashboards] Fix issues in note widget
+- [flows] Nullcheck in default flows creation function.
+
+  Enterprise fixes:
+- [flows] Nullcheck in default flows creation function
+- [drill] Nullcheck when fetching snapshots data
+
 ## Version 24.05.1
 Fixes:
 - [populator] Bugfix for - Can't edit populator template
