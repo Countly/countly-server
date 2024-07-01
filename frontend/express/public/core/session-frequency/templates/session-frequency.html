@@ -7,25 +7,30 @@
     <cly-main>
         <cly-date-picker-g class="session-frequency-date-picker-container"></cly-date-picker-g>
         <cly-section>
-            <cly-chart-bar :option="sessionFrequencyOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
+            <cly-chart-bar test-id="chart-session-frequency" :option="sessionFrequencyOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="sessionFrequencyRows" :resizable="true" :force-loading="isLoading">
+            <cly-datatable-n  test-id="datatable-session-frequency" :rows="sessionFrequencyRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column :sortable="true" prop="frequency" :label="i18n('session-frequency.table.frequency')" :sort-method="sortFrequencyBuckets">
+                        <template slot-scope="scope">
+                            <div :data-test-id="'datatable-session-frequency-time-since-last-session-' + scope.$index">
+                                {{scope.row.frequency}}</div>
+                        </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.number-of-sessions')">
                         <template slot-scope="scope">
-                            {{formatNumber(scope.row.numberOfSessions)}}
+                            <div :data-test-id="'datatable-session-frequency-number-of-sessions-' + scope.$index">
+                                {{formatNumber(scope.row.numberOfSessions)}}</div>                            
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="numberOfSessions" column-key="percentage" :label="i18n('common.percent')">
                         <template slot-scope="scope">
                             <div class="bu-level-left">
-                                <div class="bu-level-item slipping-away-users-table-data-item">
+                                <div class="bu-level-item slipping-away-users-table-data-item" :data-test-id="'datatable-session-frequency-percent-' + scope.$index">
                                     <span>{{scope.row.percentage}}%</span>
                                 </div>
-                                <cly-progress-bar  :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
+                                <cly-progress-bar :data-test-id="'datatable-session-frequency-progress-bar-' + scope.$index" :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
                             </div>
                         </template>
                     </el-table-column>
