@@ -571,12 +571,18 @@
                     },
                     deselectGuidesButton: ({ getters, commit }) => {
                         const buttonState = getters.getGuidesButton;
-                        if (buttonState !== 'hover') {
+                        if (buttonState !== 'highlighted') {
                             commit('setGuidesButton', '');
                         }
                     },
-                    highlightGuidesButton: function(context) {
-                        context.commit('setGuidesButton', 'hover');
+                    highlightGuidesButton: function({getters, commit}, payload) {
+                        const buttonState = getters.getGuidesButton;
+                        if (!payload) {
+                            payload = 'hover';
+                        }
+                        if (buttonState !== 'selected') {
+                            commit('setGuidesButton', payload);
+                        }
                     }
                 }
             }

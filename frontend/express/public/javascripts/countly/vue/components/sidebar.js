@@ -716,7 +716,7 @@
                     if (state === 'selected') {
                         return 'color:#12AF51;';
                     }
-                    else if (state === 'hover') {
+                    else if (state === 'hover' || state === 'highlighted') {
                         return 'color:white;';
                     }
                     else {
@@ -731,6 +731,18 @@
                 }
             },
             methods: {
+                guidesMouseOver: function() {
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state !== 'selected' && state !== 'highlighted') {
+                        this.$store.dispatch("countlySidebar/highlightGuidesButton");
+                    }
+                },
+                guidesMouseLeave: function() {
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state !== 'selected' && state !== 'highlighted') {
+                        this.$store.dispatch("countlySidebar/deselectGuidesButton");
+                    }
+                },
                 onClick: function(option) {
                     if (!option.noSelect) {
                         this.selectedMenuOptionLocal = option.name;
@@ -930,7 +942,7 @@
                     countlyCMS.fetchEntry("server-guide-config").then(function(config) {
                         self.enableGuides = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
                     });
-                    this.$store.dispatch("countlySidebar/highlightGuidesButton");
+                    this.$store.dispatch("countlySidebar/highlightGuidesButton", 'highlighted');
                 }
             }
         });
