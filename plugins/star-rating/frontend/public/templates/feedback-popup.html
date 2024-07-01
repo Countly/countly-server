@@ -193,7 +193,11 @@
         var h = d.getHours();
         var dow = d.getDay();
         var symbol = 'emoji';
-
+        var encodeHtml = function (html) {
+            var div = document.createElement('div');
+            div.innerText = html;
+            return div.innerHTML;
+        };
         if (!platform || (platform === "undefined") || (platform === "null")) {
                 platform = "Web";
             }
@@ -236,10 +240,10 @@
                 }
                 if(consent && links && finalText){
                     //sanitize the text and links
-                    finalText = $("<p>").text(finalText).text();
+                    finalText = encodeHtml(finalText);
                     links.forEach(function (link) {
-                        link.linkValue = $("<p>").text(link.linkValue).text();
-                        link.textValue = $("<p>").text(link.textValue).text();
+                        link.linkValue = encodeHtml(link.linkValue);
+                        link.textValue = encodeHtml(link.textValue);
                         var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
                         finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
                     });
