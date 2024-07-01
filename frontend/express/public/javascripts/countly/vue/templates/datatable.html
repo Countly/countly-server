@@ -106,7 +106,7 @@
             :row-key="keyFn"
             :data="mutatedRows"
             :span-method="tableSpanMethod"
-            :default-sort="defaultSort"
+            :default-sort="localDefaultSort"
             v-bind="$attrs"
             v-on="$listeners"
             @sort-change="onSortChange"
