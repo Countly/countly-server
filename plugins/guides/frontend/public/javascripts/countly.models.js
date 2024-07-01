@@ -1,4 +1,4 @@
-/* global countlyCMS CV countlyCommon*/
+/* global countlyCMS CV countlyGlobal */
 
 (function(countlyGuides) {
 
@@ -16,11 +16,11 @@
     countlyGuides.memberViewedGuides = function(user_id) {
         CV.$.ajax({
             type: "POST",
-            url: countlyCommon.API_PARTS.data.w + "/guides/viewed",
+            url: "/guides/viewed",
             dataType: "json",
             data: {
-                "app_id": countlyCommon.ACTIVE_APP_ID,
                 "user_id": user_id,
+                _csrf: countlyGlobal.csrf_token,
             }
         });
     };
