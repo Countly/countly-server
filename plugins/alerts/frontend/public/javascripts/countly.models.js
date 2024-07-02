@@ -491,7 +491,7 @@
                             }
                             /*eslint-disable */
                             var rowData0 = Object.assign({}, alertsList[i]);
-                            raowData0 = Object.assign(rowData0, {
+                            rowData0 = Object.assign(rowData0, {
                                 _id: alertsList[i]._id,
                                 app_id: alertsList[i].selectedApps[0],
                                 appNameList: appNameList.join(", "),
@@ -513,7 +513,7 @@
                                     alertsList[i].selectedApps[0]
                                 ),
                             });
-                            tableData.push(raowData0);
+                            tableData.push(rowData0);
                             /*eslint-enable */
                         }
 

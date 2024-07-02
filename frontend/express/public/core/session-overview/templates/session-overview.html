@@ -7,26 +7,29 @@
     <cly-main>
         <cly-date-picker-g class="session-overview-date-picker-container"></cly-date-picker-g>
         <cly-section>
-            <cly-chart-line  xAxisLabelOverflow="unset" :option="sessionOverviewOptions" :height="400" v-loading="isLoading" :force-loading="isLoading" :legend="legend" category="session"></cly-chart-line>
+            <cly-chart-line test-id="analytics-session-overview" xAxisLabelOverflow="unset" :option="sessionOverviewOptions" :height="400" v-loading="isLoading" :force-loading="isLoading" :legend="legend" category="session"></cly-chart-line>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="sessionOverviewRows" :resizable="true" :force-loading="isLoading">
+            <cly-datatable-n  test-id="analytics-session-overview" :rows="sessionOverviewRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
                     <el-table-column prop="date" :label="i18n('common.date')" :sortable="true" :sort-method="sortDates">
+                        <template slot-scope="scope">
+							<div :data-test-id="'datatable-analytics-session-overview-date-' + scope.$index">{{scope.row.date}}</div>
+						</template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="totalSessions" :label="i18n('common.total-sessions')">
                         <template slot-scope="scope">
-                            {{formatNumber(scope.row.totalSessions)}}
+                            <div :data-test-id="'datatable-analytics-session-overview-total-sessions-' + scope.$index">{{formatNumber(scope.row.totalSessions)}}</div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="newSessions" :label="i18n('common.new-sessions')">
                         <template slot-scope="scope">
-                            {{formatNumber(scope.row.newSessions)}}
+                            <div :data-test-id="'datatable-analytics-session-overview-new-sessions-' + scope.$index">{{formatNumber(scope.row.newSessions)}}</div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="uniqueSessions" :label="i18n('common.unique-sessions')">
                         <template slot-scope="scope">
-                            {{formatNumber(scope.row.uniqueSessions)}}
+                            <div :data-test-id="'datatable-analytics-session-overview-unique-sessions-' + scope.$index">{{formatNumber(scope.row.uniqueSessions)}}</div>
                         </template>
                     </el-table-column>
                 </template>
