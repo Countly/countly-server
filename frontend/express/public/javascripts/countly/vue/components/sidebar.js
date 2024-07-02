@@ -754,7 +754,7 @@
                     }
                     else if (option.name === "countly-guides") {
                         this.$store.dispatch("countlySidebar/selectGuidesButton");
-                        this.showMainMenu = true;
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "guides", item: {}});
                     }
                 },
                 onToggleClick: function() {
