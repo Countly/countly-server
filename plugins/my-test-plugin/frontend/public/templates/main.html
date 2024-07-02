@@ -1,0 +1,44 @@
+<div
+  class="my-test-plugin"
+  :class="[componentId]"
+>
+  <cly-main>
+    <cly-header :title="i18n('my-test-plugin.title')">
+      <template #header-top>
+        <span class="my-test-plugin__text--small">Header Top</span>
+      </template>
+      <template #header-left>
+        <span class="my-test-plugin__text--small">Header Left (This replaces the title)</span>
+        {{ i18n('my-test-plugin.title') }}
+      </template>
+      <template #header-right>
+        <span class="my-test-plugin__text--small">Header Right</span>
+      </template>
+      <template #header-bottom>
+        <span class="my-test-plugin__text--small">Header Bottom</span>
+      </template>
+      <template #header-tabs>
+        <span class="my-test-plugin__text--small">Header Tabs</span>
+      </template>
+      <span class="my-test-plugin__text--small">Header Content</span>
+    </cly-header>
+    <cly-section title="Base Section">
+      Section content
+    </cly-section>
+    <cly-section
+      auto-gap
+      title="Auto Gap Section"
+    >
+      Section content
+    </cly-section>
+    <cly-section
+      auto-gap
+      title="Auto Gap Section"
+    >
+      <template #header>
+        <div>Section Title Replacement</div>
+      </template>
+      Section content
+    </cly-section>
+  </cly-main>
+</div>

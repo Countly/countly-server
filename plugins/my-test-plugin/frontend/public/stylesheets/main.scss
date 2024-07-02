@@ -1,0 +1,6 @@
+.my-test-plugin {
+  // .my-test-plugin__text--small
+  &__text--small {
+    font-size: 0.75em;
+  }
+}
