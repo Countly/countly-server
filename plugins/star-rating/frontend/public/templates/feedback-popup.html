@@ -193,7 +193,11 @@
         var h = d.getHours();
         var dow = d.getDay();
         var symbol = 'emoji';
-
+        var encodeHtml = function (html) {
+            var div = document.createElement('div');
+            div.innerText = html;
+            return div.innerHTML;
+        };
         if (!platform || (platform === "undefined") || (platform === "null")) {
                 platform = "Web";
             }
@@ -235,11 +239,14 @@
                     links = JSON.parse(response.links);
                 }
                 if(consent && links && finalText){
-links.forEach(function(link) {
-    var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
-    finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
-});
-
+                    //sanitize the text and links
+                    finalText = encodeHtml(finalText);
+                    links.forEach(function (link) {
+                        link.linkValue = encodeHtml(link.linkValue);
+                        link.textValue = encodeHtml(link.textValue);
+                        var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
+                        finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
+                    });
                 }
                 if(consent){
                                 contentEl.removeClass("hidden");
