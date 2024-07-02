@@ -1,4 +1,4 @@
-/*global countlyCMS */
+/* global countlyCMS CV countlyGlobal */
 
 (function(countlyGuides) {
 
@@ -12,6 +12,18 @@
     }
 
     var _entries = [];
+
+    countlyGuides.memberViewedGuides = function(user_id) {
+        CV.$.ajax({
+            type: "POST",
+            url: "/guides/viewed",
+            dataType: "json",
+            data: {
+                "user_id": user_id,
+                _csrf: countlyGlobal.csrf_token,
+            }
+        });
+    };
 
     countlyGuides.fetchEntries = function(query, refresh) {
         return new Promise(function(resolve, reject) {

@@ -540,21 +540,49 @@
             countlySidebar: {
                 namespaced: true,
                 state: {
-                    selectedMenuItem: {}
+                    selectedMenuItem: {},
+                    guidesButton: '',
                 },
                 getters: {
                     getSelectedMenuItem: function(state) {
                         return state.selectedMenuItem;
+                    },
+                    getGuidesButton: function(state) {
+                        return state.guidesButton;
                     }
                 },
                 mutations: {
                     setSelectedMenuItem: function(state, payload) {
                         state.selectedMenuItem = payload;
+                    },
+                    setGuidesButton: function(state, payload) {
+                        state.guidesButton = payload;
                     }
                 },
                 actions: {
-                    updateSelectedMenuItem: function(context, payload) {
-                        context.commit('setSelectedMenuItem', payload);
+                    updateSelectedMenuItem: function({dispatch, commit}, payload) {
+                        commit('setSelectedMenuItem', payload);
+                        if (Object.keys(payload.item).length !== 0) {
+                            dispatch('deselectGuidesButton');
+                        }
+                    },
+                    selectGuidesButton: function(context) {
+                        context.commit('setGuidesButton', 'selected');
+                    },
+                    deselectGuidesButton: ({ getters, commit }) => {
+                        const buttonState = getters.getGuidesButton;
+                        if (buttonState !== 'highlighted') {
+                            commit('setGuidesButton', '');
+                        }
+                    },
+                    highlightGuidesButton: function({getters, commit}, payload) {
+                        const buttonState = getters.getGuidesButton;
+                        if (!payload) {
+                            payload = 'hover';
+                        }
+                        if (buttonState !== 'selected') {
+                            commit('setGuidesButton', payload);
+                        }
                     }
                 }
             }
