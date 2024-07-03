@@ -18,6 +18,37 @@ plugins.setConfigs("remote-config", {
         ob.features.push(FEATURE_NAME);
     });
 
+    /**
+     * @api {get} /o/sdk?method=rc Get remote configs in sdk
+     * @apiName GetRemoteConfigInSdk
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Fetch all remote config in sdk
+     *
+     * @apiQuery {String} app_key APP_KEY of an app for which to fetch remote config
+     * @apiQuery {String} device_id Your generated or device specific unique device ID to identify user
+     * @apiQuery {String} [timestamp] 10 digit UTC timestamp for recording past data
+     * @apiQuery {String} [city] Name of the user's city
+     * @apiQuery {String} [country_code] ISO Country code for the user's country
+     * @apiQuery {String} [location] Users lat, lng
+     * @apiQuery {String} [tz] Users timezone
+     * @apiQuery {String} [ip_address]  IP address of user to determine user location, if not provided, countly will try to establish ip address based on connection data
+     * @apiQuery {String[]} [keys] Only the values mentioned in the array will be fetched
+     * @apiQuery {String[]} [omit_keys] Only the values mentioned in the array will not be fetched
+     * @apiQuery {Object} [metrics] JSON object with key value pairs
+     * @apiQuery {Number} [oi] To indicate that user will be enrolled in the returned keys if eligible
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * {
+            "default_colors": {
+                "button": "#f77a22",
+                "buttonColor": "#ffffff",
+                "titleColor": "#2eb52b"
+            },
+            "display_onboarding": true,
+            "image_alt": "The image cannot be loaded"
+        }
+     */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
         if (params.qstring.method !== "rc") {
