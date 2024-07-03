@@ -96,7 +96,6 @@
                         </template>
                     </el-table-column>
 
-
                     <el-table-column type="options" test-id="more-button-area">
                         <template v-slot="rowScope">
                             <cly-more-options :test-id="'row-' + rowScope.$index" v-if="rowScope.row.hover && (rowScope.row._canUpdate || rowScope.row._canDelete)" size="small" @command="handleAlertEditCommand($event,rowScope)">
@@ -518,7 +517,7 @@
                                 v-model="selectedRadioButton"
                                 :label="item.value"
                                 :key="idx"
-                                v-for="(item, idx) in emailOptions"
+                                v-for="(item, idx) in filteredEmailOptions"
                                 class="is-autosized"
                                 border>
                                     {{item.label}}
