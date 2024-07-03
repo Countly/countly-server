@@ -92,7 +92,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         tooltipElement: viewsDataTableElements().COLUMN_NAME_TOTAL_USERS_TOOLTIP,
-        tooltipText: "Total (unique) value for this period is estimated and corrected using the biggest time buckets from available daily, weekly and monthly stats.<br /><br />Exact total counts are available for this year, month and day periods"
+        tooltipText: "Total (unique) value for this period is estimated and corrected using the biggest time buckets from available daily, weekly and monthly stats. Exact total counts are available for this year, month and day periods"
     });
 
     cy.verifyElement({
