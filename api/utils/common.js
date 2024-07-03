@@ -2777,10 +2777,13 @@ common.processCarrier = function(metrics) {
         var carrier = metrics._carrier + "";
 
         //random hash without spaces
-        if (carrier === "--" || (carrier.length === 16 && carrier.indexOf(" ") === -1)) {
+        if ((carrier.length === 16 && carrier.indexOf(" ") === -1)) {
             delete metrics._carrier;
             return;
-            // Change for opening PR so I can update branch to next 
+        }
+
+        if (carrier === "--") {
+            metrics._carrier = "Unknown";
         }
 
         //random code
