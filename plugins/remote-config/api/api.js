@@ -76,12 +76,11 @@ plugins.setConfigs("remote-config", {
      * @apiQuery {String[]} [keys] Only the values mentioned in the array will be fetched
      * @apiQuery {Object} [metrics] JSON object with key value pairs
      *
-     * @apiSuccessExample {json} Success-Response:
-     *  {
-            "header_color": "red",
-            "background": "blue",
-            "showBanner": true
-        }
+     * @apiSuccessExample {body} Success-Response:
+     *      HTTP/1.1 200 OK
+     *      {
+     *        "Successfully enrolled in ab tests"
+     *      }
      */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
