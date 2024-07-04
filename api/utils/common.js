@@ -2782,7 +2782,7 @@ common.processCarrier = function(metrics) {
             return;
         }
 
-        if (!carrier || carrier === "--") {
+        if (!metrics._carrier || carrier === "--") {
             metrics._carrier = "Unknown";
         }
 
