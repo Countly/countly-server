@@ -58,6 +58,31 @@ plugins.setConfigs("remote-config", {
 
     });
 
+    /**
+     * @api {get} /o/sdk?method=ab Enrolls in ab tests for mentioned keys if user is eligible
+     * @apiName EnrollUserInABTests
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Enrolls in ab tests for mentioned keys if user is eligible
+     *
+     * @apiQuery {String} app_key APP_KEY of an app for which to fetch remote config
+     * @apiQuery {String} device_id Your generated or device specific unique device ID to identify user
+     * @apiQuery {String} [timestamp] 10 digit UTC timestamp for recording past data
+     * @apiQuery {String} [city] Name of the user's city
+     * @apiQuery {String} [country_code] ISO Country code for the user's country
+     * @apiQuery {String} [location] Users lat, lng
+     * @apiQuery {String} [tz] Users timezone
+     * @apiQuery {String} [ip_address]  IP address of user to determine user location, if not provided, countly will try to establish ip address based on connection data
+     * @apiQuery {String[]} [keys] Only the values mentioned in the array will be fetched
+     * @apiQuery {Object} [metrics] JSON object with key value pairs
+     *
+     * @apiSuccessExample {json} Success-Response:
+     *  {
+            "header_color": "red",
+            "background": "blue",
+            "showBanner": true
+        }
+     */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
         if (params.qstring.method !== "ab") {
