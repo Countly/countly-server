@@ -75,6 +75,7 @@ plugins.setConfigs("remote-config", {
      * @apiQuery {String} [ip_address]  IP address of user to determine user location, if not provided, countly will try to establish ip address based on connection data
      * @apiQuery {String[]} [keys] Only the values mentioned in the array will be fetched
      * @apiQuery {Object} [metrics] JSON object with key value pairs
+     * @apiQuery {Number} [oi] To indicate that user will be enrolled in the returned keys if eligible
      *
      * @apiSuccessExample {body} Success-Response:
      *      HTTP/1.1 200 OK
