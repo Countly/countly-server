@@ -9,6 +9,8 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
 
 const countlyFetch = require("../../../api/parts/data/fetch.js");
 
+const { scheduleMessage } = require("./new/scheduling.js");
+
 /**
  * Validate data & construct message out of it, throw in case of error
  * 
@@ -292,7 +294,8 @@ module.exports.create = async params => {
         msg.status = Status.Created;
         await msg.save();
         if (!demo) {
-            await msg.schedule(log, params);
+            scheduleMessage(msg);
+            // await msg.schedule(log, params);
         }
         log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
@@ -795,7 +798,7 @@ module.exports.periodicStats = async params => {
     };
     const endDate = moment().tz(app.timezone).toDate();
     const startDate = moment(endDate).subtract(...delta);
-    const dateRange = periodicDateRange(startDate, endDate, app.timezone, delta[1]);
+    const dateRange = periodicDateRange(startDate.toDate(), endDate, app.timezone, delta[1]);
     const ob = { app_id, appTimezone: app.timezone, qstring: { period, segmentation: "i" } };
     const results = {};
     for (const colName in cols) {

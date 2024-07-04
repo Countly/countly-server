@@ -45,6 +45,9 @@ const plugins = require('../../pluginManager'),
         }
     };
 
+const { init: initKafka } = require("./new/queue/kafka.js");
+const { sendMessagesToQueue, sendPushMessage } = require('./new/sending.js');
+
 plugins.setConfigs(FEATURE_NAME, {
     proxyhost: '',
     proxyport: '',
@@ -77,41 +80,78 @@ plugins.internalDrillEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_sent');
 
 
-plugins.register('/worker', function() {
+/**
+ * 
+ * @param {boolean} isMaster 
+ */
+async function kafkaInitializer(isMaster = false) {
+    try {
+        await initKafka(
+            async function(push) {
+                try {
+                    await sendPushMessage(push);
+                }
+                catch (err) {
+                    console.error("ERROR ON KAFKA PUSH HANDLER", err);
+                    // TODO: log the error
+                }
+            },
+            async function(job) {
+                try {
+                    await sendMessagesToQueue(job);
+                }
+                catch (err) {
+                    console.error("ERROR ON KAFKA JOB HANDLER", err);
+                    // TODO: log the error
+                }
+            },
+            isMaster
+        );
+    }
+    catch(err) {
+        // TODO: log the error
+    }
+}
+
+
+plugins.register('/worker', async function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
+    kafkaInitializer(false);
 });
 
-plugins.register('/master', function() {
+plugins.register('/master', async function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
     setTimeout(() => {
         require('../../../api/parts/jobs').job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
     }, 10000);
+    kafkaInitializer(true);
 });
 
-plugins.register('/master/runners', runners => {
-    let sender;
-    runners.push(async() => {
-        if (!sender) {
-            try {
-                sender = new Sender();
-                await sender.prepare();
-                let has = await sender.watch();
-                if (has) {
-                    await sender.send();
-                }
-                sender = undefined;
-            }
-            catch (e) {
-                log.e('Sending stopped with an error', e);
-                sender = undefined;
-            }
-        }
-    });
-});
+
+// plugins.register('/master/runners', runners => {
+//     let sender;
+//     runners.push(async() => {
+//         if (!sender) {
+//             try {
+//                 sender = new Sender();
+//                 await sender.prepare();
+//                 let has = await sender.watch();
+//                 if (has) {
+//                     await sender.send();
+//                 }
+//                 sender = undefined;
+//             }
+//             catch (e) {
+//                 log.e('Sending stopped with an error', e);
+//                 sender = undefined;
+//             }
+//         }
+//     });
+// });
 
 plugins.register('/cache/init', function() {
     common.cache.init(PUSH_CACHE_GROUP, {
@@ -232,7 +272,7 @@ plugins.register('/i', async ob => {
  * 
  * @param {object} apisObj apis.i or apis.o
  * @param {object} ob object from pluginManager ({params, qstring, ...})
- * @returns {boolean} true if the call has been handled
+ * @returns {boolean=} true if the call has been handled
  */
 function apiCall(apisObj, ob) {
     let {params, paths} = ob,
