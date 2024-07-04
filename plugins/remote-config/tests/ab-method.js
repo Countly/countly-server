@@ -33,7 +33,7 @@ describe('Ab Enroll Test', () => {
             .expect(400);
     });
 
-    it('Should enroll the user for the given keys', async() => {
+    it('Should not enroll the user for the given keys', async() => {
         const resp = await request
             .get('/o/sdk')
             .query({
@@ -45,6 +45,26 @@ describe('Ab Enroll Test', () => {
                 keys: JSON.stringify(['header_color', 'background', 'showBanner'])
             })
             .expect(200);
+
+        //TODO: check app_user
+
+    });
+
+    it('Should not enroll the user for the given keys', async() => {
+
+        const resp = await request
+            .get('/o/sdk')
+            .query({
+                api_key: API_KEY_ADMIN,
+                app_id: APP_ID,
+                app_key: testUtils.get('APP_KEY'),
+                method: AB_METHOD,
+                device_id: 'device_0',
+                keys: JSON.stringify(['header_color', 'background', 'showBanner']),
+                oi: 1
+            })
+            .expect(200);
+        //TODO: check app_user
     });
 
 });
