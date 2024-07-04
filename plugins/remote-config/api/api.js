@@ -747,7 +747,7 @@ plugins.setConfigs("remote-config", {
                             var deviceId = params.qstring.device_id || "";
                             user.random_percentile = remoteConfig.randomPercentile(seed, deviceId);
 
-                            var conditionStatus = remoteConfig.processFilter(params, user, conditionObj.condition);
+                            var conditionStatus = remoteConfig.processFilter(user, conditionObj.condition);
 
                             if (conditionStatus) {
                                 parameterValue = conditionObj.value;
