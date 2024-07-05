@@ -285,7 +285,7 @@ describe('Fetch remote config', () => {
             return acc;
         }, []);
 
-        for (let idx = 0; idx < parameterIds.length; idx += 1) {
+        for (let idx = 0; idx < parameterIds?.length; idx += 1) {
             await request
                 .post('/i/remote-config/remove-parameter')
                 .send({
@@ -297,7 +297,7 @@ describe('Fetch remote config', () => {
                 .expect('Content-Type', /json/);
         }
 
-        for (let idx = 0; idx < conditionIds.length; idx += 1) {
+        for (let idx = 0; idx < conditionIds?.length; idx += 1) {
             await request
                 .post('/i/remote-config/remove-condition')
                 .send({
