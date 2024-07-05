@@ -1,3 +1,21 @@
+## Version 24.05.3
+Fixes:
+- [core] Bugfix for newsletter check
+- [core] Presets UI fixes
+- [core] Security Vulnerabilities and bugs
+- [events] Fix event chart selection
+- [push] Hotfix: removed the projection from push token query
+- [star-rating] Text and link sanitization
+
+Features:
+- [core]  Run once option for crash removal script
+- [populator] Add warning in case salt is set to application
+
+Enterprise fixes:
+- [block] Add user prop support for crash blocking and isset operator overall
+- [drill] Fixes for query builder when dealing with values starting with an empty string
+
+
 ## Version 24.05.2
 Fixes:
 - [dashboards] Disable intercom for custom dashboards
