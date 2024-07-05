@@ -15,28 +15,28 @@ const CONDITION_PREFIX = 'fetchremoteconfigcond';
 const VALUE_PREFIX = 'value_';
 const TARGETTED_USER_ID = 'targetted_user';
 
-before(async() => {
-    for (let count = 0; count < AMOUNT_OF_KEYS; count += 1) {
-        await request
-            .post('/i/remote-config/add-parameter')
-            .send({
-                api_key: API_KEY_ADMIN,
-                app_id: APP_ID,
-                app_key: APP_KEY,
-                parameter: JSON.stringify({
-                    parameter_key: `${PARAMETER_PREFIX}${count}`,
-                    default_value: `${VALUE_PREFIX}${count}`,
-                    description: '-',
-                    conditions: [],
-                    status: 'Running',
-                    expiry_dttm: null,
-                }),
-            })
-            .expect('Content-Type', /json/);
-    }
-});
-
 describe('Fetch remote config', () => {
+    before(async() => {
+        for (let count = 0; count < AMOUNT_OF_KEYS; count += 1) {
+            await request
+                .post('/i/remote-config/add-parameter')
+                .send({
+                    api_key: API_KEY_ADMIN,
+                    app_id: APP_ID,
+                    app_key: APP_KEY,
+                    parameter: JSON.stringify({
+                        parameter_key: `${PARAMETER_PREFIX}${count}`,
+                        default_value: `${VALUE_PREFIX}${count}`,
+                        description: '-',
+                        conditions: [],
+                        status: 'Running',
+                        expiry_dttm: null,
+                    }),
+                })
+                .expect('Content-Type', /json/);
+        }
+    });
+
     it('Should reject if there is no device_id', async() => {
         const resp = await request
             .get('/o/sdk')
@@ -251,5 +251,62 @@ describe('Fetch remote config', () => {
 
             should(resp.body).containEql({ [`${PARAMETER_PREFIX}conditioned`]: `${VALUE_PREFIX}conditioned`});
         });
+    });
+
+    after(async() => {
+        // remove all remote configs and conditions that are created by this test file
+        const resp = await request
+            .get('/o')
+            .query({
+                api_key: API_KEY_ADMIN,
+                app_id: APP_ID,
+                app_key: APP_KEY,
+                method: 'remote-config',
+            })
+            .expect(200);
+
+        const parameterIds = resp.body?.parameters?.reduce((acc, curr) => {
+            const rgx = new RegExp(`^${PARAMETER_PREFIX}`);
+
+            if (rgx.test(curr.parameter_key)) {
+                acc.push(curr._id);
+            }
+
+            return acc;
+        }, []);
+
+        const conditionIds = resp.body?.conditions?.reduce((acc, curr) => {
+            const rgx = new RegExp(`^${CONDITION_PREFIX}`);
+
+            if (rgx.test(curr.condition_name)) {
+                acc.push(curr._id);
+            }
+
+            return acc;
+        }, []);
+
+        for (let idx = 0; idx < parameterIds.length; idx += 1) {
+            await request
+                .post('/i/remote-config/remove-parameter')
+                .send({
+                    api_key: API_KEY_ADMIN,
+                    app_id: APP_ID,
+                    app_key: APP_KEY,
+                    parameter_id: parameterIds[idx],
+                })
+                .expect('Content-Type', /json/);
+        }
+
+        for (let idx = 0; idx < conditionIds.length; idx += 1) {
+            await request
+                .post('/i/remote-config/remove-condition')
+                .send({
+                    api_key: API_KEY_ADMIN,
+                    app_id: APP_ID,
+                    app_key: APP_KEY,
+                    condition_id: conditionIds[idx],
+                })
+                .expect('Content-Type', /json/);
+        }
     });
 });
