@@ -98,7 +98,7 @@ describe('Non empty remote-config endpoint', () => {
 
         const parameter = resp.body?.parameters?.find((param) => param.parameter_key === `${PARAMETER_PREFIX}conditioned`);
 
-        should(parameter.default_value).be.eql(`${VALUE_PREFIX}default`);
+        should(parameter?.default_value).be.eql(`${VALUE_PREFIX}default`);
     });
 
     it('Should return conditions', async() => {
@@ -143,7 +143,7 @@ describe('Non empty remote-config endpoint', () => {
 
         const condition = resp.body?.conditions?.find((cond) => cond.condition_name === `${CONDITION_PREFIX}0`);
 
-        should(condition.used_in_parameters).be.eql(1);
+        should(condition?.used_in_parameters).be.eql(1);
     });
 
     after(async() => {
