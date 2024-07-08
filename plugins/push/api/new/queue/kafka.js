@@ -1,10 +1,10 @@
 /**
- * @typedef {import('../types/queue.js').JobTicket} JobTicket
+ * @typedef {import('../types/queue.ts').JobTicket} JobTicket
  * @typedef {import('kafkajs').Producer} Producer
  * @typedef {import('kafkajs').Admin} Admin
- * @typedef {import('../types/queue.js').PushTicket} PushTicket
- * @typedef {import('../types/queue.js').PushTicketHandler} PushTicketHandler
- * @typedef {import('../types/queue.js').JobTicketHandler} JobTicketHandler
+ * @typedef {import('../types/queue.ts').PushTicket} PushTicket
+ * @typedef {import('../types/queue.ts').PushTicketHandler} PushTicketHandler
+ * @typedef {import('../types/queue.ts').JobTicketHandler} JobTicketHandler
  */
 
 const { Kafka, KafkaJSProtocolError, Partitioners, logLevel } = require("kafkajs");
@@ -115,7 +115,7 @@ async function init(onPushMessage, onMessageSchedule, isMaster = false) {
  * 
  * @param {JobTicket} messageScheduleJob message schedule to create job for
  */
-async function createJob(messageScheduleJob) {
+async function sendJobTicket(messageScheduleJob) {
     if (!_producer) {
         throw new Error("Producer is not initialized");
     }
@@ -147,7 +147,7 @@ async function createJob(messageScheduleJob) {
  * 
  * @param {PushTicket} push
  */
-async function sendToQueue(push) {
+async function sendPushTicket(push) {
     if (!_producer) {
         throw new Error("Producer is not initialized");
     }
@@ -160,8 +160,8 @@ async function sendToQueue(push) {
 }
 
 module.exports = {
-    sendToQueue,
-    createJob,
+    sendPushTicket,
+    sendJobTicket,
     init
 };
 

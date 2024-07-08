@@ -1,15 +1,15 @@
 /**
- * @typedef {import('./types/queue.js').JobTicket} JobTicket
- * @typedef {import('./types/queue.js').PushTicket} PushTicket
- * @typedef {import('./types/message.js').Message} Message
- * @typedef {import('./types/credentials.js').SomeCredential} SomeCredential
- * @typedef {import('./types/proxy.js').ProxyConfiguration} ProxyConfiguration
+ * @typedef {import('./types/queue.ts').JobTicket} JobTicket
+ * @typedef {import('./types/queue.ts').PushTicket} PushTicket
+ * @typedef {import('./types/message.ts').Message} Message
+ * @typedef {import('./types/credentials.ts').SomeCredential} SomeCredential
+ * @typedef {import('./types/proxy.ts').ProxyConfiguration} ProxyConfiguration
  * @typedef {import("mongodb").Db} MongoDb
- * @typedef {import('./types/schedule.js').MessageSchedule} MessageSchedule
+ * @typedef {import('./types/schedule.ts').MessageSchedule} MessageSchedule
  */
 
 const common = require('../../../../api/utils/common');
-const { sendToQueue } = require("./queue/kafka.js");
+const { sendPushTicket } = require("./queue/kafka.js");
 const { Template } = require("../send/data/template.js");
 const { send: androidSend } = require("./platforms/android.js");
 const { Message: OldMessage } = require("../send/data/message.js");
@@ -134,7 +134,7 @@ async function sendMessagesToQueue(messageScheduleJob) {
                 proxy,
             };
 
-            await sendToQueue(push);
+            await sendPushTicket(push);
         }
     }
 }

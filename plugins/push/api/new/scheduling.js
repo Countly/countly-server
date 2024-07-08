@@ -1,24 +1,24 @@
 /**
- * @typedef {import('./types/message.js').Message} Message
- * @typedef {import('./types/message.js').PlainTrigger} PlainTrigger
- * @typedef {import('./types/message.js').RecurringTrigger} RecurringTrigger
- * @typedef {import('./types/message.js').MultiTrigger} MultiTrigger
- * @typedef {import('./types/schedule.js').MessageSchedule} MessageSchedule
- * @typedef {import('./types/queue.js').JobTicket} JobTicket
+ * @typedef {import('./types/message.ts').Message} Message
+ * @typedef {import('./types/message.ts').PlainTrigger} PlainTrigger
+ * @typedef {import('./types/message.ts').RecurringTrigger} RecurringTrigger
+ * @typedef {import('./types/message.ts').MultiTrigger} MultiTrigger
+ * @typedef {import('./types/schedule.ts').MessageSchedule} MessageSchedule
+ * @typedef {import('./types/queue.ts').JobTicket} JobTicket
+ * @typedef {import("mongodb").Db} MongoDb
  */
 
 const common = require('../../../../api/utils/common');
 const { ObjectId } = require('mongodb');
-const { createJob } = require("./queue/kafka.js");
+const { sendJobTicket } = require("./queue/kafka.js");
+const moment = require("moment");
 
-const allTZOffsets = require("./constants/all-tz-offsets.json").map(val => {
-    const factor = val[0] === "-" ? -1 : 1;
-    const hours = parseInt(val.slice(1, 3));
-    const minutes = parseInt(val.slice(4, 6));
-    return factor * (hours * 60 + minutes);
-});
+/** @type {MongoDb} */
+const db = common.db;
 
+const allTZOffsets = require("./constants/all-tz-offsets.json");
 const schedulableTriggerKinds = ["plain", "rec", "multi"];
+
 
 /**
  * 
@@ -27,30 +27,44 @@ const schedulableTriggerKinds = ["plain", "rec", "multi"];
 async function scheduleMessage(message) {
     const triggers = message.triggers
         .filter(trigger => schedulableTriggerKinds.includes(trigger.kind));
+    const now = new Date();
+
     for (let i = 0; i < triggers.length; i++) {
         const trigger = triggers[i];
+        /** @type {Date|undefined} */
+        let scheduleTo;
 
         switch(triggers[i].kind) {
         case "plain":
-            await scheduleWithPlainTrigger(
-                message,
-                /** @type {PlainTrigger} */(trigger)
-            );
+            scheduleTo = trigger.start;
             break;
 
         case "rec":
-            await scheduleWithRecurringTrigger(
-                message,
-                /** @type {RecurringTrigger} */(trigger)
+            // find the last schedule
+            const lastSchedule = await db.collection("message_schedules").find({
+                messageId: message._id,
+            }).limit(1).sort({ scheduledTo: -1 });
+            /** @type {Date} */
+            let lastScheduleDate = lastSchedule?.[0].scheduledTo;
+
+            scheduleTo = findNextMatchForRecurring(
+                /** @type {RecurringTrigger} */(trigger),
+                new Date(Math.max(lastScheduleDate?.getTime() || 0, now.getTime()))
             );
             break;
 
         case "multi":
-            await scheduleWithMultiTrigger(
-                message,
-                /** @type {MultiTrigger} */(trigger)
-            );
+            // TODO: implement
             break;
+        }
+
+        if ("tz" in trigger && trigger.tz) {
+            if (typeof trigger.sctz !== "number") {
+                throw new Error("Scheduler timezone is required when a "
+                    + "message schedule is timezone aware");
+            }
+            scheduleTo = new Date(scheduleTo.getTime() - trigger.sctz * 60 * 1000);
+            return createSchedule(message.app, message._id, scheduleTo, true);
         }
     }
 }
@@ -58,35 +72,119 @@ async function scheduleMessage(message) {
 /**
  * 
  * @param {Message} message 
- * @param {PlainTrigger} trigger 
+ * @param {PlainTrigger} trigger
+ * @return {Promise<MessageSchedule|undefined>}
  */
 async function scheduleWithPlainTrigger(message, trigger) {
     let scheduleTo = trigger.start;
     let timezoneAware = trigger.tz;
-    if (timezoneAware) {
-        if (typeof trigger.sctz !== "number") {
-            throw new Error("Scheduler timezone is required when a "
-                + "message schedule is timezone aware");
-        }
-        scheduleTo = new Date(scheduleTo.getTime() - trigger.sctz * 60 * 1000);
-    }
     return await createSchedule(message.app, message._id, scheduleTo, timezoneAware);
 }
 /**
  * 
- * @param {Message} message 
- * @param {RecurringTrigger} trigger 
+ * @param {Date} date
+ * @param {number} offset
+ * @param {number} time
+ * @return {Date}
  */
-async function scheduleWithRecurringTrigger(message, trigger) {
-    
+function tzOffsetAdjustedTime(date, offset, time) {
+    return moment.utc(date.getTime())
+        .subtract(offset, "minutes")
+        .minutes(0).hours(0).seconds(0).millisecond(0)
+        .add(time, "milliseconds")
+        .add(offset, "minutes")
+        .toDate();
+}
+/**
+ * 
+ * @param {RecurringTrigger} trigger
+ * @param {Date=} after
+ * @return {Date=}
+ */
+function findNextMatchForRecurring(trigger, after = new Date) {
+    // to prevent mutation:
+    const onDates = trigger.on ? [...trigger.on] : [];
+    // to put negative values to the end, add a 100
+    onDates.sort((i, j) => (i < 1 ? i + 100 : i) - (j < 1 ? j + 100 : j))
+
+    /**
+     * checks if the given date is exceeding trigger.end
+     * @param {Date} date 
+     * @returns {Boolean}
+     */
+    const exceeds = date => trigger.end
+        ? date.getTime() >= trigger.end.getTime()
+        : false;
+
+    if (exceeds(after)) {
+        return;
+    }
+
+    // find when to start
+    let current = tzOffsetAdjustedTime(trigger.start, trigger.sctz, trigger.time);
+    if (current.getTime() < trigger.start.getTime()) {
+        current = moment(current).add(1, "day").toDate();
+    }
+
+    let i = 0;
+    while (true) {
+        if (trigger.bucket === "daily") {
+            if (current.getTime() >= after.getTime()) {
+                if (exceeds(current)) {
+                    return;
+                }
+                return current;
+            }
+            // skip the days defined by the rule
+            current = moment(current).add(trigger.every, "days").toDate();
+        }
+        else {
+            const curMoment = moment(current).utcOffset(-1 * trigger.sctz);
+
+            if (trigger.bucket === "weekly") {
+                const found = onDates
+                    .map(dateIndex => curMoment.isoWeekday(dateIndex).toDate())
+                    .filter(date => date.getTime() >= current.getTime())
+                    .find(date => date.getTime() >= after.getTime());
+                if (found) {
+                    if (exceeds(found)) {
+                        return;
+                    }
+                    return found;
+                }
+                // skip the weeks
+                current = curMoment.isoWeekday(1).add(trigger.every, "week").toDate();
+            }
+            else if (trigger.bucket === "monthly") {
+                const found = onDates
+                    .map(i => curMoment.add(i < 1 ? 1 : 0, "month").date(i).toDate())
+                    .filter(date => date.getTime() >= current.getTime())
+                    .find(date => date.getTime() >= after.getTime());
+                if (found) {
+                    if (exceeds(found)) {
+                        return;
+                    }
+                    return found;
+                }
+                // skip the months
+                current = curMoment.date(1).add(trigger.every, "month").toDate();
+            }
+        }
+        // just in case:
+        if (++i > 100_000) {
+            throw new Error("Next date couldn't be found");
+        }
+    }
 }
 /**
  * 
  * @param {Message} message 
  * @param {MultiTrigger} trigger 
+ * @return {Promise<MessageSchedule|undefined>}
  */
 async function scheduleWithMultiTrigger(message, trigger) {
-
+    // TODO: implement
+    return;
 }
 
 /**
@@ -104,7 +202,7 @@ async function createSchedule(appId, messageId, scheduledTo, timezoneAware = fal
     /** @type {MessageSchedule} */
     const messageSchedule = {
         _id: new ObjectId,
-        appId: appId,
+        appId,
         messageId,
         scheduledTo,
         status: "started",
@@ -125,9 +223,9 @@ async function createJobs(messageSchedule) {
     const jobs = [];
     if (messageSchedule.timezoneAware) {
         for (let i = 0; i < allTZOffsets.length; i++) {
-            const offset = allTZOffsets[i];
+            const offset = allTZOffsets[i].offset;
             const tzAdjustedScheduleDate = new Date(
-                messageSchedule.scheduledTo.getTime() - offset * 60 * 1000
+                messageSchedule.scheduledTo.getTime() + offset * 60 * 1000
             );
             jobs.push({
                 appId: messageSchedule.appId,
@@ -147,27 +245,17 @@ async function createJobs(messageSchedule) {
         });
     }
     // schedule all jobs
-    await Promise.all(jobs.map(createJob));
+    await Promise.all(jobs.map(sendJobTicket));
     return jobs;
 }
 
 module.exports = {
-    scheduleMessage
-};
+    scheduleMessage,
 
-// =============================== TESTS ================================
-(async() => {
-    // if (!require('cluster').isPrimary) {
-    //     return;
-    // }
-    // await require("./queue/kafka.js").init(
-    //     async function(push) {},
-    //     async function(job) {},
-    //     false,
-    // );
-    // await createSchedule(
-    //     new ObjectId("667e7619df6b3fe64d1de3ba"),
-    //     new Date("2024-06-28T07:00:42.000Z"),
-    //     true
-    // );
-})();
+    // exported for unit tests
+    createJobs,
+    createSchedule,
+    scheduleWithPlainTrigger,
+    tzOffsetAdjustedTime,
+    findNextMatchForRecurring,
+};

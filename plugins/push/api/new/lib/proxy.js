@@ -1,6 +1,6 @@
 /**
- * @typedef {import('../types/proxy').ProxyAgentOptions} ProxyAgentOptions
- * @typedef {import('../types/proxy').BaseAgent} BaseAgent
+ * @typedef {import('../types/proxy.ts').ProxyAgentOptions} ProxyAgentOptions
+ * @typedef {import('../types/proxy.ts').BaseAgent} BaseAgent
  */
 const log = require('../../../../../api/utils/log')('push:proxy');
 
