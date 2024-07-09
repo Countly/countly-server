@@ -144,6 +144,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/date.js',
                     'frontend/express/public/javascripts/countly/vue/components/dropdown.js',
                     'frontend/express/public/javascripts/countly/vue/components/input.js',
+                    'frontend/express/public/javascripts/countly/vue/components/content.js',
                     'frontend/express/public/javascripts/countly/vue/datatable-legacy.js',
                     'frontend/express/public/javascripts/countly/vue/components/datatable.js',
                     'frontend/express/public/javascripts/countly/vue/components/dialog.js',

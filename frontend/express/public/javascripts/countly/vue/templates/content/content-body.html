@@ -1,0 +1,28 @@
+<div style="display: contents;">
+    <!-- Here body, currentTab: {{currentTab}} -->
+    <div class="bu-is-flex bu-is-justify-content-space-between" style="height: 100%;">
+        <transition :name="toggleTransition" @enter="onViewEntered">
+            <div v-if="!isLeftSidebarHidden" class="content-builder-body__leftSidebar" style="width: 230px;border: 1px solid #ECECEC; border-radius: 8px; margin-top: 8px;margin-bottom: 8px; margin-left: 8px;">
+                <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-space-between" style="border-bottom: 1px solid #F6F6F6;padding: 16px">
+                    <div class="bu-is-flex bu-is-align-items-center justify-content-space-between">
+                        <h4>Screens</h4>
+                        <cly-tooltip-icon style="margin-left: 4px" tooltip="Screens"></cly-tooltip-icon>
+                    </div>
+                    <div style="padding: 10px;border: 1px solid rgb(226, 228, 232);border-radius: 12px;box-shadow: 1px 1px 1px #E2E4E8;" @click="collapseBar('left')">
+                        <div class="color-warm-gray-80" style="border: 2px solid; cursor:pointer; border-radius: 5px; width: 16px; height: 17px;"><i style="font-weight: 600" class="cly-io cly-io-arrow-sm-left"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div v-else style="padding: 10px;border: 1px solid rgb(226, 228, 232);border-radius: 12px;box-shadow: 1px 1px 1px #E2E4E8; height: fit-content; margin-top: 8px; margin-left: 8px;" @click="collapseBar('left')">
+                <div class="color-warm-gray-80" style="border: 2px solid; cursor:pointer; border-radius: 5px; width: 16px; height: 17px;"><i style="font-weight: 600" class="cly-io cly-io-arrow-sm-left"></i></div>
+            </div>
+        </transition>
+        <slot name="content-layout-body"></slot>
+        <div v-if="!hideRightSidebar" class="content-builder-body__rightSidebar" style="width: 348px;
+        border: 1px solid;
+        margin-top: 8px;
+        margin-bottom: 8px;">
+        <slot name="content-layout-right-sidebar"></slot>
+    </div>
+    </div>
+</div>

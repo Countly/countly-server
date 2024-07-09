@@ -641,10 +641,11 @@ countlyFs.gridfs = {};
         bucket.find().toArray()
             .then((records) => callback(
                 null,
-                records.map(({ filename, uploadDate, length }) => ({
+                records.map(({ filename, uploadDate, length, metadata }) => ({
                     filename,
                     createdOn: uploadDate,
-                    size: length
+                    size: length,
+                    metadata
                 }))
             ))
             .catch((error) => callback(error, null));
