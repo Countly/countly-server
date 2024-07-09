@@ -2777,9 +2777,8 @@ common.processCarrier = function(metrics) {
         var carrier = metrics._carrier + "";
 
         //random hash without spaces
-        if (carrier.length === 16 && carrier.indexOf(" ") === -1) {
+        if ((carrier.length === 16 && carrier.indexOf(" ") === -1)) {
             delete metrics._carrier;
-            return;
         }
 
         //random code
@@ -2791,14 +2790,17 @@ common.processCarrier = function(metrics) {
             }
             else {
                 delete metrics._carrier;
-                return;
             }
         }
 
         carrier = carrier.replace(/\w\S*/g, function(txt) {
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         });
+
         metrics._carrier = carrier;
+        if (!metrics._carrier || metrics._carrier === "--") {
+            metrics._carrier = "Unknown";
+        }
     }
 };
 

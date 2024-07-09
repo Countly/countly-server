@@ -108,6 +108,7 @@
                     this.$emit("close");
                 },
                 onChange: function(id) {
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                     var selectedApp = this.allApps.find(function(a) {
                         return a._id === id;
                     });
@@ -188,6 +189,9 @@
                         message: this.errorMessage,
                         type: "error"
                     });
+                },
+                unselectCountlyGuides: function() {
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                 }
             }
         });
@@ -637,10 +641,10 @@
                 otherMenuOptions: function() {
                     var menuOptions = [
                         {
-                            name: "help-center",
-                            icon: "cly-icon-sidebar-help-center",
+                            name: this.enableGuides ? "countly-guides" : "help-center",
+                            icon: this.enableGuides ? "cly-icon-sidebar-countly-guides" : "cly-icon-sidebar-help-center",
                             noSelect: true,
-                            tooltip: "Help Center"
+                            tooltip: this.enableGuides ? "Countly Guides" : "Help Center"
                         },
                         {
                             name: "user",
@@ -707,6 +711,18 @@
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
                     return selected && selected.menu;
                 },
+                guidesButtonDynamicClass: function() {
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state === 'selected') {
+                        return 'color:#12AF51;';
+                    }
+                    else if (state === 'hover' || state === 'highlighted') {
+                        return 'color:white;';
+                    }
+                    else {
+                        return 'color:#A7AEB8;';
+                    }
+                },
                 helpCenterLink: function() {
                     return this.enableGuides ? '#/guides' : "https://support.count.ly";
                 },
@@ -715,6 +731,18 @@
                 }
             },
             methods: {
+                guidesMouseOver: function() {
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state !== 'selected' && state !== 'highlighted') {
+                        this.$store.dispatch("countlySidebar/highlightGuidesButton");
+                    }
+                },
+                guidesMouseLeave: function() {
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state !== 'selected' && state !== 'highlighted') {
+                        this.$store.dispatch("countlySidebar/deselectGuidesButton");
+                    }
+                },
                 onClick: function(option) {
                     if (!option.noSelect) {
                         this.selectedMenuOptionLocal = option.name;
@@ -723,6 +751,10 @@
 
                     if (option.name === "toggle") {
                         this.onToggleClick();
+                    }
+                    else if (option.name === "countly-guides") {
+                        this.$store.dispatch("countlySidebar/selectGuidesButton");
+                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "guides", item: {}});
                     }
                 },
                 onToggleClick: function() {
@@ -910,6 +942,7 @@
                     countlyCMS.fetchEntry("server-guide-config").then(function(config) {
                         self.enableGuides = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
                     });
+                    this.$store.dispatch("countlySidebar/highlightGuidesButton", 'highlighted');
                 }
             }
         });
