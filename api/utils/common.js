@@ -87,6 +87,7 @@ common.escape_html = function(string, more) {
 common.encodeCharacters = function(str) {
     try {
         str = str + "";
+        str = str.replace(/\u0000/g,"&#9647");
         str.replace(/[^\x00-\x7F]/g, function(c) {
             return encodeURI(c);
         });

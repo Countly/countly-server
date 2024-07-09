@@ -1359,39 +1359,40 @@ describe('Writing app events', function() {
                     });
             });
         });
-    });
-    describe('Verifying dealing with unicode values', function() {
-        describe('creating event', function() {
-            it('should success', function(done) {
-                var params = [{
-                    "key": "testUnicodeSegment",
-                    "count": 1,
-                    "sum": 5,
-                    "segmentation": {
-                        "unicodeSegment": "\u00E7\u0000\u0067A"
-                    }
-                }];
-                request
-                    .get('/i?device_id=' + DEVICE_ID + 'A&app_key=' + APP_KEY + "&events=" + JSON.stringify(params))
-                    .expect(200)
-                    .end(function(err, res) {
-                        if (err) {
-                            return done(err);
+
+        describe('Verifying dealing with unicode values', function() {
+            describe('creating event', function() {
+                it('should success', function(done) {
+                    var params = [{
+                        "key": "testUnicodeSegment",
+                        "count": 1,
+                        "sum": 5,
+                        "segmentation": {
+                            "unicodeSegment": "\u00E7\u0000\u0067A"
                         }
-                        var ob = JSON.parse(res.text);
-                        ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
-                    });
+                    }];
+                    request
+                        .get('/i?device_id=' + DEVICE_ID + 'A&app_key=' + APP_KEY + "&events=" + JSON.stringify(params))
+                        .expect(200)
+                        .end(function(err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+                            var ob = JSON.parse(res.text);
+                            ob.should.have.property('result', 'Success');
+                            setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        });
+                });
             });
-        });
-        describe('verify specific event', function() {
-            it('should have add count and sum', function(done) {
-                request
-                    .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=testUnicodeSegment')
-                    .expect(200)
-                    .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {meta: {"unicodeSegment": ["\u00E7\u0067A"], "segments": ["unicodeSegment"]}, c: 1, s: 5});
-                    });
+            describe('verify specific event', function() {
+                it('should have add count and sum', function(done) {
+                    request
+                        .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=testUnicodeSegment')
+                        .expect(200)
+                        .end(function(err, res) {
+                            testUtils.validateEvents(err, res, done, {meta: {"unicodeSegment": ["\u00E7&amp;#9647\u0067A"], "segments": ["unicodeSegment"]}, c: 1, s: 5});
+                        });
+                });
             });
         });
     });
