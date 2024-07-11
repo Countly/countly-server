@@ -1,29 +1,26 @@
 /**
- *  Description: Creates CSV file of document counts per month for specified time from drill data
+ *  Description: Creates CSV file of document counts per month from drill data
  *  Server: countly
  *  Path: $(countly dir)/bin/scripts/export-data
  *  Command: node export_monthly_doc_count.js
  */
 
 
-const moment = require('moment-timezone');
+// const moment = require('moment-timezone');
 const { ObjectId } = require('mongodb');
 const fs = require('fs');
-const { Parser, transforms: { flatten } } = require('json2csv');
 
 const pluginManager = require('../../../plugins/pluginManager.js');
 const drillCommon = require('../../../plugins/drill/api/common.js');
-const countlyCommon = require('../../../api/lib/countly.common.js');
 
 const app_list = []; //valid app_ids here. If empty array passed, script will process all apps.
 const path = './'; //path to save csv files
-const period = '60days'; //supported values are month, 60days, 30days, 7days, yesterday, hour, all, or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000]
 
-const EventDetailsFields = {
-    "app_name": "AppName",
-    "event": "EventName",
-    "_id": "CreationDate",
-    "count": "Count",
+const headerMap = {
+    "app_name": "App Name",
+    "event_name": "Event Name",
+    "month": "Creation Date",
+    "doc_count": "Count",
 };
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
@@ -34,56 +31,34 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             return close();
         }
         else {
-            //SET PERIOD
-            var activePeriod = period;
-            if (period !== 'all') {
-                countlyCommon.setPeriod(period);
-                activePeriod = typeof countlyCommon.periodObj.activePeriod === "number" ? JSON.stringify(countlyCommon.periodObj.activePeriod).replace(/\./g, ":") : countlyCommon.periodObj.activePeriod.replace(/\./g, ":");
-            }
-            //CREATE FILE
-            const eventDetailsWriteStream = fs.createWriteStream(path + `/EventDetails_${activePeriod}.csv`);
+            // CREATE WRITE STREAM
+            const eventDetailsWriteStream = fs.createWriteStream(path + `/monthly_document_counts.csv`);
             var isFirst = true;
 
             for (let i = 0; i < apps.length; i++) {
                 var app = apps[i];
                 console.log(i + 1, ") Processing app:", app.name);
-                //SET APP TIMEZONE
-                countlyCommon.setTimezone(app.timezone);
-                var periodObj = countlyCommon.periodObj;
+
                 try {
-                    //GET EVENTS FOR APP
+                    // GET EVENTS FOR CURRENT APP
                     var events = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
                     events = events && events.list || [];
-                    //PROCESS EACH EVENT
+                    // PROCESS EACH EVENT TO GET COLLECTION NAME
                     for (let j = 0; j < events.length; j++) {
                         var event = events[j];
                         console.log("Processing event:", event);
                         var collectionName = drillCommon.getCollectionName(event, app._id);
-                        //QUERY TO GET DATA
-                        let query = {};
-                        if (period !== 'all') {
-                            let ts = {};
-                            let tmpArr = periodObj.currentPeriodArr[0].split(".");
-                            ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
-                            if (app.timezone) {
-                                ts.$gte.tz(app.timezone);
-                            }
-                            ts.$gte = ts.$gte.valueOf() - ts.$gte.utcOffset() * 60000;
 
-                            tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
-                            ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
-                            if (app.timezone) {
-                                ts.$lt.tz(app.timezone);
-                            }
-                            ts.$lt = ts.$lt.valueOf() - ts.$lt.utcOffset() * 60000;
-                            query.ts = ts;
-                        }
-
-                        //FETCH DATA AND WRITE TO FILES
+                        // FETCH, TRANSFORM, AND SET DATA
                         try {
+                            const appName = app.name;
+                            const eventName = event;
                             var cursor = drillDb.collection(collectionName).aggregate([
                                 {
-                                    $match: query
+                                    $set: {
+                                        app_name: appName,
+                                        event_name: eventName,
+                                    }
                                 },
                                 {
                                     $group: {
@@ -95,33 +70,33 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                         },
                                         count: {
                                             $sum: 1
-                                        }
+                                        },
+                                        app_name: { $first: "$app_name" },
+                                        event_name: { $first: "$event_name" }
+                                    }
+                                },
+                                {
+                                    $project: {
+                                        _id: 0,
+                                        app_name: "$app_name",
+                                        event_name: "$event_name",
+                                        month: "$_id",
+                                        doc_count: "$count"
                                     }
                                 }
                             ]);
-                            while (await cursor.hasNext()) {
-                                //EVENT DETAILS
-                                var row = await cursor.next();
-                                var newRow = {
-                                    AppName: app.name,
-                                    EventName: event,
-                                };
-                                for (var key in EventDetailsFields) {
-                                    if (row[key]) {
-                                        newRow[EventDetailsFields[key]] = row[key];
-                                    }
-                                }
-                                var eventDetailsParser = new Parser({ transforms: [ flatten({objects: 'true', arrays: 'true', separator: '_'}) ], fields: Object.values(EventDetailsFields), header: false });
-                                var eventDetails = eventDetailsParser.parse(newRow);
 
-                                //WRITE TO FILES
-                                if (isFirst) {
-                                    isFirst = false;
-                                    eventDetailsWriteStream.write(Object.values(EventDetailsFields).join(","));
-                                }
-                                if (eventDetails && eventDetails.length > 0) {
-                                    eventDetailsWriteStream.write("\n" + eventDetails);
-                                }
+                            var array = (await cursor.toArray());
+                            const rows = array.map(obj => Object.values(obj).join(',')).join('\n');
+
+                            // WRITE TO FILE
+                            if (isFirst) {
+                                isFirst = false;
+                                const headerValues = Object.keys(array[0]).map(key => headerMap[key]);
+                                eventDetailsWriteStream.write(headerValues.join(","));
+                            }
+                            if (rows && rows.length > 0) {
+                                eventDetailsWriteStream.write("\n" + rows);
                             }
                         }
                         catch (err) {
