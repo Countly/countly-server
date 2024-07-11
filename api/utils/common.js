@@ -2782,7 +2782,7 @@ common.processCarrier = function(metrics) {
         }
 
         // Since iOS 16.04 carrier returns value "--", interpret as Unknown by deleting
-        if (carrier === "---") {
+        if (carrier === "--") {
             delete metrics._carrier;
         }
 
@@ -2801,6 +2801,8 @@ common.processCarrier = function(metrics) {
         carrier = carrier.replace(/\w\S*/g, function(txt) {
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         });
+
+        metrics._carrier = carrier;
     }
     if (!metrics._carrier) {
         metrics._carrier = "Unknown";
