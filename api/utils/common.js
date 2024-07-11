@@ -2773,7 +2773,9 @@ common.updateAppUser = function(params, update, no_meta, callback) {
 * @param {object} metrics - metrics object from SDK request
 */
 common.processCarrier = function(metrics) {
-    if (metrics && metrics._carrier) {
+    // Initialize metrics if undefined
+    metrics = metrics || {};
+    if (metrics._carrier) {
         var carrier = metrics._carrier + "";
 
         //random hash without spaces
@@ -2804,10 +2806,7 @@ common.processCarrier = function(metrics) {
 
         metrics._carrier = carrier;
     }
-    if (!metrics._carrier) {
-        metrics = metrics || {};
-        metrics._carrier = "Unknown";
-    }
+    metrics._carrier = metrics._carrier ? metrics._carrier : "Unknwon";
 };
 
 /**
