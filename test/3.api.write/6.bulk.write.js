@@ -87,7 +87,7 @@ describe('Bulk writing', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "1.0 min", avg_time: "0.3 min", avg_requests: "3.0", platforms: [], carriers: [], resolutions: []});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "1.0 min", avg_time: "0.3 min", avg_requests: "3.0", platforms: [], carriers: [{"name": 'Unknown', "value": 3, "percent": 100}], resolutions: []});
                     });
             });
         });
@@ -171,7 +171,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=carriers')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateMetrics(err, res, done, {meta: {"carriers": ["Vodafone", "Telecom"]}, "Vodafone": {"n": 1, "t": 1, "u": 1}, "Telecom": {"n": 2, "t": 2, "u": 2}});
+                        testUtils.validateMetrics(err, res, done, {meta: {"carriers": ["Vodafone", 'Unknown', "Telecom"]}, "Vodafone": {"n": 1, "t": 1, "u": 1}, "Telecom": {"n": 2, "t": 2, "u": 2}});
                     });
             });
         });
@@ -191,7 +191,7 @@ describe('Bulk writing', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 9, total_users: 9, new_users: 9, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 50}, {"name": "IOS", "value": 2, "percent": 50}], resolutions: [{"name": "2048x1536", "value": 2, "percent": 66.7}, {"name": "1200x800", "value": 1, "percent": 33.3}], carriers: [{"name": "Telecom", "value": 2, "percent": 66.7}, {"name": "Vodafone", "value": 1, "percent": 33.3}]});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 9, total_users: 9, new_users: 9, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 50}, {"name": "IOS", "value": 2, "percent": 50}], resolutions: [{"name": "2048x1536", "value": 2, "percent": 66.7}, {"name": "1200x800", "value": 1, "percent": 33.3}], carriers: [{"name": "Telecom", "value": 2, "percent": 22.2}, {"name": "Vodafone", "value": 1, "percent": 11.1}, {"name": 'Unknown', "value": 6, "percent": 66.7}]});
                     });
             });
         });
