@@ -113,8 +113,98 @@
         }
     });
 
+    var drillViewDrawer = countlyVue.views.create({
+        template: CV.T("/views/templates/drillViewDrawer.html"),
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            controls: {
+                type: Object,
+                required: true
+            }
+        },
+        computed: {
+            views: function() {
+                return Object.entries(countlyViews.getViewsNames()).map(function([key, value]) {
+                    return {
+                        value: key,
+                        label: value
+                    };
+                });
+            },
+            availableSegments: function() {
+                var segments = this.$store.state.countlyViews.segments || {};
+                var sortedKeys = Object.keys(segments).sort(Intl.Collator().compare);
+                var list = [{"value": "all", "label": jQuery.i18n.map["views.all-segments"]}];
+                for (var i = 0; i < sortedKeys.length; i++) {
+                    list.push({"value": sortedKeys[i], "label": sortedKeys[i]});
+                }
+                return list;
+            },
+            omittedSegments: function() {
+                var omittedSegmentsObj = {
+                    label: CV.i18n("events.all.omitted.segments"),
+                    options: []
+                };
+                var omittedSegments = this.$store.getters['countlyViews/getOmittedSegments'];
+                if (omittedSegments) {
+                    omittedSegmentsObj.options = omittedSegments.map(function(item) {
+                        return {
+                            "label": item,
+                            "value": item
+                        };
+                    });
+                }
+                return omittedSegmentsObj;
+            },
+            segmentValues: function() {
+                const segments = this.$store.state.countlyViews.segments || {};
+                const selectedSegment = this.$refs.drawerScope.editedObject.selectedSegment;
+
+                if (!selectedSegment || !segments[selectedSegment]) {
+                    return [];
+                }
+
+                return segments[selectedSegment].map(function(value) {
+                    return {
+                        value: value,
+                        label: value
+                    };
+                });
+            },
+        },
+        methods: {
+            onSubmit: function(doc) {
+                let URLparams = {
+                    event: "[CLY]_view",
+                    period: doc.period,
+                    dbFilter: {},
+                    byVal: [],
+                    executed: false
+                };
+                if (doc.selectedViews.length > 0) {
+                    URLparams.dbFilter[`sg.name`] = { "$in": doc.selectedViews };
+                }
+                if (doc.selectedSegment !== "all" && doc.selectedSegmentValues.length > 0) {
+                    URLparams.dbFilter[`sg.${doc.selectedSegment}`] = { "$in": doc.selectedSegmentValues };
+                }
+                //Go to drill page
+                app.navigate("#/drill/" + JSON.stringify(URLparams), true);
+            },
+            onCopy: function() {
+            },
+            onClose: function() {
+            }
+        },
+        mounted: function() {
+            //countlyViews.loadList();
+        }
+    });
+
     var ViewsView = countlyVue.views.create({
         template: CV.T("/views/templates/views.html"),
+        components: {
+            "drill-view-drawer": drillViewDrawer
+        },
         data: function() {
             var showScrollingCol = false;
             var showActionMapColumn = false;
@@ -519,9 +609,22 @@
             },
             dateChanged: function() {
                 this.isSpecialPeriod = countlyCommon.periodObj.isSpecialPeriod;
+            },
+            openDrillViewDrawer: function() {
+                let self = this;
+                let args = {
+                    "period": countlyCommon.getPeriod(),
+                    "selectedSegment": this.filter.segment,
+                    "selectedSegmentValues": (this.filter.segmentKey && this.filter.segmentKey !== "all") ? [this.filter.segmentKey] : [],
+                    "selectedViews": this.$store.state.countlyViews.selectedViews.map(function(id) {
+                        let view = self.selectedTableRows.find(function(row) {
+                            return row._id === id;
+                        });
+                        return view ? view.view : id;
+                    })
+                }
+                this.openDrawer("drill-view", args);
             }
-
-
         },
         computed: {
             data: function() {
@@ -632,12 +735,16 @@
                 }
                 return omittedSegmentsObj;
             },
+            isDrillEnabled: function() {
+                return CountlyHelpers.isPluginEnabled("drill");
+            }
         },
         mixins: [
             countlyVue.container.dataMixin({
                 'externalLinks': '/analytics/views/links'
             }),
-            countlyVue.mixins.auth(FEATURE_NAME)
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.hasDrawers("drill-view")
         ]
     });
 
