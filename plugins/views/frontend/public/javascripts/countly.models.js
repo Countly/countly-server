@@ -773,7 +773,7 @@
     */
     countlyViews.getViewsNames = function() {
         return _viewsNames;
-    }
+    };
 
     /** Reverse function. Returns 'view' value from display name
     * @param {string} name  - display name

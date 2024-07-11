@@ -622,7 +622,7 @@
                         });
                         return view ? view.view : id;
                     })
-                }
+                };
                 this.openDrawer("drill-view", args);
             }
         },

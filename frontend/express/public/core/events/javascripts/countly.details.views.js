@@ -181,7 +181,7 @@
                 if (doc.selectedSegment !== "segment") {
                     URLparams.dbFilter[`sg.${doc.selectedSegment}`] = { "$in": [] };
                     if (doc.selectedSegmentValues.length > 0) {
-                        URLparams.dbFilter[`sg.${doc.selectedSegment}`]["$in"] = doc.selectedSegmentValues;
+                        URLparams.dbFilter[`sg.${doc.selectedSegment}`].$in = doc.selectedSegmentValues;
                     }
                 }
                 //Go to drill page
@@ -273,7 +273,7 @@
                     "selectedSegment": this.currentActiveSegmentation,
                     "selectedSegmentValues": [],
                     "period": countlyCommon.getPeriod(),
-                }
+                };
                 this.openDrawer("drill-event", args);
             }
         },

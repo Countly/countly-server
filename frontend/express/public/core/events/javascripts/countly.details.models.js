@@ -781,8 +781,8 @@
         },
         fetchSelectedEventsData: function(context, period, selectedEventName, segmentation) {
             let _selectedEventName = selectedEventName ? selectedEventName : context.state.selectedEventName;
-            let _segmentation = segmentation ? 
-                (segmentation === "segment" ? "" : segmentation) : 
+            let _segmentation = segmentation ?
+                (segmentation === "segment" ? "" : segmentation) :
                 (context.state.currentActiveSegmentation === "segment" ? "" : context.state.currentActiveSegmentation);
 
             return CV.$.ajax({

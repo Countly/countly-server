@@ -383,7 +383,7 @@
             topClasses: function() {
                 let classes = ["cly-vue-form-step__section"];
                 if (this.direction === "row") {
-                    classes.push("bu-is-flex", "bu-is-flex-direction-row","bu-is-align-items-center");
+                    classes.push("bu-is-flex", "bu-is-flex-direction-row", "bu-is-align-items-center");
                     return classes;
                 }
                 if (this.inline) {
@@ -472,7 +472,7 @@
                 }
             },
             searchable: { type: Boolean, default: true },
-            searchPlaceholder: { type: String, default: CV.i18n('common.search') }
+            searchPlaceholder: { type: String, default: 'Search' }
         },
         methods: {
             deleteValue: function(item) {
@@ -484,7 +484,7 @@
                 this.$emit('input', value);
             }
         },
-        template:   '<div class="cly-vue-form-checklistbox">\
+        template: '<div class="cly-vue-form-checklistbox">\
                         <cly-form-field :name="name" :required="required" direction="row" inline v-slot:default>\
                             <div class="cly-vue-form-checklistbox-field">\
                                 <div class="bu-is-flex bu-is-align-items-center" style="height: 25px;">\
