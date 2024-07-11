@@ -7,7 +7,7 @@ $bg-color: #24292e;
 #cly-vue-sidebar {
     left: 0;
     height: 100%;
-    z-index: 2000;
+    z-index: 1999;
     user-select: none;
     color: map.get(c.$colors, "warm-gray-40");
 }

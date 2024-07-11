@@ -31,6 +31,7 @@
 
                     if (active) {
                         active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
+                        active.name = countlyCommon.unescapeHtml(active.name);
                     }
                     return active || {};
                 },
