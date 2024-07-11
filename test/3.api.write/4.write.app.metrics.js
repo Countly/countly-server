@@ -293,7 +293,7 @@ describe('Writing app metrics', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 6, total_users: 6, new_users: 6, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 100}], resolutions: [{"name": "1200x800", "value": 1, "percent": 100}], carriers: [{"name": 'Unknown', "value": 5, "percent": 83.3 }, {"name": "Vodafone", "value": 1, "percent": 16.7}, {"name": "Unkown", "value": 5, "percent": 83.3}]});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 6, total_users: 6, new_users: 6, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 100}], resolutions: [{"name": "1200x800", "value": 1, "percent": 100}], carriers: [{"name": 'Unknown', "value": 5, "percent": 83.3 }, {"name": "Vodafone", "value": 1, "percent": 16.7}]});
                     });
             });
         });
@@ -459,7 +459,7 @@ describe('Writing app metrics', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 9, total_users: 9, new_users: 9, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 50}, {"name": "IOS", "value": 2, "percent": 50}], resolutions: [{"name": "2048x1536", "value": 2, "percent": 66.7}, {"name": "1200x800", "value": 1, "percent": 33.3}], carriers: [{"name": "Telecom", "value": 2, "percent": 22.2}, {"name": 'Unknown', "value": 6, "percent": 66.7}, {"name": "Vodafone", "value": 1, "percent": 11.1}]});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 9, total_users: 9, new_users: 9, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "1.0", platforms: [{"name": "Android", "value": 2, "percent": 50}, {"name": "IOS", "value": 2, "percent": 50}], resolutions: [{"name": "2048x1536", "value": 2, "percent": 66.7}, {"name": "1200x800", "value": 1, "percent": 33.3}], carriers: [{"name": 'Unknown', "value": 6, "percent": 66.7}, {"name": "Telecom", "value": 2, "percent": 22.2}, {"name": "Vodafone", "value": 1, "percent": 11.1}]});
                     });
             });
         });
