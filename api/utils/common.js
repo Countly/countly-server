@@ -2773,11 +2773,18 @@ common.updateAppUser = function(params, update, no_meta, callback) {
 * @param {object} metrics - metrics object from SDK request
 */
 common.processCarrier = function(metrics) {
-    if (metrics && metrics._carrier) {
+    // Initialize metrics if undefined
+    metrics = metrics || {};
+    if (metrics._carrier) {
         var carrier = metrics._carrier + "";
 
         //random hash without spaces
         if ((carrier.length === 16 && carrier.indexOf(" ") === -1)) {
+            delete metrics._carrier;
+        }
+
+        // Since iOS 16.04 carrier returns value "--", interpret as Unknown by deleting
+        if (carrier === "--") {
             delete metrics._carrier;
         }
 
@@ -2798,10 +2805,8 @@ common.processCarrier = function(metrics) {
         });
 
         metrics._carrier = carrier;
-        if (!metrics._carrier || metrics._carrier === "--") {
-            metrics._carrier = "Unknown";
-        }
     }
+    metrics._carrier = metrics._carrier ? metrics._carrier : "Unknown";
 };
 
 /**
