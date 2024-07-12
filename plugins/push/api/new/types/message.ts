@@ -19,12 +19,12 @@ export interface BaseTrigger {
         "cohort"| // Automated on-cohort message
         "api"   | // API (Transactional) message
         "rec"   | // Recurring message
-        "multi"   // Multiple times
+        "multi";  // Multiple times
     start: Date;
-    last?: Date;
 }
 
 export interface AutoTrigger extends BaseTrigger {
+    kind: "event"|"api"|"cohort";
     end?: Date;
     actuals?: boolean;
     time?: number;
@@ -35,48 +35,53 @@ export interface AutoTrigger extends BaseTrigger {
 }
 
 export interface ReschedulingTrigger extends BaseTrigger {
-    tz?: boolean;
-    sctz?: number;
+    kind: "rec"|"multi";
     delayed?: boolean;
     reschedule?: boolean;
-    last?: Date;
-    prev?: Date;
 }
 
 export interface PlainTrigger extends BaseTrigger {
+    kind: "plain";
     tz?: boolean;
-    sctz?: number;
+    sctz?: number; // exists only if tz: true
     delayed?: boolean;
 }
 
 export interface EventTrigger extends AutoTrigger {
+    kind: "event";
     events: string[];
 }
 
 export interface CohortTrigger extends AutoTrigger {
+    kind: "cohort";
     cohorts: string[];
     entry?: boolean;
     cancels?: boolean;
 }
 
 export interface APITrigger extends AutoTrigger {
-    
+    kind: "api";
 }
 
 export interface RecurringTrigger extends ReschedulingTrigger {
-    sctz: number;
+    kind: "rec";
     end?: Date;
     bucket: "daily"|"weekly"|"monthly";
     time: number;
     every: number;
     on?: number[];
+    tz: boolean;
+    sctz: number;
 }
 
 export interface MultiTrigger extends ReschedulingTrigger {
+    kind: "multi";
     dates: Date[];
+    tz?: boolean;
+    sctz?: number;
 }
 
-export type MessageTrigger = PlainTrigger | EventTrigger | CohortTrigger | APITrigger | RecurringTrigger;
+export type MessageTrigger = PlainTrigger | EventTrigger | CohortTrigger | APITrigger | RecurringTrigger | MultiTrigger;
 
 export interface PersonalizationObject {
     k?: string; // key

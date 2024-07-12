@@ -18,8 +18,6 @@ const db = common.db;
 
 const allTZOffsets = require("./constants/all-tz-offsets.json");
 const schedulableTriggerKinds = ["plain", "rec", "multi"];
-
-
 /**
  * 
  * @param {Message} message 
@@ -31,22 +29,27 @@ async function scheduleMessage(message) {
 
     for (let i = 0; i < triggers.length; i++) {
         const trigger = triggers[i];
+
         /** @type {Date|undefined} */
         let scheduleTo;
+        /** @type {Date|undefined} */
+        let lastScheduleDate;
 
-        switch(triggers[i].kind) {
+        // find the last schedule date if this trigger is recurring or multi
+        if (["rec", "multi"].includes(trigger.kind)) {
+            const lastSchedule = await db.collection("message_schedules").find({
+                messageId: message._id,
+            }).limit(1).sort({ scheduledTo: -1 }).toArray();
+            console.log(lastSchedule);
+            lastScheduleDate = lastSchedule?.[0].scheduledTo;
+        }
+
+        switch(trigger.kind) {
         case "plain":
             scheduleTo = trigger.start;
             break;
 
         case "rec":
-            // find the last schedule
-            const lastSchedule = await db.collection("message_schedules").find({
-                messageId: message._id,
-            }).limit(1).sort({ scheduledTo: -1 });
-            /** @type {Date} */
-            let lastScheduleDate = lastSchedule?.[0].scheduledTo;
-
             scheduleTo = findNextMatchForRecurring(
                 /** @type {RecurringTrigger} */(trigger),
                 new Date(Math.max(lastScheduleDate?.getTime() || 0, now.getTime()))
@@ -54,31 +57,28 @@ async function scheduleMessage(message) {
             break;
 
         case "multi":
-            // TODO: implement
+            scheduleTo = findNextMatchForMulti(
+                /** @type {MultiTrigger} */(trigger),
+                new Date(Math.max(lastScheduleDate?.getTime() || 0, now.getTime())))
             break;
         }
 
+        if (!scheduleTo) {
+            continue;
+        }
+        console.log(scheduleTo);
         if ("tz" in trigger && trigger.tz) {
             if (typeof trigger.sctz !== "number") {
                 throw new Error("Scheduler timezone is required when a "
                     + "message schedule is timezone aware");
             }
             scheduleTo = new Date(scheduleTo.getTime() - trigger.sctz * 60 * 1000);
-            return createSchedule(message.app, message._id, scheduleTo, true);
+            await createSchedule(message.app, message._id, scheduleTo, true);
+            continue;
         }
-    }
-}
 
-/**
- * 
- * @param {Message} message 
- * @param {PlainTrigger} trigger
- * @return {Promise<MessageSchedule|undefined>}
- */
-async function scheduleWithPlainTrigger(message, trigger) {
-    let scheduleTo = trigger.start;
-    let timezoneAware = trigger.tz;
-    return await createSchedule(message.app, message._id, scheduleTo, timezoneAware);
+        await createSchedule(message.app, message._id, scheduleTo);
+    }
 }
 /**
  * 
@@ -104,7 +104,7 @@ function tzOffsetAdjustedTime(date, offset, time) {
 function findNextMatchForRecurring(trigger, after = new Date) {
     // to prevent mutation:
     const onDates = trigger.on ? [...trigger.on] : [];
-    // to put negative values to the end, add a 100
+    // to put negative values to the end
     onDates.sort((i, j) => (i < 1 ? i + 100 : i) - (j < 1 ? j + 100 : j))
 
     /**
@@ -116,11 +116,13 @@ function findNextMatchForRecurring(trigger, after = new Date) {
         ? date.getTime() >= trigger.end.getTime()
         : false;
 
+    // check if after is already exceeding the end date
     if (exceeds(after)) {
         return;
     }
 
-    // find when to start
+    // check if we can schedule to the same date as trigger.start
+    // considering scheduler's timezone might not be the same with server's
     let current = tzOffsetAdjustedTime(trigger.start, trigger.sctz, trigger.time);
     if (current.getTime() < trigger.start.getTime()) {
         current = moment(current).add(1, "day").toDate();
@@ -178,13 +180,21 @@ function findNextMatchForRecurring(trigger, after = new Date) {
 }
 /**
  * 
- * @param {Message} message 
  * @param {MultiTrigger} trigger 
- * @return {Promise<MessageSchedule|undefined>}
+ * @param {Date=} after
+ * @return {Date=}
  */
-async function scheduleWithMultiTrigger(message, trigger) {
-    // TODO: implement
-    return;
+function findNextMatchForMulti(trigger, after = new Date) {
+    // avoid mutation. sort the dates
+    const dates = trigger.dates.map(d => new Date(d.getTime()));
+    dates.sort((i, j) => i.getTime() - j.getTime());
+    const startIncludedAfter = new Date(Math.max(trigger.start.getTime(), after.getTime()));
+
+    for (let date of dates) {
+        if (date.getTime() >= startIncludedAfter.getTime()) {
+            return date;
+        }
+    }
 }
 
 /**
@@ -255,7 +265,7 @@ module.exports = {
     // exported for unit tests
     createJobs,
     createSchedule,
-    scheduleWithPlainTrigger,
     tzOffsetAdjustedTime,
     findNextMatchForRecurring,
+    findNextMatchForMulti,
 };

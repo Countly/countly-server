@@ -1,6 +1,6 @@
 const assert = require("assert");
 /**
- * @typedef {import("../../api/new/types/message.js").RecurringTrigger} RecurringTrigger
+ * @typedef {import("../../../api/new/types/message.js").RecurringTrigger} RecurringTrigger
  */
 
 // since mocha is in the root package.json, vscode doesn't recognize
@@ -10,7 +10,7 @@ const mocha = require("mocha");
 const {
     tzOffsetAdjustedTime,
     findNextMatchForRecurring,
-} = require("../../api/new/scheduling.js");
+} = require("../../../api/new/scheduling.js");
 
 describe("scheduling recurring messages", () => {
     describe("calculate date/time with timezone offset", () => {
@@ -38,10 +38,11 @@ describe("scheduling recurring messages", () => {
             kind: "rec",
             bucket: "daily",
             time: 53100000, // 14:45
-            sctz: -180,
             start: new Date("2024-02-01T09:00:00.000+03:00"),
             every: 5,
             end: new Date("2024-03-09T08:00:00.000+03:00"),
+            tz: true,
+            sctz: -180,
         });
         const now = new Date("2024-01-01T00:00:00+03:00");
         const matches = [
@@ -80,8 +81,9 @@ describe("scheduling recurring messages", () => {
             kind: "rec",
             bucket: "weekly",
             time: 53100000, // 14:45
-            sctz: -180,
             start: new Date("2024-02-01T09:00:00.000+03:00"),
+            tz: true,
+            sctz: -180,
             every: 2,
             end: new Date("2024-03-15T09:00:00.000+03:00"),
             on: [2, 4, 5] // on monday, thursday, friday,
@@ -117,6 +119,7 @@ describe("scheduling recurring messages", () => {
             kind: "rec",
             bucket: "monthly",
             time: 53100000, // 14:45
+            tz: true,
             sctz: -180,
             start: new Date("2024-02-01T09:00:00.000+03:00"),
             every: 3,
