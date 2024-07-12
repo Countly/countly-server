@@ -1,8 +1,8 @@
-<div style="position: absolute;z-index: 2005;background-color: white;width: 100vw;height: 100vh;top: 0;left: 0; display: flex; flex-direction: column;">
+<div style="position: absolute;z-index: 2005;background-color: white;width: 100vw;top: 0;left: 0; display: flex; flex-direction: column; min-height: 100vh;">
     <div class="content-builder__layout-header" style="display: flex;margin-left: 24px;margin-right: 24px;height: 80px;background-color: #FFFFFF;align-items: center;justify-content: space-between;">
         <slot name="content-layout-header"></slot>
     </div>
-    <div class="content-builder__layout-main" style="height: calc(100vh - 104px); width: full; margin:0px 24px 24px 24px;border:1px solid#ECECEC;border-radius:8px;background-color: #FCFCFC;">
+    <div class="content-builder__layout-main" style=" width: full; margin:0px 24px 24px 24px;border:1px solid#ECECEC;border-radius:8px;background-color: #FCFCFC; min-height: calc(100vh - 96px);">
         <slot name="content-layout-body"></slot>
     </div>
 </div>

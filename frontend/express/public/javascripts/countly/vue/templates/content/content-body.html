@@ -1,8 +1,8 @@
 <div style="display: contents;">
     <!-- Here body, currentTab: {{currentTab}} -->
-    <div class="bu-is-flex bu-is-justify-content-space-between" style="height: 100%;">
+    <div class="bu-is-flex bu-is-justify-content-space-between" style="">
         <transition :name="toggleTransition" @enter="onViewEntered">
-            <div v-if="!isLeftSidebarHidden" class="content-builder-body__leftSidebar" style="width: 230px;border: 1px solid #ECECEC; border-radius: 8px; margin-top: 8px;margin-bottom: 8px; margin-left: 8px;">
+            <div v-if="!isLeftSidebarHidden" class="content-builder-body__leftSidebar" style="width: 230px;border: 1px solid #ECECEC; border-radius: 8px; margin-top: 8px;margin-bottom: 8px; margin-left: 8px; min-height: calc(100vh - 96px);">
                 <div class="bu-is-flex bu-is-align-items-center bu-is-justify-content-space-between" style="border-bottom: 1px solid #F6F6F6;padding: 16px">
                     <div class="bu-is-flex bu-is-align-items-center justify-content-space-between">
                         <h4>Screens</h4>
@@ -18,11 +18,14 @@
             </div>
         </transition>
         <slot name="content-layout-body"></slot>
-        <div v-if="!hideRightSidebar" class="content-builder-body__rightSidebar" style="width: 348px;
-        border: 1px solid;
-        margin-top: 8px;
-        margin-bottom: 8px;">
+        <div v-if="!hideRightSidebar" class="content-builder-body__rightSidebar" style="width: 369px;
+            border: 1px solid rgb(236, 236, 236);
+            border-radius: 8px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            margin-right: 8px;
+            margin-left: 8px;min-height: calc(100vh - 96px);">
         <slot name="content-layout-right-sidebar"></slot>
-    </div>
+        </div>
     </div>
 </div>

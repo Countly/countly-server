@@ -133,7 +133,7 @@
         data: function() {
             return {
                 toggleTransition: 'stdt-slide-right',
-                isLeftSidebarHidden: this.hideLeftSidebar,
+                isLeftSidebarHidden: this.hideLeftSidebar
             };
         },
         computed: {
