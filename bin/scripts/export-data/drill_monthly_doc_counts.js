@@ -6,16 +6,18 @@
  */
 
 
-// const moment = require('moment-timezone');
+const moment = require('moment-timezone');
 const { ObjectId } = require('mongodb');
+const { Parser } = require('json2csv');
 const fs = require('fs');
 
 const pluginManager = require('../../../plugins/pluginManager.js');
 const drillCommon = require('../../../plugins/drill/api/common.js');
+const countlyCommon = require('../../../api/lib/countly.common.js');
 
 const app_list = []; //valid app_ids here. If empty array passed, script will process all apps.
 const path = './'; //path to save csv files
-
+const period = '60days'; //supported values are 60days, 30days, 7days, yesterday, all, or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000]
 const headerMap = {
     "app_name": "App Name",
     "event_name": "Event Name",
@@ -31,14 +33,21 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             return close();
         }
         else {
+            if (period !== 'all') {
+                countlyCommon.setPeriod(period);
+            }
             // CREATE WRITE STREAM
             const eventDetailsWriteStream = fs.createWriteStream(path + `/monthly_document_counts.csv`);
             var isFirst = true;
+            // CREATE PARSER
+            const fileParser = new Parser({fields: Object.keys(headerMap), header: false});
 
             for (let i = 0; i < apps.length; i++) {
                 var app = apps[i];
                 console.log(i + 1, ") Processing app:", app.name);
-
+                // SET APP TIMEZONE
+                countlyCommon.setTimezone(app.timezone);
+                var periodObj = countlyCommon.periodObj;
                 try {
                     // GET EVENTS FOR CURRENT APP
                     var events = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
@@ -49,11 +58,37 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         console.log("Processing event:", event);
                         var collectionName = drillCommon.getCollectionName(event, app._id);
 
+                        // SET PERIOD AND QUERY
+                        let query = {};
+                        if (period !== 'all') {
+                            let cd = {};
+                            let tmpArr = periodObj.currentPeriodArr[0].split(".");
+
+                            cd.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
+                            if (app.timezone) {
+                                cd.$gte.tz(app.timezone);
+                            }
+                            cd.$gte = cd.$gte.valueOf() - cd.$gte.utcOffset() * 60000;
+                            cd.$gte = moment(cd.$gte).toDate();
+
+                            tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
+                            cd.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
+                            if (app.timezone) {
+                                cd.$lt.tz(app.timezone);
+                            }
+                            cd.$lt = cd.$lt.valueOf() - cd.$lt.utcOffset() * 60000;
+                            cd.$lt = moment(cd.$lt).toDate();
+
+                            query.cd = cd;
+                        }
                         // FETCH, TRANSFORM, AND SET DATA
                         try {
                             const appName = app.name;
                             const eventName = event;
-                            var cursor = drillDb.collection(collectionName).aggregate([
+                            var result = await drillDb.collection(collectionName).aggregate([
+                                {
+                                    $match: query,
+                                },
                                 {
                                     $set: {
                                         app_name: appName,
@@ -84,19 +119,16 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                         doc_count: "$count"
                                     }
                                 }
-                            ]);
+                            ], {allowDiskUse: true}).toArray();
 
-                            var array = (await cursor.toArray());
-                            const rows = array.map(obj => Object.values(obj).join(',')).join('\n');
-
-                            // WRITE TO FILE
+                            // SAVE TO FILE
                             if (isFirst) {
+                                eventDetailsWriteStream.write(Object.values(headerMap).join(",") + "\n");
                                 isFirst = false;
-                                const headerValues = Object.keys(array[0]).map(key => headerMap[key]);
-                                eventDetailsWriteStream.write(headerValues.join(","));
                             }
-                            if (rows && rows.length > 0) {
-                                eventDetailsWriteStream.write("\n" + rows);
+                            if (result && result.length > 0) {
+                                eventDetailsWriteStream.write(fileParser.parse(result));
+                                eventDetailsWriteStream.write("\n");
                             }
                         }
                         catch (err) {
