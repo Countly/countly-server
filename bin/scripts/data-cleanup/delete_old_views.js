@@ -1,7 +1,7 @@
 /**
  *  Description: Delete old views (before a certain date).
  *  Server: countly
- *  Path: $(countly dir)/bin/scripts/expire-data
+ *  Path: $(countly dir)/bin/scripts/data-cleanup
  *  Command: node delete_old_views.js
  */
 
