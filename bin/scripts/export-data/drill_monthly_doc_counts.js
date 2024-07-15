@@ -16,8 +16,8 @@ const drillCommon = require('../../../plugins/drill/api/common.js');
 const countlyCommon = require('../../../api/lib/countly.common.js');
 
 const app_list = []; //valid app_ids here. If empty array passed, script will process all apps.
-const path = './'; //path to save csv files
-const period = '60days'; //supported values are 60days, 30days, 7days, yesterday, all, or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000]
+const pathToFile = './'; //path to save csv files
+const period = 'all'; //supported values are 60days, 30days, 7days, yesterday, all, or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000]
 const headerMap = {
     "app_name": "App Name",
     "event_name": "Event Name",
@@ -37,7 +37,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 countlyCommon.setPeriod(period);
             }
             // CREATE WRITE STREAM
-            const eventDetailsWriteStream = fs.createWriteStream(path + `/monthly_document_counts.csv`);
+            const eventDetailsWriteStream = fs.createWriteStream(pathToFile + `monthly_document_counts.csv`);
             var isFirst = true;
             // CREATE PARSER
             const fileParser = new Parser({fields: Object.keys(headerMap), header: false});
@@ -46,8 +46,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 var app = apps[i];
                 console.log(i + 1, ") Processing app:", app.name);
                 // SET APP TIMEZONE
-                countlyCommon.setTimezone(app.timezone);
-                var periodObj = countlyCommon.periodObj;
+
                 try {
                     // GET EVENTS FOR CURRENT APP
                     var events = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
@@ -61,6 +60,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         // SET PERIOD AND QUERY
                         let query = {};
                         if (period !== 'all') {
+                            countlyCommon.setTimezone(app.timezone);
+                            var periodObj = countlyCommon.periodObj;
                             let cd = {};
                             let tmpArr = periodObj.currentPeriodArr[0].split(".");
 
@@ -90,12 +91,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                     $match: query,
                                 },
                                 {
-                                    $set: {
-                                        app_name: appName,
-                                        event_name: eventName,
-                                    }
-                                },
-                                {
                                     $group: {
                                         _id: {
                                             $dateToString: {
@@ -105,9 +100,13 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                         },
                                         count: {
                                             $sum: 1
-                                        },
-                                        app_name: { $first: "$app_name" },
-                                        event_name: { $first: "$event_name" }
+                                        }
+                                    }
+                                },
+                                {
+                                    $set: {
+                                        app_name: appName,
+                                        event_name: eventName,
                                     }
                                 },
                                 {
