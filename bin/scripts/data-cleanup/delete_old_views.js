@@ -21,7 +21,7 @@ const SERVER_URL = ""; //countly server URL
 const APP_LIST = []; //valid app_ids here. If an empty array is passed, the script will process all apps.
 const EXPIRATION_DATE = "2024-03-10"; //expiration date for the data
 //
-var deleted_views = [];
+var deleted_views = {};
 var event = "[CLY]_view";
 //
 
@@ -37,58 +37,45 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             // FOR EACH APP
             for (let i = 0; i < apps.length; i++) {
                 var app = apps[i];
+                deleted_views[app._id] = [];
                 console.log(i + 1, ") Processing app:", app.name);
                 //SET EXPIRATION TIMESTAMP
                 var expiration_timestamp = moment(EXPIRATION_DATE).tz(app.timezone).endOf('day').valueOf();
                 var collectionName = drillCommon.getCollectionName(event, app._id);
-                // FETCH DATA FOR EVENT
+                // FETCH DATA
                 try {
-                    var cursor = drillDb.collection(collectionName).aggregate([
-                        {
-                            $group: {
-                                _id: "$sg.name",
-                                vid: { $first: "$vid" },
-                                count: {
-                                    $sum: {
-                                        $cond: [{ $gt: ["$ts", expiration_timestamp] }, 1, 0]
+                    var cursor = countlyDb.collection("app_viewsmeta" + app._id).find({});
+                    while (await cursor.hasNext()) {
+                        let view = await cursor.next();
+                        //Find one drill entry for the view with timestamp greater than expiration date
+                        var drillEntry = await drillDb.collection(collectionName).findOne({"sg.name": view.view, "ts": { $gt: expiration_timestamp }}, {ts: 1});
+                        //If no entry found, delete the view
+                        if (!DRY_RUN && !deleted_views[app._id].includes(view.view) && !drillEntry) {
+                            console.log("Deleting view: ", view.view);
+                            await new Promise(function(resolve) {
+                                sendRequest({
+                                    requestType: 'POST',
+                                    Url: SERVER_URL + "/i/views",
+                                    body: {
+                                        app_id: app._id,
+                                        api_key: API_KEY,
+                                        method: "delete_view",
+                                        view_id: view._id,
                                     }
-                                }
-                            },
-                        },
-                        {
-                            $match: {
-                                count: { $eq: 0 }
-                            }
-                        }
-                    ], {allowDiskUse: true});
-
-                    if (!DRY_RUN) {
-                        while (await cursor.hasNext()) {
-                            let view = await cursor.next();
-                            console.log("Deleting view: ", view._id, view.vid);
-                            if (!deleted_views.includes(view._id)) {
-                                await new Promise(function(resolve) {
-                                    sendRequest({
-                                        requestType: 'POST',
-                                        Url: SERVER_URL + "/i/views",
-                                        body: {
-                                            app_id: app._id,
-                                            api_key: API_KEY,
-                                            method: "delete_view",
-                                            view_id: view.vid,
-                                        }
-                                    }, function(err) {
-                                        if (err) {
-                                            console.log(JSON.stringify(err));
-                                        }
-                                        else {
-                                            console.log("Deleted view: ", view._id);
-                                            deleted_views.push(view._id);
-                                        }
-                                        resolve();
-                                    });
+                                }, function(err) {
+                                    if (err) {
+                                        console.log(JSON.stringify(err));
+                                    }
+                                    else {
+                                        deleted_views[app._id].push(view.view);
+                                    }
+                                    resolve();
                                 });
-                            }
+                            });
+                        }
+                        else {
+                            //flag the view as checked
+                            await countlyDb.collection("app_viewsmeta" + app._id).updateOne({_id: view._id}, {$set: {checked: true}});
                         }
                     }
                 }
@@ -96,7 +83,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     console.log("Error fetching data: ", err);
                 }
             }
-            console.log("Deleted views: ", deleted_views);
+            console.log("Deleted views per app: ", deleted_views);
         }
     }
     catch (err) {
@@ -131,9 +118,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         if (err) {
             console.log("Finished with errors: ", err);
         }
+        else {
+            console.log("Finished successfully.");
+        }
         countlyDb.close();
         drillDb.close();
-        console.log("Finished successfully.");
     }
 
     /**
