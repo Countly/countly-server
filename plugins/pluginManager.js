@@ -2290,7 +2290,7 @@ var pluginManager = function pluginManager() {
                             callback(err, null);
                         }
                         else {
-                            if (ignore_errors && ignore_errors.indexOf(err.code) !== -1) {
+                            if (ignore_errors && ignore_errors.indexOf(err.code) === -1) {
                                 logDbWrite.e("Error in promise from " + collection + " %j %s %j", data, err, err);
                                 logDbWrite.d("From connection %j", countlyDb._cly_debug);
                                 if (e) {
@@ -2710,7 +2710,7 @@ var pluginManager = function pluginManager() {
                 }
                 return function(err, res) {
                     if (err) {
-                        if (ignore_errors && ignore_errors.indexOf(err.code) !== -1) {
+                        if (ignore_errors && ignore_errors.indexOf(err.code) === -1) {
                             logDbRead.d("Error reading " + collection + " %j %s %j", data, err, err);
                             logDbRead.d("From connection %j", countlyDb._cly_debug);
                             if (e) {
