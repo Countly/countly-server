@@ -73,13 +73,16 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
                             query.cd = cd;
                         }
+                        else {
+                            query.cd = { $ne: 0 };
+                        }
                         // FETCH, TRANSFORM, AND SET DATA
                         try {
                             const appName = app.name;
                             const eventName = event;
                             var result = await drillDb.collection(collectionName).aggregate([
                                 {
-                                    $match: { "cd": { $ne: 0 } }
+                                    $match: query
                                 },
                                 {
                                     $group: {
