@@ -5,6 +5,7 @@
  *  Command: node delete_old_views_cleanup.js
  */
 
+const { ObjectId } = require('mongodb');
 const pluginManager = require('../../../plugins/pluginManager.js');
 var APP_LIST = [];
 
