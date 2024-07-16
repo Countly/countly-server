@@ -12,7 +12,7 @@ var common = {},
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose'),
     argon2 = require('argon2'),
-    mongodb = require('mongodb-legacy'),
+    mongodb = require('mongodb'),
     getRandomValues = require('get-random-values'),
     _ = require('lodash');
 

@@ -1,7 +1,7 @@
 var should = require("should");
 var testUtils = require("../testUtils");
 var common = require("../../api/utils/common");
-const mongodb = require('mongodb-legacy');
+const mongodb = require('mongodb');
 
 describe("Common API utility functions", function() {
     describe("versionCompare", function() {
