@@ -20,6 +20,7 @@ const SERVER_URL = ""; //countly server URL
 //
 const APP_LIST = []; //valid app_ids here. If an empty array is passed, the script will process all apps.
 const EXPIRATION_DATE = "2024-03-10"; //expiration date for the data
+const COOLDOWN_TIME = 5000; //cooldown time between requests in ms
 //
 var deleted_views = {};
 var event = "[CLY]_view";
@@ -72,6 +73,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                     resolve();
                                 });
                             });
+                            await sleep(COOLDOWN_TIME);
                         }
                         else {
                             //flag the view as checked
@@ -168,5 +170,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             console.log(e);
             callback({"err": 'Failed to send'});
         }
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 });
