@@ -1,4 +1,4 @@
-const mongodb = require('mongodb-legacy');
+const mongodb = require('mongodb');
 
 module.exports.ObjectID = function(id) {
     try {
