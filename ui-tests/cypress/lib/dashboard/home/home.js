@@ -557,7 +557,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.AUDIENCE.TOTAL_SESSIONS_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -573,7 +573,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.AUDIENCE.NEW_SESSIONS_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -589,7 +589,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.AUDIENCE.TIME_SPENT_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -605,7 +605,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.AUDIENCE.AVG_SESSION_DURATION_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -621,7 +621,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.scrollPageToCenter('.main-view');
@@ -689,7 +689,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.COUNTRIES.TOTAL_SESSIONS_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -706,7 +706,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.COUNTRIES.TOTAL_USERS_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -722,7 +722,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.COUNTRIES.NEW_USERS_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.scrollPageToBottom('.main-view');
@@ -740,7 +740,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.TOTAL_CRASHES_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -756,7 +756,7 @@ const verifyFullDataPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: homePageElements.CRASH_STATISTICS.UNIQUE_CRASHES_TREND_VALUE,
-        elementText: "NA",
+        elementText: null,
     });
 
     cy.verifyElement({
