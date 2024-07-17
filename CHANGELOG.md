@@ -1,3 +1,14 @@
+## Version 24.05.4
+Fixes:
+- [core] Make sure Unicode characters are escaped for events segment values on incoming data
+- [dashboard] Small UI fixes for dealing with unexpected appid values
+
+Features:
+- [core]  Script for getting document counts of drill collections
+
+Enterprise fixes:
+- [drill] Make sure Unicode characters are escaped for events segment values on incoming data
+
 ## Version 24.05.3
 Fixes:
 - [core] Bugfix for newsletter check
