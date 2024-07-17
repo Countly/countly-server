@@ -1703,7 +1703,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
             for (let i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                 documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
-                if (!(options && options.dontBreak)) {
+                if (options?.dontBreak) {
                     for (let m = 0; m < common.base64.length; m++) {
                         documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
                     }
