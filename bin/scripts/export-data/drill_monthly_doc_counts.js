@@ -24,28 +24,7 @@ const headerMap = {
     "month": "Creation Date",
     "doc_count": "Count",
 };
-
 const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 5000;
-
-async function retry(fn, retries = MAX_RETRIES) {
-    let lastError;
-    for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-            return await fn();
-        }
-        catch (error) {
-            lastError = error;
-            console.log(`Attempt ${attempt} failed: ${error.message}. Retrying in ${RETRY_DELAY_MS}ms...`);
-            await delay(RETRY_DELAY_MS);
-        }
-    }
-    throw lastError;
-}
-
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
@@ -101,51 +80,71 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         try {
                             const appName = app.name;
                             const eventName = event;
-                            var result = await retry(() => drillDb.collection(collectionName).aggregate([
-                                {
-                                    $match: query
-                                },
-                                {
-                                    $group: {
-                                        _id: {
-                                            $dateToString: {
-                                                format: "%Y-%m",
-                                                date: "$cd"
-                                            }
-                                        },
-                                        count: {
-                                            $sum: 1
-                                        }
-                                    }
-                                },
-                                {
-                                    $set: {
-                                        app_name: appName,
-                                        event_name: eventName,
-                                    }
-                                },
-                                {
-                                    $project: {
-                                        _id: 0,
-                                        app_name: "$app_name",
-                                        event_name: "$event_name",
-                                        month: "$_id",
-                                        doc_count: "$count"
+                            var isEstablished = false;
+
+                            // ESTABLISH CONNECTION BEFORE RUNNING QUERY
+                            for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+                                try {
+                                    let pingResult = await drillDb.command({ ping: 1 });
+                                    if (pingResult.ok) {
+                                        isEstablished = true;
+                                        break;
                                     }
                                 }
-                            ], {allowDiskUse: true}).toArray());
-                            // SAVE TO FILE
-                            if (isFirst) {
-                                eventDetailsWriteStream.write(Object.values(headerMap).join(",") + "\n");
-                                isFirst = false;
+                                catch (error) {
+                                    console.log("Closing and reestablishing database connection");
+                                    await drillDb.close();
+                                    drillDb = await pluginManager.dbConnection("countly_drill");
+                                }
                             }
-                            if (result && result.length > 0) {
-                                eventDetailsWriteStream.write(fileParser.parse(result));
-                                eventDetailsWriteStream.write("\n");
+
+                            if (isEstablished) {
+                                var result = await drillDb.collection(collectionName).aggregate([
+                                    {
+                                        $match: query
+                                    },
+                                    {
+                                        $group: {
+                                            _id: {
+                                                $dateToString: {
+                                                    format: "%Y-%m",
+                                                    date: "$cd"
+                                                }
+                                            },
+                                            count: {
+                                                $sum: 1
+                                            }
+                                        }
+                                    },
+                                    {
+                                        $set: {
+                                            app_name: appName,
+                                            event_name: eventName,
+                                        }
+                                    },
+                                    {
+                                        $project: {
+                                            _id: 0,
+                                            app_name: "$app_name",
+                                            event_name: "$event_name",
+                                            month: "$_id",
+                                            doc_count: "$count"
+                                        }
+                                    }
+                                ], {allowDiskUse: true}).toArray();
+                                // SAVE TO FILE
+                                if (isFirst) {
+                                    eventDetailsWriteStream.write(Object.values(headerMap).join(",") + "\n");
+                                    isFirst = false;
+                                }
+                                if (result && result.length > 0) {
+                                    eventDetailsWriteStream.write(fileParser.parse(result));
+                                    eventDetailsWriteStream.write("\n");
+                                }
                             }
                         }
                         catch (err) {
-                            console.log("Error converting data: ", err);
+                            console.log("Error aggregating data: ", err);
                         }
                     }
                 }
