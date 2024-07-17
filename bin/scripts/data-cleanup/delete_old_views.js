@@ -51,29 +51,31 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         //Find one drill entry for the view with timestamp greater than expiration date
                         var drillEntry = await drillDb.collection(collectionName).findOne({"sg.name": view.view, "ts": { $gt: expiration_timestamp }}, {ts: 1});
                         //If no entry found, delete the view
-                        if (!DRY_RUN && !deleted_views[app._id].includes(view.view) && !drillEntry) {
+                        if (!drillEntry) {
                             console.log("Deleting view: ", view.view);
-                            await new Promise(function(resolve) {
-                                sendRequest({
-                                    requestType: 'POST',
-                                    Url: SERVER_URL + "/i/views",
-                                    body: {
-                                        app_id: app._id,
-                                        api_key: API_KEY,
-                                        method: "delete_view",
-                                        view_id: view._id,
-                                    }
-                                }, function(err) {
-                                    if (err) {
-                                        console.log(JSON.stringify(err));
-                                    }
-                                    else {
-                                        deleted_views[app._id].push(view.view);
-                                    }
-                                    resolve();
+                            if (!DRY_RUN) {
+                                await new Promise(function(resolve) {
+                                    sendRequest({
+                                        requestType: 'POST',
+                                        Url: SERVER_URL + "/i/views",
+                                        body: {
+                                            app_id: app._id,
+                                            api_key: API_KEY,
+                                            method: "delete_view",
+                                            view_id: view._id,
+                                        }
+                                    }, function(err) {
+                                        if (err) {
+                                            console.log(JSON.stringify(err));
+                                        }
+                                        else {
+                                            deleted_views[app._id].push(view.view);
+                                        }
+                                        resolve();
+                                    });
                                 });
-                            });
-                            await sleep(COOLDOWN_TIME);
+                                await sleep(COOLDOWN_TIME);
+                            }
                         }
                         else {
                             //flag the view as checked
