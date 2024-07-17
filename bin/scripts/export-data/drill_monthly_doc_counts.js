@@ -82,7 +82,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             const eventName = event;
                             var isEstablished = false;
 
-                            // ESTABLISH CONNECTION BEFORE RUNNING QUERY
+                            // ESTABLISH CONNECTION WITH DRILL DB BEFORE RUNNING QUERY
                             for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
                                 try {
                                     let pingResult = await drillDb.command({ ping: 1 });
@@ -98,6 +98,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                 }
                             }
 
+                            // RUN QUERY IF ESTABLISHED, OR SKIP EVENT IF NOT
                             if (isEstablished) {
                                 var result = await drillDb.collection(collectionName).aggregate([
                                     {
