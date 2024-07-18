@@ -45,7 +45,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 var collectionName = drillCommon.getCollectionName(event, app._id);
                 // FETCH DATA
                 try {
-                    var cursor = countlyDb.collection("app_viewsmeta" + app._id).find({});
+                    var cursor = countlyDb.collection("app_viewsmeta" + app._id).find({checked: {$exists: false}});
                     while (await cursor.hasNext()) {
                         let view = await cursor.next();
                         //Find one drill entry for the view with timestamp greater than expiration date
