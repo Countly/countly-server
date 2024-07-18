@@ -1204,7 +1204,7 @@
                 let image = this.getAppImage(appId);
                 return {
                     id: appId,
-                    name: this.__getAppName(appId),
+                    name: countlyCommon.unescapeHtml(this.__getAppName(appId)),
                     image: image,
                     avatar: this.getAppAvatar(appId, image)
                 };
@@ -1238,7 +1238,7 @@
                 if (image) {
                     return {'background-image': 'url("' + image + '")'};
                 }
-                else {
+                else if (this.__allApps[appId]) {
                     var position = (this.__allApps[appId].created_at % 12) * -100;
                     return {
                         'background-image': 'url("images/avatar-sprite.png?v2")',
@@ -1248,6 +1248,9 @@
                         'align-items': 'center',
                         'justify-content': 'center',
                     };
+                }
+                else {
+                    return null;
                 }
             },
         }

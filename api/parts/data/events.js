@@ -132,6 +132,7 @@ countlyEvents.processEvents = function(params) {
                             try {
                                 tmpSegVal = myValues[z] + "";
                                 tmpSegVal = tmpSegVal.replace(/^\$+/, "").replace(/\./g, ":");
+                                tmpSegVal = common.encodeCharacters(tmpSegVal);
 
                                 if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
                                     tmpSegVal = "[CLY]" + tmpSegVal;
@@ -353,6 +354,8 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
                         tmpSegVal = "[CLY]" + tmpSegVal;
                     }
+
+                    tmpSegVal = common.encodeCharacters(tmpSegVal);
 
                     var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
 
