@@ -1712,11 +1712,11 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
             for (let i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                 documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]);
-                if (!(options && options.dontBreak)) {
-                    for (let m = 0; m < common.base64.length; m++) {
-                        documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                    if (!(options && options.dontBreak)) {
+                        for (let m = 0; m < common.base64.length; m++) {
+                            documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                        }
                     }
-                }
             }
         }
         else {
