@@ -6,6 +6,7 @@ const common = require('../../utils/common.js');
 
 var batcherStats = {
     key: 'BATCHER_STATS',
+    pid: process.pid,
     insert_queued: 0,
     insert_processing: 0,
     insert_errored_fallback: 0,
@@ -342,12 +343,12 @@ class WriteBatcher {
      */
     add(collection, id, operation, db = "countly") {
         if (!this.shared || cluster.isMaster) {
-            batcherStats.update_queued++;
             if (!this.data[db][collection]) {
                 this.data[db][collection] = {};
             }
             if (!this.data[db][collection][id]) {
                 this.data[db][collection][id] = {id: id, value: operation};
+                batcherStats.update_queued++;
             }
             else {
                 this.data[db][collection][id].value = common.mergeQuery(this.data[db][collection][id].value, operation);
