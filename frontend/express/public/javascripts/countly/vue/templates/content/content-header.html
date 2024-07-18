@@ -1,40 +1,38 @@
-<div style="display: contents">
-    <div class="bu-is-flex bu-is-align-items-center" style="width: 350px;">
-        <div v-if="closeButton" class="content-builder__close-icon" @click="close" style="border:1px solid #d1d1d1;width:32px;height:32px;border-radius:40px;display:flex;justify-content:center;align-items:center; cursor: pointer; box-shadow: 0px 1px 2px #D1D1D1;">
-            <i class="cly-io cly-io-x color-warm-gray-60" style="font-weight: 600;"></i>
+<div class="cly-vue-content-builder__layout-header__wrapper">
+    <div class="cly-vue-content-builder__layout-header__left">
+        <div v-if="closeButton" class="cly-vue-content-builder__layout-header__icon cly-vue-content-builder__layout-header__icon--close" @click="close">
+            <i class="cly-io cly-io-x color-warm-gray-60"></i>
         </div>
-        <div v-else class="content-builder__back-icon" @click="close" style="border:1px solid #d1d1d1;width:32px;height:32px;border-radius:40px;display:flex;justify-content:center;align-items:center; cursor: pointer; box-shadow: 0px 1px 2px #D1D1D1;">
-            <i class="cly-io cly-io-arrow-sm-left color-warm-gray-60" style="font-weight: 600;"></i>
+        <div v-else class="cly-vue-content-builder__layout-header__icon cly-vue-content-builder__layout-header__icon--back" @click="close">
+            <i class="cly-io cly-io-arrow-sm-left color-warm-gray-60"></i>
         </div>
-        <div v-if="toggle">
+        <div v-if="toggle" class="cly-vue-content-builder__layout-header__toggle">
             <el-switch
-                style="margin-right: -8px;"
                 v-model="isActive"
-                class="bu-ml-5"
                 @change="$emit('switch-toggle')">
             </el-switch>
         </div>
-        <div class="bu-ml-5">
-            <div><h4>{{ title }}</h4></div>    
-            <div class="bu-is-flex text-small">
-                <div style="text-decoration: underline">{{ version }}</div>
-                <div class="bu-is-flex bu-is-align-items-center"><i class="cly-is cly-is-status bu-mx-1" style="font-size: 6px"></i></div>
-                <div>{{ createdBy }}</div>
+        <div class="cly-vue-content-builder__layout-header__info">
+            <div class="cly-vue-content-builder__layout-header__info-title"><h4>{{ title }}</h4></div>    
+            <div class="cly-vue-content-builder__layout-header__info-meta">
+                <div class="cly-vue-content-builder__layout-header__info-version">{{ version }}</div>
+                <div class="cly-vue-content-builder__layout-header__info-separator"><i class="cly-is cly-is-status"></i></div>
+                <div class="cly-vue-content-builder__layout-header__info-creator">{{ createdBy }}</div>
             </div>
         </div>
     </div>
-    <div style="width: 350px;">
+    <div class="cly-vue-content-builder__layout-header__tabs">
         <cly-dynamic-tabs v-if="tabs" v-model="currentTab" :tabs="tabs" skin="primary" :no-history=true></cly-dynamic-tabs>
     </div>
-    <div class="bu-is-flex bu-is-align-items-center" style="gap: 16px">
-        <cly-status-badge v-if="status" :label="status"></cly-status-badge>
-        <div v-if="!hideSaveButton">
-            <el-button type="success" size="small" @click="save"> {{ saveButtonLabel }}</el-button>
+    <div class="cly-vue-content-builder__layout-header__actions">
+        <cly-status-badge v-if="status" :label="status" class="cly-vue-content-builder__layout-header__status"></cly-status-badge>
+        <div v-if="!hideSaveButton" class="cly-vue-content-builder__layout-header__save">
+            <el-button type="success" size="small" @click="save">{{ saveButtonLabel }}</el-button>
         </div>
-        <div v-if="topDropdownOptions">
+        <div v-if="topDropdownOptions" class="cly-vue-content-builder__layout-header__options">
             <cly-more-options size="small" @command="handleCommand($event)">
                 <el-dropdown-item v-for="(item, idx) in topDropdownOptions" :key="idx" :command="item.value">
-                    <span class="text-medium" @click="$emit('selected-command')"> {{ item.label }} </span>
+                    <span class="cly-vue-content-builder__layout-header__option-label" @click="$emit('selected-command')">{{ item.label }}</span>
                 </el-dropdown-item>
             </cly-more-options>
         </div>
