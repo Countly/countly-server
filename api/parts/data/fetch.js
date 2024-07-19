@@ -1589,11 +1589,11 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         options = {};
     }
 
-    if (typeof options === "undefined") {
+    if (!options) {
         options = {};
     }
 
-    if (options && typeof options.db === "undefined") {
+    if (typeof options.db === "undefined") {
         options.db = common.db;
     }
 
@@ -1679,7 +1679,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
         var zeroDocs = [zeroIdToFetch];
         var monthDocs = [monthIdToFetch];
-        if (!(options && options.dontBreak)) {
+        if (!options.dontBreak) {
             for (let i = 0; i < common.base64.length; i++) {
                 zeroDocs.push(zeroIdToFetch + "_" + common.base64[i]);
                 monthDocs.push(monthIdToFetch + "_" + common.base64[i]);
