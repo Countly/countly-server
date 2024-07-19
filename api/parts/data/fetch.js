@@ -1593,7 +1593,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         options = {};
     }
 
-    if (typeof options.db === "undefined") {
+    if (options && typeof options.db === "undefined") {
         options.db = common.db;
     }
 
