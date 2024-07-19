@@ -4195,18 +4195,16 @@
     flex-direction: column;
     min-height: 100vh;
     &__layout-step {
+        position: relative;
+        .picker-body--right {
+            position: absolute !important;
+            right: 0 !important;
+            left: auto !important
+        }
         &__component {
             .el-input-group__append {
                 padding: 0 8px !important;
             }
-        }
-        &__step {
-            .picker-body--right {
-                position: absolute !important;
-                right: 0 !important;
-                left: auto !important
-            }
-            position: relative;
         }
         &__header {
             font-family: Inter;
