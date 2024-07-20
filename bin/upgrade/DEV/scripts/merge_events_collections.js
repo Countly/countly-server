@@ -35,7 +35,7 @@ function merge_data_from_collection(countlyDB, collection, mapped) {
         else {
             var app_id = mapped[collection].a;
             var prefix = app_id + "_" + collection.replace("events", "");
-            countlyDB.collection(collection).aggregate([{"$addFields": {"_id": {"$concat": [prefix, "_", "$_id"]}, "app_id": app_id}}, {"$merge": {"into": "events_data", "on": "_id", "whenMatched": "merge"}}], function(err) {
+            countlyDB.collection(collection).aggregate([{"$addFields": {"_id": {"$concat": [prefix, "_", "$_id"]}, "a": app_id,"e":mapped[collection].e}}, {"$merge": {"into": "events_data", "on": "_id", "whenMatched": "merge"}}], function(err) {
                 if (err) {
                     console.log(err);
                     reject();

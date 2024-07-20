@@ -50,8 +50,8 @@ fetch.prefetchEventData = function(collection, params) {
                     }
                 }
 
-                var collectionName = "events" + crypto.createHash('sha1').update(collection + params.app_id).digest('hex');
-                fetch.fetchTimeObj(collectionName, params, true);
+                var collectionName = crypto.createHash('sha1').update(collection + params.app_id).digest('hex');
+                fetch.fetchTimeObj("events_data", params, true, {'id_prefix': params.app_id + "_" + collectionName + '_'});
             }
             else {
                 common.returnOutput(params, {});
@@ -59,8 +59,8 @@ fetch.prefetchEventData = function(collection, params) {
         });
     }
     else {
-        var collectionName = "events" + crypto.createHash('sha1').update(params.qstring.event + params.app_id).digest('hex');
-        fetch.fetchTimeObj(collectionName, params, true);
+        var collectionName = crypto.createHash('sha1').update(params.qstring.event + params.app_id).digest('hex');
+        fetch.fetchTimeObj("events_data", params, true, {'id_prefix': params.app_id + "_" + collectionName + '_'});
     }
 };
 
@@ -199,7 +199,7 @@ fetch.getMergedEventData = function(params, events, options, callback) {
     var eventKeysArr = [];
 
     for (let i = 0; i < events.length; i++) {
-        eventKeysArr.push(events[i] + params.app_id);
+        eventKeysArr.push({"e": events[i], "a": params.app_id});
     }
 
     if (!eventKeysArr.length) {
@@ -331,8 +331,10 @@ fetch.getMergedEventData = function(params, events, options, callback) {
     * @param {function} done - function to call when data fetched
     **/
     function getEventData(eventKey, done) {
-        var collectionName = "events" + crypto.createHash('sha1').update(eventKey).digest('hex');
-        fetchTimeObj(collectionName, params, true, options, function(output) {
+        var collectionName = crypto.createHash('sha1').update(eventKey.e + eventKey.a).digest('hex');
+        var optionsCopy = JSON.parse(JSON.stringify(options));
+        optionsCopy.id_prefix = eventKey.a + "_" + collectionName + "_";
+        fetchTimeObj("events_data", params, true, optionsCopy, function(output) {
             done(null, output || {});
         });
     }
@@ -1246,8 +1248,8 @@ fetch.fetchDataTopEvents = function(params) {
 **/
 fetch.fetchEvents = function(params) {
     if (params.qstring.event && params.qstring.event.length) {
-        let collectionName = "events" + crypto.createHash('sha1').update(params.qstring.event + params.app_id).digest('hex');
-        fetch.getTimeObjForEvents(collectionName, params, function(doc) {
+        let collectionName = crypto.createHash('sha1').update(params.qstring.event + params.app_id).digest('hex');
+        fetch.getTimeObjForEvents("events_data", params, {'id_prefix': params.app_id + "_" + collectionName + '_'}, function(doc) {
             var options = {};
             if (params.qstring.bucket) {
                 options.bucket = params.qstring.bucket;
@@ -1277,8 +1279,8 @@ fetch.fetchEvents = function(params) {
         if (Array.isArray(params.qstring.events)) {
             var data = {};
             async.each(params.qstring.events, function(event, done) {
-                let collectionName = "events" + crypto.createHash('sha1').update(event + params.app_id).digest('hex');
-                fetch.getTimeObjForEvents(collectionName, params, function(doc) {
+                let collectionName = crypto.createHash('sha1').update(event + params.app_id).digest('hex');
+                fetch.getTimeObjForEvents("events_data", params, {'id_prefix': params.app_id + "_" + collectionName + '_'}, function(doc) {
                     countlyEvents.setDb(doc || {});
                     if (params.qstring.segmentation && params.qstring.segmentation !== "no-segment") {
                         data[event] = countlyEvents.getSegmentedData(params.qstring.segmentation);
@@ -1294,7 +1296,15 @@ fetch.fetchEvents = function(params) {
         }
     }
     else {
-        common.returnMessage(params, 400, 'Must provide event or events');
+        //no event passed, get total counts
+        let collectionName = "all";
+        params.qstring.segmentation = "key";
+        fetch.getTimeObjForEvents("events_data", params, {'id_prefix': params.app_id + "_" + collectionName + '_'}, function(doc) {
+            countlyEvents.setDb(doc || {});
+            var data = {};
+            data.all = countlyEvents.getSegmentedData(params.qstring.segmentation);
+            common.returnOutput(params, data);
+        });
     }
 };
 
@@ -1622,7 +1632,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     }
 
     if (params.qstring.fullRange) {
-        options.db.collection(collection).find({ '_id': { $regex: "^" + options.id + ".*" } }).toArray(function(err1, data) {
+        options.db.collection(collection).find({ '_id': { $regex: "^" + (options.id_prefix || "") + options.id + ".*" } }).toArray(function(err1, data) {
             callback(getMergedObj(data, true, options.levels, params.truncateEventValuesList));
         });
     }
@@ -1669,20 +1679,20 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         if (isCustomEvent) {
             let segment = params.qstring.segmentation || "no-segment";
 
-            zeroIdToFetch = "no-segment_" + dbDateIds.zero;
-            monthIdToFetch = segment + "_" + dbDateIds.month;
+            zeroIdToFetch = (options.id_prefix || "") + "no-segment_" + dbDateIds.zero;
+            monthIdToFetch = (options.id_prefix || "") + segment + "_" + dbDateIds.month;
         }
         else {
-            zeroIdToFetch = options.id + "_" + dbDateIds.zero;
-            monthIdToFetch = options.id + "_" + dbDateIds.month;
+            zeroIdToFetch = (options.id_prefix || "") + options.id + "_" + dbDateIds.zero;
+            monthIdToFetch = (options.id_prefix || "") + options.id + "_" + dbDateIds.month;
         }
 
         var zeroDocs = [zeroIdToFetch];
         var monthDocs = [monthIdToFetch];
         if (!(options && options.dontBreak)) {
             for (let i = 0; i < common.base64.length; i++) {
-                zeroDocs.push(zeroIdToFetch + "_" + common.base64[i]);
-                monthDocs.push(monthIdToFetch + "_" + common.base64[i]);
+                zeroDocs.push((options.id_prefix || "") + zeroIdToFetch + "_" + common.base64[i]);
+                monthDocs.push((options.id_prefix || "") + monthIdToFetch + "_" + common.base64[i]);
             }
         }
 
@@ -1702,44 +1712,47 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
             let segment = params.qstring.segmentation || "no-segment";
 
             for (let i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
-                documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
+                documents.push((options.id_prefix || "") + "no-segment_" + periodObj.reqZeroDbDateIds[i]);
                 if (!(options && options.dontBreak)) {
                     for (let m = 0; m < common.base64.length; m++) {
-                        documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                        documents.push((options.id_prefix || "") + "no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
                     }
                 }
             }
 
             for (let i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
-                documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]);
+                documents.push((options.id_prefix || "") + segment + "_" + periodObj.reqMonthDbDateIds[i]);
                 if (!(options && options.dontBreak)) {
                     for (let m = 0; m < common.base64.length; m++) {
-                        documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                        documents.push((options.id_prefix || "") + segment + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
                     }
                 }
             }
         }
         else {
             for (let i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
-                documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i]);
+                documents.push((options.id_prefix || "") + options.id + "_" + periodObj.reqZeroDbDateIds[i]);
                 if (!(options && options.dontBreak)) {
                     for (let m = 0; m < common.base64.length; m++) {
-                        documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                        documents.push((options.id_prefix || "") + options.id + "_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
                     }
                 }
             }
 
             for (let i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
-                documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i]);
+                documents.push((options.id_prefix || "") + options.id + "_" + periodObj.reqMonthDbDateIds[i]);
                 if (!(options && options.dontBreak)) {
                     for (let m = 0; m < common.base64.length; m++) {
-                        documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
+                        documents.push((options.id_prefix || "") + options.id + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
                     }
                 }
             }
         }
 
         options.db.collection(collection).find({ '_id': { $in: documents } }, {}).toArray(function(err, dataObjects) {
+            if (err) {
+                console.log(err);
+            }
             callback(getMergedObj(dataObjects, false, options.levels, params.truncateEventValuesList));
         });
     }
@@ -1910,7 +1923,6 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     }
                 }
             }
-
             //Fixing meta  to be escaped.(Because return output will escape keys and make values incompatable)
             for (let i in mergedDataObj.meta) {
                 for (var p = 0; p < mergedDataObj.meta[i].length; p++) {
@@ -1973,7 +1985,6 @@ function union(x, y) {
     }
 
     var res = [];
-
     for (let k in obj) {
         res.push(k);
     }
