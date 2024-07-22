@@ -579,7 +579,7 @@ plugins.register("/i/hook/test", function(ob) {
             hookConfig = sanitizeConfig(hookConfig);
             const mockData = JSON.parse(params.qstring.mock_data);
 
-            if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
+            if (!hookConfig || !(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
                 common.returnMessage(params, 403, "hook config invalid");
             }
 
