@@ -60,7 +60,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     async function processCursor(app) {
         // FETCH DATA
         try {
-            var session;
+            var session, drillSession;
             //start sessions
             session = await countlyDb.client.startSession();
             drillSession = await drillDb.client.startSession();
