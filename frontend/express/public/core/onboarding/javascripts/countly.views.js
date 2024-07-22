@@ -37,9 +37,10 @@
                 types: Object.keys(app.appTypes),
                 appTemplates: appTemplates,
                 populatorProgress: 0,
-                populatorMaxTime: 60,
+                populatorMaxTime: 30,
                 isPopulatorFinished: false,
                 isCountlyEE: countlyGlobal.plugins.includes('drill'),
+                selectedAppTemplate: null,
             };
         },
         computed: {
@@ -93,36 +94,33 @@
             populateApp: function() {
                 var self = this;
                 self.populatorProgress = 0;
+                const selectedAppTemplate = self.selectedAppTemplate || self.newApp.appTemplate;
 
                 countlyPopulator.setStartTime(countlyCommon.periodObj.start / 1000);
                 countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
-
-                countlyPopulator.setSelectedTemplate(self.newApp.appTemplate);
-                countlyPopulator.getTemplate(self.newApp.appTemplate, function(template) {
-                    countlyPopulator.generateUsers(self.populatorMaxTime * 4, template);
-                });
-                var startTime = Math.round(Date.now() / 1000);
-                var progressBar = setInterval(function() {
-                    if (parseInt(self.populatorProgress, 10) < 100) {
-                        self.populatorProgress = parseFloat((Math.round(Date.now() / 1000) - startTime) / self.populatorMaxTime) * 100;
-                        if (self.populatorProgress > 100) {
-                            self.populatorProgress = 100;
+                countlyPopulator.setSelectedTemplate(selectedAppTemplate);
+                countlyPopulator.getTemplate(selectedAppTemplate, function(template) {
+                    countlyPopulator.generateUsers(10, template);
+                    self.populatorProgress = 0;
+                    self.progressBar = setInterval(function() {
+                        if (countlyPopulator.isGenerating()) {
+                            self.populatorProgress = countlyPopulator.getCompletedRequestCount() / (template.uniqueUserCount) * 100;
                         }
-                    }
-                    else {
-                        self.populatorProgress = 100;
-                        countlyPopulator.stopGenerating(true);
-                        window.clearInterval(progressBar);
-                        self.isPopulatorFinished = true;
-                    }
-                }, 1000);
+                        else {
+                            self.populatorProgress = 100;
+                            countlyPopulator.stopGenerating(true);
+                            window.clearInterval(self.progressBar);
+                            self.isPopulatorFinished = true;
+                        }
+                    }, 1000);
+                });
             },
             handleSubmit: function(doc) {
                 var self = this;
                 if (this.isDemoApp) {
                     this.$store.dispatch('countlyOnboarding/fetchIntroVideos');
                 }
-
+                self.selectedAppTemplate = doc.appTemplate;
                 delete doc.appTemplate;
 
                 this.$store.dispatch('countlyOnboarding/createApp', doc)
@@ -158,6 +156,21 @@
             handleContinueClick: function() {
                 app.navigate('#/initial-consent', true);
             },
+            getIconClass: function(appName) {
+                let clyIo = 'cly-io cly-io-';
+                let classMapper = {
+                    'entertainment': 'video-camera',
+                    'finance': 'currency-dollar',
+                    'b2b-saas': 'presentation-chart-line',
+                    'healthcare': 'heart',
+                    'e-commerce': 'shopping-bag',
+                    'social': 'emoji-happy',
+                    'mobile': 'device-mobile',
+                    'desktop': 'desktop-computer',
+                    'web': 'globe-alt',
+                };
+                return clyIo + classMapper[appName];
+            }
         },
     });
 

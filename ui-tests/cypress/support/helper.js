@@ -1,4 +1,8 @@
 import moment from 'moment';
+const addDataApi = require('../api/addData');
+const { faker } = require('@faker-js/faker');
+const getApiKey = require('../api/getApiKey');
+const getApps = require('../api/getApps');
 
 function capitalize(text) {
     text = text.toLowerCase();
@@ -6,7 +10,7 @@ function capitalize(text) {
 }
 
 function toSlug(text) {
-    return text.toLowerCase().replace('\'', '').replace('/', '').replace(' ', '-');
+    return text.toLowerCase().replaceAll('\'', '').replaceAll('/', '').replaceAll(' ', '-');
 }
 
 function hexToRgb(hex) {
@@ -42,10 +46,38 @@ function getCurrentDate() {
     return moment().format('ddd, D MMM YYYY');
 }
 
+const addData = ({
+    username,
+    password,
+    appName,
+    appVersion = faker.number.float({ min: 1, max: 10, fractionDigits: 2 }) + "." + faker.number.int(10),
+    os = "Android",
+    events = '[{"key":"[CLY]_view","count":1,"segmentation":{"visit":1,"name":"' + faker.lorem.words({ min: 1, max: 5 }) + '"}}]'
+}) => {
+
+    let apiKey;
+    let appKey;
+
+    getApiKey.request(username, password)
+        .then((response) => {
+            apiKey = response;
+            return getApps.request(apiKey);
+        })
+        .then((response) => {
+            for (const key in response.admin_of) {
+                if (response.admin_of[key].name === appName) {
+                    appKey = response.admin_of[key].key;
+                }
+            }
+            return addDataApi.request({ appKey, appVersion, os: os, events });
+        });
+};
+
 export default {
     capitalize,
     toSlug,
     hexToRgb,
     calculatePercentageRatings,
     getCurrentDate,
+    addData
 };

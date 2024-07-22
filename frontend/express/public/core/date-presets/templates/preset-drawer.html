@@ -1,0 +1,122 @@
+<cly-drawer
+    id="preset-drawer"
+    ref="drawerScope"
+    @submit="onSubmit"
+    @copy="onCopy"
+    @close="onClose"
+    :title="title"
+    :saveButtonLabel="saveButtonLabel"
+    v-bind="controls">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="preset-drawer-form">
+
+            <cly-form-field :label="i18n('management.preset.date-range')" name="range" rules="required" v-slot:default>
+                <cly-date-picker 
+                    timestampFormat="ms" 
+                    type="daterange" 
+                    :display-shortcuts="false" 
+                    :min-input-width="336" 
+                    :max-input-width="336"
+                    v-model="period" 
+                    label-mode-prop="absolute"
+                    :allow-presets="false"
+                    @change-label="handleLabelChanged"
+                >
+                </cly-date-picker>
+            </cly-form-field>
+
+            <cly-form-field v-if="showExcludeCurrentDay(drawerScope.editedObject.range)" name="exclude-current-day" style="padding-top: 0;">
+                <el-checkbox v-model="drawerScope.editedObject.exclude_current_day">{{i18n('management.preset.exclude-current-day')}}</el-checkbox>
+                <div class="text-small  color-cool-gray-50 bu-mt-1 bu-pl-5">
+                    {{i18n('management.preset.exclude-current-day.description')}}
+                </div>
+            </cly-form-field>
+
+            <cly-form-field :label="i18n('management.preset.name')" name="name" rules="required" v-slot:default>
+                <el-input
+                    v-model="drawerScope.editedObject.name"
+                    :placeholder="i18n('management.preset.placeholder')">
+                </el-input>
+            </cly-form-field>
+
+            <cly-form-field :label="i18n('management.preset.visibility')" name="visbility" rules="required">
+                <el-radio-group 
+                    :disabled="!canShare" 
+                    v-model="drawerScope.editedObject.share_with"
+                    class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned"
+                >
+                    <el-radio
+                        border
+                        class="is-autosized"
+                        v-for="(item) in sharingOptions"
+                        :label="item.value"
+                        :key="item.value">
+                        <div>
+                            {{item.name}}
+                        </div>
+                    </el-radio>
+                </el-radio-group>
+            </cly-form-field>
+
+          
+            <div v-if="drawerScope.editedObject.share_with === 'selected-users'">
+                <div class="text-big font-weight-bold">
+                    {{i18n('management.preset.user-permissions')}}
+                    <cly-tooltip-icon tooltip="Set the User permissions"></cly-tooltip-icon>
+                </div>
+                <cly-form-field :label="i18n('management.preset.users-edit-permission')" :subheading="i18n('management.preset.users-edit-description')">
+                    <cly-select-email :disabled="!canShare" v-model="sharedEmailEdit" :placeholder="canShare ? i18n('management.preset.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
+                </cly-form-field>
+                <cly-form-field :label="i18n('management.preset.users-view-permission')" :subheading="i18n('management.preset.users-view-description')">
+                    <cly-select-email :disabled="!canShare" v-model="sharedEmailView" :placeholder="canShare ? i18n('management.preset.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
+                </cly-form-field>
+            </div>
+
+            <div v-if="(drawerScope.editedObject.share_with === 'selected-users') && groupSharingAllowed">
+                <div class="text-big font-weight-bold">
+                    {{i18n('management.preset.user-group-permission')}}
+                    <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
+                </div>
+                <cly-form-field
+                    name="shared_user_groups_edit"
+                    :label="i18n('management.preset.users-edit-permission')"
+                    :subheading="i18n('management.preset.users-edit-description')">
+                    <el-select
+                        :key="elSelectKey"
+                        multiple
+                        :disabled="!canShare"
+                        v-model="sharedGroupEdit"
+                        :placeholder="canShare ? i18n('management.preset.select-user-group') : i18n('management.preset.sharing-disabled')"
+                        style="width: 100%;">
+                        <el-option
+                            v-for="(item) in allGroups"
+                            :value="item.value"
+                            :label="item.name"
+                            :key="item.value">
+                        </el-option>
+                    </el-select>
+                </cly-form-field>
+                <cly-form-field
+                    name="shared_user_groups_view"
+                    :label="i18n('management.preset.users-view-permission')"
+                    :subheading="i18n('management.preset.users-view-description')">
+                    <el-select
+                        :key="elSelectKey"
+                        multiple
+                        :disabled="!canShare"
+                        v-model="sharedGroupView"
+                        :placeholder="canShare ? i18n('management.preset.select-user-group') : i18n('management.preset.sharing-disabled')"
+                        style="width: 100%;">
+                        <el-option
+                            v-for="(item) in allGroups"
+                            :value="item.value"
+                            :label="item.name"
+                            :key="item.value">
+                        </el-option>
+                    </el-select>
+                </cly-form-field>
+            </div>
+
+        </cly-form-step>
+    </template>
+</cly-drawer>
