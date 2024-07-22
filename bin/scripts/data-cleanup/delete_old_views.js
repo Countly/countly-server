@@ -40,51 +40,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 var app = apps[i];
                 deleted_views[app._id] = [];
                 console.log(i + 1, ") Processing app:", app.name);
-                //SET EXPIRATION TIMESTAMP
-                var expiration_timestamp = moment(EXPIRATION_DATE).tz(app.timezone).endOf('day').valueOf();
-                var collectionName = drillCommon.getCollectionName(event, app._id);
-                // FETCH DATA
                 try {
-                    var cursor = countlyDb.collection("app_viewsmeta" + app._id).find({checked: {$exists: false}});
-                    while (await cursor.hasNext()) {
-                        let view = await cursor.next();
-                        //Find one drill entry for the view with timestamp greater than expiration date
-                        var drillEntry = await drillDb.collection(collectionName).findOne({"sg.name": view.view, "ts": { $gt: expiration_timestamp }}, {ts: 1});
-                        //If no entry found, delete the view
-                        if (!drillEntry) {
-                            console.log("Deleting view: ", view.view);
-                            if (!DRY_RUN) {
-                                await new Promise(function(resolve) {
-                                    sendRequest({
-                                        requestType: 'POST',
-                                        Url: SERVER_URL + "/i/views",
-                                        body: {
-                                            app_id: app._id,
-                                            api_key: API_KEY,
-                                            method: "delete_view",
-                                            view_id: view._id,
-                                        }
-                                    }, function(err) {
-                                        if (err) {
-                                            console.log(JSON.stringify(err));
-                                        }
-                                        else {
-                                            deleted_views[app._id].push(view.view);
-                                        }
-                                        resolve();
-                                    });
-                                });
-                                await sleep(COOLDOWN_TIME);
-                            }
-                        }
-                        else {
-                            //flag the view as checked
-                            await countlyDb.collection("app_viewsmeta" + app._id).updateOne({_id: view._id}, {$set: {checked: true}});
-                        }
-                    }
+                    await processCursor(app);
                 }
                 catch (err) {
-                    console.log("Error fetching data: ", err);
+                    console.log("Error processing app: ", app.name, err);
                 }
             }
             console.log("Deleted views per app: ", deleted_views);
@@ -95,6 +55,94 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     }
     finally {
         close();
+    }
+
+    async function processCursor(app) {
+        // FETCH DATA
+        try {
+            var session;
+            //start sessions
+            session = await countlyDb.client.startSession();
+            drillSession = await drillDb.client.startSession();
+            //SET EXPIRATION TIMESTAMP
+            var expiration_timestamp = moment(EXPIRATION_DATE).tz(app.timezone).endOf('day').valueOf();
+            var collectionName = drillCommon.getCollectionName(event, app._id);
+            var cursor = session.client.db("countly").collection("app_viewsmeta" + app._id).find({checked: {$exists: false}});
+            var refreshTimestamp = new Date();
+            try {
+                while (cursor && await cursor.hasNext()) {
+                    console.log("Timestamp:", new Date());
+                    //refresh session every 5 minutes
+                    if ((new Date() - refreshTimestamp) / 1000 > 1) {
+                        console.log("Refreshing session");
+                        try {
+                            await session.client.db("countly").admin().command({ refreshSessions: [session.id] });
+                            await drillSession.client.db("countly_drill").admin().command({ refreshSessions: [drillSession.id] });
+                            refreshTimestamp = new Date();
+                        }
+                        catch (err) {
+                            console.log("Error refreshing sessions: ", err);
+                            break;
+                        }
+                    }
+                    //get next view
+                    let view = await cursor.next();
+                    //Find one drill entry for the view with timestamp greater than expiration date
+                    var drillEntry = await drillSession.client.db("countly_drill").collection(collectionName).findOne({"sg.name": view.view, "ts": { $gt: expiration_timestamp }}, {ts: 1});
+                    //If no entry found, delete the view
+                    if (!drillEntry) {
+                        console.log("Deleting view: ", view.view);
+                        if (!DRY_RUN) {
+                            await new Promise(function(resolve) {
+                                sendRequest({
+                                    requestType: 'POST',
+                                    Url: SERVER_URL + "/i/views",
+                                    body: {
+                                        app_id: app._id,
+                                        api_key: API_KEY,
+                                        method: "delete_view",
+                                        view_id: view._id,
+                                    }
+                                }, function(err) {
+                                    if (err) {
+                                        console.log(JSON.stringify(err));
+                                    }
+                                    else {
+                                        deleted_views[app._id].push(view.view);
+                                    }
+                                    resolve();
+                                });
+                            });
+                            await sleep(COOLDOWN_TIME);
+                        }
+                    }
+                    else {
+                        //flag the view as checked
+                        await session.client.db("countly").collection("app_viewsmeta" + app._id).updateOne({_id: view._id}, {$set: {checked: true}});
+                    }
+                }
+            }
+            catch(cursorError) {
+                console.log("Cursor error: ", cursorError);
+                cursor.close();
+                console.log("Restarting sessions..");
+                await processCursor(app);
+            }
+        }
+        catch(sessionError) {
+            console.log("Session error: ", sessionError);
+            await sleep(1000);
+            console.log("Restarting sessions...");
+            await processCursor(app);
+        }
+        finally {
+            if (session) {
+                session.endSession();
+            }
+            if (drillSession) {
+                drillSession.endSession();
+            }
+        }
     }
 
     async function getAppList(options) {
