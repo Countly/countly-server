@@ -136,6 +136,9 @@ plugins.setConfigs("dashboards", {
                             if (hasEditAccess) {
                                 dashboard.is_editable = true;
                             }
+                            else {
+                                dashboard.is_editable = false;
+                            }
 
                             if (ownerData && ownerData.length) {
                                 dashboard.owner = ownerData[0];
@@ -484,6 +487,9 @@ plugins.setConfigs("dashboards", {
 
                             if (hasEditAccess) {
                                 dashboard.is_editable = true;
+                            }
+                            else {
+                                dashboard.is_editable = false;
                             }
 
                             if (ownerData && ownerData.length) {

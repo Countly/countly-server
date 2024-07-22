@@ -259,7 +259,30 @@
                 width: auto;
                 padding-left: 5px;
             }
-            
+        }
+    }
+
+    .view-button-initial {
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        background-color: #FFFFFF;
+        border-radius: 23px;
+        padding: 7px;
+        border: 1px solid #E2E4E8;
+        box-shadow: 0px 2px 4px 0px #0000000C;
+        width: auto;
+        cursor: pointer;
+        .text {
+            font-size: 13px;
+            font-weight: 400;
+            line-height: 16px;
+            color: #0166D6;
+            white-space: nowrap;
+            opacity: 1;
+            width: auto;
+            padding-left: 5px;
+            transition: width 1s ease-in;
         }
     }
 

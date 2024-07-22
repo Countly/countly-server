@@ -42,6 +42,19 @@
 }
 
 @font-face {
+    font-family: 'Inter';
+    src: url('../fonts/Inter/Inter-SemiBold.eot');
+    src: url('../fonts/Inter/Inter-SemiBold.eot?#iefix') format('embedded-opentype'),
+        url('../fonts/Inter/Inter-SemiBold.woff2') format('woff2'),
+        url('../fonts/Inter/Inter-SemiBold.woff') format('woff'),
+        url('../fonts/Inter/Inter-SemiBold.ttf') format('truetype'),
+        url('../fonts/Inter/Inter-SemiBold.svg#Inter-SemiBold') format('svg');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
 font-family: 'Roboto Mono';
 font-weight: 400;
 font-style: normal;
@@ -237,7 +250,7 @@ border-bottom: 1px solid #888;
     #sidebar-menu .sidebar-menu .sidebar-submenu .submenu-close { right: 18px; position: absolute; top: 14px; font-size: 14px; cursor: pointer; opacity: 0.7; }
         #sidebar-menu .sidebar-menu .sidebar-submenu .submenu-close:hover { opacity: 1; }
     #sidebar-menu .sidebar-menu .sidebar-submenu .item,
-    #sidebar-menu .sidebar-menu .sidebar-submenu .disabled-item { text-transform:capitalize; background-color: #02060B text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:30px; display:block; padding-left:8px; cursor:pointer; }
+    #sidebar-menu .sidebar-menu .sidebar-submenu .disabled-item { text-transform:capitalize; background-color: #02060B; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:30px; display:block; padding-left:8px; cursor:pointer; }
     #sidebar-menu .sidebar-menu .sidebar-submenu .disabled-item { cursor:default; }
         #sidebar-menu .sidebar-menu .sidebar-submenu .item .logo-icon { display:none; color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:8px; text-align:center;}
         #sidebar-menu .sidebar-menu .sidebar-submenu .item .logo { display:none; color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:1px; }
@@ -1519,7 +1532,7 @@ margin: 50px 0;}
 }
 .export-columns-selector .export-columns-search input, .data-table-column-selector .export-columns-search input {
     border: none;
-    background-color: #fffff;
+    background-color: #ffffff;
     width:100%;
     border-radius:2px;
     color:#6B6B6B;

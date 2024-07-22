@@ -2773,13 +2773,19 @@ common.updateAppUser = function(params, update, no_meta, callback) {
 * @param {object} metrics - metrics object from SDK request
 */
 common.processCarrier = function(metrics) {
-    if (metrics && metrics._carrier) {
+    // Initialize metrics if undefined
+    metrics = metrics || {};
+    if (metrics._carrier) {
         var carrier = metrics._carrier + "";
 
         //random hash without spaces
-        if (carrier.length === 16 && carrier.indexOf(" ") === -1) {
+        if ((carrier.length === 16 && carrier.indexOf(" ") === -1)) {
             delete metrics._carrier;
-            return;
+        }
+
+        // Since iOS 16.04 carrier returns value "--", interpret as Unknown by deleting
+        if (carrier === "--") {
+            delete metrics._carrier;
         }
 
         //random code
@@ -2791,15 +2797,16 @@ common.processCarrier = function(metrics) {
             }
             else {
                 delete metrics._carrier;
-                return;
             }
         }
 
         carrier = carrier.replace(/\w\S*/g, function(txt) {
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         });
+
         metrics._carrier = carrier;
     }
+    metrics._carrier = metrics._carrier ? metrics._carrier : "Unknown";
 };
 
 /**
