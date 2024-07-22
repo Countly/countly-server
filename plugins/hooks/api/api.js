@@ -290,8 +290,8 @@ plugins.register("/i/hook/save", function(ob) {
                     common.returnMessage(params, 400, 'Not enough args');
                     return true;
                 }
-            }
-                
+            
+
             if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
                 common.returnMessage(params, 400, 'Invalid configuration for effects');
                 return true;
@@ -314,6 +314,7 @@ plugins.register("/i/hook/save", function(ob) {
                         }
                     });
             }
+        }
             hookConfig.createdBy = params.member._id;
             hookConfig.created_at = new Date().getTime();
             return common.db.collection("hooks").insert(
