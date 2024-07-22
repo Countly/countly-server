@@ -286,9 +286,9 @@ plugins.register("/i/hook/save", function(ob) {
             hookConfig = sanitizeConfig(hookConfig);
             if (hookConfig) {
                 // Null check for hookConfig
-                if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
-                    common.returnMessage(params, 400, 'Invalid configuration for effects');
-                }
+                if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
+                    common.returnMessage(params, 400, 'Not enough args');
+                    return true;
             }
 
             if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
