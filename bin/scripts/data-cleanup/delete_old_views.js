@@ -122,14 +122,14 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     }
                 }
             }
-            catch(cursorError) {
+            catch (cursorError) {
                 console.log("Cursor error: ", cursorError);
                 cursor.close();
                 console.log("Restarting sessions..");
                 await processCursor(app);
             }
         }
-        catch(sessionError) {
+        catch (sessionError) {
             console.log("Session error: ", sessionError);
             await sleep(1000);
             console.log("Restarting sessions...");
