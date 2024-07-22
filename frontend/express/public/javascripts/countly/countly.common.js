@@ -5005,7 +5005,9 @@
                         noteSortByApp[note.app_id].push(note);
                     });
                     appIds.forEach(function(appId) {
-                        window.countlyGlobal.apps[appId].notes = noteSortByApp[appId] || [];
+                        if (window.countlyGlobal.apps[appId]) {
+                            window.countlyGlobal.apps[appId].notes = noteSortByApp[appId] || [];
+                        }
                     });
                     callBack && callBack(notes);
                 }

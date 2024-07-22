@@ -232,6 +232,10 @@ var pluginManager = function pluginManager() {
     this.reloadEnabledPluginList = function(db, callback) {
         this.loadDependencyMap();
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+            if (err) {
+                console.log(err);
+            }
+            res = res || {};
             if (Object.keys(fullPluginsMap).length > 0) {
                 for (var pp in res.plugins) {
                     if (!fullPluginsMap[pp]) {

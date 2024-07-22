@@ -1,3 +1,56 @@
+## Version 24.05.5
+Fixes:
+- [push] p12 file parsing bug fixed
+- [views] script to delete old views
+
+Enterprise fixes:
+- [active_users] Fixes for Active users recalculation
+
+## Version 24.05.4
+Fixes:
+- [core] Make sure Unicode characters are escaped for events segment values on incoming data
+- [dashboard] Small UI fixes for dealing with unexpected appid values
+
+Features:
+- [core]  Script for getting document counts of drill collections
+
+Enterprise fixes:
+- [drill] Make sure Unicode characters are escaped for events segment values on incoming data
+
+## Version 24.05.3
+Fixes:
+- [core] Bugfix for newsletter check
+- [core] Presets UI fixes
+- [core] Security Vulnerabilities and bugs
+- [events] Fix event chart selection
+- [push] Hotfix: removed the projection from push token query
+- [star-rating] Text and link sanitization
+
+Features:
+- [core]  Run once option for crash removal script
+- [populator] Add warning in case salt is set to application
+
+Enterprise fixes:
+- [block] Add user prop support for crash blocking and isset operator overall
+- [drill] Fixes for query builder when dealing with values starting with an empty string
+
+
+## Version 24.05.2
+Fixes:
+- [dashboards] Disable intercom for custom dashboards
+- [data-manager] Fix duplicate Create Event Group button
+- [push] Push config is not being loaded properly
+- [push] Push FCM SDK is not using proxy while sending messages
+- [core] Fix height inconsistency in datepicker popup
+- [core] Fixes to prevent scheduling duplicated jobs
+- [core] Making sure "Exclude current day" works everywhere
+- [dashboards] Fix issues in note widget
+- [flows] Nullcheck in default flows creation function.
+
+Enterprise fixes:
+- [flows] Nullcheck in default flows creation function
+- [drill] Nullcheck when fetching snapshots data
+
 ## Version 24.05.1
 Fixes:
 - [populator] Bugfix for - Can't edit populator template
