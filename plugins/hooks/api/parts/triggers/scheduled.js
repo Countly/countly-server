@@ -51,6 +51,9 @@ class ScheduledTrigger {
      */
     async process(ob) {
         log.d(JSON.stringify(ob), "[hook trigger schedule]");
+        if (!ob) {
+            return false;
+        }
         const {rule} = ob;
         if (!rule) {
             return false;
