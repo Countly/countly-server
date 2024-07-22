@@ -1,3 +1,109 @@
+## Version 24.05.5
+Fixes:
+- [push] p12 file parsing bug fixed
+- [views] script to delete old views
+
+Enterprise fixes:
+- [active_users] Fixes for Active users recalculation
+
+## Version 24.05.4
+Fixes:
+- [core] Make sure Unicode characters are escaped for events segment values on incoming data
+- [dashboard] Small UI fixes for dealing with unexpected appid values
+
+Features:
+- [core]  Script for getting document counts of drill collections
+
+Enterprise fixes:
+- [drill] Make sure Unicode characters are escaped for events segment values on incoming data
+
+## Version 24.05.3
+Fixes:
+- [core] Bugfix for newsletter check
+- [core] Presets UI fixes
+- [core] Security Vulnerabilities and bugs
+- [events] Fix event chart selection
+- [push] Hotfix: removed the projection from push token query
+- [star-rating] Text and link sanitization
+
+Features:
+- [core]  Run once option for crash removal script
+- [populator] Add warning in case salt is set to application
+
+Enterprise fixes:
+- [block] Add user prop support for crash blocking and isset operator overall
+- [drill] Fixes for query builder when dealing with values starting with an empty string
+
+
+## Version 24.05.2
+Fixes:
+- [dashboards] Disable intercom for custom dashboards
+- [data-manager] Fix duplicate Create Event Group button
+- [push] Push config is not being loaded properly
+- [push] Push FCM SDK is not using proxy while sending messages
+- [core] Fix height inconsistency in datepicker popup
+- [core] Fixes to prevent scheduling duplicated jobs
+- [core] Making sure "Exclude current day" works everywhere
+- [dashboards] Fix issues in note widget
+- [flows] Nullcheck in default flows creation function.
+
+Enterprise fixes:
+- [flows] Nullcheck in default flows creation function
+- [drill] Nullcheck when fetching snapshots data
+
+## Version 24.05.1
+Fixes:
+- [populator] Bugfix for - Can't edit populator template
+- [surveys] fix nps/survey background color
+- [alerts] fix for old data remains when the alerts metric is updated 
+- [star-rating] tooltips updates  
+- [populator] fix for correctly checking if different plugins enabled
+  
+Enterprise fixes:
+- [formulas] null checks
+- [surveys] survey/nps tooltips updates
+- [surveys] fix for nps/survey color hover
+- [surveys] Fix submit button
+- [users] add hinge back in user
+
+## Version 24.05
+Features:
+- [alerts] Alerts plugin revamp
+- [core] Ensure consistency when deleting dashboard user
+- [crashes] Contains operator for (App Version) filter on the Crash Overview page
+- [crashes] Sort crashes by filtered results
+- [dashboard] Show in UI which values are estimated
+- [dashboards] Improve dashboard list loading time
+- [data-manager] Add option to delete source events when merging
+- [date-picker] Date picker presets
+- [dev] Remote process profiling option
+- [events] Ensure consistency when deleting an event
+- [plugins] Dynamic plugins including docker
+- [populator] Crash and Symbolication examples
+- [populator] New Data Populator
+- [push] Move to new FCM API
+- [versions] View to display history of upgrades for server
+- [views] Visualize omitted views just like we visualize omited events in events section
+
+Enterprise Features:
+- [data-manager] Delete user property value
+- [data-manager] Transformation to copy event segmentation to user custom properties
+- [date-picker] Add "hours" and "minutes" options to "in the last" filtering
+- [flows] Allow disabling flows
+- [flows] Merge Flow plugin collections into single one
+- [license] Improve license emails
+- [surveys] Add "Internal Label" field to Surveys and Ratings
+- [surveys] Add custom properties to surveys
+- [surveys] Add optional ToC and Privacy Policy checkbox with URLs to feedback widgets
+- [surveys] Faster table loading through server side tables
+- [surveys] Removing connect.sid cookie in case of nps
+- [surveys] Responsiveness for survey/NPS/rating widget contents
+- [users] Profile Groups
+- [users] Purging user profiles in bulk
+- [users] Record hinge as user property 
+- [users] Select/deselect users
+- [users] User Profiles widget in dashboards
+
 ## Version 23.11.22
 Features:
 - [views] Added deselect All button

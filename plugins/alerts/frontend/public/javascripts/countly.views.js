@@ -381,6 +381,16 @@
                 }
                 return alertDataSubTypeOptions;
             },
+            alertDataVariableOptions: function() {
+                var alertDataVariableOptions;
+                if (this.$refs.drawerData.editedObject.alertDataType === "onlineUsers") {
+                    alertDataVariableOptions = this.onlineUsersAlertVariable.condition;
+                }
+                else {
+                    alertDataVariableOptions = this.defaultAlertVariable.condition;
+                }
+                return alertDataVariableOptions;
+            },
             elSelectKey: function() {
                 var key = this.allGroups
                     .map(function(g) {
@@ -810,6 +820,12 @@
                     break;
                 }
 
+                if (!this.isCompareTypeSelectAvailable) {
+                    settings.compareType = null;
+                    settings.compareValue = null;
+                    settings.period = null;
+                }
+
                 if (settings.period) {
                     if (subTarget) {
                         if (settings.compareType === "more") {
@@ -950,21 +966,20 @@
                 this.showCondition = false;
                 this.showConditionValue = false;
                 newState.selectedApps = newState.selectedApps[0];
-                // this.onAppChange(newState.selectedApps, true);
-                // this.alertDataSubTypeSelected(newState.alertDataSubType, true);
-                //this.resetAlertCondition();
+                newState.alertName = countlyCommon.unescapeHtml(newState.alertName);
+                newState.alertValues = newState.alertValues.map((email) => countlyCommon.unescapeHtml(email));
                 this.getMetrics();
                 this.setFilterKeyOptions();
                 this.setFilterValueOptions();
-
                 if (newState._id !== null) {
                     this.title = jQuery.i18n.map["alert.Edit_Your_Alert"];
                     this.saveButtonLabel = jQuery.i18n.map["alert.save-alert"];
                     this.filterButton = Array.isArray(newState.filterValue)
                         ? !!newState.filterValue.length
                         : !!newState.filterValue;
-                    this.alertDataFilterKey = newState.filterKey;
-                    this.alertDataFilterValue = newState.filterValue;
+                    this.alertDataFilterKey = countlyCommon.unescapeHtml(newState.filterKey);
+                    this.alertDataFilterValue = countlyCommon.unescapeHtml(newState.filterValue);
+
 
                     if (newState.alertBy === "email") {
                         if (newState?.allGroups?.length) {
@@ -986,24 +1001,43 @@
                 this.title = jQuery.i18n.map["alert.Create_New_Alert"];
                 this.saveButtonLabel = jQuery.i18n.map["alert.save"];
             },
+            isNumberKeyPressEvent(evt) {
+                evt = (evt) ? evt : window.event;
+                var charCode = (evt.which) ? evt.which : evt.keyCode;
+                if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
+                    evt.preventDefault();
+                }
+                else {
+                    return true;
+                }
+            },
+            calculateWidth(value) {
+                if (!value || !this.$refs?.alertDataSubTypeSelect?.$el) {
+                    return;
+                }
+                let tmpEl = document.createElement("span");
+                tmpEl.textContent = value;
+                tmpEl.style.cssText = `
+                    visibility: hidden;
+                    position: fixed;
+                    font-size: 13px;
+                    font-family: Arial, sans-serif !important;
+                    box-sizing: border-box;
+                    font-weight: 600;
+                    padding: 10px
+                `;
+                document.body.appendChild(tmpEl);
+                const tempSelectWidth = tmpEl.getBoundingClientRect().width;
+                tmpEl.remove();
+                //this.changeColor(this.$refs.alertDataSubTypeSelect.$el); 
+                return tempSelectWidth;
+            },
             // Handle the change event of the element
             handleChange(element) {
                 this.changeColor(element);
                 if (element.nodeName !== "SELECT") {
                     return;
                 }
-                let tempSelect = document.createElement("element"),
-                    tempOption = document.createElement("option");
-                tempOption.textContent =
-                    element.options[element.selectedIndex].text;
-                tempSelect.style.cssText +=
-                    "visibility:hidden;position:fixed;font-weight:500;padding:6px;font-size:13px";
-                tempSelect.appendChild(tempOption);
-                element.after(tempSelect);
-                const tempSelectWidth =
-                    tempSelect.getBoundingClientRect().width;
-                element.style.width = `${tempSelectWidth}px`;
-                tempSelect.remove();
             },
             changeColor(element) {
                 // Set the background color of the element to green when a selection is made
