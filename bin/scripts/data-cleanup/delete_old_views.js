@@ -35,6 +35,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             return close();
         }
         else {
+            console.log(apps.length + " app(s) to process");
             // FOR EACH APP
             for (let i = 0; i < apps.length; i++) {
                 var app = apps[i];
