@@ -128,50 +128,49 @@ export const feedbackRatingWidgetsPageElements = {
     RATINGS_POPUP_TRIGGER_BUTTON: 'ratings-drawer-trigger-button'
 };
 
-const widgetsDataTableElements = (index = 0) => {
-    return {
-        TABLE_ROWS: '.el-table__row',
-        EDIT_COLUMNS_BUTTON: 'ratings-widgets-data-table-edit-columns-button',
-        EXPORT_AS_BUTTON: 'ratings-widgets-data-table-export-as-button',
-        TABLE_SEARCH_INPUT: 'ratings-widgets-data-table-datatable-search-input',
-        COLUMN_NAME_STATUS_LABEL: 'ratings-widgets-data-table-label-status',
-        COLUMN_NAME_STATUS_SORTABLE_ICON: 'ratings-widgets-data-table-sortable-icon-status',
-        COLUMN_NAME_RATINGS_WIDGET_NAME_LABEL: 'ratings-widgets-data-table-label-ratings-widget-name',
-        COLUMN_NAME_TARGETING_LABEL: 'ratings-widgets-data-table-label-targeting',
-        COLUMN_NAME_RATING_SCORE_LABEL: 'ratings-widgets-data-table-label-rating-score',
-        COLUMN_NAME_RATING_SCORE_SORTABLE_ICON: 'ratings-widgets-data-table-sortable-icon-rating-score',
-        COLUMN_NAME_RESPONSES_LABEL: 'ratings-widgets-data-table-label-responses',
-        COLUMN_NAME_RESPONSES_SORTABLE_ICON: 'ratings-widgets-data-table-sortable-icon-responses',
-        COLUMN_NAME_PAGES_LABEL: 'ratings-widgets-data-table-label-pages',
-        COLUMN_NAME_PAGES_SORTABLE_ICON: 'ratings-widgets-data-table-sortable-icon-pages',
-        //Columns' Rows' Datas Elements
-        STATUS_SWITCH_WRAPPER: 'ratings-widgets-data-table-status-' + index + '-el-switch-wrapper',
-        STATUS_SWITCH_INPUT: 'ratings-widgets-data-table-status-' + index + '-el-switch-input',
-        WIDGET_QUESTION: 'ratings-widgets-data-table-widget-name-' + index,
-        INTERNAL_NAME: 'ratings-widgets-data-table-internal-widget-name-' + index,
-        WIDGET_ID_LABEL: 'ratings-widgets-data-table-widget-id-label-' + index,
-        WIDGET_ID: 'ratings-widgets-data-table-widget-id-value-' + index,
-        TARGETING_ALL_USERS: 'ratings-widgets-data-table-targeting-' + index + '-all-users',
-        TARGETING_PROPERTY_LABEL: 'ratings-widgets-data-table-targeting-' + index + '-seg-type-label',
-        TARGETING_PROPERTY_SEGMENT: 'ratings-widgets-data-table-targeting-' + index + '-seg-type-value',
-        TARGETING_BEHAVIOR_LABEL: 'ratings-widgets-data-table-targeting-' + index + '-cohorts-behavior-label',
-        TARGETING_BEHAVIOR_SEGMENT: 'ratings-widgets-data-table-targeting-' + index + '-cohorts-behavior-value',
-        RATING_SCORE: 'ratings-widgets-data-table-rating-score-' + index,
-        RESPONSES: 'ratings-widgets-data-table-responses-' + index,
-        PAGES: 'ratings-widgets-data-table-pages-' + index,
-        //PAGINATION ELEMENTS
-        ITEMS_PER_PAGE_LABEL: 'ratings-widgets-data-table-items-per-page-label',
-        PER_PAGE_COUNT_SELECT: 'ratings-widgets-data-table-items-per-page-count-select-input-pseudo-input-label',
-        PER_PAGE_COUNT_SELECT_ICON: 'ratings-widgets-data-table-items-per-page-count-select-icon',
-        PER_PAGE_COUNT_LABEL: 'ratings-widgets-data-table-items-per-page-count-select',
-        PAGE_NUMBER_SELECT: 'ratings-widgets-data-table-page-number-select-input-pseudo-input-label',
-        PAGE_NUMBER_SELECT_ICON: 'ratings-widgets-data-table-page-number-select-icon',
-        FIRST_PAGE_ARROW_BUTTON: 'ratings-widgets-data-table-first-page-arrow-button',
-        PREVIOUS_PAGE_ARROW_BUTTON: 'ratings-widgets-data-table-previous-page-arrow-button',
-        NEXT_PAGE_ARROW_BUTTON: 'ratings-widgets-data-table-next-page-arrow-button',
-        LAST_PAGE_ARROW_BUTTON: 'ratings-widgets-data-table-last-page-arrow-button'
-    };
-};
+const widgetsDataTableElements = (index = 0) => ({
+
+    TABLE_ROWS: '.el-table__row',
+    EDIT_COLUMNS_BUTTON: 'ratings-widgets-data-table-edit-columns-button',
+    EXPORT_AS_BUTTON: 'ratings-widgets-data-table-export-as-button',
+    TABLE_SEARCH_INPUT: 'ratings-widgets-data-table-datatable-search-input',
+    COLUMN_NAME_STATUS_LABEL: 'ratings-widgets-data-table-label-status',
+    COLUMN_NAME_STATUS_SORTABLE_ICON: 'ratings-widgets-data-table-sortable-icon-status',
+    COLUMN_NAME_RATINGS_WIDGET_NAME_LABEL: 'ratings-widgets-data-table-label-ratings-widget-name',
+    COLUMN_NAME_TARGETING_LABEL: 'ratings-widgets-data-table-label-targeting',
+    COLUMN_NAME_RATING_SCORE_LABEL: 'ratings-widgets-data-table-label-rating-score',
+    COLUMN_NAME_RATING_SCORE_SORTABLE_ICON: 'ratings-widgets-data-table-sortable-icon-rating-score',
+    COLUMN_NAME_RESPONSES_LABEL: 'ratings-widgets-data-table-label-responses',
+    COLUMN_NAME_RESPONSES_SORTABLE_ICON: 'ratings-widgets-data-table-sortable-icon-responses',
+    COLUMN_NAME_PAGES_LABEL: 'ratings-widgets-data-table-label-pages',
+    COLUMN_NAME_PAGES_SORTABLE_ICON: 'ratings-widgets-data-table-sortable-icon-pages',
+    //Columns' Rows' Datas Elements
+    STATUS_SWITCH_WRAPPER: 'ratings-widgets-data-table-status-' + index + '-el-switch-wrapper',
+    STATUS_SWITCH_INPUT: 'ratings-widgets-data-table-status-' + index + '-el-switch-input',
+    WIDGET_QUESTION: 'ratings-widgets-data-table-widget-name-' + index,
+    INTERNAL_NAME: 'ratings-widgets-data-table-internal-widget-name-' + index,
+    WIDGET_ID_LABEL: 'ratings-widgets-data-table-widget-id-label-' + index,
+    WIDGET_ID: 'ratings-widgets-data-table-widget-id-value-' + index,
+    TARGETING_ALL_USERS: 'ratings-widgets-data-table-targeting-' + index + '-all-users',
+    TARGETING_PROPERTY_LABEL: 'ratings-widgets-data-table-targeting-' + index + '-seg-type-label',
+    TARGETING_PROPERTY_SEGMENT: 'ratings-widgets-data-table-targeting-' + index + '-seg-type-value',
+    TARGETING_BEHAVIOR_LABEL: 'ratings-widgets-data-table-targeting-' + index + '-cohorts-behavior-label',
+    TARGETING_BEHAVIOR_SEGMENT: 'ratings-widgets-data-table-targeting-' + index + '-cohorts-behavior-value',
+    RATING_SCORE: 'ratings-widgets-data-table-rating-score-' + index,
+    RESPONSES: 'ratings-widgets-data-table-responses-' + index,
+    PAGES: 'ratings-widgets-data-table-pages-' + index,
+    //PAGINATION ELEMENTS
+    ITEMS_PER_PAGE_LABEL: 'ratings-widgets-data-table-items-per-page-label',
+    PER_PAGE_COUNT_SELECT: 'ratings-widgets-data-table-items-per-page-count-select-input-pseudo-input-label',
+    PER_PAGE_COUNT_SELECT_ICON: 'ratings-widgets-data-table-items-per-page-count-select-icon',
+    PER_PAGE_COUNT_LABEL: 'ratings-widgets-data-table-items-per-page-count-select',
+    PAGE_NUMBER_SELECT: 'ratings-widgets-data-table-page-number-select-input-pseudo-input-label',
+    PAGE_NUMBER_SELECT_ICON: 'ratings-widgets-data-table-page-number-select-icon',
+    FIRST_PAGE_ARROW_BUTTON: 'ratings-widgets-data-table-first-page-arrow-button',
+    PREVIOUS_PAGE_ARROW_BUTTON: 'ratings-widgets-data-table-previous-page-arrow-button',
+    NEXT_PAGE_ARROW_BUTTON: 'ratings-widgets-data-table-next-page-arrow-button',
+    LAST_PAGE_ARROW_BUTTON: 'ratings-widgets-data-table-last-page-arrow-button'
+});
 
 export const feedbackRatingWidgetDetailsPageElements = {
     RATINGS_WIDGET_DETAILS_BACK_TO_RATING_WIDGETS_LINK_ICON: 'ratings-detail-back-link-icon',
@@ -217,66 +216,64 @@ export const feedbackRatingWidgetDetailsPageElements = {
     RATINGS_WIDGET_DETAILS_TAB_COMMENTS: 'tab-ratings-detail-table-tab-comments-title',
 };
 
-const feedbackRatingWidgetDetailsCommentsDataTableElements = (index = 0) => {
-    return {
-        TABLE_ROWS: '.el-table__row',
-        EXPORT_AS_BUTTON: 'ratings-comments-table-export-as-button',
-        TABLE_SEARCH_INPUT: 'ratings-comments-table-datatable-search-input',
-        COLUMN_NAME_RATING_LABEL: 'ratings-comments-table-label-rating',
-        COLUMN_NAME_RATING_SORTABLE_ICON: 'ratings-comments-table-sortable-icon-rating',
-        COLUMN_NAME_TIME_LABEL: 'ratings-comments-table-label-time',
-        COLUMN_NAME_TIME_SORTABLE_ICON: 'ratings-comments-table-sortable-icon-time',
-        COLUMN_NAME_COMMENT_LABEL: 'ratings-comments-table-label-comment',
-        COLUMN_NAME_EMAIL_LABEL: 'ratings-comments-table-label-e-mail',
-        //Columns' Rows' Datas Elements
-        ROW_RATING: 'ratings-comment-table-rating-row-' + index,
-        ROW_TIME: 'ratings-comment-table-time-row-' + index,
-        ROW_COMMENT: 'ratings-comment-table-comment-row-' + index,
-        ROW_EMAIL: 'ratings-comment-table-time-email-row' + index,
+const feedbackRatingWidgetDetailsCommentsDataTableElements = (index = 0) => ({
 
-        //PAGINATION ELEMENTS
-        ITEMS_PER_PAGE_LABEL: 'ratings-comments-table-items-per-page-label',
-        PER_PAGE_COUNT_SELECT: 'ratings-comments-table-items-per-page-count-select-input-pseudo-input-label',
-        PER_PAGE_COUNT_SELECT_ICON: 'ratings-comments-table-items-per-page-count-select-icon',
-        PER_PAGE_COUNT_LABEL: 'ratings-comments-table-items-per-page-count-select',
-        PAGE_NUMBER_SELECT: 'ratings-comments-table-page-number-select-input-pseudo-input-label',
-        PAGE_NUMBER_SELECT_ICON: 'ratings-comments-table-page-number-select-icon',
-        FIRST_PAGE_ARROW_BUTTON: 'ratings-comments-table-first-page-arrow-button',
-        PREVIOUS_PAGE_ARROW_BUTTON: 'ratings-comments-table-previous-page-arrow-button',
-        NEXT_PAGE_ARROW_BUTTON: 'ratings-comments-table-next-page-arrow-button',
-        LAST_PAGE_ARROW_BUTTON: 'ratings-comments-table-last-page-arrow-button'
-    };
-};
+    TABLE_ROWS: '.el-table__row',
+    EXPORT_AS_BUTTON: 'ratings-comments-table-export-as-button',
+    TABLE_SEARCH_INPUT: 'ratings-comments-table-datatable-search-input',
+    COLUMN_NAME_RATING_LABEL: 'ratings-comments-table-label-rating',
+    COLUMN_NAME_RATING_SORTABLE_ICON: 'ratings-comments-table-sortable-icon-rating',
+    COLUMN_NAME_TIME_LABEL: 'ratings-comments-table-label-time',
+    COLUMN_NAME_TIME_SORTABLE_ICON: 'ratings-comments-table-sortable-icon-time',
+    COLUMN_NAME_COMMENT_LABEL: 'ratings-comments-table-label-comment',
+    COLUMN_NAME_EMAIL_LABEL: 'ratings-comments-table-label-e-mail',
+    //Columns' Rows' Datas Elements
+    ROW_RATING: 'ratings-comment-table-rating-row-' + index,
+    ROW_TIME: 'ratings-comment-table-time-row-' + index,
+    ROW_COMMENT: 'ratings-comment-table-comment-row-' + index,
+    ROW_EMAIL: 'ratings-comment-table-time-email-row' + index,
 
-const feedbackRatingWidgetDetailsRatingsDataTableElements = (index = 0) => {
-    return {
-        TABLE_ROWS: '.el-table__row',
-        EXPORT_AS_BUTTON: 'ratings-data-table-export-as-button',
-        TABLE_SEARCH_INPUT: 'ratings-data-table-datatable-search-input',
-        COLUMN_NAME_RATING_LABEL: 'ratings-data-table-label-rating',
-        COLUMN_NAME_RATING_SORTABLE_ICON: 'ratings-data-table-sortable-icon-rating',
-        COLUMN_NAME_NUMBER_OF_RATINGS_LABEL: 'ratings-data-table-label-number-of-ratings',
-        COLUMN_NAME_NUMBER_OF_RATINGS_SORTABLE_ICON: 'ratings-data-table-sortable-icon-number-of-ratings',
-        COLUMN_NAME_PERCENTAGE_LABEL: 'ratings-data-table-label-percentage',
-        COLUMN_NAME_PERCENTAGE_SORTABLE_ICON: 'ratings-data-table-sortable-icon-percentage',
-        //Columns' Rows' Datas Elements
-        ROW_RATING: 'ratings-data-table-rating-' + index,
-        ROW_NUMBER_OF_RATINGS: 'ratings-data-table-number-of-rating-' + index,
-        ROW_PERCENTAGE: 'ratings-data-table-percentage-' + index,
+    //PAGINATION ELEMENTS
+    ITEMS_PER_PAGE_LABEL: 'ratings-comments-table-items-per-page-label',
+    PER_PAGE_COUNT_SELECT: 'ratings-comments-table-items-per-page-count-select-input-pseudo-input-label',
+    PER_PAGE_COUNT_SELECT_ICON: 'ratings-comments-table-items-per-page-count-select-icon',
+    PER_PAGE_COUNT_LABEL: 'ratings-comments-table-items-per-page-count-select',
+    PAGE_NUMBER_SELECT: 'ratings-comments-table-page-number-select-input-pseudo-input-label',
+    PAGE_NUMBER_SELECT_ICON: 'ratings-comments-table-page-number-select-icon',
+    FIRST_PAGE_ARROW_BUTTON: 'ratings-comments-table-first-page-arrow-button',
+    PREVIOUS_PAGE_ARROW_BUTTON: 'ratings-comments-table-previous-page-arrow-button',
+    NEXT_PAGE_ARROW_BUTTON: 'ratings-comments-table-next-page-arrow-button',
+    LAST_PAGE_ARROW_BUTTON: 'ratings-comments-table-last-page-arrow-button'
+});
 
-        //PAGINATION ELEMENTS
-        ITEMS_PER_PAGE_LABEL: 'ratings-data-table-items-per-page-label',
-        PER_PAGE_COUNT_SELECT: 'ratings-data-table-items-per-page-count-select-input-pseudo-input-label',
-        PER_PAGE_COUNT_SELECT_ICON: 'ratings-data-table-items-per-page-count-select-icon',
-        PER_PAGE_COUNT_LABEL: 'ratings-data-table-items-per-page-count-select',
-        PAGE_NUMBER_SELECT: 'ratings-data-table-page-number-select-input-pseudo-input-label',
-        PAGE_NUMBER_SELECT_ICON: 'ratings-data-table-page-number-select-icon',
-        FIRST_PAGE_ARROW_BUTTON: 'ratings-data-table-first-page-arrow-button',
-        PREVIOUS_PAGE_ARROW_BUTTON: 'ratings-data-table-previous-page-arrow-button',
-        NEXT_PAGE_ARROW_BUTTON: 'ratings-data-table-next-page-arrow-button',
-        LAST_PAGE_ARROW_BUTTON: 'ratings-data-table-last-page-arrow-button'
-    };
-};
+const feedbackRatingWidgetDetailsRatingsDataTableElements = (index = 0) => ({
+
+    TABLE_ROWS: '.el-table__row',
+    EXPORT_AS_BUTTON: 'ratings-data-table-export-as-button',
+    TABLE_SEARCH_INPUT: 'ratings-data-table-datatable-search-input',
+    COLUMN_NAME_RATING_LABEL: 'ratings-data-table-label-rating',
+    COLUMN_NAME_RATING_SORTABLE_ICON: 'ratings-data-table-sortable-icon-rating',
+    COLUMN_NAME_NUMBER_OF_RATINGS_LABEL: 'ratings-data-table-label-number-of-ratings',
+    COLUMN_NAME_NUMBER_OF_RATINGS_SORTABLE_ICON: 'ratings-data-table-sortable-icon-number-of-ratings',
+    COLUMN_NAME_PERCENTAGE_LABEL: 'ratings-data-table-label-percentage',
+    COLUMN_NAME_PERCENTAGE_SORTABLE_ICON: 'ratings-data-table-sortable-icon-percentage',
+    //Columns' Rows' Datas Elements
+    ROW_RATING: 'ratings-data-table-rating-' + index,
+    ROW_NUMBER_OF_RATINGS: 'ratings-data-table-number-of-rating-' + index,
+    ROW_PERCENTAGE: 'ratings-data-table-percentage-' + index,
+
+    //PAGINATION ELEMENTS
+    ITEMS_PER_PAGE_LABEL: 'ratings-data-table-items-per-page-label',
+    PER_PAGE_COUNT_SELECT: 'ratings-data-table-items-per-page-count-select-input-pseudo-input-label',
+    PER_PAGE_COUNT_SELECT_ICON: 'ratings-data-table-items-per-page-count-select-icon',
+    PER_PAGE_COUNT_LABEL: 'ratings-data-table-items-per-page-count-select',
+    PAGE_NUMBER_SELECT: 'ratings-data-table-page-number-select-input-pseudo-input-label',
+    PAGE_NUMBER_SELECT_ICON: 'ratings-data-table-page-number-select-icon',
+    FIRST_PAGE_ARROW_BUTTON: 'ratings-data-table-first-page-arrow-button',
+    PREVIOUS_PAGE_ARROW_BUTTON: 'ratings-data-table-previous-page-arrow-button',
+    NEXT_PAGE_ARROW_BUTTON: 'ratings-data-table-next-page-arrow-button',
+    LAST_PAGE_ARROW_BUTTON: 'ratings-data-table-last-page-arrow-button'
+});
 
 module.exports = {
     feedbackRatingWidgetsPageElements,

@@ -5,7 +5,6 @@
  *  Command: node export_monthly_doc_count.js
  */
 
-
 const moment = require('moment-timezone');
 const { ObjectId } = require('mongodb');
 const { Parser } = require('json2csv');
@@ -16,6 +15,7 @@ const drillCommon = require('../../../plugins/drill/api/common.js');
 const countlyCommon = require('../../../api/lib/countly.common.js');
 
 const app_list = []; //valid app_ids here. If empty array passed, script will process all apps.
+const internalDrillEvents = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
 const pathToFile = './'; //path to save csv files
 const period = 'all'; //supported values are 60days, 30days, 7days, yesterday, all, or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000]
 const headerMap = {
@@ -24,6 +24,7 @@ const headerMap = {
     "month": "Creation Date",
     "doc_count": "Count",
 };
+const MAX_RETRIES = 5;
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
@@ -33,9 +34,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             return close();
         }
         else {
-            if (period !== 'all') {
-                countlyCommon.setPeriod(period);
-            }
             // CREATE WRITE STREAM
             const eventDetailsWriteStream = fs.createWriteStream(pathToFile + `monthly_document_counts.csv`);
             var isFirst = true;
@@ -45,93 +43,109 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             for (let i = 0; i < apps.length; i++) {
                 var app = apps[i];
                 console.log(i + 1, ") Processing app:", app.name);
-                // SET APP TIMEZONE
-
                 try {
-                    // GET EVENTS FOR CURRENT APP
+                    // GET EVENTS FOR CURRENT APP INCLUDING COUNTLY INTERNAL EVENTS
                     var events = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
                     events = events && events.list || [];
+                    if (internalDrillEvents && internalDrillEvents.length) {
+                        events.push(...internalDrillEvents);
+                    }
                     // PROCESS EACH EVENT TO GET COLLECTION NAME
                     for (let j = 0; j < events.length; j++) {
                         var event = events[j];
                         console.log("Processing event:", event);
                         var collectionName = drillCommon.getCollectionName(event, app._id);
-
                         // SET PERIOD AND QUERY
                         let query = {};
                         if (period !== 'all') {
-                            countlyCommon.setTimezone(app.timezone);
                             var periodObj = countlyCommon.periodObj;
                             let cd = {};
-                            let tmpArr = periodObj.currentPeriodArr[0].split(".");
 
+                            let tmpArr = periodObj.currentPeriodArr[0].split(".");
                             cd.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
-                            if (app.timezone) {
-                                cd.$gte.tz(app.timezone);
-                            }
                             cd.$gte = cd.$gte.valueOf() - cd.$gte.utcOffset() * 60000;
                             cd.$gte = moment(cd.$gte).toDate();
 
                             tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
                             cd.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
-                            if (app.timezone) {
-                                cd.$lt.tz(app.timezone);
-                            }
                             cd.$lt = cd.$lt.valueOf() - cd.$lt.utcOffset() * 60000;
                             cd.$lt = moment(cd.$lt).toDate();
 
                             query.cd = cd;
                         }
+                        else {
+                            query.cd = { $ne: 0 };
+                        }
                         // FETCH, TRANSFORM, AND SET DATA
                         try {
                             const appName = app.name;
                             const eventName = event;
-                            var result = await drillDb.collection(collectionName).aggregate([
-                                {
-                                    $match: query,
-                                },
-                                {
-                                    $group: {
-                                        _id: {
-                                            $dateToString: {
-                                                format: "%Y-%m",
-                                                date: "$cd"
-                                            }
-                                        },
-                                        count: {
-                                            $sum: 1
-                                        }
-                                    }
-                                },
-                                {
-                                    $set: {
-                                        app_name: appName,
-                                        event_name: eventName,
-                                    }
-                                },
-                                {
-                                    $project: {
-                                        _id: 0,
-                                        app_name: "$app_name",
-                                        event_name: "$event_name",
-                                        month: "$_id",
-                                        doc_count: "$count"
+                            var isEstablished = false;
+
+                            // ESTABLISH CONNECTION WITH DRILL DB BEFORE RUNNING QUERY
+                            for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+                                try {
+                                    let pingResult = await drillDb.command({ ping: 1 });
+                                    if (pingResult.ok) {
+                                        isEstablished = true;
+                                        break;
                                     }
                                 }
-                            ], {allowDiskUse: true}).toArray();
-
-                            // SAVE TO FILE
-                            if (isFirst) {
-                                eventDetailsWriteStream.write(Object.values(headerMap).join(",") + "\n");
-                                isFirst = false;
+                                catch (error) {
+                                    console.log("Closing and reestablishing database connection");
+                                    await drillDb.close();
+                                    drillDb = await pluginManager.dbConnection("countly_drill");
+                                }
                             }
-                            if (result && result.length > 0) {
-                                eventDetailsWriteStream.write(fileParser.parse(result));
-                                eventDetailsWriteStream.write("\n");
+
+                            // RUN QUERY IF ESTABLISHED, OR SKIP EVENT IF NOT
+                            if (isEstablished) {
+                                var result = await drillDb.collection(collectionName).aggregate([
+                                    {
+                                        $match: query
+                                    },
+                                    {
+                                        $group: {
+                                            _id: {
+                                                $dateToString: {
+                                                    format: "%Y-%m",
+                                                    date: "$cd"
+                                                }
+                                            },
+                                            count: {
+                                                $sum: 1
+                                            }
+                                        }
+                                    },
+                                    {
+                                        $set: {
+                                            app_name: appName,
+                                            event_name: eventName,
+                                        }
+                                    },
+                                    {
+                                        $project: {
+                                            _id: 0,
+                                            app_name: "$app_name",
+                                            event_name: "$event_name",
+                                            month: "$_id",
+                                            doc_count: "$count"
+                                        }
+                                    }
+                                ], {allowDiskUse: true}).toArray();
+                                // SAVE TO FILE
+                                if (isFirst) {
+                                    eventDetailsWriteStream.write(Object.values(headerMap).join(",") + "\n");
+                                    isFirst = false;
+                                }
+                                if (result && result.length > 0) {
+                                    eventDetailsWriteStream.write(fileParser.parse(result));
+                                    eventDetailsWriteStream.write("\n");
+                                }
                             }
                         }
                         catch (err) {
-                            console.log("Error converting data: ", err);
+                            console.log("Error aggregating data: ", err);
                         }
                     }
                 }

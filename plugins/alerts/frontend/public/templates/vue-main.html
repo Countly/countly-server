@@ -96,7 +96,6 @@
                         </template>
                     </el-table-column>
 
-
                     <el-table-column type="options" test-id="more-button-area">
                         <template v-slot="rowScope">
                             <cly-more-options :test-id="'row-' + rowScope.$index" v-if="rowScope.row.hover && (rowScope.row._canUpdate || rowScope.row._canDelete)" size="small" @command="handleAlertEditCommand($event,rowScope)">
@@ -313,8 +312,9 @@
                     <div class="text-medium text-heading bu-has-background-white" style="font-size:13px; margin-top: 32px" data-test-id="trigger-label">
                         {{i18n('alert.Alert_Trigger')}}
                     </div>
+                    
                     <div :key="drawerScope.editedObject.alertDataType" v-if="drawerScope.editedObject.alertDataType" class="cly-vue-alert-drawer__card alert-trigger">
-                        <div v-if="showSubType1">
+                        <div class="bu-px-4" v-if="showSubType1">
                             <span class="groupcard-text mediumtextNormal-20px" v-if="isCompareTypeSelectAvailable" data-test-id="trigger-send-alert-if-label">
                                 Send alert if
                             </span>
@@ -347,7 +347,7 @@
 
                             <cly-form-field rules="required" style="display:inline-block" v-if="isCompareTypeSelectAvailable">    
                                 <cly-select-x
-                                    data-test-id="trigger-variable-select"
+                                    test-id="trigger-variable-select"
                                     width="auto"
                                     :arrow="false"
                                     ref="alertDataSubTypeSelect"
@@ -385,7 +385,7 @@
                             <cly-form-field v-if="isPeriodSelectAvailable && drawerScope.editedObject.alertDataSubType !== 't'" rules="required" style="display:inline-block">
                                 <cly-select-x
                                     width="auto"
-                                    data-test-id="trigger-time-select"
+                                    test-id="trigger-time-select"
                                     :arrow="false"
                                     ref="alertDataSubTypeSelect"
                                     :style="{width:calculateWidth(drawerScope.editedObject.period) + 'px'}"
@@ -423,7 +423,7 @@
                             Send alert if
                         </span>
                         <cly-select-x
-                            data-test-id="trigger-metric-select"
+                            test-id="trigger-metric-select"
                             :arrow="false"
                             width="auto"
                             class="alert-drawer-trigger-select-and-input metric"
@@ -434,7 +434,7 @@
                         </span>
 
                         <cly-select-x
-                            data-test-id="trigger-variable-select"
+                            test-id="trigger-variable-select"
                             :arrow="false"
                             width="auto"
                             class="alert-drawer-trigger-select-and-input variable"
@@ -450,12 +450,13 @@
                             class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
                             placeholder="value"
                             type="text"
+                            @keypress="isNumberKeyPressEvent($event)"
                             />
                         <span class="groupcard-text mediumtextNormal-14px" data-test-id="trigger-in-the-last-label">
                             in the last
                         </span>
                         <cly-select-x
-                            data-test-id="trigger-time-select"
+                            test-id="trigger-time-select"
                             :arrow="false"
                             width="auto"
                             class="alert-drawer-trigger-select-and-input time"
@@ -517,7 +518,7 @@
                                 v-model="selectedRadioButton"
                                 :label="item.value"
                                 :key="idx"
-                                v-for="(item, idx) in emailOptions"
+                                v-for="(item, idx) in filteredEmailOptions"
                                 class="is-autosized"
                                 border>
                                     {{item.label}}

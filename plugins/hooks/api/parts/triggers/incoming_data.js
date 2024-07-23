@@ -58,7 +58,7 @@ class IncomingDataTrigger {
      */
     async process(ob) {
         let rules = [];
-        if (ob.is_mock === true) {
+        if (ob && ob.is_mock === true) {
             return ob;
         }
         rules = this._rules.filter((r) => {

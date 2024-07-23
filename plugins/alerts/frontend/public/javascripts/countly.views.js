@@ -411,6 +411,14 @@
                     return;
                 }
             },
+            filteredEmailOptions: function() {
+                if (!countlyGlobal.plugins.includes("groups")) {
+                    return this.emailOptions.filter(
+                        (option) => option.value !== "toGroup"
+                    );
+                }
+                return this.emailOptions;
+            }
         },
         props: {
             placeholder: { type: String, default: "Select" },
@@ -420,17 +428,19 @@
         },
         mounted: function() {
             var self = this;
-            groupsModel.initialize().then(function() {
-                var groups = _.sortBy(groupsModel.data(), "name");
-                var userGroups = groups.map(function(g) {
-                    return {
-                        name: g.name,
-                        value: g._id,
-                        users: g.users,
-                    };
+            if (countlyGlobal.plugins.includes("groups")) {
+                groupsModel.initialize().then(function() {
+                    var groups = _.sortBy(groupsModel.data(), "name");
+                    var userGroups = groups.map(function(g) {
+                        return {
+                            name: g.name,
+                            value: g._id,
+                            users: g.users,
+                        };
+                    });
+                    self.allGroups = userGroups;
                 });
-                self.allGroups = userGroups;
-            });
+            }
         },
         methods: {
             subType2Label: function(obj) {
@@ -536,7 +546,7 @@
                     countlyAlerts.getSurveysForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((s) => {
+                            this.alertDataSubType2Options = data.filter(s => s.status).map((s) => {
                                 return { value: s._id, label: countlyCommon.unescapeHtml(s.name) };
                             });
                         }
@@ -546,7 +556,7 @@
                     countlyAlerts.getNPSForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((n) => {
+                            this.alertDataSubType2Options = data.filter(n => n.status).map((n) => {
                                 return { value: n._id, label: countlyCommon.unescapeHtml(n.name) };
                             });
                         }
@@ -556,7 +566,7 @@
                     countlyAlerts.getRatingForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((r) => {
+                            this.alertDataSubType2Options = data.filter(r => r.is_active === 'true').map((r) => {
                                 return {
                                     value: r._id,
                                     label: countlyCommon.unescapeHtml(r.popup_header_text),
@@ -1012,7 +1022,7 @@
                 }
             },
             calculateWidth(value) {
-                if (!value || !this.$refs?.alertDataSubTypeSelect?.$el) {
+                if (!value) {
                     return;
                 }
                 let tmpEl = document.createElement("span");
