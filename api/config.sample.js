@@ -106,7 +106,7 @@ var countlyConfig = {
     * Specifies where to store files. Value "fs" means file system or basically storing files on hard drive. Another currently supported option is "gridfs" storing files in MongoDB database using GridFS. By default fallback to "fs";
     * @type {string} [default=fs]
     */
-    fileStorage: "fs",
+    fileStorage: "gridfs",
     /**
     * Specifies after how long time configurations are reloded from data base. Default value is 10000 (10 seconds)
     * @type {integer} [default=10000]
@@ -120,7 +120,7 @@ var countlyConfig = {
     /** 
      * Share same database connection pool between databases
      */
-    shared_connection: false,
+    shared_connection: true,
     /**
      * Simple SMTP mail sender configuration.
      * Can only be used when you don't have custom mailer extend ({@code countly/extend/mail.js}).
