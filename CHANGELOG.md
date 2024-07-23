@@ -1,3 +1,11 @@
+## Version 24.05.5
+Fixes:
+- [push] p12 file parsing bug fixed
+- [views] script to delete old views
+
+Enterprise fixes:
+- [active_users] Fixes for Active users recalculation
+
 ## Version 24.05.4
 Fixes:
 - [core] Make sure Unicode characters are escaped for events segment values on incoming data
