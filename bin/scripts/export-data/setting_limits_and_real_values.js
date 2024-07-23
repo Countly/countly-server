@@ -65,15 +65,16 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         realVal,
                         currentVal;
 
+                    let eventsCollectionPerApp = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
+                    let pluginsCollectionPlugins = await countlyDb.collection("plugins").findOne({"_id": 'plugins'});
+
                     // EVENT KEYS
                     defaultVal = DEFAULTS.event_limit;
 
-                    let realEvents = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
-                    realEvents = realEvents && realEvents.list || [];
+                    let realEvents = eventsCollectionPerApp && eventsCollectionPerApp.list || [];
                     realVal = realEvents.length;
 
-                    let currentEventLimit = await countlyDb.collection("plugins").findOne({"_id": 'plugins'});
-                    currentEventLimit = currentEventLimit && currentEventLimit.api && currentEventLimit.api.event_limit || [];
+                    let currentEventLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.api && pluginsCollectionPlugins.api.event_limit || [];
                     currentVal = currentEventLimit;
 
                     app_results['Event Keys'] = {"default": defaultVal, "set": currentVal, "real": realVal};
@@ -85,8 +86,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     currentEventSegmentLimit = currentEventSegmentLimit && currentEventSegmentLimit.api && currentEventSegmentLimit.api.event_segmentation_limit || [];
                     currentVal = currentEventSegmentLimit;
 
-                    let eventSegments = await countlyDb.collection('events').findOne({"_id": ObjectId(app._id)});
-                    eventSegments = eventSegments && eventSegments.segments || {};
+                    let eventSegments = eventsCollectionPerApp && eventsCollectionPerApp.segments || {};
 
                     realVal = Object.entries(eventSegments)
                         .sort((a, b) => b[1].length - a[1].length)
