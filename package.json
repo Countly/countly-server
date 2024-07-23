@@ -58,7 +58,7 @@
     "geoip-lite": "1.4.10",
     "get-random-values": "^3.0.0",
     "grunt": "1.6.1",
-    "grunt-cli": "1.4.3",
+    "grunt-cli": "1.5.0",
     "grunt-contrib-concat": "2.1.0",
     "grunt-contrib-copy": "1.0.0",
     "grunt-contrib-cssmin": "5.0.0",
