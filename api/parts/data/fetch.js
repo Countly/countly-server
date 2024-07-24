@@ -1691,8 +1691,8 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         var monthDocs = [monthIdToFetch];
         if (!(options && options.dontBreak)) {
             for (let i = 0; i < common.base64.length; i++) {
-                zeroDocs.push((options.id_prefix || "") + zeroIdToFetch + "_" + common.base64[i]);
-                monthDocs.push((options.id_prefix || "") + monthIdToFetch + "_" + common.base64[i]);
+                zeroDocs.push(zeroIdToFetch + "_" + common.base64[i]);
+                monthDocs.push(monthIdToFetch + "_" + common.base64[i]);
             }
         }
 

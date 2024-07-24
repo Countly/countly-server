@@ -296,7 +296,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
             eventCollections.all = {};
         }
         var ee = {};
-        ee["key." + dateIds.month + "_" + postfix2] = tmpTotalObj;
+        ee["key." + dateIds.month + "." + postfix2] = tmpTotalObj;
 
         mergeEvents(eventCollections.all, ee);
         //fill time object for total event count
