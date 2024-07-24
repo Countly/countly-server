@@ -232,6 +232,10 @@ var pluginManager = function pluginManager() {
     this.reloadEnabledPluginList = function(db, callback) {
         this.loadDependencyMap();
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+            if (err) {
+                console.log(err);
+            }
+            res = res || {};
             if (Object.keys(fullPluginsMap).length > 0) {
                 for (var pp in res.plugins) {
                     if (!fullPluginsMap[pp]) {
@@ -1410,7 +1414,11 @@ var pluginManager = function pluginManager() {
                 resolve(errors);
             }
             else if (!self.getConfig("api").offline_mode) {
-                const cmd = spawn('npm', ["install"], {cwd: cwd});
+                var args = ["install"];
+                if (apiCountlyConfig.symlinked === true) {
+                    args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                }
+                const cmd = spawn('npm', args, {cwd: cwd});
                 var error2 = "";
 
                 cmd.stdout.on('data', (data) => {
