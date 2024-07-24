@@ -2637,7 +2637,11 @@ var pluginManager = function pluginManager() {
                 };
                 cursor._forEach = cursor.forEach;
                 cursor.forEach = function(iterator, cb) {
-                    return handlePromiseErrors(cursor._forEach(iterator), e, copyArguments(arguments, "find"), logForReads(cb, e, copyArguments(args, "find")));
+                    return handlePromiseErrors(cursor._forEach(iterator), e, copyArguments(arguments, "aggregate"), logForReads(cb, e, copyArguments(args, "aggregate")));
+                };
+                cursor._close = cursor.close;
+                cursor.close = function(cb) {
+                    return handlePromiseErrors(cursor._close(), e, copyArguments(arguments, "aggregate"), logForReads(cb, e, copyArguments(args, "aggregate")));
                 };
                 if (typeof callback === "function") {
                     return cursor.toArray(callback);
@@ -2706,6 +2710,10 @@ var pluginManager = function pluginManager() {
                 cursor._forEach = cursor.forEach;
                 cursor.forEach = function(iterator, callback) {
                     return handlePromiseErrors(cursor._forEach(iterator), e, copyArguments(arguments, "find"), logForReads(callback, e, copyArguments(args, "find")));
+                };
+                cursor._close = cursor.close;
+                cursor.close = function(cb) {
+                    return handlePromiseErrors(cursor._close(), e, copyArguments(arguments, "find"), logForReads(cb, e, copyArguments(args, "find")));
                 };
                 return cursor;
             };
