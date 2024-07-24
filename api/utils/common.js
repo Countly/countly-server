@@ -79,6 +79,24 @@ common.escape_html = function(string, more) {
 
     return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
 };
+/**
+ * Function to escape unicode characters
+ * @param {string} str  - string for which to escape
+ * @returns  {string} escaped string
+ */
+common.encodeCharacters = function(str) {
+    try {
+        str = str + "";
+        str = str.replace(/\u0000/g, "&#9647");
+        str.replace(/[^\x00-\x7F]/g, function(c) {
+            return encodeURI(c);
+        });
+        return str;
+    }
+    catch {
+        return str;
+    }
+};
 
 /**
 * Decode escaped html 
@@ -2773,11 +2791,18 @@ common.updateAppUser = function(params, update, no_meta, callback) {
 * @param {object} metrics - metrics object from SDK request
 */
 common.processCarrier = function(metrics) {
-    if (metrics && metrics._carrier) {
+    // Initialize metrics if undefined
+    metrics = metrics || {};
+    if (metrics._carrier) {
         var carrier = metrics._carrier + "";
 
         //random hash without spaces
         if ((carrier.length === 16 && carrier.indexOf(" ") === -1)) {
+            delete metrics._carrier;
+        }
+
+        // Since iOS 16.04 carrier returns value "--", interpret as Unknown by deleting
+        if (carrier === "--") {
             delete metrics._carrier;
         }
 
@@ -2798,10 +2823,8 @@ common.processCarrier = function(metrics) {
         });
 
         metrics._carrier = carrier;
-        if (!metrics._carrier || metrics._carrier === "--") {
-            metrics._carrier = "Unknown";
-        }
     }
+    metrics._carrier = metrics._carrier ? metrics._carrier : "Unknown";
 };
 
 /**

@@ -976,21 +976,20 @@
                 this.showCondition = false;
                 this.showConditionValue = false;
                 newState.selectedApps = newState.selectedApps[0];
-                // this.onAppChange(newState.selectedApps, true);
-                // this.alertDataSubTypeSelected(newState.alertDataSubType, true);
-                //this.resetAlertCondition();
+                newState.alertName = countlyCommon.unescapeHtml(newState.alertName);
+                newState.alertValues = newState.alertValues.map((email) => countlyCommon.unescapeHtml(email));
                 this.getMetrics();
                 this.setFilterKeyOptions();
                 this.setFilterValueOptions();
-
                 if (newState._id !== null) {
                     this.title = jQuery.i18n.map["alert.Edit_Your_Alert"];
                     this.saveButtonLabel = jQuery.i18n.map["alert.save-alert"];
                     this.filterButton = Array.isArray(newState.filterValue)
                         ? !!newState.filterValue.length
                         : !!newState.filterValue;
-                    this.alertDataFilterKey = newState.filterKey;
-                    this.alertDataFilterValue = newState.filterValue;
+                    this.alertDataFilterKey = countlyCommon.unescapeHtml(newState.filterKey);
+                    this.alertDataFilterValue = countlyCommon.unescapeHtml(newState.filterValue);
+
 
                     if (newState.alertBy === "email") {
                         if (newState?.allGroups?.length) {
