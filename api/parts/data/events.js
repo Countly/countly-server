@@ -446,7 +446,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     }
                     eventSegments[collection + "." + zeroId].m = zeroId.split(".")[0];
                     eventSegments[collection + "." + zeroId].s = "no-segment";
-                    eventSegments[collection + "." + zeroId].a = params.app_id;
+                    eventSegments[collection + "." + zeroId].a = params.app_id + "";
                     eventSegments[collection + "." + zeroId].e = eventHashMap[collection] || collection;
                     common.writeBatcher.add("events_data", params.app_id + "_" + collection + "_" + "no-segment_" + zeroId.replace(".", "_"), {$set: eventSegments[collection + "." + zeroId]});
                 }
@@ -460,7 +460,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     $set: {
                         "m": collIdSplits[1],
                         "s": collIdSplits[0],
-                        "a": params.app_id,
+                        "a": params.app_id + "",
                         "e": eventHashMap[collection] || collection
                     },
                     "$inc": eventCollections[collection][segment]
@@ -484,7 +484,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
 
                     eventSegments[collection + "." + zeroId].m = zeroId.split(".")[0];
                     eventSegments[collection + "." + zeroId].s = "no-segment";
-                    eventSegments[collection + "." + zeroId].a = params.app_id;
+                    eventSegments[collection + "." + zeroId].a = params.app_id + "";
                     eventSegments[collection + "." + zeroId].e = eventHashMap[collection] || collection;
 
 
@@ -507,7 +507,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                         $set: {
                             "m": collIdSplits[1],
                             "s": collIdSplits[0],
-                            "a": params.app_id,
+                            "a": params.app_id + "",
                             "e": eventHashMap[collection] || collection
                         },
                         "$inc": eventCollections[collection][segment]
