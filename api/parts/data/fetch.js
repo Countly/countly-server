@@ -1301,9 +1301,9 @@ fetch.fetchEvents = function(params) {
         params.qstring.segmentation = "key";
         fetch.getTimeObjForEvents("events_data", params, {'id_prefix': params.app_id + "_" + collectionName + '_'}, function(doc) {
             countlyEvents.setDb(doc || {});
-            var data = {};
-            data.all = countlyEvents.getSegmentedData(params.qstring.segmentation);
-            common.returnOutput(params, data);
+            var data2 = {};
+            data2.all = countlyEvents.getSegmentedData(params.qstring.segmentation);
+            common.returnOutput(params, data2);
         });
     }
 };

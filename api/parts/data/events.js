@@ -223,7 +223,6 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
 
         var currEvent = params.qstring.events[i];
         tmpEventObj = {};
-
         var tmpTotalObj = {};
 
         // Key fields is required
@@ -446,18 +445,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     eventSegments[collection + "." + zeroId].s = "no-segment";
                     eventSegments[collection + "." + zeroId].a = params.app_id;
                     eventSegments[collection + "." + zeroId].e = eventHashMap[collection] || collection;
-
                     common.writeBatcher.add("events_data", params.app_id + "_" + collection + "_" + "no-segment_" + zeroId.replace(".", "_"), {$set: eventSegments[collection + "." + zeroId]});
-
-                    /*var updateZeroAll = {
-                        "m": zeroId.split(".")[0],
-                        "s": "no-segment",
-                        "a": params.app_id,
-                        "e": "all"
-                    }
-                    updateZeroAll["meta_v2.segments.key"] = true;
-                    updateZeroAll["meta_v2.key." + eventHashMap[collection]] = true;
-                    common.writeBatcher.add("events_data", params.app_id + "_all_" + "no-segment_" + zeroId.replace(".", "_"), {$set: updateZeroAll});*/
                 }
             }
 
@@ -502,22 +490,6 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                         "_id": params.app_id + "_" + collection + "_" + "no-segment_" + zeroId.replace(".", "_"),
                         "updateObj": {$set: eventSegments[collection + "." + zeroId]}
                     });
-
-                    /* var postfix2 = common.crypto.createHash("md5").update(eventHashMap[collection]).digest('base64')[0];
-
-                    var updateZeroAll = {
-                        "m": zeroId.split(".")[0],
-                        "s": "no-segment",
-                        "a": params.app_id,
-                        "e": "all"
-                    }
-                    updateZeroAll["meta_v2.segments.key"] = true;
-                    updateZeroAll["meta_v2.key." + eventHashMap[collection]] = true;
-                    eventDocs.push({
-                        "collection": "events_data",
-                        "_id": params.app_id + "_all_" + "no-segment_" + zeroId.replace(".", "_"),
-                        "updateObj": {$set: updateZeroAll}
-                    });*/
                 }
             }
 
@@ -595,7 +567,6 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 }
             }
         }
-        console.log(JSON.stringify(eventSegmentList));
         common.writeBatcher.add('events', common.db.ObjectID(params.app_id), eventSegmentList);
     }
     done();
