@@ -184,7 +184,7 @@ module.exports = function(countlyConfig) {
     }
 
     // eslint-disable-next-line require-jsdoc
-    function post(uri, options, callback, config) {
+    function post(uri, options, callback, config = countlyConfig) {
         var params = initParams(uri, options, callback, config);
         if (params.options && (params.options.url || params.options.uri)) {
             if (params.options.form && params.options.form.fileStream && params.options.form.fileField) {
@@ -219,7 +219,7 @@ module.exports = function(countlyConfig) {
     }
 
 
-    function get(uri, options, callback, config) {
+    function get(uri, options, callback, config = countlyConfig) {
         requestFunction(uri, options, callback, config);
     }
 
