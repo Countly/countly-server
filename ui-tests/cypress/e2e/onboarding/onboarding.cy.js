@@ -93,6 +93,10 @@ describe('Complete Onboarding', () => {
         });
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
+        navigationHelpers.goToLogoutPage();
+        navigationHelpers.goToLoginPage();
+        loginHelpers.login(user.email, user.password);
+        navigationHelpers.isNavigatedToDashboard();
     });
 
     it('should be complete onboarding flow with creating mobile type demo application and do not enable tracking and subscribe to newsletter', function() {
@@ -120,6 +124,10 @@ describe('Complete Onboarding', () => {
         });
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
+        navigationHelpers.goToLogoutPage();
+        navigationHelpers.goToLoginPage();
+        loginHelpers.login(user.email, user.password);
+        navigationHelpers.isNavigatedToDashboard();
     });
 
     it('should be complete onboarding flow with creating mobile type own application and verify all pages with empty data', function() {
@@ -283,6 +291,10 @@ describe('Complete Onboarding', () => {
         });
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
+        navigationHelpers.goToLogoutPage();
+        navigationHelpers.goToLoginPage();
+        loginHelpers.login(user.email, user.password);
+        navigationHelpers.isNavigatedToDashboard();
     });
 
     it('should be complete onboarding flow with creating mobile type demo application and verify home page with Finance data', function() {

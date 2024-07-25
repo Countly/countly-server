@@ -169,7 +169,7 @@
                         <i class="ion-android-exit"></i>
                     </div>
                     <div class="bu-level-item cursor-pointer ">
-                        <div @click="logout()">{{i18nM('sidebar.logout')}}</div>
+                        <div @click="logout()" data-test-id="sidebar-menuoptions-myprofile-logout">{{i18nM('sidebar.logout')}}</div>
                     </div>
                 </div>
             </div>
@@ -196,7 +196,7 @@
                     height: 30 + 'px',
                     width: 30 + 'px'
                 }">
-            <span class="cly-vue-sidebar__user-initials has-ellipsis">{{item.member.image.initials}}</span>
+            <span class="cly-vue-sidebar__user-initials has-ellipsis" data-test-id="sidebar-menuoptions-myprofile">{{item.member.image.initials}}</span>
         </div>
     </template>
 </el-popover>

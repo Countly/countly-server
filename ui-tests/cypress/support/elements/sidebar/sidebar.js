@@ -95,4 +95,8 @@ export default {
         HOOKS: 'sidebar-management-hooks',
         DB_VIEWER: 'sidebar-management-db'
     },
+
+    SIDEBAR_MY_PROFILE_OPTIONS: {
+		LOGOUT: 'sidebar-menuoptions-myprofile-logout',
+	},
 };
