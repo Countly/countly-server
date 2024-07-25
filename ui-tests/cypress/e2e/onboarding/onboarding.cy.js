@@ -57,6 +57,7 @@ const hooksPageHelpers = require('../../lib/dashboard/manage/hooks/hooks');
 const dbCountlyPageHelpers = require('../../lib/dashboard/manage/db/countly/dbCountly');
 const dbCountlyOutPageHelpers = require('../../lib/dashboard/manage/db/countlyOut/countlyOut');
 const dbCountlyFsPageHelpers = require('../../lib/dashboard/manage/db/countlyFs/countlyFs');
+const loginHelpers = require('../../lib/login/login');
 const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
 describe('Complete Onboarding', () => {

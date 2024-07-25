@@ -97,6 +97,6 @@ export default {
     },
 
     SIDEBAR_MY_PROFILE_OPTIONS: {
-		LOGOUT: 'sidebar-menuoptions-myprofile-logout',
-	},
+        LOGOUT: 'sidebar-menuoptions-myprofile-logout',
+    },
 };
