@@ -226,6 +226,8 @@ function punchCard(db, filter, options) {
  *  @param {db} db - database object
  *  @param {object} filter - to filter documents
  *  @param {object} options - array with periods
+ *  @param {boolean} options.monthlyBreakdown - if true, will calculate monthly data points breakdown for all apps (used to get license metric)
+ *  @param {string} options.license_hosting - client hosting type, could be countly hosted or self hosted. This will determine how consolidated data points should be added to total data points
  *  @param {function} callback - callback
  */
 function fetchDatapoints(db, filter, options, callback) {
@@ -239,6 +241,35 @@ function fetchDatapoints(db, filter, options, callback) {
         if (err || !result) {
             console.log("Failed to get datapoints", err);
             return callback(toReturn);
+        }
+
+        if (options.monthlyBreakdown) {
+            const dataPoints = result
+                .reduce((acc, current) => {
+                    let dp = current.e + current.s;
+
+                    if (/^\[CLY\]_consolidated/.test(current._id)) {
+                        // do not count consolidated dp for countly hosted clients
+                        if (options.license_hosting === 'Countly-Hosted') {
+                            dp = 0;
+                        }
+                        // subtract consolidated dp for self hosted clients to get natural dp
+                        else {
+                            dp *= -1;
+                        }
+                    }
+
+                    if (current.m in acc) {
+                        acc[current.m] += dp;
+                    }
+                    else {
+                        acc[current.m] = dp;
+                    }
+
+                    return acc;
+                }, {});
+
+            return callback(dataPoints);
         }
 
         for (let i = 0; i < result.length; i++) {
