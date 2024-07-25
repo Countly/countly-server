@@ -2,16 +2,11 @@
 (function(countlyVue) {
     Vue.component("cly-content-layout", countlyVue.components.create({
         props: {
-            // meta: {
-            //     type: Object,
-            //     required: true,
-            //     default: function() {
-            //         return {};
-            //     },
-            //     validator(prop) {
-            //         return prop.title && prop.version && prop.createdBy;
-            //     }
-            // }
+            backgroundColor: {
+                type: String,
+                required: false,
+                default: null
+            }
         },
         data: function() {
             return {
@@ -81,6 +76,11 @@
                 type: Boolean,
                 required: false,
                 default: false
+            },
+            backgroundColor: {
+                type: String,
+                required: false,
+                default: '#fff'
             }
         },
         data: function() {
@@ -127,12 +127,32 @@
             collapsible: {
                 type: Boolean,
                 required: false,
+                default: true
+            },
+            rightSidebarWidth: {
+                type: String,
+                required: false,
+                default: null
+            },
+            leftSidebarWidth: {
+                type: String,
+                required: false,
+                default: null
+            },
+            hasDashedBackground: {
+                type: Boolean,
+                required: false,
                 default: false
+            },
+            backgroundColor: {
+                type: String,
+                required: false,
+                default: '#fff'
             }
         },
         data: function() {
             return {
-                toggleTransition: 'stdt-slide-right',
+                toggleTransition: 'stdt-slide-left',
                 isLeftSidebarHidden: this.hideLeftSidebar
             };
         },

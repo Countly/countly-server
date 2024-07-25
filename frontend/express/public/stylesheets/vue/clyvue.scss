@@ -4334,6 +4334,13 @@
             display: flex;
             justify-content: space-between;
 
+            &__dashed-bg {
+                background-color: white;
+                background-image: radial-gradient(#e0e0e0 1px, transparent 1px), radial-gradient(#e0e0e0 1px, transparent 1px);
+                background-size: 10px 10px;
+                background-position: 0 0, 20px 20px;
+            }
+
             &__left-sidebar {
                 width: 230px;
                 border: 1px solid #ECECEC;

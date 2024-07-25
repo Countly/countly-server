@@ -1,4 +1,4 @@
-<div class="cly-vue-content-builder__layout-main__body">
+<div class="cly-vue-content-builder__layout-main__body" :class="{ 'bu-is-justify-content-flex-end': isLeftSidebarHidden, 'bu-is-justify-content-flex-start': hideRightSidebar, 'cly-vue-content-builder__layout-main__body__dashed-bg': hasDashedBackground }" :style="{'background-color': backgroundColor}">
     <transition :name="toggleTransition" @enter="onViewEntered">
         <div v-if="!isLeftSidebarHidden" class="cly-vue-content-builder__layout-main__body__left-sidebar">
             <div class="cly-vue-content-builder__layout-main__body__left-sidebar__header">
@@ -6,21 +6,21 @@
                     <h4>Screens</h4>
                     <cly-tooltip-icon class="bu-ml-1" tooltip="Screens"></cly-tooltip-icon>
                 </div>
-                <div class="cly-vue-content-builder__layout-main__body__collapse-button" @click="collapseBar('left')">
+                <div v-if="collapsible" class="cly-vue-content-builder__layout-main__body__collapse-button" @click="collapseBar('left')">
                     <div class="cly-vue-content-builder__layout-main__body__collapse-button__icon color-warm-gray-80">
                         <i class="cly-io cly-io-arrow-sm-left"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div v-else class="cly-vue-content-builder__layout-main__body__collapse-button" @click="collapseBar('left')">
+        <div v-else-if="!hideLeftSidebar && collapsible" class="cly-vue-content-builder__layout-main__body__collapse-button" @click="collapseBar('left')">
             <div class="cly-vue-content-builder__layout-main__body__collapse-button__icon color-warm-gray-80">
                 <i class="cly-io cly-io-arrow-sm-left"></i>
             </div>
         </div>
     </transition>
     <slot name="content-layout-body"></slot>
-    <div v-if="!hideRightSidebar" class="cly-vue-content-builder__layout-main__body__right-sidebar">
+    <div v-if="!hideRightSidebar" class="cly-vue-content-builder__layout-main__body__right-sidebar" :style="{ 'width': this.rightSidebarWidth + 'px !important'}">
         <slot name="content-layout-right-sidebar"></slot>
     </div>
 </div>

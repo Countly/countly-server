@@ -1,4 +1,4 @@
-<div class="cly-vue-content-builder__layout-header__wrapper">
+<div class="cly-vue-content-builder__layout-header__wrapper" :style="{'background-color': backgroundColor}">
     <div class="cly-vue-content-builder__layout-header__left">
         <div v-if="closeButton" class="cly-vue-content-builder__layout-header__icon cly-vue-content-builder__layout-header__icon--close" @click="close">
             <i class="cly-io cly-io-x color-warm-gray-60"></i>
@@ -22,7 +22,7 @@
         </div>
     </div>
     <div class="cly-vue-content-builder__layout-header__tabs">
-        <cly-dynamic-tabs v-if="tabs" v-model="currentTab" :tabs="tabs" skin="primary" :no-history=true></cly-dynamic-tabs>
+        <cly-dynamic-tabs v-if="tabs" v-model="currentTab" :tabs="tabs" :custom-style="'background-color: ' + backgroundColor" :no-history=true></cly-dynamic-tabs>
     </div>
     <div class="cly-vue-content-builder__layout-header__actions">
         <cly-status-badge v-if="status" :label="status" class="cly-vue-content-builder__layout-header__status"></cly-status-badge>

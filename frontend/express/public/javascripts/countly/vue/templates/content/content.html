@@ -1,8 +1,9 @@
  <div class="cly-vue-content-builder">
-    <div class="cly-vue-content-builder__layout-header">
-        <slot name="content-layout-header"></slot>
+    <div class="cly-vue-content-builder__layout-header" :style="{'background-color': backgroundColor}">
+        <slot name="content-layout-header" :background-color="backgroundColor">
+        </slot>
     </div>
-    <div class="cly-vue-content-builder__layout-main">
+    <div class="cly-vue-content-builder__layout-main" :style="{'background-color': backgroundColor}">
         <slot name="content-layout-body"></slot>
     </div>
 </div>
