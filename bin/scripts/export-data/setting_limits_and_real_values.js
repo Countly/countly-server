@@ -14,11 +14,10 @@ const drillCommon = require('../../../plugins/drill/api/common.js');
 const countlyCommon = require('../../../api/lib/countly.common.js');
 const common = require('../../../api/utils/common.js');
 const crypto = require('crypto');
-
+const MAX_RETRIES = 5;
 const app_list = []; //valid app_ids here. If empty array passed, script will process all apps.
 // const pathToFile = './'; //path to save csv files
 // const period = 'all'; //supported values are 60days, 30days, 7days, yesterday, all, or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000]
-const MAX_RETRIES = 5;
 
 const DEFAULTS = {
     event_limit: 500,
@@ -81,10 +80,26 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             $unwind: "$segmentValues"
                         },
                         {
+                            $addFields: {
+                                segmentSize: { $size: { $objectToArray: "$segmentValues.v" } }
+                            }
+                        },
+                        {
+                            $sort: { segmentSize: -1 }
+                        },
+                        {
                             $group: {
                                 _id: "$_id",
                                 numberOfSegments: { $first: "$numberOfSegments" },
-                                maxSegmentSize: { $max: { $size: { $objectToArray: "$segmentValues.v" } } }
+                                maxSegmentSize: { $first: "$segmentSize" },
+                                maxSegmentValues: { $first: "$segmentValues.v" }
+                            }
+                        },
+                        {
+                            $project: {
+                                numberOfSegments: 1,
+                                maxSegmentSize: 1,
+                                maxSegmentValues: 1
                             }
                         }
                     ]).toArray();
@@ -110,13 +125,10 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     realVal = Object.entries(eventSegments)
                         .sort((a, b) => b[1].length - a[1].length)
                         .map(([key, value]) => {
-                            return { event: key, segment: value.length };
+                            return { [key]: value.length };
                         });
 
                     app_results['Event Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
-
-                    // TODO: This is the full list of segments
-                    console.log(realVal);
 
                     // UNIQUE EVENT SEGMENT VALUES FOR 1 SEGMENT
                     defaultVal = DEFAULTS.event_segment_value_limit;
@@ -130,88 +142,54 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     //     var shortEventName = common.fixEventKey(event);
                     //     var eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + app._id).digest('hex');
 
-                    //     // FETCH, TRANSFORM, AND SET DATA
-                    //     try {
-                    //         // TODO: this might be unnecessary here, setting it as true for now and skipping pings
-                    //         var isEstablished = true;
-                    //         // var isEstablished = false;
-
-                    //         // ESTABLISH CONNECTION WITH DRILL DB BEFORE RUNNING QUERY
-                    //         // for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-                    //         //     try {
-                    //         //         let pingResult = await drillDb.command({ ping: 1 });
-                    //         //         if (pingResult.ok) {
-                    //         //             isEstablished = true;
-                    //         //             break;
-                    //         //         }
-                    //         //     }
-                    //         //     catch (error) {
-                    //         //         console.log("Closing and reestablishing database connection");
-                    //         //         await drillDb.close();
-                    //         //         drillDb = await pluginManager.dbConnection("countly_drill");
-                    //         //     }
-                    //         // }
-
-                    //         // RUN QUERY IF ESTABLISHED, OR SKIP EVENT IF NOT
-                    //         if (isEstablished) {
-                    //             // TODO: work in progress
-                    //             var result = await countlyDb.collection(eventCollectionName).aggregate([
-                    //                 {
-                    //                     $match: query
-                    //                 },
-                    //                 {
-                    //                     "$addFields": {
-                    //                         "meta_v2": {
-                    //                             "$objectToArray": "$meta_v2"
-                    //                         }
-                    //                     }
-                    //                 },
-                    //                 {
-                    //                     "$addFields": {
-                    //                         "meta_v2": {
-                    //                             "$map": {
-                    //                                 "input": "$meta_v2",
-                    //                                 "as": "item",
-                    //                                 "in": {
-                    //                                     "k": "$$item.k",
-                    //                                     "v": {
-                    //                                         "$size": {
-                    //                                             "$objectToArray": "$$item.v"
-                    //                                         }
-                    //                                     }
+                    //     // TODO: work in progress
+                    //     var result = await countlyDb.collection(eventCollectionName).aggregate([
+                    //         {
+                    //             $match: query
+                    //         },
+                    //         {
+                    //             "$addFields": {
+                    //                 "meta_v2": {
+                    //                     "$objectToArray": "$meta_v2"
+                    //                 }
+                    //             }
+                    //         },
+                    //         {
+                    //             "$addFields": {
+                    //                 "meta_v2": {
+                    //                     "$map": {
+                    //                         "input": "$meta_v2",
+                    //                         "as": "item",
+                    //                         "in": {
+                    //                             "k": "$$item.k",
+                    //                             "v": {
+                    //                                 "$size": {
+                    //                                     "$objectToArray": "$$item.v"
                     //                                 }
                     //                             }
                     //                         }
                     //                     }
-                    //                 },
-                    //                 {
-                    //                     "$unwind": "$meta_v2"
-                    //                 },
-                    //                 {
-                    //                     "$group": {
-                    //                         "_id": "$meta_v2.k",
-                    //                         "values": {
-                    //                             "$push": "$meta_v2.v"
-                    //                         }
-                    //                     }
-                    //                 },
-                    //                 {
-                    //                     "$project": {
-                    //                         "_id": 1,
-                    //                         "meta_v2": "$values"
-                    //                     }
                     //                 }
-                    //             ], {allowDiskUse: true}).toArray();
-                    //             // console.log(app.name);
-                    //             if (app.name === "platform_test_app") {
-                    //                 console.log("For Each Event");
-                    //                 console.log(JSON.stringify(result, null, 2));
+                    //             }
+                    //         },
+                    //         {
+                    //             "$unwind": "$meta_v2"
+                    //         },
+                    //         {
+                    //             "$group": {
+                    //                 "_id": "$meta_v2.k",
+                    //                 "values": {
+                    //                     "$push": "$meta_v2.v"
+                    //                 }
+                    //             }
+                    //         },
+                    //         {
+                    //             "$project": {
+                    //                 "_id": 1,
+                    //                 "meta_v2": "$values"
                     //             }
                     //         }
-                    //     }
-                    //     catch (err) {
-                    //         console.log("Error aggregating data: ", err);
-                    //     }
+                    //     ], {allowDiskUse: true}).toArray();
                     // });
 
                     // app_results['Unique Event Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
@@ -232,10 +210,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     let currentViewNameLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.views && pluginsCollectionPlugins.views.view_name_limit || [];
                     currentVal = currentViewNameLimit;
 
-                    realVal = -1;
+                    realVal = {viewName: "", viewLength: -1};
                     let viewsDocuments = viewsCollectionPerApp;
                     viewsDocuments.forEach(document => {
                         if (document && document.view) {
+                            // TODO: Is this check unnecessary?
                             if (typeof document.view !== "string") {
                                 try {
                                     document.view = String(document.view);
@@ -244,8 +223,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                     console.log("Failed to convert view name to type String.");
                                 }
                             }
-                            if (realVal < document.view.length) {
-                                realVal = document.view.length;
+                            if (realVal.viewLength < document.view.length) {
+                                realVal.viewLength = document.view.length;
+                                realVal.viewName = document.view;
                             }
                         }
                     });
@@ -268,7 +248,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     let currentViewSegmentValueLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.api && pluginsCollectionPlugins.api.segment_value_limit || [];
                     currentVal = currentViewSegmentValueLimit;
 
-                    realVal = viewsSegmentsPerApp[0].maxSegmentSize;
+                    realVal = { "Max Segment Length": viewsSegmentsPerApp[0].maxSegmentSize, "Max Segment Values": viewsSegmentsPerApp[0].maxSegmentValues };
 
                     app_results['View Segments Unique Values'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
@@ -290,6 +270,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     console.log("Couldn't get events for app:", app.name, err);
                 }
             }
+            // console.log(JSON.stringify(all_results, null, 2));
             console.log(all_results);
 
             // CREATE WRITE STREAM
