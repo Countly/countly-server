@@ -1,25 +1,18 @@
 /**
- *  Description: Creates CSV file of document counts per month from drill data
+ *  Description: Creates JSON file of events, views, and custom user properties, their segments, and segment values.
  *  Server: countly
  *  Path: $(countly dir)/bin/scripts/export-data
- *  Command: node export_monthly_doc_count.js
+ *  Command: node setting_limits_and_real_values.js
  */
 
 const { ObjectId } = require('mongodb');
 const fs = require('fs');
-const pathToFile = './'; //path to save csv files
-const WriteStream = fs.createWriteStream(pathToFile + `setting_limits_and_values.csv`);
-const pluginManager = require('../../../plugins/pluginManager.js');
-
-// const moment = require('moment-timezone');
-// const drillCommon = require('../../../plugins/drill/api/common.js');
-// const countlyCommon = require('../../../api/lib/countly.common.js');
-const common = require('../../../api/utils/common.js');
 const crypto = require('crypto');
-// const MAX_RETRIES = 5;
-// const period = 'all'; //supported values are 60days, 30days, 7days, yesterday, all, or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000]
-const app_list = []; //valid app_ids here. If empty array passed, script will process all apps.
-
+const common = require('../../../api/utils/common.js');
+const pathToFile = './'; // path to save json files
+const WriteStream = fs.createWriteStream(pathToFile + `setting_limits_and_values.json`);
+const pluginManager = require('../../../plugins/pluginManager.js');
+const app_list = []; // valid app_ids here. If empty array passed, script will process all apps.
 const DEFAULTS = {
     event_limit: 500,
     event_segment_limit: 100,
@@ -184,10 +177,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
                 let currentEventSegmentValueLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.api && pluginsCollectionPlugins.api.event_segmentation_value_limit || undefined;
                 currentVal = currentEventSegmentValueLimit;
-
                 realVal = {};
-                // TODO: This part is problematic
-                realEvents.forEach(async(event) => {
+                await Promise.all(realEvents.map(async(event) => {
                     var shortEventName = common.fixEventKey(event);
                     var eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + app._id).digest('hex');
 
@@ -195,9 +186,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         var eventsSegmentsValues = await countlyDb.collection(eventCollectionName).aggregate([
                             {
                                 "$match": {
-                                    "_id": {
-                                        "$regex": "^no-segment_2024:0.*"
-                                    }
+                                    "_id": { "$regex": "^no-segment_2024:0.*" }
                                 }
                             },
                             {
@@ -208,22 +197,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                 }
                             },
                             {
-                                "$addFields": {
-                                    "meta_v2": {
-                                        "$map": {
-                                            "input": "$meta_v2",
-                                            "as": "item",
-                                            "in": {
-                                                "k": "$$item.k",
-                                                "v": {
-                                                    "$size": {
-                                                        "$objectToArray": "$$item.v"
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                "$project":
+                                {"meta_v2": {"$map": {"input": "$meta_v2", "in": {"k": "$$this.k", "v": {"$size": {"$objectToArray": "$$this.v"}}}}}}
                             },
                             {
                                 "$unwind": "$meta_v2"
@@ -236,7 +211,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             {
                                 "$group": {
                                     "_id": null,
-                                    "keyValuePairs": {
+                                    "fields": {
                                         "$push": {
                                             "k": "$meta_v2.k",
                                             "v": "$meta_v2.v"
@@ -245,16 +220,15 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                 }
                             },
                             {
-                                "$project": {
-                                    "_id": 0, // Exclude the _id field
-                                    "result": {
+                                "$replaceRoot": {
+                                    "newRoot": {
                                         "$arrayToObject": {
                                             "$map": {
-                                                "input": "$keyValuePairs",
-                                                "as": "pair",
+                                                "input": "$fields",
+                                                "as": "field",
                                                 "in": {
-                                                    "k": "$$pair.k",
-                                                    "v": "$$pair.v"
+                                                    "k": "$$field.k",
+                                                    "v": "$$field.v"
                                                 }
                                             }
                                         }
@@ -262,16 +236,13 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                 }
                             }
                         ]).toArray();
-
-                        // console.log(JSON.stringify(eventsSegmentsValues, null, 2));
-                        realVal[event] = eventsSegmentsValues;
+                        realVal[event] = eventsSegmentsValues && eventsSegmentsValues[0];
                     }
                     catch (err) {
-                        console.log("Error: " + err);
+                        console.log("Unique event segment values aggregation failed with error: " + err);
                     }
-
-                });
-                app_results['Unique Event Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
+                }));
+                app_results['Unique Event Segment Values'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // UNIQUE VIEV NAMES
                 defaultVal = DEFAULTS.view_limit;
@@ -293,15 +264,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 let viewsDocuments = viewsCollectionPerApp;
                 viewsDocuments.forEach(document => {
                     if (document && document.view) {
-                        // TODO: Is this check unnecessary?
-                        if (typeof document.view !== "string") {
-                            try {
-                                document.view = String(document.view);
-                            }
-                            catch {
-                                console.log("Failed to convert view name to type String.");
-                            }
-                        }
                         if (realVal.longestViewLength < document.view.length) {
                             realVal.longestViewLength = document.view.length;
                             realVal.longestViewName = document.view;
@@ -354,8 +316,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 // PUSH APP SPECIFIC RESULTS TO ARRAY
                 all_results.push(app_results);
             }
-            // console.log(JSON.stringify(all_results, null, 2));
-            // console.log(all_results);
 
             // CREATE WRITE STREAM AND WRITE IT ALL TO JSON/CSV FILE
             WriteStream.write(JSON.stringify(all_results, null, 2), 'utf8', () => {
