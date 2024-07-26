@@ -235,12 +235,32 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             },
                             {
                                 "$group": {
-                                    "_id": "$meta_v2.k",
-                                    "valuesList": {
-                                        "$push": "$meta_v2.v"
+                                    "_id": null,
+                                    "keyValuePairs": {
+                                        "$push": {
+                                            "k": "$meta_v2.k",
+                                            "v": "$meta_v2.v"
+                                        }
                                     }
                                 }
                             },
+                            {
+                                "$project": {
+                                    "_id": 0, // Exclude the _id field
+                                    "result": {
+                                        "$arrayToObject": {
+                                            "$map": {
+                                                "input": "$keyValuePairs",
+                                                "as": "pair",
+                                                "in": {
+                                                    "k": "$$pair.k",
+                                                    "v": "$$pair.v"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         ]).toArray();
 
                         // console.log(JSON.stringify(eventsSegmentsValues, null, 2));
