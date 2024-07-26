@@ -346,8 +346,8 @@ plugins.setConfigs("logger", {
         if (params.qstring.method === 'collection_info') {
             validateRead(params, FEATURE_NAME, async function(parameters) {
                 try {
-                    var stats = await common.db.collection('logs' + parameters.app_id).aggregate([ { $collStats: { storageStats: { } } } ]).toArray()[0];
-                    common.returnOutput(parameters, {capped: stats?.storageStats?.capped, max: stats?.storageStats?.max});
+                    var stats = await common.db.collection('logs' + parameters.app_id).aggregate([ { $collStats: { storageStats: { } } } ]).toArray();
+                    common.returnOutput(parameters, {capped: stats?.[0]?.storageStats?.capped, max: stats?.[0]?.storageStats?.max});
                 }
                 catch (ex) {
                     console.log("Failed fetching logs collection info: ", ex);
