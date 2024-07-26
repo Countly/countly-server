@@ -772,7 +772,7 @@ plugins.setConfigs("remote-config", {
                             var deviceId = params.qstring.device_id || "";
                             user.random_percentile = remoteConfig.randomPercentile(seed, deviceId);
 
-                            var conditionStatus = remoteConfig.processFilter(params, user, conditionObj.condition);
+                            var conditionStatus = remoteConfig.processFilter(user, conditionObj.condition);
 
                             if (conditionStatus) {
                                 parameterValue = conditionObj.value;
@@ -1057,6 +1057,14 @@ plugins.setConfigs("remote-config", {
             return true;
         }
 
+        if (!condition.condition) {
+            if (params.internal) {
+                return 'Invalid parameter: condition';
+            }
+            common.returnMessage(params, 400, 'Invalid parameter: condition');
+            return true;
+        }
+
         if (typeof condition.condition !== typeof '') {
             condition.condition = JSON.stringify(condition.condition);
         }
@@ -1230,6 +1238,14 @@ plugins.setConfigs("remote-config", {
 
         if (!conditionColor) {
             common.returnMessage(params, 400, 'Invalid parameter: condition_color');
+            return true;
+        }
+
+        if (!condition.condition) {
+            if (params.internal) {
+                return 'Invalid parameter: condition';
+            }
+            common.returnMessage(params, 400, 'Invalid parameter: condition');
             return true;
         }
 
