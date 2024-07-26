@@ -49,6 +49,12 @@
 
 <header>
     
+        
+            
+        
+            
+        
+    
 </header>
 
 <article>
@@ -56,6 +62,35 @@
         <div class="container-overview">
         
             
+                <div class="description usertext"><p>Log provides a wrapper over debug or console functions with log level filtering, module filtering and ability to store log in database.
+Uses configuration require('../config.js').logging:
+{
+'info': ['app', 'auth', 'static'],      // log info and higher level for modules 'app*', 'auth*', 'static*'
+'debug': ['api.users'],                 // log debug and higher (in fact everything) for modules 'api.users*'
+'default': 'warn',                      // log warn and higher for all other modules
+}
+Note that log levels supported are ['debug', 'info', 'warn', 'error']</p>
+<p>Usage is quite simple:
+var log = require('common.js').log('module[:submodule[:subsubmodule]]');
+log.i('something happened: %s, %j', 'string', {obj: 'ect'});
+log.e('something really bad happened: %j', new Error('Oops'));</p>
+<p>Whenever DEBUG is in process.env, log outputs all filtered messages with debug module instead of console so you could have pretty colors in console.
+In other cases only log.d is logged using debug module.</p>
+<p>To control log level at runtime, call require('common.js').log.setLevel('events', 'debug'). From now on 'events' logger will log everything.</p>
+<p>There is also a handy method for generating standard node.js callbacks which log error. Only applicable if no actions in case of error needed:
+collection.find().toArray(log.callback(function(arg1, arg2){ // all good }));</p>
+<ul>
+<li>if error didn't happen, function is called</li>
+<li>if error happened, it will be logged, but function won't be called</li>
+<li>if error happened, arg1 is a first argument AFTER error, it's not an error</li>
+</ul></div>
+            
+
+            
+                
+
+
+
 
 <dl class="details">
     
@@ -125,30 +160,189 @@ collection.find().toArray(log.callback(function(arg1, arg2){ // all good }));</p
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             
-                <div class="description usertext"><p>Log provides a wrapper over debug or console functions with log level filtering, module filtering and ability to store log in database.
-Uses configuration require('../config.js').logging:
-{
-'info': ['app', 'auth', 'static'],      // log info and higher level for modules 'app*', 'auth*', 'static*'
-'debug': ['api.users'],                 // log debug and higher (in fact everything) for modules 'api.users*'
-'default': 'warn',                      // log warn and higher for all other modules
-}
-Note that log levels supported are ['debug', 'info', 'warn', 'error']</p>
-<p>Usage is quite simple:
-var log = require('common.js').log('module[:submodule[:subsubmodule]]');
-log.i('something happened: %s, %j', 'string', {obj: 'ect'});
-log.e('something really bad happened: %j', new Error('Oops'));</p>
-<p>Whenever DEBUG is in process.env, log outputs all filtered messages with debug module instead of console so you could have pretty colors in console.
-In other cases only log.d is logged using debug module.</p>
-<p>To control log level at runtime, call require('common.js').log.setLevel('events', 'debug'). From now on 'events' logger will log everything.</p>
-<p>There is also a handy method for generating standard node.js callbacks which log error. Only applicable if no actions in case of error needed:
-collection.find().toArray(log.callback(function(arg1, arg2){ // all good }));</p>
-<ul>
-<li>if error didn't happen, function is called</li>
-<li>if error happened, it will be logged, but function won't be called</li>
-<li>if error happened, arg1 is a first argument AFTER error, it's not an error</li>
-</ul></div>
+                
+
+    
+
+    <h4 class="name" id="module:api/utils/log"><span class="type-signature"></span>(require("api/utils/log"))<span class="signature">(name)</span><span class="type-signature"> &rarr; {<a href="module-api_utils_log-Logger.html">module:api/utils/log~Logger</a>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Creates new logger object for provided module</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils_log.js.html">utils/log.js</a>, <a href="utils_log.js.html#line282">line 282</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
             
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>name of the module</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>logger object</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="module-api_utils_log-Logger.html">module:api/utils/log~Logger</a></span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
 
             
         
@@ -2194,7 +2388,7 @@ collection.find().toArray(log.callback(function(arg1, arg2){ // all good }));</p
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Fri Jul 26 2024 13:53:41 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a> on Fri Jul 26 2024 14:10:38 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
