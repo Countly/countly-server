@@ -14,8 +14,8 @@ const pluginManager = require('../../../plugins/pluginManager.js');
 // const moment = require('moment-timezone');
 // const drillCommon = require('../../../plugins/drill/api/common.js');
 // const countlyCommon = require('../../../api/lib/countly.common.js');
-// const common = require('../../../api/utils/common.js');
-// const crypto = require('crypto');
+const common = require('../../../api/utils/common.js');
+const crypto = require('crypto');
 // const MAX_RETRIES = 5;
 // const period = 'all'; //supported values are 60days, 30days, 7days, yesterday, all, or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000]
 const app_list = []; //valid app_ids here. If empty array passed, script will process all apps.
@@ -153,7 +153,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 }
 
                 // EVENT KEYS
-                resetValues();
                 defaultVal = DEFAULTS.event_limit;
 
                 let realEvents = eventsCollectionPerApp && eventsCollectionPerApp.list || [];
@@ -165,7 +164,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 app_results['Event Keys'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // SEGMENTS IN ONE EVENT
-                resetValues();
                 defaultVal = DEFAULTS.event_segment_limit;
 
                 let currentEventSegmentLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.api && pluginsCollectionPlugins.api.event_segmentation_limit || undefined;
@@ -174,79 +172,88 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 let eventSegments = eventsCollectionPerApp && eventsCollectionPerApp.segments || {};
                 realVal = Object.entries(eventSegments)
                     .sort((a, b) => b[1].length - a[1].length)
-                    .map(([key, value]) => {
-                        return { [key]: value.length };
-                    });
+                    .reduce((acc, [key, value]) => {
+                        acc[key] = value.length;
+                        return acc;
+                    }, {});
 
                 app_results['Event Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // UNIQUE EVENT SEGMENT VALUES FOR 1 SEGMENT
-                resetValues();
                 defaultVal = DEFAULTS.event_segment_value_limit;
 
                 let currentEventSegmentValueLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.api && pluginsCollectionPlugins.api.event_segmentation_value_limit || undefined;
                 currentVal = currentEventSegmentValueLimit;
 
-                // real values for event segment values
-                // let query = {"_id": {"$regex": "^no-segment_2024:0.*"}};
-                // realEvents.forEach(async(event) => {
-                //     var shortEventName = common.fixEventKey(event);
-                //     var eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + app._id).digest('hex');
+                realVal = {};
+                // TODO: This part is problematic
+                realEvents.forEach(async(event) => {
+                    var shortEventName = common.fixEventKey(event);
+                    var eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + app._id).digest('hex');
 
-                //     // TODO: work in progress
-                //     var result = await countlyDb.collection(eventCollectionName).aggregate([
-                //         {
-                //             $match: query
-                //         },
-                //         {
-                //             "$addFields": {
-                //                 "meta_v2": {
-                //                     "$objectToArray": "$meta_v2"
-                //                 }
-                //             }
-                //         },
-                //         {
-                //             "$addFields": {
-                //                 "meta_v2": {
-                //                     "$map": {
-                //                         "input": "$meta_v2",
-                //                         "as": "item",
-                //                         "in": {
-                //                             "k": "$$item.k",
-                //                             "v": {
-                //                                 "$size": {
-                //                                     "$objectToArray": "$$item.v"
-                //                                 }
-                //                             }
-                //                         }
-                //                     }
-                //                 }
-                //             }
-                //         },
-                //         {
-                //             "$unwind": "$meta_v2"
-                //         },
-                //         {
-                //             "$group": {
-                //                 "_id": "$meta_v2.k",
-                //                 "values": {
-                //                     "$push": "$meta_v2.v"
-                //                 }
-                //             }
-                //         },
-                //         {
-                //             "$project": {
-                //                 "_id": 1,
-                //                 "meta_v2": "$values"
-                //             }
-                //         }
-                //     ], {allowDiskUse: true}).toArray();
-                // });
+                    try {
+                        var eventsSegmentsValues = await countlyDb.collection(eventCollectionName).aggregate([
+                            {
+                                "$match": {
+                                    "_id": {
+                                        "$regex": "^no-segment_2024:0.*"
+                                    }
+                                }
+                            },
+                            {
+                                "$addFields": {
+                                    "meta_v2": {
+                                        "$objectToArray": "$meta_v2"
+                                    }
+                                }
+                            },
+                            {
+                                "$addFields": {
+                                    "meta_v2": {
+                                        "$map": {
+                                            "input": "$meta_v2",
+                                            "as": "item",
+                                            "in": {
+                                                "k": "$$item.k",
+                                                "v": {
+                                                    "$size": {
+                                                        "$objectToArray": "$$item.v"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "$unwind": "$meta_v2"
+                            },
+                            {
+                                "$match": {
+                                    "meta_v2.k": { "$ne": "segments" }
+                                }
+                            },
+                            {
+                                "$group": {
+                                    "_id": "$meta_v2.k",
+                                    "valuesList": {
+                                        "$push": "$meta_v2.v"
+                                    }
+                                }
+                            },
+                        ]).toArray();
 
-                // app_results['Unique Event Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
+                        // console.log(JSON.stringify(eventsSegmentsValues, null, 2));
+                        realVal[event] = eventsSegmentsValues;
+                    }
+                    catch (err) {
+                        console.log("Error: " + err);
+                    }
+
+                });
+                app_results['Unique Event Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // UNIQUE VIEV NAMES
-                resetValues();
                 defaultVal = DEFAULTS.view_limit;
 
                 let currentViewLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.views && pluginsCollectionPlugins.views.view_limit || undefined;
@@ -257,13 +264,12 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 app_results['Unique View Names'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // VIEW NAME LENGTH LIMIT
-                resetValues();
                 defaultVal = DEFAULTS.view_name_limit;
 
                 let currentViewNameLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.views && pluginsCollectionPlugins.views.view_name_limit || undefined;
                 currentVal = currentViewNameLimit;
 
-                realVal = {viewName: "", viewLength: -1};
+                realVal = {longestViewName: "", longestViewLength: -1};
                 let viewsDocuments = viewsCollectionPerApp;
                 viewsDocuments.forEach(document => {
                     if (document && document.view) {
@@ -276,9 +282,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                 console.log("Failed to convert view name to type String.");
                             }
                         }
-                        if (realVal.viewLength < document.view.length) {
-                            realVal.viewLength = document.view.length;
-                            realVal.viewName = document.view;
+                        if (realVal.longestViewLength < document.view.length) {
+                            realVal.longestViewLength = document.view.length;
+                            realVal.longestViewName = document.view;
                         }
                     }
                 });
@@ -286,7 +292,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 app_results['View Name Length Limit'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // SEGMENTS IN ONE VIEW
-                resetValues();
                 defaultVal = DEFAULTS.view_segment_limit;
 
                 let currentViewSegmentLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.views && pluginsCollectionPlugins.views.segment_limit || undefined;
@@ -294,10 +299,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
                 realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0] && viewsSegmentsPerApp[0].numberOfSegments || 0;
 
-                app_results['Segments In One View'] = {"default": defaultVal, "set": currentVal, "real": realVal};
+                app_results['View Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // VIEW SEGMENT'S UNIQUE VALUES
-                resetValues();
                 defaultVal = DEFAULTS.view_segment_value_limit;
 
                 let currentViewSegmentValueLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.views && pluginsCollectionPlugins.views.segment_value_limit || undefined;
@@ -310,7 +314,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 app_results['View Segments Unique Values'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // USER PROPERTIES
-                resetValues();
                 defaultVal = DEFAULTS.custom_prop_limit;
 
                 let currentCustomPropertyLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.users && pluginsCollectionPlugins.users.custom_prop_limit || undefined;
@@ -320,7 +323,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 app_results['Custom User Properties'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // VALUES IN AN ARRAY FOR ONE USER PROPERTY
-                resetValues();
                 defaultVal = DEFAULTS.custom_prop_value_limit;
 
                 let currentCustomPropertyValueLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.users && pluginsCollectionPlugins.users.custom_set_limit || undefined;
@@ -346,12 +348,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     }
     finally {
         close();
-    }
-
-    function resetValues() {
-        realVal = null;
-        defaultVal = null;
-        currentVal = null;
     }
 
     async function getAppList(options) {
