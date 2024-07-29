@@ -5,3 +5,4 @@ require('./condition-endpoints.js');
 require('./fetch-params-from-ab.js');
 require('./fetch-params-from-ab.js');
 require('./ab-method.js');
+require('./parameter-crud/parameter-crud.js');
