@@ -161,9 +161,9 @@ class FCM extends Splitter {
 
                 // new fcm api doesn't allow objects or arrays inside "data" property
                 if (content.data && typeof content.data === "object") {
-                    for (let key in content.data) {
-                        if (content.data[key] && typeof content.data[key] === "object") {
-                            content.data[key] = JSON.stringify(content.data[key]);
+                    for (let prop in content.data) {
+                        if (content.data[prop] && typeof content.data[prop] === "object") {
+                            content.data[prop] = JSON.stringify(content.data[prop]);
                         }
                     }
                 }
