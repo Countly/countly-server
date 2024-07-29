@@ -30,11 +30,11 @@ describe("Common API utility functions", function() {
 
     describe('validateArgs extra types', () => {
         common.db = common.db || {
-            _ObjectID: mongodb.ObjectID
+            _ObjectId: mongodb.ObjectId
         };
 
-        it('should validate ObjectID', () => {
-            let id = mongodb.ObjectID(),
+        it('should validate ObjectId', () => {
+            let id = new mongodb.ObjectId(),
                 scheme = {
                     id: { type: 'ObjectID', required: true },
                     idstr: { type: 'ObjectID', required: true }
@@ -47,9 +47,9 @@ describe("Common API utility functions", function() {
             should.deepEqual(common.validateArgs({id: id.toString(), idstr: id.toString()}, scheme, true), {errors: [], result: true, obj: {id: id, idstr: id}});
         });
 
-        it('should validate ObjectID[]', () => {
-            let id1 = mongodb.ObjectID(),
-                id2 = mongodb.ObjectID(),
+        it('should validate ObjectId[]', () => {
+            let id1 = new mongodb.ObjectId(),
+                id2 = new mongodb.ObjectId(),
                 scheme = {
                     ids: { type: 'ObjectID[]', required: true },
                 };
@@ -67,7 +67,7 @@ describe("Common API utility functions", function() {
         });
 
         it('should validate inner scheme', () => {
-            let id = mongodb.ObjectID(),
+            let id = new mongodb.ObjectId(),
                 scheme = {
                     _id: { type: 'ObjectID', required: true },
                     num: { type: 'Number' },

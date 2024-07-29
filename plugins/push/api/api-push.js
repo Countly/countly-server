@@ -103,7 +103,7 @@ async function processTokenSession(msg) {
 
     log.d('push token: %s/%s/%s', p, f, token);
 
-    let push = await pushCollection.findOne({_id: uid}, {projection: {[field]: 1}});
+    let push = await pushCollection.findOne({_id: uid});
     if (token && (!push || common.dot(push, pushField) !== token)) {
         appusersCollection.updateOne({_id: app_user_id}, {$set: {[appusersField]: hash}}, () => {}); // don't wait
         pushCollection.updateOne({_id: uid}, {$set: {[pushField]: token}}, {upsert: true}, () => {});
