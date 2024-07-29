@@ -34,6 +34,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             return close();
         }
         else {
+            // GETTING DATA FOR SET LIMITS FOR EVENTS, VIEWS, AND CUSTOM PROPERTIES
+            var pluginsCollectionPlugins = await countlyDb.collection("plugins").findOne({"_id": 'plugins'});
+
             // LOOP APPS FOR EACH REQUIREMENT
             for (let i = 0; i < apps.length; i++) {
                 var app = apps[i];
@@ -45,49 +48,38 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         realVal,
                         currentVal;
 
+                    // GETTING DATA PER APP
                     var eventsCollectionPerApp = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
-                    var pluginsCollectionPlugins = await countlyDb.collection("plugins").findOne({"_id": 'plugins'});
                     var viewsCollectionPerApp = await countlyDb.collection("app_viewsmeta" + app._id).find().toArray();
                     var viewsSegmentsPerApp = await countlyDb.collection("views").aggregate([
                         {
                             $match: { "_id": ObjectId(app._id) }
                         },
                         {
-                            $project: {
-                                segments: 1,
-                                numberOfSegments: { $size: { $objectToArray: "$segments" } },
-                                segmentValues: { $objectToArray: "$segments" }
+                            "$addFields": {
+                                "segments": {
+                                    "$objectToArray": "$segments"
+                                }
                             }
                         },
                         {
-                            $unwind: "$segmentValues"
-                        },
-                        {
-                            $addFields: {
-                                segmentName: "$segmentValues.k",
-                                segmentSize: { $size: { $objectToArray: "$segmentValues.v" } }
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: "$_id",
-                                numberOfSegments: { $first: "$numberOfSegments" },
-                                valuesPerSegment: {
-                                    $push: {
-                                        k: "$segmentName",
-                                        v: "$segmentSize"
+                            "$project": {
+                                "_id": 0,
+                                "segments": {
+                                    "$arrayToObject": {
+                                        "$map": {
+                                            "input": "$segments",
+                                            "as": "field",
+                                            "in": {
+                                                "k": "$$field.k",
+                                                "v": { "$size": { "$objectToArray": "$$field.v" } }
+                                            }
+                                        }
                                     }
-                                }
+                                },
+                                "numberOfSegments": { "$size": "$segments" },
                             }
                         },
-                        {
-                            $project: {
-                                numberOfSegments: 1,
-                                valuesPerSegment: {
-                                    $arrayToObject: "$valuesPerSegment"
-                                }
-                            }
-                        }
                     ]).toArray();
                     var customPropsPerApp = await drillDb.collection("drill_meta").aggregate([
                         {
@@ -292,7 +284,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 let currentViewSegmentValueLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.views && pluginsCollectionPlugins.views.segment_value_limit || undefined;
                 currentVal = currentViewSegmentValueLimit;
 
-                realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0] && viewsSegmentsPerApp[0].valuesPerSegment || 0;
+                realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0] && viewsSegmentsPerApp[0].segments || 0;
 
                 app_results['View Segments Unique Values'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
