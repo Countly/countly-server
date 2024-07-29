@@ -64,25 +64,28 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         },
                         {
                             $addFields: {
+                                segmentName: "$segmentValues.k",
                                 segmentSize: { $size: { $objectToArray: "$segmentValues.v" } }
                             }
-                        },
-                        {
-                            $sort: { segmentSize: -1 }
                         },
                         {
                             $group: {
                                 _id: "$_id",
                                 numberOfSegments: { $first: "$numberOfSegments" },
-                                maxSegmentSize: { $first: "$segmentSize" },
-                                maxSegmentValues: { $first: "$segmentValues.v" }
+                                valuesPerSegment: {
+                                    $push: {
+                                        k: "$segmentName",
+                                        v: "$segmentSize"
+                                    }
+                                }
                             }
                         },
                         {
                             $project: {
                                 numberOfSegments: 1,
-                                maxSegmentSize: 1,
-                                maxSegmentValues: 1
+                                valuesPerSegment: {
+                                    $arrayToObject: "$valuesPerSegment"
+                                }
                             }
                         }
                     ]).toArray();
@@ -289,9 +292,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 let currentViewSegmentValueLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.views && pluginsCollectionPlugins.views.segment_value_limit || undefined;
                 currentVal = currentViewSegmentValueLimit;
 
-                let maxSegmentSize = viewsSegmentsPerApp && viewsSegmentsPerApp[0] && viewsSegmentsPerApp[0].maxSegmentSize || 0;
-                let maxSegmentValues = viewsSegmentsPerApp && viewsSegmentsPerApp[0] && viewsSegmentsPerApp[0].maxSegmentValues || 0;
-                realVal = { "Max Segment Length": maxSegmentSize, "Max Segment Values": maxSegmentValues };
+                realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0] && viewsSegmentsPerApp[0].valuesPerSegment || 0;
 
                 app_results['View Segments Unique Values'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
