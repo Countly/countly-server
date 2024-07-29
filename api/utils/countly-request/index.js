@@ -154,13 +154,13 @@ var convertOptionsToGot = function(options) {
 module.exports = function(countlyConfig) {
     // Return the request function
     // eslint-disable-next-line require-jsdoc
-    function requestFunction(uri, options, callback) {
+    function requestFunction(uri, options, callback, config = countlyConfig) {
         if (typeof uri === 'undefined') {
             throw new Error('undefined is not a valid uri or options object.');
         }
 
         // Initialize params with the provided config
-        const params = initParams(uri, options, callback, countlyConfig);
+        const params = initParams(uri, options, callback, config);
 
         // Request logic follows, unchanged from your provided code
         if (params.options && (params.options.url || params.options.uri)) {
