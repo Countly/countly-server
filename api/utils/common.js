@@ -79,6 +79,24 @@ common.escape_html = function(string, more) {
 
     return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
 };
+/**
+ * Function to escape unicode characters
+ * @param {string} str  - string for which to escape
+ * @returns  {string} escaped string
+ */
+common.encodeCharacters = function(str) {
+    try {
+        str = str + "";
+        str = str.replace(/\u0000/g, "&#9647");
+        str.replace(/[^\x00-\x7F]/g, function(c) {
+            return encodeURI(c);
+        });
+        return str;
+    }
+    catch {
+        return str;
+    }
+};
 
 /**
 * Decode escaped html 
