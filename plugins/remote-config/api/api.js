@@ -351,6 +351,27 @@ plugins.setConfigs("remote-config", {
      * @apiQuery {String} app_id Application id
      * @apiQuery {Object} parameter Parameter information
      *
+     * @apiQueryExample {json} Request-Example:
+     * {
+     *   "app_id": "5da8c68cb1ce0e2f34c4f3e6",
+     *   "parameter": "{\"parameter_key\":\"new_feature_enabled\",\"default_value\":false,\"conditions\":[]}"
+     * }
+     * 
+     * @apiSuccess {Number} result Result code (200 for success)
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {}
+     *
+     * @apiError {Number} result Result code (400 or 500 for error)
+     * @apiError {String} message Error message
+     *
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *   "result": 400,
+     *   "message": "Invalid parameter: parameter_key"
+     * }
      */
     /**
      * Function to add a parameter
@@ -395,7 +416,7 @@ plugins.setConfigs("remote-config", {
         parameter.conditions = parameter.conditions || [];
         processParamValue(parameter);
 
-        var maximumParametersAllowed = plugins.getConfig("remote-config").maximum_allowed_parameters;
+        var maximumParametersAllowed = params.qstring.isTest ? 4: plugins.getConfig("remote-config").maximum_allowed_parameters;
         var maximumConditionsAllowed = plugins.getConfig("remote-config").conditions_per_paramaeters;
         var collectionName = "remoteconfig_parameters" + appId;
         parameter.ts = Date.now();
@@ -408,7 +429,7 @@ plugins.setConfigs("remote-config", {
 
         async.series(asyncTasks, function(err) {
             if (err) {
-                var message = 'Failed to add parameter';
+                var message = err?.message || 'Failed to add parameter';
                 if (err.exists) {
                     message = 'The parameter already exists';
                 }
@@ -824,7 +845,29 @@ plugins.setConfigs("remote-config", {
      * @apiQuery {String} app_id Application id
      * @apiQuery {Object} parameter Parameter information
      * @apiQuery {String} parameter_id Id of the parameter which is to be updated
+     * 
+     * @apiQueryExample {json} Request-Example:
+     * {
+     *   "app_id": "5da8c68cb1ce0e2f34c4f3e6",
+     *   "parameter_id": "60a7c1234b1ce0e2f34c4f3e7",
+     *   "parameter": "{\"parameter_key\":\"feature_enabled\",\"default_value\":true,\"conditions\":[]}"
+     * }
      *
+     * @apiSuccess {Number} result Result code (200 for success)
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {}
+     *
+     * @apiError {Number} result Result code (400 or 500 for error)
+     * @apiError {String} message Error message
+     *
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *   "result": 400,
+     *   "message": "Invalid parameter: parameter_key"
+     * }
      */
     /**
      * Function to update parameter
@@ -845,13 +888,19 @@ plugins.setConfigs("remote-config", {
         var parameterId = params.qstring.parameter_id;
         var parameterKey = parameter.parameter_key;
         var defaultValue = parameter.default_value;
+        //var conditionName = parameter.conditions;
 
+        
         var pattern = new RegExp(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
         if (!pattern.test(parameterKey)) {
             common.returnMessage(params, 400, 'Invalid parameter: parameter_key');
             return true;
         }
-
+        // var conditionPattern = new RegExp(/^[a-zA-Z0-9 ]+$/);
+        // if (!conditionName || !conditionPattern.test(conditionName.trim())) {
+        //     common.returnMessage(params, 400, 'Invalid parameter: condition_name');
+        //     return true;
+        // }        
         if (!defaultValue && defaultValue !== false) {
             common.returnMessage(params, 400, 'Invalid parameter: default_value');
             return true;
@@ -863,10 +912,14 @@ plugins.setConfigs("remote-config", {
         processParamValue(parameter);
 
         var collectionName = "remoteconfig_parameters" + appId;
+        
+        //var maximumConditionsAllowed = plugins.getConfig("remote-config").conditions_per_paramaeters;
 
         var asyncTasks = [
             checkMaximumConditionsLimit.bind(null, parameter.conditions, maximumConditionsAllowed),
             checkIfParameterExists.bind(null, appId, parameterKey, parameterId),
+            //checkMaximumConditionsLimit.bind(null, parameter.conditions, maximumConditionsAllowed),
+            //checkIfConditionExists.bind(null, appId, conditionName, null),
             updateParameterInDb.bind(null, params, collectionName, parameterId, parameter)
         ];
 
