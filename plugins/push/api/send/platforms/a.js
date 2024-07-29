@@ -158,6 +158,16 @@ class FCM extends Splitter {
             };
             if (!this.legacyApi) {
                 const tokens = pushes.map(p => p.t);
+
+                // new fcm api doesn't allow objects or arrays inside "data" property
+                if (content.data && typeof content.data === "object") {
+                    for (let key in content.data) {
+                        if (content.data[key] && typeof content.data[key] === "object") {
+                            content.data[key] = JSON.stringify(content.data[key]);
+                        }
+                    }
+                }
+
                 const messages = tokens.map(token => ({
                     token,
                     ...content,
