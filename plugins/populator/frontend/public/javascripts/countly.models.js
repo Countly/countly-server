@@ -1,4 +1,4 @@
-/*global chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, app, moment, CV*/
+/*global chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyPlugins, countlyFunnel, $, app, moment, CV*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_density", "_locale", "_store"],
@@ -2254,27 +2254,39 @@
         }
 
         if (environment && environment.length) {
-            getUsers();
+            countlyPlugins.updateConfigs({
+                "api": {
+                    "safe": true
+                }
+            }, function() {
+                getUsers();
+            });
         }
         else {
-            generateWidgets(function() {
-                generateCampaigns(async function() {
-                    await createUsers();
+            countlyPlugins.updateConfigs({
+                "api": {
+                    "safe": true
+                }
+            }, function() {
+                generateWidgets(function() {
+                    generateCampaigns(async function() {
+                        await createUsers();
 
-                    if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
-                        abExampleName = "Pricing" + abExampleCount++;
-                        generateAbTests(function() {
-                            if (users.length) {
-                                const usersForAbTests = getRandomInt(1, users.length / 2);
-                                for (var i = 0; i < usersForAbTests; i++) {
-                                    users[i].startSessionForAb(users[i]);
+                        if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
+                            abExampleName = "Pricing" + abExampleCount++;
+                            generateAbTests(function() {
+                                if (users.length) {
+                                    const usersForAbTests = getRandomInt(1, users.length / 2);
+                                    for (var i = 0; i < usersForAbTests; i++) {
+                                        users[i].startSessionForAb(users[i]);
+                                    }
                                 }
-                            }
-                        });
-                    }
-                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                        setTimeout(reportConversions, 100);
-                    }
+                            });
+                        }
+                        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                            setTimeout(reportConversions, 100);
+                        }
+                    });
                 });
             });
         }
@@ -2324,15 +2336,21 @@
     };
 
     countlyPopulator.stopGenerating = function(ensureJobs, callback) {
-        stopCallback = callback;
-        generating = false;
+        countlyPlugins.updateConfigs({
+            "api": {
+                "safe": false
+            }
+        }, function() {
+            stopCallback = callback;
+            generating = false;
 
-        if (ensureJobs) {
-            countlyPopulator.ensureJobs();
-        }
-        if (stopCallback) {
-            stopCallback(true);
-        }
+            if (ensureJobs) {
+                countlyPopulator.ensureJobs();
+            }
+            if (stopCallback) {
+                stopCallback(true);
+            }
+        });
     };
 
     countlyPopulator.isGenerating = function() {
