@@ -11,7 +11,7 @@ let APP_ID = testUtils.get("APP_ID");
 describe('Remote Config - Remove Parameter', () => {
     let existingParameterId;
 
-    before(async () => {
+    before(async() => {
         // Create a parameter to remove in our tests
         const resp = await request
             .post('/i/remote-config/add-parameter')
@@ -44,7 +44,7 @@ describe('Remote Config - Remove Parameter', () => {
         existingParameterId = getResp.body.parameters.find(p => p.parameter_key === 'test_remove_key')._id;
     });
 
-    it('Should successfully remove an existing parameter', async () => {
+    it('Should successfully remove an existing parameter', async() => {
         const resp = await request
             .post('/i/remote-config/remove-parameter')
             .send({
@@ -71,7 +71,7 @@ describe('Remote Config - Remove Parameter', () => {
         should(getResp.body.parameters.find(p => p._id === existingParameterId)).be.undefined();
     });
 
-    it('Should handle removing a non-existent parameter', async () => {
+    it('Should handle removing a non-existent parameter', async() => {
         const nonExistentId = 'deadbeefdeadbeefdeadbeef'; // A fake ObjectId
 
         const resp = await request
@@ -82,7 +82,7 @@ describe('Remote Config - Remove Parameter', () => {
                 app_key: APP_KEY,
                 parameter_id: nonExistentId,
             })
-            .expect(200); 
+            .expect(200);
 
         should(resp.body).have.property('result', 'Success');
         // The behavior here matches the function, which doesn't distinguish between

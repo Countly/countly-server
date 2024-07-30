@@ -12,7 +12,7 @@ describe('Remote Config - Update Parameter', () => {
     let parameterIdToUpdate;
     let existingConditionId;
 
-    before(async () => {
+    before(async() => {
         // Create a parameter with a condition to update in our tests
         const resp = await request
             .post('/i/remote-config/add-parameter')
@@ -50,7 +50,7 @@ describe('Remote Config - Update Parameter', () => {
         existingConditionId = createdParameter.conditions[0]._id;
     });
 
-    it('Should successfully update an existing condition with valid data', async () => {
+    it('Should successfully update an existing condition with valid data', async() => {
         const resp = await request
             .post('/i/remote-config/update-parameter')
             .send({
@@ -72,7 +72,7 @@ describe('Remote Config - Update Parameter', () => {
                 }),
             })
             .expect(200);
-        
+
         // Verify the condition was updated
         const getResp = await request
             .get('/o')
@@ -88,7 +88,7 @@ describe('Remote Config - Update Parameter', () => {
         should(updatedParameter.conditions[0].condition_value).equal('updated_condition_value');
     });
 
-    it('Should reject updating a non-existent condition', async () => {
+    it('Should reject updating a non-existent condition', async() => {
         const resp = await request
             .post('/i/remote-config/update-parameter')
             .send({
@@ -110,12 +110,12 @@ describe('Remote Config - Update Parameter', () => {
                 }),
             })
         //.expect(400);
-        .expect(200);
+            .expect(200);
             //TODO:FIX
         //should(resp.body).have.property('result', 'Condition not found');
     });
 
-    it('Should reject updating a condition with an invalid name', async () => {
+    it('Should reject updating a condition with an invalid name', async() => {
         const resp = await request
             .post('/i/remote-config/update-parameter')
             .send({
@@ -137,12 +137,12 @@ describe('Remote Config - Update Parameter', () => {
                 }),
             })
             //.expect(400);
-        .expect(200);
+            .expect(200);
         //TODO:FIX
     //should(resp.body).have.property('result', 'Condition not found');
     });
 
-    it('Should reject updating a parameter without a default value', async () => {
+    it('Should reject updating a parameter without a default value', async() => {
         const resp = await request
             .post('/i/remote-config/update-parameter')
             .send({
@@ -168,7 +168,7 @@ describe('Remote Config - Update Parameter', () => {
     });
 
 
-    after(async () => {
+    after(async() => {
         // Clean up: remove the parameter created during tests
         await request
             .post('/i/remote-config/remove-parameter')
