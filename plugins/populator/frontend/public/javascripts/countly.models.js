@@ -2254,39 +2254,27 @@
         }
 
         if (environment && environment.length) {
-            countlyPlugins.updateConfigs({
-                "api": {
-                    "safe": true
-                }
-            }, function() {
-                getUsers();
-            });
+            getUsers();
         }
         else {
-            countlyPlugins.updateConfigs({
-                "api": {
-                    "safe": true
-                }
-            }, function() {
-                generateWidgets(function() {
-                    generateCampaigns(async function() {
-                        await createUsers();
+            generateWidgets(function() {
+                generateCampaigns(async function() {
+                    await createUsers();
 
-                        if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
-                            abExampleName = "Pricing" + abExampleCount++;
-                            generateAbTests(function() {
-                                if (users.length) {
-                                    const usersForAbTests = getRandomInt(1, users.length / 2);
-                                    for (var i = 0; i < usersForAbTests; i++) {
-                                        users[i].startSessionForAb(users[i]);
-                                    }
+                    if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
+                        abExampleName = "Pricing" + abExampleCount++;
+                        generateAbTests(function() {
+                            if (users.length) {
+                                const usersForAbTests = getRandomInt(1, users.length / 2);
+                                for (var i = 0; i < usersForAbTests; i++) {
+                                    users[i].startSessionForAb(users[i]);
                                 }
-                            });
-                        }
-                        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
-                            setTimeout(reportConversions, 100);
-                        }
-                    });
+                            }
+                        });
+                    }
+                    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web") {
+                        setTimeout(reportConversions, 100);
+                    }
                 });
             });
         }
@@ -2336,21 +2324,15 @@
     };
 
     countlyPopulator.stopGenerating = function(ensureJobs, callback) {
-        countlyPlugins.updateConfigs({
-            "api": {
-                "safe": false
-            }
-        }, function() {
-            stopCallback = callback;
-            generating = false;
+        stopCallback = callback;
+        generating = false;
 
-            if (ensureJobs) {
-                countlyPopulator.ensureJobs();
-            }
-            if (stopCallback) {
-                stopCallback(true);
-            }
-        });
+        if (ensureJobs) {
+            countlyPopulator.ensureJobs();
+        }
+        if (stopCallback) {
+            stopCallback(true);
+        }
     };
 
     countlyPopulator.isGenerating = function() {
