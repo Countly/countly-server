@@ -75,7 +75,6 @@ plugins.setConfigs("remote-config", {
      * @apiQuery {String} [ip_address]  IP address of user to determine user location, if not provided, countly will try to establish ip address based on connection data
      * @apiQuery {String[]} [keys] Only the values mentioned in the array will be fetched
      * @apiQuery {Object} [metrics] JSON object with key value pairs
-     * @apiQuery {Number} [oi] To indicate that user will be enrolled in the returned keys if eligible
      *
      * @apiSuccessExample {body} Success-Response:
      *      HTTP/1.1 200 OK
@@ -416,7 +415,7 @@ plugins.setConfigs("remote-config", {
         parameter.conditions = parameter.conditions || [];
         processParamValue(parameter);
 
-        var maximumParametersAllowed = params.qstring.isTest ? 4: plugins.getConfig("remote-config").maximum_allowed_parameters;
+        var maximumParametersAllowed = params.qstring.isTest ? 4 : plugins.getConfig("remote-config").maximum_allowed_parameters;
         var maximumConditionsAllowed = plugins.getConfig("remote-config").conditions_per_paramaeters;
         var collectionName = "remoteconfig_parameters" + appId;
         parameter.ts = Date.now();
@@ -889,8 +888,6 @@ plugins.setConfigs("remote-config", {
         var parameterKey = parameter.parameter_key;
         var defaultValue = parameter.default_value;
         //var conditionName = parameter.conditions;
-
-        
         var pattern = new RegExp(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
         if (!pattern.test(parameterKey)) {
             common.returnMessage(params, 400, 'Invalid parameter: parameter_key');
@@ -912,13 +909,12 @@ plugins.setConfigs("remote-config", {
         processParamValue(parameter);
 
         var collectionName = "remoteconfig_parameters" + appId;
-        
-        //var maximumConditionsAllowed = plugins.getConfig("remote-config").conditions_per_paramaeters;
+
+        //TODO:validations
 
         var asyncTasks = [
             checkMaximumConditionsLimit.bind(null, parameter.conditions, maximumConditionsAllowed),
             checkIfParameterExists.bind(null, appId, parameterKey, parameterId),
-            //checkMaximumConditionsLimit.bind(null, parameter.conditions, maximumConditionsAllowed),
             //checkIfConditionExists.bind(null, appId, conditionName, null),
             updateParameterInDb.bind(null, params, collectionName, parameterId, parameter)
         ];

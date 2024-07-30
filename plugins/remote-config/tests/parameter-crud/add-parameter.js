@@ -28,7 +28,9 @@ describe('Remote Config - Add Parameter', () => {
             .expect('Content-Type', /json/)
             .expect(400)
             .end((err, res) => {
-                if (err) return done(err);
+                if (err) {
+                    return done(err);
+                }
                 should(res.body).have.property('result', 'Invalid parameter: parameter_key');
                 done();
             });
@@ -52,7 +54,9 @@ describe('Remote Config - Add Parameter', () => {
             .expect('Content-Type', /json/)
             .expect(400)
             .end((err, res) => {
-                if (err) return done(err);
+                if (err) {
+                    return done(err);
+                }
                 should(res.body).have.property('result', 'Invalid parameter: default_value');
                 done();
             });
@@ -77,7 +81,9 @@ describe('Remote Config - Add Parameter', () => {
             .expect('Content-Type', /json/)
             .expect(200)
             .end((err, res) => {
-                if (err) return done(err);
+                if (err) {
+                    return done(err);
+                }
                 done();
             });
     });
@@ -100,8 +106,10 @@ describe('Remote Config - Add Parameter', () => {
                 }),
             })
             .end((err, res) => {
-                if (err) return done(err);
-                
+                if (err) {
+                    return done(err);
+                }
+
                 // Then, try to add the same parameter again
                 request
                     .post('/i/remote-config/add-parameter')
@@ -121,14 +129,16 @@ describe('Remote Config - Add Parameter', () => {
                     .expect('Content-Type', /json/)
                     .expect(500)
                     .end((err, res) => {
-                        if (err) return done(err);
+                        if (err) {
+                            return done(err);
+                        }
                         should(res.body).have.property('result', 'The parameter already exists');
                         done();
                     });
             });
     });
 
-    it('Should reject if maximum number of parameter limit is exceeded', async () => {
+    it('Should reject if maximum number of parameter limit is exceeded', async() => {
         // First, get the current number of parameters
         const initialResp = await request
             .get('/o')
@@ -186,7 +196,7 @@ describe('Remote Config - Add Parameter', () => {
         should(finalResp.body).have.property('result', 'Maximum parameters limit reached');
     });
 
-    after(async () => {
+    after(async() => {
         // Clean up: remove all parameters created during tests
         const resp = await request
             .get('/o')
@@ -198,8 +208,8 @@ describe('Remote Config - Add Parameter', () => {
             })
             .expect(200);
 
-        const parameterIds = resp.body?.parameters?.filter(param => 
-            param.parameter_key.startsWith('test_key_') || 
+        const parameterIds = resp.body?.parameters?.filter(param =>
+            param.parameter_key.startsWith('test_key_') ||
             ['valid_key', 'existing_key'].includes(param.parameter_key)
         ).map(param => param._id);
 
