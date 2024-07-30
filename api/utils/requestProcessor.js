@@ -299,7 +299,7 @@ const processRequest = (params) => {
                     common.returnMessage(params, 400, 'Invalid parameter "requests"');
                     return false;
                 }
-                if ((params.qstring.safe_api_response || !plugins.getConfig("api", params.app && params.app.plugins, true).safe) && !params.res.finished) {
+                if ((!params.qstring.safe_api_response || !plugins.getConfig("api", params.app && params.app.plugins, true).safe) && !params.res.finished) {
                     common.returnMessage(params, 200, 'Success');
                 }
                 common.blockResponses(params);
