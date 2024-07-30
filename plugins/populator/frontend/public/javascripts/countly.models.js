@@ -1,4 +1,4 @@
-/*global chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyPlugins, countlyFunnel, $, app, moment, CV*/
+/*global chance, CountlyHelpers, countlyAuth, countlyGlobal, countlyCommon, countlyCohorts, countlyFunnel, $, app, moment, CV*/
 (function(countlyPopulator) {
     var metric_props = {
         mobile: ["_os", "_os_version", "_resolution", "_device", "_device_type", "_manufacturer", "_carrier", "_density", "_locale", "_store"],
