@@ -13,7 +13,7 @@ const pathToFile = './'; // path to save json files
 const WriteStream = fs.createWriteStream(pathToFile + `setting_limits_and_values.json`);
 const pluginManager = require('../../../plugins/pluginManager.js');
 const app_list = []; // valid app_ids here. If empty array passed, script will process all apps.
-const DEFAULTS = {
+const DEFAULT_LIMITS = {
     event_limit: 500,
     event_segment_limit: 100,
     event_segment_value_limit: 1000,
@@ -48,7 +48,23 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         realVal,
                         currentVal;
 
-                    // GETTING DATA PER APP
+                    // SETTING UP CURRENT SET LIMITS PER APP
+                    var appsCollectionPerApp = await countlyDb.collection("apps").findOne({"_id": ObjectId(app._id)});
+                    var CURRENT_LIMITS = {
+                        // TODO: Coudln't find examples of limits for views and custom props in master server apps collection either
+                        // Make sure they're correct in structure, if all are supposed to be under appsCollectionPerApp.plugins, might as well make that final result above
+                        event_limit: appsCollectionPerApp?.plugins?.api?.event_limit || pluginsCollectionPlugins?.api?.event_limit || DEFAULT_LIMITS.event_limit,
+                        event_segment_limit: appsCollectionPerApp?.plugins?.api?.event_segmentation_limit || pluginsCollectionPlugins?.api?.event_segmentation_limit || DEFAULT_LIMITS.event_segment_limit,
+                        event_segment_value_limit: appsCollectionPerApp?.plugins?.api?.event_segmentation_value_limit || pluginsCollectionPlugins?.api?.event_segmentation_value_limit || DEFAULT_LIMITS.event_segmentation_value_limit,
+                        view_limit: appsCollectionPerApp?.plugins?.views?.view_limit || pluginsCollectionPlugins?.views?.view_limit || DEFAULT_LIMITS.view_limit,
+                        view_name_limit: appsCollectionPerApp?.plugins?.views?.view_name_limit || pluginsCollectionPlugins?.views?.view_name_limit || DEFAULT_LIMITS.view_name_limit,
+                        view_segment_limit: appsCollectionPerApp?.plugins?.views?.segment_limit || pluginsCollectionPlugins?.views?.segment_limit || DEFAULT_LIMITS.view_segment_limit,
+                        view_segment_value_limit: appsCollectionPerApp?.plugins?.views?.segment_value_limit || pluginsCollectionPlugins?.views?.segment_value_limit || DEFAULT_LIMITS.view_segment_value_limit,
+                        custom_prop_limit: appsCollectionPerApp?.plugins?.users?.custom_prop_limit || pluginsCollectionPlugins?.users?.custom_prop_limit || DEFAULT_LIMITS.custom_prop_limit,
+                        custom_prop_value_limit: appsCollectionPerApp?.plugins?.users?.custom_set_limit || pluginsCollectionPlugins?.users?.custom_set_limit || DEFAULT_LIMITS.custom_prop_value_limit,
+                    };
+
+                    // GETTING REAL DATA PER APP
                     var eventsCollectionPerApp = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
                     var viewsCollectionPerApp = await countlyDb.collection("app_viewsmeta" + app._id).find().toArray();
                     var viewsSegmentsPerApp = await countlyDb.collection("views").aggregate([
@@ -56,19 +72,12 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             $match: { "_id": ObjectId(app._id) }
                         },
                         {
-                            "$addFields": {
-                                "segments": {
-                                    "$objectToArray": "$segments"
-                                }
-                            }
-                        },
-                        {
                             "$project": {
                                 "_id": 0,
                                 "segments": {
                                     "$arrayToObject": {
                                         "$map": {
-                                            "input": "$segments",
+                                            "input": { "$objectToArray": "$segments" },
                                             "as": "field",
                                             "in": {
                                                 "k": "$$field.k",
@@ -77,9 +86,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                         }
                                     }
                                 },
-                                "numberOfSegments": { "$size": "$segments" },
+                                "numberOfSegments": { "$size": { "$objectToArray": "$segments" } }
                             }
-                        },
+                        }
                     ]).toArray();
                     var customPropsPerApp = await drillDb.collection("drill_meta").aggregate([
                         {
@@ -87,24 +96,13 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         },
                         {
                             $project: {
-                                customProperties: { $objectToArray: "$custom" }
+                                customPropertiesCount: {
+                                    $size: {
+                                        $ifNull: [{ $objectToArray: "$custom" }, []]
+                                    }
+                                }
                             }
                         },
-                        {
-                            $unwind: "$customProperties"
-                        },
-                        {
-                            $group: {
-                                _id: "$_id",
-                                customPropertiesCount: { $sum: 1 }
-                            }
-                        },
-                        {
-                            $project: {
-                                _id: 0,
-                                customPropertiesCount: 1
-                            }
-                        }
                     ]).toArray();
                     var valueFieldCounts = await drillDb.collection("drill_meta").aggregate([
                         {
@@ -112,50 +110,37 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         },
                         {
                             $project: {
+                                _id: 0,
                                 field: { $arrayElemAt: [{ $split: ["$_id", "."] }, -1] },
                                 valueFieldCount: { $size: { $objectToArray: "$values" } }
                             }
                         },
-                        {
-                            $group: {
-                                _id: null,
-                                fields: {
-                                    $push: {
-                                        k: "$field",
-                                        v: "$valueFieldCount"
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            $replaceRoot: {
-                                newRoot: {
-                                    $arrayToObject: "$fields"
-                                }
-                            }
-                        }
                     ]).toArray();
+                    valueFieldCounts = valueFieldCounts.reduce((acc, item) => {
+                        acc[item.field] = item.valueFieldCount;
+                        return acc;
+                    }, {});
+
+                    console.log(JSON.stringify(valueFieldCounts, null, 2));
                 }
                 catch (err) {
                     console.log("Mongodb operation failed for app: ", app.name, err);
                 }
 
                 // EVENT KEYS
-                defaultVal = DEFAULTS.event_limit;
+                defaultVal = DEFAULT_LIMITS.event_limit;
 
-                let realEvents = eventsCollectionPerApp && eventsCollectionPerApp.list || [];
+                currentVal = CURRENT_LIMITS.event_limit;
+
+                let realEvents = eventsCollectionPerApp?.list || [];
                 realVal = realEvents.length;
-
-                let currentEventLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.api && pluginsCollectionPlugins.api.event_limit || undefined;
-                currentVal = currentEventLimit;
 
                 app_results['Event Keys'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // SEGMENTS IN ONE EVENT
-                defaultVal = DEFAULTS.event_segment_limit;
+                defaultVal = DEFAULT_LIMITS.event_segment_limit;
 
-                let currentEventSegmentLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.api && pluginsCollectionPlugins.api.event_segmentation_limit || undefined;
-                currentVal = currentEventSegmentLimit;
+                currentVal = CURRENT_LIMITS.event_segment_limit;
 
                 let eventSegments = eventsCollectionPerApp && eventsCollectionPerApp.segments || {};
                 realVal = Object.entries(eventSegments)
@@ -168,10 +153,10 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 app_results['Event Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // UNIQUE EVENT SEGMENT VALUES FOR 1 SEGMENT
-                defaultVal = DEFAULTS.event_segment_value_limit;
+                defaultVal = DEFAULT_LIMITS.event_segment_value_limit;
 
-                let currentEventSegmentValueLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.api && pluginsCollectionPlugins.api.event_segmentation_value_limit || undefined;
-                currentVal = currentEventSegmentValueLimit;
+                currentVal = CURRENT_LIMITS.event_segment_value_limit;
+
                 realVal = {};
                 await Promise.all(realEvents.map(async(event) => {
                     var shortEventName = common.fixEventKey(event);
@@ -185,15 +170,24 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                 }
                             },
                             {
-                                "$addFields": {
+                                "$project": {
+                                    "_id": 0,
                                     "meta_v2": {
-                                        "$objectToArray": "$meta_v2"
+                                        "$map": {
+                                            "input": {
+                                                "$objectToArray": "$meta_v2"
+                                            },
+                                            "in": {
+                                                "k": "$$this.k",
+                                                "v": {
+                                                    "$size": {
+                                                        "$objectToArray": "$$this.v"
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
-                            },
-                            {
-                                "$project":
-                                {"meta_v2": {"$map": {"input": "$meta_v2", "in": {"k": "$$this.k", "v": {"$size": {"$objectToArray": "$$this.v"}}}}}}
                             },
                             {
                                 "$unwind": "$meta_v2"
@@ -202,36 +196,20 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                 "$match": {
                                     "meta_v2.k": { "$ne": "segments" }
                                 }
-                            },
-                            {
-                                "$group": {
-                                    "_id": null,
-                                    "fields": {
-                                        "$push": {
-                                            "k": "$meta_v2.k",
-                                            "v": "$meta_v2.v"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                "$replaceRoot": {
-                                    "newRoot": {
-                                        "$arrayToObject": {
-                                            "$map": {
-                                                "input": "$fields",
-                                                "as": "field",
-                                                "in": {
-                                                    "k": "$$field.k",
-                                                    "v": "$$field.v"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         ]).toArray();
-                        realVal[event] = eventsSegmentsValues && eventsSegmentsValues[0];
+
+                        // Use reduce to transform array
+                        eventsSegmentsValues = eventsSegmentsValues.reduce((acc, item) => {
+                            const key = item.meta_v2.k;
+                            if (!acc[key]) {
+                                acc[key] = 0;
+                            }
+                            acc[key] += item.meta_v2.v;
+                            return acc;
+                        }, {});
+
+                        realVal[event] = eventsSegmentsValues ;
                     }
                     catch (err) {
                         console.log("Unique event segment values aggregation failed with error: " + err);
@@ -240,20 +218,18 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 app_results['Unique Event Segment Values'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // UNIQUE VIEV NAMES
-                defaultVal = DEFAULTS.view_limit;
+                defaultVal = DEFAULT_LIMITS.view_limit;
 
-                let currentViewLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.views && pluginsCollectionPlugins.views.view_limit || undefined;
-                currentVal = currentViewLimit;
+                currentVal = CURRENT_LIMITS.view_limit;
 
                 realVal = viewsCollectionPerApp.length;
 
                 app_results['Unique View Names'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // VIEW NAME LENGTH LIMIT
-                defaultVal = DEFAULTS.view_name_limit;
+                defaultVal = DEFAULT_LIMITS.view_name_limit;
 
-                let currentViewNameLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.views && pluginsCollectionPlugins.views.view_name_limit || undefined;
-                currentVal = currentViewNameLimit;
+                currentVal = CURRENT_LIMITS.view_name_limit;
 
                 realVal = {longestViewName: "", longestViewLength: -1};
                 let viewsDocuments = viewsCollectionPerApp;
@@ -269,41 +245,37 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 app_results['View Name Length Limit'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // SEGMENTS IN ONE VIEW
-                defaultVal = DEFAULTS.view_segment_limit;
+                defaultVal = DEFAULT_LIMITS.view_segment_limit;
 
-                let currentViewSegmentLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.views && pluginsCollectionPlugins.views.segment_limit || undefined;
-                currentVal = currentViewSegmentLimit;
+                currentVal = CURRENT_LIMITS.view_segment_limit;
 
                 realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0] && viewsSegmentsPerApp[0].numberOfSegments || 0;
 
                 app_results['View Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // VIEW SEGMENT'S UNIQUE VALUES
-                defaultVal = DEFAULTS.view_segment_value_limit;
+                defaultVal = DEFAULT_LIMITS.view_segment_value_limit;
 
-                let currentViewSegmentValueLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.views && pluginsCollectionPlugins.views.segment_value_limit || undefined;
-                currentVal = currentViewSegmentValueLimit;
+                currentVal = CURRENT_LIMITS.view_segment_value_limit;
 
                 realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0] && viewsSegmentsPerApp[0].segments || 0;
 
                 app_results['View Segments Unique Values'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // USER PROPERTIES
-                defaultVal = DEFAULTS.custom_prop_limit;
+                defaultVal = DEFAULT_LIMITS.custom_prop_limit;
 
-                let currentCustomPropertyLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.users && pluginsCollectionPlugins.users.custom_prop_limit || undefined;
-                currentVal = currentCustomPropertyLimit;
+                currentVal = CURRENT_LIMITS.custom_prop_limit;
 
                 realVal = customPropsPerApp && customPropsPerApp[0] && customPropsPerApp[0].customPropertiesCount || 0;
                 app_results['Custom User Properties'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // VALUES IN AN ARRAY FOR ONE USER PROPERTY
-                defaultVal = DEFAULTS.custom_prop_value_limit;
+                defaultVal = DEFAULT_LIMITS.custom_prop_value_limit;
 
-                let currentCustomPropertyValueLimit = pluginsCollectionPlugins && pluginsCollectionPlugins.users && pluginsCollectionPlugins.users.custom_set_limit || undefined;
-                currentVal = currentCustomPropertyValueLimit;
+                currentVal = CURRENT_LIMITS.custom_prop_value_limit;
 
-                realVal = valueFieldCounts && valueFieldCounts[0] || undefined;
+                realVal = valueFieldCounts || undefined;
                 app_results['Values In Array For One User Property'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // PUSH APP SPECIFIC RESULTS TO ARRAY
