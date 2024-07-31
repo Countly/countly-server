@@ -51,17 +51,15 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     // SETTING UP CURRENT SET LIMITS PER APP
                     var appsCollectionPerApp = await countlyDb.collection("apps").findOne({"_id": ObjectId(app._id)});
                     var CURRENT_LIMITS = {
-                        // TODO: Coudln't find examples of limits for views and custom props in master server apps collection either
-                        // Make sure they're correct in structure, if all are supposed to be under appsCollectionPerApp.plugins, might as well make that final result above
                         event_limit: appsCollectionPerApp?.plugins?.api?.event_limit || pluginsCollectionPlugins?.api?.event_limit || DEFAULT_LIMITS.event_limit,
                         event_segment_limit: appsCollectionPerApp?.plugins?.api?.event_segmentation_limit || pluginsCollectionPlugins?.api?.event_segmentation_limit || DEFAULT_LIMITS.event_segment_limit,
                         event_segment_value_limit: appsCollectionPerApp?.plugins?.api?.event_segmentation_value_limit || pluginsCollectionPlugins?.api?.event_segmentation_value_limit || DEFAULT_LIMITS.event_segmentation_value_limit,
-                        view_limit: appsCollectionPerApp?.plugins?.views?.view_limit || pluginsCollectionPlugins?.views?.view_limit || DEFAULT_LIMITS.view_limit,
-                        view_name_limit: appsCollectionPerApp?.plugins?.views?.view_name_limit || pluginsCollectionPlugins?.views?.view_name_limit || DEFAULT_LIMITS.view_name_limit,
-                        view_segment_limit: appsCollectionPerApp?.plugins?.views?.segment_limit || pluginsCollectionPlugins?.views?.segment_limit || DEFAULT_LIMITS.view_segment_limit,
-                        view_segment_value_limit: appsCollectionPerApp?.plugins?.views?.segment_value_limit || pluginsCollectionPlugins?.views?.segment_value_limit || DEFAULT_LIMITS.view_segment_value_limit,
-                        custom_prop_limit: appsCollectionPerApp?.plugins?.users?.custom_prop_limit || pluginsCollectionPlugins?.users?.custom_prop_limit || DEFAULT_LIMITS.custom_prop_limit,
-                        custom_prop_value_limit: appsCollectionPerApp?.plugins?.users?.custom_set_limit || pluginsCollectionPlugins?.users?.custom_set_limit || DEFAULT_LIMITS.custom_prop_value_limit,
+                        view_limit: pluginsCollectionPlugins?.views?.view_limit || DEFAULT_LIMITS.view_limit,
+                        view_name_limit: pluginsCollectionPlugins?.views?.view_name_limit || DEFAULT_LIMITS.view_name_limit,
+                        view_segment_limit: pluginsCollectionPlugins?.views?.segment_limit || DEFAULT_LIMITS.view_segment_limit,
+                        view_segment_value_limit: pluginsCollectionPlugins?.views?.segment_value_limit || DEFAULT_LIMITS.view_segment_value_limit,
+                        custom_prop_limit: pluginsCollectionPlugins?.users?.custom_prop_limit || DEFAULT_LIMITS.custom_prop_limit,
+                        custom_prop_value_limit: pluginsCollectionPlugins?.users?.custom_set_limit || DEFAULT_LIMITS.custom_prop_value_limit,
                     };
 
                     // GETTING REAL DATA PER APP
