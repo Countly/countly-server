@@ -1,7 +1,9 @@
 <cly-drawer
   @submit="onSubmit"
   @copy="onCopy"
+  @open="handleOpen"
   :title="title"
+  ref="clyDrawer"
   :saveButtonLabel="saveButtonLabel"
   v-bind="controls">
   <template v-slot:default="drawerScope">

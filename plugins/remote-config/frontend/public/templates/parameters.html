@@ -44,7 +44,7 @@
         </el-table-column>
         <el-table-column min-width="160" prop="description" :label="i18n('remote-config.description')">
           <template v-slot:default="rowScope">
-            {{rowScope.row.description || "-"}}
+            {{displayDescription(rowScope.row.description)}}
           </template>
         </el-table-column>
         <el-table-column min-width="160" prop="ts" :label="i18n('remote-config.parameter.created')" sortable="custom">
