@@ -325,6 +325,7 @@
     });
     var ParametersDrawer = countlyVue.views.create({
         template: CV.T("/remote-config/templates/parameters-drawer.html"),
+        mixins: [countlyVue.mixins.commonFormatters],
         components: {
             "json-editor": JsonEditor,
 
@@ -378,6 +379,11 @@
             };
         },
         methods: {
+            handleOpen: function() {
+                if (this.$refs.clyDrawer.editedObject.description) {
+                    this.$refs.clyDrawer.editedObject.description = this.unescapeHtml(this.$refs.clyDrawer.editedObject.description);
+                }
+            },
             getOffset: function() {
                 var activeAppId = countlyCommon.ACTIVE_APP_ID;
                 var timeZone = countlyGlobal.apps[activeAppId].timezone ? countlyGlobal.apps[activeAppId].timezone : 'UTC';
@@ -481,7 +487,7 @@
                         doc.expiry_dttm = doc.expiry_dttm - new Date().getTimezoneOffset() * 60 * 1000;
                     }
                     this.showExpirationDate = false;
-                    this.defaultValue = doc.default_value;
+                    this.defaultValue = doc.default_value + '';
 
                     if (doc.description === "-") {
                         doc.description = "";
@@ -550,6 +556,7 @@
     });
     var ConditionsDrawer = countlyVue.views.create({
         template: CV.T("/remote-config/templates/conditions-drawer.html"),
+        mixins: [countlyVue.mixins.commonFormatters],
         props: {
             controls: {
                 type: Object
@@ -604,6 +611,11 @@
             };
         },
         methods: {
+            handleOpen: function() {
+                if (this.$refs.clyDrawer.editedObject.condition_description) {
+                    this.$refs.clyDrawer.editedObject.condition_description = this.unescapeHtml(this.$refs.clyDrawer.editedObject.condition_description);
+                }
+            },
             onSubmit: function(doc) {
                 var self = this;
                 doc.condition_color = this.selectedTag.value ? this.selectedTag.value : 1;
@@ -706,6 +718,13 @@
             }
         },
         methods: {
+            displayDescription: function(description) {
+                if (description && description.length) {
+                    return this.unescapeHtml(description);
+                }
+
+                return '-';
+            },
             getOffset: function() {
                 var activeAppId = countlyCommon.ACTIVE_APP_ID;
                 var timeZone = countlyGlobal.apps[activeAppId].timezone ? countlyGlobal.apps[activeAppId].timezone : 'UTC';
@@ -829,6 +848,13 @@
             }
         },
         methods: {
+            displayDescription: function(description) {
+                if (description && description.length) {
+                    return this.unescapeHtml(description);
+                }
+
+                return '-';
+            },
             create: function() {
                 this.openDrawer("conditions", countlyRemoteConfig.factory.conditions.getEmpty());
             },
@@ -881,6 +907,7 @@
 
     var MainComponent = countlyVue.views.BaseView.extend({
         template: "#remote-config-main",
+        mixins: [countlyVue.mixins.commonFormatters],
         data: function() {
             var tabs = [
                 {
@@ -912,7 +939,7 @@
         methods: {
             refresh: function() {
                 this.$store.dispatch("countlyRemoteConfig/initialize");
-            }
+            },
         }
     });
 
