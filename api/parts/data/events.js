@@ -407,7 +407,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
         params.time = time;
     }
 
-    if (!pluginsGetConfig.safe) {
+    if (!pluginsGetConfig.safe && (!params.safe_api_response || !params.qstring.safe_api_response)) {
         for (let collection in eventCollections) {
             if (eventSegmentsZeroes[collection] && eventSegmentsZeroes[collection].length) {
                 for (let i = 0; i < eventSegmentsZeroes[collection].length; i++) {
