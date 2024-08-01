@@ -3196,6 +3196,9 @@ const processBulkRequest = (i, requests, params) => {
 
     params.req.body = JSON.stringify(requests[i]);
 
+    if (params.qstring.safe_api_response) {
+        requests[i].safe_api_response = true;
+    }
     const tmpParams = {
         'app_id': '',
         'app_cc': '',
@@ -3210,8 +3213,7 @@ const processBulkRequest = (i, requests, params) => {
         'req': params.req,
         'promises': [],
         'bulk': true,
-        'populator': params.qstring.populator,
-        'safe_api_response': params.qstring.safe_api_response,
+        'populator': params.qstring.populator
     };
 
     tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
@@ -3365,13 +3367,13 @@ function validateRedirect(ob) {
                 log.e("Redirect error", error, body, opts, app, params);
             }
 
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.safe_api_response) {
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
                 common.returnMessage(params, code, message);
             }
         });
         params.cancelRequest = "Redirected: " + app.redirect_url;
         params.waitForResponse = false;
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.safe_api_response) {
+        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
             params.waitForResponse = true;
         }
         return false;
