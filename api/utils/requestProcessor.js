@@ -3193,12 +3193,10 @@ const processBulkRequest = (i, requests, params) => {
     if (!requests[i] || (!requests[i].app_key && !appKey)) {
         return processBulkRequest(i + 1, requests, params);
     }
-
-    params.req.body = JSON.stringify(requests[i]);
-
     if (params.qstring.safe_api_response) {
         requests[i].safe_api_response = true;
     }
+    params.req.body = JSON.stringify(requests[i]);
     const tmpParams = {
         'app_id': '',
         'app_cc': '',
