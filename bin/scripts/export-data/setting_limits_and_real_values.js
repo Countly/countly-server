@@ -118,8 +118,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         acc[item.field] = item.valueFieldCount;
                         return acc;
                     }, {});
-
-                    console.log(JSON.stringify(valueFieldCounts, null, 2));
                 }
                 catch (err) {
                     console.log("Mongodb operation failed for app: ", app.name, err);
@@ -161,10 +159,16 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     var eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + app._id).digest('hex');
 
                     try {
+                        var regexes = [
+                            "^no-segment_2023:0.*",
+                            "^no-segment_2024:0.*"
+                        ];
                         var eventsSegmentsValues = await countlyDb.collection(eventCollectionName).aggregate([
                             {
                                 "$match": {
-                                    "_id": { "$regex": "^no-segment_2024:0.*" }
+                                    "$or": regexes.map(pattern => ({
+                                        "_id": { "$regex": pattern }
+                                    }))
                                 }
                             },
                             {
@@ -207,7 +211,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             return acc;
                         }, {});
 
-                        realVal[event] = eventsSegmentsValues ;
+                        if (Object.keys(eventsSegmentsValues).length > 0) {
+                            realVal[event] = eventsSegmentsValues;
+                        }
                     }
                     catch (err) {
                         console.log("Unique event segment values aggregation failed with error: " + err);
@@ -247,7 +253,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
                 currentVal = CURRENT_LIMITS.view_segment_limit;
 
-                realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0] && viewsSegmentsPerApp[0].numberOfSegments || 0;
+                realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0]?.numberOfSegments || 0;
 
                 app_results['View Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
@@ -256,8 +262,12 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
                 currentVal = CURRENT_LIMITS.view_segment_value_limit;
 
-                realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0] && viewsSegmentsPerApp[0].segments || 0;
-
+                realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0]?.segments || 0;
+                Object.keys(realVal).forEach(key => {
+                    if (realVal[key] === 0) {
+                        delete realVal[key];
+                    }
+                });
                 app_results['View Segments Unique Values'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // USER PROPERTIES
@@ -265,7 +275,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
                 currentVal = CURRENT_LIMITS.custom_prop_limit;
 
-                realVal = customPropsPerApp && customPropsPerApp[0] && customPropsPerApp[0].customPropertiesCount || 0;
+                realVal = customPropsPerApp && customPropsPerApp[0]?.customPropertiesCount || 0;
                 app_results['Custom User Properties'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
                 // VALUES IN AN ARRAY FOR ONE USER PROPERTY
