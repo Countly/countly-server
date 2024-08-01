@@ -64,7 +64,22 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
                     // GETTING REAL DATA PER APP
                     var eventsCollectionPerApp = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
-                    var viewsCollectionPerApp = await countlyDb.collection("app_viewsmeta" + app._id).find().toArray();
+                    var viewsCountsPerApp = await countlyDb.collection("app_viewsmeta" + app._id).countDocuments();
+                    var viewsCollectionPerApp = await countlyDb.collection("app_viewsmeta" + app._id).aggregate([
+                        {
+                            $addFields: {
+                                max_length: { $strLenCP: "$view" }
+                            }
+                        },
+                        {
+                            $sort: {
+                                max_length: -1
+                            }
+                        },
+                        {
+                            $limit: 1
+                        }
+                    ]).toArray();
                     var viewsSegmentsPerApp = await countlyDb.collection("views").aggregate([
                         {
                             $match: { "_id": ObjectId(app._id) }
@@ -226,7 +241,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
                 currentVal = CURRENT_LIMITS.view_limit;
 
-                realVal = viewsCollectionPerApp.length;
+                realVal = viewsCountsPerApp;
 
                 app_results['Unique View Names'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
@@ -235,16 +250,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
                 currentVal = CURRENT_LIMITS.view_name_limit;
 
-                realVal = {longestViewName: "", longestViewLength: -1};
-                let viewsDocuments = viewsCollectionPerApp;
-                viewsDocuments.forEach(document => {
-                    if (document && document.view) {
-                        if (realVal.longestViewLength < document.view.length) {
-                            realVal.longestViewLength = document.view.length;
-                            realVal.longestViewName = document.view;
-                        }
-                    }
-                });
+                realVal = {longestViewName: "", longestViewLength: 0};
+                realVal.longestViewName = viewsCollectionPerApp && viewsCollectionPerApp[0] && viewsCollectionPerApp[0]?.view;
+                realVal.longestViewLength = viewsCollectionPerApp && viewsCollectionPerApp[0] && viewsCollectionPerApp[0]?.max_length;
 
                 app_results['View Name Length Limit'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
