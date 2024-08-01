@@ -1,3 +1,38 @@
+## Version 24.05.6
+Fixes:
+- [data-manager] Fix for event deletion timeout
+- [alerts] Fix for special character problem in value part for all data types
+- [scripts] Fix for old views script
+- [server-stats] Add monthly data points endpoint
+
+Enterprise fixes:
+- [config-transfer] Correct check when adding config transfer menu item
+- [users] Changes to show sample document download for all users
+- [funnels] Prevent autofill from Chrome on inputs
+- [drill] Fix for case when it is not possible to download table in drill
+- [surveys] Update popup height attribute in survey widgets
+- [license] Get correct license metric values
+- [okta] Add config extender code for OKTA
+
+## Version 24.05.5
+Fixes:
+- [push] p12 file parsing bug fixed
+- [views] script to delete old views
+
+Enterprise fixes:
+- [active_users] Fixes for Active users recalculation
+
+## Version 24.05.4
+Fixes:
+- [core] Make sure Unicode characters are escaped for events segment values on incoming data
+- [dashboard] Small UI fixes for dealing with unexpected appid values
+
+Features:
+- [core]  Script for getting document counts of drill collections
+
+Enterprise fixes:
+- [drill] Make sure Unicode characters are escaped for events segment values on incoming data
+
 ## Version 24.05.3
 Fixes:
 - [core] Bugfix for newsletter check
