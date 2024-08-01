@@ -1048,7 +1048,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (typeof args[arg] === 'string') {
                         if (mongodb.ObjectId.isValid(args[arg])) {
-                            parsed = mongodb.ObjectId(args[arg]);
+                            parsed = new mongodb.ObjectId(args[arg]);
                         }
                         else {
                             if (returnErrors) {
@@ -3412,7 +3412,7 @@ common.mergeQuery = function(ob1, ob2) {
 common.dbext = {
     ObjectID: function(id) {
         try {
-            return mongodb.ObjectId(id);
+            return new mongodb.ObjectId(id);
         }
         catch (ex) {
             return id;
@@ -3438,7 +3438,7 @@ common.dbext = {
      * @returns {ObjectID} id
      */
     oid: function(id) {
-        return !id ? id : id instanceof mongodb.ObjectId ? id : mongodb.ObjectId(id);
+        return !id ? id : id instanceof mongodb.ObjectId ? id : new mongodb.ObjectId(id);
     },
 
     /**

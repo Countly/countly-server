@@ -415,8 +415,8 @@ describe('Testing event settings', function() {
         if (plugins.isPluginEnabled('drill')) {
             it('checking if drill db ', function(done) {
                 var event = crypto.createHash('sha1').update("test3" + APP_ID).digest('hex');
-                dbdrill.collection("drill_meta" + APP_ID).findOne({_id: "meta_" + event}, function(err, res) {
-                    res.should.have.property("sg", {"my_segment": {"type": "s"}, "my_segment2": {"type": "l", "values": {"value": true}}});
+                dbdrill.collection("drill_meta").findOne({_id: APP_ID + "_meta_" + event}, function(err, res) {
+                    res.should.have.property("sg", {"my_segment": {"type": "s"}, "my_segment2": {"type": "l"}});
                     done();
                 });
             });
@@ -528,7 +528,7 @@ describe('Testing event settings', function() {
         if (plugins.isPluginEnabled('drill')) {
             it('checking if drill db ', function(done) {
                 var event = crypto.createHash('sha1').update("t1" + APP_ID).digest('hex');
-                dbdrill.collection("drill_meta" + APP_ID).findOne({_id: "meta_" + event}, function(err, res) {
+                dbdrill.collection("drill_meta").findOne({_id: APP_ID + "_meta_" + event}, function(err, res) {
                     res.should.have.property("sg", {"s": {"type": "s"}});
                     done();
                 });
@@ -536,7 +536,7 @@ describe('Testing event settings', function() {
 
             it('check if biglist removed ', function(done) {
                 var event = crypto.createHash('sha1').update("t1" + APP_ID).digest('hex');
-                dbdrill.collection("drill_meta" + APP_ID).findOne({_id: {$in: ["meta_" + event + "_sg.s"]}}, function(err, res) {
+                dbdrill.collection("drill_meta").findOne({_id: {$in: [APP_ID + "_meta_" + event + "_sg.s"]}}, function(err, res) {
                     if (!res) {
                         done();
                     }
