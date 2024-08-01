@@ -58,6 +58,30 @@ plugins.setConfigs("remote-config", {
 
     });
 
+    /**
+     * @api {get} /o/sdk?method=ab Enrolls in ab tests for mentioned keys if user is eligible
+     * @apiName EnrollUserInABTests
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Enrolls in ab tests for mentioned keys if user is eligible
+     *
+     * @apiQuery {String} app_key APP_KEY of an app for which to fetch remote config
+     * @apiQuery {String} device_id Your generated or device specific unique device ID to identify user
+     * @apiQuery {String} [timestamp] 10 digit UTC timestamp for recording past data
+     * @apiQuery {String} [city] Name of the user's city
+     * @apiQuery {String} [country_code] ISO Country code for the user's country
+     * @apiQuery {String} [location] Users lat, lng
+     * @apiQuery {String} [tz] Users timezone
+     * @apiQuery {String} [ip_address]  IP address of user to determine user location, if not provided, countly will try to establish ip address based on connection data
+     * @apiQuery {String[]} [keys] Only the values mentioned in the array will be fetched
+     * @apiQuery {Object} [metrics] JSON object with key value pairs
+     *
+     * @apiSuccessExample {body} Success-Response:
+     *      HTTP/1.1 200 OK
+     *      {
+     *        "Successfully enrolled in ab tests"
+     *      }
+     */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
         if (params.qstring.method !== "ab") {
@@ -326,6 +350,27 @@ plugins.setConfigs("remote-config", {
      * @apiQuery {String} app_id Application id
      * @apiQuery {Object} parameter Parameter information
      *
+     * @apiQueryExample {json} Request-Example:
+     * {
+     *   "app_id": "5da8c68cb1ce0e2f34c4f3e6",
+     *   "parameter": "{\"parameter_key\":\"new_feature_enabled\",\"default_value\":false,\"conditions\":[]}"
+     * }
+     * 
+     * @apiSuccess {Number} result Result code (200 for success)
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {}
+     *
+     * @apiError {Number} result Result code (400 or 500 for error)
+     * @apiError {String} message Error message
+     *
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *   "result": 400,
+     *   "message": "Invalid parameter: parameter_key"
+     * }
      */
     /**
      * Function to add a parameter
@@ -383,7 +428,7 @@ plugins.setConfigs("remote-config", {
 
         async.series(asyncTasks, function(err) {
             if (err) {
-                var message = 'Failed to add parameter';
+                var message = err?.message || 'Failed to add parameter';
                 if (err.exists) {
                     message = 'The parameter already exists';
                 }
@@ -799,7 +844,29 @@ plugins.setConfigs("remote-config", {
      * @apiQuery {String} app_id Application id
      * @apiQuery {Object} parameter Parameter information
      * @apiQuery {String} parameter_id Id of the parameter which is to be updated
+     * 
+     * @apiQueryExample {json} Request-Example:
+     * {
+     *   "app_id": "5da8c68cb1ce0e2f34c4f3e6",
+     *   "parameter_id": "60a7c1234b1ce0e2f34c4f3e7",
+     *   "parameter": "{\"parameter_key\":\"feature_enabled\",\"default_value\":true,\"conditions\":[]}"
+     * }
      *
+     * @apiSuccess {Number} result Result code (200 for success)
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {}
+     *
+     * @apiError {Number} result Result code (400 or 500 for error)
+     * @apiError {String} message Error message
+     *
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *   "result": 400,
+     *   "message": "Invalid parameter: parameter_key"
+     * }
      */
     /**
      * Function to update parameter
@@ -820,13 +887,17 @@ plugins.setConfigs("remote-config", {
         var parameterId = params.qstring.parameter_id;
         var parameterKey = parameter.parameter_key;
         var defaultValue = parameter.default_value;
-
+        //var conditionName = parameter.conditions;
         var pattern = new RegExp(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
         if (!pattern.test(parameterKey)) {
             common.returnMessage(params, 400, 'Invalid parameter: parameter_key');
             return true;
         }
-
+        // var conditionPattern = new RegExp(/^[a-zA-Z0-9 ]+$/);
+        // if (!conditionName || !conditionPattern.test(conditionName.trim())) {
+        //     common.returnMessage(params, 400, 'Invalid parameter: condition_name');
+        //     return true;
+        // }        
         if (!defaultValue && defaultValue !== false) {
             common.returnMessage(params, 400, 'Invalid parameter: default_value');
             return true;
@@ -839,9 +910,12 @@ plugins.setConfigs("remote-config", {
 
         var collectionName = "remoteconfig_parameters" + appId;
 
+        //TODO:validations
+
         var asyncTasks = [
             checkMaximumConditionsLimit.bind(null, parameter.conditions, maximumConditionsAllowed),
             checkIfParameterExists.bind(null, appId, parameterKey, parameterId),
+            //checkIfConditionExists.bind(null, appId, conditionName, null),
             updateParameterInDb.bind(null, params, collectionName, parameterId, parameter)
         ];
 
