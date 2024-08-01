@@ -9,8 +9,8 @@ node <path>/remove_old_events_collections.js
 var pluginManager = require('../../../plugins/pluginManager.js');
 
 var force = true; //if set to false will skip event collections which do not show up as migrated
-if(force ===false){
-    console.log("Script will skip all collections without migration flag. If there are any collections which were skipped in migration because they could not be associated with any app - those will not be deleted. Safe approach is to run merging again and compare skipped collection list with collections not deleted by this scrip.")
+if (force === false) {
+    console.log("Script will skip all collections without migration flag. If there are any collections which were skipped in migration because they could not be associated with any app - those will not be deleted. Safe approach is to run merging again and compare skipped collection list with collections not deleted by this scrip.");
 }
 console.log("Removing old Events collections");
 var failedCn = 0;
