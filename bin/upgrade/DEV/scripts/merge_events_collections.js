@@ -5,6 +5,16 @@ var crypto = require('crypto');
 
 console.log("Merging all events collections into single collection");
 
+var maxActionCount = 5000;
+
+var reports = {
+    "listed":0,
+    "skipped":0,
+    "merged":[],
+    "failed":[],
+    "mergedOneByOne":[]
+}
+
 function load_event_hashmap(countlyDB, callback) {
     var mapped = {};
     countlyDB.collection('events').find({}, {'list': 1}).toArray(function(err, events) {
@@ -25,23 +35,83 @@ function load_event_hashmap(countlyDB, callback) {
     });
 }
 
-function merge_data_from_collection(countlyDB, collection, mapped) {
-    return new Promise(function(resolve, reject) {
+async function merge_data_from_collection(countlyDB, collection, mapped) {
+    return new Promise(async function(resolve, reject) {
         if (!mapped[collection]) {
             console.log("Skipping collection " + collection + " as it is not found in events list");
+            reports.skipped += 1;
             resolve();
             return;
         }
         else {
             var app_id = mapped[collection].a;
             var prefix = app_id + "_" + collection.replace("events", "");
-            countlyDB.collection(collection).aggregate([{"$addFields": {"_id": {"$concat": [prefix, "_", "$_id"]}, "a": app_id,"e":mapped[collection].e}}, {"$merge": {"into": "events_data", "on": "_id", "whenMatched": "merge"}}], function(err) {
+
+            await countlyDB.collection(collection).updateMany({}, {"$unset": {"merged": ""}});
+            countlyDB.collection(collection).aggregate([{"$match":{"merged":{"$ne":true}}},{"$addFields": {"_id": {"$concat": [prefix, "_", "$_id"]}, "a": app_id,"e":mapped[collection].e}}, {"$merge": {"into": "events_data", "on": "_id", "whenMatched": "fail"}}],async  function(err) {
                 if (err) {
-                    console.log(err);
-                    reject();
+                    console.log("Failed to merge with database  $merge operation. Doing each document one by one");
+                    //As it field there are already some incoming data. Process all of them one by one. 
+                    var cursor = await countlyDB.collection(collection).find({"merged":{"$ne":true}});
+                    var doc;
+                    try {
+                        while((doc = await cursor.next())){
+                            var original_id = doc._id;
+                            doc._id = prefix + "_" + doc._id;
+                            doc.a = app_id;
+                            doc.e = mapped[collection].e;
+                            var actionCounter = 0;
+
+                            var update = {"$set":{"m":doc.m,"a":doc.a,"e":doc.e,"s":doc.s}};
+                            if(doc.meta_v2){
+                                for(var key in doc.meta_v2){
+                                    for(var value in doc.meta_v2[key]){
+                                        update["$set"]["meta_v2."+key+"."+value] = doc.meta_v2[key][value];
+                                        actionCounter++;
+                                        if(actionCounter>maxActionCount){
+                                            await countlyDB.collection("events_data").updateOne({"_id":doc._id},update,{upsert:true});
+                                            update = {"$set":{"m":doc.m,"a":doc.a,"e":doc.e,"s":doc.s}};
+                                            actionCounter = 0;
+                                        }
+                                    }
+                                }
+                            }
+                            if(doc.d){
+                                for(var day in doc.d){
+                                    for(var key in doc.d[day]){
+                                        for(var prop in doc.d[day][key]){
+                                            update["$inc"] =  update["$max"] || {};
+                                            update["$inc"]["d."+day+"."+key+"."+prop] = doc.d[day][key][prop];
+                                            actionCounter++;
+                                            if(actionCounter>maxActionCount){
+                                                await countlyDB.collection("events_data").updateOne({"_id":doc._id},update,{upsert:true});
+                                                update = {"$set":{"m":doc.m,"a":doc.a,"e":doc.e,"s":doc.s}};
+                                                actionCounter = 0;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if(actionCounter>0){ //we are splitting updates to make sure update operation do not reach 16MB
+                                await countlyDB.collection("events_data").updateOne({"_id":doc._id},update,{upsert:true});
+                            }
+                            await countlyDB.collection(collection).updateOne({"_id":original_id}, {"$set": {"merged": true}});
+                        }
+                    } catch (error) {
+                        console.log(error);
+                        reports.failed.push(collection);
+                        reject(error);
+                        return;
+                    }
+                    reports.mergedOneByOne.push(collection);
+                    resolve();
                 }
                 else {
-                    resolve();
+                    reports.merged.push(collection);
+                    countlyDB.collection(collection).updateMany({"merged":{"$ne":true}}, {"$set": {"moved": true}}, function(err) {
+                        //mark documents as coppied
+                        resolve();
+                    });
                 }
             });
         }
@@ -57,7 +127,6 @@ Promise.all(
             if (err) {
                 console.log('Script failed. Exiting');
                 countlyDB.close();
-                countlyDB.close();
             }
             else {
                 //filter out list with only drill_meta collections. but not outr merged collection
@@ -68,6 +137,7 @@ Promise.all(
                     return (coll.indexOf("events") === 0 && coll.length > 11);
                 });
                 //load all 
+                reports.listed = collections.length;
                 load_event_hashmap(countlyDB, function(err, mapped) {
                     if (err) {
                         console.log(err);
@@ -79,10 +149,26 @@ Promise.all(
                             return merge_data_from_collection(countlyDB, coll, mapped);
                         }).then(function() {
                             console.log("All events collections merged");
+                            console.log("collections containing events data: ",reports.listed);
+                            console.log("Skipped collections: ",reports.skipped);
+                            console.log("Moved collections: ",reports.merged.length);
+                            console.log("Failed to merge collections: ",reports.failed.length);
+                            if(reports.failed.length>0){
+                                console.log(JSON.stringify(reports.failed));
+                            }
+                            console.log("Merged collections: ",reports.mergedOneByOne.length);
                             countlyDB.close();
                         }).catch(function(err5) {
                             console.log(err5);
-                            console.log('Script failed. Exiting');
+                            console.log("All events collections merged");
+                            console.log("collections containing events data: ",reports.listed);
+                            console.log("Moved collections: ",reports.merged.length);
+                            console.log("Failed to merge collections: ",reports.failed.length);
+                            if(reports.failed.length>0){
+                                console.log(JSON.stringify(reports.failed));
+                            }
+                            console.log("Merged collections: ",reports.mergedOneByOne.length);
+                            console.log('Script failed. Exiting. PLEASE RERUN SCRIPT TO MIGRATE ALL DATA.');
                             countlyDB.close();
                         });
                     }
