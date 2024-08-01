@@ -415,7 +415,7 @@ plugins.setConfigs("remote-config", {
         parameter.conditions = parameter.conditions || [];
         processParamValue(parameter);
 
-        var maximumParametersAllowed = params.qstring.isTest ? 4 : plugins.getConfig("remote-config").maximum_allowed_parameters;
+        var maximumParametersAllowed = plugins.getConfig("remote-config").maximum_allowed_parameters;
         var maximumConditionsAllowed = plugins.getConfig("remote-config").conditions_per_paramaeters;
         var collectionName = "remoteconfig_parameters" + appId;
         parameter.ts = Date.now();

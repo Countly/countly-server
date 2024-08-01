@@ -9,6 +9,14 @@ let APP_KEY = testUtils.get('APP_KEY');
 let APP_ID = testUtils.get("APP_ID");
 
 describe('Remote Config - Add Parameter', () => {
+    let stockConfig = {};
+
+    before(async() => {
+        //save the current config
+        const res1 = await request.get(`/o/configs?${new URLSearchParams({ api_key: API_KEY_ADMIN, app_id: APP_ID })}`);
+        stockConfig = res1.body['remote-config'];
+    });
+
     it('Should reject if parameter_key is invalid', (done) => {
         request
             .post('/i/remote-config/add-parameter')
@@ -153,6 +161,19 @@ describe('Remote Config - Add Parameter', () => {
         const initialParameterCount = initialResp.body.parameters.length;
         const maxAllowedParameters = 4;
 
+        const config = {
+            'remote-config': {
+                maximum_allowed_parameters: maxAllowedParameters,
+            },
+        };
+        const configs = { configs: JSON.stringify(config) };
+
+        await request.get(`/i/configs?${new URLSearchParams({ ...configs, api_key: API_KEY_ADMIN }).toString()}`).expect(200);
+        // request config here to make sure that config has changed
+        const res = await request.get(`/o/configs?${new URLSearchParams({ api_key: API_KEY_ADMIN, app_id: APP_ID })}`).expect(200);
+        const newConfig = res.body['remote-config'];
+        should(newConfig).have.property('maximum_allowed_parameters', maxAllowedParameters);
+
         // Add parameters until we reach the limit
         for (let i = initialParameterCount; i < maxAllowedParameters; i++) {
             await request
@@ -161,7 +182,6 @@ describe('Remote Config - Add Parameter', () => {
                     api_key: API_KEY_ADMIN,
                     app_id: APP_ID,
                     app_key: APP_KEY,
-                    isTest: true,
                     parameter: JSON.stringify({
                         parameter_key: `test_key_${i}`,
                         default_value: 'test_value',
@@ -181,7 +201,6 @@ describe('Remote Config - Add Parameter', () => {
                 api_key: API_KEY_ADMIN,
                 app_id: APP_ID,
                 app_key: APP_KEY,
-                isTest: true,
                 parameter: JSON.stringify({
                     parameter_key: 'one_too_many',
                     default_value: 'test_value',
@@ -197,6 +216,11 @@ describe('Remote Config - Add Parameter', () => {
     });
 
     after(async() => {
+        // Restore the original config
+        const config = { 'remote-config': stockConfig };
+        const configs = { configs: JSON.stringify(config) };
+        await request.get(`/i/configs?${new URLSearchParams({ ...configs, api_key: API_KEY_ADMIN }).toString()}`).expect(200);
+
         // Clean up: remove all parameters created during tests
         const resp = await request
             .get('/o')
