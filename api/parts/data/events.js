@@ -220,7 +220,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
         forbiddenSegValues.push(i + "");
     }
 
-    for (let i = 0; i < params.qstring.events.length; i++) {
+    for (let i = 0; i < params.qstring?.events.length; i++) {
 
         var currEvent = params.qstring.events[i];
         tmpEventObj = {};
