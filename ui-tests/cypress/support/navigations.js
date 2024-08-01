@@ -6,7 +6,8 @@ const goToLoginPage = () => {
 };
 
 const goToLogoutPage = () => {
-    cy.visit('/logout');
+    cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.MY_PROFILE);
+    cy.clickElement(sidebarElements.SIDEBAR_MY_PROFILE_OPTIONS.LOGOUT);
 };
 
 const goToDashboardPage = () => {
