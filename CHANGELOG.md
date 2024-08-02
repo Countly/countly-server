@@ -1,3 +1,14 @@
+## Version 24.05.7
+Fixes:
+- [countly-request]Fix countly-request get and post methods
+- [core] Improvements to prevent XSS
+- [push] objects are not allowed for the properties inside "data" key of the payload in new FCM API
+- [populator] Fixes for handling bulk requests
+
+Enterprise fixes:
+- [adjust] Added adjust plugin
+- [surveys] UI changes for table
+
 ## Version 24.05.6
 Fixes:
 - [data-manager] Fix for event deletion timeout
