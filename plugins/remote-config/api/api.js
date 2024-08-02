@@ -445,6 +445,39 @@ plugins.setConfigs("remote-config", {
     }
 
     /**
+     * @api {post} /i/remote-config/add_complete_config
+     * @apiName AddCompleteRemoteConfig
+     * @apiGroup Remote Config
+     * @apiPermission user
+     * @apiDescription Add a complete remote configuration including parameters and conditions, it is used to publish the experiment results,
+     * In summmary replace the default value of a parameter in remote config with the winning variant from AB Test
+     *
+     * @apiParam {String} app_id Application ID
+     * @apiParam {String} config JSON string representing the complete config object
+     *
+     * @apiParamExample {json} Request-Example:
+     * {
+     *   "app_id": "5da8c68cb1ce0e2f34c4f3e6",
+     *   "config": "{\"parameters\":[{\"parameter_key\":\"feature_enabled\",\"exp_value\":true,\"description\":\"Enable new feature\"}],\"condition\":{\"condition_name\":\"New Users\",\"condition\":{\"user_properties.is_new\":true}}}"
+     * }
+     *
+     * @apiSuccess {Number} result Result code (200 for success)
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * HTTP/1.1 200 OK
+     * {}
+     *
+     * @apiError {Number} result Result code (400 or 500 for error)
+     * @apiError {String} message Error message
+     *
+     * @apiErrorExample {json} Error-Response:
+     * HTTP/1.1 400 Bad Request
+     * {
+     *   "result": 400,
+     *   "message": "Invalid config"
+     * }
+     */
+    /**
      * Function to add the complete config including parameter and condition
      * @param  {Object} params - params object
      * @returns {String} response

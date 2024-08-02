@@ -120,6 +120,17 @@
                 dataType: "json"
             });
         },
+        addCompleteConfig: function(settings) {
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.w + "/remote-config/add-complete-config",
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "config": JSON.stringify(settings)
+                },
+                dataType: "json"
+            });
+        }
     };
 
     countlyRemoteConfig.getVuexModule = function() {
