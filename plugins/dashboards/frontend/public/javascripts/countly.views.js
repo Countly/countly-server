@@ -967,6 +967,9 @@
                 this.validateWidgets(allWidgets);
 
                 return allWidgets;
+            },
+            widgetsLoaded: function() {
+                return this.$store.getters["countlyDashboards/widgetsLoaded"];
             }
         },
         methods: {
@@ -1084,6 +1087,10 @@
                 return rowWidgets;
             },
             initGrid: function() {
+                if (!this.widgetsLoaded) {
+                    setTimeout(() => this.initGrid(), 100); // Retry after a short delay
+                    return;
+                }
                 var self = this;
 
                 this.grid = GridStack.init({
@@ -1337,7 +1344,11 @@
             }
         },
         mounted: function() {
-            this.initGrid();
+            this.$watch('widgetsLoaded', function(newValue) {
+                if (newValue) {
+                    this.initGrid();
+                }
+            }, { immediate: true });
         },
         beforeDestroy: function() {
             this.destroyGrid();

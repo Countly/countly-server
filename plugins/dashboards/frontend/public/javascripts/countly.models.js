@@ -399,7 +399,8 @@
                     data: null
                 },
                 events: {},
-                apps: {}
+                apps: {},
+                widgetsLoaded: false
             };
         };
 
@@ -483,6 +484,9 @@
 
                     return segments;
                 };
+            },
+            widgetsLoaded: function(state) {
+                return state.widgetsLoaded;
             }
         };
 
@@ -557,6 +561,9 @@
                 }
 
                 state.apps = Object.assign({}, appsObj, globalApps);
+            },
+            setWidgetsLoaded(state, value) {
+                state.widgetsLoaded = value;
             }
         };
 
@@ -584,6 +591,8 @@
             getDashboard: function(context, params) {
                 var dashboardId = context.getters.selected.id;
                 var isRefresh = params && params.isRefresh;
+
+                context.commit('setWidgetsLoaded', false);
 
                 return countlyDashboards.service.dashboards.get(dashboardId, isRefresh).then(function(res) {
                     var isSane = context.getters["requests/isSane"];
@@ -630,7 +639,9 @@
                             }
                         }
                         context.dispatch("widgets/setAll", widgets);
+
                         context.commit("setApps", apps);
+                        context.commit('setWidgetsLoaded', true);
 
                         return false;
                     }
@@ -642,7 +653,7 @@
                         message: "Something went wrong while fetching the dashbaord!",
                         type: "error"
                     });
-
+                    context.commit('setWidgetsLoaded', true);
                     return false;
                 });
             },
