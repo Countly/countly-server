@@ -1,3 +1,30 @@
+## Version 24.05.7
+Fixes:
+- [countly-request]Fix countly-request get and post methods
+- [core] Improvements to prevent XSS
+- [push] objects are not allowed for the properties inside "data" key of the payload in new FCM API
+- [populator] Fixes for handling bulk requests
+
+Enterprise fixes:
+- [adjust] Added adjust plugin
+- [surveys] UI changes for table
+
+## Version 24.05.6
+Fixes:
+- [data-manager] Fix for event deletion timeout
+- [alerts] Fix for special character problem in value part for all data types
+- [scripts] Fix for old views script
+- [server-stats] Add monthly data points endpoint
+
+Enterprise fixes:
+- [config-transfer] Correct check when adding config transfer menu item
+- [users] Changes to show sample document download for all users
+- [funnels] Prevent autofill from Chrome on inputs
+- [drill] Fix for case when it is not possible to download table in drill
+- [surveys] Update popup height attribute in survey widgets
+- [license] Get correct license metric values
+- [okta] Add config extender code for OKTA
+
 ## Version 24.05.5
 Fixes:
 - [push] p12 file parsing bug fixed
