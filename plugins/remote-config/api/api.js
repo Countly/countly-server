@@ -404,7 +404,7 @@ plugins.setConfigs("remote-config", {
             return true;
         }
 
-        if (!defaultValue && defaultValue !== false) {
+        if (defaultValue === undefined) {
             if (params.internal) {
                 return 'Invalid parameter: default_value';
             }
@@ -931,7 +931,7 @@ plugins.setConfigs("remote-config", {
         //     common.returnMessage(params, 400, 'Invalid parameter: condition_name');
         //     return true;
         // }        
-        if (!defaultValue && defaultValue !== false) {
+        if (defaultValue === undefined) {
             common.returnMessage(params, 400, 'Invalid parameter: default_value');
             return true;
         }
