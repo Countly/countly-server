@@ -387,6 +387,9 @@ plugins.setConfigs("remote-config", {
         catch (SyntaxError) {
             console.log('Parse parameter failed: ', params.qstring.parameter);
         }
+        if (!parameter.status) {
+            parameter.status = "Running";
+        }
 
         var parameterKey = parameter.parameter_key;
         var defaultValue = parameter.default_value;
@@ -915,6 +918,9 @@ plugins.setConfigs("remote-config", {
         }
         catch (SyntaxError) {
             console.log('Parse parameter failed: ', params.qstring.parameter);
+        }
+        if (!parameter.status) {
+            parameter.status = "Running";
         }
 
         var parameterId = params.qstring.parameter_id;
