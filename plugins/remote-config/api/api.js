@@ -404,7 +404,7 @@ plugins.setConfigs("remote-config", {
             return true;
         }
 
-        if (defaultValue === undefined) {
+        if (!defaultValue && defaultValue !== false) {
             if (params.internal) {
                 return 'Invalid parameter: default_value';
             }
