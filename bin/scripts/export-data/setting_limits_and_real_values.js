@@ -5,7 +5,6 @@
  *  Command: node setting_limits_and_real_values.js
  */
 
-const { ObjectId } = require('mongodb');
 const fs = require('fs');
 const crypto = require('crypto');
 const common = require('../../../api/utils/common.js');
@@ -27,13 +26,17 @@ const DEFAULT_LIMITS = {
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
+    common.db = countlyDb;
+    common.drillDb = drillDb;
     try {
-        var all_results = [];
         const apps = await getAppList({db: countlyDb});
         if (!apps || !apps.length) {
             return close();
         }
         else {
+            // WRITE START OF ARRAY
+            WriteStream.write('[\n', 'utf8');
+
             // GETTING DATA FOR SET LIMITS FOR EVENTS, VIEWS, AND CUSTOM PROPERTIES
             var pluginsCollectionPlugins = await countlyDb.collection("plugins").findOne({"_id": 'plugins'});
 
@@ -49,7 +52,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         currentVal;
 
                     // SETTING UP CURRENT SET LIMITS PER APP
-                    var appsCollectionPerApp = await countlyDb.collection("apps").findOne({"_id": ObjectId(app._id)});
+                    var appsCollectionPerApp = await countlyDb.collection("apps").findOne({"_id": common.db.ObjectID(app._id)});
                     var CURRENT_LIMITS = {
                         event_limit: appsCollectionPerApp?.plugins?.api?.event_limit || pluginsCollectionPlugins?.api?.event_limit || DEFAULT_LIMITS.event_limit,
                         event_segment_limit: appsCollectionPerApp?.plugins?.api?.event_segmentation_limit || pluginsCollectionPlugins?.api?.event_segmentation_limit || DEFAULT_LIMITS.event_segment_limit,
@@ -63,7 +66,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     };
 
                     // GETTING REAL DATA PER APP
-                    var eventsCollectionPerApp = await countlyDb.collection("events").findOne({"_id": ObjectId(app._id)});
+                    var eventsCollectionPerApp = await countlyDb.collection("events").findOne({"_id": common.db.ObjectID(app._id)});
                     var viewsCountsPerApp = await countlyDb.collection("app_viewsmeta" + app._id).countDocuments();
                     var viewsCollectionPerApp = await countlyDb.collection("app_viewsmeta" + app._id).aggregate([
                         {
@@ -82,7 +85,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     ]).toArray();
                     var viewsSegmentsPerApp = await countlyDb.collection("views").aggregate([
                         {
-                            $match: { "_id": ObjectId(app._id) }
+                            $match: { "_id": common.db.ObjectID(app._id) }
                         },
                         {
                             "$project": {
@@ -294,12 +297,14 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 realVal = valueFieldCounts || undefined;
                 app_results['Values In Array For One User Property'] = {"default": defaultVal, "set": currentVal, "real": realVal};
 
-                // PUSH APP SPECIFIC RESULTS TO ARRAY
-                all_results.push(app_results);
+                // WRITE RESULTS PER APP TO FILE
+                WriteStream.write(JSON.stringify(app_results, null, 2), 'utf8');
+                if (i + 1 < apps.length) {
+                    WriteStream.write(',\n', 'utf8');
+                }
             }
-
-            // CREATE WRITE STREAM AND WRITE IT ALL TO JSON/CSV FILE
-            WriteStream.write(JSON.stringify(all_results, null, 2), 'utf8', () => {
+            // WRITE AND CLOSE ARRAY
+            WriteStream.write('\n]', 'utf8', () => {
                 console.log('Data has been written to the file.');
             });
         }
@@ -316,7 +321,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         if (app_list && app_list.length > 0) {
             var listed = [];
             for (var z = 0; z < app_list.length; z++) {
-                listed.push(ObjectId(app_list[z]));
+                listed.push(common.db.ObjectID(app_list[z]));
             }
             query = {_id: {$in: listed}};
         }
