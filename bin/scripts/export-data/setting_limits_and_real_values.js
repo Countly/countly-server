@@ -184,9 +184,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         var eventsSegmentsValues = await countlyDb.collection(eventCollectionName).aggregate([
                             {
                                 "$match": {
-                                    "$or": regexes.map(pattern => ({
-                                        "_id": { "$regex": pattern }
-                                    }))
+                                    "_id": {
+                                        "$in": regexes.map(pattern => new RegExp(pattern))
+                                    }
                                 }
                             },
                             {
