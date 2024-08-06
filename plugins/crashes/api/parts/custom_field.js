@@ -47,13 +47,16 @@ function generateUpdates(crashgroup, maxCustomFieldKeys = DEFAULT_MAX_CUSTOM_FIE
 async function cleanupCustomField(
     countlyDb,
     maxCustomFieldKeys = DEFAULT_MAX_CUSTOM_FIELD_KEYS,
-    BATCH_SIZE = 200
+    BATCH_SIZE = 20
 ) {
-    const apps = await countlyDb.collection('apps').find({}).project({_id: 1}).toArray();
+    const appsCursor = await countlyDb.collection('apps').find({}).project({_id: 1, name: 1});
 
-    for (let idx = 0; idx < apps.length; idx += 1) {
-        const crashgroupCollection = `app_crashgroups${apps[idx]._id}`;
-        const crashgroups = await countlyDb.collection(crashgroupCollection)
+    while (await appsCursor.hasNext()) {
+        const app = await appsCursor.next();
+        console.log(`Updating crashgroup for ${app.name}`);
+
+        const crashgroupCollection = `app_crashgroups${app._id}`;
+        const crashgroupsCursor = await countlyDb.collection(crashgroupCollection)
             .aggregate([
                 {
                     $project: {
@@ -73,15 +76,15 @@ async function cleanupCustomField(
                 { $unwind: "$custom" },
                 { $match: { "custom.size": { "$gt": maxCustomFieldKeys } } },
                 { $group: { _id: "$_id", keys: { $push: "$custom.key" } } },
-            ])
-            .toArray();
+            ]);
 
         let updates = [];
 
-        for (let idy = 0; idy < crashgroups.length; idy += 1) {
-            updates = updates.concat(generateUpdates(crashgroups[idy], maxCustomFieldKeys));
+        while (await crashgroupsCursor.hasNext()) {
+            const crashgroup = await crashgroupsCursor.next();
+            updates = updates.concat(generateUpdates(crashgroup, maxCustomFieldKeys));
 
-            if (updates.length && (updates.length === BATCH_SIZE || idy === crashgroups.length - 1)) {
+            if (updates.length && updates.length === BATCH_SIZE) {
                 try {
                     await countlyDb.collection(crashgroupCollection).bulkWrite(updates, { ordered: false });
                 }
@@ -93,6 +96,17 @@ async function cleanupCustomField(
                 }
             }
         }
+
+        if (updates.length && updates.length > 0) {
+            try {
+                await countlyDb.collection(crashgroupCollection).bulkWrite(updates, { ordered: false });
+            }
+            catch (err) {
+                console.error(`Failed updating collection ${crashgroupCollection}`, err);
+            }
+        }
+
+        console.log(`${app.name} done`);
     }
 }
 
