@@ -153,7 +153,23 @@
         data: function() {
             return {
                 toggleTransition: 'stdt-slide-left',
-                isLeftSidebarHidden: this.hideLeftSidebar
+                isLeftSidebarHidden: this.hideLeftSidebar,
+                scrollOps: {
+                    vuescroll: {},
+                    scrollPanel: {
+                        initialScrollX: false
+                    },
+                    rail: {
+                        gutterOfSide: "1px",
+                        gutterOfEnds: "15px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: false
+                    }
+                },
             };
         },
         computed: {
@@ -328,21 +344,32 @@
         },
         data() {
             return {
-                localValue: this.value,
+                localValue: this.initializeLocalValue(),
             };
         },
         watch: {
-            value: function(newValue) {
-                this.localValue = newValue;
+            value: {
+                handler: function(newValue) {
+                    this.localValue = this.initializeLocalValue(newValue);
+                },
+                deep: true
             },
-            localValue: function(newValue) {
-                this.$emit('input', newValue);
+            localValue: {
+                handler: function(newValue) {
+                    this.$emit('input', newValue);
+                },
+                deep: true
             }
         },
         methods: {
-            updateValue: function(id, newValue) {
-                this.$set(this.localValues, id, newValue);
-                this.$emit('input', { ...this.localValues });
+            initializeLocalValue(val = this.value) {
+                if (this.inputType === 'switch') {
+                    return val === true;
+                }
+                return val !== undefined ? val : null;
+            },
+            updateValue: function(newValue) {
+                this.localValue = newValue;
             },
             getComponentType: function(type) {
                 const mapping = {
@@ -359,14 +386,14 @@
         },
         template: `
             <div class="cly-vue-content-builder__layout-step">
-                <div v-if="subHeader" class="cly-vue-content-builder__layout-step__sub-header color-cool-gray-50">{{ subHeader }}</div>
+                <div v-if="subHeader" class="cly-vue-content-builder__layout-step__sub-header color-cool-gray-50 bu-mb-2">{{ subHeader }}</div>
                 <div class="cly-vue-content-builder__layout-step__element bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center" :class="{'bu-is-flex-direction-column bu-is-align-items-baseline': position !== 'horizontal' }" :style="[position !== 'horizontal' ? {'gap': '8px'}: {}]">
                     <div v-if="label" class="cly-vue-content-builder__layout-step__label">{{ label }}</div>
                     <slot name="content-builder-layout-step">
                         <component
                             :is="getComponentType(inputType)"
                             v-bind="inputProps"
-                            v-model="localValue"
+                            :value="localValue"
                             @input="updateValue"
                             class="cly-vue-content-builder__layout-step__component"
                             :style="[ position !== 'horizontal' ? {\'width\':  \'100%\'} : {\'width\': width + \'px\'}]"
@@ -415,24 +442,56 @@
             };
         },
         methods: {
-            numberChange: function(val) {
-                this.selectedValue = val;
-                this.$emit('input', this.selectedValue);
+            numberChange: function(item) {
+                if (!item.disabled) {
+                    this.selectedValue = item.value;
+                    this.$emit('input', this.selectedValue);
+                }
             }
         },
         created: function() {
             this.selectedValue = this.value || this.items[0].value || 0;
         },
-        template: '<div>\
-                        <div class="bu-is-flex cly-option-swapper" :style="{\'width\': width + \'px\'}">\
-                            <div v-for="(item, index) in items" :key="item.value" class="cly-option-swapper__each-box-wrapper">\
-                                <div :style="item.value === selectedValue ? {\'background-color\': activeColorCode } : {}" :class="{ \'cly-option-swapper__active \': item.value === selectedValue, \'cly-option-swapper__first\' : index === 0, \'cly-option-swapper__last\' : index === (items.length - 1) }" class="cly-option-swapper__each" @click="numberChange(item.value)">\
-                                    <i v-if="item.icon" :class="item.icon" :style="item.value === selectedValue ? {\'color\': \'#0166d6\' } : {\'color\': \'#000\' }"></i>\
-                                    <span v-else :style="item.value === selectedValue ? {\'color\': \'#0166d6\' } : {\'color\': \'#000\' }" class="text-medium">{{ item.text }}</span>\
-                                </div>\
-                            </div>\
-                        </div>\
-                  </div>'
+        template: `
+            <div>
+                <div class="bu-is-flex cly-option-swapper" :style="{'width': width + 'px'}">
+                    <div v-for="(item, index) in items" :key="item.value" class="cly-option-swapper__each-box-wrapper">
+                        <div
+                            :style="[
+                                item.value === selectedValue && !item.disabled ? {'background-color': activeColorCode} : {},
+                                item.disabled ? {'opacity': '0.5', 'cursor': 'not-allowed', 'background-color': '#E2E4E8'} : {}
+                            ]"
+                            :class="{
+                                'cly-option-swapper__active': item.value === selectedValue && !item.disabled,
+                                'cly-option-swapper__first': index === 0,
+                                'cly-option-swapper__last': index === (items.length - 1),
+                                'cly-option-swapper__disabled': item.disabled
+                            }"
+                            v-tooltip="item.tooltip"
+                            class="cly-option-swapper__each"
+                            @click="numberChange(item)"
+                        >
+                            <i v-if="item.icon"
+                               :class="item.icon"
+                               :style="[
+                                   item.value === selectedValue && !item.disabled ? {'color': '#0166d6'} : {'color': '#000'},
+                                   item.disabled ? {'color': '#999'} : {}
+                               ]">
+                            </i>
+                            <span v-else
+                                  :style="[
+                                      item.value === selectedValue && !item.disabled ? {'color': '#0166d6'} : {'color': '#000'},
+                                      item.disabled ? {'color': '#999'} : {}
+                                  ]"
+                                  class="text-medium"
+                            >
+                                {{ item.text }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `
     }));
 
     Vue.component("cly-device-selector", countlyVue.components.BaseComponent.extend({
