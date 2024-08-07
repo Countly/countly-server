@@ -126,7 +126,7 @@ async function merge_data_from_collection(countlyDB, collection, mapped, resolve
                     if (err) {
                         console.log(err);
                     }
-                    countlyDB.collection(collection).updateMany({"_id": {"$regex": "^" + prefix + "_.*"}}, {"$unset": {"tscheck": ""}}, function(ee) {
+                    countlyDB.collection("events_data").updateMany({"_id": {"$regex": "^" + prefix + "_.*"}}, {"$unset": {"tscheck": ""}}, function(ee) {
                         if (ee) {
                             console.log(ee);
                         }
