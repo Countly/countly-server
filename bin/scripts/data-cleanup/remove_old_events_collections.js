@@ -51,7 +51,6 @@ pluginManager.dbConnection().then(async(countlyDb) => {
                                 }
                             }
                         });
-
                     });
                 }
             }

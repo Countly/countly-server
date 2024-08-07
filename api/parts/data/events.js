@@ -224,6 +224,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
 
         var currEvent = params.qstring.events[i];
         tmpEventObj = {};
+        tmpEventColl = {};
         var tmpTotalObj = {};
 
         // Key fields is required
