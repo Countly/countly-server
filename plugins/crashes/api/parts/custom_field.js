@@ -49,10 +49,10 @@ async function cleanupCustomField(
     maxCustomFieldKeys = DEFAULT_MAX_CUSTOM_FIELD_KEYS,
     BATCH_SIZE = 20
 ) {
-    const appsCursor = await countlyDb.collection('apps').find({}).project({_id: 1, name: 1});
+    const apps = await countlyDb.collection('apps').find({}).project({_id: 1, name: 1}).toArray();
 
-    while (await appsCursor.hasNext()) {
-        const app = await appsCursor.next();
+    for (let idx = 0; idx < apps.length; idx += 1) {
+        const app = apps[idx];
         console.log(`Updating crashgroup for ${app.name}`);
 
         const crashgroupCollection = `app_crashgroups${app._id}`;
