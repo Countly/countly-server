@@ -404,7 +404,9 @@ module.exports = function(my_db) {
                         if (res[j].list && res[j].list.length > 0) {
                             for (var z = 0; z < res[j].list.length; z++) {
                                 var eventCollName = "events" + crypto.createHash('sha1').update(res[j].list[z] + data.appid).digest('hex');
+                                //old data, can be removed once we are sure that we are only using merged events_data collection
                                 scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', eventCollName, '--out', data.my_folder]});
+
                                 if (plugins.isPluginEnabled('drill')) {
                                     eventCollName = "drill_events" + crypto.createHash('sha1').update(res[j].list[z] + data.appid).digest('hex');
                                     scripts.push({cmd: 'mongodump', args: [...data.dbargs_drill, '--collection', eventCollName, '--out', data.my_folder]});
@@ -412,6 +414,8 @@ module.exports = function(my_db) {
                             }
                         }
                     }
+                    //new data
+                    scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', "events_data", '-q', '{ "_id": {"$in":{"$regex":"^' + data.appid + '_.*"}}}}', '--out', data.my_folder]});
                 }
                 resolve(scripts);
             }

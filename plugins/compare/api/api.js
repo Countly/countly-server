@@ -65,7 +65,7 @@ const FEATURE_NAME = 'compare';
 
             for (var i = 0; i < eventKeysArr.length; i++) {
                 collectionNames.push(
-                    (eventKeysArr[i].startsWith('[CLY]_group_')) ? eventKeysArr[i] : "events" + crypto.createHash('sha1').update(eventKeysArr[i] + params.app_id).digest('hex')
+                    (eventKeysArr[i].startsWith('[CLY]_group_')) ? eventKeysArr[i] : crypto.createHash('sha1').update(eventKeysArr[i] + params.app_id).digest('hex')
                 );
             }
 
@@ -92,7 +92,8 @@ const FEATURE_NAME = 'compare';
                 });
             }
             else {
-                fetch.getTimeObjForEvents(collectionName, params, function(output) {
+                //'id_prefix': params.app_id + "_" + collectionName + '_'}
+                fetch.getTimeObjForEvents("events_data", params, {'id_prefix': params.app_id + "_" + collectionName + '_'}, function(output) {
                     callback(null, output || {});
                 });
             }
