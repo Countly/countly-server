@@ -6,6 +6,12 @@ var plugin = {},
     log = common.log('system-utility:api'),
     cluster = require("cluster");
 
+const AsyncTracker = require('./AsyncTracker');
+const asyncTracker = new AsyncTracker();
+asyncTracker.start();
+setInterval(() => asyncTracker.logStuckOperations(), 30000);
+
+
 const processName = (cluster.isMaster ? "master" : "worker") + "-" + process.pid;
 const profilerCmds = ["startProfiler", "stopProfiler", "startInspector", "stopInspector"];
 let numberOfWorkers;
