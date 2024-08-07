@@ -449,6 +449,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                     eventSegments[collection + "." + zeroId].s = "no-segment";
                     eventSegments[collection + "." + zeroId].a = params.app_id + "";
                     eventSegments[collection + "." + zeroId].e = eventHashMap[collection] || collection;
+                    eventSegments[collection + "." + zeroId]._id = params.app_id + "_" + collection + "_" + "no-segment_" + zeroId.replace(".", "_");
                     common.writeBatcher.add("events_data", params.app_id + "_" + collection + "_" + "no-segment_" + zeroId.replace(".", "_"), {$set: eventSegments[collection + "." + zeroId]});
                 }
             }
@@ -457,7 +458,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                 let collIdSplits = segment.split("."),
                     collId = params.app_id + "_" + collection + "_" + segment.replace(/\./g, "_");
 
-                common.writeBatcher.add(collection, collId, {
+                common.writeBatcher.add("events_data", collId, {
                     $set: {
                         "m": collIdSplits[1],
                         "s": collIdSplits[0],
