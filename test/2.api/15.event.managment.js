@@ -324,7 +324,10 @@ describe('Testing event settings', function() {
 
         it('checking for segmentation in  collections(test3)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("test3" + APP_ID).digest('hex');
-            testUtils.db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["my_segment", "my_segment2"]}}).toArray(function(err, res) {
+            testUtils.db.collection("events_data").find({"a": APP_ID, "e": "test3", "_id": {"$regex": "^" + APP_ID + "_" + collectionNameWoPrefix + "_.*"}, "s": {$in: ["my_segment", "my_segment2"]}}).toArray(function(err, res) {
+                if (err) {
+                    console.log(err);
+                }
                 if (res.length > 0) {
                     done();
                 }
@@ -337,7 +340,7 @@ describe('Testing event settings', function() {
 
         it('checking for segmentation in  collections(t1)', function(done) {
             var collectionNameWoPrefix = crypto.createHash('sha1').update("t1" + APP_ID).digest('hex');
-            testUtils.db.collection("events" + collectionNameWoPrefix).find({"s": {$in: ["s"]}}).toArray(function(err, res) {
+            testUtils.db.collection("events_data").find({"a": APP_ID, "e": "t1", "_id": {"$regex": "^" + APP_ID + "_" + collectionNameWoPrefix + "_.*"}, "s": {$in: ["s"]}}).toArray(function(err, res) {
                 if (res.length > 0) {
                     done();
                 }
