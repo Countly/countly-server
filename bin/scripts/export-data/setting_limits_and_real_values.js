@@ -71,7 +71,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     var viewsCollectionPerApp = await countlyDb.collection("app_viewsmeta" + app._id).aggregate([
                         {
                             $addFields: {
-                                max_length: { $strLenCP: "$view" }
+                                max_length: { $strLenCP: {$convert: {input: "$view", to: "string", onError: "", onNull: ""} }}
                             }
                         },
                         {
@@ -97,12 +97,12 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                             "as": "field",
                                             "in": {
                                                 "k": "$$field.k",
-                                                "v": { "$size": { "$objectToArray": "$$field.v" } }
+                                                "v": { "$size": { "$ifNull": [{"$objectToArray": "$$field.v" }, []] }}
                                             }
                                         }
                                     }
                                 },
-                                "numberOfSegments": { "$size": { "$objectToArray": "$segments" } }
+                                "numberOfSegments": { "$size": {"$ifNull": [{ "$objectToArray": "$segments" }, []]}}
                             }
                         }
                     ]).toArray();
@@ -128,7 +128,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             $project: {
                                 _id: 0,
                                 field: { $arrayElemAt: [{ $split: ["$_id", "."] }, -1] },
-                                valueFieldCount: { $size: { $objectToArray: "$values" } }
+                                valueFieldCount: { $size: {"$ifNull": [{ $objectToArray: "$values" }, []] }}
                             }
                         },
                     ]).toArray();
@@ -201,7 +201,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                                 "k": "$$this.k",
                                                 "v": {
                                                     "$size": {
-                                                        "$objectToArray": "$$this.v"
+                                                        "$ifNull": [{"$objectToArray": "$$this.v"}, []]
                                                     }
                                                 }
                                             }
