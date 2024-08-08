@@ -947,6 +947,13 @@
             sortable: {
                 type: Boolean,
                 default: false
+            },
+            displayMode: {
+                type: String,
+                default: null,
+                validator: function(value) {
+                    return ['list', /** add others if needed */].indexOf(value) !== -1;
+                }
             }
         },
         data: function() {
@@ -999,6 +1006,9 @@
                 var classes = [];
                 if (!this.forceLoading && this.dataSource && this.externalStatus === 'silent-pending') {
                     classes.push("silent-loading");
+                }
+                if (this.displayMode) {
+                    classes.push("display-mode--" + this.displayMode);
                 }
 
                 return classes;
