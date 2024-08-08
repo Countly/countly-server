@@ -1358,14 +1358,14 @@ fetch.getTimeObj = function(collection, params, options, callback) {
 * @param {function} callback - callback to retrieve the data, receiving only one param which is output
 */
 fetch.getTimeObjForEvents = function(collection, params, options, callback) {
-    if (collection !== 'events_data') {
-        if (collection.startsWith('events')) {
-            collection = collection.substring(6);
-        }
-        if (typeof options === "function") {
-            callback = options;
-            options = {};
-        }
+
+    if (typeof options === "function") {
+        callback = options;
+        options = {};
+    }
+
+    if (collection !== 'events_data' && collection.startsWith('events')) {
+        collection = collection.substring(6);
         options = options || {};
         options.id_prefix = params.app_id + "_" + collection + "_";
         collection = "events_data";
