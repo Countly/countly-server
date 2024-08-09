@@ -243,17 +243,20 @@
         cursor: pointer;
         .text {
             font-size: 13px;
-            font-weight: 400;
+            font-weight: 500;
             line-height: 16px;
             color: #0166D6;
             white-space: nowrap;
             opacity: 0;
             width: 0;
-            transition: width 1s ease-in;
+            transition: width 1s ease-in-out;
         }
         &:hover {
             width: auto;
             border-radius: 23px;
+            padding: 7px;
+            padding-left: 11px;
+            padding-right: 11px;
             .text {
                 opacity: 1; 
                 width: auto;
@@ -269,13 +272,15 @@
         background-color: #FFFFFF;
         border-radius: 23px;
         padding: 7px;
+        padding-left: 11px;
+        padding-right: 11px;
         border: 1px solid #E2E4E8;
         box-shadow: 0px 2px 4px 0px #0000000C;
         width: auto;
         cursor: pointer;
         .text {
             font-size: 13px;
-            font-weight: 400;
+            font-weight: 500;
             line-height: 16px;
             color: #0166D6;
             white-space: nowrap;

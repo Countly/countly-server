@@ -643,7 +643,7 @@
                         {
                             name: this.enableGuides ? "countly-guides" : "help-center",
                             icon: this.enableGuides ? "cly-icon-sidebar-countly-guides" : "cly-icon-sidebar-help-center",
-                            noSelect: true,
+                            noSelect: this.enableGuides ? undefined : true,
                             tooltip: this.enableGuides ? "Countly Guides" : "Help Center"
                         },
                         {
@@ -700,11 +700,9 @@
                 },
                 pseudoSelectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
-
                     if (!this.selectedMenuOptionLocal && selected) {
                         return selected.menu;
                     }
-
                     return this.selectedMenuOptionLocal;
                 },
                 selectedMenuOption: function() {
@@ -745,6 +743,7 @@
                 },
                 onClick: function(option) {
                     if (!option.noSelect) {
+                        // EMRE: make guides go in here and change selectedMenuOptionLocal to guides or sth?
                         this.selectedMenuOptionLocal = option.name;
                         this.showMainMenu = true;
                     }

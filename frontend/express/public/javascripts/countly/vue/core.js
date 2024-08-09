@@ -562,7 +562,8 @@
                 actions: {
                     updateSelectedMenuItem: function({dispatch, commit}, payload) {
                         commit('setSelectedMenuItem', payload);
-                        if (Object.keys(payload.item).length !== 0) {
+                        if (payload.menu !== 'guides') {
+                            // console.log("SHOULD DESELECT GUIDES BUTTON");
                             dispatch('deselectGuidesButton');
                         }
                     },

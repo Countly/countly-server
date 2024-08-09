@@ -226,6 +226,7 @@
                 }
             },
             onClose: function() {
+                // EMRE: View Guides button closing animation flag here
                 this.isDialogVisible = false;
                 let mainViewContainer = document.getElementById('main-views-container');
                 mainViewContainer.getElementsByClassName('main-view')[0].style.setProperty('overflow', 'auto', 'important');
