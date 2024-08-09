@@ -79,6 +79,24 @@ common.escape_html = function(string, more) {
 
     return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
 };
+/**
+ * Function to escape unicode characters
+ * @param {string} str  - string for which to escape
+ * @returns  {string} escaped string
+ */
+common.encodeCharacters = function(str) {
+    try {
+        str = str + "";
+        str = str.replace(/\u0000/g, "&#9647");
+        str.replace(/[^\x00-\x7F]/g, function(c) {
+            return encodeURI(c);
+        });
+        return str;
+    }
+    catch {
+        return str;
+    }
+};
 
 /**
 * Decode escaped html 
@@ -1030,7 +1048,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (typeof args[arg] === 'string') {
                         if (mongodb.ObjectId.isValid(args[arg])) {
-                            parsed = mongodb.ObjectId(args[arg]);
+                            parsed = new mongodb.ObjectId(args[arg]);
                         }
                         else {
                             if (returnErrors) {
@@ -2773,13 +2791,19 @@ common.updateAppUser = function(params, update, no_meta, callback) {
 * @param {object} metrics - metrics object from SDK request
 */
 common.processCarrier = function(metrics) {
-    if (metrics && metrics._carrier) {
+    // Initialize metrics if undefined
+    metrics = metrics || {};
+    if (metrics._carrier) {
         var carrier = metrics._carrier + "";
 
         //random hash without spaces
-        if (carrier === "--" || (carrier.length === 16 && carrier.indexOf(" ") === -1)) {
+        if ((carrier.length === 16 && carrier.indexOf(" ") === -1)) {
             delete metrics._carrier;
-            return;
+        }
+
+        // Since iOS 16.04 carrier returns value "--", interpret as Unknown by deleting
+        if (carrier === "--") {
+            delete metrics._carrier;
         }
 
         //random code
@@ -2791,15 +2815,16 @@ common.processCarrier = function(metrics) {
             }
             else {
                 delete metrics._carrier;
-                return;
             }
         }
 
         carrier = carrier.replace(/\w\S*/g, function(txt) {
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         });
+
         metrics._carrier = carrier;
     }
+    metrics._carrier = metrics._carrier ? metrics._carrier : "Unknown";
 };
 
 /**
@@ -3387,7 +3412,7 @@ common.mergeQuery = function(ob1, ob2) {
 common.dbext = {
     ObjectID: function(id) {
         try {
-            return mongodb.ObjectId(id);
+            return new mongodb.ObjectId(id);
         }
         catch (ex) {
             return id;
@@ -3413,7 +3438,7 @@ common.dbext = {
      * @returns {ObjectID} id
      */
     oid: function(id) {
-        return !id ? id : id instanceof mongodb.ObjectId ? id : mongodb.ObjectId(id);
+        return !id ? id : id instanceof mongodb.ObjectId ? id : new mongodb.ObjectId(id);
     },
 
     /**
