@@ -12,7 +12,7 @@ const common = require('../../../api/utils/common.js');
 const drillCommon = require('../../../plugins/drill/api/common.js');
 
 const APP_ID = "";
-const EVENTS = []; //leave empty to delete all custom events
+const EVENTS = []; //If empty, no events will be deleted
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
@@ -28,11 +28,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         //GET EVENTS
         var events = EVENTS;
         if (!events.length) {
-            events = await countlyDb.collection("events").findOne({_id: app._id}, {_id: 0, list: 1});
-            events = (events && events.list) || [];
-        }
-        if (!events.length) {
-            close("No events found");
+            close("No events to delete");
         }
         else {
             //DELETE EVENTS
