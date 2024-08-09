@@ -56,7 +56,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 close("Invalid regex");
             }
         }
-        
+
         console.log("Events to delete:", events);
         if (DRY_RUN) {
             close();
