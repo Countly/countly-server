@@ -2767,7 +2767,8 @@ common.updateAppUser = function(params, update, no_meta, callback) {
         if (callback) {
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
                 new: true,
-                upsert: true
+                upsert: true,
+                skipDataMasking: true
             }, function(err, res) {
                 if (!err && res && res.value) {
                     params.app_user = res.value;
