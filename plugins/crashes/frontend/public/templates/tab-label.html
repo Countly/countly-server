@@ -6,7 +6,7 @@
         </div>
     </div>
     <div class="bu-is-flex bu-is-align-items-center">
-        <h2 v-if="data.isEstimate" v-tooltip="i18n('common.estimation')" class="is-estimate" :data-test-id="`cly-section-${title.toLowerCase().replaceAll(/\s/g, '-').replace('/', 'or')}-value`">
+        <h2 v-if="data data.isEstimate" v-tooltip="i18n('common.estimation')" class="is-estimate" :data-test-id="`cly-section-${title.toLowerCase().replaceAll(/\s/g, '-').replace('/', 'or')}-value`">
             ~{{ data && data.total && !isNaN(data.total) && getShortNumber(data.total) || data && data.total}}
         </h2>
         <h2 v-else :data-test-id="`cly-section-${title.toLowerCase().replaceAll(/\s/g, '-').replace('/', 'or')}-value`">
