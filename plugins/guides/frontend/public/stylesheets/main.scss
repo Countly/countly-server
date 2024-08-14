@@ -236,10 +236,15 @@
         align-items: center;
         overflow: hidden;
         background-color: #FFFFFF;
-        border-radius: 50%;
-        padding: 7px;
+        border-radius: 23px;
+        padding-bottom: 5.25px;
+        padding-top: 5.25px;
+        padding-left: 5.5px;
+        padding-right: 5.5px;
         border: 1px solid #E2E4E8;
         box-shadow: 0px 2px 4px 0px #0000000C;
+        width: 19px;
+        transition: width 0.5s ease-in-out 0.5s, padding 0.5s ease-in-out 0.5s;
         cursor: pointer;
         .text {
             font-size: 13px;
@@ -248,19 +253,20 @@
             color: #0166D6;
             white-space: nowrap;
             opacity: 0;
-            width: 0;
-            transition: width 1s ease-in-out;
+            width: 0px;
+            overflow: hidden;
+            transition: width 0.5s ease-in-out 0.5s, padding 0.5s ease-in-out 0.5s, opacity 0.5s ease-in-out 0.5s;
         }
         &:hover {
-            width: auto;
-            border-radius: 23px;
-            padding: 7px;
             padding-left: 11px;
             padding-right: 11px;
+            width: 80%;
+            transition: width 0.5s ease-in-out, padding 0.5s ease-in-out;
             .text {
                 opacity: 1; 
-                width: auto;
+                width: 100%;
                 padding-left: 5px;
+                transition: width 0.5s ease-in-out, padding 0.5s ease-in-out, opacity 0.3s;
             }
         }
     }
@@ -271,23 +277,23 @@
         overflow: hidden;
         background-color: #FFFFFF;
         border-radius: 23px;
-        padding: 7px;
-        padding-left: 11px;
-        padding-right: 11px;
+        padding: 5.25px;
         border: 1px solid #E2E4E8;
         box-shadow: 0px 2px 4px 0px #0000000C;
-        width: auto;
         cursor: pointer;
+        padding-left: 11px;
+        padding-right: 11px;
+        width: 80%;
         .text {
             font-size: 13px;
             font-weight: 500;
             line-height: 16px;
             color: #0166D6;
             white-space: nowrap;
+            overflow: hidden;
             opacity: 1;
-            width: auto;
+            width: 100%;
             padding-left: 5px;
-            transition: width 1s ease-in;
         }
     }
 

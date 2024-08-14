@@ -211,6 +211,9 @@
                 if (this.viewedGuides === true) {
                     highlightGuidesButton = false;
                 }
+                if (this.isDialogVisible) {
+                    highlightGuidesButton = true;
+                }
                 return highlightGuidesButton ? 'view-button-initial' : 'view-button';
             }
         },
