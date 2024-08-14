@@ -235,7 +235,6 @@
             }
 
             return {
-                localDefaultSort: this.defaultSort,
                 controlParams: controlParams,
                 firstPage: 1
             };
@@ -306,14 +305,14 @@
                     sort: [],
                     selectedDynamicCols: false
                 };
-                if (this.localDefaultSort && this.preventDefaultSort === false) {
+                if (this.defaultSort && this.preventDefaultSort === false) {
                     defaultState.sort = [{
-                        field: this.localDefaultSort.prop,
-                        type: this.localDefaultSort.order === "ascending" ? "asc" : "desc"
+                        field: this.defaultSort.prop,
+                        type: this.defaultSort.order === "ascending" ? "asc" : "desc"
                     }];
                 }
                 else {
-                    this.localDefaultSort = {};
+                    this.defaultSort = {};
                 }
 
                 if (!this.persistKey) {
