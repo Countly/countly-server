@@ -8,7 +8,7 @@
         </template>
     </cly-header>
 
-    <cly-main class="preset-table">
+    <cly-main>
         <cly-datatable-n 
             :rows="rows" 
             :resizable="true" 
@@ -17,6 +17,7 @@
             :hide-bottom="true"
             :sortable="true"
             :default-sort="{prop: 'sort_order', order: 'ascending'}"
+            :display-mode="'list'"
             @drag-start="onDragStart"
             @drag-end="reorderPresets"
         >
