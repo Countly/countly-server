@@ -2437,10 +2437,11 @@ var pluginManager = function pluginManager() {
                     logDbWrite.d(name + " " + collection + " %j %j %j" + at, selector, doc, options);
                     logDbWrite.d("From connection %j", countlyDb._cly_debug);
                     if (options.upsert) {
+                        var self = this;
                         return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, function() {
                             logDbWrite.d("retrying " + name + " " + collection + " %j %j %j" + at, selector, doc, options);
                             logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                            return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                            return handlePromiseErrors(self["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
                         }, e, copyArguments(arguments, name)));
                     }
                     else {
