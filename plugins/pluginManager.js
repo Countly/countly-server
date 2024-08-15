@@ -2393,10 +2393,11 @@ var pluginManager = function pluginManager() {
                 logDbWrite.d("findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
                 logDbWrite.d("From connection %j", countlyDb._cly_debug);
                 if (options.upsert) {
+                    var self = this;
                     return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, function() {
                         logDbWrite.d("retrying findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
                         logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
+                        return handlePromiseErrors(self._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
                     }, e, copyArguments(arguments, "findAndModify")));
                 }
                 else {
