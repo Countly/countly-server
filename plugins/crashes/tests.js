@@ -3111,7 +3111,7 @@ describe('Testing Crashes', function() {
                 .get(`/o?method=crashes&api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&query=${crashGroupQuery}`);
             const crashGroup = crashGroupResponse.body.aaData[0];
 
-            crashGroup.error.should.equal(JSON.stringify(common.escape_html(crashData._error)));
+            should(crashGroup.error).equal(common.escape_html(crashData._error));
         });
     });
 
