@@ -1,6 +1,7 @@
 var request = require('supertest');
 var should = require('should');
 var testUtils = require("../../test/testUtils");
+const common = require('../../api/utils/common');
 request = request(testUtils.url);
 
 var APP_KEY = "";
@@ -3094,7 +3095,7 @@ describe('Testing Crashes', function() {
     describe('Flutter stacktrace', async() => {
         it('should return flutter stacktrace correctly', async() => {
             const crashData = {
-                '_error': 'java.lang.Exception: IntegerDivisionByOneException\n\n%230      int (dart:core-patch/integers.dart:30:7)\n%231      CrashReportingPage.dividedByZero (package:countly_flutter_example/page_crash_reporting.dart:49:31)\n%232      _InkResponseState.handleTap (package:flutter/src/material/ink_well.dart:1183:21)\n%233      GestureRecognizer.invokeCallback (package:flutter/src/gestures/recognizer.dart:275:24)\n%234      TapGestureRecognizer.handleTapUp (package:flutter/src/gestures/tap.dart:652:11)\n%235      BaseTapGestureRecognizer._checkUp (package:flutter/src/gestures/tap.dart:309:5)\n%236      BaseTapGestureRecognizer.handlePrimaryPointer (package:flutter/src/gestures/tap.dart:242:7)\n%237      PrimaryPointerGestureRecognizer.handleEvent (package:flutter/src/gestures/recognizer.dart:630:9)\n%238      PointerRouter._dispatch (package:flutter/src/gestures/pointer_router.dart:98:12)\n%239      PointerRouter._dispatchEventToRoutes.<anonymous closure> (package:flutter/src/gestures/pointer_router.dart:143:9)\n%2310     _LinkedHashMapMixin.forEach (dart:collection-patch/compact_hash.dart:633:13)\n%2311     PointerRouter._dispatchEventToRoutes (package:flutter/src/gestures/pointer_router.dart:141:18)\n%2312     PointerRouter.route (package:flutter/src/gestures/pointer_router.dart:127:7)\n%2313     GestureBinding.handleEvent (package:flutter/src/gestures/binding.dart:488:19)\n%2314     GestureBinding.dispatchEvent (package:flutter/src/gestures/binding.dart:468:22)\n%2315     RendererBinding.dispatchEvent (package:flutter/src/rendering/binding.dart:439:11)\n%2316     GestureBinding._handlePointerEventImmediately (package:flutter/src/gestures/binding.dart:413:7)\n%2317     GestureBinding.handlePointerEvent (package:flutter/src/gestures/binding.dart:376:5)\n%2318     GestureBinding._flushPointerEventQueue (package:flutter/src/gestures/binding.dart:323:7)\n%2319     GestureBinding._handlePointerDataPacket (package:flutter/src/gestures/binding.dart:292:9)\n%2320     _rootRunUnary (dart:async/zone.dart:1415:13)\n%2321     _CustomZone.runUnary (dart:async/zone.dart:1308:19)\n%2322     _CustomZone.runUnaryGuarded (dart:async/zone.dart:1217:7)\n%2323     _invoke1 (dart:ui/hooks.dart:330:10)\n%2324     PlatformDispatcher._dispatchPointerDataPacket (dart:ui/platform_dispatcher.dart:410:7)\n%2325     _dispatchPointerDataPacket (dart:ui/hooks.dart:262:31)\n\nat ly.count.dart.countly_flutter.CountlyFlutterPlugin.onMethodCall(CountlyFlutterPlugin.java:394)\nat io.flutter.plugin.common.MethodChannel$IncomingMethodCallHandler.onMessage(MethodChannel.java:267)\nat io.flutter.embedding.engine.dart.DartMessenger.invokeHandler(DartMessenger.java:295)\nat io.flutter.embedding.engine.dart.DartMessenger.lambda$dispatchMessageToQueue$0$io-flutter-embedding-engine-dart-DartMessenger(DartMessenger.java:322)\nat io.flutter.embedding.engine.dart.DartMessenger$$ExternalSyntheticLambda0.run(Unknown Source:12)\nat android.os.Handler.handleCallback(Handler.java:873)\nat android.os.Handler.dispatchMessage(Handler.java:99)\nat android.os.Looper.loop(Looper.java:193)\nat android.app.ActivityThread.main(ActivityThread.java:6669)\nat java.lang.reflect.Method.invoke(Native Method)\nat com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493)\nat com.android.internal.os.ZygoteInit.main(ZygoteInit.java:858)',
+                '_error': 'java.lang.Exception: IntegerDivisionByOneException\n\n%230      int (dart:core-patch/integers.dart:30:7)\n%231      CrashReportingPage.dividedByZero (package:countly_flutter_example/page_crash_reporting.dart:49:31)\n%232      _InkResponseState.handleTap (package:flutter/src/material/ink_well.dart:1183:21)',
                 '_os_version': '8.2',
                 '_os': 'Android',
                 '_app_version': '78.0.0',
@@ -3110,7 +3111,7 @@ describe('Testing Crashes', function() {
                 .get(`/o?method=crashes&api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&query=${crashGroupQuery}`);
             const crashGroup = crashGroupResponse.body.aaData[0];
 
-            crashGroup.error.should.equal(JSON.stringify(crashData._error));
+            crashGroup.error.should.equal(JSON.stringify(common.escape_html(crashData._error)));
         });
     });
 
