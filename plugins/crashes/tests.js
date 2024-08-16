@@ -3111,7 +3111,12 @@ describe('Testing Crashes', function() {
                 .get(`/o?method=crashes&api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&query=${crashGroupQuery}`);
             const crashGroup = crashGroupResponse.body.aaData[0];
 
+            console.warn(crashGroupResponse.body);
+
             should(crashGroup.error).equal(common.escape_html(crashData._error));
+
+            await request
+                .get('/i/crashes/delete?args=' + JSON.stringify({ crash_id: crashGroup._id }) + '&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN);
         });
     });
 
