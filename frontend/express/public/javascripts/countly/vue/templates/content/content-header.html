@@ -13,7 +13,16 @@
             </el-switch>
         </div>
         <div class="cly-vue-content-builder__layout-header__info">
-            <div class="cly-vue-content-builder__layout-header__info-title"><h4>{{ title }}</h4></div>    
+            <div class="cly-vue-content-builder__layout-header__info-title cursor-pointer" @dblclick="handleDoubleClick">
+                <h4 v-if="!isEditing">{{ title }}</h4>
+                <el-input
+                    v-else
+                    class="bu-mb-2 cly-vue-content-builder__layout-header__info-title__input"
+                    v-model="title"
+                    @blur="finishEditing"
+                    @keydown.enter.native="finishEditing"
+                />
+            </div>    
             <div class="cly-vue-content-builder__layout-header__info-meta">
                 <div class="cly-vue-content-builder__layout-header__info-version">{{ version }}</div>
                 <div class="cly-vue-content-builder__layout-header__info-separator"><i class="cly-is cly-is-status"></i></div>

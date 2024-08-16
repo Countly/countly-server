@@ -85,7 +85,8 @@
         },
         data: function() {
             return {
-                currentTab: this.tabs[0]?.value || null
+                currentTab: this.tabs[0]?.value || null,
+                isEditing: false
             };
         },
         watch: {
@@ -102,6 +103,12 @@
             },
             handleCommand: function(event) {
                 this.$emit('handle-command', event);
+            },
+            handleDoubleClick: function() {
+                this.isEditing = true;
+            },
+            finishEditing: function() {
+                this.isEditing = false;
             }
         },
         template: CV.T('/javascripts/countly/vue/templates/content/content-header.html')
@@ -279,6 +286,11 @@
                 required: false,
                 default: null
             },
+            collapse: {
+                type: Boolean,
+                required: false,
+                default: true
+            }
         },
         data() {
             return {
@@ -289,12 +301,16 @@
         },
         template: `
             <div class="cly-vue-content-builder__layout-steps">
-                <div>
+                <div v-if="collapse">
                     <el-collapse v-model="activeSection">
                         <el-collapse-item :title="header" name="section">
                             <slot name="content-builder-layout-steps"></slot>
                         </el-collapse-item>
                     </el-collapse>  
+                </div>
+                <div v-else>
+                    <div class="cly-vue-content-builder__layout-steps__header text-medium font-weight-bold">{{ header }}</div>
+                    <slot name="content-builder-layout-steps"></slot>
                 </div>
             </div>
         `,
