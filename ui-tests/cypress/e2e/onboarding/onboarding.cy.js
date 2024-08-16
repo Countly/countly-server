@@ -343,9 +343,9 @@ describe('Complete Onboarding', () => {
         analyticsViewsPerSessionPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToAnalyticsViews();
         analyticsViewsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToAnalyticsSources();
+        analyticsSourcesPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToAnalyticsSources();
-        //analyticsSourcesPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToAnalyticsTechnologyPlatforms();
         //analyticsTechnologyPlatformsPageHelpers.verifyFullDataPageElements();
         //analyticsTechnologyPlatformsPageHelpers.clickDevicesAndTypesTab();
