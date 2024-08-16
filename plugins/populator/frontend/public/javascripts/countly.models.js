@@ -1361,7 +1361,8 @@
                     data: {
                         app_key: countlyCommon.ACTIVE_APP_KEY,
                         requests: JSON.stringify(req),
-                        populator: true
+                        populator: true,
+                        safe_api_response: true
                     },
                     success: function(response) {
                         if (response && response.status === 504) {
