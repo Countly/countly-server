@@ -64,7 +64,7 @@ const verifyStaticElementsOfPage = () => {
         isElementVisible: false,
         element: acquisitionDataTableElements().COLUMN_NAME_NEW_USERS_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -76,7 +76,7 @@ const verifyEmptyPageElements = () => {
 
     verifyAcquisitionDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -89,7 +89,7 @@ const verifyFullDataPageElements = () => {
 
     verifyAcquisitionDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifyAcquisitionChart = ({
@@ -124,7 +124,8 @@ const verifyAcquisitionChart = ({
             labelElement: acquisitionEChartElements.EMPTY_PIE_SOURCES_NEW_USERS_SUBTITLE,
             labelText: "No data found",
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: acquisitionEChartElements.ECHARTS,
         });
@@ -156,7 +157,8 @@ const verifyAcquisitionDataFromTable = ({
             labelText: "No data found",
         });
 
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: acquisitionDataTableElements(index).VIEW_CHECKBOX,

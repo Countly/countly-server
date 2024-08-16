@@ -2,7 +2,7 @@ export const acquisitionPageElements = {
     PAGE_TITLE: 'header-title',
     PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
     FILTER_DATE_PICKER: 'cly-datepicker-test-id-pseudo-input-label',
-}
+};
 
 export const acquisitionEChartElements = {
     ECHARTS: '.echarts',
@@ -12,7 +12,7 @@ export const acquisitionEChartElements = {
     EMPTY_PIE_SOURCES_NEW_USERS_ICON: 'pie-sources-new-users-empty-logo',
     EMPTY_PIE_SOURCES_NEW_USERS_TITLE: 'pie-sources-new-users-empty-title',
     EMPTY_PIE_SOURCES_NEW_USERS_SUBTITLE: 'pie-sources-new-users-empty-subtitle',
-}
+};
 
 const acquisitionDataTableElements = (index = 0) => {
     return {
