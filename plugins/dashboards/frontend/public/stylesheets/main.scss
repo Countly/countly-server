@@ -3,9 +3,13 @@
 
 .full-screen {
     #cly-vue-sidebar {display: none;}
+    #intercom-container{display: none;}
+    #intercom-frame{display:none;}
 }
 
 .email-screen {
+    #intercom-container{display: none;}
+    #intercom-frame{display:none;}
     #cly-vue-sidebar {display: none;}
     .cly-vue-dashboards > header {display: none;}
     #content {

@@ -1,9 +1,20 @@
-<div class="bu-py-3">
-    <el-checkbox v-model="checkbox">{{i18nM("dashboards.custom-period")}}</el-checkbox>
+<div :class="[showCheckbox ? 'bu-mt-4' : 'bu-py-3']">
+    <el-checkbox v-model="checkbox" v-if="showCheckbox">
+        <span class="text-smallish">{{ i18nM("dashboards.custom-period") }}</span>
+    </el-checkbox>
     <cly-form-field
         v-if="checkbox"
         name="title"
+        :label="!showCheckbox && i18n('dashboards.period')"
         :rules="checkbox ? 'required' : ''">
-       <cly-date-picker v-model="customPeriod" :disabled-shortcuts="disabledShortcuts" timestampFormat="ms"></cly-date-picker>
+        <cly-date-picker 
+            v-model="customPeriod" 
+            timestampFormat="ms"
+            :disabled-shortcuts="disabledShortcuts"
+            :allow-custom-range="allowCustomRange"
+            :show-relative-modes="showRelativeModes"
+            @change="onCustomPeriodChange"
+        >
+        </cly-date-picker>
     </cly-form-field>
 </div>

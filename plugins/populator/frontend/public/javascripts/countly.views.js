@@ -327,6 +327,10 @@
                 });
             },
             openDialog: function() {
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].salt || countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].checksum_salt) {
+                    CountlyHelpers.notify({type: 'error', message: CV.i18n("populator.error-salt"), sticky: true});
+                    return;
+                }
                 var self = this;
                 let selectedTemplateId = this.selectedTemplate;
                 if (this.currentPopulateTab === 'pop-with-env') { // populate with environment selected
