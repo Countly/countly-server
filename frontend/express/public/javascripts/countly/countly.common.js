@@ -1885,9 +1885,6 @@
 
             countlyCommon.periodObj = getPeriodObj();
 
-            if (!rangeArray) {
-                return { "chartData": tableData };
-            }
             var periodMin = 0,
                 periodMax = 0,
                 dataObj = {},
@@ -1896,6 +1893,10 @@
                 propertyFunctions = _.pluck(dataProperties, "func"),
                 propertyValue = 0;
 
+            if (!rangeArray) {
+                return { "chartData": tableData };
+            }
+            
             if (!countlyCommon.periodObj.isSpecialPeriod) {
                 periodMin = countlyCommon.periodObj.periodMin;
                 periodMax = (countlyCommon.periodObj.periodMax + 1);
