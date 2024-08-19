@@ -1896,7 +1896,7 @@
             if (!rangeArray) {
                 return { "chartData": tableData };
             }
-            
+
             if (!countlyCommon.periodObj.isSpecialPeriod) {
                 periodMin = countlyCommon.periodObj.periodMin;
                 periodMax = (countlyCommon.periodObj.periodMax + 1);
