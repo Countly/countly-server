@@ -1,3 +1,18 @@
+## Version 24.05.8
+Fixes:
+- [scripts] script to check settings limits
+- [crashes] Update custom field cleanup script with streaming
+- [core] Skip data masking on internal appUsers data refetching query
+- [core][bugfix] Correct validation on "is any plugin masked"
+- [scripts] Delete custom events scripts
+- [dashboards] Show edit option also for invalid widgets
+- [core] batcher stats added
+- [dependencies] Bump xlsx-write-stream from 1.0.2 to 1.0.3
+
+Enterprise fixes:
+- [data-manager] changes to allow skipping query rewriting using passed property
+- [os] fix for changing default repository of CentOS 8 to vault because OS reached EOL
+  
 ## Version 24.05.7
 Fixes:
 - [countly-request]Fix countly-request get and post methods
