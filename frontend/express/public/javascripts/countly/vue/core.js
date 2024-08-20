@@ -560,12 +560,8 @@
                     }
                 },
                 actions: {
-                    updateSelectedMenuItem: function({dispatch, commit}, payload) {
+                    updateSelectedMenuItem: function({commit}, payload) {
                         commit('setSelectedMenuItem', payload);
-                        if (payload.menu !== 'guides') {
-                            // console.log("SHOULD DESELECT GUIDES BUTTON");
-                            dispatch('deselectGuidesButton');
-                        }
                     },
                     selectGuidesButton: function(context) {
                         context.commit('setGuidesButton', 'selected');

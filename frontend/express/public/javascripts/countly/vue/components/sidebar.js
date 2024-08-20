@@ -319,6 +319,7 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -453,6 +454,7 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -643,7 +645,7 @@
                         {
                             name: this.enableGuides ? "countly-guides" : "help-center",
                             icon: this.enableGuides ? "cly-icon-sidebar-countly-guides" : "cly-icon-sidebar-help-center",
-                            noSelect: this.enableGuides ? undefined : true,
+                            noSelect: true,
                             tooltip: this.enableGuides ? "Countly Guides" : "Help Center"
                         },
                         {
@@ -700,6 +702,20 @@
                 },
                 pseudoSelectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state === 'selected') {
+                        return 'guides';
+                    }
+
+                    if (!this.selectedMenuOptionLocal && selected) {
+                        return selected.menu;
+                    }
+                    return this.selectedMenuOptionLocal;
+                },
+                visibleSidebarMenu: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
+
                     if (!this.selectedMenuOptionLocal && selected) {
                         return selected.menu;
                     }
@@ -743,9 +759,9 @@
                 },
                 onClick: function(option) {
                     if (!option.noSelect) {
-                        // EMRE: make guides go in here and change selectedMenuOptionLocal to guides or sth?
                         this.selectedMenuOptionLocal = option.name;
                         this.showMainMenu = true;
+                        this.$store.dispatch("countlySidebar/deselectGuidesButton");
                     }
 
                     if (option.name === "toggle") {
@@ -753,7 +769,6 @@
                     }
                     else if (option.name === "countly-guides") {
                         this.$store.dispatch("countlySidebar/selectGuidesButton");
-                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "guides", item: {}});
                     }
                 },
                 onToggleClick: function() {
