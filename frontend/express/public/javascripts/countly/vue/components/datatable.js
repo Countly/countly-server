@@ -235,7 +235,6 @@
             }
 
             return {
-                localDefaultSort: this.defaultSort,
                 controlParams: controlParams,
                 firstPage: 1
             };
@@ -306,14 +305,14 @@
                     sort: [],
                     selectedDynamicCols: false
                 };
-                if (this.localDefaultSort && this.preventDefaultSort === false) {
+                if (this.defaultSort && this.preventDefaultSort === false) {
                     defaultState.sort = [{
-                        field: this.localDefaultSort.prop,
-                        type: this.localDefaultSort.order === "ascending" ? "asc" : "desc"
+                        field: this.defaultSort.prop,
+                        type: this.defaultSort.order === "ascending" ? "asc" : "desc"
                     }];
                 }
                 else {
-                    this.localDefaultSort = {};
+                    this.defaultSort = {};
                 }
 
                 if (!this.persistKey) {
@@ -948,6 +947,13 @@
             sortable: {
                 type: Boolean,
                 default: false
+            },
+            displayMode: {
+                type: String,
+                default: null,
+                validator: function(value) {
+                    return ['list', /** add others if needed */].indexOf(value) !== -1;
+                }
             }
         },
         data: function() {
@@ -1001,7 +1007,9 @@
                 if (!this.forceLoading && this.dataSource && this.externalStatus === 'silent-pending') {
                     classes.push("silent-loading");
                 }
-
+                if (this.displayMode) {
+                    classes.push("display-mode--" + this.displayMode);
+                }
                 return classes;
             },
             sourceRows: function() {
