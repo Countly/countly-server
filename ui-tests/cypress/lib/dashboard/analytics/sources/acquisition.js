@@ -157,33 +157,33 @@ const verifyAcquisitionDataFromTable = ({
         });
         return;
     }
-        cy.verifyElement({
-            element: acquisitionDataTableElements(index).VIEW_CHECKBOX,
-        });
+    cy.verifyElement({
+        element: acquisitionDataTableElements(index).VIEW_CHECKBOX,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: acquisitionDataTableElements(index).SOURCE,
-            elementText: source
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: acquisitionDataTableElements(index).SOURCE,
+        elementText: source
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: acquisitionDataTableElements(index).TOTAL_SESSIONS,
-            elementText: totalSessions
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: acquisitionDataTableElements(index).TOTAL_SESSIONS,
+        elementText: totalSessions
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: acquisitionDataTableElements(index).TOTAL_USERS,
-            elementText: totalUsers
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: acquisitionDataTableElements(index).TOTAL_USERS,
+        elementText: totalUsers
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: acquisitionDataTableElements(index).NEW_USERS,
-            elementText: newUsers
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: acquisitionDataTableElements(index).NEW_USERS,
+        elementText: newUsers
+    });
 };
 
 module.exports = {
