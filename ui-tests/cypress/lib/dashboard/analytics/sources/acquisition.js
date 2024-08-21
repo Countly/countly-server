@@ -124,12 +124,11 @@ const verifyAcquisitionChart = ({
             labelElement: acquisitionEChartElements.EMPTY_PIE_SOURCES_NEW_USERS_SUBTITLE,
             labelText: "No data found",
         });
+        return;
     }
-    else {
-        cy.verifyElement({
-            element: acquisitionEChartElements.ECHARTS,
-        });
-    }
+    cy.verifyElement({
+        element: acquisitionEChartElements.ECHARTS,
+    });
 };
 
 const verifyAcquisitionDataFromTable = ({
@@ -156,10 +155,8 @@ const verifyAcquisitionDataFromTable = ({
             labelElement: acquisitionDataTableElements().EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
-
+        return;
     }
-    else {
-
         cy.verifyElement({
             element: acquisitionDataTableElements(index).VIEW_CHECKBOX,
         });
@@ -187,7 +184,6 @@ const verifyAcquisitionDataFromTable = ({
             element: acquisitionDataTableElements(index).NEW_USERS,
             elementText: newUsers
         });
-    }
 };
 
 module.exports = {
