@@ -1104,11 +1104,6 @@ membersUtility.updateMember = async function(query = {}, data = {}, upsert = tru
             return reject(ex);
         }
 
-        // _id is immutable(unique field. It should not be updated)
-        // created_at is set on user creation and should not be updated)
-        delete copy._id;
-        delete copy.created_at;
-
         this.db.collection('members').update(query, { $set: copy }, { upsert }, (err) => {
             if (err) {
                 reject(err);
@@ -1155,7 +1150,7 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     if (!data || !Object.keys(data).length) {
         throw new Error('Invalid user data provided');
     }
-    user._id = data._id || data.id || data.sub || data.username;
+    user.provider_id = data._id || data.id || data.sub || data.username;
     user.email = data.email || '';
     user.username = data.username || data.email;
     user.full_name = data.full_name || data.name || `${data.firstName} ${data.lastName}` || "";
@@ -1167,7 +1162,19 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
     user.isAD = (provider === 'ad' || provider === 'azure');
     user.isCognito = provider === 'cognito';
 
-    user.created_at = data.created_at || Math.floor(((new Date()).getTime()) / 1000);
+    const query = user.email
+        ? {
+            $or: [
+                { provider_id: user.provider_id },
+                { email: user.email }
+            ]
+        }
+        : { provider_id: user.provider_id };
+    const existingMembers = await membersUtility.findMembers(query);
+
+    if (existingMembers.length === 0) {
+        user.created_at = data.created_at || Math.floor(((new Date()).getTime()) / 1000);
+    }
 
     user.admin_of = data.admin_of || [];
     user.user_of = data.user_of || [];
@@ -1188,26 +1195,19 @@ membersUtility.createMember = async function(data, provider = '', deleteDuplicat
         user.admin_of.push(...data.marketing_of);
     }
 
-    const buffer = crypto.randomBytes(48);
-    user.api_key = data.api_key || common.md5Hash(buffer.toString('hex') + Math.random());
-    user.password = data.password || common.md5Hash(data.api_key);
+    if (existingMembers.length === 0 || !existingMembers[0].api_key) {
+        const buffer = crypto.randomBytes(48);
+        user.api_key = data.api_key || common.md5Hash(buffer.toString('hex') + Math.random());
+        user.password = data.password || common.md5Hash(data.api_key);
+
+    }
 
     // push approver permission
     user.approver = !!data.approver;
     user.approver_bypass = !!data.approver_bypass;
 
-    const query = user.email
-        ? {
-            $or: [
-                { _id: user._id },
-                { email: user.email }
-            ]
-        }
-        : { _id: user._id };
-
     try {
-        const existingMembers = await membersUtility.findMembers(query);
-        if (deleteDuplicate && (existingMembers.length >= 2 || (existingMembers.length === 1 && existingMembers[0]._id !== user._id))) {
+        if (deleteDuplicate && (existingMembers.length >= 2 || (existingMembers.length === 1 && existingMembers[0].provider_id !== user.provider_id))) {
             await membersUtility.removeMembers(query);
         }
 

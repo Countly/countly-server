@@ -26,9 +26,6 @@
                 <el-dropdown-item v-if="canUserCreateTransform && (currentSecondaryTab === 'transformations') " command="create-segment-transform">
                     {{i18n('data-manager.create-segment-transformation')}}
                 </el-dropdown-item>
-                <el-dropdown-item v-if="canUserCreate && (currentSecondaryTab === 'event-groups') " command="create-event-group">
-                    {{i18n('data-manager.create-group')}}
-                </el-dropdown-item>
             </cly-more-options>
           </div>
         <div v-if="isDrill && (canUserUpdate || canUserCreate || isUserGlobalAdmin)" class="bu-ml-2">
