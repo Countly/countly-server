@@ -202,9 +202,9 @@ updates:
     interval: daily
   open-pull-requests-limit: 10
   reviewers:
-  - iartem
+  - cihadtekin
   assignees:
-  - iartem
+  - cihadtekin
   labels:
   - dependencies
   versioning-strategy: increase-if-necessary

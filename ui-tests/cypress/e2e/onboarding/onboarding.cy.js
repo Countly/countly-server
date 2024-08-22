@@ -57,6 +57,7 @@ const hooksPageHelpers = require('../../lib/dashboard/manage/hooks/hooks');
 const dbCountlyPageHelpers = require('../../lib/dashboard/manage/db/countly/dbCountly');
 const dbCountlyOutPageHelpers = require('../../lib/dashboard/manage/db/countlyOut/countlyOut');
 const dbCountlyFsPageHelpers = require('../../lib/dashboard/manage/db/countlyFs/countlyFs');
+const loginHelpers = require('../../lib/login/login');
 const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
 describe('Complete Onboarding', () => {
@@ -93,6 +94,10 @@ describe('Complete Onboarding', () => {
         });
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
+        navigationHelpers.goToLogoutPage();
+        navigationHelpers.goToLoginPage();
+        loginHelpers.login(user.email, user.password);
+        navigationHelpers.isNavigatedToDashboard();
     });
 
     it('should be complete onboarding flow with creating mobile type demo application and do not enable tracking and subscribe to newsletter', function() {
@@ -120,6 +125,10 @@ describe('Complete Onboarding', () => {
         });
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
+        navigationHelpers.goToLogoutPage();
+        navigationHelpers.goToLoginPage();
+        loginHelpers.login(user.email, user.password);
+        navigationHelpers.isNavigatedToDashboard();
     });
 
     it('should be complete onboarding flow with creating mobile type own application and verify all pages with empty data', function() {
@@ -283,6 +292,10 @@ describe('Complete Onboarding', () => {
         });
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
+        navigationHelpers.goToLogoutPage();
+        navigationHelpers.goToLoginPage();
+        loginHelpers.login(user.email, user.password);
+        navigationHelpers.isNavigatedToDashboard();
     });
 
     it('should be complete onboarding flow with creating mobile type demo application and verify home page with Finance data', function() {
