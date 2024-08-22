@@ -13,7 +13,7 @@
                     timestampFormat="ms"
                     type="daterange"
                     v-model="scope.editedObject.period"
-                    @change="fetchSegments"
+                    @change="onEventChange"
                 >
                 </cly-date-picker>
             </cly-form-field>
@@ -21,7 +21,7 @@
                 <cly-select-x
                     :options="allEvents"
                     v-model="scope.editedObject.selectedEventName"
-                    @change="fetchSegments"
+                    @change="onEventChange"
                 >
                 </cly-select-x>
             </cly-form-field>
@@ -35,6 +35,7 @@
                 </cly-select-x>
             </cly-form-field>
             <cly-form-field-checklistbox
+                ref="segmentValuesChecklistbox"
                 v-if="scope.editedObject.selectedSegment !== 'segment'"
                 name="segment-values"
                 :label="i18n('events.segment.values')"

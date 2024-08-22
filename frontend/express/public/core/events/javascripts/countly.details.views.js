@@ -161,7 +161,8 @@
                 omittedSegments: {
                     label: CV.i18n("events.all.omitted.segments"),
                     options: [],
-                }
+                },
+                domObserver: null
             };
         },
         computed: {
@@ -192,6 +193,10 @@
                 this.fetchSegmentValues();
             },
             onClose: function() {
+            },
+            onEventChange: function() {
+                this.$refs.drawerScope.editedObject.selectedSegment = "segment";
+                this.fetchSegments();
             },
             fetchSegments: function() {
                 var self = this;
@@ -238,7 +243,42 @@
                         });
                     });
                 }
+            },
+            observeDomChanges: function() {
+                const targetNode = this.$refs.drawerScope.$el;
+                const config = { childList: true, subtree: true };
+                const self = this;
+
+                const callback = function(mutationsList) {
+                    for (const mutation of mutationsList) {
+                        if (mutation.type === 'childList') {
+                            self.updateMaxHeight();
+                        }
+                    }
+                };
+
+                const observer = new MutationObserver(callback);
+                observer.observe(targetNode, config);
+            
+                this.domObserver = observer;
+            },
+            updateMaxHeight: function() {
+                const footerElement = this.$refs.drawerScope.$el.querySelector(".cly-vue-drawer__footer");
+                const footer = footerElement.getBoundingClientRect();
+                const footerStyle = window.getComputedStyle(footerElement);
+                const borderWidth = parseFloat(footerStyle.borderTopWidth);
+                const checklistboxMaxY = footer.top - borderWidth;
+                this.$refs.segmentValuesChecklistbox.recalculateMaxHeight(checklistboxMaxY);
             }
+        },
+        beforeDestroy: function() {
+            if (this.domObserver) {
+                this.domObserver.disconnect();
+            }
+        },
+        mounted: function() {
+            this.observeDomChanges();
+            this.updateMaxHeight();
         }
     });
 

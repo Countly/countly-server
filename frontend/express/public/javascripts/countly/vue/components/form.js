@@ -482,7 +482,19 @@
             },
             updateValue: function(value) {
                 this.$emit('input', value);
+            },
+            recalculateMaxHeight: function(maxY) {
+                const checklistboxHeaderElement = document.querySelector('div.cly-vue-form-checklistbox > div.cly-vue-listbox.scroll-keep-show.cly-vue-listbox--bordered.cly-vue-listbox--has-margin.cly-vue-listbox--has-default-skin > div.cly-vue-listbox__header');
+                const checklistboxHeader = checklistboxHeaderElement.getBoundingClientRect();
+                const headerStyle = window.getComputedStyle(checklistboxHeaderElement);
+                const marginBottom = parseFloat(headerStyle.marginBottom);
+                this.checklistboxMaxHeight = maxY - 32 - checklistboxHeader.bottom - marginBottom;
             }
+        },
+        data: function() {
+            return {
+                checklistboxMaxHeight: "auto"
+            };
         },
         template: '<div class="cly-vue-form-checklistbox">\
                         <cly-form-field :name="name" :required="required" direction="row" inline v-slot:default>\
@@ -500,7 +512,7 @@
                             :options="options"\
                             :searchable="searchable"\
                             :search-placeholder="searchPlaceholder"\
-                            height="467"\
+                            :height="checklistboxMaxHeight"\
                             :value="value"\
                             :no-match-found-placeholder="i18n(\'common.search.no-match-found\')"\
                             @input="updateValue"\

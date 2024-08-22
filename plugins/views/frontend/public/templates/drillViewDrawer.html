@@ -21,6 +21,7 @@
                     :options="availableSegments"
                     :disabledOptions="omittedSegments"
                     v-model="scope.editedObject.selectedSegment"
+                    @change="onSegmentChange"
                 >
                 </cly-select-x>
             </cly-form-field>
@@ -35,6 +36,7 @@
                 </cly-select-x>
             </cly-form-field>
             <cly-form-field-checklistbox
+                ref="viewsChecklistbox"
                 name="views"
                 :label="i18n('views.drill-drawer.views')"
                 :required="false"
