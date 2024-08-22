@@ -10,9 +10,14 @@ module.exports = { send }
  * @param {import("../sending").PushTicket} push 
  */
 async function send(push) {
-    let agent = new Agent;
+    /** @type {Agent=} */
+    let agent;
     if (push.proxy) {
-        agent = /** @type {Agent} */ (proxyAgent({ proxy: push.proxy }));
+        // TODO: check if we need to cache agent. node or firebase app instance
+        // might be doing that already. node keeps agents in a pool depending
+        // on keepAlive: https://nodejs.org/api/http.html#class-httpagent
+        console.log(push.proxy);
+        agent = /** @type {Agent} */(proxyAgent({ proxy: push.proxy }));
     }
 
     const creds = /** @type {import('../types/credentials').FCMCredentials} */ (push.credentials);
