@@ -912,7 +912,7 @@
                                         context.commit("setLabels", countlyAllEvents.helpers.getLabels(res, context.state.groupData, context.state.selectedEventName));
                                         countlyAllEvents.service.fetchSelectedEventsData(context, period)
                                             .then(function(response) {
-                                                if (response) {
+                                                if (response?.event === context.state.selectedEventName) {
                                                     context.commit("setSelectedEventsData", response);
                                                     context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, response) || []);
                                                     context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);

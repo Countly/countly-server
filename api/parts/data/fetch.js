@@ -1942,6 +1942,10 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                     }
                 }
             }
+
+            if (Object.keys(mergedDataObj).length && params?.qstring?.event) {
+                mergedDataObj.event = params.qstring.event;
+            }
         }
         return mergedDataObj;
     }
