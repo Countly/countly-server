@@ -1,5 +1,6 @@
 <cly-drawer
     id="preset-drawer"
+    ref="drawerScope"
     @submit="onSubmit"
     @copy="onCopy"
     @close="onClose"
@@ -16,16 +17,15 @@
                     :display-shortcuts="false" 
                     :min-input-width="336" 
                     :max-input-width="336"
-                    v-model="drawerScope.editedObject.range" 
-                    label-mode="absolute"
+                    v-model="period" 
+                    label-mode-prop="absolute"
                     :allow-presets="false"
-                    :exclude-current-day-prop="drawerScope.editedObject.exclude_current_day"
-                    @change-label="payload => handleLabelChanged(payload, drawerScope)"
+                    @change-label="handleLabelChanged"
                 >
                 </cly-date-picker>
             </cly-form-field>
 
-            <cly-form-field v-if="showExcludeCurrentDay(drawerScope.editedObject.range)" name="exclude-current-day" style="padding-top: 0; display:none;">
+            <cly-form-field v-if="showExcludeCurrentDay(drawerScope.editedObject.range)" name="exclude-current-day" style="padding-top: 0;">
                 <el-checkbox v-model="drawerScope.editedObject.exclude_current_day">{{i18n('management.preset.exclude-current-day')}}</el-checkbox>
                 <div class="text-small  color-cool-gray-50 bu-mt-1 bu-pl-5">
                     {{i18n('management.preset.exclude-current-day.description')}}

@@ -18,6 +18,8 @@ const SERVER_URL = '';
 const BATCH_LIMIT = 1000;
 // format 'YYYY-MM-DD', crashes with last occurence older than this will be removed
 const LAST_TIMESTAMP = '';
+// if true, run one batch of deletion then exit
+const RUN_ONCE = true;
 
 const moment = require('moment-timezone');
 const _ = require('underscore');
@@ -125,7 +127,7 @@ pluginManager.dbConnection().then(async(db) => {
         uri: urlObj.href,
     }));
 
-    while (requestOptions.length > 0) {
+    do {
         const requestOption = requestOptions.shift();
 
         if (DRY_RUN) {
@@ -161,7 +163,7 @@ pluginManager.dbConnection().then(async(db) => {
                 uri: urlObj.href,
             }));
         }
-    }
+    } while (requestOptions.length > 0 && !RUN_ONCE);
 
     db.close();
 });
