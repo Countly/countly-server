@@ -621,7 +621,7 @@ taskmanager.checkIfRunning = function(options, callback) {
     if (options.request) {
         query.request = options.request;
     }
-    if (!query.request && options.params && options.params.qstring) {
+    if (!query.request && options && options.params && options.params.qstring) {
         var json = options.params.qstring || {};
         json = JSON.parse(JSON.stringify(json));
         //make sure not to have same task already running
@@ -982,6 +982,7 @@ taskmanager.rerunTask = function(options, callback) {
                 reqData = {};
             }
             if (reqData.uri) {
+                reqData.json = reqData.json || {};
                 reqData.json.task_id = options.id;
                 reqData.strictSSL = false;
                 if (reqData.json && reqData.json.period && Array.isArray(reqData.json.period)) {
