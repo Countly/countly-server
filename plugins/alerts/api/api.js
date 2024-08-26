@@ -198,7 +198,9 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                         {$set: alertConfig},
                         function(err, result) {
                             if (!err) {
-                                plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.value });
+                                if (result && result.value) {
+                                    plugins.dispatch("/updateAlert", { method: "alertTrigger", alert: result.value });
+                                }
                                 plugins.dispatch("/updateAlert", { method: "alertTrigger" });
 
                                 common.returnOutput(params, result && result.value);

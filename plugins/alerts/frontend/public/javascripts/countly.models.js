@@ -245,13 +245,16 @@
             },
             dataType: "json",
             success: function(res) {
-                if (res && res.aaData && res.aaData.length > 0 && callback) {
+                if (res && res.aaData && res.aaData.length > 0) {
                     var data = [];
                     for (var i = 0; i < res.aaData.length; i++) {
                         data.push({
                             value: res.aaData[i]._id,
                             name: res.aaData[i].view,
                         });
+                    }
+                    if (callback) {
+                        callback(data);
                     }
                     return callback(data);
                 }

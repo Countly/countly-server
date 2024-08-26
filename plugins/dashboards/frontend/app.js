@@ -14,6 +14,9 @@ var countlyFs = require('../../../api/utils/countlyFs.js');
 
     plugin.staticPaths = function(app/*, countlyDb*/) {
         app.get(countlyConfig.path + "/dashboards/images/screenshots/*", function(req, res) {
+            if (!req || !req.params) {
+                return res.send(false);
+            }
             var requestPath = req.path;
             var reqArray = requestPath.split("/");
             var fileName = "";

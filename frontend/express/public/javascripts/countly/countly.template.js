@@ -1414,7 +1414,7 @@ var AppRouter = Backbone.Router.extend({
         * <span>{{#limitString value 15}}{{/limitString}}</span>
 		*/
         Handlebars.registerHelper('limitString', function(string, limit) {
-            if (string.length > limit) {
+            if (string && string.length > limit) {
                 return (string || '').substr(0, limit) + "..";
             }
             else {
