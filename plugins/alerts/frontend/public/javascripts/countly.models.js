@@ -253,9 +253,7 @@
                             name: res.aaData[i].view,
                         });
                     }
-                    if (callback) {
-                        callback(data);
-                    }
+
                     return callback(data);
                 }
 

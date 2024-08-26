@@ -448,7 +448,7 @@ plugins.setConfigs("crashes", {
                     }
                     var hash = common.crypto.createHash('sha1').update(seed).digest('hex');
                     var dbAppUser = params.app_user;
-                    if (!dbAppUser) {
+                    if (dbAppUser) {
                         report.group = hash;
                         report.uid = dbAppUser.uid;
                         report.ts = params.time.timestamp;
