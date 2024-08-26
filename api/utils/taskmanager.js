@@ -607,6 +607,7 @@ taskmanager.checkResult = function(options, callback) {
 * @param {funciton} callback - callback for the result
 */
 taskmanager.checkIfRunning = function(options, callback) {
+    options = options || {};
     options.db = options.db || common.db;
     var query = {};
     if (options.id) {
