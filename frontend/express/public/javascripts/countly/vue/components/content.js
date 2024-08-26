@@ -30,12 +30,12 @@
             },
             version: {
                 type: String,
-                required: true,
+                required: false,
                 default: null
             },
             createdBy: {
                 type: String,
-                required: true,
+                required: false,
                 default: null
             },
             toggle: {

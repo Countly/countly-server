@@ -24,8 +24,8 @@
                 />
             </div>    
             <div class="cly-vue-content-builder__layout-header__info-meta">
-                <div class="cly-vue-content-builder__layout-header__info-version">{{ version }}</div>
-                <div class="cly-vue-content-builder__layout-header__info-separator"><i class="cly-is cly-is-status"></i></div>
+                <div v-if="version" class="cly-vue-content-builder__layout-header__info-version">{{ version }}</div>
+                <div v-if="version" class="cly-vue-content-builder__layout-header__info-separator"><i class="cly-is cly-is-status"></i></div>
                 <div class="cly-vue-content-builder__layout-header__info-creator">{{ createdBy }}</div>
             </div>
         </div>
