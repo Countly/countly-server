@@ -23,10 +23,9 @@
 
     Vue.component("cly-content-header", countlyVue.components.create({
         props: {
-            title: {
+            value: {
                 type: String,
-                required: true,
-                default: null
+                required: true
             },
             version: {
                 type: String,
@@ -65,6 +64,11 @@
                 required: false,
                 default: CV.i18n('common.save')
             },
+            saveButtonDisabled: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
             topDropdownOptions: {
                 type: Array,
                 required: false,
@@ -86,10 +90,14 @@
         data: function() {
             return {
                 currentTab: this.tabs[0]?.value || null,
-                isEditing: false
+                isEditing: false,
+                localTitle: this.value
             };
         },
         watch: {
+            value: function(newVal) {
+                this.localTitle = newVal;
+            },
             currentTab: function(newVal) {
                 this.$emit('tab-change', newVal);
             }
@@ -109,6 +117,9 @@
             },
             finishEditing: function() {
                 this.isEditing = false;
+                if (this.localTitle !== this.value) {
+                    this.$emit('input', this.localTitle);
+                }
             }
         },
         template: CV.T('/javascripts/countly/vue/templates/content/content-header.html')

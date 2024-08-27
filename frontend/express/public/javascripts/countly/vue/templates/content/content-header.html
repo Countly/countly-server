@@ -14,11 +14,11 @@
         </div>
         <div class="cly-vue-content-builder__layout-header__info">
             <div class="cly-vue-content-builder__layout-header__info-title cursor-pointer" @dblclick="handleDoubleClick">
-                <h4 v-if="!isEditing">{{ title }}</h4>
+                <h4 v-if="!isEditing">{{ localTitle }}</h4>
                 <el-input
                     v-else
                     class="bu-mb-2 cly-vue-content-builder__layout-header__info-title__input"
-                    v-model="title"
+                    v-model="localTitle"
                     @blur="finishEditing"
                     @keydown.enter.native="finishEditing"
                 />
@@ -36,7 +36,7 @@
     <div class="cly-vue-content-builder__layout-header__actions">
         <cly-status-badge v-if="status" :label="status" class="cly-vue-content-builder__layout-header__status"></cly-status-badge>
         <div v-if="!hideSaveButton" class="cly-vue-content-builder__layout-header__save">
-            <el-button type="success" size="small" @click="save">{{ saveButtonLabel }}</el-button>
+            <el-button type="success" :disabled="saveButtonDisabled" size="small" @click="save">{{ saveButtonLabel }}</el-button>
         </div>
         <div v-if="topDropdownOptions" class="cly-vue-content-builder__layout-header__options">
             <cly-more-options size="small" @command="handleCommand($event)">
