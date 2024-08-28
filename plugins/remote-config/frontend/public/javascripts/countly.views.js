@@ -1,4 +1,4 @@
-/*global _,countlyQueryBuilder, app, moment, countlyGlobal, countlyVue, countlyCommon, countlyAuth, CV, CountlyHelpers, countlyRemoteConfig */
+/*global _, VeeValidate, countlyQueryBuilder, app, moment, countlyGlobal, countlyVue, countlyCommon, countlyAuth, CV, CountlyHelpers, countlyRemoteConfig */
 
 (function() {
     var FEATURE_NAME = "remote_config";
@@ -34,6 +34,20 @@
         s: CV.i18n("remote-config.type.s"),
         l: CV.i18n("remote-config.type.l")
     };
+
+    VeeValidate.extend('oneHour', {
+        validate: function(inpValue) {
+            var valid = true;
+
+            if (moment.duration(moment(inpValue).diff(moment())).asHours() < 1) {
+                valid = false;
+            }
+
+            return {
+                valid: valid,
+            };
+        },
+    });
 
     var ConditionStats = countlyVue.views.BaseView.extend({
         template: '	<table class="cly-vue-remote-config-percentages-breakdown">\
@@ -377,6 +391,22 @@
                 defaultValue: "",
                 createdCondition: {}
             };
+        },
+        watch: {
+            showExpirationDate: {
+                immediate: true,
+                handler: function(newValue) {
+                    if (this.$refs.clyDrawer) {
+                        if (newValue === true) {
+                            var currentTime = moment();
+                            this.$refs.clyDrawer.editedObject.expiry_dttm = currentTime.add(moment.duration(1, 'days')).valueOf();
+                        }
+                        else if (newValue === false) {
+                            this.$refs.clyDrawer.editedObject.expiry_dttm = null;
+                        }
+                    }
+                },
+            },
         },
         methods: {
             handleOpen: function() {
