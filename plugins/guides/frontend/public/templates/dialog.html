@@ -1,4 +1,5 @@
 <div class="guide-dialog-wrapper">
+    <!-- EMRE: this section here should have the animation, with closing animation happening after closing guides page -->
     <div v-if="isButtonVisible" data-test-id="view-guide-button" :class="dynamicClassGuideButton" @click="onClick">
         <span class="icon">
             <img src="images/icons/book-open.svg" alt="Icon"/>
@@ -25,7 +26,7 @@
             <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center">
                 <h2>{{ guideData.sectionTitle || "" }}</h2>
                 <div class="close-icon" @click="onClose">
-                    <img src="images/icons/close-icon-grey.svg" alt="Icon"/>
+                    <img class="bu-p-1" src="images/icons/close-icon-grey.svg" alt="Icon"/>
                 </div>
             </div>
         </template>
