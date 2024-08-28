@@ -399,7 +399,7 @@
                     if (this.$refs.clyDrawer) {
                         if (newValue === true) {
                             var currentTime = moment();
-                            this.$refs.clyDrawer.editedObject.expiry_dttm = currentTime.add(moment.duration(1, 'days')).valueOf();
+                            this.$refs.clyDrawer.editedObject.expiry_dttm = currentTime.add(moment.duration(25, 'hours')).valueOf();
                         }
                         else if (newValue === false) {
                             this.$refs.clyDrawer.editedObject.expiry_dttm = null;
