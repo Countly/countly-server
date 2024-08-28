@@ -86,7 +86,7 @@
     "sass": "1.77.8",
     "sqlite3": "^5.1.7",
     "tslib": "^2.6.3",
-    "uglify-js": "3.19.0",
+    "uglify-js": "3.18.0",
     "underscore": "1.13.6",
     "xlsx-write-stream": "^1.0.0"
   },

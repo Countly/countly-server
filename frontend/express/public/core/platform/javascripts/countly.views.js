@@ -288,4 +288,3 @@ countlyVue.container.registerTab("/analytics/technology", {
     dataTestId: "platforms",
     component: AppPlatformView
 });
-
