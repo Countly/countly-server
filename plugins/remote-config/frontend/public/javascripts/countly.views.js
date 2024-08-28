@@ -398,8 +398,10 @@
                 handler: function(newValue) {
                     if (this.$refs.clyDrawer) {
                         if (newValue === true) {
-                            var currentTime = moment();
-                            this.$refs.clyDrawer.editedObject.expiry_dttm = currentTime.add(moment.duration(25, 'hours')).valueOf();
+                            if (!this.$refs.clyDrawer.editedObject.expiry_dttm) {
+                                var currentTime = moment();
+                                this.$refs.clyDrawer.editedObject.expiry_dttm = currentTime.add(moment.duration(25, 'hours')).valueOf();
+                            }
                         }
                         else if (newValue === false) {
                             this.$refs.clyDrawer.editedObject.expiry_dttm = null;
@@ -413,6 +415,13 @@
                 if (this.$refs.clyDrawer.editedObject.description) {
                     this.$refs.clyDrawer.editedObject.description = this.unescapeHtml(this.$refs.clyDrawer.editedObject.description);
                 }
+
+                var self = this;
+                setTimeout(function() {
+                    if (self.$refs.expirationValidator) {
+                        self.$refs.expirationValidator.validate();
+                    }
+                }, 300);
             },
             getOffset: function() {
                 var activeAppId = countlyCommon.ACTIVE_APP_ID;

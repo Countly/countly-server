@@ -110,7 +110,7 @@
             </div>
           </div>
           <div v-if="showExpirationDate">
-            <validation-provider v-slot="validation" name="improvement" rules='required|oneDay'>
+            <validation-provider v-slot="validation" name="expiration" ref="expirationValidator" rules='required|oneDay'>
               <cly-date-picker class="bu-mt-5" v-model="drawerScope.editedObject.expiry_dttm" timestampFormat="ms" type="date" :isFuture="true" :selectTime="true"></cly-date-picker>
               <div v-if="validation.errors.length > 0" class="text-small color-red-100 bu-pt-1">
                 {{i18n('remote-config.expiration.time.error')}}
