@@ -35,11 +35,11 @@
         l: CV.i18n("remote-config.type.l")
     };
 
-    VeeValidate.extend('oneHour', {
+    VeeValidate.extend('oneDay', {
         validate: function(inpValue) {
             var valid = true;
 
-            if (moment.duration(moment(inpValue).diff(moment())).asHours() < 1) {
+            if (moment.duration(moment(inpValue).diff(moment())).asDays() < 1) {
                 valid = false;
             }
 
