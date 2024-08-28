@@ -468,6 +468,11 @@
                 selectedValue: this.items[0].value || 0
             };
         },
+        watch: {
+            value: function(value) {
+                this.selectedValue = value;
+            }
+        },
         methods: {
             numberChange: function(item) {
                 if (!item.disabled) {
