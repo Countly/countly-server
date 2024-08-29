@@ -90,8 +90,8 @@
         data: function() {
             return {
                 currentTab: this.tabs[0]?.value || null,
-                isEditing: false,
-                localTitle: this.value
+                localTitle: this.value,
+                isEditing: !this.value
             };
         },
         watch: {
@@ -116,7 +116,9 @@
                 this.isEditing = true;
             },
             finishEditing: function() {
-                this.isEditing = false;
+                if (this.localTitle) {
+                    this.isEditing = false;
+                }
                 if (this.localTitle !== this.value) {
                     this.$emit('input', this.localTitle);
                 }
