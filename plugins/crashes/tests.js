@@ -3093,7 +3093,7 @@ describe('Testing Crashes', function() {
     });
 
     describe('Flutter stacktrace', async() => {
-        it('should return flutter stacktrace correctly', async() => {
+        it('should return double newline flutter stacktrace correctly', async() => {
             const crashData = {
                 // this is a malformed stacktrace from sdk with two newlines after the first line
                 '_error': 'java.lang.Exception: IntegerDivisionByOneException\n\n%230      int (dart:core-patch/integers.dart:30:7)\n%231      CrashReportingPage.dividedByZero (package:countly_flutter_example/page_crash_reporting.dart:49:31)\n%232      _InkResponseState.handleTap (package:flutter/src/material/ink_well.dart:1183:21)',
@@ -3118,7 +3118,7 @@ describe('Testing Crashes', function() {
                 .get('/i/crashes/delete?args=' + JSON.stringify({ crash_id: crashGroup._id }) + '&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN);
         });
 
-        it('should return flutter stacktrace correctly', async() => {
+        it('should return normal flutter stacktrace correctly', async() => {
             const crashData = {
                 // this is how a normal stacktrace should look like with just one newline after the first line
                 '_error': 'java.lang.Exception: IntegerDivisionByOneException\n%230      int (dart:core-patch/integers.dart:30:7)\n%231      CrashReportingPage.dividedByZero (package:countly_flutter_example/page_crash_reporting.dart:49:31)\n%232      _InkResponseState.handleTap (package:flutter/src/material/ink_well.dart:1183:21)',
