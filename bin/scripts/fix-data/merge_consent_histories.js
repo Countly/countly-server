@@ -45,16 +45,16 @@ pluginManager.dbConnection().then(async(countlyDb) => {
         var consentHistoryCollections = collectionNames.filter(x => (x.startsWith('consent_history') && !x.endsWith('consent_history')));
 
         //If list of apps to exclude is provided, filter out those collections
-        if(APPS_TO_EXCLUDE.length) {
+        if (APPS_TO_EXCLUDE.length) {
             consentHistoryCollections = consentHistoryCollections.filter(x => !APPS_TO_EXCLUDE.some(appId => x.endsWith(appId)));
         }
         //If list of apps to merge is provided, filter out only those collections
-        else if(APPS_TO_MERGE.length) {
+        else if (APPS_TO_MERGE.length) {
             consentHistoryCollections = consentHistoryCollections.filter(x => APPS_TO_MERGE.some(appId => x.endsWith(appId)));
         }
         //If no list of apps to exclude or merge is provided, merge all collections
         console.log("Merging the following consent_historyAPPID collections: " + consentHistoryCollections.join(', '));
-    
+
         try {
             const result = await mergeConsentHistoryCollections(consentHistoryCollections, countlyDb);
             const faileds = result.filter(x=>x.status === 'rejected');
