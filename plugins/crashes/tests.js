@@ -3095,13 +3095,39 @@ describe('Testing Crashes', function() {
     describe('Flutter stacktrace', async() => {
         it('should return flutter stacktrace correctly', async() => {
             const crashData = {
+                // this is a malformed stacktrace from sdk with two newlines after the first line
                 '_error': 'java.lang.Exception: IntegerDivisionByOneException\n\n%230      int (dart:core-patch/integers.dart:30:7)\n%231      CrashReportingPage.dividedByZero (package:countly_flutter_example/page_crash_reporting.dart:49:31)\n%232      _InkResponseState.handleTap (package:flutter/src/material/ink_well.dart:1183:21)',
                 '_os_version': '8.2',
                 '_os': 'Android',
                 '_app_version': '78.0.0',
             };
 
-            await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`);
+            await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`).expect(200);
+            const crashGroupQuery = JSON.stringify({
+                os: crashData._os,
+                latest_version: crashData._app_version,
+            });
+
+            let crashGroupResponse = await request
+                .get(`/o?method=crashes&api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&query=${crashGroupQuery}`);
+            const crashGroup = crashGroupResponse.body.aaData[0];
+
+            should(crashGroup.error).equal(common.escape_html(crashData._error.replaceAll('%23', '#')));
+
+            await request
+                .get('/i/crashes/delete?args=' + JSON.stringify({ crash_id: crashGroup._id }) + '&app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN);
+        });
+
+        it('should return flutter stacktrace correctly', async() => {
+            const crashData = {
+                // this is how a normal stacktrace should look like with just one newline after the first line
+                '_error': 'java.lang.Exception: IntegerDivisionByOneException\n%230      int (dart:core-patch/integers.dart:30:7)\n%231      CrashReportingPage.dividedByZero (package:countly_flutter_example/page_crash_reporting.dart:49:31)\n%232      _InkResponseState.handleTap (package:flutter/src/material/ink_well.dart:1183:21)',
+                '_os_version': '8.2',
+                '_os': 'Android',
+                '_app_version': '78.0.0',
+            };
+
+            await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`).expect(200);
             const crashGroupQuery = JSON.stringify({
                 os: crashData._os,
                 latest_version: crashData._app_version,
