@@ -11,7 +11,7 @@ export const resolutionsPageElements = {
     TAB_DENSITIES: 'tab-technology-densities-title',
 };
 
-const resolutionsMetricCardElements = (index = 0) => {
+const resolutionsEGraphElements = (index = 0) => {
     return {
         EMPTY_PIE_TOTAL_ICON: 'pie-total-empty-logo',
         EMPTY_PIE_TOTAL_TITLE: 'pie-total-empty-title',
@@ -21,7 +21,7 @@ const resolutionsMetricCardElements = (index = 0) => {
         EMPTY_PIE_NEW_SUBTITLE: 'pie-new-empty-subtitle',
 
         ECHARTS: '.cly-vue-chart',
-        RESOLUTIONS_NAMES: '.cly-vue-chart-legend__s-series',
+        RESOLUTIONS_NAMES: '.cly-vue-chart-legend__s-title',
         RESOLUTIONS_VALUES: '.cly-vue-chart-legend__s-percentage',
         RESOLUTIONS_ICONS: '.cly-vue-chart-legend__s-rectangle',
     };
@@ -69,6 +69,6 @@ const resolutionsDataTableElements = (index = 0) => {
 
 module.exports = {
     resolutionsPageElements,
-    resolutionsMetricCardElements,
+    resolutionsEGraphElements,
     resolutionsDataTableElements
 };

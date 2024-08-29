@@ -1,8 +1,8 @@
 import {
     devicesAndTypesPageElements,
-    devicesMetricCardElements,
+    devicesEGraphElements,
     devicesDataTableElements,
-    typesMetricCardElements,
+    typesEGraphElements,
     typesDataTableElements
 } from "../../../../support/elements/dashboard/analytics/technology/devicesAndTypes";
 
@@ -63,23 +63,23 @@ const verifyStaticElementsOfPage = () => {
     clickDevicesTab();
 
     cy.verifyElement({
-        labelElement: devicesMetricCardElements().TOP_PLATFORMS_LABEL,
+        labelElement: devicesEGraphElements().TOP_PLATFORMS_LABEL,
         labelText: "Top Platforms",
-        tooltipElement: devicesMetricCardElements().TOP_PLATFORMS_TOOLTIP,
+        tooltipElement: devicesEGraphElements().TOP_PLATFORMS_TOOLTIP,
         tooltipText: "Top 5 versions of the platforms of your users’ sessions, in the selected time period."
     });
 
     cy.verifyElement({
-        labelElement: devicesMetricCardElements().TOP_PLATFORMS_VERSIONS_LABEL,
+        labelElement: devicesEGraphElements().TOP_PLATFORMS_VERSIONS_LABEL,
         labelText: "Top Platform Versions",
-        tooltipElement: devicesMetricCardElements().TOP_PLATFORMS_VERSIONS_TOOLTIP,
+        tooltipElement: devicesEGraphElements().TOP_PLATFORMS_VERSIONS_TOOLTIP,
         tooltipText: "Top 3 versions of the platforms of your users' sessions, in the selected time period."
     });
 
     cy.verifyElement({
-        labelElement: devicesMetricCardElements().TOP_RESOLUTIONS_LABEL,
+        labelElement: devicesEGraphElements().TOP_RESOLUTIONS_LABEL,
         labelText: "Top Resolutions",
-        tooltipElement: devicesMetricCardElements().TOP_RESOLUTIONS_TOOLTIP,
+        tooltipElement: devicesEGraphElements().TOP_RESOLUTIONS_TOOLTIP,
         tooltipText: "Top 5 resolution settings of the devices used your users' sessions, in the selected time period."
     });
 
@@ -180,7 +180,7 @@ const verifyEmptyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
-    verifyDevicesMetricCard({
+    verifyDevicesEGraph({
         isEmpty: true,
     });
 
@@ -188,7 +188,7 @@ const verifyEmptyPageElements = () => {
         isEmpty: true,
     });
 
-    verifyTypesMetricCard({
+    verifyTypesEGraph({
         isEmpty: true,
     });
 
@@ -201,7 +201,7 @@ const verifyFullDataPageElements = () => {
 
     verifyStaticElementsOfPage();
 
-    verifyDevicesMetricCard({
+    verifyDevicesEGraph({
         isEmpty: false,
     });
 
@@ -209,7 +209,7 @@ const verifyFullDataPageElements = () => {
         isEmpty: false,
     });
 
-    verifyTypesMetricCard({
+    verifyTypesEGraph({
         isEmpty: false,
     });
 
@@ -218,8 +218,7 @@ const verifyFullDataPageElements = () => {
     });
 };
 
-
-const verifyDevicesMetricCard = ({
+const verifyDevicesEGraph = ({
     index = 0,
     isEmpty = false,
     platformName = null,
@@ -235,30 +234,30 @@ const verifyDevicesMetricCard = ({
     if (isEmpty) {
 
         cy.verifyElement({
-            element: devicesMetricCardElements().EMPTY_PIE_DEVICES_TOTAL_ICON,
+            element: devicesEGraphElements().EMPTY_PIE_DEVICES_TOTAL_ICON,
         });
 
         cy.verifyElement({
-            labelElement: devicesMetricCardElements().EMPTY_PIE_DEVICES_TOTAL_TITLE,
+            labelElement: devicesEGraphElements().EMPTY_PIE_DEVICES_TOTAL_TITLE,
             labelText: "...hmm, seems empty here",
         });
 
         cy.verifyElement({
-            labelElement: devicesMetricCardElements().EMPTY_PIE_DEVICES_TOTAL_SUBTITLE,
+            labelElement: devicesEGraphElements().EMPTY_PIE_DEVICES_TOTAL_SUBTITLE,
             labelText: "No data found",
         });
 
         cy.verifyElement({
-            element: devicesMetricCardElements().EMPTY_PIE_DEVICES_NEW_ICON,
+            element: devicesEGraphElements().EMPTY_PIE_DEVICES_NEW_ICON,
         });
 
         cy.verifyElement({
-            labelElement: devicesMetricCardElements().EMPTY_PIE_DEVICES_NEW_TITLE,
+            labelElement: devicesEGraphElements().EMPTY_PIE_DEVICES_NEW_TITLE,
             labelText: "...hmm, seems empty here",
         });
 
         cy.verifyElement({
-            labelElement: devicesMetricCardElements().EMPTY_PIE_DEVICES_NEW_SUBTITLE,
+            labelElement: devicesEGraphElements().EMPTY_PIE_DEVICES_NEW_SUBTITLE,
             labelText: "No data found",
         });
 
@@ -266,76 +265,76 @@ const verifyDevicesMetricCard = ({
     }
 
     cy.verifyElement({
-        element: devicesMetricCardElements().ECHARTS,
+        element: devicesEGraphElements().ECHARTS,
     });
 
     cy.verifyElement({
-        element: devicesMetricCardElements().DEVICES_NAMES,
+        element: devicesEGraphElements().DEVICES_NAMES,
     });
 
     cy.verifyElement({
-        element: devicesMetricCardElements().DEVICES_VALUES,
+        element: devicesEGraphElements().DEVICES_VALUES,
     });
 
     cy.verifyElement({
-        element: devicesMetricCardElements().DEVICES_ICONS,
+        element: devicesEGraphElements().DEVICES_ICONS,
     });
 
     for (var i = 0; i < 3; i++) {
         cy.verifyElement({
             shouldNot: !isEmpty,
-            element: devicesMetricCardElements(i).TOP_PLATFORMS_NAME,
+            element: devicesEGraphElements(i).TOP_PLATFORMS_NAME,
             elementText: platformName,
         });
 
         cy.verifyElement({
             shouldNot: !isEmpty,
-            element: devicesMetricCardElements(i).TOP_PLATFORMS_PERCENT,
+            element: devicesEGraphElements(i).TOP_PLATFORMS_PERCENT,
             elementText: platformPercentage,
         });
 
         cy.verifyElement({
             isElementVisible: false,
-            element: devicesMetricCardElements(i).TOP_PLATFORMS_PROGRESS_BAR,
+            element: devicesEGraphElements(i).TOP_PLATFORMS_PROGRESS_BAR,
         });
 
         cy.verifyElement({
             shouldNot: !isEmpty,
-            element: devicesMetricCardElements(i).TOP_PLATFORMS_VERSIONS_NAME,
+            element: devicesEGraphElements(i).TOP_PLATFORMS_VERSIONS_NAME,
             elementText: platformVersion,
         });
 
         cy.verifyElement({
             shouldNot: !isEmpty,
-            element: devicesMetricCardElements(i).TOP_PLATFORMS_VERSIONS_PERCENT,
+            element: devicesEGraphElements(i).TOP_PLATFORMS_VERSIONS_PERCENT,
             elementText: platformVersionPercentage,
         });
 
         cy.verifyElement({
             isElementVisible: false,
-            element: devicesMetricCardElements(i).TOP_PLATFORMS_VERSIONS_PROGRESS_BAR,
+            element: devicesEGraphElements(i).TOP_PLATFORMS_VERSIONS_PROGRESS_BAR,
         });
 
         cy.verifyElement({
             shouldNot: !isEmpty,
-            element: devicesMetricCardElements(i).TOP_RESOLUTIONS_NAME,
+            element: devicesEGraphElements(i).TOP_RESOLUTIONS_NAME,
             elementText: platformResolution,
         });
 
         cy.verifyElement({
             shouldNot: !isEmpty,
-            element: devicesMetricCardElements(i).TOP_RESOLUTIONS_PERCENT,
+            element: devicesEGraphElements(i).TOP_RESOLUTIONS_PERCENT,
             elementText: platformResolutionPercentage,
         });
 
         cy.verifyElement({
             isElementVisible: false,
-            element: devicesMetricCardElements(i).TOP_RESOLUTIONS_PROGRESS_BAR,
+            element: devicesEGraphElements(i).TOP_RESOLUTIONS_PROGRESS_BAR,
         });
     }
 };
 
-const verifyTypesMetricCard = ({
+const verifyTypesEGraph = ({
     index = 0,
     isEmpty = false
 }) => {
@@ -345,30 +344,30 @@ const verifyTypesMetricCard = ({
     if (isEmpty) {
 
         cy.verifyElement({
-            element: typesMetricCardElements().EMPTY_PIE_TYPES_TOTAL_ICON,
+            element: typesEGraphElements().EMPTY_PIE_TYPES_TOTAL_ICON,
         });
 
         cy.verifyElement({
-            labelElement: typesMetricCardElements().EMPTY_PIE_TYPES_TOTAL_TITLE,
+            labelElement: typesEGraphElements().EMPTY_PIE_TYPES_TOTAL_TITLE,
             labelText: "...hmm, seems empty here",
         });
 
         cy.verifyElement({
-            labelElement: typesMetricCardElements().EMPTY_PIE_TYPES_TOTAL_SUBTITLE,
+            labelElement: typesEGraphElements().EMPTY_PIE_TYPES_TOTAL_SUBTITLE,
             labelText: "No data found",
         });
 
         cy.verifyElement({
-            element: typesMetricCardElements().EMPTY_PIE_TYPES_NEW_ICON,
+            element: typesEGraphElements().EMPTY_PIE_TYPES_NEW_ICON,
         });
 
         cy.verifyElement({
-            labelElement: typesMetricCardElements().EMPTY_PIE_TYPES_NEW_TITLE,
+            labelElement: typesEGraphElements().EMPTY_PIE_TYPES_NEW_TITLE,
             labelText: "...hmm, seems empty here",
         });
 
         cy.verifyElement({
-            labelElement: typesMetricCardElements().EMPTY_PIE_TYPES_NEW_SUBTITLE,
+            labelElement: typesEGraphElements().EMPTY_PIE_TYPES_NEW_SUBTITLE,
             labelText: "No data found",
         });
 
@@ -376,19 +375,19 @@ const verifyTypesMetricCard = ({
     }
 
     cy.verifyElement({
-        element: devicesMetricCardElements().ECHARTS,
+        element: devicesEGraphElements().ECHARTS,
     });
 
     cy.verifyElement({
-        element: devicesMetricCardElements().DEVICES_NAMES,
+        element: devicesEGraphElements().DEVICES_NAMES,
     });
 
     cy.verifyElement({
-        element: devicesMetricCardElements().DEVICES_VALUES,
+        element: devicesEGraphElements().DEVICES_VALUES,
     });
 
     cy.verifyElement({
-        element: devicesMetricCardElements().DEVICES_ICONS,
+        element: devicesEGraphElements().DEVICES_ICONS,
     });
 };
 
@@ -555,8 +554,8 @@ module.exports = {
     clickAppVersionsTab,
     clickCarriersTab,
     clickDensitiesTab,
-    verifyDevicesMetricCard,
+    verifyDevicesEGraph,
     verifyDevicesDataFromTable,
-    verifyTypesMetricCard,
+    verifyTypesEGraph,
     verifyTypesDataFromTable
 };

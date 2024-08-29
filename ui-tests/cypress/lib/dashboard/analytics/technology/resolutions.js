@@ -1,6 +1,6 @@
 import {
     resolutionsPageElements,
-    resolutionsMetricCardElements,
+    resolutionsEGraphElements,
     resolutionsDataTableElements
 } from "../../../../support/elements/dashboard/analytics/technology/resolutions";
 
@@ -97,7 +97,7 @@ const verifyEmptyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
-    verifyResolutionsMetricCard({
+    verifyResolutionsEGraph({
         isEmpty: true,
     });
 
@@ -110,7 +110,7 @@ const verifyFullDataPageElements = () => {
 
     verifyStaticElementsOfPage();
 
-    verifyResolutionsMetricCard({
+    verifyResolutionsEGraph({
         isEmpty: false,
     });
 
@@ -119,7 +119,7 @@ const verifyFullDataPageElements = () => {
     });
 };
 
-const verifyResolutionsMetricCard = ({
+const verifyResolutionsEGraph = ({
     index = 0,
     isEmpty = false
 }) => {
@@ -127,30 +127,30 @@ const verifyResolutionsMetricCard = ({
     if (isEmpty) {
 
         cy.verifyElement({
-            element: resolutionsMetricCardElements().EMPTY_PIE_TOTAL_ICON,
+            element: resolutionsEGraphElements().EMPTY_PIE_TOTAL_ICON,
         });
 
         cy.verifyElement({
-            labelElement: resolutionsMetricCardElements().EMPTY_PIE_TOTAL_TITLE,
+            labelElement: resolutionsEGraphElements().EMPTY_PIE_TOTAL_TITLE,
             labelText: "...hmm, seems empty here",
         });
 
         cy.verifyElement({
-            labelElement: resolutionsMetricCardElements().EMPTY_PIE_TOTAL_SUBTITLE,
+            labelElement: resolutionsEGraphElements().EMPTY_PIE_TOTAL_SUBTITLE,
             labelText: "No data found",
         });
 
         cy.verifyElement({
-            element: resolutionsMetricCardElements().EMPTY_PIE_NEW_ICON,
+            element: resolutionsEGraphElements().EMPTY_PIE_NEW_ICON,
         });
 
         cy.verifyElement({
-            labelElement: resolutionsMetricCardElements().EMPTY_PIE_NEW_TITLE,
+            labelElement: resolutionsEGraphElements().EMPTY_PIE_NEW_TITLE,
             labelText: "...hmm, seems empty here",
         });
 
         cy.verifyElement({
-            labelElement: resolutionsMetricCardElements().EMPTY_PIE_NEW_SUBTITLE,
+            labelElement: resolutionsEGraphElements().EMPTY_PIE_NEW_SUBTITLE,
             labelText: "No data found",
         });
 
@@ -158,19 +158,19 @@ const verifyResolutionsMetricCard = ({
     }
 
     cy.verifyElement({
-        element: resolutionsMetricCardElements().ECHARTS,
+        element: resolutionsEGraphElements().ECHARTS,
     });
 
     cy.verifyElement({
-        element: resolutionsMetricCardElements().RESOLUTIONS_NAMES,
+        element: resolutionsEGraphElements().RESOLUTIONS_NAMES,
     });
 
     cy.verifyElement({
-        element: resolutionsMetricCardElements().RESOLUTIONS_VALUES,
+        element: resolutionsEGraphElements().RESOLUTIONS_VALUES,
     });
 
     cy.verifyElement({
-        element: resolutionsMetricCardElements().RESOLUTIONS_ICONS,
+        element: resolutionsEGraphElements().RESOLUTIONS_ICONS,
     });
 };
 
@@ -267,6 +267,6 @@ module.exports = {
     clickAppVersionsTab,
     clickCarriersTab,
     clickDensitiesTab,
-    verifyResolutionsMetricCard,
+    verifyResolutionsEGraph,
     verifyResolutionsDataFromTable
 };

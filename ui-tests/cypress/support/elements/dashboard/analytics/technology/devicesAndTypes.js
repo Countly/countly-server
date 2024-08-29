@@ -13,7 +13,7 @@ export const devicesAndTypesPageElements = {
     TAB_DENSITIES: 'tab-technology-densities-title',
 };
 
-const devicesMetricCardElements = (index = 0) => {
+const devicesEGraphElements = (index = 0) => {
     return {
         EMPTY_PIE_DEVICES_TOTAL_ICON: 'pie-devices-total-empty-logo',
         EMPTY_PIE_DEVICES_TOTAL_TITLE: 'pie-devices-total-empty-title',
@@ -23,7 +23,7 @@ const devicesMetricCardElements = (index = 0) => {
         EMPTY_PIE_DEVICES_NEW_SUBTITLE: 'pie-devices-new-empty-subtitle',
 
         ECHARTS: '.cly-vue-chart',
-        DEVICES_NAMES: '.cly-vue-chart-legend__s-series',
+        DEVICES_NAMES: '.cly-vue-chart-legend__s-title',
         DEVICES_VALUES: '.cly-vue-chart-legend__s-percentage',
         DEVICES_ICONS: '.cly-vue-chart-legend__s-rectangle',
 
@@ -88,7 +88,7 @@ const devicesDataTableElements = (index = 0) => {
     };
 };
 
-const typesMetricCardElements = (index = 0) => {
+const typesEGraphElements = (index = 0) => {
     return {
         EMPTY_PIE_TYPES_TOTAL_ICON: 'pie-types-total-empty-logo',
         EMPTY_PIE_TYPES_TOTAL_TITLE: 'pie-types-total-empty-title',
@@ -98,7 +98,7 @@ const typesMetricCardElements = (index = 0) => {
         EMPTY_PIE_TYPES_NEW_SUBTITLE: 'pie-types-new-empty-subtitle',
 
         ECHARTS: '.cly-vue-chart',
-        TYPES_NAMES: '.cly-vue-chart-legend__s-series',
+        TYPES_NAMES: '.cly-vue-chart-legend__s-title',
         TYPES_VALUES: '.cly-vue-chart-legend__s-percentage',
         TYPES_ICONS: '.cly-vue-chart-legend__s-rectangle',
     };
@@ -146,8 +146,8 @@ const typesDataTableElements = (index = 0) => {
 
 module.exports = {
     devicesAndTypesPageElements,
-    devicesMetricCardElements,
+    devicesEGraphElements,
     devicesDataTableElements,
-    typesMetricCardElements,
+    typesEGraphElements,
     typesDataTableElements
 };
