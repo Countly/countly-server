@@ -1323,6 +1323,9 @@ fetch.fetchEvents = function(params) {
 */
 fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
     fetchTimeObj(collection, params, isCustomEvent, options, function(output) {
+        if (params?.qstring?.event) {
+            output.eventName = params.qstring.event;
+        }
         common.returnOutput(params, output);
     });
 };
@@ -1965,10 +1968,6 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                         }
                     }
                 }
-            }
-
-            if (Object.keys(mergedDataObj).length && params?.qstring?.event) {
-                mergedDataObj.event = params.qstring.event;
             }
         }
         return mergedDataObj;
