@@ -319,6 +319,7 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -453,6 +454,7 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -701,10 +703,22 @@
                 pseudoSelectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state === 'selected') {
+                        return 'guides';
+                    }
+
                     if (!this.selectedMenuOptionLocal && selected) {
                         return selected.menu;
                     }
+                    return this.selectedMenuOptionLocal;
+                },
+                visibleSidebarMenu: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
+                    if (!this.selectedMenuOptionLocal && selected) {
+                        return selected.menu;
+                    }
                     return this.selectedMenuOptionLocal;
                 },
                 selectedMenuOption: function() {
@@ -747,6 +761,7 @@
                     if (!option.noSelect) {
                         this.selectedMenuOptionLocal = option.name;
                         this.showMainMenu = true;
+                        this.$store.dispatch("countlySidebar/deselectGuidesButton");
                     }
 
                     if (option.name === "toggle") {
@@ -754,7 +769,6 @@
                     }
                     else if (option.name === "countly-guides") {
                         this.$store.dispatch("countlySidebar/selectGuidesButton");
-                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "guides", item: {}});
                     }
                 },
                 onToggleClick: function() {
