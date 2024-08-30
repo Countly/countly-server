@@ -90,8 +90,8 @@
         data: function() {
             return {
                 currentTab: this.tabs[0]?.value || null,
-                isEditing: false,
-                localTitle: this.value
+                localTitle: this.value,
+                isEditing: !this.value
             };
         },
         watch: {
@@ -116,7 +116,9 @@
                 this.isEditing = true;
             },
             finishEditing: function() {
-                this.isEditing = false;
+                if (this.localTitle) {
+                    this.isEditing = false;
+                }
                 if (this.localTitle !== this.value) {
                     this.$emit('input', this.localTitle);
                 }
@@ -467,6 +469,11 @@
             return {
                 selectedValue: this.items[0].value || 0
             };
+        },
+        watch: {
+            value: function(value) {
+                this.selectedValue = value;
+            }
         },
         methods: {
             numberChange: function(item) {

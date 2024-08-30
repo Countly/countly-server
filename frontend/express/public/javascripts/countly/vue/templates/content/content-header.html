@@ -38,7 +38,7 @@
         <div v-if="!hideSaveButton" class="cly-vue-content-builder__layout-header__save">
             <el-button type="success" :disabled="saveButtonDisabled" size="small" @click="save">{{ saveButtonLabel }}</el-button>
         </div>
-        <div v-if="topDropdownOptions" class="cly-vue-content-builder__layout-header__options">
+        <div v-if="topDropdownOptions.length" class="cly-vue-content-builder__layout-header__options">
             <cly-more-options size="small" @command="handleCommand($event)">
                 <el-dropdown-item v-for="(item, idx) in topDropdownOptions" :key="idx" :command="item.value">
                     <span class="cly-vue-content-builder__layout-header__option-label" @click="$emit('selected-command')">{{ item.label }}</span>
