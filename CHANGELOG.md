@@ -1,3 +1,11 @@
+## Version 24.05.9
+Fixes:
+- [crashes] Fix crashes template paths and add data check
+
+Enterprise fixes:
+- [license] Fix for License warning appears is Flex server
+- [drill] Fix typo in view regeneration api response
+
 ## Version 24.05.8
 Fixes:
 - [scripts] script to check settings limits
