@@ -1009,17 +1009,18 @@
                             {{ goTo.title }}
                         </a>
                     </div>
-                    <div
-                        v-if="closable"
-                        :class="closeIconDynamicClasses"
-                        @click="closeModal"
-                    >
-                        <slot name="close">
-                            <i
-                                :data-test-id="closeIconDataId"
-                                class="cly-vue-notification__alert-box__close-icon el-icon-close"
-                            />
-                        </slot>
+                    <div v-if="closable">
+                        <div
+                            :class="closeIconDynamicClasses"
+                            @click="closeModal"
+                        >
+                            <slot name="close">
+                                <i
+                                    :data-test-id="closeIconDataId"
+                                    class="cly-vue-notification__alert-box__close-icon el-icon-close"
+                                />
+                            </slot>
+                        </div>
                     </div>
                     <div
                         v-else
