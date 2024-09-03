@@ -9,7 +9,7 @@ export const carriersPageElements = {
     TAB_APP_VERSIONS: 'tab-technology-versions-title',
     TAB_CARRIERS: 'tab-technology-carriers-title',
     TAB_DENSITIES: 'tab-technology-densities-title',
-}
+};
 
 const carriersEGraphElements = (index = 0) => {
     return {
@@ -65,7 +65,7 @@ const carriersDataTableElements = (index = 0) => {
         NEXT_PAGE_ARROW_BUTTON: 'carriers-next-page-arrow-button',
         LAST_PAGE_ARROW_BUTTON: 'carriers-views-last-page-arrow-button'
     };
-}
+};
 
 module.exports = {
     carriersPageElements,

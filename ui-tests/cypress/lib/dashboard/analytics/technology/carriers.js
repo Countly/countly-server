@@ -91,7 +91,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: carriersDataTableElements().COLUMN_NAME_NEW_USERS_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -103,7 +103,7 @@ const verifyEmptyPageElements = () => {
 
     verifyCarriersDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -116,7 +116,7 @@ const verifyFullDataPageElements = () => {
 
     verifyCarriersDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifyCarriersEGraph = ({
@@ -226,7 +226,7 @@ const verifyCarriersDataFromTable = ({
         element: carriersDataTableElements(index).NEW_USERS,
         elementText: newUsers
     });
-}
+};
 
 const clickPlatformsTab = () => {
     cy.scrollPageToTop();
