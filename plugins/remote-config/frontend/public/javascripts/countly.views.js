@@ -794,19 +794,22 @@
             create: function() {
                 this.openDrawer("parameters", countlyRemoteConfig.factory.parameters.getEmpty());
             },
-            startParameter: function(row) {
+            toggleParameterState(rowObj, status) {
+                var row = Object.assign({}, rowObj);
+                var refresh = this.refresh;
                 if (row.expiry_dttm < Date.now()) {
                     row.expiry_dttm = null;
                 }
-                row.status = "Running";
-                this.$store.dispatch("countlyRemoteConfig/parameters/update", row);
+                row.status = status;
+                this.$store.dispatch("countlyRemoteConfig/parameters/update", row).then(function() {
+                    refresh();
+                });
             },
-            stopParameter: function(row) {
-                if (row.expiry_dttm < Date.now()) {
-                    row.expiry_dttm = null;
-                }
-                row.status = "Stopped";
-                this.$store.dispatch("countlyRemoteConfig/parameters/update", row);
+            startParameter: function(rowObj) {
+                this.toggleParameterState(rowObj, "Running");
+            },
+            stopParameter: function(rowObj) {
+                this.toggleParameterState(rowObj, "Stopped");
             },
             handleCommand: function(command, scope, row) {
                 var self = this;
@@ -830,7 +833,7 @@
                 }
             },
             onSubmit: function() {
-                this.$store.dispatch("countlyRemoteConfig/initialize");
+                this.refresh();
             },
             handleTableRowClick: function(row) {
                 // Only expand row if text inside of it are not highlighted
@@ -856,6 +859,9 @@
                 }
                 return table;
 
+            },
+            refresh: function() {
+                this.$store.dispatch("countlyRemoteConfig/initialize");
             },
         },
         created: function() {
