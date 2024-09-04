@@ -979,25 +979,61 @@
                    </div>'
     }));
     Vue.component("cly-notification", countlyBaseComponent.extend({
-        template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
-                        '<div class="bu-is-flex bu-is-justify-content-space-between bu-p-3">\n' +
-                            '<div class="bu-is-flex">\n' +
-                                '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-3">\n' +
-                                '<slot><span class="alert-text" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
-                            '</div>\n' +
-                            '<div v-if="goTo.title" class="bu-is-flex bu-ml-auto"><a class="bu-level-item bu-has-text-link bu-has-text-weight-medium" @click="goToUrl">{{goTo.title}}</a></div>' +
-                            '<div v-if="closable"  class="" >\n' +
-                                '<div v-if="size==\'full\'" @click="closeModal" class=" bu-ml-2" >\n' +
-                                    '<slot name="close"><i data-test-id="cly-notification-full-size-close-icon" class="el-icon-close"></i></slot>\n' +
-                                '</div>\n' +
-                                '<div v-else @click="closeModal" class="bu-ml-3 bu-pl-3 bu-ml-3" style="cursor:pointer;">\n' +
-                                    '<slot name="close"><i data-test-id="cly-notification-modal-close-icon" class="el-icon-close"></i></slot>\n' +
-                                '</div>\n' +
-                            '</div>\n' +
-                            '<div v-else class="bu-ml-5">\n' +
-                            '</div>\n' +
-                        '</div>\n' +
-                  '</div>\n',
+        template: `
+            <div
+                v-if="isModalVisible"
+                class="cly-vue-notification__alert-box"
+                :class="dynamicClasses"
+            >
+                <div class="bu-is-flex bu-is-justify-content-space-between bu-p-3">
+                    <div class="bu-is-flex">
+                        <img
+                            class="alert-image bu-mr-3"
+                            data-test-id="cly-notification-img"
+                            :src="image"
+                        >
+                        <slot>
+                            <span
+                                class="alert-text"
+                                data-test-id="cly-notification-text"
+                                style="margin-block:auto"
+                                v-html="innerText"
+                            >
+                                {{ text }}
+                            </span>
+                        </slot>
+                    </div>
+                    <div
+                        v-if="goTo.title"
+                        class="bu-is-flex bu-ml-auto"
+                    >
+                        <a
+                            class="bu-level-item bu-has-text-link bu-has-text-weight-medium"
+                            @click="goToUrl"
+                        >
+                            {{ goTo.title }}
+                        </a>
+                    </div>
+                    <div v-if="closable">
+                        <div
+                            :class="closeIconDynamicClasses"
+                            @click="closeModal"
+                        >
+                            <slot name="close">
+                                <i
+                                    :data-test-id="closeIconDataId"
+                                    class="cly-vue-notification__alert-box__close-icon el-icon-close"
+                                />
+                            </slot>
+                        </div>
+                    </div>
+                    <div
+                        v-else
+                        class="bu-ml-5"
+                    />
+                </div>
+            </div>
+        `,
         mixins: [countlyVue.mixins.i18n],
         props: {
             id: {default: "", type: [String, Number], required: false},
@@ -1034,6 +1070,22 @@
             }
         },
         computed: {
+            closeIconDynamicClasses: function() {
+                if (this.size === 'full') {
+                    return 'bu-ml-2';
+                }
+
+                return 'bu-ml-3 bu-pl-3 bu-ml-3';
+            },
+
+            closeIconDataId: function() {
+                if (this.size === 'full') {
+                    return 'cly-notification-full-size-close-icon';
+                }
+
+                return 'cly-notification-modal-close-icon';
+            },
+
             dynamicClasses: function() {
                 var classes = ["cly-vue-notification__alert-box__alert-text--" + this.color, "cly-vue-notification__alert-box--" + this.size];
                 if (this.customWidth !== "") {
