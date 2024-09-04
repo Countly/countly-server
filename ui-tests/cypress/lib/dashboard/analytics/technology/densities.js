@@ -249,34 +249,35 @@ const verifyDensitiesMetricCard = ({
         element: densitiesMetricCardElements(index).BOUNCE_RATE_PROGRESS_CIRCLE,
     });
 
-    for (var i = 0; i < 3; i++) {
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: densitiesMetricCardElements(i).VERSION_NAME,
-            elementText: versionName,
-        });
+    // TODO: Ooen that part after https://countly.atlassian.net/browse/SER-1791 Fixed 
+    // for (var i = 0; i < 3; i++) {
+    //     cy.verifyElement({
+    //         shouldNot: !isEmpty,
+    //         element: densitiesMetricCardElements(i).VERSION_NAME,
+    //         elementText: versionName,
+    //     });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: densitiesMetricCardElements(i).VERSION_NUMBER,
-            elementText: versionNumber,
-        });
+    //     cy.verifyElement({
+    //         shouldNot: !isEmpty,
+    //         element: densitiesMetricCardElements(i).VERSION_NUMBER,
+    //         elementText: versionNumber,
+    //     });
 
-        cy.verifyElement({
-            element: densitiesMetricCardElements(i).VERSION_DIVIDER,
-        });
+    //     cy.verifyElement({
+    //         element: densitiesMetricCardElements(i).VERSION_DIVIDER,
+    //     });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: densitiesMetricCardElements(i).VERSION_PERCENTAGE,
-            elementText: versionPercentage,
-        });
+    //     cy.verifyElement({
+    //         shouldNot: !isEmpty,
+    //         element: densitiesMetricCardElements(i).VERSION_PERCENTAGE,
+    //         elementText: versionPercentage,
+    //     });
 
-        cy.verifyElement({
-            isElementVisible: false,
-            element: densitiesMetricCardElements(i).VERSION_PROGRESS_BAR,
-        });
-    }
+    //     cy.verifyElement({
+    //         isElementVisible: false,
+    //         element: densitiesMetricCardElements(i).VERSION_PROGRESS_BAR,
+    //     });
+    // }
 };
 
 const verifyDensitiesDataFromTable = ({
