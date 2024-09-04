@@ -414,6 +414,9 @@ module.exports = function(my_db) {
                     }
                     //new data
                     scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', "events_data", '-q', '{ "_id": {"$in":{"$regex":"^' + data.appid + '_.*"}}}}', '--out', data.my_folder]});
+                    if (plugins.isPluginEnabled('drill')) {
+                        scripts.push({cmd: 'mongodump', args: [...data.dbargs_drill, '--collection', "drill_events", '-q', '{ "a": "'+data.appid+'"}', '--out', data.my_folder]});
+                    }
                 }
                 resolve(scripts);
             }
