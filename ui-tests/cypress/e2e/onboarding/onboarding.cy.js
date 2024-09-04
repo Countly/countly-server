@@ -355,9 +355,9 @@ describe('Complete Onboarding', () => {
         analyticsTechnologyAppVersionsPageHelpers.verifyFullDataPageElements();
         analyticsTechnologyAppVersionsPageHelpers.clickCarriersTab();
         analyticsTechnologyCarriersPageHelpers.verifyFullDataPageElements();
+        analyticsTechnologyCarriersPageHelpers.clickDensitiesTab();
+        analyticsTechnologyDensitiesPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //analyticsTechnologyCarriersPageHelpers.clickDensitiesTab();
-        //analyticsTechnologyDensitiesPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToAnalyticsGeoCountries();
         //analyticsGeoCountriesPageHelpers.verifyFullDataPageElements();
         //analyticsGeoCountriesPageHelpers.clickLanguagesTab();

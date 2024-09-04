@@ -1,13 +1,37 @@
 <cly-section>
-	<cly-datatable-n :rows="versionDetail" :resizable="true" :force-loading="isLoading">
+	<cly-datatable-n test-id="density-versions" :rows="versionDetail" :resizable="true" :force-loading="isLoading">
 		<template v-slot="scope">
-			<el-table-column sortable="custom" prop="density" :label="i18n('density.table-version')"></el-table-column>
-			<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
-			<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
-			<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
+			<el-table-column sortable="custom" prop="density" :label="i18n('density.table-version')">
+				<template v-slot="rowScope">
+					<div :data-test-id="'datatable-density-versions-version-' + rowScope.$index">
+						{{ rowScope.row.density }}
+					</div>
+				</template>
+			</el-table-column>
+			<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')">
+				<template v-slot="rowScope">
+					<div :data-test-id="'datatable-density-versions-total-sessions-' + rowScope.$index">
+						{{ rowScope.row.t }}
+					</div>
+				</template>
+			</el-table-column>
+			<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')">
+				<template v-slot="rowScope">
+					<div :data-test-id="'datatable-density-versions-total-users-' + rowScope.$index">
+						{{ rowScope.row.u }}
+					</div>
+				</template>
+			</el-table-column>
+			<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')">
+				<template v-slot="rowScope">
+					<div :data-test-id="'datatable-density-versions-new-users-' + rowScope.$index">
+						{{ rowScope.row.n }}
+					</div>
+				</template>
+			</el-table-column>
 		</template>
 		<template v-slot:header-left>
-			<el-select v-model="selectedDensity" >
+			<el-select test-id="density" v-model="selectedDensity" >
 				<el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in versions"></el-option>
 			</el-select>
 		</template>
