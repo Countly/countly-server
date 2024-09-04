@@ -91,7 +91,8 @@
             return {
                 currentTab: this.tabs[0]?.value || null,
                 localTitle: this.value,
-                isEditing: !this.value
+                isEditing: !this.value,
+                isActive: false
             };
         },
         watch: {
@@ -103,6 +104,10 @@
             }
         },
         methods: {
+            toggleChanged(newValue) {
+                this.console.log('toggleChanged');
+                this.$emit('toggleChanged', newValue);
+            },
             close: function() {
                 this.$emit('close');
             },
