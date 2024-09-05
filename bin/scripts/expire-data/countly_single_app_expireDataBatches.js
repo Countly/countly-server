@@ -158,18 +158,20 @@ function prepareIterationList(collections, seconds, callback) {
             if (err) {
                 console.log("ERROR: Could not fetch min ts for collections");
                 callback(err);
-            } else {
+            }
+            else {
                 console.log("Min ts: " + minTs);
                 generateIterationList(minTs);
             }
         });
-    } else {
+    }
+    else {
         generateIterationList(start);
     }
 
     function getMinTs(cb) {
         var minTs = end;
-    
+
         async.each(collections, function(col, cb1) {
             col.db.collection(col.collection).findOne({}, { sort: { ts: 1 }, projection: { ts: 1 } }, function(err, doc) {
                 if (err) {
@@ -184,11 +186,12 @@ function prepareIterationList(collections, seconds, callback) {
         }, function(err) {
             if (err) {
                 cb(err);
-            } else {
+            }
+            else {
                 cb(null, minTs);
             }
         });
-    };
+    }
 
     function generateIterationList(z) {
         z = (start === 0 && z) ? z : start;
@@ -210,7 +213,8 @@ function prepareIterationList(collections, seconds, callback) {
                         listed.push({"collection": col.collection, "db": col.db, "start": z, "end": Math.min(z + timeSpan, end), "seconds": true});
                     });
                 }
-            } else {
+            }
+            else {
                 for (; z <= end; z += timeSpan * 1000) {
                     collections.forEach(col => {
                         listed.push({"collection": col.collection, "db": col.db, "start": z, "end": Math.min(z + timeSpan * 1000, end)});
@@ -220,7 +224,7 @@ function prepareIterationList(collections, seconds, callback) {
         }
 
         callback(null, listed);
-    };
+    }
 }
 function processDrillCollections(db, drill_db, callback) {
     if (process && process.drill_events) {
