@@ -359,9 +359,9 @@ describe('Complete Onboarding', () => {
         analyticsTechnologyDensitiesPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToAnalyticsGeoCountries();
         analyticsGeoCountriesPageHelpers.verifyFullDataPageElements();
+        analyticsGeoCountriesPageHelpers.clickLanguagesTab();
+        analyticsGeoLanguagesPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //analyticsGeoCountriesPageHelpers.clickLanguagesTab();
-        //analyticsGeoLanguagesPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToAnalyticsEventsOverview();
         //analyticsEventsOverviewPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToAnalyticsAllEvents();
