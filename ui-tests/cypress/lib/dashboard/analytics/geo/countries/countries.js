@@ -58,6 +58,7 @@ const verifyStaticElementsOfPage = () => {
         labelText: "Total Users",
     });
 
+    //TODO: Will be opened after https://countly.atlassian.net/browse/SER-1798 Fixed
     // cy.verifyElement({
     //     tooltipElement: countriesMetricCardElements.TOTAL_USERS_NUMBER,
     //     tooltipText: "Total (unique) value for this period is estimated and corrected using the biggest time buckets from available daily, weekly and monthly stats. Exact total counts are available for this year, month and day periods"
@@ -183,6 +184,7 @@ const verifyCountriesMetricCard = ({
             elementText: totalUserNumber,
         });
 
+        //TODO: Will be removed after https://countly.atlassian.net/browse/SER-1798 Fixed... will be verified by line 61
         cy.verifyElement({
             tooltipElement: countriesMetricCardElements.TOTAL_USERS_NUMBER,
             tooltipText: "Total (unique) value for this period is estimated and corrected using the biggest time buckets from available daily, weekly and monthly stats. Exact total counts are available for this year, month and day periods"
