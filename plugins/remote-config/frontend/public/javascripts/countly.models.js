@@ -37,8 +37,6 @@
                     method: 'remote-config'
                 },
                 dataType: "json"
-            }).then(function(res) {
-                return res || {};
             });
         },
         getAb: function() {
@@ -137,41 +135,43 @@
         var actions = {
             initialize: function(context) {
                 return countlyRemoteConfig.service.initialize().then(function(res) {
-                    if (res && countlyGlobal.plugins.indexOf("ab-testing") > -1) {
-                        countlyRemoteConfig.service.getAb().then(function(resp) {
-                            context.state.parameters.isTableLoading = false;
-                            if (resp) {
-                                var parameters = res.parameters || [];
-                                var conditions = res.conditions || [];
-                                parameters.forEach(function(parameter) {
-                                    parameter.editable = true;
-                                    resp.experiments.forEach(function(experiment) {
-                                        if (experiment && experiment.status !== "completed" && experiment.variants && experiment.variants.length > 0 && experiment.variants[0].parameters.length && experiment.variants[0].parameters.length > 0 && experiment.variants[0].parameters[0].name === parameter.parameter_key) {
-                                            parameter.abStatus = experiment.status;
-                                            parameter.editable = false;
+                    if (res) {
+                        if (res && countlyGlobal.plugins.indexOf("ab-testing") > -1) {
+                            countlyRemoteConfig.service.getAb().then(function(resp) {
+                                context.state.parameters.isTableLoading = false;
+                                if (resp) {
+                                    var parameters = res.parameters || [];
+                                    var conditions = res.conditions || [];
+                                    parameters.forEach(function(parameter) {
+                                        parameter.editable = true;
+                                        resp.experiments.forEach(function(experiment) {
+                                            if (experiment && experiment.status !== "completed" && experiment.variants && experiment.variants.length > 0 && experiment.variants[0].parameters.length && experiment.variants[0].parameters.length > 0 && experiment.variants[0].parameters[0].name === parameter.parameter_key) {
+                                                parameter.abStatus = experiment.status;
+                                                parameter.editable = false;
+                                            }
+                                        });
+                                        if (parameter.expiry_dttm && parameter.expiry_dttm < Date.now()) {
+                                            parameter.status = "Expired";
                                         }
                                     });
-                                    if (parameter.expiry_dttm && parameter.expiry_dttm < Date.now()) {
-                                        parameter.status = "Expired";
-                                    }
-                                });
-                                context.dispatch("countlyRemoteConfig/parameters/all", parameters, {root: true});
-                                context.dispatch("countlyRemoteConfig/conditions/all", conditions, {root: true});
-                            }
-                        });
-                    }
-                    else {
-                        context.state.parameters.isTableLoading = false;
-                        var parameters = res.parameters || [];
-                        var conditions = res.conditions || [];
-                        parameters.forEach(function(parameter) {
-                            if (parameter.expiry_dttm && parameter.expiry_dttm < Date.now()) {
-                                parameter.status = "Expired";
-                            }
-                            parameter.editable = true;
-                        });
-                        context.dispatch("countlyRemoteConfig/parameters/all", parameters, {root: true});
-                        context.dispatch("countlyRemoteConfig/conditions/all", conditions, {root: true});
+                                    context.dispatch("countlyRemoteConfig/parameters/all", parameters, {root: true});
+                                    context.dispatch("countlyRemoteConfig/conditions/all", conditions, {root: true});
+                                }
+                            });
+                        }
+                        else {
+                            context.state.parameters.isTableLoading = false;
+                            var parameters = res.parameters || [];
+                            var conditions = res.conditions || [];
+                            parameters.forEach(function(parameter) {
+                                if (parameter.expiry_dttm && parameter.expiry_dttm < Date.now()) {
+                                    parameter.status = "Expired";
+                                }
+                                parameter.editable = true;
+                            });
+                            context.dispatch("countlyRemoteConfig/parameters/all", parameters, {root: true});
+                            context.dispatch("countlyRemoteConfig/conditions/all", conditions, {root: true});
+                        }
                     }
                 });
             }
