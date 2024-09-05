@@ -146,6 +146,8 @@ const verifyTimesOfDayDataFromTable = ({
     sunday = null,
 }) => {
 
+    cy.scrollPageToBottom();
+
     cy.verifyElement({
         element: timesOfDayDataTableElements(0).HOURS,
         elementText: "00:00-01:00"
@@ -158,9 +160,6 @@ const verifyTimesOfDayDataFromTable = ({
         element: timesOfDayDataTableElements(2).HOURS,
         elementText: "02:00-03:00"
     });
-
-    cy.scrollPageToBottom();
-
     cy.verifyElement({
         element: timesOfDayDataTableElements(3).HOURS,
         elementText: "03:00-04:00"
