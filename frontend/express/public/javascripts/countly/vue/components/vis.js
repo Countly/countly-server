@@ -1882,6 +1882,9 @@
         methods: {
             refresh: function() {
                 this.$emit('refresh');
+            },
+            getIconUrl: function(icon) {
+                return `${countlyGlobal.cdn}images/annotation/${icon}.svg`;
             }
         },
         components: {
@@ -1891,12 +1894,12 @@
             '<div class="chart-type-annotation-wrapper">\
                 <el-dropdown trigger="click" @command="graphNotesHandleCommand($event)">\
                     <el-button size="small">\
-                        <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
+                        <img :src="getIconUrl(\'notation-icon\')" class="chart-type-annotation-wrapper__icon"/>\
                     </el-button>\
                     <el-dropdown-menu slot="dropdown">\
-                        <el-dropdown-item v-if="hasCreateRight" command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
-                        <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
-                        <el-dropdown-item v-if="hasUpdateRight" command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item v-if="hasCreateRight" command="add"><img :src="getIconUrl(\'add-icon\')" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
+                        <el-dropdown-item command="manage"><img :src="getIconUrl(\'manage-icon\')" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item v-if="hasUpdateRight" command="show"><img :src="getIconUrl(\'show-icon\')" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
                     </el-dropdown-menu>\
                 </el-dropdown>\
                 <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>\
@@ -2859,7 +2862,7 @@
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                 markerIcon: L.icon({
-                    iconUrl: '/images/leaflet/marker-icon.svg',
+                    iconUrl: 'images/leaflet/marker-icon.svg',
                     iconSize: [32, 32],
                     iconAnchor: [ 16, 32],
                 }),
@@ -3377,7 +3380,7 @@
                     return false;
                 }
                 else {
-                    return "/images/flags/" + code.toLowerCase() + ".png";
+                    return "images/flags/" + code.toLowerCase() + ".png";
                 }
             },
             getMarkerTooltipTitle: function(code) {
@@ -3403,10 +3406,10 @@
                 var self = this;
                 this.loadingGeojson = true;
 
-                var url = '/geodata/world.geojson';
+                var url = 'geodata/world.geojson';
 
                 if (country) {
-                    url = '/geodata/region/' + country + '.geojson';
+                    url = 'geodata/region/' + country + '.geojson';
                 }
 
                 return CV.$.ajax({
