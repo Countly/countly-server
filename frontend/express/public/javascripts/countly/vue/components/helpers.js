@@ -339,6 +339,11 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            testId: {
+                type: String,
+                default: "metric-breakdown-test-id",
+                required: false
             }
         },
         computed: {
