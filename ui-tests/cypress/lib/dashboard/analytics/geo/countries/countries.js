@@ -119,7 +119,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: countriesDataTableElements().COLUMN_NAME_NEW_USERS_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -131,7 +131,7 @@ const verifyEmptyPageElements = () => {
 
     verifyCountriesDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -144,7 +144,7 @@ const verifyFullDataPageElements = () => {
 
     verifyCountriesDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifyCountriesMetricCard = ({
@@ -185,7 +185,7 @@ const verifyCountriesMetricCard = ({
         cy.verifyElement({
             element: countriesMetricCardElements.TOTAL_USERS_TREND_ICON,
         });
-        
+
         cy.verifyElement({
             element: countriesMetricCardElements.TOTAL_USERS_TREND_VALUE,
             elementText: totalUserPercentage,
