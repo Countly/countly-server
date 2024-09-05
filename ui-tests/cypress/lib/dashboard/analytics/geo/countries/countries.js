@@ -140,6 +140,12 @@ const verifyFullDataPageElements = () => {
 
     verifyCountriesMetricCard({
         isEmpty: false,
+        totalSessionNumber: "1000",
+        totalSessionPercentage: "NA",
+        totalUserNumber: "100",
+        totalUserPercentage: "NA",
+        newUserNumber: "100",
+        newUserPercentage: "NA"
     });
 
     verifyCountriesDataFromTable({
@@ -208,7 +214,6 @@ const verifyCountriesMetricCard = ({
     }
 
     cy.verifyElement({
-        shouldNot: !isEmpty,
         element: countriesMetricCardElements.TOTAL_SESSIONS_NUMBER,
         elementText: totalSessionNumber,
     });
@@ -218,13 +223,11 @@ const verifyCountriesMetricCard = ({
     });
 
     cy.verifyElement({
-        shouldNot: !isEmpty,
         element: countriesMetricCardElements.TOTAL_SESSIONS_TREND_VALUE,
         elementText: totalSessionPercentage,
     });
 
     cy.verifyElement({
-        shouldNot: !isEmpty,
         element: countriesMetricCardElements.TOTAL_USERS_NUMBER,
         elementText: totalUserNumber,
     });
@@ -234,7 +237,6 @@ const verifyCountriesMetricCard = ({
     });
 
     cy.verifyElement({
-        shouldNot: !isEmpty,
         element: countriesMetricCardElements.TOTAL_USERS_TREND_VALUE,
         elementText: totalUserPercentage,
     });
