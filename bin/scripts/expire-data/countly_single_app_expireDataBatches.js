@@ -310,17 +310,14 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                 db_drill.close();
             }
             else {
-                prepareIterationList(processCols, true, function(err, iteratorList) {
-                    if (iteratorList) {
-                        async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
-                            if (errorCn > 0) {
-                                console.log("There were errors. Please recheck logs for those.");
-                            }
-                            console.log('finished');
-                            db.close();
-                            db_drill.close();
-                        });
+                var iteratorList = prepareIterationList(processCols, true);
+                async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
+                    if (errorCn > 0) {
+                        console.log("There were errors. Please recheck logs for those.");
                     }
+                    console.log('finished');
+                    db.close();
+                    db_drill.close();
                 });
             }
         });
