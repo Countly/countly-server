@@ -150,45 +150,59 @@ function eventIterator(fr, done) {
     }
 }
 
-function prepareIterationList(collections, seconds, callback) {
+function prepareIterationList(collections, seconds) {
+    var listed = [];
+    var z = start;
+    if (seconds) {
+        z = Math.floor(start / 1000);
+        for (; z <= Math.floor(end / 1000); z += timeSpan) {
+            for (var k = 0; k < collections.length; k++) {
+                listed.push({"collection": collections[k].collection, "db": collections[k].db, "start": z, "end": Math.min(z + timeSpan, end), "seconds": true});
+            }
+        }
+    }
+    else {
+        for (; z <= end; z += timeSpan * 1000) {
+            for (var k1 = 0; k1 < collections.length; k1++) {
+                listed.push({"collection": collections[k1].collection, "db": collections[k1].db, "start": z, "end": Math.min(z + timeSpan * 1000, end)});
+            }
+        }
+    }
+    return listed;
+
+}
+
+function processDrillCollection(collection, seconds, callback) {
     var listed = [];
 
     if (start === 0) {
         getMinTs(function(err, minTs) {
             if (err) {
-                console.log("ERROR: Could not fetch min ts for collections");
+                console.log("ERROR: Could not fetch min ts for collection " + collection.collection);
                 callback(err);
             }
             else {
-                console.log("Min ts: " + minTs);
+                console.log("Min ts for collection " + collection.collection + ": " + minTs);
                 generateIterationList(minTs);
+                processCollection();
             }
         });
     }
     else {
         generateIterationList(start);
+        processCollection();
     }
 
     function getMinTs(cb) {
-        var minTs = end;
-
-        async.each(collections, function(col, cb1) {
-            col.db.collection(col.collection).findOne({}, { sort: { ts: 1 }, projection: { ts: 1 } }, function(err, doc) {
-                if (err) {
-                    console.log("ERROR: Could not fetch min ts for collection " + col.collection);
-                    return cb1(err);
-                }
-                if (doc && doc.ts && doc.ts < minTs) {
-                    minTs = doc.ts;
-                }
-                cb1();
-            });
-        }, function(err) {
+        collection.db.collection(collection.collection).findOne({}, { sort: { ts: 1 }, projection: { ts: 1 } }, function(err, doc) {
             if (err) {
-                cb(err);
+                return callback(err);
+            }
+            if (doc && doc.ts) {
+                cb(null, doc.ts);
             }
             else {
-                cb(null, minTs);
+                cb(null, end);
             }
         });
     }
@@ -196,36 +210,38 @@ function prepareIterationList(collections, seconds, callback) {
     function generateIterationList(z) {
         z = (start === 0 && z) ? z : start;
         if (timeSpan === 0 && start === 0) {
-            collections.forEach(function(col) {
-                listed.push({"collection": col.collection, "db": col.db, "start": 0, "end": end, "query": {"ts": {"$lt": end}}});
-            });
+            listed.push({"collection": collection.collection, "db": collection.db, "start": 0, "end": end, "query": {"ts": {"$lt": end}}});
         }
         else if (timeSpan === 0) {
-            collections.forEach(function(col) {
-                listed.push({"collection": col.collection, "db": col.db, "start": z, "end": end, "query": {"ts": {"$gte": z, "$lt": end}}});
-            });
+            listed.push({"collection": collection.collection, "db": collection.db, "start": z, "end": end, "query": {"ts": {"$gte": z, "$lt": end}}});
         }
         else {
             if (seconds) {
                 z = Math.floor(z / 1000);
                 for (; z <= Math.floor(end / 1000); z += timeSpan) {
-                    collections.forEach(function(col) {
-                        listed.push({"collection": col.collection, "db": col.db, "start": z, "end": Math.min(z + timeSpan, end), "seconds": true});
-                    });
+                    listed.push({"collection": collection.collection, "db": collection.db, "start": z, "end": Math.min(z + timeSpan, end), "seconds": true});
                 }
             }
             else {
                 for (; z <= end; z += timeSpan * 1000) {
-                    collections.forEach(col => {
-                        listed.push({"collection": col.collection, "db": col.db, "start": z, "end": Math.min(z + timeSpan * 1000, end)});
-                    });
+                    listed.push({"collection": collection.collection, "db": collection.db, "start": z, "end": Math.min(z + timeSpan * 1000, end)});
                 }
             }
         }
+    }
 
-        callback(null, listed);
+    function processCollection() {
+        async.eachLimit(listed, paralelCn, eventIterator, function(err) {
+            if (err) {
+                console.log("ERROR: Error while processing drill collection: " + collection.collection);
+                return callback(err);
+            }
+            console.log('Finished processing collection ' + collection.collection);
+            callback();
+        });
     }
 }
+
 function processDrillCollections(db, drill_db, callback) {
     if (process && process.drill_events) {
         var collections = [];
@@ -247,13 +263,19 @@ function processDrillCollections(db, drill_db, callback) {
                     collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update(eventData.list[i] + APP_ID).digest('hex')});
                 }
             }
-            prepareIterationList(collections, false, function(err, iteratorList) {
-                if (iteratorList) {
-                    async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
-                        console.log('Drill collections processed');
-                        callback();
-                    });
+
+            async.eachSeries(collections, function(collection, done) {
+                processDrillCollection(collection, false, function(err) {
+                    if (err) {
+                        console.log("ERROR: Error while processing drill collection: " + collection.collection);
+                    }
+                    done(err);
+                });
+            }, function(err) {
+                if (err) {
+                    console.log("ERROR: Error processing collections.");
                 }
+                callback(err);
             });
         });
     }
@@ -282,18 +304,25 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                     }
                 }
             }
-            prepareIterationList(processCols, true, function(err, iteratorList) {
-                if (iteratorList) {
-                    async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
-                        if (errorCn > 0) {
-                            console.log("There were errors. Please recheck logs for those.");
-                        }
-                        console.log('finished');
-                        db.close();
-                        db_drill.close();
-                    });
-                }
-            });
+            if (processCols.length === 0) {
+                console.log("Finished");
+                db.close();
+                db_drill.close();
+            }
+            else {
+                prepareIterationList(processCols, true, function(err, iteratorList) {
+                    if (iteratorList) {
+                        async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
+                            if (errorCn > 0) {
+                                console.log("There were errors. Please recheck logs for those.");
+                            }
+                            console.log('finished');
+                            db.close();
+                            db_drill.close();
+                        });
+                    }
+                });
+            }
         });
     }
 });
