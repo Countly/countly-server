@@ -138,7 +138,7 @@
                     if (res) {
                         if (res && countlyGlobal.plugins.indexOf("ab-testing") > -1) {
                             countlyRemoteConfig.service.getAb().then(function(resp) {
-                                context.state.parameters.isTableLoading = false;
+                                context.dispatch("parameters/setTableLoading", false);
                                 if (resp) {
                                     var parameters = res.parameters || [];
                                     var conditions = res.conditions || [];
@@ -160,7 +160,7 @@
                             });
                         }
                         else {
-                            context.state.parameters.isTableLoading = false;
+                            context.dispatch("parameters/setTableLoading", false);
                             var parameters = res.parameters || [];
                             var conditions = res.conditions || [];
                             parameters.forEach(function(parameter) {
