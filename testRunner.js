@@ -1,3 +1,4 @@
+// TODO: run set and teardown just once?
 const glob = require('glob');
 const path = require('path');
 const { spawn } = require('child_process');
@@ -62,7 +63,7 @@ function runMochaForPlugins(plugins) {
 
         const mochaArgs = [
             'mocha',
-            '--reporter', 'min',
+            '--reporter', 'spec',
             '--timeout', '50000',
             '--colors',
             // '--debug',
@@ -90,19 +91,45 @@ function runMochaForPlugins(plugins) {
             env: { ...process.env }
         });
 
-        let output = '';
+        let failureOutput = '';
+        let currentPluginOutput = '';
+        let currentPlugin = '';
+
         mochaProcess.stdout.on('data', (data) => {
-            output += data.toString();
+            const dataStr = data.toString();
+            currentPluginOutput += dataStr;
+
+            // Check if this is the start of a new plugin's tests
+            const pluginMatch = dataStr.match(/^ {2}([^\n]+)/);
+            if (pluginMatch) {
+                if (currentPlugin && !failureOutput.includes(currentPlugin)) {
+                    // If the previous plugin had no failures, print its output
+                    process.stdout.write(currentPluginOutput);
+                }
+                currentPlugin = pluginMatch[1];
+                currentPluginOutput = dataStr;
+            }
+
+            // Check for test failures
+            if (dataStr.includes('✖')) {
+                failureOutput += currentPluginOutput;
+            }
         });
+
         mochaProcess.stderr.on('data', (data) => {
-            output += data.toString();
+            failureOutput += data.toString();
         });
 
         mochaProcess.on('close', (code) => {
+            // Print output for the last plugin if it was successful
+            if (currentPlugin && !failureOutput.includes(currentPlugin)) {
+                process.stdout.write(currentPluginOutput);
+            }
+
             resolve({
                 plugins,
                 success: code === 0,
-                output
+                failureOutput
             });
         });
     });
@@ -144,9 +171,7 @@ async function runTestsInBatches() {
 
         results.forEach(result => {
             if (!result.success) {
-                console.log(`--- Output for failed plugins: ${result.plugins.join(', ')} ---`);
-                console.log(result.output);
-                console.log('---\n');
+                console.log(result.failureOutput);
             }
         });
 
