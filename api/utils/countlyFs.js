@@ -339,17 +339,13 @@ countlyFs.gridfs = {};
         const setOps = {};
 
         for (const [key, value] of Object.entries(updateFields)) {
-            if (key.startsWith('metadata.')) {
-                setOps[key] = value;
-            }
-            else {
-                setOps[key] = value;
-            }
+            setOps[key] = value;
         }
 
-        collection.updateOne(
+        collection.findOneAndUpdate(
             { _id: new db.ObjectID(id) },
             { $set: setOps },
+            { returnOriginal: true },
             function(err, result) {
                 if (err) {
                     log.e("Error updating file:", err);
@@ -359,7 +355,7 @@ countlyFs.gridfs = {};
                     return;
                 }
 
-                if (result.matchedCount === 0) {
+                if (!result.value) {
                     if (callback) {
                         callback(new Error("File not found"));
                     }
@@ -368,7 +364,7 @@ countlyFs.gridfs = {};
 
                 log.d("File updated successfully");
                 if (callback) {
-                    callback(null);
+                    callback(null, result.value);
                 }
             }
         );
