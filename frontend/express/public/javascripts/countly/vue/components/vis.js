@@ -1884,7 +1884,7 @@
                 this.$emit('refresh');
             },
             getIconUrl: function(icon) {
-                return `${countlyGlobal.cdn}images/annotation/${icon}.svg`;
+                return `${countlyGlobal.path}/images/annotation/${icon}.svg`;
             }
         },
         components: {

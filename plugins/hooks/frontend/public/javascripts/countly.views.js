@@ -528,7 +528,7 @@
                 var c = countlyGlobal.timezones[country];
                 c && c.z && c.z.forEach(function(item) {
                     for (var zone in item) {
-                        zones.push({value: item[zone], label: countlyGlobal.timezones[country].n + ' ' + zone, image: "background-image:url(" + countlyGlobal.cdn + "images/flags/" + country.toLowerCase() + ".png)"});
+                        zones.push({value: item[zone], label: countlyGlobal.timezones[country].n + ' ' + zone, image: "background-image:url(" + countlyGlobal.path + "/images/flags/" + country.toLowerCase() + ".png)"});
                     }
                 });
             }
