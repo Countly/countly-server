@@ -191,7 +191,7 @@ var CountryView = countlyVue.views.create({
 
             this.data.table = this.data.table || [];
             for (var z = 0; z < this.data.table.length; z++) {
-                this.data.table[z].flag = countlyGlobal.cdn + "images/flags/" + (this.data.table[z].code || "unknown") + ".svg";
+                this.data.table[z].flag = countlyGlobal.path + "/images/flags/" + (this.data.table[z].code || "unknown") + ".svg";
             }
             return this.data.table;
         },
