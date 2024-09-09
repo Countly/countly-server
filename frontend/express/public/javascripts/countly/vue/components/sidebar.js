@@ -15,7 +15,7 @@
                             apps = this.sortBy(apps, countlyGlobal.member.appSortList);
                         }
                         apps = apps.map(function(a) {
-                            a.image = countlyGlobal.cdn + "appimages/" + a._id + ".png";
+                            a.image = countlyGlobal.path + "/appimages/" + a._id + ".png";
                             a.label = a.name;
                             a.value = a._id;
                             return a;
@@ -30,7 +30,7 @@
                     });
 
                     if (active) {
-                        active.image = countlyGlobal.cdn + "appimages/" + active._id + ".png";
+                        active.image = countlyGlobal.path + "/appimages/" + active._id + ".png";
                     }
                     return active || {};
                 },
