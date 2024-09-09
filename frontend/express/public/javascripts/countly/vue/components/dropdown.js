@@ -529,8 +529,9 @@
         template: '<cly-dropdown class="cly-vue-more-options" ref="dropdown" :placement="placement" :disabled="disabled" v-on="$listeners">\
                         <template v-slot:trigger>\
                             <slot name="trigger">\
-                                <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type">\
-                                <span :data-test-id="testId + \'-more-option-text\'" v-if="text">{{text}}</span>\
+                                <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type" @click="toggleArrowState">\
+                                    <span :data-test-id="testId + \'-more-option-text\'" v-if="text">{{text}}</span>\
+                                    <i v-if="showArrows" :class="\'cly-is cly-is-arrow-drop-\' + arrowIcon"></i>\
                                 </el-button>\
                             </slot>\
                         </template>\
@@ -567,16 +568,36 @@
             testId: {
                 type: String,
                 default: 'cly-more-options-test-id'
+            },
+            showArrows: {
+                type: Boolean,
+                default: false
             }
+        },
+        data: function() {
+            return {
+                arrowState: false,
+            };
         },
         mounted: function() {
             this.$on('menu-item-click', this.handleMenuItemClick);
+        },
+        computed: {
+            arrowIcon: function() {
+                return this.arrowState ? 'up' : 'down';
+            },
         },
         methods: {
             handleMenuItemClick: function(command, instance) {
                 if (!this.disabled) {
                     this.$emit('command', command, instance);
                     this.$refs.dropdown.handleClose();
+                    this.arrowState = false;
+                }
+            },
+            toggleArrowState: function() {
+                if (!this.disabled) {
+                    this.arrowState = !this.arrowState;
                 }
             }
         },
