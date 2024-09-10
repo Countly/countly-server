@@ -560,7 +560,7 @@
 
                 return Object.keys(apps).map(function(key) {
                     return {
-                        label: apps[key].name,
+                        label: countlyCommon.unescapeHtml(apps[key].name),
                         value: apps[key]._id
                     };
                 });

@@ -132,6 +132,7 @@ countlyEvents.processEvents = function(params) {
                             try {
                                 tmpSegVal = myValues[z] + "";
                                 tmpSegVal = tmpSegVal.replace(/^\$+/, "").replace(/\./g, ":");
+                                tmpSegVal = common.encodeCharacters(tmpSegVal);
 
                                 if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
                                     tmpSegVal = "[CLY]" + tmpSegVal;
@@ -219,7 +220,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
         forbiddenSegValues.push(i + "");
     }
 
-    for (let i = 0; i < params.qstring.events.length; i++) {
+    for (let i = 0; i < params.qstring?.events.length; i++) {
 
         var currEvent = params.qstring.events[i];
         tmpEventObj = {};
@@ -354,6 +355,8 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
                         tmpSegVal = "[CLY]" + tmpSegVal;
                     }
 
+                    tmpSegVal = common.encodeCharacters(tmpSegVal);
+
                     var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
 
                     if (pluginsGetConfig.event_segmentation_value_limit &&
@@ -404,7 +407,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
         params.time = time;
     }
 
-    if (!pluginsGetConfig.safe) {
+    if (!pluginsGetConfig.safe && !(params.qstring?.safe_api_response)) {
         for (let collection in eventCollections) {
             if (eventSegmentsZeroes[collection] && eventSegmentsZeroes[collection].length) {
                 for (let i = 0; i < eventSegmentsZeroes[collection].length; i++) {

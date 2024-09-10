@@ -232,6 +232,10 @@ var pluginManager = function pluginManager() {
     this.reloadEnabledPluginList = function(db, callback) {
         this.loadDependencyMap();
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+            if (err) {
+                console.log(err);
+            }
+            res = res || {};
             if (Object.keys(fullPluginsMap).length > 0) {
                 for (var pp in res.plugins) {
                     if (!fullPluginsMap[pp]) {
@@ -2080,7 +2084,7 @@ var pluginManager = function pluginManager() {
     this.isAnyMasked = function() {
         if (masking && masking.apps) {
             for (var app in masking.apps) {
-                if (masking.apps[app] && masking.apps[app].masking) {
+                if (masking.apps[app]) {
                     return hasAnyValueTrue(masking.apps[app].masking);
                 }
             }

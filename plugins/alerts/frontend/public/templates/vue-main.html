@@ -80,7 +80,7 @@
                     
                     <el-table-column  min-width="415" prop="condtionText"  sortable="true"  :label="i18n('alert.Condition')">
                         <template slot-scope="scope" sortable="true">
-                            <span :data-test-id="'datatable-condition-' + scope.$index">{{scope.row.condtionText}}</span>
+                            <span :data-test-id="'datatable-condition-' + scope.$index">{{unescapeHtml(scope.row.condtionText)}}</span>
                         </template>
                     </el-table-column>
 
@@ -450,6 +450,7 @@
                             class="alert-drawer-trigger-select-and-input alert-drawer-trigger-input"
                             placeholder="value"
                             type="text"
+                            @keypress="isNumberKeyPressEvent($event)"
                             />
                         <span class="groupcard-text mediumtextNormal-14px" data-test-id="trigger-in-the-last-label">
                             in the last
