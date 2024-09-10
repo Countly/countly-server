@@ -220,7 +220,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
         forbiddenSegValues.push(i + "");
     }
 
-    for (let i = 0; i < params.qstring.events.length; i++) {
+    for (let i = 0; i < params.qstring?.events.length; i++) {
 
         var currEvent = params.qstring.events[i];
         tmpEventObj = {};
@@ -433,7 +433,7 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
         params.time = time;
     }
 
-    if (!pluginsGetConfig.safe) {
+    if (!pluginsGetConfig.safe && !(params.qstring?.safe_api_response)) {
         for (let collection in eventCollections) {
             if (eventSegmentsZeroes[collection] && eventSegmentsZeroes[collection].length) {
                 for (let i = 0; i < eventSegmentsZeroes[collection].length; i++) {
