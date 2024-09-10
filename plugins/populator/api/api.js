@@ -55,10 +55,6 @@ const FEATURE_NAME = 'populator';
         ob.features.push(FEATURE_NAME);
     });
 
-    plugins.setConfigs("api", {
-        safe: true,
-    });
-
     const createTemplate = function(ob) {
         const obParams = ob.params;
         const validatedArgs = common.validateArgs(obParams.qstring, templateProperties, true);
