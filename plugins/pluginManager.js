@@ -1758,10 +1758,19 @@ var pluginManager = function pluginManager() {
     * @returns {string} modified connection string
     **/
     this.replaceDatabaseString = function(str, db) {
+        if (!db) {
+            db = "countly";
+        }
         var i = str.lastIndexOf('/countly');
         var k = str.lastIndexOf('/' + db);
         if (i !== k && i !== -1 && db) {
             return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+        }
+        else if (i === -1 && k === -1) {
+            //no db found in the string, we should insert the needed one
+            var parts = str.split("/");
+            parts[parts.length - 1] = db + parts[parts.length - 1];
+            return parts.join("/");
         }
         return str;
     };
