@@ -1087,20 +1087,27 @@
                 return rowWidgets;
             },
             initGrid: function() {
-                if (!this.widgetsLoaded) {
-                    setTimeout(() => this.initGrid(), 100); // Retry after a short delay
-                    return;
-                }
                 var self = this;
 
                 this.grid = GridStack.init({
                     cellHeight: 80,
                     margin: 8,
-                    animate: true,
-                    float: false
+                    animate: false,
+                    float: false,
+                    disableOneColumnMode: true,
+                    staticGrid: true
                 });
 
-                this.updateAllWidgetsGeography();
+                if (!this.widgetsLoaded) {
+                    this.$watch('widgetsLoaded', function(newValue) {
+                        if (newValue) {
+                            self.enableGridInteraction();
+                        }
+                    });
+                }
+                else {
+                    this.enableGridInteraction();
+                }
 
                 if (!this.canUpdate) {
                     this.disableGrid();
@@ -1227,20 +1234,9 @@
                 return this.grid.save(false);
             },
             validateWidgets: function(allWidgets) {
-                if (this.grid) {
+                if (this.grid && this.widgetsLoaded) {
                     var self = this;
                     this.$nextTick(function() {
-                        /**
-                         * Lets execute the following code on the nextTick.
-                         * If we execute it on the same tick, the event loop is
-                         * blocked and the grid becomes very laggy and unresponsive.
-                         *
-                         * Following code mainly fixes the issue when the grid is in
-                         * loading state with some placeholder widgets in the grid,
-                         * that are locked and cannot move and resize themselves.
-                         * We need to update them when the widgets data arrive so that
-                         * users can interact with them (i.e. move or resize them).
-                         */
                         self.grid.batchUpdate();
 
                         for (var i = 0; i < allWidgets.length; i++) {
@@ -1265,21 +1261,15 @@
                                 noResize: noResize,
                             };
 
-                            /**
-
-                            Lets not update the width and heights of widgets.
-                            Because this is running int he nextTick, we get size
-                            consistency issues then.
-
-                            var w = widget.size && widget.size[0];
-                            var h = widget.size && widget.size[1];
-
-                            if (Number.isInteger(w) && Number.isInteger(h)) {
-                                setting.w = w;
-                                setting.h = h;
+                            if (widget.size && widget.size.length === 2) {
+                                setting.w = widget.size[0];
+                                setting.h = widget.size[1];
                             }
 
-                             */
+                            if (widget.position && widget.position.length === 2) {
+                                setting.x = widget.position[0];
+                                setting.y = widget.position[1];
+                            }
 
                             self.updateGridWidget(nodeEl, setting);
                         }
@@ -1323,6 +1313,12 @@
             compactGrid: function() {
                 this.grid.compact();
             },
+            enableGridInteraction: function() {
+                this.grid.setStatic(false);
+                this.grid.setFloat(true);
+                this.grid.setAnimation(true);
+                this.updateAllWidgetsGeography();
+            },
             removeGridWidget: function(el) {
                 if (this.grid) {
                     this.grid.removeWidget(el);
@@ -1344,11 +1340,7 @@
             }
         },
         mounted: function() {
-            this.$watch('widgetsLoaded', function(newValue) {
-                if (newValue) {
-                    this.initGrid();
-                }
-            }, { immediate: true });
+            this.initGrid();
         },
         beforeDestroy: function() {
             this.destroyGrid();
