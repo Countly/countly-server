@@ -679,7 +679,7 @@
                     })
                 });
             },
-            handleAllChange: function(selection) {
+            handleAllChange: function(selection, force = false) {
                 var self = this;
                 if (selection.length) {
                     selection.forEach(function(row) {
@@ -690,6 +690,9 @@
                     this.events.forEach(function(row) {
                         self.$refs.eventsDefaultTable.patch(row, { isSelected: false });
                     });
+                    if (force) {
+                        this.$refs.eventsDefaultTable.$refs.elTable.clearSelection();
+                    }
                 }
             },
             handleChangeVisibility: function(command, rows) {
@@ -781,6 +784,9 @@
                 });
                 this.deleteQueue = null;
                 this.showDeleteDialog = false;
+            },
+            unpatchSelectedEvents: function() {
+                this.handleAllChange([], true);
             },
             statusClassObject: statusClassObject,
         },
