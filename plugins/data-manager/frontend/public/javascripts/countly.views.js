@@ -858,7 +858,7 @@
                     self.$refs.eventGroupsTable.patch(row, { isSelected: !!isSelected });
                 }
             },
-            handleAllChange: function(selection) {
+            handleAllChange: function(selection, force = false) {
                 var self = this;
                 if (selection.length) {
                     selection.forEach(function(row) {
@@ -869,6 +869,9 @@
                     this.eventGroups.forEach(function(row) {
                         self.$refs.eventGroupsTable.patch(row, { isSelected: false });
                     });
+                    if (force) {
+                        this.$refs.eventGroupsTable.$refs.elTable.clearSelection();
+                    }
                 }
             },
             handleCommand: function(ev, eventGroup) {
@@ -908,6 +911,9 @@
                 });
                 this.$store.dispatch('countlyDataManager/deleteEventGroups', events);
             },
+            unpatchSelectedEventGroups: function() {
+                this.handleAllChange([], true);
+            }
         }
     });
 
