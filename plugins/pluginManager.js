@@ -1772,9 +1772,18 @@ var pluginManager = function pluginManager() {
         }
         else if (i === -1 && k === -1) {
             //no db found in the string, we should insert the needed one
-            var parts = str.split("/");
-            parts[parts.length - 1] = db + parts[parts.length - 1];
-            return parts.join("/");
+            var urlparts = str.split("://");
+            if (typeof urlparts[1] === "string") {
+                var parts = urlparts[1].split("/");
+                if (parts.length === 1) {
+                    parts[0] += "/" + db;
+                }
+                else {
+                    parts[parts.length - 1] = db + parts[parts.length - 1];
+                }
+                urlparts[1] = parts.join("/");
+            }
+            return urlparts.join("://");
         }
         return str;
     };
