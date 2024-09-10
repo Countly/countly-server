@@ -383,103 +383,103 @@ $bg-color: #24292e;
     .cly-icon {
         &-sidebar{
             &-app {
-                background-image: url("../../../images/sidebar/default/app.svg");
+                background-image: url("../../images/sidebar/default/app.svg");
                 height: 24px;
                 width: 24px;
             }
 
             &-analytics {
-                background-image: url("../../../images/sidebar/default/analytics-icon.svg");
+                background-image: url("../../images/sidebar/default/analytics-icon.svg");
                 height: 20px;
                 width: 20px;
 
                 &:hover {
-                    background-image: url("../../../images/sidebar/hover/analytics-icon.svg");
+                    background-image: url("../../images/sidebar/hover/analytics-icon.svg");
                 }
 
                 &.cly-vue-sidebar__menu-option--selected {
-                    background-image: url("../../../images/sidebar/selected/analytics-icon.svg");
+                    background-image: url("../../images/sidebar/selected/analytics-icon.svg");
                 }
             }
 
             &-dashboards {
-                background-image: url("../../../images/sidebar/default/dashboards-icon.svg");
+                background-image: url("../../images/sidebar/default/dashboards-icon.svg");
                 height: 20px;
                 width: 20px;
 
                 &:hover {
-                    background-image: url("../../../images/sidebar/hover/dashboards-icon.svg");
+                    background-image: url("../../images/sidebar/hover/dashboards-icon.svg");
                 }
 
                 &.cly-vue-sidebar__menu-option--selected {
-                    background-image: url("../../../images/sidebar/selected/dashboards-icon.svg");
+                    background-image: url("../../images/sidebar/selected/dashboards-icon.svg");
                 }
             }
 
             &-divider {
-                background-image: url("../../../images/sidebar/default/divider.svg");
+                background-image: url("../../images/sidebar/default/divider.svg");
                 width: 32px;
                 height: 1px;
             }
 
             &-management {
-                background-image: url("../../../images/sidebar/default/management.svg");
+                background-image: url("../../images/sidebar/default/management.svg");
                 height: 20px;
                 width: 20px;
 
                 &:hover {
-                    background-image: url("../../../images/sidebar/hover/management.svg");
+                    background-image: url("../../images/sidebar/hover/management.svg");
                 }
 
                 &.cly-vue-sidebar__menu-option--selected {
-                    background-image: url("../../../images/sidebar/selected/management.svg");
+                    background-image: url("../../images/sidebar/selected/management.svg");
                 }
             }
 
             &-report-manager {
-                background-image: url("../../../images/sidebar/default/report-manager.svg");
+                background-image: url("../../images/sidebar/default/report-manager.svg");
                 height: 18px;
                 width: 20px;
 
                 &:hover {
-                    background-image: url("../../../images/sidebar/hover/report-manager.svg");
+                    background-image: url("../../images/sidebar/hover/report-manager.svg");
                 }
 
                 &.cly-vue-sidebar__menu-option--selected {
-                    background-image: url("../../../images/sidebar/selected/report-manager.svg");
+                    background-image: url("../../images/sidebar/selected/report-manager.svg");
                 }
             }
 
             &-help-center {
-                background-image: url("../../../images/sidebar/default/help-center.svg");
+                background-image: url("../../images/sidebar/default/help-center.svg");
                 height: 25px;
                 width: 20px;
 
                 &:hover {
-                    background-image: url("../../../images/sidebar/hover/help-center.svg");
+                    background-image: url("../../images/sidebar/hover/help-center.svg");
                 }
 
                 &.cly-vue-sidebar__menu-option--selected {
-                    background-image: url("../../../images/sidebar/selected/help-center.svg");
+                    background-image: url("../../images/sidebar/selected/help-center.svg");
                 }
             }
 
             &-notifications {
-                background-image: url("../../../images/sidebar/default/notifications.svg");
+                background-image: url("../../images/sidebar/default/notifications.svg");
                 height: 23px;
                 width: 20px;
 
                 &:hover {
-                    background-image: url("../../../images/sidebar/hover/notifications.svg");
+                    background-image: url("../../images/sidebar/hover/notifications.svg");
                 }
 
                 &.cly-vue-sidebar__menu-option--selected {
-                    background-image: url("../../../images/sidebar/selected/notifications.svg");
+                    background-image: url("../../images/sidebar/selected/notifications.svg");
                 }
             }
 
             &-toggle-left {
-                background-image: url("../../../images/sidebar/default/toggle-left.svg");
+                background-image: url("../../images/sidebar/default/toggle-left.svg");
                 height: 15px;
                 width: 11px;
             }
