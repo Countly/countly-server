@@ -25,7 +25,8 @@
 		<div class="technology-analytics-wrapper__items bu-pb-5" v-loading="isLoading">
             <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
                 <cly-metric-cards :multiline="false" :is-synced-scroll="true">
-                    <cly-metric-card 
+                    <cly-metric-card
+                        :test-id="'platform-' + idx" 
                         :is-percentage="true" 
                         :column-width=3 
                         :color="item.color" 
@@ -55,6 +56,7 @@
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
 					<cly-metric-cards :multiline="false" :is-synced-scroll="true">
 						<cly-metric-breakdown 
+                            :test-id="'platform-' + idx"
 							:name="item.name" 
 							:values="item.values" 
 							:key="idx"
