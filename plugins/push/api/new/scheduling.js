@@ -40,7 +40,6 @@ async function scheduleMessage(message) {
             const lastSchedule = await db.collection("message_schedules").find({
                 messageId: message._id,
             }).limit(1).sort({ scheduledTo: -1 }).toArray();
-            console.log(lastSchedule);
             lastScheduleDate = lastSchedule?.[0].scheduledTo;
         }
 
@@ -66,7 +65,6 @@ async function scheduleMessage(message) {
         if (!scheduleTo) {
             continue;
         }
-        console.log(scheduleTo);
         if ("tz" in trigger && trigger.tz) {
             if (typeof trigger.sctz !== "number") {
                 throw new Error("Scheduler timezone is required when a "

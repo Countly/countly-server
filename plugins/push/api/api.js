@@ -132,26 +132,26 @@ plugins.register('/master', async function() {
 });
 
 
-// plugins.register('/master/runners', runners => {
-//     let sender;
-//     runners.push(async() => {
-//         if (!sender) {
-//             try {
-//                 sender = new Sender();
-//                 await sender.prepare();
-//                 let has = await sender.watch();
-//                 if (has) {
-//                     await sender.send();
-//                 }
-//                 sender = undefined;
-//             }
-//             catch (e) {
-//                 log.e('Sending stopped with an error', e);
-//                 sender = undefined;
-//             }
-//         }
-//     });
-// });
+plugins.register('/master/runners', runners => {
+    let sender;
+    runners.push(async() => {
+        if (!sender) {
+            try {
+                sender = new Sender();
+                await sender.prepare();
+                let has = await sender.watch();
+                if (has) {
+                    await sender.send();
+                }
+                sender = undefined;
+            }
+            catch (e) {
+                log.e('Sending stopped with an error', e);
+                sender = undefined;
+            }
+        }
+    });
+});
 
 plugins.register('/cache/init', function() {
     common.cache.init(PUSH_CACHE_GROUP, {

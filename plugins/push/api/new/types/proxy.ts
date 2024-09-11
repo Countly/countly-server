@@ -8,7 +8,6 @@ export interface ProxyConfiguration {
     pass?: string;
     user?: string;
     auth: boolean;
-    http2?: boolean;
 }
 
 export interface ProxyAgentOptions extends AgentOptions {

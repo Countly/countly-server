@@ -21,6 +21,7 @@
   ],
   "dependencies": {
     "firebase-admin": "^12.1.0",
+    "https-proxy-agent": "^7.0.5",
     "jsonwebtoken": "9.0.2",
     "kafkajs": "^2.2.4",
     "node-forge": "1.3.1",

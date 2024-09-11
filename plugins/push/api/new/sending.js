@@ -65,16 +65,12 @@ async function sendMessagesToQueue(messageScheduleJob) {
 
     // pipeline:
     const $match = {};
+    const $project = { uid: 1, tk: 1, la: 1, };
     const $lookup = {
         from: `push_${messageScheduleJob.appId.toString()}`,
         localField: 'uid',
         foreignField: '_id',
         as: "tk"
-    };
-    const $project = {
-        uid: 1,
-        tk: 1,
-        la: 1,
     };
     // TODO: check what different ios FIELDS do here (production, development, adhoc)
     // Platform filters and projection:
@@ -244,5 +240,5 @@ async function loadProxyConfig() {
     }
     const { proxyhost: host, proxyport: port, proxyuser: user,
         proxypass: pass, proxyunauthorized: unauth } = pushConfig;
-    return { host, port, auth: !(unauth || false) }
+    return { host, port, auth: !(unauth || false), pass, user }
 }

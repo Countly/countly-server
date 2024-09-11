@@ -1,25 +1,20 @@
+/**
+ * @typedef {import("../types/results.js").FCMResponse} FCMResponse
+ */
+
 const firebaseAdmin = require("firebase-admin");
 const FORGE = require('node-forge');
-const { Agent } = require('https');
-const { proxyAgent } = require("../lib/proxy");
+const { HttpsProxyAgent } = require("https-proxy-agent");
+const { buildProxyUrl } = require("../lib/utils.js");
 
 module.exports = { send }
 
 /**
  * 
  * @param {import("../sending").PushTicket} push 
+ * @returns {Promise<FCMResponse>}
  */
 async function send(push) {
-    /** @type {Agent=} */
-    let agent;
-    if (push.proxy) {
-        // TODO: check if we need to cache agent. node or firebase app instance
-        // might be doing that already. node keeps agents in a pool depending
-        // on keepAlive: https://nodejs.org/api/http.html#class-httpagent
-        console.log(push.proxy);
-        agent = /** @type {Agent} */(proxyAgent({ proxy: push.proxy }));
-    }
-
     const creds = /** @type {import('../types/credentials').FCMCredentials} */ (push.credentials);
     const serviceAccountJSON = FORGE.util.decode64(
         creds.serviceAccountFile.substring(
@@ -28,19 +23,33 @@ async function send(push) {
     );
     const serviceAccountObject = JSON.parse(serviceAccountJSON);
     const appName = creds.hash;
-    const firebaseApp = firebaseAdmin.apps.find(app => app ? app.name === appName : false)
-        ? firebaseAdmin.app(appName)
-        : firebaseAdmin.initializeApp({
+
+    let firebaseApp = firebaseAdmin.apps.find(app => app ? app.name === appName : false);
+
+    if (!firebaseApp) {
+        /** @type {HttpsProxyAgent<"proxy-address">=} */
+        let agent = undefined;
+
+        if (push.proxy) {
+            agent = new HttpsProxyAgent(buildProxyUrl(push.proxy), {
+                keepAlive: true,
+                timeout: 5000,
+                rejectUnauthorized: push.proxy.auth,
+                // ALPNProtocols: push.proxy.http2 ? ["h2"] : undefined,
+            });
+        }
+
+        firebaseApp = firebaseAdmin.initializeApp({
             credential: firebaseAdmin.credential.cert(serviceAccountObject, agent),
             httpAgent: agent
         }, appName);
+    }
 
-    const firebaseMessaging = firebaseApp.messaging();
-
-    const messageId = await firebaseMessaging.send({
+    const messageId = await firebaseApp.messaging().send({
         token: push.token,
         ...push.message
     });
-
+    
     console.log("FCM messageId", messageId);
+    return { messageId }
 }
