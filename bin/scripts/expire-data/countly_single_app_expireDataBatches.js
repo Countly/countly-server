@@ -171,6 +171,77 @@ function prepareIterationList(collections, seconds) {
     return listed;
 
 }
+
+function processDrillCollection(collection, seconds, callback) {
+    var listed = [];
+
+    if (start === 0) {
+        getMinTs(function(err, minTs) {
+            if (err) {
+                console.log("ERROR: Could not fetch min ts for collection " + collection.collection);
+                callback(err);
+            }
+            else {
+                console.log("Min ts for collection " + collection.collection + ": " + minTs);
+                generateIterationList(minTs);
+                processCollection();
+            }
+        });
+    }
+    else {
+        generateIterationList(start);
+        processCollection();
+    }
+
+    function getMinTs(cb) {
+        collection.db.collection(collection.collection).findOne({}, { sort: { ts: 1 }, projection: { ts: 1 } }, function(err, doc) {
+            if (err) {
+                return callback(err);
+            }
+            if (doc && doc.ts) {
+                cb(null, doc.ts);
+            }
+            else {
+                cb(null, end);
+            }
+        });
+    }
+
+    function generateIterationList(z) {
+        z = (start === 0 && z) ? z : start;
+        if (timeSpan === 0 && start === 0) {
+            listed.push({"collection": collection.collection, "db": collection.db, "start": 0, "end": end, "query": {"ts": {"$lt": end}}});
+        }
+        else if (timeSpan === 0) {
+            listed.push({"collection": collection.collection, "db": collection.db, "start": z, "end": end, "query": {"ts": {"$gte": z, "$lt": end}}});
+        }
+        else {
+            if (seconds) {
+                z = Math.floor(z / 1000);
+                for (; z <= Math.floor(end / 1000); z += timeSpan) {
+                    listed.push({"collection": collection.collection, "db": collection.db, "start": z, "end": Math.min(z + timeSpan, end), "seconds": true});
+                }
+            }
+            else {
+                for (; z <= end; z += timeSpan * 1000) {
+                    listed.push({"collection": collection.collection, "db": collection.db, "start": z, "end": Math.min(z + timeSpan * 1000, end)});
+                }
+            }
+        }
+    }
+
+    function processCollection() {
+        async.eachLimit(listed, paralelCn, eventIterator, function(err) {
+            if (err) {
+                console.log("ERROR: Error while processing drill collection: " + collection.collection);
+                return callback(err);
+            }
+            console.log('Finished processing collection ' + collection.collection);
+            callback();
+        });
+    }
+}
+
 function processDrillCollections(db, drill_db, callback) {
     if (process && process.drill_events) {
         var collections = [];
@@ -192,10 +263,19 @@ function processDrillCollections(db, drill_db, callback) {
                     collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update(eventData.list[i] + APP_ID).digest('hex')});
                 }
             }
-            var iteratorList = prepareIterationList(collections);
-            async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
-                console.log('Drill collections processed');
-                callback();
+
+            async.eachSeries(collections, function(collection, done) {
+                processDrillCollection(collection, false, function(err) {
+                    if (err) {
+                        console.log("ERROR: Error while processing drill collection: " + collection.collection);
+                    }
+                    done(err);
+                });
+            }, function(err) {
+                if (err) {
+                    console.log("ERROR: Error processing collections.");
+                }
+                callback(err);
             });
         });
     }
@@ -224,15 +304,22 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                     }
                 }
             }
-            var iteratorList = prepareIterationList(processCols, true);
-            async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
-                if (errorCn > 0) {
-                    console.log("There were errors. Please recheck logs for those.");
-                }
-                console.log('finished');
+            if (processCols.length === 0) {
+                console.log("Finished");
                 db.close();
                 db_drill.close();
-            });
+            }
+            else {
+                var iteratorList = prepareIterationList(processCols, true);
+                async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
+                    if (errorCn > 0) {
+                        console.log("There were errors. Please recheck logs for those.");
+                    }
+                    console.log('finished');
+                    db.close();
+                    db_drill.close();
+                });
+            }
         });
     }
 });
