@@ -102,15 +102,16 @@
 				<monitor-events-breakdown-horizontal-tile
 				  :trend="item.trend"
 				  :change="item.change"
+				  :test-id= "'events-overview-monitor-events-' + idx"
 				  :key="idx"
 				  v-for="(item, idx) in monitorEventsData">
 				  <div class="bu-is-align-items-center bu-is-flex cly-monitor-events-breakdown-horizontal-tile__width-50" slot="title">
-				  	<span v-tooltip="item.name" class="text-medium has-ellipsis cly-monitor-events-breakdown-horizontal-tile__overview-name" :data-test-id="'events-overview-' + item.name.replaceAll(' ', '-').toLowerCase() + '-event-name-label'">{{decode(item.name)}}</span>
+				  	<span v-tooltip="item.name" class="text-medium has-ellipsis cly-monitor-events-breakdown-horizontal-tile__overview-name" :data-test-id="'events-overview-monitor-events-event-' + idx + '-name-label'">{{decode(item.name)}}</span>
 				  </div>
-				  <div slot="countValue" class="cly-monitor-events-breakdown-horizontal-tile__overviewvalue" :data-test-id="'events-overview-' + item.name.replaceAll(' ', '-').toLowerCase() + '-value-label'">{{item.total}}</div>
-				  <div slot="propertyName" class="cly-monitor-events-breakdown-horizontal-tile__eventproperty" :data-test-id="'events-overview-' + item.name.replaceAll(' ', '-').toLowerCase() + '-property-label'">{{item.eventProperty}}</div>
-				  <div slot="barGraph" :data-test-id="'events-overview-' + item.name.replaceAll(' ', '-').toLowerCase() + '-graph'">
-					<cly-chart-bar :test-id="'events-overview-' + item.name.replaceAll(' ', '-').toLowerCase()" :valFormatter="durCheck(item) ? valFormatter : undefined" xAxisLabelOverflow="unset" class="cly-vue-events-overview-monitor-events__charts" :noEmpty="true" :legend="monitorEventsLegend" :height=130 :option="item.barData" :autoresize=true :showZoom=false :showToggle=false :showDownload=false>
+				  <div slot="countValue" class="cly-monitor-events-breakdown-horizontal-tile__overviewvalue" :data-test-id="'events-overview-monitor-events-event-' + idx + '-value-label'">{{item.total}}</div>
+				  <div slot="propertyName" class="cly-monitor-events-breakdown-horizontal-tile__eventproperty" :data-test-id="'events-overview-monitor-events-event-' + idx + '-property-label'">{{item.eventProperty}}</div>
+				  <div slot="barGraph" :data-test-id="'events-overview-monitor-events-event-' + idx + '-graph'">
+					<cly-chart-bar :test-id="'events-overview-monitor-events-monitor-events-event-' + idx" :valFormatter="durCheck(item) ? valFormatter : undefined" xAxisLabelOverflow="unset" class="cly-vue-events-overview-monitor-events__charts" :noEmpty="true" :legend="monitorEventsLegend" :height=130 :option="item.barData" :autoresize=true :showZoom=false :showToggle=false :showDownload=false>
 					</cly-chart-bar>
 				  </div>
 				</monitor-events-breakdown-horizontal-tile>
