@@ -22,21 +22,19 @@ module.exports.triggerByEvent = triggerByEvent;
  */
 async function triggerByEvent(payload) {
     const crashObject = payload?.crash;
-    const appKey = payload?.app_key;
-    if (!crashObject || typeof crashObject !== "object" || !appKey) {
+    const app = payload?.app;
+
+    if (!crashObject || typeof crashObject !== "object" || !app) {
         return;
     }
 
-    const app = await common.db.collection("apps").findOne({ key: appKey });
-    if (!app) {
-        return;
-    }
-
-    const alert = await common.db.collection("alerts").findOne({
+    //read batcher reads from db and cashes data for some time
+    const alert = await common.readBatcher.getOne("alerts", {
         selectedApps: app._id.toString(),
         alertDataType: "crashes",
         alertDataSubType: commonLib.TRIGGERED_BY_EVENT.crashes,
     });
+
     if (!alert) {
         return;
     }
@@ -46,7 +44,7 @@ async function triggerByEvent(payload) {
 
 
 module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
-    const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
+    const app = await common.readBatcher.getOne("apps", { _id: ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
         return done();
