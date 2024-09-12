@@ -81,7 +81,9 @@ function verifyAddedEvents(addedEvents, initialRequest) {
 
                 lastEventCounts[internalEventKey] = lastEventCounts[internalEventKey] || 0;
                 lastEventCounts[internalEventKey] += Math.min(event.count, 1);
-                lastEventCounts.e += Math.min(event.count, 1);
+                if (key !== '[CLY]_push_sent' && key !== '[CLY]_push_action') {
+                    lastEventCounts.e += Math.min(event.count, 1);
+                }
             });
             if (!addedEvents.filter(item => item.key === '[CLY]_session').length) { // then session included with begin_session=1 and count it also.
                 lastEventCounts.s++;
