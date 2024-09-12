@@ -113,7 +113,6 @@
         },
         methods: {
             toggleChanged(newValue) {
-                this.console.log('toggleChanged');
                 this.$emit('toggleChanged', newValue);
             },
             close: function() {
