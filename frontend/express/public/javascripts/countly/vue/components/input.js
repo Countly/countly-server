@@ -66,11 +66,11 @@
                         '<div @click.stop="open" :data-test-id="testId" class="preview">\n' +
                             '<div>\n' +
                                 '<div class="drop bu-mt-auto" :data-test-id="testId + \'-cly-color-picker-img-wrapper\'" :style="previewStyle"></div>\n' +
-                                '<img src="/images/icons/blob.svg"/>\n' +
+                                '<img src="images/icons/blob.svg"/>\n' +
                             '</div>\n' +
                             '<input class="color-input" v-model="localValue" type="text"/>\n' +
-                            '<img height="12px" width="10px" class="bu-pt-2" v-if="!isOpened" src="/images/icons/arrow_drop_down_.svg"/>\n' +
-                            '<img height="12px" width="10px" class="bu-pt-2" v-if="isOpened" src="/images/icons/arrow_drop_up_.svg"/>\n' +
+                            '<img height="12px" width="10px" class="bu-pt-2" v-if="!isOpened" src="images/icons/arrow_drop_down_.svg"/>\n' +
+                            '<img height="12px" width="10px" class="bu-pt-2" v-if="isOpened" src="images/icons/arrow_drop_up_.svg"/>\n' +
                         '</div>\n' +
                         '<div class="picker-body" v-if="isOpened" v-click-outside="close" :class="alignment">\n' +
                             '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
