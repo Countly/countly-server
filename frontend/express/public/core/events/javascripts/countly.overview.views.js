@@ -151,7 +151,12 @@
             },
             change: {
                 type: String
-            }
+            },
+            testId: {
+                type: String,
+                default: 'events-breakdown-horizontal-tile-test-id',
+                required: false
+            },
         },
         template: '<div class="cly-events-breakdown-horizontal-tile bu-column">\
     <div class="cly-events-breakdown-horizontal-tile__wrapper">\
@@ -165,8 +170,8 @@
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\
                             <slot name="countValue"></slot>\
-                            <span v-if="trend === \'u\'" class="cly-events-breakdown-horizontal-tile__trend cly-trend-up bu-pl-2"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{change}}</span>\
-                            <span v-else class="cly-events-breakdown-horizontal-tile__trend cly-trend-down bu-pl-2"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{change}}</span>\
+                            <span v-if="trend === \'u\'" class="cly-events-breakdown-horizontal-tile__trend cly-trend-up bu-pl-2" :data-test-id="testId + \'-trend-value-label\'"><i class="cly-trend-up-icon ion-android-arrow-up" :data-test-id="testId + \'-trend-icon\'"></i>{{change}}</span>\
+                            <span v-else class="cly-events-breakdown-horizontal-tile__trend cly-trend-down bu-pl-2" :data-test-id="testId + \'-trend-value-label\'"><i class="cly-trend-down-icon ion-android-arrow-down" :data-test-id="testId + \'-trend-icon\'"></i>{{change}}</span>\
                             </div>\
                         </div>\
                         <slot name="totalPercentage">\
