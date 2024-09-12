@@ -233,6 +233,10 @@ var pluginManager = function pluginManager() {
     this.reloadEnabledPluginList = function(db, callback) {
         this.loadDependencyMap();
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+            if (err) {
+                console.log(err);
+            }
+            res = res || {};
             if (Object.keys(fullPluginsMap).length > 0) {
                 for (var pp in res.plugins) {
                     if (!fullPluginsMap[pp]) {
@@ -1411,7 +1415,11 @@ var pluginManager = function pluginManager() {
                 resolve(errors);
             }
             else if (!self.getConfig("api").offline_mode) {
-                const cmd = spawn('npm', ["install"], {cwd: cwd});
+                var args = ["install"];
+                if (apiCountlyConfig.symlinked === true) {
+                    args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                }
+                const cmd = spawn('npm', args, {cwd: cwd});
                 var error2 = "";
 
                 cmd.stdout.on('data', (data) => {
@@ -1755,10 +1763,28 @@ var pluginManager = function pluginManager() {
     * @returns {string} modified connection string
     **/
     this.replaceDatabaseString = function(str, db) {
+        if (!db) {
+            db = "countly";
+        }
         var i = str.lastIndexOf('/countly');
         var k = str.lastIndexOf('/' + db);
         if (i !== k && i !== -1 && db) {
             return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+        }
+        else if (i === -1 && k === -1) {
+            //no db found in the string, we should insert the needed one
+            var urlparts = str.split("://");
+            if (typeof urlparts[1] === "string") {
+                var parts = urlparts[1].split("/");
+                if (parts.length === 1) {
+                    parts[0] += "/" + db;
+                }
+                else {
+                    parts[parts.length - 1] = db + parts[parts.length - 1];
+                }
+                urlparts[1] = parts.join("/");
+            }
+            return urlparts.join("://");
         }
         return str;
     };
@@ -2070,7 +2096,7 @@ var pluginManager = function pluginManager() {
     this.isAnyMasked = function() {
         if (masking && masking.apps) {
             for (var app in masking.apps) {
-                if (masking.apps[app] && masking.apps[app].masking) {
+                if (masking.apps[app]) {
                     return hasAnyValueTrue(masking.apps[app].masking);
                 }
             }

@@ -893,7 +893,7 @@
                                 var eventKey = res.list[0];
                                 if (res.map && res.map[context.state.selectedEventName]) {
                                     eventKey = res.list.find(function(item) {
-                                        return !(res.map[item] && res.map[item].is_visible === false);
+                                        return res.map[item] && item === context.state.selectedEventName;
                                     });
                                 }
                                 eventKeyForStorage[appId] = eventKey;

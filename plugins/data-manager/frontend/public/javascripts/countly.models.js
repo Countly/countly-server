@@ -452,17 +452,20 @@
             },
             deleteEvents: function(context, events) {
                 countlyDataManager.service.deleteEvents(events).then(function(res) {
-                    countlyDataManager.service.deleteEventsMeta(events).then(function(res2) {
-                        if (res === 'Error' || res2 === 'Error') {
-                            CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-delete'), sticky: false, type: 'error'});
-                            return 'Error';
-                        }
-                        context.dispatch('loadEventsData');
-                        context.dispatch('loadSegmentsMap');
-                        CountlyHelpers.notify({message: CV.i18n('data-manager.success.event-delete'), sticky: false, type: 'success'});
-                    });
-                }).catch(function() {
-                    CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-delete'), sticky: false, type: 'error'});
+                    if (res === 'Error') {
+                        CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-delete'), sticky: false, type: 'error'});
+                        return 'Error';
+                    }
+                    context.dispatch('loadEventsData');
+                    context.dispatch('loadSegmentsMap');
+                    CountlyHelpers.notify({message: CV.i18n('data-manager.success.event-delete'), sticky: false, type: 'success'});
+                }).catch(function(e) {
+                    if (e.status === 504) {
+                        CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-delete-timeout'), sticky: false, type: 'warning'});
+                    }
+                    else {
+                        CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-delete'), sticky: false, type: 'error'});
+                    }
                 });
             },
             loadCategories: function(context) {
