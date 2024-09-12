@@ -85,14 +85,22 @@
                 type: String,
                 required: false,
                 default: '#fff'
+            },
+            isToggleActive: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
+            toggleTooltip: {
+                type: String,
+                required: false
             }
         },
         data: function() {
             return {
                 currentTab: this.tabs[0]?.value || null,
                 localTitle: this.value,
-                isEditing: !this.value,
-                isActive: false
+                isEditing: !this.value
             };
         },
         watch: {
