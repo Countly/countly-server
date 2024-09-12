@@ -728,13 +728,13 @@
                 guidesButtonDynamicClass: function() {
                     var state = this.$store.getters["countlySidebar/getGuidesButton"];
                     if (state === 'selected') {
-                        return 'color:#12AF51;';
+                        return 'color:#12AF51; font-size:larger;';
                     }
                     else if (state === 'hover' || state === 'highlighted') {
-                        return 'color:white;';
+                        return 'color:white; font-size:larger;';
                     }
                     else {
-                        return 'color:#A7AEB8;';
+                        return 'color:#A7AEB8; font-size:larger;';
                     }
                 },
                 helpCenterLink: function() {
