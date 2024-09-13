@@ -668,7 +668,7 @@
                 {
                     namespace: "crashes",
                     mapping: {
-                        overview: "crashes/templates/overview.html"
+                        overview: "/crashes/templates/overview.html"
                     }
                 },
                 "/drill/templates/query.builder.v2.html",
@@ -1133,7 +1133,7 @@
                 {
                     namespace: "crashes",
                     mapping: {
-                        crashgroup: "crashes/templates/crashgroup.html"
+                        crashgroup: "/crashes/templates/crashgroup.html"
                     }
                 }
             ]
@@ -1232,7 +1232,7 @@
                 {
                     namespace: "crashes",
                     mapping: {
-                        "binary-images": "crashes/templates/binary-images.html"
+                        "binary-images": "/crashes/templates/binary-images.html"
                     }
                 }
             ]

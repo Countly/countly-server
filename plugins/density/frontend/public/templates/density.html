@@ -26,6 +26,7 @@
             <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
                 <cly-metric-cards :multiline="false" :is-synced-scroll="true">
                     <cly-metric-card 
+						:test-id="'density-' + idx"
                         :is-percentage="true" 
                         :column-width=3 
                         :color="item.color" 
@@ -39,14 +40,14 @@
                         </template>
                     </cly-metric-card>
 					<div v-if="densityItems.length === 0 && !isLoading" class="technology-density-wrapper__empty-card">
-						<div class="text-medium" data-test-id="destiny-for-no-data-label">{{i18n('common.table.no-data')}}</div>
+						<div class="text-medium" data-test-id="density-for-no-data-label">{{i18n('common.table.no-data')}}</div>
 					</div>
                 </cly-metric-cards>
             </vue-scroll>
         </div>
 		<h5 class="bu-pb-4" data-test-id="density-distribution-label"> {{i18n('density.distribution')}} </h5>
 		<div v-if="densityVersions.length < 4 && !isLoading" class="technology-density-wrapper__versions-empty-card">
-			<div class="text-medium" data-test-id="destiny-distribution-no-data-label">{{i18n('common.table.no-data')}}</div>
+			<div class="text-medium" data-test-id="density-distribution-no-data-label">{{i18n('common.table.no-data')}}</div>
 		</div>
 		<div v-else-if="densityVersions.length === 0 && isLoading">
 			<div style="height: 200px;" v-loading="isLoading"></div>
@@ -55,6 +56,7 @@
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
 					<cly-metric-cards :multiline="false" :is-synced-scroll="true">
 						<cly-metric-breakdown 
+							:test-id="'density-items-' + idx"
 							:name="item.name" 
 							:values="item.values" 
 							:key="idx"

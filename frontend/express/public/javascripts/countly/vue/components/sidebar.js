@@ -15,7 +15,7 @@
                             apps = this.sortBy(apps, countlyGlobal.member.appSortList);
                         }
                         apps = apps.map(function(a) {
-                            a.image = countlyGlobal.path + "appimages/" + a._id + ".png";
+                            a.image = countlyGlobal.path + "/appimages/" + a._id + ".png";
                             a.label = a.name;
                             a.value = a._id;
                             return a;
@@ -30,7 +30,7 @@
                     });
 
                     if (active) {
-                        active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
+                        active.image = countlyGlobal.path + "/appimages/" + active._id + ".png";
                     }
                     return active || {};
                 },
@@ -728,13 +728,13 @@
                 guidesButtonDynamicClass: function() {
                     var state = this.$store.getters["countlySidebar/getGuidesButton"];
                     if (state === 'selected') {
-                        return 'color:#12AF51;';
+                        return 'color:#12AF51; font-size:larger;';
                     }
                     else if (state === 'hover' || state === 'highlighted') {
-                        return 'color:white;';
+                        return 'color:white; font-size:larger;';
                     }
                     else {
-                        return 'color:#A7AEB8;';
+                        return 'color:#A7AEB8; font-size:larger;';
                     }
                 },
                 helpCenterLink: function() {
