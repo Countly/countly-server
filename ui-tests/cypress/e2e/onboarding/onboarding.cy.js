@@ -361,9 +361,9 @@ describe('Complete Onboarding', () => {
         analyticsGeoCountriesPageHelpers.verifyFullDataPageElements();
         analyticsGeoCountriesPageHelpers.clickLanguagesTab();
         analyticsGeoLanguagesPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToAnalyticsEventsOverview();
+        analyticsEventsOverviewPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToAnalyticsEventsOverview();
-        //analyticsEventsOverviewPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToAnalyticsAllEvents();
         //analyticsEventsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToPushNotifications();
