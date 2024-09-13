@@ -192,7 +192,12 @@
             },
             change: {
                 type: String
-            }
+            },
+            testId: {
+                type: String,
+                default: 'events-breakdown-horizontal-tile-test-id',
+                required: false
+            },
         },
         template: '<div class="cly-monitor-events-breakdown-horizontal-tile bu-column bu-is-6">\
     <div class="cly-monitor-events-breakdown-horizontal-tile__wrapper">\
@@ -206,8 +211,8 @@
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\
                             <slot name="countValue"></slot>\
-                            <span v-if="trend === \'u\'" class="cly-trend-up cly-monitor-events-breakdown-horizontal-tile__trend bu-pl-2"><i class="cly-monitor-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-up"></i>{{change}}</span>\
-                            <span v-else class="cly-trend-down cly-monitor-events-breakdown-horizontal-tile__trend bu-pl-2"><i class="cly-monitor-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-down"></i>{{change}}</span>\
+                            <span v-if="trend === \'u\'" class="cly-trend-up cly-monitor-events-breakdown-horizontal-tile__trend bu-pl-2" :data-test-id="testId + \'-trend-value-label\'"><i class="cly-monitor-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-up" :data-test-id="testId + \'-trend-icon\'"></i>{{change}}</span>\
+                            <span v-else class="cly-trend-down cly-monitor-events-breakdown-horizontal-tile__trend bu-pl-2" :data-test-id="testId + \'-trend-value-label\'"><i class="cly-monitor-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-down" :data-test-id="testId + \'-trend-icon\'"></i>{{change}}</span>\
                             </div>\
                         </div>\
                     </div>\
