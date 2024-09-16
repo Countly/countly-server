@@ -1882,6 +1882,9 @@
         methods: {
             refresh: function() {
                 this.$emit('refresh');
+            },
+            getIconUrl: function(icon) {
+                return `${countlyGlobal.path}/images/annotation/${icon}.svg`;
             }
         },
         components: {
@@ -2866,7 +2869,7 @@
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                 markerIcon: L.icon({
-                    iconUrl: '/images/leaflet/marker-icon.svg',
+                    iconUrl: 'images/leaflet/marker-icon.svg',
                     iconSize: [32, 32],
                     iconAnchor: [ 16, 32],
                 }),
@@ -3384,7 +3387,7 @@
                     return false;
                 }
                 else {
-                    return "/images/flags/" + code.toLowerCase() + ".png";
+                    return "images/flags/" + code.toLowerCase() + ".png";
                 }
             },
             getMarkerTooltipTitle: function(code) {
@@ -3410,10 +3413,10 @@
                 var self = this;
                 this.loadingGeojson = true;
 
-                var url = '/geodata/world.geojson';
+                var url = 'geodata/world.geojson';
 
                 if (country) {
-                    url = '/geodata/region/' + country + '.geojson';
+                    url = 'geodata/region/' + country + '.geojson';
                 }
 
                 return CV.$.ajax({

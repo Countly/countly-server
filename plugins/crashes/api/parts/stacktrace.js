@@ -417,7 +417,8 @@ var trace = {
         }
         else {
             parts = crash.error.replace(/^\s*\n/gim, "\n").split("\n\n");
-            if (parts.length > 1) {
+            const isFlutter = /flutter|\.dart/i.test(crash.error);
+            if (parts.length > 1 && !isFlutter) {
                 crash.error = null;
                 threads = [];
                 for (let i = 0; i < parts.length; i++) {
