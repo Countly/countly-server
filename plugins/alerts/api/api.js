@@ -32,8 +32,6 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
     "hourly": "every 1 hour on the 59th min",
     "daily": "at " + _hours + ":59",
     "monthly": "on the last day of the month at " + _hours + ":59",
-    // "daily": "at 23:59",
-    // "monthly": "on the last day of the month at 23:59",
 };
 
 (function() {
@@ -85,15 +83,17 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
     }
 
     plugins.register("/i", async function(ob) {
-        const payload = ob?.params?.qstring;
-        if (!payload) {
+        const events = ob?.params?.qstring?.events;
+        const app = ob.app;
+
+        if (!events || !app) {
             return;
         }
 
         for (let { module, name } of TRIGGER_BY_EVENT) {
             if (name !== "crashes") {
                 try {
-                    await module.triggerByEvent(payload);
+                    await module.triggerByEvent({ events, app });
                 }
                 catch (err) {
                     log.e("Alert module '" + name + "' couldn't be triggered by event", err);
