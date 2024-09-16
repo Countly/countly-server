@@ -40,7 +40,7 @@ async function triggerByEvent(payload) {
         if (!alerts || !alerts.length) {
             continue;
         }
-        
+
         // trigger all alerts
         await Promise.all(alerts.map(alert => commonLib.trigger({
             alert,
