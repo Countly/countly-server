@@ -1,8 +1,8 @@
 /**
- *  Description: Deletes custom events from countly and drill databases
+ *  Description: Deletes custom events from countly and drill databases using a regular expression
  *  Server: countly
  *  Path: $(countly dir)/bin/scripts/expire-data
- *  Command: node delete_custom_events.js
+ *  Command: node delete_custom_events_regex.js
  */
 
 
@@ -11,8 +11,10 @@ const pluginManager = require('../../../plugins/pluginManager.js');
 const common = require('../../../api/utils/common.js');
 const drillCommon = require('../../../plugins/drill/api/common.js');
 
+const DRY_RUN = true;
 const APP_ID = "";
-const EVENTS = []; //If empty, no events will be deleted
+const EVENTS_REGEX = ""; // If empty, no events will be deleted
+const CASE_INSENSITIVE = true;
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
@@ -26,9 +28,38 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         const app = await countlyDb.collection("apps").findOne({_id: ObjectId(APP_ID)}, {_id: 1, name: 1});
         console.log("App:", app.name);
         //GET EVENTS
-        var events = EVENTS;
-        if (!events.length) {
-            close("No events to delete");
+        var events = [];
+        if (EVENTS_REGEX && EVENTS_REGEX.length) {
+            try {
+                const regex = new RegExp(EVENTS_REGEX);
+                console.log("Regular expression:", regex);
+                events = await countlyDb.collection("events").aggregate([
+                    {
+                        $match: {_id: app._id}
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            list: {
+                                $filter: {
+                                    input: "$list",
+                                    as: "item",
+                                    cond: {$regexMatch: {input: "$$item", regex: regex, options: CASE_INSENSITIVE ? "i" : ""}}
+                                }
+                            }
+                        }
+                    }
+                ]).toArray();
+                events = events.length ? events[0].list : [];
+            }
+            catch (err) {
+                close("Invalid regex");
+            }
+        }
+
+        console.log("Events to delete:", events);
+        if (DRY_RUN) {
+            close();
         }
         else {
             //DELETE EVENTS

@@ -29,7 +29,7 @@
     </div>
   </cly-section>
   <cly-section>
-    <cly-datatable-n :rows="sourcesData.chartData" :key-fn="sourcesFnKey" :hasDynamicCols="false" :force-loading="isLoading" ref="table" @row-click="handleTableRowClick" row-class-name="bu-is-clickable">
+    <cly-datatable-n test-id="datatable-analytics-acquisition" :rows="sourcesData.chartData" :key-fn="sourcesFnKey" :hasDynamicCols="false" :force-loading="isLoading" ref="table" @row-click="handleTableRowClick" row-class-name="bu-is-clickable">
       <template v-slot:header-left="selectScope">
       </template>
       <template v-slot="scope">
@@ -40,28 +40,28 @@
         </el-table-column>
         <el-table-column sortable="true" prop="sources" :label="i18n('sources.source')">
           <template v-slot="rowScope">
-              <div>
+              <div :data-test-id="'datatable-acquisition-source-' + rowScope.$index">
                   {{ rowScope.row.sources }}
               </div>
           </template>
         </el-table-column>
         <el-table-column sortable="true" prop="t" :label="i18n('common.table.total-sessions')">
             <template v-slot="rowScope">
-                <div>
+                <div :data-test-id="'datatable-acquisition-total-sessions-' + rowScope.$index">
                     {{ formatNumber(rowScope.row.t) }}
                 </div>
             </template>
         </el-table-column>
         <el-table-column sortable="true" prop="u" :label="i18n('common.table.total-users')">
             <template v-slot="rowScope">
-                <div>
+                <div :data-test-id="'datatable-acquisition-total-users-' + rowScope.$index">
                     {{ formatNumber(rowScope.row.u) }}
                 </div>
             </template>
         </el-table-column>
         <el-table-column sortable="true" prop="n" :label="i18n('common.new-users')">
         <template v-slot="rowScope">
-            <div>
+            <div :data-test-id="'datatable-acquisition-new-users-' + rowScope.$index">
                 {{ formatNumber(rowScope.row.n) }}
             </div>
         </template>

@@ -1762,10 +1762,28 @@ var pluginManager = function pluginManager() {
     * @returns {string} modified connection string
     **/
     this.replaceDatabaseString = function(str, db) {
+        if (!db) {
+            db = "countly";
+        }
         var i = str.lastIndexOf('/countly');
         var k = str.lastIndexOf('/' + db);
         if (i !== k && i !== -1 && db) {
             return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+        }
+        else if (i === -1 && k === -1) {
+            //no db found in the string, we should insert the needed one
+            var urlparts = str.split("://");
+            if (typeof urlparts[1] === "string") {
+                var parts = urlparts[1].split("/");
+                if (parts.length === 1) {
+                    parts[0] += "/" + db;
+                }
+                else {
+                    parts[parts.length - 1] = db + parts[parts.length - 1];
+                }
+                urlparts[1] = parts.join("/");
+            }
+            return urlparts.join("://");
         }
         return str;
     };
@@ -2076,7 +2094,7 @@ var pluginManager = function pluginManager() {
     this.isAnyMasked = function() {
         if (masking && masking.apps) {
             for (var app in masking.apps) {
-                if (masking.apps[app] && masking.apps[app].masking) {
+                if (masking.apps[app]) {
                     return hasAnyValueTrue(masking.apps[app].masking);
                 }
             }
@@ -2393,10 +2411,11 @@ var pluginManager = function pluginManager() {
                 logDbWrite.d("findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
                 logDbWrite.d("From connection %j", countlyDb._cly_debug);
                 if (options.upsert) {
+                    var self = this;
                     return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, function() {
                         logDbWrite.d("retrying findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
                         logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
+                        return handlePromiseErrors(self._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
                     }, e, copyArguments(arguments, "findAndModify")));
                 }
                 else {
@@ -2437,10 +2456,11 @@ var pluginManager = function pluginManager() {
                     logDbWrite.d(name + " " + collection + " %j %j %j" + at, selector, doc, options);
                     logDbWrite.d("From connection %j", countlyDb._cly_debug);
                     if (options.upsert) {
+                        var self = this;
                         return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, function() {
                             logDbWrite.d("retrying " + name + " " + collection + " %j %j %j" + at, selector, doc, options);
                             logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                            return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                            return handlePromiseErrors(self["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
                         }, e, copyArguments(arguments, name)));
                     }
                     else {
