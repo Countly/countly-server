@@ -83,7 +83,7 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
     }
 
     plugins.register("/i", async function(ob) {
-        const events = ob?.params?.qstring?.events;
+        const events = ob.params?.qstring?.events;
         const app = ob.app;
 
         if (!events || !app) {
