@@ -678,6 +678,7 @@
                         return countlyCommon.unescapeHtml(ev.key);
                     })
                 });
+                this.unpatchSelectedEvents();
             },
             handleAllChange: function(selection, force = false) {
                 var self = this;
@@ -704,6 +705,7 @@
                 this.$store.dispatch('countlyDataManager/changeVisibility', { events: events, isVisible: isVisible }).then(function() {
                     countlyEvent.refreshEvents();
                 });
+                this.unpatchSelectedEvents();
             },
             handleChangeStatus: function(command, rows) {
                 var events = [];
@@ -711,6 +713,7 @@
                     events.push(row.key);
                 });
                 this.$store.dispatch('countlyDataManager/updateEventStatus', { events: events, status: command });
+                this.unpatchSelectedEvents();
             },
             onRowClick: function(params) {
                 app.navigate("#/manage/data-manager/events/events/" + params.key, true);
@@ -901,6 +904,7 @@
                     events.push(row.key);
                 });
                 this.$store.dispatch('countlyDataManager/changeEventGroupsVisibility', { events: events, isVisible: isVisible });
+                this.unpatchSelectedEventGroups();
             },
             handleDelete: function(rows) {
                 this.deleteQueue = rows;
