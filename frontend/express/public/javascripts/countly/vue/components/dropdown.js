@@ -531,7 +531,7 @@
                             <slot name="trigger">\
                                 <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type" @click="toggleArrowState">\
                                     <span :data-test-id="testId + \'-more-option-text\'" v-if="text">{{text}}</span>\
-                                    <i v-if="showArrows" :class="\'cly-is cly-is-arrow-drop-\' + arrowIcon"></i>\
+                                    <i v-if="showArrows" class="el-select__caret" :class="[iconClass]"></i>\
                                 </el-button>\
                             </slot>\
                         </template>\
@@ -583,8 +583,8 @@
             this.$on('menu-item-click', this.handleMenuItemClick);
         },
         computed: {
-            arrowIcon: function() {
-                return this.arrowState ? 'up' : 'down';
+            iconClass: function() {
+                return this.arrowState ? 'ion-arrow-up-b is-reverse' : 'ion-arrow-up-b';
             },
         },
         methods: {

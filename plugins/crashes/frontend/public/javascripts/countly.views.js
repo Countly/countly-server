@@ -573,10 +573,14 @@
                     ]);
                 }
             },
-            handleSelectionChange: function(selectedRows) {
+            handleSelectionChange: function(selectedRows, force = false) {
+                var self = this;
                 this.$data.selectedCrashgroups = selectedRows.map(function(row) {
                     return row._id;
                 });
+                if (force) {
+                    self.$refs.dataTable.$refs.elTable.clearSelection();
+                }
             },
             badgesFor: function(crash) {
                 return countlyCrashes.generateBadges(crash);
@@ -621,10 +625,10 @@
                         }
                     }).finally(function() {
                         // Reset selection if command is delete or hide
-                        if (["delete", "hide"].includes(state)) {
-                            self.selectedCrashgroups = [];
-                            self.$refs.dataTable.$refs.elTable.clearSelection();
-                        }
+                        // if (["delete", "hide"].includes(state)) {
+                        self.selectedCrashgroups = [];
+                        self.$refs.dataTable.$refs.elTable.clearSelection();
+                        // }
                     });
                 }
             },
@@ -644,6 +648,9 @@
 
                 return item1.reports - item2.reports;
             },
+            unpatchSelectedGroups: function() {
+                this.handleSelectionChange([], true);
+            }
         },
         beforeCreate: function() {
             var query = {};
