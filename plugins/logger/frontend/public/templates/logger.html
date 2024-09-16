@@ -67,6 +67,8 @@
 							<strong v-if="rowScope.row.c" class='red-text'>{{i18n('logger.request-canceled')}}</strong>
 							<div v-if="rowScope.row.c" class="bu-pt-2" >{{rowScope.row.c}}</div>
                             <logger-info :info="rowScope.row.t" :filter="loggerFilter"></logger-info>
+                            <strong v-if="rowScope.row.p" class='red-text'>{{i18n('logger.problems')}}</strong>
+							<div v-if="rowScope.row.p" v-for="p in rowScope.row.p" class="bu-pt-2" >{{p}}</div>
                         </template>
                     </el-table-column>
                 </template>
