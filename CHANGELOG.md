@@ -1,3 +1,14 @@
+## Version 24.05.10
+Fixes:
+- [alerts] Alerts improvements
+- [core] Various fixes for frontend to support running countly from subdirectory
+- [logs]  Show collected problems on logger
+
+Enterprise fixes:
+- [data-manager] Fixes n UI to allow events starting with "/"
+- [flows] Fixes for flows step generation
+- [surveys] Other is not allowed as a valid answer for required questions
+
 ## Version 24.05.9
 Fixes:
 - [crashes] Fix crashes template paths and add data check
