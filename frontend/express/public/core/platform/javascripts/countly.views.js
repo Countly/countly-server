@@ -40,6 +40,7 @@ var AppPlatformView = countlyVue.views.create({
                 {
                     title: CV.i18n('platforms.title'),
                     name: "platform-table",
+                    dataTestId: "platforms-table",
                     component: countlyVue.views.create({
                         template: CV.T("/core/platform/templates/platform_table.html"),
                         computed: {
@@ -63,6 +64,7 @@ var AppPlatformView = countlyVue.views.create({
                 {
                     title: CV.i18n('platforms.versions'),
                     name: "version-table",
+                    dataTestId: "versions-table",
                     component: countlyVue.views.create({
                         template: CV.T("/core/platform/templates/version_table.html"),
                         computed: {
@@ -286,4 +288,3 @@ countlyVue.container.registerTab("/analytics/technology", {
     dataTestId: "platforms",
     component: AppPlatformView
 });
-

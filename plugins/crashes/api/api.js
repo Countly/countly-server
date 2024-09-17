@@ -60,7 +60,7 @@ plugins.setConfigs("crashes", {
         });
 
         setTimeout(() => {
-            require('../../../api/parts/jobs').job('crashes:cleanup_custom_field').replace().schedule("every 1 hour");
+            require('../../../api/parts/jobs').job('crashes:cleanup_custom_field').replace().schedule('at 01:01 am ' + 'every 1 day');
         }, 10000);
     });
     var ranges = ["ram", "bat", "disk", "run", "session"];
@@ -1570,6 +1570,7 @@ plugins.setConfigs("crashes", {
                             common.db.collection('app_crashgroups' + params.qstring.app_id).remove({'_id': group._id }, function() {
                                 if (common.drillDb) {
                                     common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + params.qstring.app_id).digest('hex')).remove({"sg.crash": group._id}, function() {});
+                                    common.drillDb.collection("drill_events").remove({"a": params.qstring.app_id + "", e: "[CLY]_crash", "sg.crash": group._id}, function() {});
                                     plugins.dispatch("/crash/delete", {appId: params.qstring.app_id, crash: group._id + ""});
                                 }
                                 var id = common.crypto.createHash('sha1').update(params.qstring.app_id + group._id + "").digest('hex');
