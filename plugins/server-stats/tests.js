@@ -4,7 +4,7 @@ var testUtils = require("../../test/testUtils");
 const pluginManager = require('../pluginManager.js');
 var statInternalEvents = require('../server-stats/api/parts/stats.js').internalEventsEnum;
 request = request.agent(testUtils.url);
-const dataPointTimeout = 1000;
+const dataPointTimeout = 1100;
 
 var APP_KEY = '';
 var API_KEY_ADMIN = '';
@@ -27,7 +27,6 @@ const verifyDataPointsProperty = (obj) => {
             Object.values(obj).forEach(item => {
                 item.should.have.property('events');
                 item.should.have.property('sessions');
-                item.should.have.property('push');
                 item.should.have.property('dp');
                 item.should.have.property('change');
             });
@@ -81,9 +80,8 @@ function verifyAddedEvents(addedEvents, initialRequest) {
 
                 lastEventCounts[internalEventKey] = lastEventCounts[internalEventKey] || 0;
                 lastEventCounts[internalEventKey] += Math.min(event.count, 1);
-                if (key !== '[CLY]_push_sent' && key !== '[CLY]_push_action') {
-                    lastEventCounts.e += Math.min(event.count, 1);
-                }
+                lastEventCounts.e += Math.min(event.count, 1);
+
             });
             if (!addedEvents.filter(item => item.key === '[CLY]_session').length) { // then session included with begin_session=1 and count it also.
                 lastEventCounts.s++;
@@ -271,6 +269,12 @@ describe('Testing data points plugin', function() {
                 delete statInternalEvents["[CLY]_apm_device"];
                 delete statInternalEvents["[CLY]_apm_network"];
             }
+            if (plugins.indexOf("push") === -1) {
+                delete statInternalEvents["[CLY]_push_sent"];
+                delete statInternalEvents["[CLY]_push_action"];
+            }
+
+
             console.log(JSON.stringify(statInternalEvents));
             for (const internalKey in statInternalEvents) {
                 if (internalKey === "[CLY]_view") {
@@ -311,6 +315,13 @@ describe('Testing data points plugin', function() {
                 setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
             }
         });
+        it('should verify session request included to data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            }).catch(err => {
+                done(err);
+            });
+        });
         it('should confirm that all system events are added to data points correctly', function(done) {
             verifyAddedEvents(internalEvents).then(() => {
                 done();
@@ -343,9 +354,23 @@ describe('Testing data points plugin', function() {
                 setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
             }
         });
+        it('verify total data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            }).catch(err => {
+                done(err);
+            });
+        });
         it('should confirm that multiple custom event are added to data points correctly', function(done) {
             verifyAddedEvents(customEvents.multi).then(() => {
                 done();
+            }).catch(err => {
+                done(err);
+            });
+        });
+        it('verify total data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
             }).catch(err => {
                 done(err);
             });
@@ -367,6 +392,13 @@ describe('Testing data points plugin', function() {
                 done(err);
             });
         });
+        it('verify total data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            }).catch(err => {
+                done(err);
+            });
+        });
         it('should add random events correctly [2.0]', function(done) {
             generateRandomEvents('e2');
             const result = sendEventRequest(randomInternalEvents.e2);
@@ -380,6 +412,13 @@ describe('Testing data points plugin', function() {
         it('should confirm that random events are added to data points correctly [2.0]', function(done) {
             verifyAddedEvents(randomInternalEvents.e2).then(() => {
                 done();
+            }).catch(err => {
+                done(err);
+            });
+        });
+        it('verify total data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
             }).catch(err => {
                 done(err);
             });
