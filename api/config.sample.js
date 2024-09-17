@@ -99,6 +99,7 @@ var countlyConfig = {
     * @property {string} algorithm - name of the algorithm to use for encryption. The algorithm is dependent on OpenSSL, examples are 'aes192', etc. On recent OpenSSL releases, openssl list-cipher-algorithms will display the available cipher algorithms. Default value is aes-256-cbc
     * @property {string} input_encoding - how encryption input is encoded. Used as output for decrypting. Default utf-8.
     * @property {string} output_encoding - how encryption output is encoded. Used as input for decrypting. Default hex.
+    * @property {string} reports_key - key used for encryption of reports links
     */
     encryption: {},
 
