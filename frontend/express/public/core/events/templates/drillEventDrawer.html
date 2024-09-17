@@ -1,0 +1,51 @@
+<cly-drawer
+    ref="drawerScope"
+    @submit="onSubmit"
+    @copy="onCopy"
+    @close="onClose"
+    :title="i18n('events.drill-drawer.title')"
+    :saveButtonLabel="i18n('events.drill-drawer.save-button')"
+    v-bind="controls">
+    <template v-slot:default="scope">
+        <cly-form-step id="event-drill-drawer-form">
+            <cly-form-field :label="i18n('events.all.period')" name="period" direction="row" v-slot:default>
+                <cly-date-picker
+                    timestampFormat="ms"
+                    type="daterange"
+                    v-model="scope.editedObject.period"
+                    @change="onEventChange"
+                >
+                </cly-date-picker>
+            </cly-form-field>
+            <cly-form-field :label="i18n('events.all.event')" name="event" direction="row" v-slot:default>
+                <cly-select-x
+                    :options="allEvents"
+                    v-model="scope.editedObject.selectedEventName"
+                    @change="onEventChange"
+                >
+                </cly-select-x>
+            </cly-form-field>
+            <cly-form-field :label="i18n('events.all.segmentation')" name="segmentation" direction="row" v-slot:default>
+                <cly-select-x
+                    :options="availableSegments"
+                    :disabledOptions="omittedSegments"
+                    v-model="scope.editedObject.selectedSegment"
+                    @change="fetchSegmentValues" 
+                >
+                </cly-select-x>
+            </cly-form-field>
+            <cly-form-field-checklistbox
+                ref="segmentValuesChecklistbox"
+                v-if="scope.editedObject.selectedSegment !== 'segment'"
+                name="segment-values"
+                :label="i18n('events.segment.values')"
+                :required="false"
+                :options="segmentValues"
+                :searchable="true"
+                :search-placeholder="i18n('events.all.segmentation-values-search.placeholder')"
+                v-model="scope.editedObject.selectedSegmentValues"
+            >
+            </cly-form-field-checklistbox>
+        </cly-form-step>
+    </template>
+</cly-drawer>
