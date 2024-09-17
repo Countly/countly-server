@@ -133,9 +133,11 @@
                                                     </tr>
                                                     <tr>
                                                         <td align="left" style="font-family: Inter; color: #333C48; font-size: 16px; font-weight:400; line-height: 22px;">
-                                                            Click to access the
-                                                            <span style="display: inline; font-family: Inter; font-weight: 400; font-size: 16px;"><%= alertDataType %></span>
-                                                            results.
+                                                            <% if (alertDataType === "crashes" && alertDataSubType === "new crash/error" && extra && extra._id) { %>
+                                                                <a href="<%= host %>/dashboard#/<%= apps[i].id %>/crashes/<%= extra._id %>">
+                                                                    Click to access the crash details.
+                                                                </a>
+                                                            <% } %>
                                                         </td>
                                                     </tr>
                                                 </table>

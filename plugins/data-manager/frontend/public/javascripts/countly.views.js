@@ -710,7 +710,7 @@
                 this.$store.dispatch('countlyDataManager/updateEventStatus', { events: events, status: command });
             },
             onRowClick: function(params) {
-                app.navigate("#/manage/data-manager/events/events/" + params.key, true);
+                app.navigate("#/manage/data-manager/events/events/" + JSON.stringify(params.key), true);
             },
             manageCategories: function() {
                 this.$refs.eventCategoryFilters.close(true);
@@ -1375,10 +1375,11 @@
         this.renderWhenReady(mainView);
     });
 
-    app.route("/manage/data-manager/events/events/:eventId", 'data-manager-event-detail', function(eventId) {
+    app.route("/manage/data-manager/events/events/*query", 'data-manager-event-detail', function(query) {
         var detailView = getEventDetailView();
+        var queryUrlParameter = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : query;
         detailView.params = {
-            eventId: eventId
+            eventId: queryUrlParameter
         };
         this.renderWhenReady(detailView);
     });
