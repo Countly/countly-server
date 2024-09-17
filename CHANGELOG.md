@@ -1,3 +1,7 @@
+## Version 24.05.11
+Fixes:
+- [cache] Use a cursor without timeout
+
 ## Version 24.05.10
 Fixes:
 - [alerts] Alerts improvements
