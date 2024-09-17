@@ -1250,7 +1250,7 @@
             }
             else {
                 //include export date
-                name += +"_on_" + moment().format("DD-MMM-YYYY");
+                name += "_on_" + moment().format("DD-MMM-YYYY");
             }
             return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
         }
