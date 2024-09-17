@@ -91,11 +91,26 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
         }
 
         for (let { module, name } of TRIGGER_BY_EVENT) {
-            try {
-                await module.triggerByEvent(payload);
+            if (name !== "crashes") {
+                try {
+                    await module.triggerByEvent(payload);
+                }
+                catch (err) {
+                    log.e("Alert module '" + name + "' couldn't be triggered by event", err);
+                }
             }
-            catch (err) {
-                log.e("Alert module '" + name + "' couldn't be triggered by event", err);
+        }
+    });
+
+    plugins.register("/crashes/new", async function(ob) {
+        for (let { module, name } of TRIGGER_BY_EVENT) {
+            if (name === "crashes") {
+                try {
+                    await module.triggerByEvent(ob.data);
+                }
+                catch (err) {
+                    log.e("Alert module '" + name + "' couldn't be triggered by event", err);
+                }
             }
         }
     });

@@ -48,7 +48,7 @@
 
     CountlyHelpers.logout = function(path) {
         if (path) {
-            window.location = "/logout";
+            window.location = "logout";
         }
         else {
             window.location.reload();//this will log us out
