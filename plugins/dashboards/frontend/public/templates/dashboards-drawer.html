@@ -15,7 +15,7 @@
             </cly-form-field>
             <div class="text-big font-weight-bold">
                 {{i18n('dashboards.share-with')}}
-                <cly-tooltip-icon tooltip="Select the dashboard sharing option"></cly-tooltip-icon>
+                <cly-tooltip-icon :tooltip="i18n('dashboards.share-with-tooltip-content')"></cly-tooltip-icon>
             </div>
             <cly-form-field name="share_with" rules="required">
                 <el-radio-group :disabled="!canShare" v-model="drawerScope.editedObject.share_with" style="width: 100%;">
@@ -39,7 +39,7 @@
             <div v-if="drawerScope.editedObject.share_with === 'selected-users'">
                 <div class="text-big font-weight-bold">
                     {{i18n('dashboards.user-permissions')}}
-                    <cly-tooltip-icon tooltip="Set the User permissions"></cly-tooltip-icon>
+                    <cly-tooltip-icon :tooltip="i18n('dashboards.user-permissions-tooltip-content')"></cly-tooltip-icon>
                 </div>
                 <cly-form-field :label="i18n('dashboards.users-edit-permission')" :subheading="i18n('dashboards.users-edit-description')">
                     <cly-select-email :disabled="!canShare" v-model="sharedEmailEdit" :placeholder="canShare ? i18n('dashboards.enter-user-email') : i18n('dashbaords.sharing-disabled')"></cly-select-email>
@@ -52,7 +52,7 @@
             <div v-if="(drawerScope.editedObject.share_with === 'selected-users') && groupSharingAllowed">
                 <div class="text-big font-weight-bold">
                     {{i18n('dashboards.user-group-permission')}}
-                    <cly-tooltip-icon tooltip="Set the User group permissions"></cly-tooltip-icon>
+                    <cly-tooltip-icon :tooltip="i18n('dashboards.user-group-permission-tooltip-content')"></cly-tooltip-icon>
                 </div>
                 <cly-form-field
                     name="shared_user_groups_edit"
