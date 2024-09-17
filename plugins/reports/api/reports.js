@@ -15,12 +15,13 @@ var reportsInstance = {},
     log = require('../../../api/utils/log')('reports:reports'),
     versionInfo = require('../../../frontend/express/version.info'),
     countlyConfig = require('../../../frontend/express/config.js'),
+    countlyApiConfig = require('./../../../api/config', 'dont-enclose'),
     pdf = require('../../../api/utils/pdf');
 
 countlyConfig.passwordSecret || "";
 
 plugins.setConfigs("reports", {
-    secretKey: "Ydqa7Omkd3yhV33M3iWV1oFcOEk898h9",
+    secretKey: countlyApiConfig?.encryption?.reports_key || "Ydqa7Omkd3yhV33M3iWV1oFcOEk898h9",
 });
 
 versionInfo.page = (!versionInfo.title) ? "https://count.ly" : null;
