@@ -1,3 +1,41 @@
+## Version 24.05.11
+Fixes:
+- [cache] Use a cursor without timeout
+
+## Version 24.05.10
+Fixes:
+- [alerts] Alerts improvements
+- [core] Various fixes for frontend to support running countly from subdirectory
+- [logs]  Show collected problems on logger
+
+Enterprise fixes:
+- [data-manager] Fixes n UI to allow events starting with "/"
+- [flows] Fixes for flows step generation
+- [surveys] Other is not allowed as a valid answer for required questions
+
+## Version 24.05.9
+Fixes:
+- [crashes] Fix crashes template paths and add data check
+
+Enterprise fixes:
+- [license] Fix for License warning appears is Flex server
+- [drill] Fix typo in view regeneration api response
+
+## Version 24.05.8
+Fixes:
+- [scripts] script to check settings limits
+- [crashes] Update custom field cleanup script with streaming
+- [core] Skip data masking on internal appUsers data refetching query
+- [core][bugfix] Correct validation on "is any plugin masked"
+- [scripts] Delete custom events scripts
+- [dashboards] Show edit option also for invalid widgets
+- [core] batcher stats added
+- [dependencies] Bump xlsx-write-stream from 1.0.2 to 1.0.3
+
+Enterprise fixes:
+- [data-manager] changes to allow skipping query rewriting using passed property
+- [os] fix for changing default repository of CentOS 8 to vault because OS reached EOL
+  
 ## Version 24.05.7
 Fixes:
 - [countly-request]Fix countly-request get and post methods
