@@ -38,7 +38,7 @@
                 <el-table-column fixed="left" min-width="330" sortable="custom" prop="name" :label="i18n('data-manager.event-name')">
                     <template v-slot="rowScope">
                         <!-- <div @click="onRowClick(rowScope.row)" class="cly-vue-data-manager__clickable bu-is-clickable color-dark-blue-100">{{rowScope.row.name || rowScope.row.key || rowScope.row.e}}</div> -->
-                        <a v-bind:href="'#/manage/data-manager/events/events/' + rowScope.row.key" @click="onRowClick(rowScope.row)" class="cly-vue-data-manager__clickable bu-is-clickable color-dark-blue-100">
+                        <a v-bind:href="'#/manage/data-manager/events/events/' + JSON.stringify(rowScope.row.key)" @click="onRowClick(rowScope.row)" class="cly-vue-data-manager__clickable bu-is-clickable color-dark-blue-100">
                             <div>{{unescapeHtml(rowScope.row.name || rowScope.row.key || rowScope.row.e)}}</div>
                         </a>
                         <div v-if="rowScope.row.audit && rowScope.row.audit.userName" class="text-small color-cool-gray-50">Last modified by {{rowScope.row.audit.userName}}</div>
