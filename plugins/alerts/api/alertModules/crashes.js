@@ -22,31 +22,35 @@ module.exports.triggerByEvent = triggerByEvent;
  */
 async function triggerByEvent(payload) {
     const crashObject = payload?.crash;
-    const appKey = payload?.app_key;
-    if (!crashObject || typeof crashObject !== "object" || !appKey) {
+    const app = payload?.app;
+
+    if (!crashObject || typeof crashObject !== "object" || !app) {
         return;
     }
 
-    const app = await common.db.collection("apps").findOne({ key: appKey });
-    if (!app) {
-        return;
-    }
-
-    const alert = await common.db.collection("alerts").findOne({
+    //read batcher reads from db and cashes data for some time
+    const alerts = await common.readBatcher.getMany("alerts", {
         selectedApps: app._id.toString(),
         alertDataType: "crashes",
         alertDataSubType: commonLib.TRIGGERED_BY_EVENT.crashes,
     });
-    if (!alert) {
+
+    if (!alerts || !alerts.length) {
         return;
     }
 
-    await commonLib.trigger({ alert, app, date: new Date }, log);
+    // trigger all alerts
+    await Promise.all(alerts.map(alert => commonLib.trigger({
+        alert,
+        app,
+        date: new Date,
+        extra: crashObject
+    }, log)));
 }
 
 
 module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
-    const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
+    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
         return done();
@@ -59,7 +63,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
-            await commonLib.trigger({ alert, app, metricValue, date });
+            await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
     else {
@@ -75,7 +79,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
             : change <= -compareValue;
 
         if (shouldTrigger) {
-            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
+            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
 

@@ -2,6 +2,7 @@
 var pluginManager = require('../../plugins/pluginManager');
 var request = require('countly-request')(pluginManager.getConfig("security"));
 var should = require('should');
+const testUtils = require("../testUtils");
 
 describe('Countly Request', () => {
 
@@ -61,11 +62,36 @@ describe('Countly Request', () => {
 
     });
 
+    it('Makes get request', (done) => {
+        request.get(`${testUtils.url}/o/ping`, (err, res) => {
+            should.not.exist(err);
+            should.exist(res);
+
+            done();
+        });
+    });
+
     it('Make post request', () => {
         request.post('https://countly', function(err, res/*, body*/) {
             should.not.exist(err);
             should.exist(res);
 
+        });
+    });
+
+    it('Makes post request', (done) => {
+        request.post({
+            url: `${testUtils.url}/i/configs`,
+            json: {
+                api_key: testUtils.get('API_KEY_ADMIN'),
+                app_key: testUtils.get('APP_KEY'),
+                configs: JSON.stringify({ frontend: { test: true } }),
+            },
+        }, (err, res) => {
+            should.not.exist(err);
+            should.exist(res);
+
+            done();
         });
     });
 

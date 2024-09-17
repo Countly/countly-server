@@ -7,7 +7,7 @@
         </div>
     </div>
 
-    <div class="preset-list__body" :style="{height: containerHeight}" v-loading="isLoading">
+    <div class="preset-list__body" v-loading="isLoading">
         <vue-scroll :ops="scrollOps">
             <draggable
                 handle=".drag-handler"

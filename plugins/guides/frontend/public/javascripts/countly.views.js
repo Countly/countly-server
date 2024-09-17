@@ -211,6 +211,9 @@
                 if (this.viewedGuides === true) {
                     highlightGuidesButton = false;
                 }
+                if (this.isDialogVisible) {
+                    highlightGuidesButton = true;
+                }
                 return highlightGuidesButton ? 'view-button-initial' : 'view-button';
             }
         },
@@ -226,6 +229,7 @@
                 }
             },
             onClose: function() {
+                // EMRE: View Guides button closing animation flag here
                 this.isDialogVisible = false;
                 let mainViewContainer = document.getElementById('main-views-container');
                 mainViewContainer.getElementsByClassName('main-view')[0].style.setProperty('overflow', 'auto', 'important');

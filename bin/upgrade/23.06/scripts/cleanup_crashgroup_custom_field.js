@@ -4,9 +4,13 @@ const { cleanupCustomField, DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('../../../
 console.log('Cleaning up crashgroup custom fields');
 
 pluginManager.dbConnection().then(async(countlyDb) => {
-    const maxCustomFieldKeys = pluginManager.getConfig('crashes').max_custom_field_keys || DEFAULT_MAX_CUSTOM_FIELD_KEYS;
-    await cleanupCustomField(countlyDb, maxCustomFieldKeys);
+    pluginManager.loadConfigs(countlyDb, async() => {
+        const maxCustomFieldKeys = pluginManager.getConfig('crashes').max_custom_field_keys || DEFAULT_MAX_CUSTOM_FIELD_KEYS;
+        await cleanupCustomField(countlyDb, maxCustomFieldKeys);
 
-    countlyDb.close();
-    console.log('Crashgroup cleanup done');
+        pluginManager.setConfigs('crashes', { activate_custom_field_cleanup_job: true });
+
+        countlyDb.close();
+        console.log('Crashgroup cleanup done');
+    });
 });

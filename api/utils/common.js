@@ -79,6 +79,24 @@ common.escape_html = function(string, more) {
 
     return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
 };
+/**
+ * Function to escape unicode characters
+ * @param {string} str  - string for which to escape
+ * @returns  {string} escaped string
+ */
+common.encodeCharacters = function(str) {
+    try {
+        str = str + "";
+        str = str.replace(/\u0000/g, "&#9647");
+        str.replace(/[^\x00-\x7F]/g, function(c) {
+            return encodeURI(c);
+        });
+        return str;
+    }
+    catch {
+        return str;
+    }
+};
 
 /**
 * Decode escaped html 
@@ -1030,7 +1048,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (typeof args[arg] === 'string') {
                         if (mongodb.ObjectId.isValid(args[arg])) {
-                            parsed = mongodb.ObjectId(args[arg]);
+                            parsed = new mongodb.ObjectId(args[arg]);
                         }
                         else {
                             if (returnErrors) {
@@ -2749,7 +2767,8 @@ common.updateAppUser = function(params, update, no_meta, callback) {
         if (callback) {
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
                 new: true,
-                upsert: true
+                upsert: true,
+                skipDataMasking: true
             }, function(err, res) {
                 if (!err && res && res.value) {
                     params.app_user = res.value;
@@ -3394,7 +3413,7 @@ common.mergeQuery = function(ob1, ob2) {
 common.dbext = {
     ObjectID: function(id) {
         try {
-            return mongodb.ObjectId(id);
+            return new mongodb.ObjectId(id);
         }
         catch (ex) {
             return id;
@@ -3420,7 +3439,7 @@ common.dbext = {
      * @returns {ObjectID} id
      */
     oid: function(id) {
-        return !id ? id : id instanceof mongodb.ObjectId ? id : mongodb.ObjectId(id);
+        return !id ? id : id instanceof mongodb.ObjectId ? id : new mongodb.ObjectId(id);
     },
 
     /**

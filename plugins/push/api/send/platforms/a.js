@@ -95,7 +95,7 @@ class FCM extends Splitter {
                 ? firebaseAdmin.app(appName)
                 : firebaseAdmin.initializeApp({
                     credential: firebaseAdmin.credential.cert(serviceAccountObject, this.agent),
-                    agent: this.agent
+                    httpAgent: this.agent
                 }, appName);
             this.firebaseMessaging = firebaseApp.messaging();
         }
@@ -158,6 +158,16 @@ class FCM extends Splitter {
             };
             if (!this.legacyApi) {
                 const tokens = pushes.map(p => p.t);
+
+                // new fcm api doesn't allow objects or arrays inside "data" property
+                if (content.data && typeof content.data === "object") {
+                    for (let prop in content.data) {
+                        if (content.data[prop] && typeof content.data[prop] === "object") {
+                            content.data[prop] = JSON.stringify(content.data[prop]);
+                        }
+                    }
+                }
+
                 const messages = tokens.map(token => ({
                     token,
                     ...content,

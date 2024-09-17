@@ -515,9 +515,10 @@
             clyModel: countlyAllEvents
         }],
     });
-    app.route("/analytics/events/key/:eventKey", "events", function(eventKey) {
+    app.route("/analytics/events/key/*eventKey", "events", function(query) {
+        var queryUrlParameter = query && CountlyHelpers.isJSON(query) ? JSON.parse(query) : query;
         var params = {
-            eventKey: eventKey
+            eventKey: queryUrlParameter
         };
         var eventsViewWrapper = getAllEventsView();
         eventsViewWrapper.params = params;
