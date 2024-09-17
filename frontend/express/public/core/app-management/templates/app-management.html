@@ -364,7 +364,27 @@
                                 </cly-inline-form-field>
                             </el-collapse-item>
                         </el-collapse>
-                        <cly-diff-helper :diff="changeKeys" @discard="onDiscard" @save="saveSettings" :disabled="v.invalid" :emitSaveWhenDisabled="true"></cly-diff-helper>
+                        <cly-diff-helper :diff="changeKeys" @discard="onDiscard" @save="saveSettings" :disabled="v.invalid" :emitSaveWhenDisabled="true" :isModal=true>
+                            <template v-slot:main>
+                                <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
+                                    <span class="selected-count-blue bu-pl-1 text-medium">
+                                        <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{changeKeys.length}}</span>
+								        <span class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made") }}</span>
+								        <span class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep") }}</span>
+                                    </span>
+                                    <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
+                                    <el-button skin="red" class="bu-mr-2" size="small" type="default" @click="saveSettings">
+                                        <i class="cly-io-16 cly-io cly-io-save" style="font-size: larger;"></i>
+                                        <span class="bu-ml-1">
+                                            {{ i18n('dashboards.save-changes') }}
+                                        </span>
+                                    </el-button>
+                                    <el-button class="x-button" @click="onDiscard">
+                                        <i class="cly-io-16 cly-io cly-io-x color-cool-gray-50"></i>
+                                    </el-button>
+                                </div>
+                            </template>
+                        </cly-diff-helper>
                     </validation-observer>
                 </cly-section>
                 <el-card class="box-card color-cool-gray-100" v-if="!newApp && isCode">
