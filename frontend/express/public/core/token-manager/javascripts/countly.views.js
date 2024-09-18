@@ -123,6 +123,7 @@
                 for (var j = 0; j < tableData.length; j++) {
                     if (tableData[j]._id === countlyGlobal.auth_token) {
                         tableData.splice(j, 1);
+                        j--;
                     }
                 }
                 for (var i = 0; i < tableData.length; i++) {
