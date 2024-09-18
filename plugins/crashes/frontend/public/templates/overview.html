@@ -51,7 +51,7 @@
                                         <el-dropdown-item command="resolving" icon="cly-io cly-io-clock">{{ i18n('crashes.action-resolving') }}</el-dropdown-item>
                                         <el-dropdown-item command="unresolved" icon="cly-io cly-io-x-circle">{{ i18n('crashes.action-unresolved') }}</el-dropdown-item>
                                     </cly-more-options>
-                                    <cly-more-options v-if="canUserUpdate" size="small" :text=" i18n('data-manager.change-visibility') " type="default" icon="cly-io cly-io-eye bu-mr-2" :showArrows=true @command="setSelectedAs($event)">
+                                    <cly-more-options v-if="canUserUpdate" size="small" :text=" i18n('data-manager.change-visibility') " :widthSameAsTrigger="true" type="default" icon="cly-io cly-io-eye bu-mr-2" :showArrows=true @command="setSelectedAs($event)">
                                         <el-dropdown-item command="show"><i class="cly-io cly-io-eye"></i>{{ i18n('crashes.action-view') }}</el-dropdown-item>
                                         <el-dropdown-item command="hide"><i class="cly-io cly-io-eye-off"></i>{{ i18n('crashes.action-hide') }}</el-dropdown-item>
                                     </cly-more-options>
