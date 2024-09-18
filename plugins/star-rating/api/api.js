@@ -875,7 +875,7 @@ function uploadFile(myfile, id, callback) {
                     */
                     currEvent.segmentation.platform = currEvent.segmentation.platform || "undefined"; //because we have a lot of old data with undefined
                     currEvent.segmentation.rating = currEvent.segmentation.rating || "undefined";
-                    currEvent.segmentation.ratingSum = currEvent.segmentation.rating || 0;
+                    currEvent.segmentation.ratingSum = Number(currEvent.segmentation.rating) || 0;
                     currEvent.segmentation.widget_id = currEvent.segmentation.widget_id || "undefined";
                     currEvent.segmentation.app_version = currEvent.segmentation.app_version || "undefined";
                     currEvent.segmentation.platform_version_rate = currEvent.segmentation.platform + "**" + currEvent.segmentation.app_version + "**" + currEvent.segmentation.rating + "**" + currEvent.segmentation.widget_id + "**";
