@@ -59,7 +59,7 @@ const verifyStaticElementsOfEventStatsPage = () => {
     cy.verifyElement({
         element: eventStatsDataTableElements().COLUMN_NAME_DATE_SORTABLE_ICON,
     });
-}
+};
 
 const verifyStaticElementsOfCompareEventsPage = () => {
 
@@ -161,7 +161,7 @@ const verifyStaticElementsOfCompareEventsPage = () => {
     cy.verifyElement({
         element: compareEventsDataTableElements().COLUMN_NAME_AVG_DURATION_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -173,26 +173,26 @@ const verifyEmptyPageElements = () => {
 
     verifyEventStatsEChartElements({
         isEmpty: true,
-    })
+    });
 
     verifyEventStatsDataTableElements({
         isEmpty: true,
-    })
+    });
 
     verifyStaticElementsOfCompareEventsPage();
 
     verifyCompareEventsEChartElements({
         isEmpty: true,
-    })
+    });
 
     verifyCompareEventsDataTableElements({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
 
-    cy.clickElement(eventStatsListBoxElements('Bill Payment').LIST_BOX_ITEM)
+    cy.clickElement(eventStatsListBoxElements('Bill Payment').LIST_BOX_ITEM);
 
     verifyStaticElementsOfEventStatsPage();
 
@@ -344,7 +344,7 @@ const verifyEventStatsEChartElements = ({
         element: eventStatsEChartElements.CHART_COUNT_PERCENTAGE,
         elementText: countPercantage,
     });
-}
+};
 
 const verifyEventStatsDataTableElements = ({
     index = 0,
@@ -382,7 +382,7 @@ const verifyEventStatsDataTableElements = ({
         element: eventStatsDataTableElements(index).COUNT,
         elementText: count,
     });
-}
+};
 
 const verifyCompareEventsEChartElements = ({
     isEmpty = false,
@@ -438,7 +438,7 @@ const verifyCompareEventsEChartElements = ({
         labelElement: compareEventsEChartElements().CHART_PREVIOUS_PERIOD_LABEL,
         labelText: "Previous Period",
     });
-}
+};
 
 const verifyCompareEventsDataTableElements = ({
     index = 0,
@@ -492,22 +492,22 @@ const verifyCompareEventsDataTableElements = ({
         element: compareEventsDataTableElements(index).AVG_DURATION,
         elementText: avgDuration,
     });
-}
+};
 
 const selectEventsToCompare = (...events) => {
-    cy.clickElement(eventsPageElements.SELECT_EVENTS_COMBOBOX)
+    cy.clickElement(eventsPageElements.SELECT_EVENTS_COMBOBOX);
 
     for (var i = 0; i < events.length; i++) {
-        var itemSelector = 'el-option-test-id-' + helper.toSlug(events[i]) + '-el-options'
+        var itemSelector = 'el-option-test-id-' + helper.toSlug(events[i]) + '-el-options';
         //cy.typeInput(feedbackRatingWidgetsPageElements.SHOW_ONLY_SELECTOR_INPUT, events[i])
-        cy.clickElement(itemSelector)
+        cy.clickElement(itemSelector);
     }
     cy.clickBody();
-}
+};
 
 const clickCompare = () => {
     cy.clickElement(eventsPageElements.COMPARE_BUTTON);
-}
+};
 
 const clickEventStatsTab = () => {
     cy.scrollPageToTop();
