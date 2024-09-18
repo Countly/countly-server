@@ -1250,7 +1250,7 @@
             }
             else {
                 //include export date
-                name += +"_on_" + moment().format("DD-MMM-YYYY");
+                name += "_on_" + moment().format("DD-MMM-YYYY");
             }
             return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
         }
@@ -3713,7 +3713,7 @@
      * @return {array} - array without empty values
      */
     CountlyHelpers.removeEmptyValues = function(array) {
-        for (var i = 0; i < array.length; i++) {
+        for (var i = array.length - 1; i >= 0; i--) {
             if (array[i] === "") {
                 array.splice(i, 1);
             }

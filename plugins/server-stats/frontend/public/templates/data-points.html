@@ -39,9 +39,9 @@
 						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.sessions-description')"></span>
 					</template>
 				</el-table-column>
-				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="events" :label="i18n('sidebar.events')">
+				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="events" :label="i18n('server-stats.events')">
 					<template v-slot:header>
-						{{i18n('sidebar.events')}}
+						{{i18n('server-stats.events')}}
 						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.events-description')"></span>
 					</template>
 					<div slot-scope="scopeRow">
@@ -69,8 +69,7 @@
 						</el-popover>
 					</div>
 				</el-table-column>
-				<el-table-column min-width="150" v-if="showPushColumn" :formatter="numberFormatter" sortable="custom" prop="push" :label="i18n('push-notification.title')"></el-table-column>
-				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="data-points" :label="i18n('server-stats.data-points')"></el-table-column>
+				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="data-points" :label="i18n('server-stats.total-datapoints')"></el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="change" :label="i18n('server-stats.datapoint-change')"></el-table-column>
 			</cly-datatable-n>
 		</cly-section>

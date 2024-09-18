@@ -48,15 +48,23 @@
                 </template>
             </el-table-column>
             <template v-slot:bottomline="scope">
-                <cly-diff-helper v-if="canUserUpdate || canUserDelete" class="action-bar" :diff="scope.diff" @discard="scope.unpatch()">
+                <cly-diff-helper v-if="canUserUpdate || canUserDelete" class="action-bar" :diff="scope.diff" @discard="scope.unpatch()" :isModal=true>
                     <template v-slot:main>
-                        <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center" style="height: 100%;">
-                            <cly-more-options class="bu-mr-3" size="small" text="Change Visibility" type="default" icon="el-icon-view" @command="handleChangeVisibility($event, scope.diff)">
-                                <el-dropdown-item command="visible">{{i18n('data-manager.visible')}}</el-dropdown-item>
-                                <el-dropdown-item command="hidden">{{i18n('data-manager.hidden')}}</el-dropdown-item>
+                        <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
+                            <cly-more-options size="small" :text=" i18n('data-manager.change-visibility') " type="default" icon="cly-io cly-io-eye bu-mr-2" :widthSameAsTrigger="true" :showArrows=true @command="handleChangeVisibility($event, scope.diff)">
+                                <el-dropdown-item command="visible"><i class="cly-io cly-io-eye"></i>{{ i18n('data-manager.visible') }}</el-dropdown-item>
+                                <el-dropdown-item command="hidden"><i class="cly-io cly-io-eye-off"></i>{{ i18n('data-manager.hidden') }}</el-dropdown-item>
                             </cly-more-options>
-                            
-                            <el-button v-if="canUserDelete" class="bu-mr-3" size="small" type="default" icon="el-icon-delete-solid" @click="handleDelete(scope.diff)">Delete</el-button>
+                            <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
+                            <el-button v-if="canUserDelete" class="bu-mr-3" size="small" type="default" @click="handleDelete(scope.diff)">
+                                <i class="cly-io-16 cly-io cly-io-trash" style="color:red"></i>
+                                <span class="ml-1" style="color: red">
+                                    {{ i18n('common.delete') }}
+                                </span>
+                            </el-button>
+                            <el-button class="x-button" @click="unpatchSelectedEventGroups">
+                                <i class="cly-io-16 cly-io cly-io-x color-cool-gray-50"></i>
+                            </el-button>
                         </div>
                     </template>
                 </cly-diff-helper>

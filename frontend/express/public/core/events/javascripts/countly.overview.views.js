@@ -12,7 +12,7 @@
         },
         methods: {
             onRowClick: function(params) {
-                app.navigate("#/analytics/events/key/" + params.key, true);
+                app.navigate("#/analytics/events/key/" + JSON.stringify(params.key), true);
             },
             formatNumber: function(val) {
                 return countlyCommon.formatNumber(val);
@@ -253,7 +253,7 @@
                 this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
             },
             onMetricClick: function(params) {
-                app.navigate("#/analytics/events/key/" + params.key, true);
+                app.navigate("#/analytics/events/key/" + JSON.stringify(params.key), true);
             },
             durCheck: function(item) {
                 var eventMapKey = item.eventKey;

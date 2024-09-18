@@ -1533,9 +1533,6 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
         periodObj = countlyCommon.periodObj;
     }
 
-    if (!rangeArray) {
-        return {"chartData": tableData};
-    }
     var periodMin = 0,
         periodMax = 0,
         dataObj = {},
@@ -1543,6 +1540,10 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
         propertyNames = underscore.pluck(dataProperties, "name"),
         propertyFunctions = underscore.pluck(dataProperties, "func"),
         propertyValue = 0;
+
+    if (!rangeArray) {
+        return {"chartData": tableData};
+    }
 
     if (!periodObj.isSpecialPeriod) {
         periodMin = periodObj.periodMin;

@@ -4,12 +4,9 @@
 		:tooltip="{description: i18n('events.all.title.tooltip')}"
 	>
 		<template v-slot:header-right>
-			<cly-more-options v-if="topDropdown" size="small">
-			  <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-				<!--<span :class="item.icon"></span>-->	
-				<a :href="item.value" class="bu-ml-1">{{item.label}}</a>
-			  </el-dropdown-item>
-			</cly-more-options>
+			<el-button v-if="isDrillEnabled" size="small" icon="cly-is cly-is-drill" type="default" @click="openDrillEventDrawer">
+				<span class="bu-ml-1">{{ i18n('events.all.drill') }}</span>
+			</el-button>
 		</template>
 	</cly-header>
 	<cly-main class="bu-pt-4">
@@ -46,8 +43,8 @@
 			<div class="bu-is-align-items-center bu-is-flex" v-if="hasSegments || hasOmittedSegments">
 			  <span class="bu-is-flex cly-vue-events-all-placeholder-text bu-pr-2" data-test-id="segmentation-by-label">{{i18n('events.all.segmentation')}}</span>
 			  	<cly-select-x
-					search-placeholder="Search segments"
-					test-id="segmentation-select"
+					:search-placeholder="i18n('events.all.segmentation-search.placeholder')"
+          test-id="segmentation-select"
 					:options="availableSegments"
 					:searchable="true"
 					v-model="selectedSegment"
@@ -74,4 +71,5 @@
 		</div>
 	  </div>
 	</cly-main>
+	<drill-event-drawer :controls="drawers['drill-event']"></drill-event-drawer>
   </div>
