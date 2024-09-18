@@ -362,10 +362,10 @@ describe('Complete Onboarding', () => {
         analyticsGeoCountriesPageHelpers.clickLanguagesTab();
         analyticsGeoLanguagesPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToAnalyticsEventsOverview();
-        //analyticsEventsOverviewPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
+        analyticsEventsOverviewPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
+        navigationHelpers.goToAnalyticsAllEvents();
+        analyticsEventsPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToAnalyticsAllEvents();
-        //analyticsEventsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToPushNotifications();
         //messagingPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToFeedbackRatingsPage();
