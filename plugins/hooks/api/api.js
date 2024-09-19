@@ -304,6 +304,12 @@ plugins.register("/i/hook/save", function(ob) {
                     {new: true},
                     function(err, result) {
                         if (!err) {
+                            // Audit log: Hook updated
+                            plugins.dispatch("/systemlogs", {
+                                params: params, 
+                                action: "hook_updated", 
+                                data: { updated: result.value }
+                            });
                             common.returnOutput(params, result && result.value);
                         }
                         else {
@@ -318,6 +324,12 @@ plugins.register("/i/hook/save", function(ob) {
                 function(err, result) {
                     log.d("insert new hook:", err, result);
                     if (!err && result && result.insertedIds && result.insertedIds[0]) {
+                        // Audit log: Hook created
+                        plugins.dispatch("/systemlogs", {
+                            params: params,
+                            action: "hook_created",
+                            data: { created: hookConfig }
+                        });
                         common.returnOutput(params, result.insertedIds[0]);
                     }
                     else {
@@ -467,6 +479,12 @@ plugins.register("/o/hook/list", function(ob) {
                         const member = _.find(members, {_id: a.createdBy});
                         a.createdByUser = member && member.full_name;
                     });
+                    // Audit log: Hook list viewed (without logging individual hooks)
+                    plugins.dispatch("/systemlogs", {
+                        params: params,
+                        action: "hook_list_viewed",
+                        data: { hookCount: hooksList.length, requestedBy: params.member._id }
+                    });
                     common.returnOutput(params, { hooksList } || []);
                 });
             });
@@ -514,6 +532,12 @@ plugins.register("/i/hook/status", function(ob) {
         }
         Promise.all(batch).then(function() {
             log.d("hooks all updated.");
+            // Audit log: Hook status updated
+            plugins.dispatch("/systemlogs", {
+                params: params,
+                action: "hook_status_updated",
+                data: { updatedHooksCount: Object.keys(statusList).length, requestedBy: params.member._id }
+            });
             common.returnOutput(params, true);
         });
     }, paramsInstance);
@@ -548,6 +572,12 @@ plugins.register("/i/hook/delete", function(ob) {
                 function(err, result) {
                     log.d(err, result, "delete an hook");
                     if (!err) {
+                        // Audit log: Hook deleted
+                        plugins.dispatch("/systemlogs", {
+                            params: params,
+                            action: "hook_deleted",
+                            data: { deletedHookID: hookID, requestedBy: params.member._id }
+                        });
                         common.returnMessage(params, 200, "Deleted an hook");
                     }
                 }
