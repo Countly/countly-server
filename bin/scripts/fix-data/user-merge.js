@@ -13,9 +13,7 @@ console.log("Merging app users");
 var COLLECTION_NAME = "";
 var APP_ID = "";
 
-var READ_LIMIT = 100;
 var RETRY_LIMIT = 3;
-var READ_COUNTER = 0;
 var UPDATE_COUNTER = 0;
 
 //Number of requests to be made before checking record count in app_user_merges
@@ -51,19 +49,39 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
     }
 
     async function cursor() {
-        var query = {};
 
-        var projections = {};
+        const duplicates = await common.db.collection(COLLECTION_NAME).aggregate([
+            {
+                $group: {
+                    _id: "$username",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $match: {
+                    count: { $gt: 1 },
+                    _id: { $ne: null }
+                }
+            }
+        ]).toArray();
 
-        var usernames = {};
+        console.log("Found", duplicates.length, "duplicate username groups.");
 
-        var cursor = common.db.collection(COLLECTION_NAME).find(query).project(projections);
+        for (var i = 0; i < duplicates.length; i++) {
 
-        var total = await cursor.count();
-        console.log("Total data length ", total);
+            var mainUser = null;
+            var mergedUsersUIDs = [];
 
-        return new Promise(function(resolve) {
-            cursor.forEach(function(doc) {
+            var query = {
+                username: duplicates[i]._id
+            };
+
+            var projections = {};
+
+            var cursor = common.db.collection(COLLECTION_NAME).find(query).project(projections);
+
+            while (await cursor.hasNext()) {
+                var doc = await cursor.next();
                 if (!doc.username) {
                     return;
                 }
@@ -74,92 +92,64 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
                     return;
                 }
 
-                if (!usernames[username]) {
-                    usernames[username] = [];
-                }
-
-                READ_COUNTER += 1;
-
-                if (READ_COUNTER % READ_LIMIT === 0) {
-                    console.log("Users read - " + READ_COUNTER + ".");
-                }
-
-                usernames[username].push(doc);
-
-            }, async function() {
-                console.log("Users read - " + READ_COUNTER + ".");
-
-                for (var key in usernames) {
-                    var users = usernames[key];
-
-                    if (users.length > 1) {
-                        await prepareRequest(users);
-                    }
-                }
-
-                resolve();
-            });
-        });
-    }
-
-    async function prepareRequest(users) {
-        //Main user is the one with the highest ls or lac fields
-        var mainUser = users.reduce(function(prev, current) {
-            var currentMax = Math.max(current.ls, current.lac);
-            var prevMax = Math.max(prev.ls, prev.lac);
-            return currentMax > prevMax ? current : prev;
-        });
-
-        if (mainUser && mainUser.did) {
-            users = users.filter(function(u) {
-                return u.uid !== mainUser.uid;
-            });
-
-            for (var j = 0; j < users.length; j++) {
-                var retryCounter = 0;
-                var success = false;
-
-                while (!success && retryCounter < RETRY_LIMIT) {
-                    await new Promise(function(resolve) {
-                        var newUser = JSON.parse(JSON.stringify(mainUser));
-
-                        appUsers.merge(APP_ID, newUser, newUser._id, users[j]._id, newUser.did, users[j].did, function(err) {
-                            if (err) {
-                                console.log("Error while merging - ", err);
-                                retryCounter += 1;
-                            }
-                            else {
-                                success = true;
-                            }
-
-                            resolve();
-                        });
-                    });
-                    await sleep(COOLDOWN_PERIOD);
-                }
-
-                if (success) {
-                    if (retryCounter > 0) {
-                        console.log("User ", users[j].uid, " merged successfully after ", retryCounter, " retries.");
-                    }
-                    UPDATE_COUNTER += 1;
-                    if (UPDATE_COUNTER % UPDATE_LIMIT === 0) {
-                        await checkRecordCount();
-                    }
+                if (!mainUser) {
+                    mainUser = doc;
                 }
                 else {
-                    console.log("Retry limit exceeded for users ", mainUser.uid, " and ", users[j].uid);
+                    let currentMax = Math.max(doc.ls, doc.lac);
+                    let mainMax = Math.max(mainUser.ls, mainUser.lac);
+                    if (currentMax > mainMax) {
+                        await mergeUsers(doc, mainUser);
+                        mergedUsersUIDs.push(mainUser.uid);
+                        mainUser = doc;
+                    }
+                    else {
+                        await mergeUsers(mainUser, doc);
+                        mergedUsersUIDs.push(doc.uid);
+                    }
                 }
             }
 
-            console.log("Total " + users.length + " users (" + users.map(function(u) {
-                return u.uid;
-            }) + ") merged into user ", mainUser.uid + ".");
+            if (mergedUsersUIDs.length > 0) {
+                console.log("Total", mergedUsersUIDs.length, "users merged into user", mainUser.uid, ": (", mergedUsersUIDs.join(", "), ")");
+            }
+        }
+    }
+
+    async function mergeUsers(mainUser, user) {
+        var retryCounter = 1;
+        var success = false;
+
+        while (!success && retryCounter < RETRY_LIMIT) {
+            await new Promise(function(resolve) {
+                var newUser = JSON.parse(JSON.stringify(mainUser));
+
+                appUsers.merge(APP_ID, newUser, newUser._id, user._id, newUser.did, user.did, function(err) {
+                    if (err) {
+                        console.log("Error while merging - ", err);
+                        retryCounter += 1;
+                    }
+                    else {
+                        success = true;
+                    }
+
+                    resolve();
+                });
+            });
+            await sleep(COOLDOWN_PERIOD);
+        }
+
+        if (success) {
+            if (retryCounter > 1) {
+                console.log("User ", user.uid, " merged successfully after ", retryCounter, " retries.");
+            }
+            UPDATE_COUNTER += 1;
+            if (UPDATE_COUNTER % UPDATE_LIMIT === 0) {
+                await checkRecordCount();
+            }
         }
         else {
-            console.log("No main user found - ", users.map(function(u) {
-                return u.uid;
-            }));
+            console.log("Retry limit exceeded for users ", mainUser.uid, " and ", user.uid);
         }
     }
 
