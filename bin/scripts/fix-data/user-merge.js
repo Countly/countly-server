@@ -14,6 +14,7 @@ var COLLECTION_NAME = "";
 var APP_ID = "";
 
 var READ_LIMIT = 100;
+var RETRY_LIMIT = 3;
 var READ_COUNTER = 0;
 var UPDATE_COUNTER = 0;
 
@@ -50,9 +51,7 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
     }
 
     async function cursor() {
-        var query = {
-            //username: "abc"
-        };
+        var query = {};
 
         var projections = {};
 
@@ -117,24 +116,39 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
             });
 
             for (var j = 0; j < users.length; j++) {
-                await new Promise(function(resolve) {
-                    var newUser = JSON.parse(JSON.stringify(mainUser));
+                var retryCounter = 0;
+                var success = false;
 
-                    appUsers.merge(APP_ID, newUser, newUser._id, users[j]._id, newUser.did, users[j].did, function(err) {
-                        if (err) {
-                            console.log("Error while merging - ", err);
-                        }
-
-                        resolve();
+                while(!success && retryCounter < RETRY_LIMIT) {
+                    await new Promise(function(resolve) {
+                        var newUser = JSON.parse(JSON.stringify(mainUser));
+    
+                        appUsers.merge(APP_ID, newUser, newUser._id, users[j]._id, newUser.did, users[j].did, function(err) {
+                            if (err) {
+                                console.log("Error while merging - ", err);
+                                retryCounter += 1;
+                            }
+                            else {
+                                success = true;
+                            }
+    
+                            resolve();
+                        });
                     });
-                });
+                    await sleep(COOLDOWN_PERIOD);
+                }
 
-                await sleep(COOLDOWN_PERIOD);
-
-                UPDATE_COUNTER += 1;
-
-                if (UPDATE_COUNTER % UPDATE_LIMIT === 0) {
-                    await checkRecordCount();
+                if (success) {
+                    if (retryCounter > 0) {
+                        console.log("User ", users[j].uid, " merged successfully after ", retryCounter, " retries.");
+                    }
+                    UPDATE_COUNTER += 1;
+                    if (UPDATE_COUNTER % UPDATE_LIMIT === 0) {
+                        await checkRecordCount();
+                    }
+                }
+                else {
+                    console.log("Retry limit exceeded for users ", mainUser.uid, " and ", users[j].uid);
                 }
             }
 
@@ -153,8 +167,10 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
         var recordCount = await common.db.collection("app_user_merges").countDocuments();
         console.log("Record count in app_user_merges: ", recordCount);
 
-        if (recordCount > RECORD_COUNT_LIMIT) {
+        while (recordCount > RECORD_COUNT_LIMIT) {
+            console.log("Record count exceeds limit. Sleeping for " + RECORD_OVERLOAD_SLEEP/1000 + "seconds.");
             await sleep(RECORD_OVERLOAD_SLEEP);
+            recordCount = await common.db.collection("app_user_merges").countDocuments();
         }
     }
 });
