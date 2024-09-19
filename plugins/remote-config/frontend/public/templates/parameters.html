@@ -66,6 +66,7 @@
               v-if="rowScope.row.hover"
               size="small"
               v-tooltip.left="rowScope.row.editable ? '' : i18n('remote-config.parameter.action-tooltip-content')"
+              :disabledButton="rowScope.row.editable ? false : true"
               @command="handleCommand($event, scope, rowScope.row)">
               <el-dropdown-item v-if="hasUpdateRight && rowScope.row.editable" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
               <el-dropdown-item v-if="hasDeleteRight && rowScope.row.editable" command="remove">{{i18n('common.delete')}}</el-dropdown-item>
@@ -75,9 +76,9 @@
         <el-table-column v-if="hasUpdateRight" min-width="110">
           <template v-slot="rowScope">
             <div v-if="rowScope.row.hover && rowScope.row.editable">
-            <el-button v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'" @click="startParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.enable')}}
+            <el-button v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'" @click.stop="startParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.enable')}}
             </el-button>
-            <el-button v-else @click="stopParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.disable')}}
+            <el-button v-else @click.stop="stopParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.disable')}}
             </el-button>
             </div>
           </template>
