@@ -110,7 +110,7 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
             var prevMax = Math.max(prev.ls, prev.lac);
             return currentMax > prevMax ? current : prev;
         });
-        
+
         if (mainUser && mainUser.did) {
             users = users.filter(function(u) {
                 return u.uid !== mainUser.uid;
