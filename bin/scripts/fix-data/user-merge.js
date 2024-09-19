@@ -119,10 +119,10 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
                 var retryCounter = 0;
                 var success = false;
 
-                while(!success && retryCounter < RETRY_LIMIT) {
+                while (!success && retryCounter < RETRY_LIMIT) {
                     await new Promise(function(resolve) {
                         var newUser = JSON.parse(JSON.stringify(mainUser));
-    
+
                         appUsers.merge(APP_ID, newUser, newUser._id, users[j]._id, newUser.did, users[j].did, function(err) {
                             if (err) {
                                 console.log("Error while merging - ", err);
@@ -131,7 +131,7 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
                             else {
                                 success = true;
                             }
-    
+
                             resolve();
                         });
                     });
@@ -168,7 +168,7 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
         console.log("Record count in app_user_merges: ", recordCount);
 
         while (recordCount > RECORD_COUNT_LIMIT) {
-            console.log("Record count exceeds limit. Sleeping for " + RECORD_OVERLOAD_SLEEP/1000 + "seconds.");
+            console.log("Record count exceeds limit. Sleeping for " + RECORD_OVERLOAD_SLEEP / 1000 + "seconds.");
             await sleep(RECORD_OVERLOAD_SLEEP);
             recordCount = await common.db.collection("app_user_merges").countDocuments();
         }
