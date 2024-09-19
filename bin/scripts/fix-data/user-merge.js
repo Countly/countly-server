@@ -1,3 +1,9 @@
+/**
+ *  Description: This script is used to merge users based on username.
+ *  Server: countly
+ *  Path: $(countly dir)/bin/scripts/fix-data
+ *  Command: node user-merge.js
+ */
 var pluginManager = require("../../../plugins/pluginManager.js");
 var appUsers = require("../../../api/parts/mgmt/app_users.js");
 var common = require("../../../api/utils/common.js");
