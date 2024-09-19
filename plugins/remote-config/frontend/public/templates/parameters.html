@@ -34,9 +34,9 @@
           <template v-slot:default="rowScope">
             <div>
               <div class="cly-vue-remote-config-conditions-drawer__margin-bottom">
-                <cly-status-tag v-if="rowScope.row.status==='Stopped'" :text="i18n('remote-config.parameter.stopped')" color="red"></cly-status-tag>
+                <cly-status-tag v-if="rowScope.row.status==='Stopped'" :text="i18n('remote-config.parameter.disabled')" color="red"></cly-status-tag>
                 <cly-status-tag v-else-if="rowScope.row.status==='Expired'" :text="i18n('remote-config.parameter.expired')" color="yellow"></cly-status-tag>
-                <cly-status-tag v-else :text="i18n('remote-config.parameter.running')" color="blue"></cly-status-tag>
+                <cly-status-tag v-else :text="i18n('remote-config.parameter.enabled')" color="blue"></cly-status-tag>
               </div>
               <div class="color-cool-gray-40 text-small" v-if="rowScope.row.expiry_dttm"> {{i18n('remote-config.expire.date')}} {{getDate(rowScope.row.expiry_dttm)}}</div>
             </div>
@@ -62,18 +62,22 @@
         </el-table-column>
         <el-table-column min-width="160" v-if="hasUpdateRight || hasDeleteRight" type="options">
           <template v-slot="rowScope">
-            <cly-more-options v-if="rowScope.row.hover && rowScope.row.editable" size="small" @command="handleCommand($event, scope, rowScope.row)">
-              <el-dropdown-item v-if="hasUpdateRight" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-              <el-dropdown-item v-if="hasDeleteRight" command="remove">{{i18n('common.delete')}}</el-dropdown-item>
+            <cly-more-options
+              v-if="rowScope.row.hover"
+              size="small"
+              v-tooltip.left="rowScope.row.editable ? '' : i18n('remote-config.parameter.action-tooltip-content')"
+              @command="handleCommand($event, scope, rowScope.row)">
+              <el-dropdown-item v-if="hasUpdateRight && rowScope.row.editable" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
+              <el-dropdown-item v-if="hasDeleteRight && rowScope.row.editable" command="remove">{{i18n('common.delete')}}</el-dropdown-item>
             </cly-more-options>
           </template>
         </el-table-column>
         <el-table-column v-if="hasUpdateRight" min-width="110">
           <template v-slot="rowScope">
             <div v-if="rowScope.row.hover && rowScope.row.editable">
-            <el-button v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'" @click="startParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.start')}}
+            <el-button v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'" @click="startParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.enable')}}
             </el-button>
-            <el-button v-else @click="stopParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.stop')}}
+            <el-button v-else @click="stopParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.disable')}}
             </el-button>
             </div>
           </template>
