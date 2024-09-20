@@ -6,7 +6,7 @@ Fixes:
 - [reports] Use config for encryption key in reports
 
 Enterprise fixes:
--[retention] Fixes for byval retention query calculation
+ - [retention] Fixes for byval retention query calculation
 
 ## Version 24.05.11
 Fixes:
