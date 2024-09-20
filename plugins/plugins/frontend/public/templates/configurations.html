@@ -302,7 +302,7 @@
                     <span class="selected-count-blue bu-pl-1 text-medium">
                         <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{diff.length}}</span>
                         <span v-if="diff.length>1" class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made") }}</span>
-                        <span v-elseclass="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made-single") }}</span>
+                        <span v-else class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made-single") }}</span>
                         <span v-if="diff.length>1" class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep") }}</span>
                         <span v-else class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep-single") }}</span>
                     </span>
