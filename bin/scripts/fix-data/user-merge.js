@@ -10,8 +10,8 @@ var common = require("../../../api/utils/common.js");
 
 console.log("Merging app users");
 
-var COLLECTION_NAME = "";
 var APP_ID = "";
+var COLLECTION_NAME = "app_users" + APP_ID;
 
 var RETRY_LIMIT = 3;
 var UPDATE_COUNTER = 0;
