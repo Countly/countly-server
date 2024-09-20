@@ -442,6 +442,9 @@
                     if (res === 'EVENT_STATUS_UNPLANNED') {
                         CountlyHelpers.notify({message: CV.i18n('data-manager.error.event-visibility-error'), sticky: false, type: 'error'});
                     }
+                    else{
+                        CountlyHelpers.notify({message: CV.i18n('data-manager.success.visibility'), sticky: false, type: 'success'});
+                    }
                     context.dispatch('loadEventsData');
                     context.dispatch('loadSegmentsMap');
                 }).catch(function(e) {
