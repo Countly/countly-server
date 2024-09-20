@@ -1,3 +1,13 @@
+## Version 24.05.12
+Fixes:
+- [dashboards] Fixes for dashboards grid
+- [dasboards] UI fix for dashboard widget action menu
+- [push] Refactored fcm API related code
+- [reports] Use config for encryption key in reports
+
+Enterprise fixes:
+-[retention] Fixes for byval retention query calculation
+
 ## Version 24.05.11
 Fixes:
 - [cache] Use a cursor without timeout
