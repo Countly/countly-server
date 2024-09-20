@@ -370,9 +370,9 @@ plugins.connectToAllDatabases().then(function() {
                 }
 
                 const form = new formidable.IncomingForm(formidableOptions);
-                req.body = '';
+                req.body = [];
                 req.on('data', (data) => {
-                    req.body += data;
+                    req.body.push(data);
                 });
 
                 let multiFormData = false;
