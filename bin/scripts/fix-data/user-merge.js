@@ -78,29 +78,15 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
 
             var projections = {};
 
-            var cursor = common.db.collection(COLLECTION_NAME).find(query).project(projections);
+            var sort = { ls: -1 };
+
+            var cursor = common.db.collection(COLLECTION_NAME).find(query).project(projections).sort(sort);
 
             while (await cursor.hasNext()) {
                 var doc = await cursor.next();
-                if (!doc.username) {
-                    return;
-                }
 
-                var username = doc.username.trim();
-
-                if (!username.length) {
-                    return;
-                }
-
-                if (!mainUser) {
-                    mainUser = doc;
-                }
-                else {
-                    let currentMax = Math.max(doc.ls, doc.lac);
-                    let mainMax = Math.max(mainUser.ls, mainUser.lac);
-                    if (currentMax > mainMax) {
-                        await mergeUsers(doc, mainUser);
-                        mergedUsersUIDs.push(mainUser.uid);
+                if (doc.uid && doc.uid !== "") {
+                    if (!mainUser) {
                         mainUser = doc;
                     }
                     else {
