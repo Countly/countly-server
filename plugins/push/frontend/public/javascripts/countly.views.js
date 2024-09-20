@@ -2267,7 +2267,6 @@
     };
     initialAppLevelConfig[countlyPushNotification.service.PlatformEnum.ANDROID] = {
         _id: "",
-        firebaseKey: "",
         serviceAccountFile: "",
         type: "fcm",
         hasServiceAccountFile: false,
@@ -2460,7 +2459,7 @@
             },
             isKeyEmpty: function(platform) {
                 if (platform === this.PlatformEnum.ANDROID) {
-                    return !this.viewModel[platform].firebaseKey && !this.viewModel[platform].serviceAccountFile;
+                    return !this.viewModel[platform].serviceAccountFile;
                 }
                 if (platform === this.PlatformEnum.IOS) {
                     if (this.iosAuthConfigType === countlyPushNotification.service.IOSAuthConfigTypeEnum.P8) {
