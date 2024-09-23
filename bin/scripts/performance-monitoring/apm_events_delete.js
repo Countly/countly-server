@@ -17,13 +17,19 @@ if (dry_run) {
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     try {
-        console.log('Deleting APM events for app_id: ' + APP_ID);
-        await Promise.all([
-            countlyDb.collection("apm").remove({app_id: APP_ID}),
-            drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_apm_network" + APP_ID).digest('hex')).drop(),
-            drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_apm_device" + APP_ID).digest('hex')).drop(),
-        ]);
-        console.log("All done");
+        if(!APP_ID){
+            console.log("Please set APP_ID");
+        }
+        else{
+            console.log('Deleting APM events for app_id: ' + APP_ID);
+            await Promise.all([
+                countlyDb.collection("apm").remove({app_id: APP_ID}),
+                drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_apm_network" + APP_ID).digest('hex')).drop(),
+                drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_apm_device" + APP_ID).digest('hex')).drop(),
+                drillDb.collection("drill_events").remove({"a": APP_ID, "e": {$in: ["[CLY]_apm_device", "[CLY]_apm_network"]}})
+            ]);
+            console.log("All done");
+        }
     }
     catch (error) {
         console.log("ERROR: ");
