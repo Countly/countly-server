@@ -587,7 +587,6 @@ plugins.register("/i/hook/test", function(ob) {
 
             if (hookConfig) {
                 // Null check for hookConfig
-                const hookConfigEffects = hookConfig.effects;
                 if (hookConfigEffects && !validateEffects(hookConfigEffects)) {
                     common.returnMessage(params, 400, 'Config invalid');
                 }
@@ -598,15 +597,16 @@ plugins.register("/i/hook/test", function(ob) {
             const results = [];
 
             // build mock data
-            const trigger = hookConfig.trigger;
-            hookConfig._id = null;
-            log.d("[hook test mock data]", mockData);
-            const obj = {
-                is_mock: true,
-                params: mockData,
-                rule: hookConfig
-            };
-
+            if(hookConfig){
+                const trigger = hookConfig?.trigger;
+                hookConfig._id = null;
+                log.d("[hook test mock data]", mockData);
+                const obj = {
+                    is_mock: true,
+                    params: mockData,
+                    rule: hookConfig
+                };
+            }    
             log.d("[hook test config data]", obj);
             const t = new Triggers[trigger.type]({
                 rules: [hookConfig],
