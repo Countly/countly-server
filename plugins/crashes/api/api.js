@@ -452,7 +452,7 @@ plugins.setConfigs("crashes", {
                         report.group = hash;
                         report.uid = dbAppUser.uid;
                         report.ts = params.time.timestamp;
-                        var updateUser = {};
+                        let updateUser = {};
                         if (!report.nonfatal) {
                             if (!dbAppUser.hadFatalCrash) {
                                 updateUser.hadFatalCrash = "true";
@@ -477,7 +477,7 @@ plugins.setConfigs("crashes", {
                             uid: report.uid,
                             last: report.ts,
                         };
-                        if (dbAppUser && dbAppUser.sc) {
+                        if (dbAppUser.sc) {
                             set.sessions = dbAppUser.sc;
                         }
                     }
