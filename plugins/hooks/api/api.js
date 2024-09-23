@@ -587,7 +587,8 @@ plugins.register("/i/hook/test", function(ob) {
 
             if (hookConfig) {
                 // Null check for hookConfig
-                if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
+                const hookConfigEffects = hookConfig.effects;
+                if (hookConfigEffects && !validateEffects(hookConfigEffects)) {
                     common.returnMessage(params, 400, 'Config invalid');
                 }
             }
