@@ -448,38 +448,36 @@ plugins.setConfigs("crashes", {
                     }
                     var hash = common.crypto.createHash('sha1').update(seed).digest('hex');
                     var dbAppUser = params.app_user;
-                    if (dbAppUser) {
-                        report.group = hash;
-                        report.uid = dbAppUser.uid;
-                        report.ts = params.time.timestamp;
-                        let updateUser = {};
-                        if (!report.nonfatal) {
-                            if (!dbAppUser.hadFatalCrash) {
-                                updateUser.hadFatalCrash = "true";
-                            }
-                            updateUser.hadAnyFatalCrash = report.ts;
+                    report.group = hash;
+                    report.uid = dbAppUser.uid;
+                    report.ts = params.time.timestamp;
+                    let updateUser = {};
+                    if (!report.nonfatal) {
+                        if (!dbAppUser.hadFatalCrash) {
+                            updateUser.hadFatalCrash = "true";
                         }
-                        else if (report.nonfatal) {
-                            if (!dbAppUser.hadNonfatalCrash) {
-                                updateUser.hadNonfatalCrash = "true";
-                            }
-                            updateUser.hadAnyNonfatalCrash = report.ts;
+                        updateUser.hadAnyFatalCrash = report.ts;
+                    }
+                    else if (report.nonfatal) {
+                        if (!dbAppUser.hadNonfatalCrash) {
+                            updateUser.hadNonfatalCrash = "true";
                         }
-                        let updateData = { $inc: {} };
-                        updateData.$inc["data.crashes"] = 1;
-                        if (Object.keys(updateUser).length) {
-                            updateData.$set = updateUser;
-                        }
-                        ob.updates.push(updateData);
+                        updateUser.hadAnyNonfatalCrash = report.ts;
+                    }
+                    let updateData = { $inc: {} };
+                    updateData.$inc["data.crashes"] = 1;
+                    if (Object.keys(updateUser).length) {
+                        updateData.$set = updateUser;
+                    }
+                    ob.updates.push(updateData);
 
-                        var set = {
-                            group: hash,
-                            uid: report.uid,
-                            last: report.ts,
-                        };
-                        if (dbAppUser.sc) {
-                            set.sessions = dbAppUser.sc;
-                        }
+                    var set = {
+                        group: hash,
+                        uid: report.uid,
+                        last: report.ts,
+                    };
+                    if (dbAppUser.sc) {
+                        set.sessions = dbAppUser.sc;
                     }
                     common.db.collection('app_crashusers' + params.app_id).findAndModify({group: hash, 'uid': report.uid}, {}, {$set: set, $inc: {reports: 1}}, {upsert: true, new: false}, function(err, user) {
                         user = user && user.ok ? user.value : null;
