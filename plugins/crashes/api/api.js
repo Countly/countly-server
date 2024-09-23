@@ -483,7 +483,7 @@ plugins.setConfigs("crashes", {
                     }
                     common.db.collection('app_crashusers' + params.app_id).findAndModify({group: hash, 'uid': report.uid}, {}, {$set: set, $inc: {reports: 1}}, {upsert: true, new: false}, function(err, user) {
                         user = user && user.ok ? user.value : null;
-                        if (user && user.sessions && dbAppUser && dbAppUser.sc && dbAppUser.sc > user.sessions) {
+                        if (user && user.sessions && dbAppUser.sc && dbAppUser.sc > user.sessions) {
                             report.session = dbAppUser.sc - user.sessions;
                         }
                         common.db.collection('app_crashes' + params.app_id).insert(report, function(crashErr, res) {
