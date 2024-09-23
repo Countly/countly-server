@@ -17,10 +17,10 @@ if (dry_run) {
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     try {
-        if(!APP_ID){
+        if (!APP_ID) {
             console.log("Please set APP_ID");
         }
-        else{
+        else {
             console.log('Deleting APM events for app_id: ' + APP_ID);
             await Promise.all([
                 countlyDb.collection("apm").remove({app_id: APP_ID}),
