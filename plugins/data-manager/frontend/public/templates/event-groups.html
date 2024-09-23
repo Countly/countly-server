@@ -51,6 +51,10 @@
                 <cly-diff-helper v-if="canUserUpdate || canUserDelete" class="action-bar" :diff="scope.diff" @discard="scope.unpatch()" :isModal=true>
                     <template v-slot:main>
                         <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
+                            <span class="selected-count-blue bu-pl-1 text-medium">
+                                <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{scope.diff.length}}</span><span class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{i18n('common.selected')}}</span>
+                            </span>
+                            <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
                             <cly-more-options size="small" :text=" i18n('data-manager.change-visibility') " type="default" icon="cly-io cly-io-eye bu-mr-2" :widthSameAsTrigger="true" :showArrows=true @command="handleChangeVisibility($event, scope.diff)">
                                 <el-dropdown-item command="visible"><i class="cly-io cly-io-eye"></i>{{ i18n('data-manager.visible') }}</el-dropdown-item>
                                 <el-dropdown-item command="hidden"><i class="cly-io cly-io-eye-off"></i>{{ i18n('data-manager.hidden') }}</el-dropdown-item>

@@ -69,7 +69,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     }
 
     async function getDrillCollections(app_id) {
-        var collections = [];
+        var collections = ["drill_events"];
         try {
             var events = await countlyDb.collection("events").findOne({_id: common.db.ObjectID(app_id)});
             var list = ["[CLY]_session", "[CLY]_crash", "[CLY]_view", "[CLY]_action", "[CLY]_push_action", "[CLY]_push_sent", "[CLY]_star_rating", "[CLY]_nps", "[CLY]_survey", "[CLY]_apm_network", "[CLY]_apm_device", "[CLY]_consent"];
@@ -97,7 +97,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         for (let i = 0; i < collections.length; i++) {
             const collection = collections[i].collectionName;
             try {
-                const events = await drillDb.collection(collection).find({uid: old_uid}, {uid: 1, _id: 0}).limit(1).toArray();
+                var query = {uid: old_uid};
+                if (collection === "drill_events") {
+                    query = {uid: old_uid, 'a': app._id + ""};
+                }
+                const events = await drillDb.collection(collection).find(query, {uid: 1, _id: 0}).limit(1).toArray();
                 if (!events || !events.length) {
                     continue;
                 }
@@ -105,7 +109,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     console.log("Found at least one event with old uid ", old_uid, "in collection ", collection, "for app ", app.name, "updating to new uid", new_uid);
                     try {
                         if (!DRY_RUN) {
-                            await drillDb.collection(collection).update({uid: old_uid}, {'$set': {uid: new_uid}}, {multi: true});
+                            await drillDb.collection(collection).update(query, {'$set': {uid: new_uid}}, {multi: true});
                         }
                     }
                     catch (err) {
