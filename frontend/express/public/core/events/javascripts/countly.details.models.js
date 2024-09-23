@@ -449,12 +449,9 @@
             return res[context.state.selectedEventName].data;
         },
         getAllEventsList: function(eventsList, groupList) {
-            if (!eventsList) {
-                return [];
-            }
-            var map = eventsList.map || {};
             var allEvents = [];
             if (eventsList && eventsList.list) {
+                var map = eventsList.map || {};
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
                         var label;
@@ -1040,9 +1037,6 @@
                 context.commit("setChartLoading", value);
             },
             fetchRefreshAllEventsData: function(context) {
-                if (!context) {
-                    return;
-                }
                 var period = context.rootGetters["countlyCommon/period"];
                 return countlyAllEvents.service.fetchAllEventsData(context, period)
                     .then(function(res) {

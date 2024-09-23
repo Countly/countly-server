@@ -622,7 +622,7 @@ taskmanager.checkIfRunning = function(options, callback) {
     if (options.request) {
         query.request = options.request;
     }
-    if (!query.request && options && options.params && options.params.qstring) {
+    if (!query.request && options.params && options.params.qstring) {
         var json = options.params.qstring || {};
         json = JSON.parse(JSON.stringify(json));
         //make sure not to have same task already running
