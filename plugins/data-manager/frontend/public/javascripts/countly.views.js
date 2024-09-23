@@ -782,6 +782,7 @@
                     var delKey = row.key || row.e || row.name;
                     events.push(delKey);
                 });
+                this.unpatchSelectedEvents();
                 this.$store.dispatch('countlyDataManager/deleteEvents', events).then(function() {
                     countlyEvent.refreshEvents();
                 });
