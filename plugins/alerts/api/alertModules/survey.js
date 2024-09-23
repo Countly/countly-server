@@ -16,13 +16,9 @@ module.exports.triggerByEvent = triggerByEvent;
  */
 async function triggerByEvent(payload) {
     const allEvents = payload?.events;
-    const appKey = payload?.app_key;
-    if (!Array.isArray(allEvents) || !appKey) {
-        return;
-    }
+    const app = payload?.app;
 
-    const app = await common.db.collection("apps").findOne({ key: appKey });
-    if (!app) {
+    if (!Array.isArray(allEvents) || !app) {
         return;
     }
 
@@ -33,22 +29,28 @@ async function triggerByEvent(payload) {
     );
 
     for (let event of validSurveyEvents) {
-        const alert = await common.db.collection("alerts").findOne({
+        const alerts = await common.readBatcher.getMany("alerts", {
             selectedApps: app._id.toString(),
             alertDataSubType2: event.segmentation.widget_id,
             alertDataType: "survey",
             alertDataSubType: commonLib.TRIGGERED_BY_EVENT.survey,
         });
-        if (!alert) {
+
+        if (!alerts || !alerts.length) {
             continue;
         }
 
-        await commonLib.trigger({ alert, app, date: new Date }, log);
+        // trigger all alerts
+        await Promise.all(alerts.map(alert => commonLib.trigger({
+            alert,
+            app,
+            date: new Date,
+        }, log)));
     }
 }
 
 module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
-    const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
+    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
         return done();
@@ -61,7 +63,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
-            await commonLib.trigger({ alert, app, metricValue, date });
+            await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
     else {
@@ -77,7 +79,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
             : change <= -compareValue;
 
         if (shouldTrigger) {
-            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
+            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
 
