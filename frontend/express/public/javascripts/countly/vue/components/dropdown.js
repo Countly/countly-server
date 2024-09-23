@@ -529,7 +529,7 @@
         template: '<cly-dropdown class="cly-vue-more-options" ref="dropdown" :placement="placement" :disabled="disabled" v-on="$listeners">\
                         <template v-slot:trigger>\
                             <slot name="trigger">\
-                                <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type">\
+                                <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type" :disabled="disabledButton">\
                                 <span :data-test-id="testId + \'-more-option-text\'" v-if="text">{{text}}</span>\
                                 </el-button>\
                             </slot>\
@@ -559,6 +559,10 @@
             disabled: {
                 type: Boolean,
                 default: false
+            },
+            disabledButton: {
+                type: Boolean,
+                default: false,
             },
             placement: {
                 type: String,
