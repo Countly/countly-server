@@ -1,4 +1,4 @@
-/* global countlyVue, countlyGlobal, countlyAllEvents, countlyCommon, CountlyHelpers, CV,app*/
+/* global countlyVue, countlyGlobal, countlyAllEvents, countlyDrillMeta, countlyCommon, CountlyHelpers, CV,app */
 (function() {
     var EventsTable = countlyVue.views.create({
         template: CV.T("/core/events/templates/eventsTable.html"),
@@ -145,16 +145,119 @@
         }
     });
 
+    var drillEventDrawer = countlyVue.views.create({
+        template: CV.T("/core/events/templates/drillEventDrawer.html"),
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            controls: {
+                type: Object,
+                required: true
+            }
+        },
+        data: function() {
+            return {
+                segmentValues: [],
+                availableSegments: [],
+                omittedSegments: {
+                    label: CV.i18n("events.all.omitted.segments"),
+                    options: [],
+                }
+            };
+        },
+        computed: {
+            allEvents: function() {
+                return this.$store.getters["countlyAllEvents/allEventsList"];
+            }
+        },
+        methods: {
+            onSubmit: function(doc) {
+                let URLparams = {
+                    event: doc.selectedEventName,
+                    period: doc.period,
+                    dbFilter: {},
+                    byVal: [],
+                    executed: false
+                };
+                if (doc.selectedSegment !== "segment") {
+                    URLparams.dbFilter[`sg.${doc.selectedSegment}`] = { "$in": [] };
+                    if (doc.selectedSegmentValues.length > 0) {
+                        URLparams.dbFilter[`sg.${doc.selectedSegment}`].$in = doc.selectedSegmentValues;
+                    }
+                }
+                //Go to drill page
+                app.navigate("#/drill/" + JSON.stringify(URLparams), true);
+            },
+            onCopy: function() {
+                this.fetchSegments();
+                this.fetchSegmentValues();
+            },
+            onClose: function() {
+            },
+            onEventChange: function() {
+                this.$refs.drawerScope.editedObject.selectedSegment = "segment";
+                this.fetchSegments();
+            },
+            fetchSegments: function() {
+                var self = this;
+
+                this.segmentValues = [];
+                this.$refs.drawerScope.editedObject.selectedSegmentValues = [];
+
+                var { selectedEventName, period, selectedSegment } = this.$refs.drawerScope.editedObject;
+                countlyAllEvents.service.fetchSelectedEventsData(null, period, selectedEventName, selectedSegment)
+                    .then(function(data) {
+                        const segments = (data && data.meta && data.meta.segments) ? data.meta.segments.slice() : [];
+                        segments.sort();
+                        segments.unshift("segment");
+                        self.availableSegments = segments.map(function(item) {
+                            return {
+                                label: item === "segment" ? CV.i18n("events.all.any.segmentation") : item,
+                                value: item
+                            };
+                        });
+                    });
+                countlyAllEvents.service.fetchAllEventsData(null, period)
+                    .then(function(data) {
+                        const _omittedSegments = countlyAllEvents.helpers.getOmittedSegments(this.selectedEventName, data) || [];
+                        self.omittedSegments.options = _omittedSegments.length === 0 ? [] : _omittedSegments.map(function(item) {
+                            return {
+                                label: item,
+                                value: item
+                            };
+                        });
+                    });
+            },
+            fetchSegmentValues: function() {
+                this.$refs.drawerScope.editedObject.selectedSegmentValues = [];
+                var { selectedEventName, selectedSegment } = this.$refs.drawerScope.editedObject;
+                if (selectedSegment !== "segment") {
+                    var self = this;
+                    var drillMeta = countlyDrillMeta.getContext(selectedEventName);
+                    drillMeta.getBigListMetaData('sg.' + selectedSegment, '', function(filters) {
+                        self.segmentValues = filters.map(function(item) {
+                            return {
+                                label: item,
+                                value: item
+                            };
+                        });
+                    });
+                }
+            }
+        }
+    });
+
     var AllEventsView = countlyVue.views.create({
         template: CV.T("/core/events/templates/allEvents.html"),
         components: {
             "detail-tables": EventsTable,
+            "drill-event-drawer": drillEventDrawer
         },
         mixins: [
             countlyVue.container.dataMixin({
                 'externalLinks': '/analytics/events/links'
             }),
-            countlyVue.mixins.commonFormatters
+            countlyVue.mixins.commonFormatters,
+            countlyVue.mixins.hasDrawers("drill-event")
         ],
         methods: {
             dateChanged: function() {
@@ -167,6 +270,15 @@
                     return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=').replace(/&amp;/g, '&');
                 }
                 return str;
+            },
+            openDrillEventDrawer: function() {
+                let args = {
+                    "selectedEventName": this.selectedEventName,
+                    "selectedSegment": this.currentActiveSegmentation,
+                    "selectedSegmentValues": [],
+                    "period": countlyCommon.getPeriod(),
+                };
+                this.openDrawer("drill-event", args);
             }
         },
         computed: {
@@ -324,6 +436,9 @@
             },
             isChartLoading: function() {
                 return this.$store.getters["countlyAllEvents/isChartLoading"];
+            },
+            isDrillEnabled: function() {
+                return CountlyHelpers.isPluginEnabled("drill");
             }
 
         },
