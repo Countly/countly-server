@@ -370,10 +370,18 @@ plugins.connectToAllDatabases().then(function() {
                 }
 
                 const form = new formidable.IncomingForm(formidableOptions);
-                req.body = [];
-                req.on('data', (data) => {
-                    req.body.push(data);
-                });
+                if (/crash_symbols\/(add_symbol|upload_symbol)/.test(req.url)) {
+                    req.body = [];
+                    req.on('data', (data) => {
+                        req.body.push(data);
+                    });
+                }
+                else {
+                    req.body = '';
+                    req.on('data', (data) => {
+                        req.body += data;
+                    });
+                }
 
                 let multiFormData = false;
                 // Check if we have 'multipart/form-data'
