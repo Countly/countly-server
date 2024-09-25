@@ -1,3 +1,16 @@
+## Version 24.05.13
+Fixes:
+- [alerts] Fixed bugs related to NPS alerts
+- [crash] Reworked symbol files upload to support larger symbol files
+- [push] Fixed bug that would surface when sending Array or Object related payload
+
+Enterprise fixes:
+- [ab-testing] Slight improvements to the UI and UX
+- [remote-config] Slight improvements to the UI and UX
+
+Enterprise Features:
+- [ab-testing] Improved UI for selecting AB test expiration
+
 ## Version 24.05.12
 Fixes:
 - [dashboards] Fixes for dashboards grid
