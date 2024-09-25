@@ -13,7 +13,7 @@ var PROCESS = [
     /^drill_events\.*/
 ];
 
-/* global Mongo, print, printjson */
+/* global Mongo, print*/
 
 var conn = new Mongo();
 
