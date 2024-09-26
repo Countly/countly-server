@@ -139,20 +139,6 @@ class FCM extends Splitter {
             const one = Math.ceil(bytes / pushes.length);
             let content = this.template(pushes[0].m).compile(pushes[0]);
 
-            // new fcm api doesn't allow objects or arrays inside "data" property
-            if (content.data && typeof content.data === "object") {
-                for (let prop in content.data) {
-                    switch (typeof content.data[prop]) {
-                    case "object":
-                        content.data[prop] = JSON.stringify(content.data[prop]);
-                        break;
-                    case "number":
-                        content.data[prop] = String(content.data[prop]);
-                        break;
-                    }
-                }
-            }
-
             let printBody = false;
             const oks = [];
             const errors = {};
@@ -171,6 +157,20 @@ class FCM extends Splitter {
                 return errors[err];
             };
             if (!this.legacyApi) {
+                // new fcm api doesn't allow objects or arrays inside "data" property
+                if (content.data && typeof content.data === "object") {
+                    for (let prop in content.data) {
+                        switch (typeof content.data[prop]) {
+                        case "object":
+                            content.data[prop] = JSON.stringify(content.data[prop]);
+                            break;
+                        case "number":
+                            content.data[prop] = String(content.data[prop]);
+                            break;
+                        }
+                    }
+                }
+
                 const tokens = pushes.map(p => p.t);
                 const messages = tokens.map(token => ({
                     token,
