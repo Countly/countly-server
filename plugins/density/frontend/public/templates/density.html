@@ -46,10 +46,7 @@
             </vue-scroll>
         </div>
 		<h5 class="bu-pb-4" data-test-id="density-distribution-label"> {{i18n('density.distribution')}} </h5>
-		<div v-if="densityVersions.length < 4 && !isLoading" class="technology-density-wrapper__versions-empty-card">
-			<div class="text-medium" data-test-id="density-distribution-no-data-label">{{i18n('common.table.no-data')}}</div>
-		</div>
-		<div v-else-if="densityVersions.length === 0 && isLoading">
+		<div v-if="densityVersions.length === 0 && isLoading">
 			<div style="height: 200px;" v-loading="isLoading"></div>
 		</div>
         <div v-else v-loading="isLoading" class="technology-density-wrapper__versions">
@@ -64,9 +61,6 @@
 							:scroll-ops="breakdownScrollOps" 
 							v-for="(item, idx) in densityVersions">
 						</cly-metric-breakdown>
-						<div v-if="densityItems.length < 4 && !isLoading" class="technology-density-wrapper__empty-card">
-                            <div class="text-medium">{{i18n('common.table.no-data')}}</div>
-                        </div>
 					</cly-metric-cards>
             </vue-scroll>
         </div>
