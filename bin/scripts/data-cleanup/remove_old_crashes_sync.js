@@ -82,6 +82,7 @@ Promise.all(
                         await sleep(SLEEP);
                         //deleting from old collection
                         res = await drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + app._id).digest('hex')).deleteMany({ ts: { $lt: lastUnixTimestamp * 1000 } });
+                        console.log("", res, "drill crashes deleted");
                         //deleting from amerged drill collection
                         res = await drillDb.collection("drill_events").deleteMany({"a": app._id + "", "e": "[CLY]_crash", ts: { $lt: lastUnixTimestamp * 1000 } });
                         console.log("", res, "drill crashes deleted");
