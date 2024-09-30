@@ -335,7 +335,7 @@ module.exports = function(grunt) {
                 replacement: '../images'
             }
         ];
-    
+
         cssFiles.forEach(function(file) {
             var content = grunt.file.read(file.filepath);
             var newContent = content.replace(/\/images/g, file.replacement);
