@@ -28,6 +28,7 @@
  * @property {string}   name     - name identifier
  * @property {ObjectId} _id      - document id
  * @property {string}   timezone - timezone string (e.g. Europe/Istanbul)
+ * @property {any}      plugins
  */
 
 /**

@@ -157,10 +157,21 @@ function syncCMSDataToDB(params) {
 }
 
 cmsApi.saveEntries = function(params) {
+
+    var entries = [];
+    try {
+        entries = JSON.parse(params.qstring.entries);
+    }
+    catch (ex) {
+        log.e(params.qstring.entries);
+        common.returnMessage(params, 400, 'Invalid entries parameter');
+        return;
+    }
+
     transformAndStoreData(
         Object.assign({dataTransformed: true}, params),
         null,
-        JSON.parse(params.qstring.entries),
+        entries,
         function(err1) {
             if (err1) {
                 log.e('An error occured while storing entries in DB: ' + err1);

@@ -8,7 +8,7 @@
       <template v-slot="formScope">
         <cly-form-step id="conditions-dialog">
           <div class="cly-vue-drawer-step__section">
-            <cly-form-field v-slot="validation" name="condition-name" :subheading="i18n('placeholder.condition-name')" :label="i18n('remote-config.condition-name')" rules="required" rules="required|regex:^[a-zA-Z0-9 ]+$">
+            <cly-form-field v-slot="validation" name="condition-name" :subheading="i18n('placeholder.condition-name')" :label="i18n('remote-config.condition-name')" rules="required|regex:^[a-zA-Z0-9 ]+$">
               <el-input
                 v-model="conditionDialog.condition_name"
                 :placeholder="i18n('remote-config.condition.name.placeholder')">
