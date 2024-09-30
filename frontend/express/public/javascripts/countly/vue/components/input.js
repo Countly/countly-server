@@ -66,11 +66,11 @@
                         '<div @click.stop="open" :data-test-id="testId" class="preview">\n' +
                             '<div>\n' +
                                 '<div class="drop bu-mt-auto" :data-test-id="testId + \'-cly-color-picker-img-wrapper\'" :style="previewStyle"></div>\n' +
-                                '<img src="/images/icons/blob.svg"/>\n' +
+                                '<img src="images/icons/blob.svg"/>\n' +
                             '</div>\n' +
                             '<input class="color-input" v-model="localValue" type="text"/>\n' +
-                            '<img height="12px" width="10px" class="bu-pt-2" v-if="!isOpened" src="/images/icons/arrow_drop_down_.svg"/>\n' +
-                            '<img height="12px" width="10px" class="bu-pt-2" v-if="isOpened" src="/images/icons/arrow_drop_up_.svg"/>\n' +
+                            '<img height="12px" width="10px" class="bu-pt-2" v-if="!isOpened" src="images/icons/arrow_drop_down_.svg"/>\n' +
+                            '<img height="12px" width="10px" class="bu-pt-2" v-if="isOpened" src="images/icons/arrow_drop_up_.svg"/>\n' +
                         '</div>\n' +
                         '<div class="picker-body" v-if="isOpened" v-click-outside="close" :class="alignment">\n' +
                             '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
@@ -321,6 +321,7 @@
     }));
 
     Vue.component("cly-checklistbox", AbstractListBox.extend({
+        mixins: [SearchableOptionsMixin],
         props: {
             value: {
                 type: Array,
@@ -466,6 +467,9 @@
                     this.innerValue = this.value; // triggers innerValue.set
                     this.$emit('update:options', this.computeSortedOptions());
                 }
+            },
+            searchedOptions: function() {
+                return this.getMatching(this.sortedOptions);
             }
         },
         template: '<div\
@@ -477,22 +481,34 @@
                     @mouseleave="handleBlur"\
                     @focus="handleHover"\
                     @blur="handleBlur">\
+                    <div class="cly-vue-listbox__header bu-p-3" v-if="searchable">\
+                        <form>\
+                            <el-input\
+                                :disabled="disabled"\
+                                test-id="cly-listbox-search-input"\
+                                autocomplete="off"\
+                                v-model="searchQuery"\
+                                :placeholder="searchPlaceholder">\
+                                <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                            </el-input>\
+                        </form>\
+                    </div>\
                     <vue-scroll\
                         :style="vueScrollStyle"\
-                        v-if="options.length > 0"\
+                        v-if="searchedOptions.length > 0"\
                         :ops="scrollCfg"\>\
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <el-checkbox-group\
                                 v-model="innerValue">\
                                 <draggable \
                                     handle=".drag-handler"\
-                                    v-model="sortedOptions"\
+                                    v-model="searchedOptions"\
                                     :disabled="!sortable">\
                                 <div\
                                     class="text-medium cly-vue-listbox__item"\
                                     :style="[option.disabled ? {\'pointer-events\' : \'none\'} : {\'pointer-events\': \'all\'}]"\
                                     :key="option.value"\
-                                    v-for="option in sortedOptions">\
+                                    v-for="option in searchedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
                                     <el-checkbox :test-id="testId + \'-\' + (option.label ? option.label.replaceAll(\' \', \'-\').toLowerCase() : \'el-checkbox\')" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\

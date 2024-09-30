@@ -1,3 +1,5 @@
+/** @typedef {import("mongodb").ObjectId} ObjectId */
+
 /**
  * Alert document object
  * @typedef  {Object}        Alert
@@ -26,16 +28,27 @@
  * @property {string}   name     - name identifier
  * @property {ObjectId} _id      - document id
  * @property {string}   timezone - timezone string (e.g. Europe/Istanbul)
+ * @property {any}      plugins
  */
 
 /**
  * Paired app&alert and the metrics
- * @typedef  {Object} MatchedResult
- * @property {App}    app               - matched app object
- * @property {Alert}  alert             - matched alert object
- * @property {Date}   date              - alert trigger date
- * @property {number} metricValue       - metric value that matched the alert condition
- * @property {number} metricValueBefore - value that compared with metricValue
+ * @typedef  {Object}  MatchedResult
+ * @property {App}     app               - matched app object
+ * @property {Alert}   alert             - matched alert object
+ * @property {Date}    date              - alert trigger date
+ * @property {number=} metricValue       - metric value that matched the alert condition
+ * @property {number=} metricValueBefore - value that compared with metricValue
+ * @property {any=}    extra             - extra parameters to pass to e-mail builder
+ */
+
+/**
+ * Individual components of a date. modified version of the moment.prototype.toObject()
+ * @typedef  {Object} DateComponents
+ * @property {number} years
+ * @property {number} months
+ * @property {number} days
+ * @property {number} hours
  */
 
 const common = require('../../../../api/utils/common.js');
@@ -85,14 +98,11 @@ module.exports = {
  * Returns a date's components based on timezone.
  * @param   {Date}   date     - date to get its components
  * @param   {string} timezone - timezone string
- * @returns {object}          - { years, months, days, hours }
+ * @returns {DateComponents}  - { years, months, days, hours }
  */
 function getDateComponents(date, timezone) {
-    const dateComponents = moment(date).tz(timezone).toObject();
-    dateComponents.months += 1; // months are zero indexed
-    dateComponents.days = dateComponents.date;
-    delete dateComponents.date;
-    return dateComponents;
+    const { years, months, date: days, hours } = moment(date).tz(timezone).toObject();
+    return { years, months: months + 1, hours, days };
 }
 
 /**
@@ -126,6 +136,7 @@ async function determineAudience(alert) {
         }
         return getUserEmailsBasedOnGroups(alert.allGroups);
     }
+    return [];
 }
 /**
  * Retrieves user emails based on group IDs.
@@ -150,7 +161,7 @@ function getUserEmailsBasedOnGroups(groupIds) {
                     members.forEach((member) => {
                         memberEmails.push(member.email);
                     });
-                    resolve();
+                    resolve(true);
                 }
             });
         });
@@ -166,7 +177,7 @@ function getUserEmailsBasedOnGroups(groupIds) {
  * @returns {Promise<string>}        - compiled e-mail string
  */
 async function compileEmail(result) {
-    const { alert, app, metricValue, metricValueBefore } = result;
+    const { alert, app, metricValue, metricValueBefore, extra } = result;
     const host = await new Promise((res, rej) => mail.lookup((err, _host) => err ? rej(err) : res(_host)));
     const metrics = [];
     if (metricValue) {
@@ -179,6 +190,7 @@ async function compileEmail(result) {
         title: `Countly Alert`,
         alertName: alert.alertName,
         alertDataType: alert.alertDataType,
+        alertDataSubType: alert.alertDataSubType,
         subTitle: `Uh oh! It seems there's been some activity related to ` + alert.alertDataSubType + ` in the `,
         host,
         compareDescribe: alert.compareDescribe,
@@ -186,7 +198,8 @@ async function compileEmail(result) {
             id: app._id.toString(),
             name: app.name,
             data: metrics
-        }]
+        }],
+        extra,
     });
 }
 /**
@@ -234,7 +247,7 @@ async function trigger(result, log) {
                     email,
                     subject,
                     emailBody,
-                    err => err ? rej(err) : res()
+                    err => err ? rej(err) : res(true)
                 )
             );
             // increase counter by date and email

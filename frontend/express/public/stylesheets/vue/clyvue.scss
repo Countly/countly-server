@@ -65,6 +65,18 @@
         border-radius: 12px;
         min-height: 48px;
         font-weight: 400;
+
+        // .cly-vue-notification__alert-box__close-icon
+        &__close-icon {
+            cursor: pointer;
+            color: #81868D;
+
+            // .cly-vue-notification__alert-box__close-icon:hover
+            &:hover {
+                color: #333C48;
+            }
+        }
+
         &--full {
             width: 100%;
             font-size: 14px;
@@ -2062,6 +2074,40 @@
                 + .cly-vue-form-step__auto-group {
                     margin-top: 20px; //12px 
                 }
+            }
+        }
+        &-checklistbox {
+            &-field {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                &__item {
+                    max-width: 300px;
+                    border-radius: 4px;
+                    border: 1px solid #E2E4E8;
+                    background: #FFF;
+                    display: flex;
+                    padding: 3.5px 6px 3.5px 8px;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 4px;
+                }
+            }
+            .cly-vue-listbox__header {
+                padding: 8px !important;
+                &::after {
+                    width: 0 !important;
+                }
+                .el-input__inner {
+                    background-color: #F6F6F6 !important;
+                }
+            }
+            .cly-vue-listbox__item {
+                padding: 6px !important;
+                margin-bottom: 4px !important;
+            }
+            .cly-vue-listbox label.el-checkbox {
+                margin-left: 0 !important;
             }
         }
     }

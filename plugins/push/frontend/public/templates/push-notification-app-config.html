@@ -52,9 +52,6 @@
             <h3>{{i18n('push-notification.android-settings')}} </h3>
             <el-button type="danger" @click="onDeleteKey(PlatformEnum.ANDROID)" :disabled="isKeyEmpty(PlatformEnum.ANDROID)">{{i18n('push-notification.delete')}}</el-button>
         </div>     
-        <cly-inline-form-field :label="i18n('push-notification.firebase-key-legacy')">
-            <el-input :value="viewModel[PlatformEnum.ANDROID].firebaseKey" @input="onInput('firebaseKey',$event,PlatformEnum.ANDROID)" autocomplete="off"></el-input>
-        </cly-inline-form-field>
 
         <cly-inline-form-field :label="i18n('push-notification.firebase-service-account-json')">
             <div class="bu-is-flex bu-is-flex-direction-column">

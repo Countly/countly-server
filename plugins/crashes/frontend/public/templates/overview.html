@@ -43,14 +43,35 @@
                         </template>
                     </template>
                     <template v-slot:bottomline="scope">
-                        <div class="crashes-action-bar" v-if="selectedCrashgroups.length > 0 && (canUserDelete || canUserUpdate)">
-                            <el-button v-if="canUserUpdate"  @click="setSelectedAs('unresolved')" icon="fas fa-circle crash-icon-color-orange"> {{i18n("crashes.action-unresolved")}}</el-button>
-                            <el-button v-if="canUserDelete" @click="setSelectedAs('delete')" icon="el-icon-delete">{{i18n("crashes.action-delete")}}</el-button>
-                            <el-button v-if="canUserUpdate" @click="setSelectedAs('hide')" icon="fas fa-eye-slash crash-icon-color-gray"> {{i18n("crashes.action-hide")}}</el-button>
-                            <el-button v-if="canUserUpdate" @click="setSelectedAs('show')" icon="fas fa-eye crash-icon-color-gray"> {{i18n("crashes.action-view")}}</el-button>
-                            <el-button v-if="canUserUpdate" @click="setSelectedAs('resolved')" icon="fas fa-circle crash-icon-color-green"> {{i18n("crashes.action-resolved")}}</el-button>
-                            <el-button v-if="canUserUpdate" @click="setSelectedAs('resolving')" icon="fas fa-circle crash-icon-color-blue"> {{i18n("crashes.action-resolving")}}</el-button>
-                        </div>
+                        <cly-diff-helper v-if="(canUserDelete || canUserUpdate)" :diff="selectedCrashgroups" @discard="scope.unpatch()" :isModal=true>
+                            <template v-slot:main>
+                                <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
+                                    <span class="selected-count-blue bu-pl-1 text-medium">
+                                        <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{selectedCrashgroups.length}}</span><span class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{i18n('common.selected')}}</span>
+                                    </span>
+                                    <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
+                                    <cly-more-options v-if="canUserUpdate" class="bu-mr-3" size="small" text="Change Status" type="default" icon="cly-io cly-io-refresh bu-mr-2" :showArrows=true @command="setSelectedAs($event)" >
+                                        <el-dropdown-item command="resolved" icon="cly-io cly-io-check-circle">{{ i18n('crashes.action-resolved') }}</el-dropdown-item>
+                                        <el-dropdown-item command="resolving" icon="cly-io cly-io-clock">{{ i18n('crashes.action-resolving') }}</el-dropdown-item>
+                                        <el-dropdown-item command="unresolved" icon="cly-io cly-io-x-circle">{{ i18n('crashes.action-unresolved') }}</el-dropdown-item>
+                                    </cly-more-options>
+                                    <cly-more-options v-if="canUserUpdate" size="small" :text=" i18n('data-manager.change-visibility') " :widthSameAsTrigger="true" type="default" icon="cly-io cly-io-eye bu-mr-2" :showArrows=true @command="setSelectedAs($event)">
+                                        <el-dropdown-item command="show"><i class="cly-io cly-io-eye"></i>{{ i18n('crashes.action-view') }}</el-dropdown-item>
+                                        <el-dropdown-item command="hide"><i class="cly-io cly-io-eye-off"></i>{{ i18n('crashes.action-hide') }}</el-dropdown-item>
+                                    </cly-more-options>
+                                    <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
+                                    <el-button v-if="canUserDelete" class="bu-mr-3" size="small" type="default" @click="setSelectedAs('delete')">
+                                        <i class="cly-io-16 cly-io cly-io-trash" style="color:red"></i>
+                                        <span class="ml-1" style="color: red">
+                                            {{ i18n('crashes.action-delete') }}
+                                        </span>
+                                    </el-button>
+                                    <el-button class="x-button" @click="unpatchSelectedGroups">
+                                        <i class="cly-io-16 cly-io cly-io-x color-cool-gray-50"></i>
+                                    </el-button>
+                                </div>
+                            </template>
+                        </cly-diff-helper>
                     </template>
                 </cly-datatable-n>
             </cly-main>

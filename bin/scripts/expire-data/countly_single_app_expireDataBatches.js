@@ -39,7 +39,6 @@ var timeout = 500; //timeout in miliseconds between deletion. (One second  ==== 
 
 
 var async = require('async'),
-    crypto = require('crypto'),
     Promise = require("bluebird"),
     plugins = require('../../../plugins/pluginManager.js');
 
@@ -109,6 +108,9 @@ function eventIterator(fr, done) {
     console.log('Processing range: ' + JSON.stringify({"ts": {"$gte": fr.start, "$lt": fr.end}}) + ' for ' + fr.collection);
     var query = {};
     query["ts"] = {"$gte": fr.start, "$lt": fr.end};
+    if (collection === 'drill_events') {
+        query["a"] = APP_ID;
+    }
     if (fr.query) {
         for (var key in fr.query) {
             query[key] = fr.query.key;
@@ -171,32 +173,84 @@ function prepareIterationList(collections, seconds) {
     return listed;
 
 }
-function processDrillCollections(db, drill_db, callback) {
-    if (process && process.drill_events) {
-        var collections = [];
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_session" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_apm_device" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_apm_network" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_nps" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_survey" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_push_action" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_push_sent" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + APP_ID).digest('hex')});
-        db.collection("events").findOne({'_id': db.ObjectID(APP_ID)}, {list: 1}, function(err, eventData) {
-            if (eventData && eventData.list) {
-                for (var i = 0; i < eventData.list.length; i++) {
-                    collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update(eventData.list[i] + APP_ID).digest('hex')});
+
+function processDrillCollection(collection, seconds, callback) {
+    var listed = [];
+
+    if (start === 0) {
+        getMinTs(function(err, minTs) {
+            if (err) {
+                console.log("ERROR: Could not fetch min ts for collection " + collection.collection);
+                callback(err);
+            }
+            else {
+                console.log("Min ts for collection " + collection.collection + ": " + minTs);
+                generateIterationList(minTs);
+                processCollection();
+            }
+        });
+    }
+    else {
+        generateIterationList(start);
+        processCollection();
+    }
+
+    function getMinTs(cb) {
+        collection.db.collection(collection.collection).findOne({}, { sort: { ts: 1 }, projection: { ts: 1 } }, function(err, doc) {
+            if (err) {
+                return callback(err);
+            }
+            if (doc && doc.ts) {
+                cb(null, doc.ts);
+            }
+            else {
+                cb(null, end);
+            }
+        });
+    }
+
+    function generateIterationList(z) {
+        z = (start === 0 && z) ? z : start;
+        if (timeSpan === 0 && z === 0) {
+            listed.push({"collection": collection.collection, "db": collection.db, "start": 0, "end": end, "query": {"ts": {"$lt": end}}});
+        }
+        else if (timeSpan === 0) {
+            listed.push({"collection": collection.collection, "db": collection.db, "start": z, "end": end, "query": {"ts": {"$gte": z, "$lt": end}}});
+        }
+        else {
+            if (seconds) {
+                z = Math.floor(z / 1000);
+                for (; z <= Math.floor(end / 1000); z += timeSpan) {
+                    listed.push({"collection": collection.collection, "db": collection.db, "start": z, "end": Math.min(z + timeSpan, end), "seconds": true});
                 }
             }
-            var iteratorList = prepareIterationList(collections);
-            async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
-                console.log('Drill collections processed');
-                callback();
-            });
+            else {
+                for (; z <= end; z += timeSpan * 1000) {
+                    listed.push({"collection": collection.collection, "db": collection.db, "start": z, "end": Math.min(z + timeSpan * 1000, end)});
+                }
+            }
+        }
+    }
+
+    function processCollection() {
+        async.eachLimit(listed, paralelCn, eventIterator, function(err) {
+            if (err) {
+                console.log("ERROR: Error while processing drill collection: " + collection.collection);
+                return callback(err);
+            }
+            console.log('Finished processing collection ' + collection.collection);
+            callback();
+        });
+    }
+}
+
+function processDrillCollections(drill_db, callback) {
+    if (process && process.drill_events) {
+        processDrillCollection({"collection": "drill_events", db: drill_db}, false, function(err) {
+            if (err) {
+                console.log("ERROR: Error while processing drill collection: drill_events");
+            }
+            callback(err);
         });
     }
     else {
@@ -212,7 +266,7 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
         db_drill.close();
     }
     else {
-        processDrillCollections(db, db_drill, function() {
+        processDrillCollections(db_drill, function() {
             var processCols = [];
             for (var key in process) {
                 if (key !== 'drill_events') {
@@ -224,15 +278,22 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                     }
                 }
             }
-            var iteratorList = prepareIterationList(processCols, true);
-            async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
-                if (errorCn > 0) {
-                    console.log("There were errors. Please recheck logs for those.");
-                }
-                console.log('finished');
+            if (processCols.length === 0) {
+                console.log("Finished");
                 db.close();
                 db_drill.close();
-            });
+            }
+            else {
+                var iteratorList = prepareIterationList(processCols, true);
+                async.eachLimit(iteratorList, paralelCn, eventIterator, function() {
+                    if (errorCn > 0) {
+                        console.log("There were errors. Please recheck logs for those.");
+                    }
+                    console.log('finished');
+                    db.close();
+                    db_drill.close();
+                });
+            }
         });
     }
 });

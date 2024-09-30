@@ -14,17 +14,25 @@ var query = {"ts": {"$gt": 1709762400000}}; //Change this query to set date rang
 var eventKey = "[CLY]_session"; //Write in your event key
 var appID = "6075f94b7e5e0d392902520c"; //Write in YOUR app ID
 
+var union_with_old_collection = false; //False if all sessions are stored in drill_events collection
+
 console.log("Running for:" + appID + " " + eventKey + " " + JSON.stringify(query));
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
 
     var pipeline = [];
-    pipeline.push({"$match": query});
+    var query2 = JSON.parse(JSON.stringify(query));
+    query2.e = eventKey;
+    query2.a = appID;
+    pipeline.push({"$match": query2});
+
+    if (union_with_old_collection) {
+        var collection = "drill_events" + crypto.createHash('sha1').update(eventKey + appID).digest('hex');
+        pipeline.push({"$unionWith": { "coll": collection, "pipeline": [{"$match": query}] }});
+    }
     pipeline.push({"$group": {"_id": null, "uid": {"$addToSet": "$uid"}}});
 
-    var collection = "drill_events" + crypto.createHash('sha1').update(eventKey + appID).digest('hex');
-
-    drillDb.collection(collection).aggregate(pipeline, function(err, res) {
+    drillDb.collection("drill_events").aggregate(pipeline, function(err, res) {
         if (err) {
             console.log(err);
             countlyDb.close();
@@ -66,6 +74,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         if (missingOnes.length > 0) {
                             console.log("Users missing in app_users collection: " + missingOnes.length);
                             console.log(JSON.stringify(missingOnes));
+                        }
+                        else {
+                            console.log("All users matched");
                         }
 
                         countlyDb.close();

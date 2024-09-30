@@ -384,7 +384,17 @@ function getPeriodObject(prmPeriod, bucket) {
 
     var period = prmPeriod || _period;
 
-    var excludeCurrentDay = period.excludeCurrentDay || false;
+    if (typeof period === 'string' && period.indexOf(",") !== -1) {
+        try {
+            period = JSON.parse(period);
+        }
+        catch (SyntaxError) {
+            console.log("period JSON parse failed");
+            period = "30days";
+        }
+    }
+
+    var excludeCurrentDay = period.exclude_current_day || false;
 
     if (period.period) {
         period = period.period;
@@ -394,16 +404,6 @@ function getPeriodObject(prmPeriod, bucket) {
 
     if (period.since) {
         period = [period.since, endTimestamp.clone().valueOf()];
-    }
-
-    if (period && typeof period === 'string' && period.indexOf(",") !== -1) {
-        try {
-            period = JSON.parse(period);
-        }
-        catch (SyntaxError) {
-            console.log("period JSON parse failed");
-            period = "30days";
-        }
     }
 
     if (Array.isArray(period)) {
@@ -1533,9 +1533,6 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
         periodObj = countlyCommon.periodObj;
     }
 
-    if (!rangeArray) {
-        return {"chartData": tableData};
-    }
     var periodMin = 0,
         periodMax = 0,
         dataObj = {},
@@ -1543,6 +1540,10 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
         propertyNames = underscore.pluck(dataProperties, "name"),
         propertyFunctions = underscore.pluck(dataProperties, "func"),
         propertyValue = 0;
+
+    if (!rangeArray) {
+        return {"chartData": tableData};
+    }
 
     if (!periodObj.isSpecialPeriod) {
         periodMin = periodObj.periodMin;

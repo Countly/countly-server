@@ -1,6 +1,9 @@
 <div v-bind:class="[componentId]">
 	<cly-header :title="i18n('views.title')" :tooltip="{description}">
 		<template v-slot:header-right>
+			<el-button v-if="isDrillEnabled" size="small" icon="cly-is cly-is-drill" type="default" @click="openDrillViewDrawer" class="bu-mr-2">
+				<span class="bu-ml-1">{{ i18n('events.all.drill') }}</span>
+			</el-button>
 			<cly-more-options test-id="analytics-views" v-if="topDropdown" size="small">
 				<el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
 					<!--<span :class="item.icon"></span>-->
@@ -199,10 +202,12 @@
 							<template slot-scope="scope">
 								<div :data-test-id="'datatable-analytics-views-' + col.value + '-' + scope.$index">
 									{{scope.row[col.value]}}</div>
+							</template>
 						</el-table-column>
 					</template>
 				</template>
 			</cly-datatable-n>
 		</cly-section>
 	</cly-main>
+	<drill-view-drawer :controls="drawers['drill-view']"></drill-view-drawer>
 </div>
