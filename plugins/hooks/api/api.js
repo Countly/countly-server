@@ -309,7 +309,11 @@ plugins.register("/i/hook/save", function(ob) {
                                 plugins.dispatch("/systemlogs", {
                                     params: params,
                                     action: "hook_updated",
-                                    data: { updated: result.value }
+                                    data: {
+                                        updatedHookID: result.value._id,
+                                        updatedBy: params.member._id,
+                                        updatedHookName: result.value.name
+                                    }
                                 });
                             }
                             else {
@@ -333,7 +337,11 @@ plugins.register("/i/hook/save", function(ob) {
                         plugins.dispatch("/systemlogs", {
                             params: params,
                             action: "hook_created",
-                            data: { created: hookConfig }
+                            data: {
+                                createdHookID: hookConfig._id,
+                                createdBy: params.member._id,
+                                createdHookName: hookConfig.name
+                            }
                         });
                         common.returnOutput(params, result.insertedIds[0]);
                     }
@@ -575,7 +583,10 @@ plugins.register("/i/hook/delete", function(ob) {
                         plugins.dispatch("/systemlogs", {
                             params: params,
                             action: "hook_deleted",
-                            data: { deletedHookID: hookID, requestedBy: params.member._id }
+                            data: {
+                                deletedHookID: hookID,
+                                requestedBy: params.member._id
+                            }
                         });
                         common.returnMessage(params, 200, "Deleted an hook");
                     }
