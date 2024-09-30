@@ -210,28 +210,36 @@ const FEATURE_NAME = 'populator';
 
     const saveEnvironment = function(ob) {
         const obParams = ob.params;
-        const users = JSON.parse(ob.params.qstring.users);
-        const setEnviromentInformationOnce = ob.params.qstring.setEnviromentInformationOnce;
-        if (!users || !users.length) {
-            common.returnMessage(obParams, 400, "Missing params: " + users);
-            return false;
-        }
-
-        const environmentId = common.crypto.createHash('sha1').update(users[0].appId + users[0].environmentName).digest('hex');
-        const insertedInformations = [];
-        const createdAt = new Date().getTime();
-        for (let i = 0; i < users.length; i++) {
-            insertedInformations.push({
-                _id: users[i].appId + "_" + users[i].templateId + "_" + environmentId + "_" + users[i].deviceId,
-                userName: users[i].userName,
-                platform: users[i].platform,
-                device: users[i].device,
-                appVersion: users[i].appVersion,
-                custom: users[i].custom,
-                createdAt: createdAt
-            });
-        }
         validateCreate(obParams, FEATURE_NAME, function(params) {
+            var users = [];
+            try {
+                users = JSON.parse(ob.params?.qstring?.users);
+            }
+            catch (e) {
+                log.e(e);
+                users = [];
+            }
+            const setEnviromentInformationOnce = ob.params?.qstring?.setEnviromentInformationOnce ;
+            if (!users || !users.length) {
+                common.returnMessage(obParams, 400, "Missing params: users");
+                return false;
+            }
+
+            const environmentId = common.crypto.createHash('sha1').update(users[0].appId + users[0].environmentName).digest('hex');
+            const insertedInformations = [];
+            const createdAt = new Date().getTime();
+            for (let i = 0; i < users.length; i++) {
+                insertedInformations.push({
+                    _id: users[i].appId + "_" + users[i].templateId + "_" + environmentId + "_" + users[i].deviceId,
+                    userName: users[i].userName,
+                    platform: users[i].platform,
+                    device: users[i].device,
+                    appVersion: users[i].appVersion,
+                    custom: users[i].custom,
+                    createdAt: createdAt
+                });
+            }
+
             if (setEnviromentInformationOnce) {
                 common.db.collection('populator_environments').insertOne({
                     _id: environmentId,
