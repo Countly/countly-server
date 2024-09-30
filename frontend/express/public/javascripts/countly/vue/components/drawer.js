@@ -127,7 +127,9 @@
                      * Delete the hover key as its set by the data table on hovering a row
                      * and we don't want to pass it to the drawer.
                      */
-                    delete initialEditedObject.hover;
+                    if (initialEditedObject && initialEditedObject.hover !== undefined) {
+                        delete initialEditedObject.hover;
+                    }
                     this.drawers[name].initialEditedObject = initialEditedObject || {};
                 },
                 closeDrawer: function(name) {
