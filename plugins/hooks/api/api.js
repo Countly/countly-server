@@ -305,15 +305,16 @@ plugins.register("/i/hook/save", function(ob) {
                     function(err, result) {
                         if (!err) {
                             // Audit log: Hook updated
-                            if(result && result.value) {
+                            if (result && result.value) {
                                 plugins.dispatch("/systemlogs", {
                                     params: params,
                                     action: "hook_updated",
                                     data: { updated: result.value }
                                 });
-                            } else {
+                            }
+                            else {
                                 common.returnMessage(params, 500, "No result found");
-                            }    
+                            }
                             common.returnOutput(params, result && result.value);
                         }
                         else {
