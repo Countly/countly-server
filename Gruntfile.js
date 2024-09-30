@@ -328,7 +328,7 @@ module.exports = function(grunt) {
         var cssFiles = [
             {
                 filepath: 'frontend/express/public/stylesheets/styles/manifest.css',
-				lookup: '../../images',
+                lookup: '../../images',
                 replacement: '../images',
 				newPath: 'frontend/express/public/stylesheets/styles/manifest2.css'
             }
