@@ -306,8 +306,8 @@ plugins.register("/i/hook/save", function(ob) {
                         if (!err) {
                             // Audit log: Hook updated
                             plugins.dispatch("/systemlogs", {
-                                params: params, 
-                                action: "hook_updated", 
+                                params: params,
+                                action: "hook_updated",
                                 data: { updated: result.value }
                             });
                             common.returnOutput(params, result && result.value);
@@ -478,12 +478,6 @@ plugins.register("/o/hook/list", function(ob) {
                     hooksList.forEach((a) => {
                         const member = _.find(members, {_id: a.createdBy});
                         a.createdByUser = member && member.full_name;
-                    });
-                    // Audit log: Hook list viewed (without logging individual hooks)
-                    plugins.dispatch("/systemlogs", {
-                        params: params,
-                        action: "hook_list_viewed",
-                        data: { hookCount: hooksList.length, requestedBy: params.member._id }
                     });
                     common.returnOutput(params, { hooksList } || []);
                 });
