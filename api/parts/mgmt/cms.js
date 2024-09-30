@@ -163,7 +163,7 @@ cmsApi.saveEntries = function(params) {
         entries = JSON.parse(params.qstring.entries);
     }
     catch (ex) {
-        log.e(entries);
+        log.e(params.qstring.entries);
         common.returnMessage(params, 400, 'Invalid entries parameter');
         return;
     }
@@ -171,7 +171,7 @@ cmsApi.saveEntries = function(params) {
     transformAndStoreData(
         Object.assign({dataTransformed: true}, params),
         null,
-        JSON.parse(params.qstring.entries),
+        entries,
         function(err1) {
             if (err1) {
                 log.e('An error occured while storing entries in DB: ' + err1);
