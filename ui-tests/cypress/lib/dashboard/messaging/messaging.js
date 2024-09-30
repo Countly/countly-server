@@ -109,7 +109,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: messagingDataTableElements().COLUMN_NAME_DATE_SENT_SCHEDULED_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -121,7 +121,7 @@ const verifyEmptyPageElements = () => {
 
     verifyMessagingDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -134,7 +134,7 @@ const verifyFullDataPageElements = () => {
 
     verifyMessagingDataFromTable({
         isEmpty: false,
-    })
+    });
 };
 
 const verifyMessagingMetricCard = ({
@@ -195,8 +195,6 @@ const verifyMessagingDataFromTable = ({
     dateScheduled = null,
 }) => {
 
-    clickPlatformsTableTab();
-
     if (isEmpty) {
 
         cy.verifyElement({
@@ -225,57 +223,57 @@ const verifyMessagingDataFromTable = ({
         shouldNot: !isEmpty,
         element: messagingDataTableElements(index).PLATFORM,
         elementText: platform
-    })
+    });
 
     cy.verifyElement({
         element: messagingDataTableElements(index).CAMPAIGN_NAME_BLINKER,
-    })
+    });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         element: messagingDataTableElements(index).CREATED_BY,
         elementText: createdBy
-    })
+    });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         element: messagingDataTableElements(index).STATUS,
         elementText: status
-    })
+    });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         element: messagingDataTableElements(index).SENT,
         elementText: sent
-    })
+    });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         element: messagingDataTableElements(index).ACTIONED,
         elementText: actionedNumber
-    })
+    });
 
     cy.verifyElement({
         element: messagingDataTableElements(index).ACTIONED_DIVIDER,
-    })
+    });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         element: messagingDataTableElements(index).ACTIONED_PERCENTAGE,
         elementText: actionedPercentage
-    })
+    });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         element: messagingDataTableElements(index).DATE_SENT,
         elementText: dateSent
-    })
+    });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         element: messagingDataTableElements(index).SCHEDULED,
         elementText: dateScheduled
-    })
+    });
 };
 
 module.exports = {
