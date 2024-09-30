@@ -330,7 +330,7 @@ module.exports = function(grunt) {
                 filepath: 'frontend/express/public/stylesheets/styles/manifest.css',
                 lookup: '../../images',
                 replacement: '../images',
-				newPath: 'frontend/express/public/stylesheets/styles/manifest2.css'
+                newPath: 'frontend/express/public/stylesheets/styles/manifest2.css'
             }
         ];
 
