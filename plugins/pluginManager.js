@@ -2088,21 +2088,27 @@ var pluginManager = function pluginManager() {
             return value;
         }
         else {
-            return !!myOb;
+            if (myOb === true) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
     }
     this.isAnyMasked = function() {
+        var result = false;
         if (masking && masking.apps) {
             for (var app in masking.apps) {
                 if (masking.apps[app]) {
-                    return hasAnyValueTrue(masking.apps[app].masking);
+                    result = result || hasAnyValueTrue(masking.apps[app]);
+                    if (result) {
+                        return true;
+                    }
                 }
             }
-            return false;
         }
-        else {
-            return false;
-        }
+        return result;
     };
 
     this.getMaskingSettings = function(appID) {
