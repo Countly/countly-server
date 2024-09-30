@@ -245,7 +245,7 @@
             },
             dataType: "json",
             success: function(res) {
-                if (res && res.aaData && res.aaData.length > 0 && callback) {
+                if (res && res.aaData && res.aaData.length > 0) {
                     var data = [];
                     for (var i = 0; i < res.aaData.length; i++) {
                         data.push({
@@ -253,6 +253,7 @@
                             name: res.aaData[i].view,
                         });
                     }
+
                     return callback(data);
                 }
 
