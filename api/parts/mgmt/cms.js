@@ -157,6 +157,17 @@ function syncCMSDataToDB(params) {
 }
 
 cmsApi.saveEntries = function(params) {
+
+    var entries = [];
+    try {
+        entries = JSON.parse(params.qstring.entries);
+    }
+    catch (ex) {
+        log.e(entries);
+        common.returnMessage(params, 400, 'Invalid entries parameter');
+        return;
+    }
+
     transformAndStoreData(
         Object.assign({dataTransformed: true}, params),
         null,
