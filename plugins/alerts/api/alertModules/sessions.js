@@ -14,14 +14,8 @@ const METRIC_ENUM = {
     AVG_SESSION_DURATION: "average session duration",
 };
 
-/**
- * Alert triggering logic
- * @param {Alert}    alert - alert document
- * @param {function} done  - callback function
- * @param {Date}     date  - scheduled date for the alert (job.next)
- */
 module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
-    const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
+    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
         return done();
@@ -51,7 +45,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
-            await commonLib.trigger({ alert, app, metricValue, date });
+            await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
     else {
@@ -67,7 +61,10 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             if (!numberOfSessionsBefore) {
                 return done();
             }
-            const sessionDuration = await getSessionMetricByDate(app, "d", before, period);
+            let sessionDuration = await getSessionMetricByDate(app, "d", before, period);
+            if (typeof sessionDuration !== "number") {
+                sessionDuration = 0;
+            }
             metricValueBefore = sessionDuration / numberOfSessionsBefore / 60;
         }
 
@@ -81,7 +78,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             : change <= -compareValue;
 
         if (shouldTrigger) {
-            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
+            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
 
