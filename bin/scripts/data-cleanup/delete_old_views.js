@@ -90,8 +90,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     let view = await cursor.next();
                     //Find one drill entry for the view with timestamp greater than expiration date
                     var drillEntry = await drillSession.client.db("countly_drill").collection(collectionName).findOne({"sg.name": view.view, "ts": { $gt: expiration_timestamp }}, {ts: 1});
+                    var drillEntry2 = await drillSession.client.db("countly_drill").collection("drill_events").findOne({"a": app._id + "", "e": event, "sg.name": view.view, "ts": { $gt: expiration_timestamp }}, {ts: 1});
                     //If no entry found, delete the view
-                    if (!drillEntry) {
+                    if (!drillEntry && !drillEntry2) {
                         console.log("Deleting view: ", view.view);
                         if (!DRY_RUN) {
                             await new Promise(function(resolve) {

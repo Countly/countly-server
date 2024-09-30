@@ -548,7 +548,8 @@
                         <template v-slot:trigger>\
                             <slot name="trigger">\
                                 <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type" :disabled="disabledButton">\
-                                <span :data-test-id="testId + \'-more-option-text\'" v-if="text">{{text}}</span>\
+                                    <span :data-test-id="testId + \'-more-option-text\'" v-if="text">{{text}}</span>\
+                                    <i v-if="showArrows" style="display:inline-block; margin: 0px 0px 0px 8px;" :class="iconClass"></i>\
                                 </el-button>\
                             </slot>\
                         </template>\
