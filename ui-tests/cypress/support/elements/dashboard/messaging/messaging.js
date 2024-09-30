@@ -23,7 +23,7 @@ const messagingDataTableElements = (index = 0) => ({
     RESULTS_FOR_LABEL: 'push-notifications-result-for-label',
     RESULTS_FOR_COMBOBOX: 'push-notifications-result-for-combobox',
     FILTER_PARAMETERS_SELECT: 'cly-multi-select-test-id-pseudo-input-label',
-    EDIT_COLUMNS_BUTTON: 'cly-datatable-n-test-id-edit-columns-button',
+    EDIT_COLUMNS_BUTTON: 'messaging-edit-columns-button',
 
     EXPORT_AS_BUTTON: 'messaging-export-as-button',
     TABLE_SEARCH_INPUT: 'messaging-datatable-search-input',
@@ -43,7 +43,7 @@ const messagingDataTableElements = (index = 0) => ({
     //Columns' Rows' Datas Elements 
     CAMPAIGN_NAME: 'datatable-messaging-campaign-name-' + index,
     PLATFORM: 'datatable-messaging-platform-name-' + index,
-    CAMPAIGN_NAME_BLINKER: 'datatable-messaging-campaign-name-blinker-' + index,
+    CAMPAIGN_NAME_BLINKER: 'datatable-messaging-blinker-' + index,
     CREATED_BY: 'datatable-messaging-created-by-' + index,
     STATUS: 'datatable-messaging-status-' + index,
     SENT: 'datatable-messaging-sent-' + index,

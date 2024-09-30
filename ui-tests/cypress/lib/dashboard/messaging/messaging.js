@@ -41,7 +41,7 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.verifyElement({
-        labelElement: messagingMetricCardElements.RESULTS_FOR_LABEL,
+        labelElement: messagingDataTableElements().RESULTS_FOR_LABEL,
         labelText: "Results for"
     });
 
@@ -67,11 +67,13 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         element: messagingDataTableElements().COLUMN_NAME_CAMPAIGN_NAME_LABEL,
+        isElementVisible: false,
         elementText: "Campaign Name",
     });
 
     cy.verifyElement({
         element: messagingDataTableElements().COLUMN_NAME_CAMPAIGN_NAME_SORTABLE_ICON,
+        isElementVisible: false
     });
 
     cy.verifyElement({
