@@ -324,7 +324,27 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', ['mochaTest']);
 
-    grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'cssmin']);
+    grunt.registerTask('replace-paths', 'Replace image paths in dev and prod CSS files', function() {
+        var cssFiles = [
+            {
+                filepath: 'frontend/express/public/stylesheets/styles/manifest.css',
+                replacement: '../../images'
+            },
+            {
+                filepath: 'frontend/express/public/stylesheets/main.min.css',
+                replacement: '../images'
+            }
+        ];
+    
+        cssFiles.forEach(function(file) {
+            var content = grunt.file.read(file.filepath);
+            var newContent = content.replace(/\/images/g, file.replacement);
+            grunt.file.write(file.filepath, newContent);
+            grunt.log.writeln('Processed file: ' + file.filepath);
+        });
+    });
+
+    grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'cssmin', 'replace-paths']);
 
     grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
         var js = [], css = [], img = [], fs = require('fs'), path = require('path');
