@@ -367,11 +367,11 @@ describe('Complete Onboarding', () => {
         analyticsEventsPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToPushNotifications();
         messagingPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToFeedbackRatingsPage();
+        feedbackRatingsPageHelpers.verifyFullDataPageElements();
+        feedbackRatingsPageHelpers.clickRatingWidgetsTab();
+        feedbackRatingWidgetsPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToFeedbackRatingsPage();
-        //feedbackRatingsPageHelpers.verifyFullDataPageElements();
-        //feedbackRatingsPageHelpers.clickRatingWidgetsTab();
-        //feedbackRatingWidgetsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToCrashesOverviewPage();
         //crashesPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToRemoteConfigPage();
