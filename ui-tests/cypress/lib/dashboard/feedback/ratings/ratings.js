@@ -348,12 +348,11 @@ const verifyCommentsDataFromTable = ({
     email = null,
 }) => {
 
-
-    cy.scrollPageToBottom();
-
     clickDatatableCommentsTab();
 
     if (isEmpty) {
+
+        cy.scrollPageToBottom();
 
         cy.verifyElement({
             element: commentsDataTableElements().EMPTY_TABLE_ICON,
@@ -370,6 +369,8 @@ const verifyCommentsDataFromTable = ({
         });
         return;
     }
+
+    cy.scrollPageToBottom();
 
     cy.verifyElement({
         shouldNot: !isEmpty,
