@@ -17,6 +17,13 @@ const createRating = require('../../../../api/feedbackWidgetsCreate');
 const verifyEmptyPageElements = () => {
 
     cy.verifyElement({
+        labelElement: feedbackRatingWidgetsPageElements.RATING_WIDGETS_HEADER_TITLE_LABEL,
+        labelText: "Rating Widgets",
+        element: feedbackRatingWidgetsPageElements.ADD_NEW_WIDGET_BUTTON,
+        elementText: 'Add New Widget'
+    });
+
+    cy.verifyElement({
         element: feedbackRatingWidgetsPageElements.RATINGS_WIDGETS_EMPTY_PAGE_ICON,
         labelElement: feedbackRatingWidgetsPageElements.RATINGS_WIDGETS_EMPTY_PAGE_TITLE,
         labelText: "Create your first Ratings Widget",
@@ -817,9 +824,9 @@ const getWidgetIdFromDataTable = (index) => {
     return cy.getElement(widgetsDataTableElements(index).WIDGET_ID).eq(0).getText();
 };
 
-const navigateToWidgetsDetailPage = (question) => {
-    searchWidgetOnDataTable(question);
-    cy.clickElement(widgetsDataTableElements().WIDGET_QUESTION, true);
+const navigateToWidgetsDetailPage = (widgetName) => {
+    searchWidgetOnDataTable(widgetName);
+    cy.clickElement(widgetsDataTableElements().WIDGET_NAME, true);
 };
 
 const verifyWidgetDetailsPageElements = ({
@@ -1042,7 +1049,7 @@ const shouldBeWidgetDeleted = (question) => {
             if (!isExists) {
                 cy.getElement(widgetsDataTableElements().TABLE_ROWS).its('length').then((count) => {
                     for (var index = 0; index < (count / 2) - 1; index++) {
-                        cy.shouldNotContainText(widgetsDataTableElements(index).WIDGET_QUESTION, question);
+                        cy.shouldNotContainText(widgetsDataTableElements(index).WIDGET_NAME, question);
                     }
                 });
             }
