@@ -964,6 +964,14 @@
             },
             canUserCreateTransform: function() {
                 return countlyAuth.validateCreate(SUB_FEATURE_TRANSFORMATIONS);
+            },
+            showMoreOptions: function() {
+                return (
+                    (this.isDrill && this.canUserCreateTransform && (this.currentSecondaryTab === 'events' || this.currentSecondaryTab === 'segmentation')) ||
+                    (this.isDrill && this.canUserCreate && this.currentSecondaryTab === 'events') ||
+                    (this.canUserCreate && this.currentSecondaryTab === 'event-groups') ||
+                    (this.isDrill && this.canUserCreateTransform && this.currentSecondaryTab === 'transformations')
+                );
             }
         },
         components: {
