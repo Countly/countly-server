@@ -30,6 +30,21 @@ const verifyEmptyPageElements = () => {
     });
 };
 
+const verifyFullDataPageElements = () => {
+
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetsPageElements.RATING_WIDGETS_HEADER_TITLE_LABEL,
+        labelText: "Rating Widgets",
+        element: feedbackRatingWidgetsPageElements.ADD_NEW_WIDGET_BUTTON,
+        elementText: 'Add New Widget'
+    });
+
+    verifyWidgetDataFromTable({
+        index: 0,
+        shouldNot: true
+    });
+};
+
 const verifySettingsPageElements = ({
     widgetName,
     question,
@@ -523,29 +538,127 @@ const clickSetActiveCheckbox = (page) => {
 
 const verifyWidgetDataFromTable = ({
     index,
-    question,
-    internalName,
-    pages,
-    isActive
+    shouldNot = false,
+    widgetName = null,
+    internalName = null,
+    ratingScore = null,
+    responses = null,
+    pages = null,
+    isActive = true
 }) => {
+
     cy.verifyElement({
-        element: widgetsDataTableElements(index).WIDGET_QUESTION,
-        elementText: question
+        element: widgetsDataTableElements().EDIT_COLUMNS_BUTTON,
     });
 
     cy.verifyElement({
-        element: widgetsDataTableElements(index).INTERNAL_NAME,
-        elementText: internalName
+        element: widgetsDataTableElements().EXPORT_AS_BUTTON,
     });
 
     cy.verifyElement({
-        element: widgetsDataTableElements(index).PAGES,
-        elementText: pages
+        element: widgetsDataTableElements().TABLE_SEARCH_INPUT,
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_STATUS_LABEL,
+        elementText: "Status",
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_STATUS_SORTABLE_ICON,
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_RATINGS_WIDGET_NAME_LABEL,
+        elementText: "Ratings Widget Name",
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_INTERNAL_NAME_LABEL,
+        elementText: "Internal Name",
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_RATING_SCORE_LABEL,
+        elementText: "Rating Score"
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_RATING_SCORE_SORTABLE_ICON,
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_RESPONSES_LABEL,
+        elementText: "Responses"
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_RESPONSES_SORTABLE_ICON,
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements(index).COLUMN_NAME_PAGES_LABEL,
+        elementText: "Pages"
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements(index).COLUMN_NAME_PAGES_SORTABLE_ICON,
     });
 
     cy.verifyElement({
         element: widgetsDataTableElements(index).STATUS_SWITCH_WRAPPER,
         isChecked: isActive
+    });
+
+    cy.verifyElement({
+        shouldNot: shouldNot,
+        element: widgetsDataTableElements(index).WIDGET_NAME,
+        elementText: widgetName
+    });
+
+    cy.verifyElement({
+        element: widgetsDataTableElements(index).WIDGET_ID_LABEL,
+        elementText: "Widget ID"
+    });
+
+    cy.verifyElement({
+        element: widgetsDataTableElements(index).WIDGET_ID,
+    });
+
+    if (internalName != null) {
+        cy.verifyElement({
+            shouldNot: shouldNot,
+            element: widgetsDataTableElements(index).INTERNAL_NAME,
+            elementText: internalName
+        });
+    }
+
+    cy.verifyElement({
+        shouldNot: shouldNot,
+        element: widgetsDataTableElements(index).RATING_SCORE,
+        elementText: ratingScore
+    });
+
+    cy.verifyElement({
+        shouldNot: shouldNot,
+        element: widgetsDataTableElements(index).RESPONSES,
+        elementText: responses
+    });
+
+    cy.verifyElement({
+        shouldNot: shouldNot,
+        element: widgetsDataTableElements(index).PAGES,
+        elementText: pages
     });
 };
 
@@ -979,6 +1092,7 @@ const createRatingWithApi = (username, password, appName, widgetName) => {
 
 module.exports = {
     verifyEmptyPageElements,
+    verifyFullDataPageElements,
     verifySettingsPageElements,
     verifyAppearancePageElements,
     verifyDevicesAndTargetingPageElements,
