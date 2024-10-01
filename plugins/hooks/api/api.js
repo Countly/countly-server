@@ -2,7 +2,6 @@ const Triggers = require('./parts/triggers/index.js');
 const Effects = require('./parts/effects/index.js');
 const asyncLib = require('async');
 const EventEmitter = require('events');
-
 const common = require('../../../api/utils/common.js');
 const { validateRead, validateCreate, validateDelete, validateUpdate } = require('../../../api/utils/rights.js');
 const plugins = require('../../pluginManager.js');
