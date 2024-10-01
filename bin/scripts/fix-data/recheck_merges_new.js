@@ -172,7 +172,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         }
                         totalProcessedUsers[app._id]++;
                     }
-                    await addRecheckedFlag(app._id, user.uid);
+                    if (user && user.uid) {
+                        await addRecheckedFlag(app._id, user.uid);
+                    }
                 }
                 console.log("Processed users for app", app.name, ": ", totalProcessedUsers[app._id]);
             }
