@@ -91,7 +91,7 @@ ipc.attach();
 
 /**
  * Process token session request
- * 
+ *
  * @param {Object} msg IPC message
  */
 async function processTokenSession(msg) {
@@ -146,10 +146,10 @@ async function processTokenSession(msg) {
             });
         }, 10000);
     }
-    else {
-        appusersCollection.updateOne({_id: app_user_id}, {$unset: {[appusersField]: 1}}, function() {});
-        pushCollection.updateOne({_id: uid}, {$unset: {[pushField]: 1}}, function() {});
-    }
+    // else {
+    //     appusersCollection.updateOne({_id: app_user_id}, {$unset: {[appusersField]: 1}}, function() {});
+    //     pushCollection.updateOne({_id: uid}, {$unset: {[pushField]: 1}}, function() {});
+    // }
 }
 
 module.exports.onTokenSession = async(dbAppUser, params) => {
