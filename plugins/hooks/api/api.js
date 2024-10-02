@@ -290,31 +290,31 @@ plugins.register("/i/hook/save", function(ob) {
                     common.returnMessage(params, 400, 'Not enough args');
                     return true;
                 }
-            
 
-            if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
-                common.returnMessage(params, 400, 'Invalid configuration for effects');
-                return true;
-            }
 
-            if (hookConfig._id) {
-                const id = hookConfig._id;
-                delete hookConfig._id;
-                return common.db.collection("hooks").findAndModify(
-                    { _id: common.db.ObjectID(id) },
-                    {},
-                    {$set: hookConfig},
-                    {new: true},
-                    function(err, result) {
-                        if (!err) {
-                            common.returnOutput(params, result && result.value);
-                        }
-                        else {
-                            common.returnMessage(params, 500, "Failed to save an hook");
-                        }
-                    });
+                if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
+                    common.returnMessage(params, 400, 'Invalid configuration for effects');
+                    return true;
+                }
+
+                if (hookConfig._id) {
+                    const id = hookConfig._id;
+                    delete hookConfig._id;
+                    return common.db.collection("hooks").findAndModify(
+                        { _id: common.db.ObjectID(id) },
+                        {},
+                        {$set: hookConfig},
+                        {new: true},
+                        function(err, result) {
+                            if (!err) {
+                                common.returnOutput(params, result && result.value);
+                            }
+                            else {
+                                common.returnMessage(params, 500, "Failed to save an hook");
+                            }
+                        });
+                }
             }
-        }
             hookConfig.createdBy = params.member._id;
             hookConfig.created_at = new Date().getTime();
             return common.db.collection("hooks").insert(
@@ -587,7 +587,7 @@ plugins.register("/i/hook/test", function(ob) {
 
             if (hookConfig) {
                 // Null check for hookConfig
-                if (hookConfigEffects && !validateEffects(hookConfigEffects)) {
+                if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
                     common.returnMessage(params, 400, 'Config invalid');
                 }
             }
@@ -597,16 +597,14 @@ plugins.register("/i/hook/test", function(ob) {
             const results = [];
 
             // build mock data
-            if(hookConfig){
-                const trigger = hookConfig?.trigger;
-                hookConfig._id = null;
-                log.d("[hook test mock data]", mockData);
-                const obj = {
-                    is_mock: true,
-                    params: mockData,
-                    rule: hookConfig
-                };
-            }    
+            const trigger = hookConfig?.trigger;
+            hookConfig._id = null;
+            log.d("[hook test mock data]", mockData);
+            const obj = {
+                is_mock: true,
+                params: mockData,
+                rule: hookConfig
+            };
             log.d("[hook test config data]", obj);
             const t = new Triggers[trigger.type]({
                 rules: [hookConfig],
