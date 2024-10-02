@@ -1824,6 +1824,9 @@ const processRequest = (params) => {
                 switch (paths[3]) {
                 case 'all':
                     validateRead(params, 'core', () => {
+                        if (!params.qstring.query) {
+                            params.qstring.query = {};
+                        }
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1864,6 +1867,9 @@ const processRequest = (params) => {
                     break;
                 case 'count':
                     validateRead(params, 'core', () => {
+                        if (!params.qstring.query) {
+                            params.qstring.query = {};
+                        }
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1896,6 +1902,9 @@ const processRequest = (params) => {
                     break;
                 case 'list':
                     validateRead(params, 'core', () => {
+                        if (!params.qstring.query) {
+                            params.qstring.query = {};
+                        }
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);

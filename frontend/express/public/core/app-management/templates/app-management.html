@@ -208,8 +208,10 @@
                                         <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
                                             <span class="selected-count-blue bu-pl-1 text-medium">
                                                 <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{compare(formScope.editedObject,apps[selectedApp]).length}}</span>
-                                                <span class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made") }}</span>
-                                                <span class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep") }}</span>
+                                                <span v-if="compare(formScope.editedObject,apps[selectedApp]).length>1" class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made") }}</span>
+                                                <span v-else class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made-single") }}</span>
+                                                <span v-if="compare(formScope.editedObject,apps[selectedApp]).length>1" class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep") }}</span>
+                                                <span v-else class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep-single") }}</span>
                                             </span>
                                             <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
                                             <el-button skin="red" class="bu-mr-2" size="small" type="default" @click="save(formScope.editedObject)">
@@ -389,8 +391,10 @@
                                 <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
                                     <span class="selected-count-blue bu-pl-1 text-medium">
                                         <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{changeKeys.length}}</span>
-								        <span class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made") }}</span>
-								        <span class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep") }}</span>
+								        <span v-if="changeKeys.length>1" class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made") }}</span>
+										<span v-else class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made-single") }}</span>
+										<span v-if="changeKeys.length>1" class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep") }}</span>
+										<span v-else class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep-single") }}</span>
                                     </span>
                                     <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
                                     <el-button skin="red" class="bu-mr-2" size="small" type="default" @click="saveSettings">

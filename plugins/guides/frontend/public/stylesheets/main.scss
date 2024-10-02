@@ -246,6 +246,9 @@
         width: 18px;
         transition: width 0.5s ease-in-out 0.5s, padding 0.5s ease-in-out 0.5s;
         cursor: pointer;
+        img {
+            display: flex;
+        }
         .text {
             font-size: 13px;
             font-weight: 500;
