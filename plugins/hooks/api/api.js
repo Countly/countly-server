@@ -573,32 +573,42 @@ plugins.register("/i/hook/test", function(ob) {
         let hookConfig = params.qstring.hook_config;
         if (!hookConfig) {
             common.returnMessage(params, 400, 'Invalid hookConfig');
-            return true;
+            return;
         }
 
         try {
             hookConfig = JSON.parse(hookConfig);
+            if (!hookConfig) {
+                common.returnMessage(params, 400, 'Parsed hookConfig is invalid');
+                return;
+            }
             hookConfig = sanitizeConfig(hookConfig);
             const mockData = JSON.parse(params.qstring.mock_data);
 
-            if (!hookConfig || !(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
+            if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
                 common.returnMessage(params, 403, "hook config invalid");
+                return; // Add return to exit early
             }
 
-            if (hookConfig) {
-                // Null check for hookConfig
-                if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
-                    common.returnMessage(params, 400, 'Config invalid');
-                }
+            // Null check for effects
+            if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
+                common.returnMessage(params, 400, 'Config invalid');
+                return; // Add return to exit early
             }
+
 
             // trigger process            
             log.d(JSON.stringify(hookConfig), "[hook test config]");
             const results = [];
 
             // build mock data
-            const trigger = hookConfig?.trigger;
+            const trigger = hookConfig.trigger;
+            if (!trigger) {
+                common.returnMessage(params, 400, 'Trigger is missing');
+                return;
+            }
             hookConfig._id = null;
+
             log.d("[hook test mock data]", mockData);
             const obj = {
                 is_mock: true,
@@ -610,7 +620,7 @@ plugins.register("/i/hook/test", function(ob) {
                 rules: [hookConfig],
             });
 
-            // out put trigger result
+            // output trigger result
             const triggerResult = await t.process(obj);
             log.d("[hook trigger test result]", triggerResult);
             results.push(JSON.parse(JSON.stringify(triggerResult)));
