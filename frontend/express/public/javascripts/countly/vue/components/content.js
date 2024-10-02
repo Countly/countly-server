@@ -1,4 +1,4 @@
-/* global Vue, CV */
+/* global Vue, CV, countlyCommon */
 (function(countlyVue) {
     Vue.component("cly-content-layout", countlyVue.components.create({
         props: {
@@ -101,7 +101,7 @@
         data: function() {
             return {
                 currentTab: this.tabs[0]?.value || null,
-                localTitle: this.value,
+                localTitle: countlyCommon.unescapeHtml(this.value),
                 isEditing: !this.value
             };
         },
@@ -254,7 +254,6 @@
             },
             badgeStyles() {
                 return {
-                    width: '55px',
                     height: '16px',
                     borderRadius: '8px',
                     backgroundColor: this.currentConfig.background,
