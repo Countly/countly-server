@@ -4333,7 +4333,7 @@
         border: 1px solid #ECECEC;
         border-radius: 8px;
         background-color: #FCFCFC;
-        min-height: calc(100vh - 96px);
+        min-height: calc(100vh - 106px);
 
         &__body {
             display: flex;
@@ -4351,7 +4351,7 @@
                 border: 1px solid #ECECEC;
                 border-radius: 8px;
                 margin: 8px 0 8px 8px;
-                min-height: calc(100vh - 96px);
+                min-height: calc(100vh - 124px);
 
                 &__header {
                     border-bottom: 1px solid #F6F6F6;
@@ -4394,8 +4394,9 @@
                 border: 1px solid rgb(236, 236, 236);
                 border-radius: 8px;
                 margin: 8px 8px 8px 8px;
-                min-height: calc(100vh - 96px);
-                height: 850px;
+                // min-height: calc(100vh - 124px);
+                height: calc(100vh - 124px);
+                // height: 850px;
                 overflow-y: auto;
             }
         }

@@ -55,16 +55,18 @@
                 }
             },
             status: {
-                type: String,
+                type: Object,
                 required: false,
-                default: null
+                default: function() {
+                    return { show: false, label: 'Status', mode: 'primary' };
+                },
             },
             saveButtonLabel: {
                 type: String,
                 required: false,
                 default: CV.i18n('common.save')
             },
-            saveButtonDisabled: {
+            disableSaveButton: {
                 type: Boolean,
                 required: false,
                 default: false
@@ -223,62 +225,39 @@
 
     Vue.component("cly-status-badge", countlyVue.components.create({
         props: {
+            mode: {
+                type: String,
+                required: true,
+                default: 'primary',
+                validator: function(value) {
+                    return ['primary', 'secondary'].includes(value);
+                }
+            },
             label: {
                 type: String,
                 required: false,
                 default: 'Status'
-            },
-            color: {
-                type: String,
-                required: false,
-                default: 'gray'
-            },
-            icon: {
-                type: String,
-                required: false,
-                default: 'cly-is cly-is-status'
-            },
-            iconSize: {
-                type: String,
-                required: false,
-                default: '8'
-            },
-            width: {
-                type: String,
-                required: false,
-                default: '55'
-            },
-            height: {
-                type: String,
-                required: false,
-                default: '16'
-            },
-            radius: {
-                type: String,
-                required: false,
-                default: '8'
-            },
-            fontClass: {
-                type: String,
-                required: false,
-                default: 'text-small'
             }
         },
         data: function() {
             return {
-                colorEnum: {
-                    'gray': {background: '#E2E4E8', icon: '#81868D'},
-                    // add more colors when needed
+                modeConfig: {
+                    primary: { background: '#E2E4E8', color: '#81868D', icon: 'cly-is cly-is-status' },
+                    secondary: { background: '#EBFAEE', color: '#12AF51', icon: 'cly-is cly-is-status' }
+                    // Add more modes here if needed
                 }
             };
         },
         computed: {
+            currentConfig() {
+                return this.modeConfig[this.mode];
+            },
             badgeStyles() {
                 return {
-                    width: `${this.width}px`,
-                    height: `${this.height}px`,
-                    borderRadius: `${this.radius}px`,
-                    backgroundColor: this.colorEnum[this.color]?.background || this.color,
+                    width: '55px',
+                    height: '16px',
+                    borderRadius: '8px',
+                    backgroundColor: this.currentConfig.background,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -287,21 +266,23 @@
             },
             iconStyles() {
                 return {
-                    color: this.colorEnum[this.color]?.icon || this.color,
-                    fontSize: `${this.iconSize}px`,
+                    color: this.currentConfig.color,
+                    fontSize: '8px',
                     marginRight: '4px',
                 };
             },
             fontStyles() {
                 return {
-                    color: this.colorEnum[this.color]?.icon || this.color,
+                    color: this.currentConfig.color,
                 };
             }
         },
-        template: `<div :style="badgeStyles">
-                        <i :class="icon" :style="iconStyles"></i>
-                        <span :class="fontClass" :style="fontStyles">{{ label }}</span>
-                    </div>`,
+        template: `
+            <div :style="badgeStyles">
+                <i :class="currentConfig.icon" :style="iconStyles"></i>
+                <span class="text-small" :style="fontStyles">{{ label }}</span>
+            </div>
+        `,
     }));
 
     Vue.component("cly-content-steps", countlyVue.components.create({
