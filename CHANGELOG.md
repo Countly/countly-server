@@ -1,3 +1,41 @@
+## Version 24.05.13
+Fixes:
+- [alerts] Fixed bugs related to NPS alerts
+- [crash] Reworked symbol files upload to support larger symbol files
+- [push] Fixed bug that would surface when sending Array or Object related payload
+
+Enterprise fixes:
+- [ab-testing] Slight improvements to the UI and UX
+- [remote-config] Slight improvements to the UI and UX
+
+Enterprise Features:
+- [ab-testing] Improved UI for selecting AB test expiration
+
+## Version 24.05.12
+Fixes:
+- [dashboards] Fixes for dashboards grid
+- [dasboards] UI fix for dashboard widget action menu
+- [push] Refactored fcm API related code
+- [reports] Use config for encryption key in reports
+
+Enterprise fixes:
+ - [retention] Fixes for byval retention query calculation
+
+## Version 24.05.11
+Fixes:
+- [cache] Use a cursor without timeout
+
+## Version 24.05.10
+Fixes:
+- [alerts] Alerts improvements
+- [core] Various fixes for frontend to support running countly from subdirectory
+- [logs]  Show collected problems on logger
+
+Enterprise fixes:
+- [data-manager] Fixes n UI to allow events starting with "/"
+- [flows] Fixes for flows step generation
+- [surveys] Other is not allowed as a valid answer for required questions
+
 ## Version 24.05.9
 Fixes:
 - [crashes] Fix crashes template paths and add data check

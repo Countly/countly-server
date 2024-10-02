@@ -1762,10 +1762,28 @@ var pluginManager = function pluginManager() {
     * @returns {string} modified connection string
     **/
     this.replaceDatabaseString = function(str, db) {
+        if (!db) {
+            db = "countly";
+        }
         var i = str.lastIndexOf('/countly');
         var k = str.lastIndexOf('/' + db);
         if (i !== k && i !== -1 && db) {
             return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+        }
+        else if (i === -1 && k === -1) {
+            //no db found in the string, we should insert the needed one
+            var urlparts = str.split("://");
+            if (typeof urlparts[1] === "string") {
+                var parts = urlparts[1].split("/");
+                if (parts.length === 1) {
+                    parts[0] += "/" + db;
+                }
+                else {
+                    parts[parts.length - 1] = db + parts[parts.length - 1];
+                }
+                urlparts[1] = parts.join("/");
+            }
+            return urlparts.join("://");
         }
         return str;
     };
@@ -2069,21 +2087,27 @@ var pluginManager = function pluginManager() {
             return value;
         }
         else {
-            return !!myOb;
+            if (myOb === true) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
     }
     this.isAnyMasked = function() {
+        var result = false;
         if (masking && masking.apps) {
             for (var app in masking.apps) {
                 if (masking.apps[app]) {
-                    return hasAnyValueTrue(masking.apps[app].masking);
+                    result = result || hasAnyValueTrue(masking.apps[app]);
+                    if (result) {
+                        return true;
+                    }
                 }
             }
-            return false;
         }
-        else {
-            return false;
-        }
+        return result;
     };
 
     this.getMaskingSettings = function(appID) {
