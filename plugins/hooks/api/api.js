@@ -315,8 +315,10 @@ plugins.register("/i/hook/save", function(ob) {
                         });
                 }
             }
-            hookConfig.createdBy = params.member._id;
-            hookConfig.created_at = new Date().getTime();
+            if (hookConfig) {
+                hookConfig.createdBy = params.member._id; // Accessing property now with proper check
+                hookConfig.created_at = new Date().getTime();
+            }
             return common.db.collection("hooks").insert(
                 hookConfig,
                 function(err, result) {
