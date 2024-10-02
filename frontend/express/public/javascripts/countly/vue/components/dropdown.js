@@ -111,6 +111,10 @@
             id: {
                 type: String
             },
+            widthSameAsTrigger: {
+                type: Boolean,
+                default: false
+            },
             testId: {
                 type: String,
                 default: "cly-dropdown-default-test-id",
@@ -154,7 +158,7 @@
                     <el-select-dropdown\
                         :id="id"\
                         ref="popper"\
-                        :width="width"\
+                        :width="computedWidth"\
                         :append-to-body="popperAppendToBody"\
                         :placement="placement"\
                         :visible-arrow="false"\
@@ -169,7 +173,8 @@
         data: function() {
             return {
                 visible: false,
-                focused: false
+                focused: false,
+                computedWidth: ""
             };
         },
         beforeDestroy: function() {
@@ -202,6 +207,19 @@
                 this.visible = !this.visible;
                 if (!this.visible) {
                     this.$emit("hide", true);
+                }
+                else {
+                    if (this.width) {
+                        this.computedWidth = this.width;
+                    }
+                    else {
+                        if (this.widthSameAsTrigger) {
+                            this.computedWidth = this.$refs.reference.$el.offsetWidth;
+                        }
+                        else {
+                            this.computedWidth = this.width;
+                        }
+                    }
                 }
             },
             updateDropdown: function() {
@@ -526,12 +544,12 @@
     Vue.component("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
-        template: '<cly-dropdown class="cly-vue-more-options" ref="dropdown" :placement="placement" :disabled="disabled" v-on="$listeners">\
+        template: '<cly-dropdown class="cly-vue-more-options" ref="dropdown" :widthSameAsTrigger="widthSameAsTrigger" :placement="placement" :disabled="disabled" @hide="toggleArrowState" @show="toggleArrowState" v-on="$listeners">\
                         <template v-slot:trigger>\
                             <slot name="trigger">\
-                                <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type" @click="toggleArrowState">\
+                                <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type" :disabled="disabledButton">\
                                     <span :data-test-id="testId + \'-more-option-text\'" v-if="text">{{text}}</span>\
-                                    <i v-if="showArrows" class="el-select__caret" :class="[iconClass]"></i>\
+                                    <i v-if="showArrows" style="display:inline-block; margin: 0px 0px 0px 8px;" :class="iconClass"></i>\
                                 </el-button>\
                             </slot>\
                         </template>\
@@ -561,6 +579,10 @@
                 type: Boolean,
                 default: false
             },
+            disabledButton: {
+                type: Boolean,
+                default: false,
+            },
             placement: {
                 type: String,
                 default: 'bottom-end'
@@ -572,32 +594,35 @@
             showArrows: {
                 type: Boolean,
                 default: false
+            },
+            widthSameAsTrigger: {
+                type: Boolean,
+                default: false
             }
         },
         data: function() {
             return {
                 arrowState: false,
+                iconClass: 'el-collapse-item__arrow ion-arrow-down-b'
             };
         },
         mounted: function() {
             this.$on('menu-item-click', this.handleMenuItemClick);
-        },
-        computed: {
-            iconClass: function() {
-                return this.arrowState ? 'ion-arrow-up-b is-reverse' : 'ion-arrow-up-b';
-            },
         },
         methods: {
             handleMenuItemClick: function(command, instance) {
                 if (!this.disabled) {
                     this.$emit('command', command, instance);
                     this.$refs.dropdown.handleClose();
-                    this.arrowState = false;
                 }
             },
             toggleArrowState: function() {
-                if (!this.disabled) {
-                    this.arrowState = !this.arrowState;
+                this.arrowState = !this.$refs.dropdown.visible;
+                if (this.arrowState) {
+                    this.iconClass = 'el-collapse-item__arrow ion-arrow-down-b';
+                }
+                else {
+                    this.iconClass = 'el-collapse-item__arrow ion-arrow-down-b is-active';
                 }
             }
         },

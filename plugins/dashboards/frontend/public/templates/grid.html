@@ -6,10 +6,10 @@
             :key="widget._id"
             :widget="widget"
             :settings="widgetSettingsGetter(widget, true)"
-            :autoPosition="autoPosition(allWidgets)"
             :loading="loading"
             @ready="onReady"
-            @command="onWidgetAction">
+            @command="onWidgetAction"
+            :style="{ width: widget.width + 'px', height: widget.height + 'px' }">
         </widget>
     </div>
     <widgets-drawer @reset="onReset" :controls="drawers.widgets"></widgets-drawer>

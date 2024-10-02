@@ -243,9 +243,12 @@
         padding-right: 5.5px;
         border: 1px solid #E2E4E8;
         box-shadow: 0px 2px 4px 0px #0000000C;
-        width: 19px;
+        width: 18px;
         transition: width 0.5s ease-in-out 0.5s, padding 0.5s ease-in-out 0.5s;
         cursor: pointer;
+        img {
+            display: flex;
+        }
         .text {
             font-size: 13px;
             font-weight: 500;

@@ -607,6 +607,7 @@ taskmanager.checkResult = function(options, callback) {
 * @param {funciton} callback - callback for the result
 */
 taskmanager.checkIfRunning = function(options, callback) {
+    options = options || {};
     options.db = options.db || common.db;
     var query = {};
     if (options.id) {
@@ -982,6 +983,7 @@ taskmanager.rerunTask = function(options, callback) {
                 reqData = {};
             }
             if (reqData.uri) {
+                reqData.json = reqData.json || {};
                 reqData.json.task_id = options.id;
                 reqData.strictSSL = false;
                 if (reqData.json && reqData.json.period && Array.isArray(reqData.json.period)) {

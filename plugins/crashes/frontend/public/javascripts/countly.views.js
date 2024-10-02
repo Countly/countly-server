@@ -605,7 +605,33 @@
                     promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsShown", this.$data.selectedCrashgroups);
                 }
                 else if (state === "delete") {
-                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsDeleted", this.$data.selectedCrashgroups);
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-delete", 1), "red", function(result) {
+                        if (result) {
+                            self.$store.dispatch("countlyCrashes/overview/setSelectedAsDeleted", self.$data.selectedCrashgroups)
+                                .then(function(response) {
+                                    if (Array.isArray(response.result)) {
+                                        var itemList = response.result.reduce(function(acc, curr) {
+                                            acc += "<li>" + curr + "</li>";
+                                            return acc;
+                                        }, "");
+                                        CountlyHelpers.alert("<ul>" + itemList + "</ul>", "red", { title: CV.i18n("crashes.alert-fails") });
+                                    }
+                                    else {
+                                        CountlyHelpers.notify({
+                                            title: jQuery.i18n.map["systemlogs.action.crash_deleted"],
+                                            message: jQuery.i18n.map["systemlogs.action.crash_deleted"]
+                                        });
+                                    }
+                                }).finally(function() {
+                                    // Reset selection if command is delete or hide
+                                    // if (["delete", "hide"].includes(state)) {
+                                    self.selectedCrashgroups = [];
+                                    self.$refs.dataTable.$refs.elTable.clearSelection();
+                                    // }
+                                });
+                        }
+                    });
+
                 }
 
                 if (typeof promise !== "undefined") {

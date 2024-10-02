@@ -34,39 +34,65 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         //PROCESS COLLECTIONS FOR EACH APP
         for (let i = 0; i < apps.length; i++) {
             console.log("Processing app: " + apps[i].name);
-            var collectionName = drillCommon.getCollectionName("[CLY]_session", apps[i]._id + "");
-            console.log("Processing collection: " + collectionName);
+            var collectionName0 = drillCommon.getCollectionName("[CLY]_session", apps[i]._id + "");
 
-            const cursor = drillDb.collection(collectionName).find(query_drill, {"_id": 1, "custom": 1});
-            //FOR EACH DOCUMENT
-            var updates = [];
-            while (await cursor.hasNext()) {
-                var doc = await cursor.next();
-                if (doc.custom) {
-                    var updateDoc = {};
-                    let updateMe = false;
-                    for (var key in doc.custom) {
-                        if (doc.custom[key] && typeof doc.custom[key] === "object") {
-                            var specialKeys = ["$set", "$addToSet", "$push", "$pull", "$inc", "$min", "$max", "$setOnce"];
-                            for (var z = 0; z < specialKeys.length; z++) {
-                                if (doc.custom[key][specialKeys[z]]) {
-                                    updateDoc["custom." + key] = doc.custom[key][specialKeys[z]];
-                                    updateMe = true;
+            var collections = ["drill_events", collectionName0];
+
+            for (var z1 = 0; z1 < collections.length; z1++) {
+                var collectionName = collections[z1];
+                console.log("Processing collection: " + collectionName);
+
+                if (collectionName === "drill_events") {
+                    query_drill.a = apps[i]._id + "";
+                    query_drill.e = "[CLY]_session";
+                }
+                else {
+                    delete query_drill.a;
+                    delete query_drill.e;
+                }
+
+                const cursor = drillDb.collection(collectionName).find(query_drill, {"_id": 1, "custom": 1});
+                //FOR EACH DOCUMENT
+                var updates = [];
+                while (await cursor.hasNext()) {
+                    var doc = await cursor.next();
+                    if (doc.custom) {
+                        var updateDoc = {};
+                        let updateMe = false;
+                        for (var key in doc.custom) {
+                            if (doc.custom[key] && typeof doc.custom[key] === "object") {
+                                var specialKeys = ["$set", "$addToSet", "$push", "$pull", "$inc", "$min", "$max", "$setOnce"];
+                                for (var z = 0; z < specialKeys.length; z++) {
+                                    if (doc.custom[key][specialKeys[z]]) {
+                                        updateDoc["custom." + key] = doc.custom[key][specialKeys[z]];
+                                        updateMe = true;
+                                    }
                                 }
                             }
                         }
+                        if (updateMe) {
+                            updates.push({
+                                'updateOne': {
+                                    'filter': { '_id': doc._id },
+                                    'update': { '$set': updateDoc },
+                                    'upsert': false
+                                }
+                            });
+                        }
                     }
-                    if (updateMe) {
-                        updates.push({
-                            'updateOne': {
-                                'filter': { '_id': doc._id },
-                                'update': { '$set': updateDoc },
-                                'upsert': false
-                            }
-                        });
+                    if (updates.length === 500) {
+                        if (dry_run) {
+                            console.log("DRY RUN: Would update " + updates.length + " docs in " + collectionName);
+                            console.log(JSON.stringify(updates));
+                        }
+                        else {
+                            console.log("updating");
+                            await drillDb.collection(collectionName).bulkWrite(updates, {"ordered": false});
+                        }
+                        updates = [];
                     }
                 }
-                if (updates.length === 500) {
+                if (updates.length > 0) {
                     if (dry_run) {
                         console.log("DRY RUN: Would update " + updates.length + " docs in " + collectionName);
                         console.log(JSON.stringify(updates));
@@ -77,16 +103,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     }
                     updates = [];
                 }
-            }
-            if (updates.length > 0) {
-                if (dry_run) {
-                    console.log("DRY RUN: Would update " + updates.length + " docs in " + collectionName);
-                    console.log(JSON.stringify(updates));
-                }
-                else {
-                    await drillDb.collection(collectionName).bulkWrite(updates, {"ordered": false});
-                }
-                updates = [];
             }
         }
     }
