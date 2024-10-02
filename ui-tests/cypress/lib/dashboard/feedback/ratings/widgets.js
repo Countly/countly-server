@@ -48,7 +48,8 @@ const verifyFullDataPageElements = () => {
 
     verifyWidgetDataFromTable({
         index: 0,
-        shouldNot: true
+        shouldNot: true,
+        isActive: false,
     });
 };
 

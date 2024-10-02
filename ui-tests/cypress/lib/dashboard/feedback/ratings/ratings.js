@@ -109,19 +109,6 @@ const verifyStaticElementsOfPage = () => {
         element: ratingsDataTableElements().COLUMN_NAME_PERCENTAGE_SORTABLE_ICON,
     });
 
-    cy.scrollPageToBottom();
-
-    for (var i = 0; i < 5; i++) {
-        cy.verifyElement({
-            element: ratingsDataTableElements(i).RATING_ICON,
-        });
-
-        cy.verifyElement({
-            element: ratingsDataTableElements(i).RATING,
-            elementText: i + 1,
-        });
-    }
-
     clickDatatableCommentsTab();
 
     cy.scrollPageToBottom();
@@ -211,9 +198,10 @@ const verifyRatingsMetricCard = ({
     averageRatingsScore = null,
 }) => {
 
-    cy.scrollPageToTop();
-
     if (isEmpty) {
+
+        cy.scrollPageToTop();
+
         cy.verifyElement({
             labelElement: ratingsMetricCardElements.TOTAL_RATINGS_NUMBER_LABEL,
             labelText: "0",
@@ -225,6 +213,8 @@ const verifyRatingsMetricCard = ({
         });
         return;
     }
+
+    cy.scrollPageToTop();
 
     cy.verifyElement({
         shouldNot: !isEmpty,
@@ -243,9 +233,9 @@ const verifyRatingsEChartElements = ({
     isEmpty = false
 }) => {
 
-    cy.scrollPageToTop();
-
     if (isEmpty) {
+
+        cy.scrollPageToTop();
 
         cy.verifyElement({
             element: ratingsEChartElements.EMPTY_CHART_ICON,
@@ -262,6 +252,8 @@ const verifyRatingsEChartElements = ({
         });
         return;
     }
+
+    cy.scrollPageToTop();
 
     cy.verifyElement({
         element: ratingsEChartElements.ECHARTS,
@@ -291,11 +283,11 @@ const verifyRatingsDataFromTable = ({
     percentage = null,
 }) => {
 
-    cy.scrollPageToBottom();
-
     clickDatatableRatingsTab();
 
     if (isEmpty) {
+
+        cy.scrollPageToBottom();
 
         for (var i = 0; i < 5; i++) {
             cy.verifyElement({
@@ -319,6 +311,8 @@ const verifyRatingsDataFromTable = ({
         }
         return;
     }
+
+    cy.scrollPageToBottom();
 
     cy.verifyElement({
         shouldNot: !isEmpty,
