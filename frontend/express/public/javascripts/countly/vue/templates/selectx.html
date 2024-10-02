@@ -52,7 +52,7 @@
         <div class="cly-vue-select-x__header">
 			<div class="bu-level">
 				<div class="cly-vue-select-x__title" :data-test-id="testId + '-select-x-title'" v-if="title">{{title}}</div>
-				<div class='bu-level-right text-small color-cool-gray-50' v-if="showSelectedCount">{{selectedCountText}}</div>
+				<div class='bu-level-right text-small color-cool-gray-50 bu-pb-4' v-if="showSelectedCount">{{selectedCountText}}</div>
 			</div>
             <div class="cly-vue-select-x__header-slot" v-if="!!$scopedSlots.header">
                 <slot name="header" :active-tab-id="activeTabId" :tabs="publicTabs" :update-tab="updateTabFn"></slot>
@@ -89,6 +89,7 @@
                     v-show="showList"
                     v-if="mode === 'single-list'"
                     :bordered="false"
+                    :searchable="false"
                     :options="getMatching(tab.options)"
                     @change="handleValueChange"
                     :hasRemovableOptions="hasRemovableOptions"
@@ -107,6 +108,7 @@
                     v-else-if="mode === 'multi-check'"
                     :test-id="testId + '-checklistbox'"
                     :disable-non-selected="disableNonSelected"
+                    :searchable="false"
                     :bordered="false"
                     :options="getMatching(tab.options)"
                     @change="handleValueChange"
@@ -120,6 +122,7 @@
                     :disable-non-selected="disableNonSelected"
                     :sortable="true"
                     :bordered="false"
+                    :searchable="false"
                     :persistColumnOrderKey="persistColumnOrderKey"
                     ref="checkListBox"
                     :options="getMatching(tab.options)"
