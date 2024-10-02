@@ -8,6 +8,43 @@ var API_KEY_ADMIN = "";
 var APP_ID = "";
 var DEVICE_ID = "1234567890";
 
+var totalEventCounts = {};
+
+
+function updateTotalEventCounts(event, count, sum, dur) {
+    if (!totalEventCounts[event]) {
+        totalEventCounts[event] = {c: 0, s: 0, dur: 0};
+    }
+    totalEventCounts[event].c += count || 0;
+    totalEventCounts[event].s += sum || 0;
+    totalEventCounts[event].dur += dur || 0;
+
+}
+function checkTotalCounts(done) {
+    request
+        .get('/o/analytics/events?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
+        .expect(200)
+        .end(function(err, res) {
+            if (err) {
+                return done(err);
+            }
+            var ob = JSON.parse(res.text);
+            ob.should.have.property("all");
+            var mapped = {};
+
+            for (var z = 0; z < ob.all.length; z++) {
+                mapped[ob.all[z]._id] = ob.all[z];
+            }
+
+            for (var ee in totalEventCounts) {
+                if (!(mapped[ee] && mapped[ee].c === totalEventCounts[ee].c && mapped[ee].s === totalEventCounts[ee].s && mapped[ee].dur === totalEventCounts[ee].dur)) {
+                    done("Invalid total events object", JSON.stringify(mapped[ee]), JSON.stringify(totalEventCounts[ee]));
+                    return;
+                }
+            }
+            done();
+        });
+}
 describe('Writing app events', function() {
     describe('Empty events', function() {
         describe('no events', function() {
@@ -64,6 +101,7 @@ describe('Writing app events', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
+                        updateTotalEventCounts("test", 1, 0, 0);
                         setTimeout(done, 1000 * testUtils.testScalingFactor);
                     });
             });
@@ -101,6 +139,11 @@ describe('Writing app events', function() {
                     });
             });
         });
+        describe('Check event count', function() {
+            it('Should have correctly counted event count', function(done) {
+                checkTotalCounts(done);
+            });
+        });
     });
     describe('Event with key and 1 count', function() {
         describe('creating event', function() {
@@ -118,6 +161,7 @@ describe('Writing app events', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
+                        updateTotalEventCounts("test", 1, 0, 0);
                         setTimeout(done, 1000 * testUtils.testScalingFactor);
                     });
             });
@@ -184,6 +228,11 @@ describe('Writing app events', function() {
                     });
             });
         });
+        describe('Check event count', function() {
+            it('Should have correctly counted event count', function(done) {
+                checkTotalCounts(done);
+            });
+        });
     });
     describe('Same event with key and 2 count', function() {
         describe('creating event', function() {
@@ -201,6 +250,7 @@ describe('Writing app events', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
+                        updateTotalEventCounts("test", 2, 0, 0);
                         setTimeout(done, 1000 * testUtils.testScalingFactor);
                     });
             });
@@ -261,6 +311,11 @@ describe('Writing app events', function() {
                         ob.should.not.have.property("segments");
                         done();
                     });
+            });
+        });
+        describe('Check event count', function() {
+            it('Should have correctly counted event count', function(done) {
+                checkTotalCounts(done);
             });
         });
     });
@@ -1357,6 +1412,42 @@ describe('Writing app events', function() {
                     .end(function(err, res) {
                         testUtils.validateEvents(err, res, done, {meta: {"test": ["bat"], "segments": ["test"]}, c: 1, s: 5});
                     });
+            });
+        });
+
+        describe('Verifying dealing with unicode values', function() {
+            describe('creating event', function() {
+                it('should success', function(done) {
+                    var params = [{
+                        "key": "testUnicodeSegment",
+                        "count": 1,
+                        "sum": 5,
+                        "segmentation": {
+                            "unicodeSegment": "\u00E7\u0000\u0067A"
+                        }
+                    }];
+                    request
+                        .get('/i?device_id=' + DEVICE_ID + 'A&app_key=' + APP_KEY + "&events=" + JSON.stringify(params))
+                        .expect(200)
+                        .end(function(err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+                            var ob = JSON.parse(res.text);
+                            ob.should.have.property('result', 'Success');
+                            setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        });
+                });
+            });
+            describe('verify specific event', function() {
+                it('should have add count and sum', function(done) {
+                    request
+                        .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events&event=testUnicodeSegment')
+                        .expect(200)
+                        .end(function(err, res) {
+                            testUtils.validateEvents(err, res, done, {meta: {"unicodeSegment": ["\u00E7&amp;#9647\u0067A"], "segments": ["unicodeSegment"]}, c: 1, s: 5});
+                        });
+                });
             });
         });
     });

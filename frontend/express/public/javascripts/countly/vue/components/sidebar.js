@@ -15,7 +15,7 @@
                             apps = this.sortBy(apps, countlyGlobal.member.appSortList);
                         }
                         apps = apps.map(function(a) {
-                            a.image = countlyGlobal.path + "appimages/" + a._id + ".png";
+                            a.image = countlyGlobal.path + "/appimages/" + a._id + ".png";
                             a.label = a.name;
                             a.value = a._id;
                             return a;
@@ -30,8 +30,7 @@
                     });
 
                     if (active) {
-                        active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
-                        active.name = countlyCommon.unescapeHtml(active.name);
+                        active.image = countlyGlobal.path + "/appimages/" + active._id + ".png";
                     }
                     return active || {};
                 },
@@ -320,6 +319,7 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -454,6 +454,7 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -702,10 +703,22 @@
                 pseudoSelectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state === 'selected') {
+                        return 'guides';
+                    }
+
                     if (!this.selectedMenuOptionLocal && selected) {
                         return selected.menu;
                     }
+                    return this.selectedMenuOptionLocal;
+                },
+                visibleSidebarMenu: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
+                    if (!this.selectedMenuOptionLocal && selected) {
+                        return selected.menu;
+                    }
                     return this.selectedMenuOptionLocal;
                 },
                 selectedMenuOption: function() {
@@ -715,13 +728,13 @@
                 guidesButtonDynamicClass: function() {
                     var state = this.$store.getters["countlySidebar/getGuidesButton"];
                     if (state === 'selected') {
-                        return 'color:#12AF51;';
+                        return 'color:#12AF51; font-size:larger;';
                     }
                     else if (state === 'hover' || state === 'highlighted') {
-                        return 'color:white;';
+                        return 'color:white; font-size:larger;';
                     }
                     else {
-                        return 'color:#A7AEB8;';
+                        return 'color:#A7AEB8; font-size:larger;';
                     }
                 },
                 helpCenterLink: function() {
@@ -748,6 +761,7 @@
                     if (!option.noSelect) {
                         this.selectedMenuOptionLocal = option.name;
                         this.showMainMenu = true;
+                        this.$store.dispatch("countlySidebar/deselectGuidesButton");
                     }
 
                     if (option.name === "toggle") {
@@ -755,7 +769,6 @@
                     }
                     else if (option.name === "countly-guides") {
                         this.$store.dispatch("countlySidebar/selectGuidesButton");
-                        this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "guides", item: {}});
                     }
                 },
                 onToggleClick: function() {

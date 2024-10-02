@@ -299,7 +299,7 @@ const processRequest = (params) => {
                     common.returnMessage(params, 400, 'Invalid parameter "requests"');
                     return false;
                 }
-                if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                if (!params.qstring.safe_api_response && !plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                     common.returnMessage(params, 200, 'Success');
                 }
                 common.blockResponses(params);
@@ -3184,7 +3184,7 @@ const processBulkRequest = (i, requests, params) => {
     const appKey = params.qstring.app_key;
     if (i === requests.length) {
         common.unblockResponses(params);
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+        if (params.qstring.safe_api_response || plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
             common.returnMessage(params, 200, 'Success');
         }
         return;
@@ -3193,9 +3193,10 @@ const processBulkRequest = (i, requests, params) => {
     if (!requests[i] || (!requests[i].app_key && !appKey)) {
         return processBulkRequest(i + 1, requests, params);
     }
-
+    if (params.qstring.safe_api_response) {
+        requests[i].safe_api_response = true;
+    }
     params.req.body = JSON.stringify(requests[i]);
-
     const tmpParams = {
         'app_id': '',
         'app_cc': '',
@@ -3364,13 +3365,13 @@ function validateRedirect(ob) {
                 log.e("Redirect error", error, body, opts, app, params);
             }
 
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
                 common.returnMessage(params, code, message);
             }
         });
         params.cancelRequest = "Redirected: " + app.redirect_url;
         params.waitForResponse = false;
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
             params.waitForResponse = true;
         }
         return false;

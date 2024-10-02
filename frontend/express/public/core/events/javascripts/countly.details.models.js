@@ -898,7 +898,7 @@
                                 var eventKey = res.list[0];
                                 if (res.map && res.map[context.state.selectedEventName]) {
                                     eventKey = res.list.find(function(item) {
-                                        return !(res.map[item] && res.map[item].is_visible === false);
+                                        return res.map[item] && item === context.state.selectedEventName;
                                     });
                                 }
                                 eventKeyForStorage[appId] = eventKey;
@@ -917,7 +917,7 @@
                                         context.commit("setLabels", countlyAllEvents.helpers.getLabels(res, context.state.groupData, context.state.selectedEventName));
                                         countlyAllEvents.service.fetchSelectedEventsData(context, period)
                                             .then(function(response) {
-                                                if (response) {
+                                                if (response?.eventName === context.state.selectedEventName) {
                                                     context.commit("setSelectedEventsData", response);
                                                     context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, response) || []);
                                                     context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);

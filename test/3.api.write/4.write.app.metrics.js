@@ -370,7 +370,6 @@ describe('Writing app metrics', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=carriers')
                     .expect(200)
                     .end(function(err, res) {
-                        // EMRE: also here, same thing with Unknown n t u
                         testUtils.validateMetrics(err, res, done, {meta: {"carriers": ["Vodafone", "Unknown", "Telecom"]}, "Vodafone": {"n": 1, "t": 1, "u": 1}, "Telecom": {"n": 1, "t": 1, "u": 1}, "Unknown": {n: 6, t: 6, u: 6}});
                     });
             });
