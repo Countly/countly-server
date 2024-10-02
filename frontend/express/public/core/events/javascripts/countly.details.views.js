@@ -178,11 +178,8 @@
                     byVal: [],
                     executed: false
                 };
-                if (doc.selectedSegment !== "segment") {
-                    URLparams.dbFilter[`sg.${doc.selectedSegment}`] = { "$in": [] };
-                    if (doc.selectedSegmentValues.length > 0) {
-                        URLparams.dbFilter[`sg.${doc.selectedSegment}`].$in = doc.selectedSegmentValues;
-                    }
+                if (doc.selectedSegment !== "segment" && doc.selectedSegmentValues.length > 0) {
+                    URLparams.dbFilter[`sg.${doc.selectedSegment}`] = { "$in": doc.selectedSegmentValues };
                 }
                 //Go to drill page
                 app.navigate("#/drill/" + JSON.stringify(URLparams), true);
