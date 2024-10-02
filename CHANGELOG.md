@@ -1,3 +1,18 @@
+## Version 24.05.14
+Fixes:
+- [code] Added better handling for countly servers while deployed using subdirectory
+- [data-manager] Added missing "Create" button for event groups
+- [data-manager] Fixes for auto toggling data masking setting on redaction change
+- [populator] Fixed issues in case of wrongly structured data
+- [push] token shouldn't be revoked if it's already in db
+- [server-stats] Fixed a data point calculation bug
+
+Enterprise fixes:
+- [push_approver] Fixed issue with the plugin not handling being "soft disabled"
+- [surveys] fixed a bug with the Survey widget where the "submit" button could become non interactable
+- [surveys] fixed issues with dashboard editor in relation to the "terms and conditions"
+- [surveys] fixed issues with previewing, creating and editing nps widgets
+
 ## Version 24.05.13
 Fixes:
 - [alerts] Fixed bugs related to NPS alerts
@@ -32,7 +47,7 @@ Fixes:
 - [logs]  Show collected problems on logger
 
 Enterprise fixes:
-- [data-manager] Fixes n UI to allow events starting with "/"
+- [data-manager] Fixes in UI to allow events starting with "/"
 - [flows] Fixes for flows step generation
 - [surveys] Other is not allowed as a valid answer for required questions
 
