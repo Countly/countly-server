@@ -189,7 +189,7 @@
                         URLparams.dbFilter.$or = [
                             { "sg.platform": { "$in": doc.selectedSegmentValues } },
                             { "sg.segment": { "$in": doc.selectedSegmentValues } }
-                        ]
+                        ];
                     }
                     else {
                         URLparams.dbFilter[`sg.${doc.selectedSegment}`] = { "$in": doc.selectedSegmentValues };
