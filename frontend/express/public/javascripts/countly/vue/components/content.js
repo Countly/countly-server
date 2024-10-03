@@ -93,6 +93,11 @@
                 required: false,
                 default: false
             },
+            isToggleDisabled: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
             toggleTooltip: {
                 type: String,
                 required: false

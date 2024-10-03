@@ -8,8 +8,9 @@
         </div>
         <div v-if="toggle" class="cly-vue-content-builder__layout-header__toggle bu-ml-4">
             <el-switch
-                v-tooltip="toggleTooltip"
+                v-tooltip.right="toggleTooltip"
                 :value="isToggleActive"
+                :disabled="isToggleDisabled"
                 @change="$emit('switch-toggle', $event)">
             </el-switch>
         </div>
