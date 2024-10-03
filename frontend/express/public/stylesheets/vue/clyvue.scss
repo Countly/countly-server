@@ -3861,6 +3861,20 @@
                 padding: 8px 14px;
             }
         }
+        .x-button {
+            border: 0;
+            box-shadow: none;
+            padding-left: 0px;
+            padding-right: 1rem;
+        }
+        .vertical-divider {
+            border-left: 1px solid #ECECEC;
+            height: 16px;
+        }
+        .cly-io-16 {
+            display: contents;
+        }
+        
     }
 
     .cly-vue-empty-home {
