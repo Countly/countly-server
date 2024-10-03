@@ -181,13 +181,14 @@ function getJSON(val) {
     }
     return ret;
 }
+
 /**
-* Logger object for creating module specific logging
-* @type {module:api/utils/log~Logger} 
-* @example
-* var log = common.log('myplugin:api');
-* log.i('myPlugin got a request: %j', params.qstring);
-*/
+ * Logger object for creating module-specific logging
+ * @type {function(string): Logger}
+ * @example
+ * const log = common.log('myplugin:api');
+ * log.i('myPlugin got a request: %j', params.qstring);
+ */
 common.log = logger;
 
 /**

@@ -186,6 +186,9 @@ mail.sendToNewMember = function(member, memberPassword) {
 mail.sendToNewMemberLink = function(member, prid) {
     member.lang = member.lang || "en";
     mail.lookup(function(err, host) {
+        if (config.path) {
+            host = host + config.path;
+        }
         localize.getProperties(member.lang, function(err2, properties) {
             var message = localize.format(properties["mail.new-member-prid"], mail.escapedHTMLString(mail.getUserFirstName(member)), host, mail.escapedHTMLString(member.username), prid);
             mail.sendMessage(member.email, properties["mail.new-member-subject"], message);
@@ -217,6 +220,9 @@ mail.sendToUpdatedMember = function(member, memberPassword) {
 mail.sendPasswordResetInfo = function(member, prid) {
     member.lang = member.lang || "en";
     mail.lookup(function(err, host) {
+        if (config.path) {
+            host = host + config.path;
+        }
         localize.getProperties(member.lang, function(err2, properties) {
             var message = localize.format(properties["mail.password-reset"], mail.escapedHTMLString(mail.getUserFirstName(member)), host, prid);
             mail.sendMessage(member.email, properties["mail.password-reset-subject"], message);
