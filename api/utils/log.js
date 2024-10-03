@@ -275,57 +275,124 @@ var ipcHandler = function(msg) {
 };
 
 /**
-* Creates new logger object for provided module
-* @param {string} name - name of the module
-* @returns {module:api/utils/log~Logger} logger object
-**/
+ * @typedef {Object} Logger
+ * @property {function(): string} id - Get the logger id
+ * @example
+ * const loggerId = logger.id();
+ * console.log(`Current logger ID: ${loggerId}`);
+ *
+ * @property {function(...*): void} d - Log debug level messages
+ * @example
+ * logger.d('Debug message: %s', 'Some debug info');
+ *
+ * @property {function(...*): void} i - Log information level messages
+ * @example
+ * logger.i('Info message: User %s logged in', username);
+ *
+ * @property {function(...*): void} w - Log warning level messages
+ * @example
+ * logger.w('Warning: %d attempts failed', attempts);
+ *
+ * @property {function(...*): void} e - Log error level messages
+ * @example
+ * logger.e('Error occurred: %o', errorObject);
+ *
+ * @property {function(string, function, string, ...*): boolean} f - Log variable level messages
+ * @example
+ * logger.f('d', (log) => {
+ *   const expensiveOperation = performExpensiveCalculation();
+ *   log('Debug: Expensive operation result: %j', expensiveOperation);
+ * }, 'i', 'Skipped expensive debug logging');
+ *
+ * @property {function(function=): function} callback - Create a callback function for logging
+ * @example
+ * const logCallback = logger.callback((result) => {
+ *   console.log('Operation completed with result:', result);
+ * });
+ * someAsyncOperation(logCallback);
+ *
+ * @property {function(string, function=, function=): function} logdb - Create a callback function for logging database operations
+ * @example
+ * const dbCallback = logger.logdb('insert user',
+ *   (result) => { console.log('User inserted:', result); },
+ *   (error) => { console.error('Failed to insert user:', error); }
+ * );
+ * database.insertUser(userData, dbCallback);
+ *
+ * @property {function(string): Logger} sub - Create a sub-logger
+ * @example
+ * const subLogger = logger.sub('database');
+ * subLogger.i('Connected to database');
+ */
+
+/**
+ * Creates a new logger object for the provided module
+ * @module api/utils/log
+ * @param {string} name - Name of the module
+ * @returns {Logger} Logger object
+ * @example
+ * const logger = require('./log.js')('myModule');
+ * logger.i('MyModule initialized');
+ */
 module.exports = function(name) {
     setLevel(name, logLevel(name));
     // console.log('Got level for ' + name + ': ' + levels[name] + ' ( prefs ', prefs);
     /**
-    * @class Logger
-    **/
+      * @type Logger
+      **/
     return {
         /**
-         * Get logger id
-         * @returns {string} id of this logger
-         */
+           * Get logger id
+           * @returns {string} id of this logger
+           * @example
+           * const loggerId = logger.id();
+           * console.log(`Current logger ID: ${loggerId}`);
+           */
         id: () => name,
         /**
-        * Log debug level messages
-        * @memberof module:api/utils/log~Logger
-        * @param {...*} var_args - string and values to format string with
-        **/
+           * Log debug level messages
+           * @param {...*} var_args - string and values to format string with
+           * @example
+           * logger.d('Debug message: %s', 'Some debug info');
+           */
         d: log(NAMES.d, name, getEnabledWithLevel(ACCEPTABLE.d, name), this, console.log),
 
         /**
-        * Log information level messages
-        * @memberof module:api/utils/log~Logger
-        * @param {...*} var_args - string and values to format string with
-        **/
+         * Log information level messages
+         * @param {...*} var_args - string and values to format string with
+         * @example
+         * logger.i('Info message: User %s logged in', username);
+         */
         i: log(NAMES.i, name, getEnabledWithLevel(ACCEPTABLE.i, name), this, console.info),
 
         /**
-        * Log warning level messages
-        * @memberof module:api/utils/log~Logger
-        * @param {...*} var_args - string and values to format string with
-        **/
+         * Log warning level messages
+         * @param {...*} var_args - string and values to format string with
+         * @example
+         * logger.w('Warning: %d attempts failed', attempts);
+         */
         w: log(NAMES.w, name, getEnabledWithLevel(ACCEPTABLE.w, name), this, console.warn, styles.stylers.warn),
 
         /**
-        * Log error level messages
-        * @memberof module:api/utils/log~Logger
-        * @param {...*} var_args - string and values to format string with
-        **/
+         * Log error level messages
+         * @param {...*} var_args - string and values to format string with
+         * @example
+         * logger.e('Error occurred: %o', errorObject);
+         */
         e: log(NAMES.e, name, getEnabledWithLevel(ACCEPTABLE.e, name), this, console.error, styles.stylers.error),
 
         /**
          * Log variable level messages (for cases when logging parameters calculation are expensive enough and shouldn't be done unless the level is enabled)
-         * @param {String} l log level (d, i, w, e)
-         * @param {function} fn function to call with single argument - logging function
-         * @param {String} fl fallback level if l is disabled
-         * @param {any[]} fargs fallback level arguments
+         * @param {string} l - log level (d, i, w, e)
+         * @param {function} fn - function to call with single argument - logging function
+         * @param {string} fl - fallback level if l is disabled
+         * @param {...*} fargs - fallback level arguments
          * @returns {boolean} true if f() has been called
+         * @example
+         * logger.f('d', (log) => {
+         *   const expensiveOperation = performExpensiveCalculation();
+         *   log('Debug: Expensive operation result: %j', expensiveOperation);
+         * }, 'i', 'Skipped expensive debug logging');
          */
         f: function(l, fn, fl, ...fargs) {
             if (ACCEPTABLE[l].indexOf(levels[name] || deflt) !== -1) {
@@ -338,11 +405,15 @@ module.exports = function(name) {
         },
 
         /**
-        * Logging inside callbacks
-        * @memberof module:api/utils/log~Logger
-        * @param {function=} next - next function to call, after callback executed
-        * @returns {function} function to pass as callback
-        **/
+         * Logging inside callbacks
+         * @param {function=} next - next function to call, after callback executed
+         * @returns {function} function to pass as callback
+         * @example
+         * const logCallback = logger.callback((result) => {
+         *   console.log('Operation completed with result:', result);
+         * });
+         * someAsyncOperation(logCallback);
+         */
         callback: function(next) {
             var self = this;
             return function(err) {
@@ -356,13 +427,18 @@ module.exports = function(name) {
             };
         },
         /**
-        * Logging database callbacks
-        * @memberof module:api/utils/log~Logger
-        * @param {string} opname - name of the performed operation
-        * @param {function=} next - next function to call, after callback executed
-        * @param {function=} nextError - function to pass error to
-        * @returns {function} function to pass as callback
-        **/
+         * Logging database callbacks
+         * @param {string} opname - name of the performed operation
+         * @param {function=} next - next function to call, after callback executed
+         * @param {function=} nextError - function to pass error to
+         * @returns {function} function to pass as callback
+         * @example
+         * const dbCallback = logger.logdb('insert user',
+         *   (result) => { console.log('User inserted:', result); },
+         *   (error) => { console.error('Failed to insert user:', error); }
+         * );
+         * database.insertUser(userData, dbCallback);
+         */
         logdb: function(opname, next, nextError) {
             var self = this;
             return function(err) {
@@ -382,9 +458,13 @@ module.exports = function(name) {
         },
         /**
          * Add one more level to the logging output while leaving loglevel the same
-         * @param {string} subname sublogger name
-         * @returns {object} new logger
+         * @param {string} subname - sublogger name
+         * @returns {Logger} new logger
+         * @example
+         * const subLogger = logger.sub('database');
+         * subLogger.i('Connected to database');
          */
+
         sub: function(subname) {
             let full = name + ':' + subname,
                 self = this;
