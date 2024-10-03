@@ -936,7 +936,7 @@
             },
             customStyle: function() {
                 return {
-                    height: (this.isVisible && (this.customRangeSelection || this.presetSelection)) ? "447px" : "auto",
+                    height: (this.isVisible && this.presetSelection) ? "447px" : "auto"
                 };
             }
         },
