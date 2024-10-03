@@ -929,7 +929,7 @@
                     var lengthStr = this.rangeLimits.maxLength[0] + ' ' + CV.i18n('common.buckets.' + this.rangeLimits.maxLength[1]);
                     return {'maxLength': CV.i18n('common.range-length-limit', lengthStr)};
                 }
-                return {};
+                return "";
             },
             setMinuteAndHourStyle: function() {
                 return { display: this.tableType === 'minute' || this.tableType === 'hour' ? 'none' : '' };

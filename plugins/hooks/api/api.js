@@ -2,7 +2,6 @@ const Triggers = require('./parts/triggers/index.js');
 const Effects = require('./parts/effects/index.js');
 const asyncLib = require('async');
 const EventEmitter = require('events');
-
 const common = require('../../../api/utils/common.js');
 const { validateRead, validateCreate, validateDelete, validateUpdate } = require('../../../api/utils/rights.js');
 const plugins = require('../../pluginManager.js');
@@ -273,7 +272,6 @@ plugins.register("/permissions/features", function(ob) {
 plugins.register("/i/hook/save", function(ob) {
     let paramsInstance = ob.params;
 
-
     validateCreate(ob.params, FEATURE_NAME, function(params) {
         let hookConfig = params.qstring.hook_config;
         if (!hookConfig) {
@@ -291,12 +289,11 @@ plugins.register("/i/hook/save", function(ob) {
                     return true;
                 }
 
-
                 if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
                     common.returnMessage(params, 400, 'Invalid configuration for effects');
                     return true;
                 }
-
+            
                 if (hookConfig._id) {
                     const id = hookConfig._id;
                     delete hookConfig._id;
@@ -307,23 +304,50 @@ plugins.register("/i/hook/save", function(ob) {
                         {new: true},
                         function(err, result) {
                             if (!err) {
+                                // Audit log: Hook updated
+                                if (result && result.value) {
+                                    plugins.dispatch("/systemlogs", {
+                                        params: params,
+                                        action: "hook_updated",
+                                        data: {
+                                            updatedHookID: result.value._id,
+                                            updatedBy: params.member._id,
+                                            updatedHookName: result.value.name
+                                        }
+                                    });
+                                }
+                                else {
+                                    common.returnMessage(params, 500, "No result found");
+                                }
                                 common.returnOutput(params, result && result.value);
                             }
                             else {
                                 common.returnMessage(params, 500, "Failed to save an hook");
                             }
-                        });
+                        }  
+                    );
                 }
+
             }
             if (hookConfig) {
                 hookConfig.createdBy = params.member._id; // Accessing property now with proper check
                 hookConfig.created_at = new Date().getTime();
-            }
+            } 
             return common.db.collection("hooks").insert(
                 hookConfig,
                 function(err, result) {
                     log.d("insert new hook:", err, result);
                     if (!err && result && result.insertedIds && result.insertedIds[0]) {
+                        // Audit log: Hook created
+                        plugins.dispatch("/systemlogs", {
+                            params: params,
+                            action: "hook_created",
+                            data: {
+                                createdHookID: hookConfig._id,
+                                createdBy: params.member._id,
+                                createdHookName: hookConfig.name
+                            }
+                        });
                         common.returnOutput(params, result.insertedIds[0]);
                     }
                     else {
@@ -520,6 +544,12 @@ plugins.register("/i/hook/status", function(ob) {
         }
         Promise.all(batch).then(function() {
             log.d("hooks all updated.");
+            // Audit log: Hook status updated
+            plugins.dispatch("/systemlogs", {
+                params: params,
+                action: "hook_status_updated",
+                data: { updatedHooksCount: Object.keys(statusList).length, requestedBy: params.member._id }
+            });
             common.returnOutput(params, true);
         });
     }, paramsInstance);
@@ -554,6 +584,15 @@ plugins.register("/i/hook/delete", function(ob) {
                 function(err, result) {
                     log.d(err, result, "delete an hook");
                     if (!err) {
+                        // Audit log: Hook deleted
+                        plugins.dispatch("/systemlogs", {
+                            params: params,
+                            action: "hook_deleted",
+                            data: {
+                                deletedHookID: hookID,
+                                requestedBy: params.member._id
+                            }
+                        });
                         common.returnMessage(params, 200, "Deleted an hook");
                     }
                 }
