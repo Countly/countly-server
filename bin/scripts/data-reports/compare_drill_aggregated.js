@@ -2,7 +2,7 @@
     * Script compares aggregated data from events collection with drill data for given period.
     * Place script ins
     * {countly}/bin/scripts/data-reports/compare_drill_aggregated.js
-    * 
+    *
     * Usage:
     * node compare_drill_aggregated.js
 */
@@ -10,8 +10,8 @@ var period = "7days"; //Chose any of formats: "Xdays" ("7days","100days") or  ["
 var app_list = []; //List with apps
 //Example var eventMap = {"6075f94b7e5e0d392902520c":["Logout","Login"],"6075f94b7e5e0d392902520d":["Logout","Login","Buy"]};
 var eventMap = {}; //If left empty will run for all alls/events.
+var verbose = false; //true to show more output
 
-var use_union_with = true; //
 
 const Promise = require("bluebird");
 const crypto = require("crypto");
@@ -89,29 +89,32 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                                 reject2();
                                             }
                                             else {
-                                                //console.log("    Drill data loaded");
-                                                //console.log(JSON.stringify(drillData));
+                                                if (verbose) {
+                                                    console.log("    Drill data loaded");
+                                                    console.log(JSON.stringify(drillData));
+                                                }
                                                 //fetch aggregated data
-
                                                 var collectionName = "events" + crypto.createHash('sha1').update(event + app._id).digest('hex');
 
                                                 fetch.getTimeObjForEvents(collectionName, params, null, function(data) {
                                                     var mergedData = {};
                                                     var totals = {"c": 0, "s": 0, "dur": 0};
-                                                    for (var z = 0; z < periodObject.currentPeriodArr.length; z++) {
-                                                        var date = periodObject.currentPeriodArr[z].split(".");
+                                                    for (var z0 = 0; z0 < periodObject.currentPeriodArr.length; z0++) {
+                                                        var date = periodObject.currentPeriodArr[z0].split(".");
                                                         if (data && data[date[0]] && data[date[0]][date[1]] && data[date[0]][date[1]][date[2]]) {
-                                                            mergedData[periodObject.currentPeriodArr[z]] = {};
-                                                            mergedData[periodObject.currentPeriodArr[z]].c = data[date[0]][date[1]][date[2]].c || 0;
-                                                            mergedData[periodObject.currentPeriodArr[z]].s = data[date[0]][date[1]][date[2]].s || 0;
-                                                            mergedData[periodObject.currentPeriodArr[z]].dur = data[date[0]][date[1]][date[2]].dur || 0;
+                                                            mergedData[periodObject.currentPeriodArr[z0]] = {};
+                                                            mergedData[periodObject.currentPeriodArr[z0]].c = data[date[0]][date[1]][date[2]].c || 0;
+                                                            mergedData[periodObject.currentPeriodArr[z0]].s = data[date[0]][date[1]][date[2]].s || 0;
+                                                            mergedData[periodObject.currentPeriodArr[z0]].dur = data[date[0]][date[1]][date[2]].dur || 0;
                                                             totals.c += data[date[0]][date[1]][date[2]].c || 0;
                                                             totals.s += data[date[0]][date[1]][date[2]].s || 0;
                                                             totals.dur += data[date[0]][date[1]][date[2]].dur || 0;
                                                         }
                                                     }
-                                                    //console.log("    Aggregated data loaded");
-                                                    //console.log(JSON.stringify(mergedData));
+                                                    if (verbose) {
+                                                        console.log("    Aggregated data loaded");
+                                                        console.log(JSON.stringify(mergedData));
+                                                    }
                                                     var report = {"totals": {}, "data": {}};
                                                     var haveAnything = false;
                                                     for (var key in totals) {
@@ -124,8 +127,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                                         if (drillData.data[periodObject.currentPeriodArr[z]]) {
                                                             if (mergedData[periodObject.currentPeriodArr[z]]) {
                                                                 var diff = {};
-                                                                for (var key in mergedData[periodObject.currentPeriodArr[z]]) {
-                                                                    diff[key] = (mergedData[periodObject.currentPeriodArr[z]][key] || 0) - (drillData.data[periodObject.currentPeriodArr[z]][key] || 0);
+                                                                for (var key0 in mergedData[periodObject.currentPeriodArr[z]]) {
+                                                                    diff[key0] = (mergedData[periodObject.currentPeriodArr[z]][key0] || 0) - (drillData.data[periodObject.currentPeriodArr[z]][key0] || 0);
                                                                 }
                                                                 if (diff.c || diff.s || diff.dur) {
                                                                     report.data[periodObject.currentPeriodArr[z]] = diff;
@@ -208,22 +211,12 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         endDate = endDate.valueOf() - endDate.utcOffset() * 60000;
 
         let collection = "drill_events" + crypto.createHash('sha1').update(options.event + options.app_id).digest('hex');
-
         var query = {"ts": {"$gte": startDate, "$lt": endDate}};
-        var query2 = {"ts": {"$gte": startDate, "$lt": endDate}};
-        /*query.e = options.event;
-        query.a = options.app_id;*/
-
         var pipeline = [
             {"$match": query},
         ];
-        /*if (use_union_with) {
-            let collection = "drill_events" + crypto.createHash('sha1').update(options.event + options.app_id).digest('hex');
-            pipeline.push({"$unionWith": { "coll": collection, "pipeline": [{"$match": query2}]}});
-        }*/
 
         pipeline.push({"$group": {"_id": "$d", "c": {"$sum": "$c"}, "s": {"$sum": "$s"}, "dur": {"$sum": "$dur"}}});
-        //console.log(JSON.stringify(pipeline));
         options.drillDb.collection(collection).aggregate(pipeline, {"allowDiskUse": true}).toArray(function(err, data) {
             if (err) {
                 console.log(err);
