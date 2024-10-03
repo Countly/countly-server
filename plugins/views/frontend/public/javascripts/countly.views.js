@@ -185,7 +185,15 @@
                     URLparams.dbFilter[`sg.name`] = { "$in": doc.selectedViews };
                 }
                 if (doc.selectedSegment !== "all" && doc.selectedSegmentValues.length > 0) {
-                    URLparams.dbFilter[`sg.${doc.selectedSegment}`] = { "$in": doc.selectedSegmentValues };
+                    if (doc.selectedSegment === "segment" || doc.selectedSegment === "platform") {
+                        URLparams.dbFilter.$or = [
+                            { "sg.platform": { "$in": doc.selectedSegmentValues } },
+                            { "sg.segment": { "$in": doc.selectedSegmentValues } }
+                        ];
+                    }
+                    else {
+                        URLparams.dbFilter[`sg.${doc.selectedSegment}`] = { "$in": doc.selectedSegmentValues };
+                    }
                 }
                 //Go to drill page
                 app.navigate("#/drill/" + JSON.stringify(URLparams), true);
