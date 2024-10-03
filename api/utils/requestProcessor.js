@@ -2130,8 +2130,16 @@ const processRequest = (params) => {
 
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
                             if (hasAccess) {
+                                var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
+                                var db = "";
+                                if (params.qstring.db && dbs[params.qstring.db]) {
+                                    db = dbs[params.qstring.db];
+                                }
+                                else {
+                                    db = common.db;
+                                }
                                 countlyApi.data.exports.fromDatabase({
-                                    db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
+                                    db: db,
                                     params: params,
                                     collection: params.qstring.collection,
                                     query: params.qstring.query,
