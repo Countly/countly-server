@@ -193,18 +193,15 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     });
 
     function getDataFromDrill(options, callback) {
-        var startDate = options.periodObj.start;
-        var endDate = options.periodObj.end;
-
         var tmpArr = options.periodObj.currentPeriodArr[0].split(".");
-        startDate = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
+        var startDate = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
         if (options.timezone) {
             startDate.tz(options.timezone);
         }
         startDate = startDate.valueOf() - startDate.utcOffset() * 60000;
 
         tmpArr = options.periodObj.currentPeriodArr[options.periodObj.currentPeriodArr.length - 1].split(".");
-        endDate = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
+        var endDate = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
         if (options.timezone) {
             endDate.tz(options.timezone);
         }
