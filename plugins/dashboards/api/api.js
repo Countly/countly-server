@@ -1218,12 +1218,12 @@ plugins.setConfigs("dashboards", {
                         }
                         if (hasEditAccess) {
                             common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {$set: widget, ...unsetQuery }, {new: false}, function(er, result) {
-                                if (er || !result || !result.value) {
+                                if (er || !result) {
                                     common.returnMessage(params, 500, "Failed to update widget");
                                 }
                                 else {
-                                    plugins.dispatch("/systemlogs", {params: params, action: "widget_edited", data: {before: result.value, update: widget}});
-                                    plugins.dispatch("/dashboard/widget/updated", {params: params, widget: {before: result.value, update: widget}});
+                                    plugins.dispatch("/systemlogs", {params: params, action: "widget_edited", data: {before: result, update: widget}});
+                                    plugins.dispatch("/dashboard/widget/updated", {params: params, widget: {before: result, update: widget}});
                                     common.returnMessage(params, 200, 'Success');
                                 }
                             });
@@ -1296,15 +1296,15 @@ plugins.setConfigs("dashboards", {
                             common.db.collection("dashboards").update({_id: common.db.ObjectID(dashboardId)}, { $pull: {widgets: common.db.ObjectID(widgetId)}}, function(dashboardErr) {
                                 if (!dashboardErr) {
                                     common.db.collection("widgets").findAndModify({_id: common.db.ObjectID(widgetId)}, {}, {}, {remove: true}, function(widgetErr, widgetResult) {
-                                        if (widgetErr || !widgetResult || !widgetResult.value) {
+                                        if (widgetErr || !widgetResult) {
                                             common.returnMessage(params, 500, "Failed to remove widget");
                                         }
                                         else {
-                                            var logData = widgetResult.value;
+                                            var logData = widgetResult;
                                             logData.dashboard = dashboard.name;
 
                                             plugins.dispatch("/systemlogs", {params: params, action: "widget_deleted", data: logData});
-                                            plugins.dispatch("/dashboard/widget/deleted", {params: params, widget: widgetResult.value});
+                                            plugins.dispatch("/dashboard/widget/deleted", {params: params, widget: widgetResult});
                                             common.returnMessage(params, 200, 'Success');
                                         }
                                     });
