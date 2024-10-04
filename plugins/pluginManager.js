@@ -2301,6 +2301,8 @@ var pluginManager = function pluginManager() {
                     if (typeof callback === "function") {
                         promise = promise.then(function(res) {
                             callback(undefined, res);
+                        }).catch(function(err) {
+                            callback(err, null);
                         });
                     }
                     return promise.catch(function(err) {
