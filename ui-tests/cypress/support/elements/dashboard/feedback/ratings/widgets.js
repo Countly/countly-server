@@ -129,7 +129,6 @@ export const feedbackRatingWidgetsPageElements = {
 };
 
 const widgetsDataTableElements = (index = 0) => ({
-
     TABLE_ROWS: '.el-table__row',
     EDIT_COLUMNS_BUTTON: 'ratings-widgets-data-table-edit-columns-button',
     EXPORT_AS_BUTTON: 'ratings-widgets-data-table-export-as-button',
@@ -137,7 +136,7 @@ const widgetsDataTableElements = (index = 0) => ({
     COLUMN_NAME_STATUS_LABEL: 'ratings-widgets-data-table-label-status',
     COLUMN_NAME_STATUS_SORTABLE_ICON: 'ratings-widgets-data-table-sortable-icon-status',
     COLUMN_NAME_RATINGS_WIDGET_NAME_LABEL: 'ratings-widgets-data-table-label-ratings-widget-name',
-    COLUMN_NAME_TARGETING_LABEL: 'ratings-widgets-data-table-label-targeting',
+    COLUMN_NAME_INTERNAL_NAME_LABEL: 'ratings-widgets-data-table-label-internal-name',
     COLUMN_NAME_RATING_SCORE_LABEL: 'ratings-widgets-data-table-label-rating-score',
     COLUMN_NAME_RATING_SCORE_SORTABLE_ICON: 'ratings-widgets-data-table-sortable-icon-rating-score',
     COLUMN_NAME_RESPONSES_LABEL: 'ratings-widgets-data-table-label-responses',
@@ -147,15 +146,10 @@ const widgetsDataTableElements = (index = 0) => ({
     //Columns' Rows' Datas Elements
     STATUS_SWITCH_WRAPPER: 'ratings-widgets-data-table-status-' + index + '-el-switch-wrapper',
     STATUS_SWITCH_INPUT: 'ratings-widgets-data-table-status-' + index + '-el-switch-input',
-    WIDGET_QUESTION: 'ratings-widgets-data-table-widget-name-' + index,
+    WIDGET_NAME: 'ratings-widgets-data-table-widget-name-' + index,
     INTERNAL_NAME: 'ratings-widgets-data-table-internal-widget-name-' + index,
     WIDGET_ID_LABEL: 'ratings-widgets-data-table-widget-id-label-' + index,
     WIDGET_ID: 'ratings-widgets-data-table-widget-id-value-' + index,
-    TARGETING_ALL_USERS: 'ratings-widgets-data-table-targeting-' + index + '-all-users',
-    TARGETING_PROPERTY_LABEL: 'ratings-widgets-data-table-targeting-' + index + '-seg-type-label',
-    TARGETING_PROPERTY_SEGMENT: 'ratings-widgets-data-table-targeting-' + index + '-seg-type-value',
-    TARGETING_BEHAVIOR_LABEL: 'ratings-widgets-data-table-targeting-' + index + '-cohorts-behavior-label',
-    TARGETING_BEHAVIOR_SEGMENT: 'ratings-widgets-data-table-targeting-' + index + '-cohorts-behavior-value',
     RATING_SCORE: 'ratings-widgets-data-table-rating-score-' + index,
     RESPONSES: 'ratings-widgets-data-table-responses-' + index,
     PAGES: 'ratings-widgets-data-table-pages-' + index,
@@ -217,7 +211,6 @@ export const feedbackRatingWidgetDetailsPageElements = {
 };
 
 const feedbackRatingWidgetDetailsCommentsDataTableElements = (index = 0) => ({
-
     TABLE_ROWS: '.el-table__row',
     EXPORT_AS_BUTTON: 'ratings-comments-table-export-as-button',
     TABLE_SEARCH_INPUT: 'ratings-comments-table-datatable-search-input',
@@ -231,7 +224,7 @@ const feedbackRatingWidgetDetailsCommentsDataTableElements = (index = 0) => ({
     ROW_RATING: 'ratings-comment-table-rating-row-' + index,
     ROW_TIME: 'ratings-comment-table-time-row-' + index,
     ROW_COMMENT: 'ratings-comment-table-comment-row-' + index,
-    ROW_EMAIL: 'ratings-comment-table-time-email-row' + index,
+    ROW_EMAIL: 'ratings-comment-table-email-row-' + index,
 
     //PAGINATION ELEMENTS
     ITEMS_PER_PAGE_LABEL: 'ratings-comments-table-items-per-page-label',
@@ -247,7 +240,6 @@ const feedbackRatingWidgetDetailsCommentsDataTableElements = (index = 0) => ({
 });
 
 const feedbackRatingWidgetDetailsRatingsDataTableElements = (index = 0) => ({
-
     TABLE_ROWS: '.el-table__row',
     EXPORT_AS_BUTTON: 'ratings-data-table-export-as-button',
     TABLE_SEARCH_INPUT: 'ratings-data-table-datatable-search-input',
