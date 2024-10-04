@@ -20,7 +20,7 @@ class Sender {
 
     /**
      * Prepare the job by loading credentials & configuration
-     * 
+     *
      * @returns {Promise} - resolved or rejected
      */
     async prepare() {
@@ -29,7 +29,7 @@ class Sender {
 
     /**
      * Load plgin configuration from db
-     * 
+     *
      * @returns {object} config object
      */
     static async loadConfig() {
@@ -135,7 +135,7 @@ class Sender {
     }
 
     /**
-     * Watch push collection for pushes to send, 
+     * Watch push collection for pushes to send,
      */
     async watch() {
         let oid = dbext.oidBlankWithDate(new Date()),
@@ -145,26 +145,6 @@ class Sender {
             });
         return count > 0;
     }
-    // /**
-    //  * Watch push collection for pushes to send, 
-    //  */
-    //  async watch() {
-    //     let oid = dbext.oidBlankWithDate(new Date());
-    //     try {
-    //         await common.db.collection('push').watch([{$match: {'fullDocument._id': {$lte: oid}}}], {maxAwaitTimeMS: 10000}).tryNext();
-    //         return true;
-    //     }
-    //     catch (e) {
-    //         if (e.code === 40573) { // not a replica set
-    //             let count = await common.db.collection('push').count({_id: {$lte: oid}});
-    //             return count > 0;
-    //         }
-    //         else {
-    //             this.log('error in change stream', e);
-    //             return false;
-    //         }
-    //     }
-    // }
 
     /**
      * Run the sender:
@@ -213,13 +193,6 @@ class Sender {
                 .pipe(batcher)
                 .pipe(resultor, {end: false});
 
-            // batcher.once('close', () => {
-            //     resultor.end(function() {
-            //         resultor.destroy();
-            //     });
-            // });
-            // connector.on('close', () => batcher.closeOnSyn());
-
             // wait for last stream close
             resultor.once('close', () => {
                 this.log.i('close');
@@ -254,7 +227,6 @@ class Sender {
             connector.destroy();
             pools.exit();
 
-            // await common.db.collection('messages').updateMany({_id: {$in: Object.keys(this.msgs)}}, {$set: {state: State.Queued, status: Status.Scheduled}});
             throw e;
         }
     }

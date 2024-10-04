@@ -9,7 +9,7 @@ const { DoFinish } = require('./do_finish'),
 class Connector extends DoFinish {
     /**
      * Constructor
-     * 
+     *
      * @param {Log} log logger
      * @param {MongoClient} db mongo client
      * @param {State} state state shared across the streams
@@ -39,7 +39,7 @@ class Connector extends DoFinish {
 
     /**
      * Transform's transform impementation
-     * 
+     *
      * @param {object} push push object
      * @param {string} encoding ignored
      * @param {function} callback callback
@@ -51,7 +51,7 @@ class Connector extends DoFinish {
 
     /**
      * Actual transform logic (it's not allowed to call _transform() directly)
-     * 
+     *
      * @param {object} push push object
      * @param {string} encoding ignored
      * @param {function} callback callback
@@ -214,7 +214,7 @@ class Connector extends DoFinish {
 
     /**
      * Actual flush logic (it's not allowed to call _flush() directly)
-     * 
+     *
      * @param {function|undefined} callback callback
      * @param {boolean} ifNeeded true if we only need to flush `discarded` when it's length is over `limit`
      */
@@ -304,105 +304,11 @@ class Connector extends DoFinish {
         this.resetErrors();
 
         callback();
-
-        // this.log.d('do_flush proceed');
-        // let updates = {};
-
-        // this.discardedByAppOrCreds.forEach(id => {
-        //     let push = this.state.pushes[id],
-        //         p = push.p,
-        //         la = push.pr.la,
-        //         inc = updates[push.m] ? updates[push.m].$inc : (updates[push.m] = {$inc: {}}).$inc;
-        //     inc['result.processed'] = (inc['result.processed'] || 0) + 1;
-        //     inc['result.errored'] = (inc['result.errored'] || 0) + 1;
-        //     inc['result.errors.NoCredentials'] = (inc['result.errors.NoCredentials'] || 0) + 1;
-        //     inc[`result.subs.${p}.processed`] = (inc[`result.subs.${p}.processed`] || 0) + 1;
-        //     inc[`result.subs.${p}.errored`] = (inc[`result.subs.${p}.errored`] || 0) + 1;
-        //     inc[`result.subs.${p}.errors.NoCredentials`] = (inc[`result.subs.${p}.errors.NoCredentials`] || 0) + 1;
-        //     inc[`result.subs.${p}.subs.${la}.processed`] = (inc[`result.subs.${p}.subs.${la}.processed`] || 0) + 1;
-        //     inc[`result.subs.${p}.subs.${la}.errored`] = (inc[`result.subs.${p}.subs.${la}.errored`] || 0) + 1;
-        //     inc[`result.subs.${p}.subs.${la}.errors.NoCredentials`] = (inc[`result.subs.${p}.subs.${la}.errors.NoCredentials`] || 0) + 1;
-        // });
-
-        // this.log.d('flushing', this.discardedByMessage);
-        // this.discardedByMessage.forEach(id => {
-        //     let push = this.state.pushes[id],
-        //         p = push.p,
-        //         la = push.pr.la,
-        //         inc = updates[push.m] ? updates[push.m].$inc : (updates[push.m] = {$inc: {}}).$inc;
-        //     inc['result.processed'] = (inc['result.processed'] || 0) + 1;
-        //     inc['result.errored'] = (inc['result.errored'] || 0) + 1;
-        //     inc['result.errors.NoMessage'] = (inc['result.errors.NoMessage'] || 0) + 1;
-        //     inc[`result.subs.${p}.processed`] = (inc[`result.subs.${p}.processed`] || 0) + 1;
-        //     inc[`result.subs.${p}.errored`] = (inc[`result.subs.${p}.errored`] || 0) + 1;
-        //     inc[`result.subs.${p}.errors.NoMessage`] = (inc[`result.subs.${p}.errors.NoMessage`] || 0) + 1;
-        //     inc[`result.subs.${p}.subs.${la}.processed`] = (inc[`result.subs.${p}.subs.${la}.processed`] || 0) + 1;
-        //     inc[`result.subs.${p}.subs.${la}.errored`] = (inc[`result.subs.${p}.subs.${la}.errored`] || 0) + 1;
-        //     inc[`result.subs.${p}.subs.${la}.errors.NoMessage`] = (inc[`result.subs.${p}.subs.${la}.errors.NoMessage`] || 0) + 1;
-        // });
-
-        // let ids = this.discardedByAppOrCreds.concat(this.discardedByMessage).map(this.db.ObjectID);
-        // this.discardedByAppOrCreds = [];
-        // this.discardedByMessage = [];
-
-        // this.db.collection('push').deleteMany({_id: {$in: ids}}, err => {
-        //     if (err) {
-        //         this.log.e('Error while clearing queue for %j', ids, err);
-        //     }
-        // });
-
-        // // we have to use fresh messages as they've been updated in Resultor, we only add two errors above (NoMessage, NoCredentials) in this class & update status for all messages
-        // Promise.all(Object.keys(updates).map(mid => this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, updates[mid])))
-        //     .then(async() => {
-        //         let mids = this.state.messages().map(m => m.id).concat(Object.keys(updates));
-        //         mids = mids.filter((mid, i) => mids.indexOf(mid) === i);
-
-        //         await new Promise(res => setTimeout(res, 5000));
-        //         let messages = await Message.findMany({_id: {$in: mids.map(this.db.ObjectID)}});
-        //         for (let m of messages) {
-        //             console.log('in connector', m.id, m.result.json);
-        //             let state, status, error;
-        //             if (m.triggerAutoOrApi()) {
-        //                 if (m.result.total === m.result.errored) {
-        //                     state = State.Error | State.Done;
-        //                     status = Status.Stopped;
-        //                     error = 'Failed to send all notifications';
-        //                 }
-        //                 else {
-        //                     state = m.state & ~State.Streaming;
-        //                     status = Status.Scheduled;
-        //                 }
-        //             }
-        //             else {
-        //                 if (m.result.total === m.result.errored) {
-        //                     state = State.Error | State.Done;
-        //                     status = Status.Failed;
-        //                     error = 'Failed to send all notifications';
-        //                 }
-        //                 else if (m.result.total === m.result.processed) {
-        //                     state = State.Done;
-        //                     status = Status.Sent;
-        //                 }
-        //                 else {
-        //                     state = m.state & ~State.Streaming;
-        //                     status = Status.Scheduled;
-        //                 }
-        //             }
-
-        //             let update = {state, status};
-        //             if (error) {
-        //                 update['result.error'] = new SendError(error, ERROR.EXCEPTION).serialize();
-        //             }
-        //             this.log.i('Message %s results: %s [%d] (%s)', m.id, status, state, error);
-        //             await this.db.collection('messages').updateOne({_id: m._id}, {$set: {state, status}});
-        //         }
-        //     })
-        //     .then(() => callback && callback(), err => callback(err));
     }
 
     /**
      * Flush & release resources
-     * 
+     *
      * @param {function} callback callback function
      */
     do_final(callback) {

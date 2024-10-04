@@ -5,7 +5,7 @@ const { DoFinish } = require('./do_finish'),
 
 /**
  * Sends multicast to multiple instances and waits for replies. Once all did reply, invokes callback.
- * 
+ *
  * @param {object} log logger instance
  * @param {int} frame frame type to send
  * @param {any} payload frame payload to send
@@ -77,7 +77,7 @@ function multicast(log, frame, payload, recipients, callback, time_out = 300000)
 class Batcher extends DoFinish {
     /**
      * Constructor
-     * 
+     *
      * @param {Log} log logger
      * @param {State} state State instance shared across streams
      */
@@ -115,7 +115,7 @@ class Batcher extends DoFinish {
 
     /**
      * Standard transform
-     * 
+     *
      * @param {object} push push object
      * @param {string} encoding ignored
      * @param {function} callback callback
@@ -170,30 +170,11 @@ class Batcher extends DoFinish {
         else {
             callback();
         }
-        // if (this.count >= this.size) {
-        //     this.log.d('flushing next batch of %d', this.buffers[id].length);
-
-        //     let data = encode(FRAME.SEND, this.buffers[id]);
-        //     this.count -= this.buffers[id].length;
-        //     this.buffers[id] = [push];
-
-        //     if (!this.listeners[id]) {
-        //         this.listeners[id] = result => {
-        //             this.push(result);
-        //         };
-        //         pools.pools[id].on('data', this.listeners[id]);
-        //     }
-        //     pools.pools[id].write(data, callback);
-        // }
-        // else {
-        //     this.buffers[id].push(push);
-        // }
-        // callback();
     }
 
     /**
      * Flush the leftover
-     * 
+     *
      * @param {function} callback callback
      * @returns {boolean|undefined} true in case nothing has been written
      */
@@ -202,8 +183,8 @@ class Batcher extends DoFinish {
             anything = false,
             /**
              * Callback for each pool write
-             * 
-             * @param {Error} err error 
+             *
+             * @param {Error} err error
              */
             cb = err => {
                 if (err) {
@@ -238,7 +219,7 @@ class Batcher extends DoFinish {
 
     /**
      * Unregistering listeners on stream closure
-     * 
+     *
      * @param {function} callback callback
      */
     do_final(callback) {
@@ -255,38 +236,6 @@ class Batcher extends DoFinish {
                 callback(flushErr || err);
             });
         });
-        // this.finalPayload = Math.random();
-        // this.finalLeft = Object.keys(this.listeners);
-        // this.finalTimeout = setTimeout(() => {
-        //     this.finalLeft = [];
-        //     this.finalCallback(null, new PushError('Failed to end in time', ERROR.EXCEPTION));
-        // }, 30000);
-        // this.finalCallback = (id, err) => {
-        //     if (id) {
-        //         let idx = this.finalLeft.indexOf(id);
-        //         if (idx !== -1) {
-        //             this.finalLeft.splice(idx, 1);
-        //         }
-        //         pools.pools[id].off('data', this.listeners[id]);
-        //         delete this.listeners[id];
-        //     }
-        //     if (!this.finalLeft.length) {
-        //         clearTimeout(this.finalTimeout);
-        //         delete this.finalPayload;
-        //         delete this.finalLeft;
-        //         delete this.finalTimeout;
-        //         delete this.finalCallback;
-        //         callback(err);
-        //     }
-        // };
-
-        // for (let id in this.listeners) {
-        //     pools.pools[id].write(encode(FRAME.END, this.finalPayload));
-        // }
-
-        // if (!this.finalLeft.length) {
-        //     setImmediate(this.finalCallback.bind(this, null));
-        // }
     }
 }
 
