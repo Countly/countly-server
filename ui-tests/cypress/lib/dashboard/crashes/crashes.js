@@ -131,7 +131,7 @@ const verifyStaticElementsOfCrashStatisticsPage = () => {
     cy.verifyElement({
         labelElement: crashPageElements.PAGE_TITLE,
         labelText: "Crash Statistics",
-        //tooltipElement: crashesPageElements.PAGE_TITLE_TOOLTIP, TO DO
+        //tooltipElement: crashesPageElements.PAGE_TITLE_TOOLTIP, TODO: Can not find the tooltip element
         //tooltipText: "An overview of the statistics of all crashes, as well as a graphic representation of selected crash metrics, in a selected time period."
     });
 
