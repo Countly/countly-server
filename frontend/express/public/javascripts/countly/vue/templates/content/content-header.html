@@ -6,10 +6,11 @@
         <div v-else class="cly-vue-content-builder__layout-header__icon cly-vue-content-builder__layout-header__icon--back" @click="close">
             <i class="cly-io cly-io-arrow-sm-left color-warm-gray-60"></i>
         </div>
-        <div v-if="toggle" class="cly-vue-content-builder__layout-header__toggle">
+        <div v-if="toggle" class="cly-vue-content-builder__layout-header__toggle bu-ml-4">
             <el-switch
-                v-tooltip="toggleTooltip"
+                v-tooltip.right="toggleTooltip"
                 :value="isToggleActive"
+                :disabled="isToggleDisabled"
                 @change="$emit('switch-toggle', $event)">
             </el-switch>
         </div>
@@ -35,13 +36,13 @@
         <cly-dynamic-tabs v-if="tabs" v-model="currentTab" :tabs="tabs" :custom-style="'background-color: ' + backgroundColor" :no-history=true></cly-dynamic-tabs>
     </div>
     <div class="cly-vue-content-builder__layout-header__actions">
-        <cly-status-badge v-if="status" :label="status" class="cly-vue-content-builder__layout-header__status"></cly-status-badge>
+        <cly-status-badge v-if="status.show" :label="status.label" :mode="status.mode" class="cly-vue-content-builder__layout-header__status"></cly-status-badge>
         <div v-if="!hideSaveButton" class="cly-vue-content-builder__layout-header__save">
-            <el-button type="success" :disabled="saveButtonDisabled" size="small" @click="save">{{ saveButtonLabel }}</el-button>
+            <el-button type="success" :disabled="disableSaveButton" size="small" @click="save">{{ saveButtonLabel }}</el-button>
         </div>
         <div v-if="topDropdownOptions.length" class="cly-vue-content-builder__layout-header__options">
             <cly-more-options size="small" @command="handleCommand($event)">
-                <el-dropdown-item v-for="(item, idx) in topDropdownOptions" :key="idx" :command="item.value">
+                <el-dropdown-item v-for="(item, idx) in topDropdownOptions" :disabled="item.disabled" :key="idx" :command="item.value">
                     <span class="cly-vue-content-builder__layout-header__option-label" @click="$emit('selected-command')">{{ item.label }}</span>
                 </el-dropdown-item>
             </cly-more-options>
