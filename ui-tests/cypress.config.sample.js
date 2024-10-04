@@ -8,6 +8,7 @@ module.exports = defineConfig({
         viewportWidth: 2000,
         viewportHeight: 1100,
         numTestsKeptInMemory: 0,
+        experimentalMemoryManagement: true,
         projectId: "000000",
         chromeWebSecurity: false,
         watchForFileChanges: true,
