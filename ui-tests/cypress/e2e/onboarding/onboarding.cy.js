@@ -371,9 +371,9 @@ describe('Complete Onboarding', () => {
         feedbackRatingsPageHelpers.verifyFullDataPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
         feedbackRatingWidgetsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToCrashesOverviewPage();
+        crashesPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToCrashesOverviewPage();
-        //crashesPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToRemoteConfigPage();
         //remoteConfigPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToReportManagerPage();
