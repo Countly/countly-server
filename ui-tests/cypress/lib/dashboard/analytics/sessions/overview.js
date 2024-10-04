@@ -3,7 +3,6 @@ import {
     analyticsSessionOverviewEChartElements,
     analyticsSessionOverviewDataTableElements
 } from "../../../../support/elements/dashboard/analytics/sessions/overview";
-const helper = require('../../../../support/helper');
 
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
