@@ -109,6 +109,10 @@
                     });
                 }
                 var filteredTotal = currentArray.length;
+                if (this.displayMode === 'list') {
+                    // avoid pagination in list mode for now
+                    this.controlParams.perPage = currentArray.length;
+                }
                 if (this.controlParams.perPage < currentArray.length) {
                     var startIndex = (this.controlParams.page - 1) * this.controlParams.perPage,
                         endIndex = startIndex + this.controlParams.perPage;
