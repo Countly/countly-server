@@ -42,7 +42,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             Promise.each(users, function(user) {
                                 return new Promise(function(resolve) {
                                     var device_id;
-                                    var events = [];
+                                    var events = [{"key": ""}];
                                     if (user.did) {
                                         device_id = user.did;
                                     }
@@ -91,7 +91,12 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                                 }
                                                 else {
                                                     var collection = "drill_events" + crypto.createHash('sha1').update(event.key + app._id).digest('hex');
-                                                    drillDb.collection(collection).aggregate([{$match: {did: device_id, uid: {"$exists": true}}}, {"$sort": {"ts": -1}}, {$limit: 1}, {$project: {did: 1, uid: 1}}], {"allowDiskUse": true}, function(err, res) {
+                                                    var query = {did: device_id, uid: {"$exists": true}};
+                                                    if (event.key === "") {
+                                                        collection = "drill_events";
+                                                        query.a = app._id + "";
+                                                    }
+                                                    drillDb.collection(collection).aggregate([{$match: query}, {"$sort": {"ts": -1}}, {$limit: 1}, {$project: {did: 1, uid: 1}}], {"allowDiskUse": true}, function(err, res) {
                                                         if (err) {
                                                             console.log(err);
                                                             resolve1();

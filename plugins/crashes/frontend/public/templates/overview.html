@@ -63,6 +63,10 @@
                         <cly-diff-helper v-if="(canUserDelete || canUserUpdate)" :diff="selectedCrashgroups" @discard="scope.unpatch()" :isModal=true>
                             <template v-slot:main>
                                 <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
+                                    <span class="selected-count-blue bu-pl-1 text-medium">
+                                        <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{selectedCrashgroups.length}}</span><span class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{i18n('common.selected')}}</span>
+                                    </span>
+                                    <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
                                     <cly-more-options v-if="canUserUpdate" class="bu-mr-3" size="small" text="Change Status" type="default" icon="cly-io cly-io-refresh bu-mr-2" :showArrows=true @command="setSelectedAs($event)" >
                                         <el-dropdown-item command="resolved" icon="cly-io cly-io-check-circle">{{ i18n('crashes.action-resolved') }}</el-dropdown-item>
                                         <el-dropdown-item command="resolving" icon="cly-io cly-io-clock">{{ i18n('crashes.action-resolving') }}</el-dropdown-item>

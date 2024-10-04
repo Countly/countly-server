@@ -15,14 +15,8 @@ const METRIC_TO_PROPERTY_MAP = {
     "# of page views": "t",
 };
 
-/**
- * Alert triggering logic
- * @param {Alert}    alert - alert document
- * @param {function} done  - callback function
- * @param {Date}     date  - scheduled date for the alert (job.next)
- */
 module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
-    const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
+    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
         return done();
@@ -41,7 +35,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
-            await commonLib.trigger({ alert, app, metricValue, date });
+            await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
     else {
@@ -57,7 +51,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             : change <= -compareValue;
 
         if (shouldTrigger) {
-            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
+            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
     done();
@@ -85,7 +79,7 @@ async function getViewMetricByDate(app, metric, view, date, period) {
 
     const record = await common.db
         .collection(collectionName)
-        .findOne({ m: monthFilter, vw: ObjectId(view.toString()) });
+        .findOne({ m: monthFilter, vw: new ObjectId(view.toString()) });
 
     // find the value we're interested inside the document.
     // structure in year based documents:
