@@ -613,6 +613,7 @@ appsApi.updateAppPlugins = function(params) {
 * @returns {boolean} true if operation successful
 **/
 appsApi.deleteApp = function(params) {
+    params = params || {};
     var argProps = {
             'app_id': {
                 'required': true,

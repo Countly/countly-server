@@ -353,11 +353,9 @@
 
                 var invalid = this.isWidgetInvalid(widget);
 
-                if (invalid) {
-                    return true;
-                }
+                return invalid;
 
-                return false;
+
             },
             widgetResizeNotAllowed: function(widget) {
                 /**
@@ -733,10 +731,6 @@
                     };
                 }
             },
-            autoPosition: {
-                type: Boolean,
-                default: false
-            },
             loading: {
                 type: Boolean,
                 default: true
@@ -951,7 +945,7 @@
                  * This validation should have been carried out in the
                  * WidgetComponent when settings change, but we are doing it here
                  * so that we don't have to watch for setting changes in the
-                 * WidgetComponent as that would been a performance hit.
+                 * WidgetComponent as that would be a performance hit.
                  */
                 this.validateWidgets(allWidgets);
 
@@ -1034,7 +1028,7 @@
                 if (id) {
                     var node = {
                         id: id,
-                        autoPosition: true,
+                        autoPosition: false,
                         w: validatedWidth,
                         h: validatedHeight,
                         minW: validatedMinWidth,
@@ -1048,29 +1042,48 @@
             onReady: function(id) {
                 this.makeGridWidget(id);
             },
-            sortWidgetByGeography: function(widgets) {
-                /**
-                 * We want to sort the grid elements by their x and y coordinates in
-                 * ascending order.
-                 */
+            customCompact: function(grid) {
+                if (!grid || !grid.engine || grid.engine.nodes.length === 0) {
+                    return;
+                }
+                const engine = grid.engine;
+                // Sort nodes by row (top to bottom) and then by column (left to right)
+                engine.sortNodes(1);
+                let maxY = Math.max(...engine.nodes.map(n => n.y + n.h));
+                let rowOccupancy = new Array(maxY).fill(false);
 
-                var w = _.sortBy(widgets, function(a) {
-                    return (a.y * 10) + a.x;
+                // Mark occupied rows
+                engine.nodes.forEach(node => {
+                    for (let y = node.y; y < node.y + node.h; y++) {
+                        rowOccupancy[y] = true;
+                    }
                 });
 
-                return w;
-            },
-            getRowWidgets: function(y) {
-                var allGridElements = this.savedGrid();
+                // Find empty rows
+                let emptyRows = [];
+                for (let y = 0; y < rowOccupancy.length; y++) {
+                    if (!rowOccupancy[y]) {
+                        emptyRows.push(y);
+                    }
+                }
 
-                allGridElements = this.sortWidgetByGeography(allGridElements);
+                // Remove empty rows
+                if (emptyRows.length > 0) {
+                    // Sort empty rows in descending order to avoid shifting issues
+                    emptyRows.sort((a, b) => b - a);
 
-                /** Get all the widgets in the same row */
-                var rowWidgets = allGridElements.filter(function(item) {
-                    return item.y === y;
-                });
+                    grid.batchUpdate(); // start batch updates
 
-                return rowWidgets;
+                    emptyRows.forEach(emptyRow => {
+                        // Move all nodes above the empty row down by one
+                        engine.nodes.forEach(node => {
+                            if (node.y > emptyRow) {
+                                grid.update(node.el, { y: node.y - 1 });
+                            }
+                        });
+                    });
+                    grid.batchUpdate(false); // end batch updates
+                }
             },
             initGrid: function() {
                 var self = this;
@@ -1079,23 +1092,51 @@
                     cellHeight: 80,
                     margin: 8,
                     animate: true,
-                    float: false
+                    float: true, // allow floating widgets
+                    column: 12,
+                    acceptWidgets: true,
+                    alwaysShowResizeHandle: 'mobile',
+                    itemClass: 'grid-stack-item',
+                    handleClass: 'grid-stack-item-content',
+                    sizeToContent: false,
+                    columnOpts: {
+                        breakpoints: [
+                            { w: 768, c: 1 },
+                            { w: Infinity, c: 12 }
+                        ],
+                        disableOneColumnMode: false,
+                        oneColumnSize: 768,
+                        widthOffset: 0
+                    },
                 });
 
-                this.updateAllWidgetsGeography();
+                /**
+                    * Temporary methods should be removed before prod
+                    */
+                window.grid = this.grid;
+                window.compacter = function() {
+                    window.bak = window.grid.save();
+                    window.grid.compact('list');
+                };
+                window.undoCompacter = function() {
+                    window.grid.load(window.bak);
+                };
+                /**
+                    * Temporary methods should be removed before prod
+                    */
 
                 if (!this.canUpdate) {
                     this.disableGrid();
                 }
 
-                this.grid.on("resizestart", function() {
+                this.grid.on("resizestart dragstart", function() {
                     self.$nextTick(function() {
                         self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
                         self.$store.dispatch("countlyDashboards/requests/markSanity", false);
                     });
                 });
 
-                this.grid.on("resizestop", function() {
+                this.grid.on("resizestop dragstop", function() {
                     /**
                      * After the resizestop event, change event is fired by the grid if there are
                      * changes in the positioning and size of OTHER widgets in the grid.
@@ -1108,30 +1149,35 @@
                      * the change event.
                      */
 
-                    self.updateAllWidgetsGeography();
-                    setTimeout(function() {
+                    self.$nextTick(function() {
                         /**
                          * Or we could set grid interaction to false from the then of updateAllWidgetsGeography
                          */
                         self.$store.dispatch("countlyDashboards/requests/gridInteraction", false);
-                    }, 500);
-                });
-
-                this.grid.on("dragstart", function() {
-                    self.$nextTick(function() {
-                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", true);
-                        self.$store.dispatch("countlyDashboards/requests/markSanity", false);
                     });
                 });
 
-                this.grid.on("dragstop", function() {
-                    self.updateAllWidgetsGeography();
-                    setTimeout(function() {
-                        /**
-                         * Or we could set grid interaction to false from the then of updateAllWidgetsGeography
-                         */
-                        self.$store.dispatch("countlyDashboards/requests/gridInteraction", false);
-                    }, 500);
+                this.grid.on('change', function(event, items) {
+                    items.forEach(item => {
+                        self.updateWidgetGeography(
+                            item.id,
+                            {
+                                size: [item.w, item.h],
+                                position: [item.x, item.y]
+                            }
+                        );
+                    });
+                    _.debounce(function() {
+                        self.$nextTick(function() {
+                            setTimeout(function() {
+                                self.customCompact(self.grid);
+                            }, 10);
+                        });
+                    }, 400)();
+                });
+
+                this.grid.on("removed", function() {
+                    self.customCompact(self.grid);
                 });
 
                 this.grid.on("added", function(event, element) {
@@ -1189,10 +1235,17 @@
                 var self = this;
 
                 this.$store.dispatch("countlyDashboards/widgets/syncGeography", {_id: widgetId, settings: settings});
-                setTimeout(function() {
-                    self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: settings});
-                }, 10);
+                this.$nextTick(() => {
+                    setTimeout(function() {
+                        self.$store.dispatch("countlyDashboards/widgets/update", {id: widgetId, settings: settings});
+                    }, 100);
+                });
             },
+            /**
+                * This method is called when the grid is ready.
+                * It updates the size and position of all widgets in the grid.
+                * @deprecateds
+                */
             updateAllWidgetsGeography: function() {
                 var allGridWidgets = this.savedGrid();
 
@@ -1296,14 +1349,13 @@
                     /**
                      * On making the widget "added" event is fired by the grid.
                      */
-                    this.grid.makeWidget("#" + id);
+                    this.$nextTick(() => {
+                        this.grid.makeWidget("#" + id);
+                    });
                 }
             },
             disableGrid: function() {
                 this.grid.disable();
-            },
-            compactGrid: function() {
-                this.grid.compact();
             },
             removeGridWidget: function(el) {
                 if (this.grid) {
@@ -1319,7 +1371,7 @@
                 var autoposition = false;
                 allWidgets.forEach(function(widget) {
                     if (!widget.position) {
-                        autoposition = true;
+                        autoposition = false;
                     }
                 });
                 return autoposition;
@@ -1766,7 +1818,7 @@
 })();
 
 /**
- * Race conditions in dashbaords -
+ * Race conditions in dashboards -
  *
  * 1. Someone tries to drag or resize widgets and as soon as they do so, there is a refresh
  * call initiated which fetches the old positions and sizes of widgets. So even though the

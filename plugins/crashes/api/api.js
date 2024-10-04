@@ -451,7 +451,7 @@ plugins.setConfigs("crashes", {
                     report.group = hash;
                     report.uid = dbAppUser.uid;
                     report.ts = params.time.timestamp;
-                    var updateUser = {};
+                    let updateUser = {};
                     if (!report.nonfatal) {
                         if (!dbAppUser.hadFatalCrash) {
                             updateUser.hadFatalCrash = "true";
@@ -464,20 +464,24 @@ plugins.setConfigs("crashes", {
                         }
                         updateUser.hadAnyNonfatalCrash = report.ts;
                     }
-                    let updateData = {$inc: {}};
+                    let updateData = { $inc: {} };
                     updateData.$inc["data.crashes"] = 1;
                     if (Object.keys(updateUser).length) {
                         updateData.$set = updateUser;
                     }
                     ob.updates.push(updateData);
 
-                    var set = {group: hash, 'uid': report.uid, last: report.ts};
-                    if (dbAppUser && dbAppUser.sc) {
+                    var set = {
+                        group: hash,
+                        uid: report.uid,
+                        last: report.ts,
+                    };
+                    if (dbAppUser.sc) {
                         set.sessions = dbAppUser.sc;
                     }
                     common.db.collection('app_crashusers' + params.app_id).findAndModify({group: hash, 'uid': report.uid}, {}, {$set: set, $inc: {reports: 1}}, {upsert: true, new: false}, function(err, user) {
                         user = user && user.ok ? user.value : null;
-                        if (user && user.sessions && dbAppUser && dbAppUser.sc && dbAppUser.sc > user.sessions) {
+                        if (user && user.sessions && dbAppUser.sc && dbAppUser.sc > user.sessions) {
                             report.session = dbAppUser.sc - user.sessions;
                         }
                         common.db.collection('app_crashes' + params.app_id).insert(report, function(crashErr, res) {

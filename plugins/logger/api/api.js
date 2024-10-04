@@ -59,6 +59,7 @@ plugins.setConfigs("logger", {
     };
 
     var processSDKRequest = function(params) {
+        params = params || {};
         log.d("Explicitly set logging_is_allowed => ", params.logging_is_allowed);
         const requestLoggerConfiguration = getRequestLoggerConfiguration(params);
         log.d("Logging config => ", requestLoggerConfiguration);

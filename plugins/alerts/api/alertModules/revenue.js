@@ -22,12 +22,9 @@ const PAYING_USER_PROP_KEY = "p";
  *   - average revenue per user
  *   - average revenue per paying user
  *   - # of paying users
- * @param {Alert}    alert - alert document
- * @param {function} done  - callback function
- * @param {Date}     date  - scheduled date for the alert (job.next)
  */
 module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
-    const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
+    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
         return done();
@@ -40,7 +37,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
-            await commonLib.trigger({ alert, app, metricValue, date });
+            await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
     else {
@@ -56,7 +53,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             : change <= -compareValue;
 
         if (shouldTrigger) {
-            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
+            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
     done();
