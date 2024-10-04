@@ -8,8 +8,9 @@
         </template>
     </cly-header>
 
-    <cly-main class="preset-table">
+    <cly-main>
         <cly-datatable-n 
+            :display-mode="'list'"
             :rows="rows" 
             :resizable="true" 
             :force-loading="isLoading" 
