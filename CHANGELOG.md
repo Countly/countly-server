@@ -1,3 +1,8 @@
+## Version 24.05.15
+Enterprise fixes:
+- [nps] Fixed UI issues in the widget editor related to the "user consent" section
+- [ratings] Fixed rendering issue for escaped values
+
 ## Version 24.05.14
 Fixes:
 - [code] Added better handling for countly servers while deployed using subdirectory
