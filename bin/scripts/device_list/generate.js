@@ -1,5 +1,6 @@
 // run as 
 // node generate.js > countly.device.list.js
+// resulting file should be copied to "/frontend/express/public/javascripts/countly"
 
 //https://www.theiphonewiki.com/wiki/Models
 //https://gist.github.com/adamawolf/3048717
@@ -16,8 +17,9 @@ for (var i in amazon) {
     devices[i] = amazon[i];
 }
 
-//Informative messages are writer to stderr so they don't interfere with the stdout piping to a file
-//When downloading the CSV file it will be UTF-16 LE. It needs to be transformed to UTF-8 (non BOM version)
+// Informative messages are writer to stderr so they don't interfere with the stdout piping to a file
+// When downloading the CSV file it will be UTF-16 LE. It needs to be transformed to UTF-8 (non BOM version)
+// converting with notepad++ or vscode might not work on a windows device. Try on a mac device
 process.stderr.write("Starting CSV parsing\n");
 var csv = require('csvtojson');
 csv()
