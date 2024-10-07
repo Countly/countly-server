@@ -15,7 +15,7 @@ Features:
 - [alerts] UI improvements
 - [alerts] small improvements in email notifications
 - [code] Unifying bottom menu for bulk operations
-- [core] Aggregated data collections merged together
+- [core] Aggregated events data collections merged together
 - [nps] UI improvements
 - [surveys] UI improvements
 - upgraded mongoDB to version 7
