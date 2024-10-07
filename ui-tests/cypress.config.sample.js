@@ -9,7 +9,7 @@ module.exports = defineConfig({
         viewportHeight: 1100,
         numTestsKeptInMemory: 0,
         projectId: "000000",
-        chromeWebSecurity: false,
+        chromeWebSecurity: true,
         watchForFileChanges: true,
         video: true,
         setupNodeEvents(on, config) {
