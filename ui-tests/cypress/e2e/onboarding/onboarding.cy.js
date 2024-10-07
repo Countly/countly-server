@@ -365,15 +365,15 @@ describe('Complete Onboarding', () => {
         //analyticsEventsOverviewPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToPushNotifications();
+        messagingPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToFeedbackRatingsPage();
+        feedbackRatingsPageHelpers.verifyFullDataPageElements();
+        feedbackRatingsPageHelpers.clickRatingWidgetsTab();
+        feedbackRatingWidgetsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToCrashesOverviewPage();
+        crashesPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToPushNotifications();
-        //messagingPageHelpers.verifyFullDataPageElements();
-        //navigationHelpers.goToFeedbackRatingsPage();
-        //feedbackRatingsPageHelpers.verifyFullDataPageElements();
-        //feedbackRatingsPageHelpers.clickRatingWidgetsTab();
-        //feedbackRatingWidgetsPageHelpers.verifyFullDataPageElements();
-        //navigationHelpers.goToCrashesOverviewPage();
-        //crashesPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToRemoteConfigPage();
         //remoteConfigPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToReportManagerPage();
