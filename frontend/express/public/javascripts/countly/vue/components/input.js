@@ -302,7 +302,7 @@
                                                 <slot name="option-prefix" v-bind="option"></slot>\
                                             </div>\
                                             <slot name="option-label" v-bind="option">\
-                                              <div :data-test-id="testId + \'-item-\' + (option.label ? option.label.replaceAll(\' \', \'-\').toLowerCase() : \' \')" class="cly-vue-listbox__item-label" v-tooltip="option.label">{{decodeHtml(option.label)}}</div>\
+                                              <div :data-test-id="testId + \'-item-\' + (option.label ? option.label.replaceAll(\' \', \'-\').toLowerCase() : \' \')" class="cly-vue-listbox__item-label" v-tooltip="decodeHtml(option.label)">{{decodeHtml(option.label)}}</div>\
                                             </slot>\
                                         </div>\
                                         <div class="bu-level-right" v-if="hasRemovableOptions || !!$scopedSlots[\'option-suffix\']">\
