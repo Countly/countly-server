@@ -98,6 +98,7 @@ describe('Create New Widget', () => {
             submitButtonText: "Submit Feedback",
             selectedMainColor: '#0166D6',
             selectedFontColor: '#0166D6',
+            hasAggrementCheckbox: true,
             hasPoweredByLogo: true,
             thankYouMessageText: 'Thanks for your feedback!',
             successIconColor: '#0166D6'
