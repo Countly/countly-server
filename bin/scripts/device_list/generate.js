@@ -25,8 +25,8 @@ var csv = require('csvtojson');
 csv()
 //from https://support.google.com/googleplay/answer/1727131?hl=en-GB
     .fromFile("./supported_devices.csv")
-    .on('json', (jsonObj)=>{        
-        process.stderr.write("Parsed data/json line: " + data);
+    .on('json', (jsonObj)=>{
+        //process.stderr.write("Parsed data/json line: " + jsonObj);
         var d = jsonObj["Marketing Name"] + "";
         var i = jsonObj["Model"] + "";
         if (i != d && d.trim().length) {
@@ -40,7 +40,7 @@ csv()
             }
         }
     })
-    // .on('data', (data)=>{        
+    // .on('data', (data)=>{
     //     //process.stderr.write("Parsed data line: " + data);
     // })
     // .on('error', (err)=>{
@@ -50,4 +50,4 @@ csv()
         process.stderr.write("CSV parsing 'done' trigger\n");
         process.stdout.write("/**\n * Object with device models as keys and pretty/marketing device names as values\n * @name countlyDeviceList\n * @global\n * @namespace countlyDeviceList\n */\nvar countlyDeviceList = " + JSON.stringify(devices, null, 4) + ";\n/*global module*/\nif (typeof module !== 'undefined' && module.exports) {\n    module.exports = countlyDeviceList;\n}");
     });
-    process.stderr.write("Ending CSV parsing\n");
+process.stderr.write("Ending CSV parsing\n");
