@@ -244,7 +244,7 @@ describe('Testing Simple database operations', function() {
         describe('Find and modify upsert:false,new:false', function() {
             runTest({"op": "findAndModify", query: { name: "test" }, "update": { $set: { name: "test2" } }, "options": { new: false }});
         });
-		describe('Find and modify remove:true', function() {
+        describe('Find and modify remove:true', function() {
             runTest({"op": "findAndModify", query: { _id: "aaaaa" }, "update": {}, "options": { remove: true }});
         });
     });
