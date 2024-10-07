@@ -54,6 +54,7 @@ const verifyDemoPageElementsAndRate = ({
     submitButtonText,
     submitButtonColor,
     submitButtonFontColor,
+    hasAggrementCheckbox = false,
     hasPoweredByLogo = true,
     thankYouMessageText,
     successIconColor
@@ -130,6 +131,12 @@ const verifyDemoPageElementsAndRate = ({
     }
     else {
         cy.shouldNotExist(demoPageElements.LOGO_IMAGE);
+    }
+
+    if (hasAggrementCheckbox) {
+        cy.contains('label', 'I agree to the terms and conditions and privacy policy')
+            .find('input[type="checkbox"]')
+            .click();
     }
 
     cy.clickElement(demoPageElements.SUBMIT_BUTTON);
