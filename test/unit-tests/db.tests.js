@@ -29,38 +29,38 @@ function runTest(options) {
                 console.log(JSON.stringify(res));
 
 
-				if(options.options.remove){
-					res = res ||{};
-					if(options.query._id){
-						res.should.have.property("_id", options.query._id);
-					}
-					else {
-						res.should.have.property("_id");
-					}
+                if (options.options.remove) {
+                    res = res || {};
+                    if (options.query._id) {
+                        res.should.have.property("_id", options.query._id);
+                    }
+                    else {
+                        res.should.have.property("_id");
+                    }
 
-					if(options.query.name){
-						res.should.have.property("name", options.query.name);
-					}
-					else {
-						res.should.have.property("name");
-					}
-				}
-				else {
-					res.should.have.property("value");
-					if (options.options.new) {
-						if (options.update.$set.name) {
-							res.value.should.have.property("name", options.update.$set.name);
-						}
-					}
-					else {
-						if (options.query.name) {
-							res.value.should.have.property("name", options.query.name);
-						}
-					}
-					if (options.query._id) {
-						res.value.should.have.property("_id", options.query._id);
-					}
-				}
+                    if (options.query.name) {
+                        res.should.have.property("name", options.query.name);
+                    }
+                    else {
+                        res.should.have.property("name");
+                    }
+                }
+                else {
+                    res.should.have.property("value");
+                    if (options.options.new) {
+                        if (options.update.$set.name) {
+                            res.value.should.have.property("name", options.update.$set.name);
+                        }
+                    }
+                    else {
+                        if (options.query.name) {
+                            res.value.should.have.property("name", options.query.name);
+                        }
+                    }
+                    if (options.query._id) {
+                        res.value.should.have.property("_id", options.query._id);
+                    }
+                }
                 done();
             });
         }
@@ -123,38 +123,38 @@ function runTest(options) {
             var res = await db.collection("testCommands2").findAndModify(options.query, options.sort || [], options.update, options.options);
             console.log("              " + JSON.stringify(res));
 
-			if(options.options.remove){
-					if(options.query._id){
-						res.should.have.property("_id", options.query._id);
-					}
-					else {
-						res.should.have.property("_id");
-					}
+            if (options.options.remove) {
+                if (options.query._id) {
+                    res.should.have.property("_id", options.query._id);
+                }
+                else {
+                    res.should.have.property("_id");
+                }
 
-					if(options.query.name){
-						res.should.have.property("name", options.query.name);
-					}
-					else {
-						res.should.have.property("name");
-					}
-				}
-				else {
-            res.should.have.property("value");
-            if (options.options.new) {
-                res.value.should.have.property("name", options.update.$set.name);
-            }
-            else {
                 if (options.query.name) {
-                    res.value.should.have.property("name", options.query.name);
+                    res.should.have.property("name", options.query.name);
+                }
+                else {
+                    res.should.have.property("name");
                 }
             }
-            if (options.query._id) {
-                res.value.should.have.property("_id", options.query._id);
-            }
             else {
-                res.value.should.have.property("_id");
+                res.should.have.property("value");
+                if (options.options.new) {
+                    res.value.should.have.property("name", options.update.$set.name);
+                }
+                else {
+                    if (options.query.name) {
+                        res.value.should.have.property("name", options.query.name);
+                    }
+                }
+                if (options.query._id) {
+                    res.value.should.have.property("_id", options.query._id);
+                }
+                else {
+                    res.value.should.have.property("_id");
+                }
             }
-				}
 
         }
         else {
@@ -192,17 +192,17 @@ function runTest(options) {
 describe('Testing Simple database operations', function() {
 
     describe('Setting up db connection', function() {
-		before('Create db connection', async function() {
-			testUtils.db = await plugins.dbConnection("countly");
-			testUtils.client = testUtils.db.client;
-		});
+        before('Create db connection', async function() {
+            testUtils.db = await plugins.dbConnection("countly");
+            testUtils.client = testUtils.db.client;
+        });
         it('Setting db', function(done) {
             db = testUtils.client.db("countly");
             done();
         });
     });
 
-	describe('Cleanup', function() {
+    describe('Cleanup', function() {
         it('should remove collection with callback', function(done) {
             db.collection("testCommands").drop(function(err, res) {
                 if (err) {
@@ -244,8 +244,8 @@ describe('Testing Simple database operations', function() {
         describe('Find and modify upsert:false,new:false', function() {
             runTest({"op": "findAndModify", query: { name: "test" }, "update": { $set: { name: "test2" } }, "options": { new: false }});
         });
-		 describe('Find and modify remove:true', function() {
-            runTest({"op": "findAndModify", query: { _id:"aaaaa" }, "update": {}, "options": { remove: true }});
+		describe('Find and modify remove:true', function() {
+            runTest({"op": "findAndModify", query: { _id: "aaaaa" }, "update": {}, "options": { remove: true }});
         });
     });
 
@@ -265,10 +265,10 @@ describe('Testing Simple database operations', function() {
         });
         it("test cursor using await and going next()", async function() {
             var cursor = await db.collection("testCommands2").find({});
-			var doc = await cursor.next();
+            var doc = await cursor.next();
             while (doc) {
-				doc.should.have.property("_id");
-				doc.should.have.property("name");
+                doc.should.have.property("_id");
+                doc.should.have.property("name");
                 doc = await cursor.next();
             }
         });
@@ -283,7 +283,7 @@ describe('Testing Simple database operations', function() {
                     console.log(err);
                 }
                 res.should.be.true;
-				done();
+                done();
             });
 
         });
@@ -291,7 +291,7 @@ describe('Testing Simple database operations', function() {
             var res = await db.collection("testCommands2").drop();
             res.should.be.true;
         });
-		after('Close db connection', async function() {
+        after('Close db connection', async function() {
             testUtils.client.close();
         });
     });
