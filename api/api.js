@@ -1,4 +1,5 @@
 const http = require('http');
+const pack = require('../package.json');
 const cluster = require('cluster');
 const formidable = require('formidable');
 const os = require('os');
@@ -11,9 +12,399 @@ const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
-const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
+
+/********** OpenTelemetry Prometheus Metrics **********/
+
+
+const { MeterProvider /*, ConsoleMetricExporter, PeriodicExportingMetricReader*/ } = require('@opentelemetry/sdk-metrics');
+const { PrometheusExporter } = require('@opentelemetry/exporter-prometheus');
+const { NodeSDK } = require('@opentelemetry/sdk-node');
+const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumentations-node');
+const { MongoDBInstrumentation } = require('@opentelemetry/instrumentation-mongodb');
+// const { Resource } = require('@opentelemetry/resources');
+// const { SemanticResourceAttributes } = require('@opentelemetry/semantic-conventions');
+const { /*metrics, */trace } = require('@opentelemetry/api');
+// const { ConsoleSpanExporter } = require('@opentelemetry/sdk-trace-base');
+const gcStats = require('gc-stats')();
+const v8 = require('v8');
+
+// Create a resource that identifies your service
+// const resource = new Resource({
+//     [SemanticResourceAttributes.SERVICE_NAME]: 'countly-metrics',
+//     [SemanticResourceAttributes.SERVICE_VERSION]: process.env.npm_package_version || '1.0.0',
+// });
+
+// Create Prometheus exporter
+const prometheusExporter = new PrometheusExporter({
+    // host: 'localhost',
+    // endpoint: '/metrics',
+    port: 9464,
+});
+
+// Create MeterProvider
+const meterProvider = new MeterProvider();
+
+// Add Console exporter to MeterProvider
+// meterProvider.addMetricReader(new PeriodicExportingMetricReader({
+//     exporter: new ConsoleMetricExporter(),
+//     exportIntervalMillis: 1000,
+// }));
+
+// Add Prometheus exporter to MeterProvider
+meterProvider.addMetricReader(prometheusExporter);
+
+// Get a meter
+const meter = meterProvider.getMeter('countly-metrics');
+
+// Create metrics
+const httpRequestDuration = meter.createHistogram('http_request_duration_seconds', {
+    description: 'Duration of HTTP requests in seconds',
+});
+
+const heapUsed = meter.createObservableGauge('nodejs_heap_used_bytes', {
+    description: 'Node.js heap usage in bytes',
+});
+
+const heapTotal = meter.createObservableGauge('nodejs_heap_total_bytes', {
+    description: 'Node.js total heap size in bytes',
+});
+
+const externalMemory = meter.createObservableGauge('nodejs_external_memory_bytes', {
+    description: 'Node.js external memory usage in bytes',
+});
+
+const eventLoopLag = meter.createObservableGauge('nodejs_eventloop_lag_seconds', {
+    description: 'Node.js event loop lag in seconds',
+});
+
+const cpuUser = meter.createObservableCounter('nodejs_cpu_user_seconds_total', {
+    description: 'Node.js CPU time spent in user mode',
+});
+
+const cpuSystem = meter.createObservableCounter('nodejs_cpu_system_seconds_total', {
+    description: 'Node.js CPU time spent in system mode',
+});
+
+const mongoDbOperationCounter = meter.createCounter('mongodb_operations_total', {
+    description: 'Total number of MongoDB operations',
+});
+
+const mongoDbOperationDuration = meter.createHistogram('mongodb_operation_duration_seconds', {
+    description: 'Duration of MongoDB operations in seconds',
+});
+
+// Process and OS metrics
+const processMemoryUsage = meter.createObservableGauge('process_memory_usage_bytes', {
+    description: 'Process memory usage in bytes',
+});
+
+const osMemoryUsage = meter.createObservableGauge('os_memory_usage_bytes', {
+    description: 'OS memory usage in bytes',
+});
+
+const processCpuUsage = meter.createObservableGauge('process_cpu_usage_seconds', {
+    description: 'Process CPU usage in seconds',
+});
+
+const osCpuUsage = meter.createObservableGauge('os_cpu_usage_percentage', {
+    description: 'OS CPU usage percentage',
+});
+
+// Node.js specific metrics
+const nodeActiveHandles = meter.createObservableGauge('node_active_handles', {
+    description: 'Number of active handles',
+});
+
+const nodeActiveRequests = meter.createObservableGauge('node_active_requests', {
+    description: 'Number of active requests',
+});
+
+// V8 heap metrics
+const v8HeapStats = meter.createObservableGauge('v8_heap_stats', {
+    description: 'V8 heap statistics',
+});
+
+const v8HeapSpaceStats = meter.createObservableGauge('v8_heap_space_stats', {
+    description: 'V8 heap space statistics',
+});
+
+// New detailed GC metrics
+const gcDuration = meter.createHistogram('gc_duration_seconds', {
+    description: 'Duration of GC operations',
+});
+
+const gcPauseTime = meter.createObservableGauge('gc_pause_time_seconds', {
+    description: 'Total pause time of GC operations',
+});
+
+const gcPhaseTime = meter.createObservableGauge('gc_phase_time_seconds', {
+    description: 'Time spent in different GC phases',
+});
+
+const gcReclaimed = meter.createObservableGauge('gc_reclaimed_bytes', {
+    description: 'Bytes reclaimed by GC',
+});
+
+// New detailed memory metrics
+const nodeMemoryUsage = meter.createObservableGauge('node_memory_usage_bytes', {
+    description: 'Memory usage of different Node.js components',
+});
+
+
+// GC stats tracking
+let totalGCPauseTime = 0;
+let totalMarkTime = 0;
+let totalSweepTime = 0;
+let totalCompactTime = 0;
+let totalReclaimedBytes = 0;
+
+gcStats.on('stats', (stats) => {
+    const gcDurationSeconds = stats.pause / 1e9;
+    gcDuration.record(gcDurationSeconds, { gctype: stats.gctype });
+
+    totalGCPauseTime += gcDurationSeconds;
+    totalMarkTime += (stats.pauseMS.mark || 0) / 1000;
+    totalSweepTime += (stats.pauseMS.sweep || 0) / 1000;
+    totalCompactTime += (stats.pauseMS.compact || 0) / 1000;
+    totalReclaimedBytes += stats.diff.usedHeapSize || 0;
+
+    gcPauseTime.addCallback((observableResult) => {
+        observableResult.observe(totalGCPauseTime);
+    });
+
+    gcPhaseTime.addCallback((observableResult) => {
+        observableResult.observe(totalMarkTime, { phase: 'mark' });
+        observableResult.observe(totalSweepTime, { phase: 'sweep' });
+        observableResult.observe(totalCompactTime, { phase: 'compact' });
+    });
+
+    gcReclaimed.addCallback((observableResult) => {
+        observableResult.observe(totalReclaimedBytes);
+    });
+});
+
+
+// Update metrics
+// eslint-disable-next-line require-jsdoc
+const updateMetrics = () => {
+    // Process memory usage
+    const memoryUsage = process.memoryUsage();
+    Object.entries(memoryUsage).forEach(([key, value]) => {
+        processMemoryUsage.addCallback((observableResult) => {
+            observableResult.observe(value, { type: key });
+        });
+    });
+
+    heapUsed.addCallback((observableResult) => {
+        observableResult.observe(memoryUsage.heapUsed);
+    });
+    heapTotal.addCallback((observableResult) => {
+        observableResult.observe(memoryUsage.heapTotal);
+    });
+    externalMemory.addCallback((observableResult) => {
+        observableResult.observe(memoryUsage.external);
+    });
+
+    cpuUser.addCallback((observableResult) => {
+        const cpuUsage = process.cpuUsage();
+        observableResult.observe(cpuUsage.user / 1e6);
+    });
+    cpuSystem.addCallback((observableResult) => {
+        const cpuUsage = process.cpuUsage();
+        observableResult.observe(cpuUsage.system / 1e6);
+    });
+
+    // OS memory usage
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    osMemoryUsage.addCallback((observableResult) => {
+        observableResult.observe(totalMem, { type: 'total' });
+        observableResult.observe(freeMem, { type: 'free' });
+        observableResult.observe(totalMem - freeMem, { type: 'used' });
+    });
+
+    // CPU usage
+    const cpuUsage = process.cpuUsage();
+    processCpuUsage.addCallback((observableResult) => {
+        observableResult.observe(cpuUsage.user / 1e6, { type: 'user' });
+        observableResult.observe(cpuUsage.system / 1e6, { type: 'system' });
+    });
+
+    const cpus = os.cpus();
+    const totalCpuUsage = cpus.reduce((acc, cpu) => {
+        acc.user += cpu.times.user;
+        acc.nice += cpu.times.nice;
+        acc.sys += cpu.times.sys;
+        acc.idle += cpu.times.idle;
+        acc.irq += cpu.times.irq;
+        return acc;
+    }, { user: 0, nice: 0, sys: 0, idle: 0, irq: 0 });
+
+    const totalTime = Object.values(totalCpuUsage).reduce((acc, time) => acc + time, 0);
+    Object.entries(totalCpuUsage).forEach(([key, value]) => {
+        osCpuUsage.addCallback((observableResult) => {
+            observableResult.observe((value / totalTime) * 100, { type: key });
+        });
+    });
+
+    // Node.js specific metrics
+    nodeActiveHandles.addCallback((observableResult) => {
+        observableResult.observe(process._getActiveHandles().length);
+    });
+
+    nodeActiveRequests.addCallback((observableResult) => {
+        observableResult.observe(process._getActiveRequests().length);
+    });
+
+    // V8 heap stats
+    const heapStats = v8.getHeapStatistics();
+    Object.entries(heapStats).forEach(([key, value]) => {
+        v8HeapStats.addCallback((observableResult) => {
+            observableResult.observe(value, { stat: key });
+        });
+    });
+
+    // V8 heap space stats
+    const heapSpaceStats = v8.getHeapSpaceStatistics();
+    heapSpaceStats.forEach((space) => {
+        v8HeapSpaceStats.addCallback((observableResult) => {
+            observableResult.observe(space.space_size, { space: space.space_name, stat: 'space_size' });
+            observableResult.observe(space.space_used_size, { space: space.space_name, stat: 'space_used_size' });
+            observableResult.observe(space.space_available_size, { space: space.space_name, stat: 'space_available_size' });
+            observableResult.observe(space.physical_space_size, { space: space.space_name, stat: 'physical_space_size' });
+        });
+    });
+
+    // Detailed Node.js memory usage
+    nodeMemoryUsage.addCallback((observableResult) => {
+        observableResult.observe(memoryUsage.rss, { component: 'rss' });
+        observableResult.observe(memoryUsage.heapTotal, { component: 'heapTotal' });
+        observableResult.observe(memoryUsage.heapUsed, { component: 'heapUsed' });
+        observableResult.observe(memoryUsage.external, { component: 'external' });
+        observableResult.observe(memoryUsage.arrayBuffers, { component: 'arrayBuffers' });
+    });
+    const startTime = process.hrtime();
+    setImmediate(() => {
+        const endTime = process.hrtime(startTime);
+        const lag = endTime[0] * 1e9 + endTime[1];
+        eventLoopLag.addCallback((observableResult) => {
+            observableResult.observe(lag / 1e9);
+        });
+    });
+};
+
+// Update metrics every 5 seconds
+setInterval(updateMetrics, 5000);
+
+// MongoDB instrumentation
+// let mongoClient;
+const originalDbConnection = plugins.dbConnection;
+plugins.dbConnection = async function(...args) {
+    const db = await originalDbConnection.apply(this, args);
+    // mongoClient = db.client;
+
+    const methodsToWrap = ['collection', 'aggregate', 'find', 'findOne', 'updateOne', 'updateMany', 'deleteOne', 'deleteMany', 'insertOne', 'insertMany'];
+
+    methodsToWrap.forEach(method => {
+        const original = db[method];
+        db[method] = function(...methodArgs) {
+            const span = trace.getTracer('mongodb').startSpan(`MongoDB ${method}`);
+            const startTime = Date.now();
+
+            mongoDbOperationCounter.add(1, { operation: method });
+
+            const result = original.apply(this, methodArgs);
+
+            if (result && typeof result.then === 'function') {
+                return result.then(
+                    (res) => {
+                        span.end();
+                        const duration = (Date.now() - startTime) / 1000;
+                        mongoDbOperationDuration.record(duration, { operation: method });
+                        return res;
+                    },
+                    (err) => {
+                        span.recordException(err);
+                        span.end();
+                        const duration = (Date.now() - startTime) / 1000;
+                        mongoDbOperationDuration.record(duration, { operation: method });
+                        throw err;
+                    }
+                );
+            }
+
+            span.end();
+            const duration = (Date.now() - startTime) / 1000;
+            mongoDbOperationDuration.record(duration, { operation: method });
+            return result;
+        };
+    });
+
+    return db;
+};
+
+
+
+// Instrument HTTP server
+const originalHttpServer = http.Server;
+http.Server = function(...args) {
+    const server = new originalHttpServer(...args);
+    server.on('request', (req, res) => {
+        const start = process.hrtime();
+        res.on('finish', () => {
+            const duration = process.hrtime(start);
+            const durationSeconds = duration[0] + duration[1] / 1e9;
+            httpRequestDuration.record(durationSeconds, {
+                method: req.method,
+                route: req.url,
+                code: res.statusCode.toString()
+            });
+        });
+    });
+    return server;
+};
+
+// Configure the SDK
+const sdk = new NodeSDK({
+    // resource: resource,
+    traceExporter: prometheusExporter,
+    instrumentations: [
+        getNodeAutoInstrumentations(),
+        new MongoDBInstrumentation({
+            enhancedDatabaseReporting: true,
+        }),
+    ],
+});
+
+// Initialize the SDK
+sdk.start((error) => {
+    if (error) {
+        console.log('Error initializing SDK:', error);
+    }
+    else {
+        console.log('OpenTelemetry SDK initialized');
+    }
+});
+
+// Gracefully shut down the SDK on process exit
+process.on('SIGTERM', () => {
+    sdk.shutdown()
+        .then(() => console.log('SDK shut down successfully'))
+        .catch((error) => console.log('Error shutting down SDK:', error))
+        .finally(() => process.exit(0));
+});
+
+console.log('OpenTelemetry setup completed');
+
+
+
+
+
+
+
+/********** OpenTelemetry Prometheus Metrics **********/
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
