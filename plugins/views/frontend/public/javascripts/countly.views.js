@@ -300,7 +300,7 @@
                 showViewCountWarning: false,
                 tableDynamicCols: dynamicCols,
                 isGraphLoading: true,
-                isTableLoading: false,
+                isTableLoading: true,
                 showActionMapColumn: showActionMapColumn, //for action map
                 domains: [], //for action map
                 persistentSettings: [],
@@ -320,7 +320,6 @@
             this.$store.dispatch('countlyViews/onSetSelectedViews', self.persistentSettings);
             this.$store.dispatch('countlyViews/fetchData').then(function() {
                 self.calculateGraphSeries();
-                self.isGraphLoading = false;
                 self.showActionsMapColumn(); //for action map
                 self.setUpDomains(); //for action map
             });
@@ -342,7 +341,6 @@
                 }
                 this.$store.dispatch('countlyViews/fetchData').then(function() {
                     self.calculateGraphSeries();
-                    self.isGraphLoading = false;
                     self.showActionsMapColumn();//for action map
                     self.setUpDomains();//for action map
                 });
@@ -426,11 +424,10 @@
                     self.isGraphLoading = true;
                     self.$store.dispatch('countlyViews/fetchData').then(function() {
                         self.calculateGraphSeries();
-                        self.isGraphLoading = false;
                     });
                 });
 
-                this.refresh();
+                this.refresh(true);
             },
             handleSelectionChange: function(selectedRows) {
                 var self = this;
@@ -467,7 +464,6 @@
                     self.isGraphLoading = true;
                     self.$store.dispatch('countlyViews/fetchData').then(function() {
                         self.calculateGraphSeries();
-                        self.isGraphLoading = false;
                     });
                 });
                 return true;
@@ -486,10 +482,10 @@
                 }
                 this.$store.dispatch('countlyViews/fetchData').then(function() {
                     self.calculateGraphSeries();
-                    self.isGraphLoading = false;
+                });
+                this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue}).then(function() {
                     self.isTableLoading = false;
                 });
-                this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue});
             },
             calculateTotalCards: function() {
                 var totals = this.$store.state.countlyViews.totals || {};
@@ -568,6 +564,7 @@
                             }
                         };
                     }
+                    self.isGraphLoading = false;
                 });
             },
             getExportQuery: function() {
@@ -617,6 +614,7 @@
             },
             dateChanged: function() {
                 this.isSpecialPeriod = countlyCommon.periodObj.isSpecialPeriod;
+                this.refresh(true);
             },
             openDrillViewDrawer: function() {
                 let self = this;
