@@ -8,6 +8,7 @@ module.exports = defineConfig({
         viewportWidth: 2000,
         viewportHeight: 1100,
         numTestsKeptInMemory: 0,
+        experimentalMemoryManagement: true,
         projectId: "000000",
         chromeWebSecurity: true,
         watchForFileChanges: true,
@@ -27,6 +28,15 @@ module.exports = defineConfig({
                     }
                 }
             });
+            // before:browser:launch event for custom Chrome options
+            on("before:browser:launch", (browser = {}, launchOptions) => {
+                if (browser.family === "chromium") {
+                    launchOptions.args.push('--js-flags="--max_old_space_size=1024 --max_semi_space_size=1024"');
+                }
+                return launchOptions;
+            });
         },
     },
 });
+
+
