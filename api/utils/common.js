@@ -2715,6 +2715,13 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                 }
             }
         }
+        else {
+            if (!update.$set) {
+                update.$set = {};
+            }
+            update.$set.no_meta = {"r": params.qstring.no_meta, "c": no_meta};
+            update.$set.lu = new Date();
+        }
 
         if (params.qstring.device_id && user.did !== params.qstring.device_id) {
             if (!update.$set) {
