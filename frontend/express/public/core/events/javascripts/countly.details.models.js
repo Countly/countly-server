@@ -1076,7 +1076,7 @@
                                                     countlyAllEvents.service.fetchSelectedEventsOverview(context, period)
                                                         .then(function(resp) {
                                                             if (resp) {
-                                                                context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
+                                                                context?.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
                                                                 context?.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
                                                             }
                                                         });
