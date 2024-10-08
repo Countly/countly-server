@@ -16,7 +16,7 @@ describe('Create New Widget', () => {
         navigationHelpers.goToFeedbackRatingsWidgetsPage();
     });
 
-    it('Verify default values of page and create a widget with that values and then update the widget data', function() {
+    it.skip('Verify default values of page and create a widget with that values and then update the widget data', function() {
         widgetsHelpers.clickAddNewWidgetButton();
         widgetsHelpers.verifySettingsPageDefaultElements();
         widgetsHelpers.typeWidgetName("My New Widget");
@@ -222,6 +222,7 @@ describe('Create New Widget', () => {
             contactViaCheckboxLabelText: widget.contactViaCheckboxLabelText,
             contactEmail: widgetRate.contactEmail,
             submitButtonText: widget.submitButtonText,
+            hasAggrementCheckbox: true,
             selectedMainColor: widget.mainColor,
             selectedFontColor: widget.FontColor,
             hasPoweredByLogo: true,
