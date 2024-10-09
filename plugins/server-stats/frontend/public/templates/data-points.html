@@ -1,7 +1,7 @@
 <div v-bind:class="[componentId]">
     <cly-header
 		:title="title"
-		:tooltip="!app_id && {description, placement: 'top-center'}"
+		:tooltip="tooltip"
 	>
 		<template v-slot:header-top >
 			<cly-back-link v-if="subPage" link="#/manage/data-points" :title ="i18n('common.back')"></cly-back-link>
