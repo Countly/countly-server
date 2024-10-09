@@ -1,14 +1,11 @@
 const { Duplex } = require('stream'),
     Measurement = require('./measure'),
-    { XXHash64, XXHash32 } = require('xxhash-addon'),
+    common = require("../../../../api/utils/common.js"),
     // { getHasher, OutputType, HashType, hashAsBigInt} = require('bigint-hash'),
     { ERROR, PushError, SendError, ConnectionError, ValidationError, Message} = require('./data'),
     { FRAME, FRAME_NAME } = require('./proto');
     // ,
     // log = require('../../../../api/utils/log.js')('push:send:base');
-
-const xx64 = new XXHash64(),
-    xx32 = new XXHash32();
 
 /**
  * Waits for given time
@@ -21,7 +18,7 @@ async function wait(ms) {
 
 /**
  * Base stream class for push senders
- * 
+ *
  * Emits:
  * - push_error for recoverable errors (invalid content, try again, etc)
  * - push_fail for non recoverable errors (auth failed, connection reset, etc) which automatically close the stream
@@ -29,7 +26,7 @@ async function wait(ms) {
 class Base extends Duplex {
     /**
      * Standard constructor
-     * 
+     *
      * @param {string} log logger name
      * @param {string} type type of connection: ap, at, id, ia, ip, ht, hp
      * @param {Creds} creds authorization key: server key for FCM/HW, P8/P12 for APN
@@ -56,7 +53,7 @@ class Base extends Duplex {
 
     // /**
     //  * Initializes the connection by calling connect function & using default stream _construct method
-    //  * 
+    //  *
     //  * @param {function} callback function called after fist connection is made
     //  */
     // _construct(callback) {
@@ -67,7 +64,7 @@ class Base extends Duplex {
 
     /**
      * Add message into local cache
-     * 
+     *
      * @param {object} data Message data / Message instance
      */
     message(data) {
@@ -93,7 +90,7 @@ class Base extends Duplex {
 
     /**
      * Forward incoming data to a corresponding platform stream logic (this.send)
-     * 
+     *
      * @param {array} chunks Array of chunks
      * @param {function} callback called when all chunks are fully processed
      */
@@ -115,7 +112,7 @@ class Base extends Duplex {
 
     /**
      * Async version of writeev
-     * 
+     *
      * @param {array} chunks Array of chunks
      */
     async do_writev(chunks) {
@@ -147,7 +144,7 @@ class Base extends Duplex {
 
     // /**
     //  * Transform's main method
-    //  * 
+    //  *
     //  * @param {Object} data incoming data
     //  * @param {String} data.data message payload
     //  * @param {String} data.token - either push token
@@ -181,12 +178,12 @@ class Base extends Duplex {
 
     /**
      * Sending abstract method
-     * 
+     *
      * A few requirements:
      * - results must be buffered (don't do a result call per notification)
-     * - recoverable errors (the ones which do not require immediate stream closure) must be returned using 
+     * - recoverable errors (the ones which do not require immediate stream closure) must be returned using
      * - reject only if error is non recoverable, the stream will be closed automatically after this method, no other calls are allowed after reject
-     * 
+     *
      * @param {Object} data data to send ([{_id, pr, ov, n, ...}, ...])
      * @param {integer} start first element in data to send (optional)
      * @param {integer} len number of elements to send (optional)
@@ -198,7 +195,7 @@ class Base extends Duplex {
 
     /**
      * Results processing function
-     * 
+     *
      * @param {Array} results results array to process
      * @param {integer} length bytes processed (from send(_, bytes)) for these results
      */
@@ -208,7 +205,7 @@ class Base extends Duplex {
 
     /**
      * Recoverable error processing function for using from send()
-     * 
+     *
      * @param {SendError} error SendError instance
      */
     send_push_error(error) {
@@ -217,7 +214,7 @@ class Base extends Duplex {
 
     /**
      * Non recoverable error processing function for using from send()
-     * 
+     *
      * @param {ConnectionError | PushError} error error to send
      */
     send_push_fail(error) {
@@ -225,16 +222,16 @@ class Base extends Duplex {
     }
 
     /**
-     * Sending with retries utility method to be used from send(): 
+     * Sending with retries utility method to be used from send():
      * - retry 3 times then fail with last error
      * - fail early if error is non-recoverable
-     * 
+     *
      * A few requirements:
      * - results must be buffered (don't do a result call per notification)
      * - recoverable errors (the ones which do not require immediate stream closure) must be returned using send_push_error
      * - number & bytes of results must be exactly equal to number & bytes of incoming pushes; for recoverable errors affected & affectedBytes in SendError counts as a result
      * - reject only if error is non recoverable, the stream will be closed automatically after this method, no other calls are allowed after reject
-     * 
+     *
      * @param {Object} data data to send ([{_id, pr, ov, n, ...}, ...])
      * @param {integer} bytes number of bytes in data
      * @param {function} fun function with single arguments (data, bytes, attempt 1..max)
@@ -294,7 +291,7 @@ class Base extends Duplex {
 
     /**
      * Wait for requests to finish and invoke the callback
-     * 
+     *
      * @param {function} callback callback to call
      */
     drainAndCall(callback) {
@@ -309,7 +306,7 @@ class Base extends Duplex {
 
     /**
      * Tear down the stream
-     * 
+     *
      * @param {function} callback callback to call when done
      */
     _final(callback) {
@@ -318,54 +315,19 @@ class Base extends Duplex {
 }
 
 /**
- * Hash 
- * 
+ * Hash
+ *
  * @param {any} data data to hash
- * @param {String} seed seed to start from
- * @returns {String} 64-bit hash hex string
+ * @param {string} seed seed to start from
+ * @returns {string} hex digest
  */
-function hash(data, seed) {
-    xx64.reset();
-    if (seed) {
-        xx64.update(Buffer.from(seed, 'hex'));
-    }
-    xx64.update(Buffer.from(JSON.stringify(data), 'utf-8'));
-    return xx64.digest().toString('hex');
-    // if (seed) {
-    //     let bufhash = getHasher(HashType.xxHash64);
-    //     bigintBuffer.writeBigUInt64BE(seed);
-    //     bufhash.update(bigintBuffer);
-    //     // eslint-disable-next-line no-unused-vars
-    //     for (let _ignored in data) {
-    //         bufhash.update(Buffer.from(JSON.stringify(data), 'utf-8'));
-    //         return bufhash.digest(OutputType.BigInt);
-    //     }
-    //     return BigInt(0);
-    // }
-    // else {
-    //     return hashAsBigInt(HashType.xxHash64, Buffer.from(JSON.stringify(data), 'utf-8'));
-    // }
+function hash(data, seed = "") {
+    return common.md5Hash(JSON.stringify(data) + seed);
 }
 
 /**
- * Simple 32-bit hashing
- * 
- * @param {string} string string to hash
- * @returns {integer} 32 bit integer hash of the string, 0 if string is empty or no string is supplied
- */
-function hashInt(string) {
-    if (typeof string === 'string' && string) {
-        xx32.reset();
-        xx32.update(Buffer.from(string, 'utf-8'));
-        return xx32.digest().readIntBE(0, 4);
-    }
-    return 0;
-}
-
-
-/** 
  * Flatten object using dot notation ({a: {b: 1}} becomes {'a.b': 1})
- * 
+ *
  * @param {object} ob - object to flatten
  * @returns {object} flattened object
  */
@@ -395,4 +357,34 @@ function flattenObject(ob) {
 }
 
 
-module.exports = { Base, util: {hash, hashInt, wait, flattenObject}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };
+module.exports = { Base, util: {hash, wait, flattenObject}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };
+
+// console.time("xx64");
+// for (let i = 0; i < 10000; i++) {
+//     let a = hash("lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet");
+// }
+// console.timeEnd("xx64");
+
+// console.time("xx32");
+// for (let i = 0; i < 10000; i++) {
+//     let a = hashInt("lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet");
+// }
+// console.timeEnd("xx32");
+
+// console.time("sha1");
+// for (let i = 0; i < 10000; i++) {
+//     let a = common.sha1Hash("lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet");
+// }
+// console.timeEnd("sha1");
+
+// console.time("sha512");
+// for (let i = 0; i < 10000; i++) {
+//     let a = common.sha512Hash("lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet");
+// }
+// console.timeEnd("sha512");
+
+// console.time("md5");
+// for (let i = 0; i < 10000; i++) {
+//     let a = common.md5Hash("lorem ipsum dolor sit amet lorem ipsum dolor sit amet lorem ipsum dolor sit amet");
+// }
+// console.timeEnd("md5");
