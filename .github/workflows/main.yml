@@ -252,10 +252,9 @@ jobs:
       - name: Install Chrome
         shell: bash
         run: |
-          CHROME_VERSION="116.0.5845.179"
           apt update
           apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
-          wget https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}-1_amd64.deb -O /tmp/chrome.deb
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
           apt install -y /tmp/chrome.deb
 
       - name: Copy code
@@ -335,10 +334,9 @@ jobs:
       - name: Install Chrome
         shell: bash
         run: |
-          CHROME_VERSION="116.0.5845.179"
           apt update
           apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
-          wget https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}-1_amd64.deb -O /tmp/chrome.deb
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
           apt install -y /tmp/chrome.deb
 
       - name: Copy code
