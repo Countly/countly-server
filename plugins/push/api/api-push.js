@@ -14,7 +14,7 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
 
         log.d('push token: %s/%s/%s', p, f, token);
 
-        let push = await pushCollection.findOne({_id: dbAppUser.uid}, {projection: {[field]: 1}});
+        let push = await pushCollection.findOne({_id: dbAppUser.uid});
         if (token && (!push || common.dot(push, pushField) !== token)) {
             appusersCollection.updateOne({_id: params.app_user_id}, {$set: {[appusersField]: hash}}, () => {}); // don't wait
             pushCollection.updateOne({_id: params.app_user.uid}, {$set: {[pushField]: token}}, {upsert: true}, () => {});
@@ -55,10 +55,10 @@ module.exports.onTokenSession = async(dbAppUser, params) => {
                 });
             }, 10000);
         }
-        else {
-            appusersCollection.updateOne({_id: params.app_user_id}, {$unset: {[appusersField]: 1}}, function() {});
-            pushCollection.updateOne({_id: params.app_user.uid}, {$unset: {[pushField]: 1}}, function() {});
-        }
+        // else {
+        //     appusersCollection.updateOne({_id: params.app_user_id}, {$unset: {[appusersField]: 1}}, function() {});
+        //     pushCollection.updateOne({_id: params.app_user.uid}, {$unset: {[pushField]: 1}}, function() {});
+        // }
     }
     else {
         log.d('no push token in token_session:', params.qstring);
