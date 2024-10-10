@@ -1326,7 +1326,12 @@ fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
         if (params?.qstring?.event) {
             output.eventName = params.qstring.event;
         }
-        common.returnOutput(params, output);
+        if (params) {
+            common.returnOutput(params, output);
+        }
+        else {
+            console.error("Params is null or undefined.");
+        }
     });
 };
 
