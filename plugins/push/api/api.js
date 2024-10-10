@@ -7,7 +7,7 @@ const plugins = require('../../pluginManager'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, test, create, update, toggle, remove, all, one, mime, user, notificationsForUser, periodicStats } = require('./api-message'),
+    { estimate, test, create, update, toggle, remove, all, one, mime, user } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
     { legacyApis } = require('./legacy'),
@@ -25,10 +25,8 @@ const plugins = require('../../pluginManager'),
                 estimate: [validateRead, estimate],
                 all: [validateRead, all],
                 GET: [validateRead, one, '_id'],
-                stats: [validateRead, periodicStats],
             },
             user: [validateRead, user],
-            notifications: [validateRead, notificationsForUser],
         },
         i: {
             message: {
@@ -59,22 +57,18 @@ plugins.setConfigs(FEATURE_NAME, {
         rate: '',
         period: ''
     },
-    deduplicate: false,
     sendahead: 60000, // send pushes scheduled up to 60 sec in the future
     connection_retries: 3, // retry this many times on recoverable errors
     connection_factor: 1000, // exponential backoff factor
     pool_pushes: 400, // object mode streams high water mark
     pool_bytes: 10000, // bytes mode streams high water mark
     pool_concurrency: 5, // max number of same type connections
-    pool_pools: 10, // max number of connections in total
-    message_timeout: 3600000, // timeout for a message not sent yet (for TooLateToSend error)
-    default_content_available: false, // sets content-available: 1 by default for ios
+    pool_pools: 10 // max number of connections in total
 });
 
 plugins.internalEvents.push('[CLY]_push_sent');
 plugins.internalEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_action');
-plugins.internalDrillEvents.push('[CLY]_push_sent');
 
 
 plugins.register('/worker', function() {
@@ -87,9 +81,6 @@ plugins.register('/master', function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
-    setTimeout(() => {
-        require('../../../api/parts/jobs').job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
-    }, 10000);
 });
 
 plugins.register('/master/runners', runners => {
@@ -106,7 +97,7 @@ plugins.register('/master/runners', runners => {
                 sender = undefined;
             }
             catch (e) {
-                log.e('Sending stopped with an error', e);
+                log.e('Sender crached', e);
                 sender = undefined;
             }
         }
@@ -167,9 +158,6 @@ plugins.register('/i', async ob => {
                     if (!msg || count !== 1) {
                         log.i('Invalid segmentation for [CLY]_push_action from %s: %j (msg %s, count %j)', params.qstring.device_id, event.segmentation, msg ? 'found' : 'not found', event.segmentation.count);
                         continue;
-                    }
-                    else {
-                        log.d('Recording push action: [%s] (%s) {%d}, %j', msg.id, params.app_user.uid, count, event);
                     }
 
                     let p = event.segmentation.p,
