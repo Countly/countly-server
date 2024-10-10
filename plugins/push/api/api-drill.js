@@ -115,7 +115,7 @@ module.exports.drillPreprocessQuery = ({query, params}) => {
             let q = messageQuery(query.message);
 
             if (!q) {
-                return;
+                return Promise.resolve();
             }
 
             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
