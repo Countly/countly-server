@@ -40,7 +40,7 @@
     "bunyan": "1.8.15",
     "colors": "1.4.0",
     "connect-flash": "0.1.1",
-    "cookie-parser": "1.4.6",
+    "cookie-parser": "1.4.7",
     "countly-request": "file:api/utils/countly-request",
     "countly-root": "file:api/utils/countly-root",
     "countly-sdk-nodejs": "*",
