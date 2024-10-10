@@ -79,7 +79,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name || inputs.custom_tag }}
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name  }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -136,7 +136,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name || inputs.custom_tag }}
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -183,7 +183,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name || inputs.custom_tag }}
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -236,7 +236,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name || inputs.custom_tag }}
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -314,7 +314,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name || inputs.custom_tag }}
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
