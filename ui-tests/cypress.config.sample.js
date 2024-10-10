@@ -10,7 +10,7 @@ module.exports = defineConfig({
         numTestsKeptInMemory: 0,
         experimentalMemoryManagement: true,
         projectId: "000000",
-        chromeWebSecurity: true,
+        chromeWebSecurity: false,
         watchForFileChanges: true,
         video: true,
         setupNodeEvents(on, config) {
@@ -31,15 +31,15 @@ module.exports = defineConfig({
             // before:browser:launch event for custom Chrome options
             on("before:browser:launch", (browser, launchOptions) => {
                 if (["chrome", "edge"].includes(browser.name)) {
-                  if (browser.isHeadless) {
-                    launchOptions.args.push("--no-sandbox");
-                    launchOptions.args.push("--disable-gl-drawing-for-tests");
-                    launchOptions.args.push("--disable-gpu");
-                  }
-                  launchOptions.args.push("--js-flags=--max-old-space-size=3500");
+                    if (browser.isHeadless) {
+                        launchOptions.args.push("--no-sandbox");
+                        launchOptions.args.push("--disable-gl-drawing-for-tests");
+                        launchOptions.args.push("--disable-gpu");
+                    }
+                    launchOptions.args.push('--js-flags="--max_old_space_size=3500 --max_semi_space_size=1024"');
                 }
                 return launchOptions;
-              });
+            });
         },
     },
 });
