@@ -15,7 +15,7 @@
     "@faker-js/faker": "^8.2.0",
     "base-64": "^1.0.0",
     "chai": "^5.1.1",
-    "cypress": "^13.10.0",
+    "cypress": "^13.15.0",
     "cypress-file-upload": "^5.0.8",
     "moment": "^2.29.4"
   }
