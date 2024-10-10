@@ -1,5 +1,5 @@
 const { DoFinish } = require('./do_finish'),
-    { State, Status, Creds, pools, FRAME, PushError, SendError, ERROR, MAX_RUNS } = require('../../send');
+    { Message, State, Status, Creds, pools, FRAME, PushError, SendError, ERROR, MAX_RUNS } = require('../../send');
 
 /**
  * Stream responsible for handling sending results:
@@ -118,16 +118,15 @@ class Connector extends DoFinish {
             return;
         }
         else if (!message) {
-            // let query = Message.filter(new Date(), this.state.cfg.sendAhead);
-            // query._id = push.m;
-            let query = { _id: push.m };
+            let query = Message.filter(new Date(), this.state.cfg.sendAhead);
+            query._id = push.m;
             this.db.collection('messages').findOne(query).then(msg => {
                 if (msg) {
                     this.log.d('sending message %s, %j', push.m, msg);
                     this.state.setMessage(msg); // only turns to app if there's one or more credentials found
                 }
                 else {
-                    this.log.e('message not found', push.m, query);
+                    this.log.e('message not found', push.m);
                     this.state.discardMessage(push.m);
                 }
                 this.do_transform(push, encoding, callback);
@@ -170,7 +169,7 @@ class Connector extends DoFinish {
                         }
                     }, callback);
             }
-            else if (push._id.getTimestamp().getTime() < Date.now() - this.state.cfg.message_timeout) {
+            else if (push._id.getTimestamp().getTime() < Date.now() - 3600000) {
                 this.tooLateToSend.addAffected(push._id, 1);
                 this.do_flush(callback, true);
                 return;
@@ -179,7 +178,7 @@ class Connector extends DoFinish {
                 let creds = app.creds[push.p],
                     pid = pools.id(creds.hash, push.p, push.f);
                 if (pools.has(pid)) { // already connected
-                    // this.log.d('pgc', push._id); // Push Goes to Connection
+                    this.log.d('pgc', push._id); // Push Goes to Connection
                     callback(null, push);
                 }
                 else if (pools.isFull) { // no connection yet and we can't create it, just ignore push so it could be sent next time
