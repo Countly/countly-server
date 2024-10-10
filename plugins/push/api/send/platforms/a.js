@@ -407,7 +407,7 @@ const FIELDS = {
  * A number comes from SDK, we need to map it into smth like tkip/tkid/tkia
  */
 const FIELDS_TITLES = {
-    '0': 'Android Firebase Token',
+    '0': 'FCM Token',
 };
 
 /**

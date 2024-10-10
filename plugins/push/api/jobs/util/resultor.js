@@ -161,7 +161,7 @@ class Resultor extends DoFinish {
                 results.forEach(res => {
                     let id, token;
                     if (typeof res === 'string') {
-                        // this.log.d('Ok for %s', id);
+                        this.log.d('Ok for %s', id);
                         id = res;
                     }
                     else {
@@ -220,6 +220,14 @@ class Resultor extends DoFinish {
                 });
                 this.log.d('Added %d results', results.length);
             }
+
+            // // in case no more data is expected, we can safely close the stream
+            // if (this.check()) {
+            //     for (let _ in this.state.pushes) {
+            //         return;
+            //     }
+            //     this.do_flush(() => this.end());
+            // }
         }
         else if (frame & FRAME.ERROR) {
             let error = results.messageError(),
@@ -247,24 +255,17 @@ class Resultor extends DoFinish {
                         result = this.noMessage[m] || (this.noMessage[m] = new Result());
                     }
 
-                    result.processed++;
-                    result.recordError(results.message, 1);
-
                     rp = result.sub(p, undefined, PLATFORM[p].parent);
                     rl = rp.sub(pr.la || 'default');
 
                     rp.processed++;
-                    rp.recordError(results.message, 1);
                     rl.processed++;
-                    rl.recordError(results.message, 1);
 
                     if (PLATFORM[p].parent) {
                         rp = result.sub(PLATFORM[p].parent),
                         rl = rp.sub(pr.la || 'default');
                         rp.processed++;
-                        rp.recordError(results.message, 1);
                         rl.processed++;
-                        rl.recordError(results.message, 1);
                     }
                 });
 
@@ -280,6 +281,7 @@ class Resultor extends DoFinish {
                 else {
                     result = this.noMessage[mid] || (this.noMessage[mid] = new Result());
                 }
+                result.processed += mids[mid];
 
                 let run = result.lastRun;
                 if (run) {
@@ -288,7 +290,7 @@ class Resultor extends DoFinish {
                 }
 
                 result.pushError(error);
-                this.data.decSending(mid, mids[mid]);
+                this.data.decSending(mid);
             }
         }
 
@@ -313,7 +315,6 @@ class Resultor extends DoFinish {
             promises = this.data.messages().map(m => {
                 m.result.lastRun.ended = new Date();
 
-                // if (await Message.hasPushRecords(m.id)) {
                 if (this.data.isSending(m.id)) {
                     this.log.d('message %s is still in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
                     return m.save();
@@ -329,35 +330,6 @@ class Resultor extends DoFinish {
                     else {
                         state = m.state & ~State.Streaming;
                         status = Status.Scheduled;
-                    }
-                }
-                else if (m.triggerRescheduleable()) {
-                    let resch = m.triggerRescheduleable();
-                    if (m.result.total === m.result.errored) {
-                        state = State.Created | State.Error | State.Done;
-                        status = Status.Stopped;
-                        error = 'Failed to send all notifications';
-                    }
-                    else if (m.result.total === m.result.processed) {
-                        if (!resch.nextReference(resch.last)) { // TODO: this will probably result in skipping last reference if it's scheduled before last message in queue is sent
-                            state = State.Created | State.Done;
-                            status = Status.Sent;
-                        }
-                        else {
-                            state = m.state & ~State.Streaming;
-                            status = Status.Scheduled;
-                        }
-                    }
-                    else { // shouldn't happen, but possible in some weird cases
-                        state = m.state & ~State.Streaming;
-                        status = Status.Scheduled;
-                        // TODO: We're already scheduling the next message on jobs/schedule.js after creating push records.
-                        // It shouldn't matter if all of the queue processed or not.
-                        // m.schedule(this.log).then(() => {
-                        //     this.log.i('Rescheduled %s from resultor', m.id);
-                        // }, e => {
-                        //     this.log.e('Rescheduling error for %s from resultor', m.id, e);
-                        // });
                     }
                 }
                 else {
@@ -398,7 +370,7 @@ class Resultor extends DoFinish {
 
                 let count = this.noMessage[mid].processed;
                 delete this.noMessage[mid];
-                return this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, {$inc: {errored: count, processed: count, 'errors.NoMessage': count}});
+                return this.db.updateOne({_id: this.db.ObjectID(mid)}, {$inc: {errored: count, processed: count, 'errors.NoMessage': count}});
             }));
 
         if (this.toDelete.length) {
@@ -509,7 +481,6 @@ class Resultor extends DoFinish {
 
                         this.log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
                         require('../../../../../api/parts/data/events').processEvents(params);
-                        //plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: params.qstring.events});
 
                         try {
                             this.log.d('Recording %d data points', sent);

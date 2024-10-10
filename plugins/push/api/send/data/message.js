@@ -1,5 +1,5 @@
 'use strict';
-const { State, Status, STATUSES, Mongoable, S, S_REGEXP, Time } = require('./const'),
+const { State, Status, STATUSES, Mongoable, DEFAULTS, S, S_REGEXP } = require('./const'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
     { Trigger, PlainTrigger, TriggerKind } = require('./trigger'),
@@ -49,7 +49,6 @@ class Message extends Mongoable {
             },
             triggers: {
                 type: Trigger.scheme,
-                discriminator: Trigger.discriminator.bind(Trigger),
                 array: true,
                 required: true,
                 'min-length': 1
@@ -107,21 +106,14 @@ class Message extends Mongoable {
      */
     static filter(date, play, state = State.Streamable) {
         let $lte = new Date(date.getTime() + play),
-            $gte = new Date(date.getTime() - play),
-            lte_plus = new Date(date.getTime() + play + 15 * 60 * 60 * 1000),
-            gte_minus = new Date(date.getTime() - play - 15 * 60 * 60 * 1000);
+            $gte = new Date(date.getTime() - play);
         return {
             state: {$bitsAllSet: state},
             $or: [
-                {triggers: {$elemMatch: {kind: TriggerKind.Plain, tz: false, start: {$lte}}}}, // either almost now for non timezoned messages
-                {triggers: {$elemMatch: {kind: TriggerKind.Plain, tz: true, start: {$lte: lte_plus}}}}, // or UTC+-15 (max possible with DST)
-                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, time: {$exists: false}, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, time: {$exists: true}, start: {$lte: lte_plus}, $or: [{end: {$gte: gte_minus}}, {end: {$exists: false}}]}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Event, time: {$exists: false}, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Event, time: {$exists: true}, start: {$lte: lte_plus}, $or: [{end: {$gte: gte_minus}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Plain, start: {$lte}}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Cohort, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
+                {triggers: {$elemMatch: {kind: TriggerKind.Event, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
                 {triggers: {$elemMatch: {kind: TriggerKind.API, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Multi, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
-                {triggers: {$elemMatch: {kind: TriggerKind.Recurring, start: {$lte}, $or: [{end: {$gte}}, {end: {$exists: false}}]}}},
             ]
         };
     }
@@ -209,7 +201,7 @@ class Message extends Mongoable {
      * @returns {boolean} true if the message is in this state
      */
     is(inState) {
-        return (inState === 0 && this.state === 0) || (this.state !== 0 && (this.state & inState) > 0);
+        return (this.state & inState) > 0;
     }
 
     /**
@@ -316,15 +308,6 @@ class Message extends Mongoable {
      */
     triggerPlain() {
         return this.triggerFind(TriggerKind.Plain);
-    }
-
-    /**
-     * Search for rescheduleable trigger
-     * 
-     * @returns {ReschedulingTrigger|undefined} multi or recurring trigger if message has it
-     */
-    triggerRescheduleable() {
-        return this.triggerFind(t => t.isRescheduleable);
     }
 
     /**
@@ -455,30 +438,6 @@ class Message extends Mongoable {
     }
 
     /**
-     * Returns the ids of messages that has at least one record in "push" collection
-     * 
-     * @returns {string[]} ids of the messages
-     */
-    static async findStreamableMessageIds() {
-        const streamableMessages = await this.findMany({
-            state: {
-                $bitsAllSet: State.Streamable
-            }
-        });
-        return streamableMessages.map(message => message._id);
-    }
-
-    // static async hasPushRecords(id) {
-    //     let oid = dbext.oidBlankWithDate(new Date());
-    //     const push = await common.db.collection(Push.collection).findOne({
-    //         _id: { $lte: oid },
-    //         m: dbext.ObjectID(id),
-    //     });
-    //     // console.log(push, id);
-    //     return !!push;
-    // }
-
-    /**
      * Encode field key so it could be stored in mongo (replace dots with S - Separator)
      * 
      * @param {string} key field name
@@ -549,7 +508,7 @@ class Message extends Mongoable {
      */
     get needsScheduling() {
         return this.state === State.Created && this.triggers.filter(t => t.kind === TriggerKind.Plain &&
-            (!t.delayed || (t.delayed && !t.tz && t.start.getTime() > Date.now() - Time.SCHEDULE_AHEAD) || (t.delayed && t.tz && t.start.getTime() > Date.now() - (Time.EASTMOST_TIMEZONE + Time.SCHEDULE_AHEAD)))).length > 0;
+            (!t.delayed || (t.delayed && t.start.getTime() > Date.now() - 5 * 60000))).length > 0;
     }
 
     /**
@@ -657,11 +616,11 @@ class Message extends Mongoable {
      * @param {log} log logger
      */
     async schedule(log) {
+        if (this.is(State.Streamable) || this.is(State.Streaming)) {
+            await this.stop(log);
+        }
         let plain = this.triggerPlain();
         if (plain) {
-            if (this.is(State.Streamable) || this.is(State.Streaming)) {
-                await this.stop(log);
-            }
             if (this.is(State.Cleared) && !this.triggerAutoOrApi()) {
                 // reset message state removing all errors set by .stop() above
                 await this.updateAtomically({_id: this._id, state: this.state}, {
@@ -676,29 +635,12 @@ class Message extends Mongoable {
                     }
                 });
             }
-            let date = Date.now();
-            if (plain.delayed) {
-                date = plain.start.getTime() - (plain.tz ? (Time.EASTMOST_TIMEZONE + Time.SCHEDULE_AHEAD) : Time.SCHEDULE_AHEAD);
-            }
+            let date = plain.delayed ? plain.start.getTime() - DEFAULTS.schedule_ahead : Date.now();
             await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app}).replace().once(date);
         }
         if (this.triggerAutoOrApi() && (this.is(State.Done) || this.state === State.Created)) {
             await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Streamable | State.Created, status: Status.Scheduled}});
             await require('../../../../pluginManager').getPluginsApis().push.cache.write(this.id, this.json);
-        }
-        let resch = this.triggerRescheduleable();
-        if (resch && !this.is(State.Done)) {
-            let reference = resch.nextReference(resch.last),
-                start = reference && resch.scheduleDate(reference);
-            log.i('Rescheduling message %s: reference %s (was %s), start %s', this.id, reference, resch.last, start);
-            if (start) {
-                await this.updateAtomically({_id: this._id, state: this.state, 'triggers.kind': resch.kind}, {$set: {'triggers.$.last': reference, 'triggers.$.prev': resch.last}});
-                await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app, reference}).replace().once(start);
-            }
-            else {
-                log.i('Message %s is sent, won\'t reschedule', this.id);
-                // await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Created | State.Done, status: Status.Sent}});
-            }
         }
     }
 
@@ -714,7 +656,6 @@ class Message extends Mongoable {
 
         let plain = this.triggerPlain(),
             auto = this.triggerAutoOrApi(),
-            resch = this.triggerRescheduleable(),
             removed = 0,
             audience = new Audience(log, this);
 
@@ -726,9 +667,6 @@ class Message extends Mongoable {
         else if (plain) {
             removed += await audience.pop(plain).clear();
         }
-        else if (resch) {
-            removed += await audience.pop(resch).clear();
-        }
 
         await JOBS.cancel('push:schedule', {mid: this._id, aid: this.app});
 
@@ -737,8 +675,6 @@ class Message extends Mongoable {
         if (auto) {
             await PLUGINS.getPluginsApis().push.cache.remove(this.id);
         }
-
-        log.i('Stopped message %s deleting %d notes', this.id, removed);
 
         return removed;
     }
