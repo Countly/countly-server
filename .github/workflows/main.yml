@@ -281,7 +281,8 @@ jobs:
           /sbin/my_init &
           cd ui-tests
           npm install
-          npm run cy:run:dashboard
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
+          npm run cy:run:dashboard -- --headless --no-sandbox --disable-gpu --disable-dev-shm-usage
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
