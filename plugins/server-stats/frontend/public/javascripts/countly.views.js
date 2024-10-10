@@ -319,6 +319,11 @@ var DataPointsView = countlyVue.views.create({
             }
             return table;
         }
+    },
+    computed: {
+        tooltip: function() {
+            return !this.app_id ? {description: this.description, placement: 'top-center'} : null;
+        }
     }
 });
 
