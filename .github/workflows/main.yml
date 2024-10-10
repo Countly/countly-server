@@ -10,6 +10,11 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      custom_tag:
+        description: 'Custom Docker tag (optional)'
+        required: false
+        default: ''
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -74,7 +79,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name || inputs.custom_tag }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -131,7 +136,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name || inputs.custom_tag }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -178,7 +183,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name || inputs.custom_tag }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -231,7 +236,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name || inputs.custom_tag }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -309,7 +314,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name || inputs.custom_tag }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
