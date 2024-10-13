@@ -220,7 +220,7 @@
                                 message: CV.i18n('data-migration.generated-token')
                             });
                             self.importDrawerCancelButtonLabel = CV.i18n('data-migration.close');
-                            self.importDrawerSaveButtonLabel = false;
+                            self.importDrawerSaveButtonLabel = "";
                         }
                         else {
                             CountlyHelpers.notify({
