@@ -196,7 +196,7 @@
                     createImageThumbnails: false,
                     autoProcessQueue: false,
                     addRemoveLinks: true,
-                    acceptedFiles: 'application/x-gzip',
+                    acceptedFiles: 'application/gzip,application/x-gzip',
                     dictDefaultMessage: this.i18n('feedback.drop-message'),
                     dictRemoveFile: this.i18n('feedback.remove-file'),
                     url: "/i/datamigration/import",
