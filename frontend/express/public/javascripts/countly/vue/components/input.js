@@ -43,7 +43,7 @@
         },
         methods: {
             setColor: function(color) {
-                this.$emit("input", color.hex);
+                this.$emit("input", color.hex8);
             },
             reset: function() {
                 this.setColor({hex: this.resetValue});
