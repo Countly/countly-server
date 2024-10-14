@@ -8,15 +8,15 @@ module.exports = defineConfig({
         defaultCommandTimeout: 30000,
         viewportWidth: 2000,
         viewportHeight: 1100,
-        numTestsKeptInMemory: 0,  // Keep 0 tests in memory to reduce memory usage
+        numTestsKeptInMemory: 0,// Keep 0 tests in memory to reduce memory usage
         projectId: "000000",
         chromeWebSecurity: false,
         watchForFileChanges: true,
         video: true,
-        experimentalMemoryManagement: true,  // Enable experimental memory management
+        experimentalMemoryManagement: true,// Enable experimental memory management
         retries: {
-            runMode: 2,  // Retry failed tests up to 2 times in headless mode
-            openMode: 0,  // No retries in interactive mode
+            runMode: 2,// Retry failed tests up to 2 times in headless mode
+            openMode: 0,// No retries in interactive mode
         },
         setupNodeEvents(on, config) {
             on('after:spec', (spec, results) => {
