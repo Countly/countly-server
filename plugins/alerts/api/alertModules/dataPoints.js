@@ -14,10 +14,10 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
     const selectedApp = alert.selectedApps[0];
     let apps;
     if (selectedApp === "all") {
-        apps = await common.db.collection("apps").find().toArray();
+        apps = await common.readBatcher.getMany("apps", {});
     }
     else {
-        apps = [await common.db.collection("apps").findOne({ _id: ObjectId(selectedApp) })];
+        apps = [await common.readBatcher.getOne("apps", { _id: new ObjectId(selectedApp) })];
     }
 
     for (let app of apps) {
@@ -33,7 +33,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 
         if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
             if (metricValue > compareValue) {
-                await commonLib.trigger({ alert, app, metricValue, date });
+                await commonLib.trigger({ alert, app, metricValue, date }, log);
             }
         }
         else {
@@ -49,7 +49,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
                 : change <= -compareValue;
 
             if (shouldTrigger) {
-                await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
+                await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
             }
         }
     }

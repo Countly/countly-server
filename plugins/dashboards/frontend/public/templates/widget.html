@@ -33,6 +33,7 @@
             <template v-slot:action v-if="canUpdateGrid && settings.isAllowed">
                 <div class="bu-level-item">
                     <cly-more-options @command="$emit('command', $event, widget)">
+                        <el-dropdown-item command="edit">{{i18n('common.edit')}}</el-dropdown-item>
                         <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
                     </cly-more-options>
                 </div>

@@ -181,13 +181,14 @@ function getJSON(val) {
     }
     return ret;
 }
+
 /**
-* Logger object for creating module specific logging
-* @type {module:api/utils/log~Logger} 
-* @example
-* var log = common.log('myplugin:api');
-* log.i('myPlugin got a request: %j', params.qstring);
-*/
+ * Logger object for creating module-specific logging
+ * @type {function(string): Logger}
+ * @example
+ * const log = common.log('myplugin:api');
+ * log.i('myPlugin got a request: %j', params.qstring);
+ */
 common.log = logger;
 
 /**
@@ -1048,7 +1049,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (typeof args[arg] === 'string') {
                         if (mongodb.ObjectId.isValid(args[arg])) {
-                            parsed = mongodb.ObjectId(args[arg]);
+                            parsed = new mongodb.ObjectId(args[arg]);
                         }
                         else {
                             if (returnErrors) {
@@ -2767,7 +2768,8 @@ common.updateAppUser = function(params, update, no_meta, callback) {
         if (callback) {
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
                 new: true,
-                upsert: true
+                upsert: true,
+                skipDataMasking: true
             }, function(err, res) {
                 if (!err && res && res.value) {
                     params.app_user = res.value;
@@ -2791,11 +2793,18 @@ common.updateAppUser = function(params, update, no_meta, callback) {
 * @param {object} metrics - metrics object from SDK request
 */
 common.processCarrier = function(metrics) {
-    if (metrics && metrics._carrier) {
+    // Initialize metrics if undefined
+    metrics = metrics || {};
+    if (metrics._carrier) {
         var carrier = metrics._carrier + "";
 
         //random hash without spaces
         if ((carrier.length === 16 && carrier.indexOf(" ") === -1)) {
+            delete metrics._carrier;
+        }
+
+        // Since iOS 16.04 carrier returns value "--", interpret as Unknown by deleting
+        if (carrier === "--") {
             delete metrics._carrier;
         }
 
@@ -2816,10 +2825,8 @@ common.processCarrier = function(metrics) {
         });
 
         metrics._carrier = carrier;
-        if (!metrics._carrier || metrics._carrier === "--") {
-            metrics._carrier = "Unknown";
-        }
     }
+    metrics._carrier = metrics._carrier ? metrics._carrier : "Unknown";
 };
 
 /**
@@ -3407,7 +3414,7 @@ common.mergeQuery = function(ob1, ob2) {
 common.dbext = {
     ObjectID: function(id) {
         try {
-            return mongodb.ObjectId(id);
+            return new mongodb.ObjectId(id);
         }
         catch (ex) {
             return id;
@@ -3433,7 +3440,7 @@ common.dbext = {
      * @returns {ObjectID} id
      */
     oid: function(id) {
-        return !id ? id : id instanceof mongodb.ObjectId ? id : mongodb.ObjectId(id);
+        return !id ? id : id instanceof mongodb.ObjectId ? id : new mongodb.ObjectId(id);
     },
 
     /**

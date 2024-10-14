@@ -1,10 +1,13 @@
-export default {
+export const countriesPageElements = {
     TAB_COUNTRIES: 'tab-countries-title',
     TAB_LANGUAGES: 'tab-languages-title',
 
     PAGE_TITLE: 'header-title',
     PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
     FILTER_DATE_PICKER: 'cly-datepicker-test-id-pseudo-input-label',
+};
+
+export const countriesMetricCardElements = {
     WORLD_MAP: 'cly-worldmap',
 
     TOTAL_SESSIONS_RADIO_BUTTON: 'cly-radio-button-box-total-sessions',
@@ -27,8 +30,48 @@ export default {
     NEW_USERS_NUMBER: 'cly-radio-number-new-users',
     NEW_USERS_TREND_ICON: 'cly-radio-trend-icon-new-users',
     NEW_USERS_TREND_VALUE: 'cly-radio-trend-new-users',
+};
 
-    EMPTY_TABLE_ICON: 'cly-datatable-n-test-id-empty-logo',
-    EMPTY_TABLE_TITLE: 'cly-datatable-n-test-id-empty-title',
-    EMPTY_TABLE_SUBTITLE: 'cly-datatable-n-test-id-empty-subtitle'
+const countriesDataTableElements = (index = 0) => ({
+    EMPTY_TABLE_ICON: 'countries-empty-logo',
+    EMPTY_TABLE_TITLE: 'countries-empty-title',
+    EMPTY_TABLE_SUBTITLE: 'countries-empty-subtitle',
+
+    EXPORT_AS_BUTTON: 'countries-export-as-button',
+    TABLE_SEARCH_INPUT: 'countries-datatable-search-input',
+    TABLE_ROWS: '.el-table__row',
+
+    COLUMN_NAME_COUNTRY_LABEL: 'countries-label-country',
+    COLUMN_NAME_COUNTRY_SORTABLE_ICON: 'countries-sortable-icon-country',
+    COLUMN_NAME_TOTAL_SESSIONS_LABEL: 'countries-label-total-sessions',
+    COLUMN_NAME_TOTAL_SESSIONS_SORTABLE_ICON: 'countries-sortable-icon-total-sessions',
+    COLUMN_NAME_TOTAL_USERS_LABEL: 'countries-label-total-users',
+    COLUMN_NAME_TOTAL_USERS_SORTABLE_ICON: 'countries-sortable-icon-total-users',
+    COLUMN_NAME_NEW_USERS_LABEL: 'countries-label-new-users',
+    COLUMN_NAME_NEW_USERS_SORTABLE_ICON: 'countries-sortable-icon-new-users',
+
+    //Columns' Rows' Datas Elements 
+    COUNTRY: 'datatable-countries-country-name-' + index,
+    COUNTRY_FLAG: 'datatable-countries-country-flag-' + index,
+    TOTAL_SESSIONS: 'datatable-countries-total-sessions-' + index,
+    TOTAL_USERS: 'datatable-countries-total-users-' + index,
+    NEW_USERS: 'datatable-countries-new-users-' + index,
+
+    //PAGINATION ELEMENTS
+    ITEMS_PER_PAGE_LABEL: 'countries-items-per-page-label',
+    PER_PAGE_COUNT_SELECT: 'countries-items-per-page-count-select-input-pseudo-input-label',
+    PER_PAGE_COUNT_SELECT_ICON: 'countries-items-per-page-count-select-icon',
+    PER_PAGE_COUNT_LABEL: 'countries-items-per-page-count-select',
+    PAGE_NUMBER_SELECT: 'countries-page-number-select-input-pseudo-input-label',
+    PAGE_NUMBER_SELECT_ICON: 'countries-page-number-select-icon',
+    FIRST_PAGE_ARROW_BUTTON: 'countries-first-page-arrow-button',
+    PREVIOUS_PAGE_ARROW_BUTTON: 'countries-previous-page-arrow-button',
+    NEXT_PAGE_ARROW_BUTTON: 'countries-next-page-arrow-button',
+    LAST_PAGE_ARROW_BUTTON: 'countries-views-last-page-arrow-button'
+});
+
+module.exports = {
+    countriesPageElements,
+    countriesMetricCardElements,
+    countriesDataTableElements
 };

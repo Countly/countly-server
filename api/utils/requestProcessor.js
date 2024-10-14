@@ -299,7 +299,7 @@ const processRequest = (params) => {
                     common.returnMessage(params, 400, 'Invalid parameter "requests"');
                     return false;
                 }
-                if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                if (!params.qstring.safe_api_response && !plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                     common.returnMessage(params, 200, 'Success');
                 }
                 common.blockResponses(params);
@@ -1824,6 +1824,9 @@ const processRequest = (params) => {
                 switch (paths[3]) {
                 case 'all':
                     validateRead(params, 'core', () => {
+                        if (!params.qstring.query) {
+                            params.qstring.query = {};
+                        }
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1864,6 +1867,9 @@ const processRequest = (params) => {
                     break;
                 case 'count':
                     validateRead(params, 'core', () => {
+                        if (!params.qstring.query) {
+                            params.qstring.query = {};
+                        }
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1896,6 +1902,9 @@ const processRequest = (params) => {
                     break;
                 case 'list':
                     validateRead(params, 'core', () => {
+                        if (!params.qstring.query) {
+                            params.qstring.query = {};
+                        }
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -2121,8 +2130,16 @@ const processRequest = (params) => {
 
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
                             if (hasAccess) {
+                                var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
+                                var db = "";
+                                if (params.qstring.db && dbs[params.qstring.db]) {
+                                    db = dbs[params.qstring.db];
+                                }
+                                else {
+                                    db = common.db;
+                                }
                                 countlyApi.data.exports.fromDatabase({
-                                    db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
+                                    db: db,
                                     params: params,
                                     collection: params.qstring.collection,
                                     query: params.qstring.query,
@@ -3184,7 +3201,7 @@ const processBulkRequest = (i, requests, params) => {
     const appKey = params.qstring.app_key;
     if (i === requests.length) {
         common.unblockResponses(params);
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+        if (params.qstring.safe_api_response || plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
             common.returnMessage(params, 200, 'Success');
         }
         return;
@@ -3193,9 +3210,10 @@ const processBulkRequest = (i, requests, params) => {
     if (!requests[i] || (!requests[i].app_key && !appKey)) {
         return processBulkRequest(i + 1, requests, params);
     }
-
+    if (params.qstring.safe_api_response) {
+        requests[i].safe_api_response = true;
+    }
     params.req.body = JSON.stringify(requests[i]);
-
     const tmpParams = {
         'app_id': '',
         'app_cc': '',
@@ -3364,13 +3382,13 @@ function validateRedirect(ob) {
                 log.e("Redirect error", error, body, opts, app, params);
             }
 
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
                 common.returnMessage(params, code, message);
             }
         });
         params.cancelRequest = "Redirected: " + app.redirect_url;
         params.waitForResponse = false;
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
             params.waitForResponse = true;
         }
         return false;

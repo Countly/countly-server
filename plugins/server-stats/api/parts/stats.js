@@ -51,7 +51,7 @@ function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consoli
             incObject[key] = eventCount[key];
             incObject[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.${key}`] = eventCount[key];
             // sum += eventCount[key] || 0;
-            if (key === "e" || key === "s" || key === "p") { //because other are breakdowns from events.
+            if (key === "e" || key === "s") { //because other are breakdowns from events.
                 sum += eventCount[key] || 0;
             }
         }
@@ -124,11 +124,13 @@ function increaseDataPoints(object, data) {
     object.ratings += (data.str || 0);
     object.apm += (data.apm || 0);
     object.custom += (data.ce || 0);
+    object.cs = (data.cs || 0);
+    object.ps = (data.ps || 0);
     if (data.dp) {
         object.dp += data.dp;
     }
     else {
-        object.dp += ((data.e || 0) + (data.s || 0) + (data.p || 0));
+        object.dp += ((data.e || 0) + (data.s || 0));
     }
 
     return object;
@@ -166,7 +168,7 @@ function punchCard(db, filter, options) {
             var data = [];
             for (let p = 0; p < ROW; p++) {
                 for (let m = 0; m < TIME_RANGE; m++) {
-                    data.push({"value": {}, "min": null, "max": 0, "sum": 0, "avg": 0, "cn": {}, "p": 0, "s": 0, "e": 0});
+                    data.push({"value": {}, "min": null, "max": 0, "sum": 0, "avg": 0, "cn": {}, "s": 0, "e": 0});
                 }
             }
 
@@ -246,7 +248,7 @@ function fetchDatapoints(db, filter, options, callback) {
         if (options.monthlyBreakdown) {
             const dataPoints = result
                 .reduce((acc, current) => {
-                    let dp = current.e + current.s;
+                    let dp = (current.e || 0) + (current.s || 0);
 
                     if (/^\[CLY\]_consolidated/.test(current._id)) {
                         // do not count consolidated dp for countly hosted clients

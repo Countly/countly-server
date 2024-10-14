@@ -1211,6 +1211,7 @@
                 "big_list_limit": true,
                 "record_big_list": true,
                 "cache_threshold": true,
+                "use_union_with": true,
                 "correct_estimation": true,
                 "custom_property_limit": true,
                 "list_limit": true,

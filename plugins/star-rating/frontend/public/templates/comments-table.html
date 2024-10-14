@@ -23,7 +23,7 @@
       </el-table-column>
       <el-table-column prop="email" :label="i18n('feedback.email')" min-width="200">
         <template v-slot="rowScope">
-            <span class="text-medium" :data-test-id="'ratings-comment-table-time-email-row' + rowScope.$index">
+            <span class="text-medium" :data-test-id="'ratings-comment-table-email-row-' + rowScope.$index">
               {{ rowScope.row.email }}
             </span>
         </template>

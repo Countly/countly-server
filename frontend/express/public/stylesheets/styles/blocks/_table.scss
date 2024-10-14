@@ -18,15 +18,15 @@
 		&--list {
 			.el-table {
 				background-color: unset;
-
+		
 				&__body {
 					border-collapse: separate;
 					border-spacing: 0 8px;
 				}
-
+		
 				&__row {
 					cursor: pointer;
-
+			
 					td {
 						cursor: pointer;
 						height: 56px;
@@ -34,21 +34,21 @@
 						border-bottom: 2px solid #ECECEC !important;
 						background-color: #FFF !important;
 						padding: 18px 0px;
-
+			
 						&:first-child {
 							border-left: 1px solid #ECECEC !important;
 							border-radius: 4px 0 0 4px !important;
 						}
-
+			
 						&:last-child {
 							border-right: 1px solid #ECECEC !important;
 							border-radius: 0 4px 4px 0 !important;
 						}
-
+		
 						.cell {
 							line-height: 20px;
 						}
-
+		
 						&.drag-icon  {
 							.cell {
 								text-overflow: unset !important;
@@ -56,20 +56,20 @@
 						}
 					}
 				}
-
+		
 				thead {
 					tr {
 						background-color: unset !important;
 					}
 				}
-
+		
 				th {
 					background-color: unset !important;
 					border: none !important;
 					padding: 0 !important;
 					color: #81868D !important;
 				}
-
+		
 				&__fixed-right::before {
 					height: 0 !important;
 				}

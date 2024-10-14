@@ -29,6 +29,22 @@
                 ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", "method=get_events", "display_loader=false"]
             }
         };
+        window.loadPlugin = function(plugin, callback, args){
+            if (typeof plugin !== "string") {
+                console.log("when loading plugin, provided plugin was not a string, but a", plugin);
+            }
+            if (typeof callback !== "function") {
+                console.log("when loading plugin", plugin, "provided callback was not a function, but a", callback);
+            }
+            if (countlyGlobal.plugins.indexOf(plugin) !== -1) {
+                if (Array.isArray(args)){
+                    callback.apply(window, args);
+                }
+                else {
+                    callback(args);
+                }
+            }
+        };
     </script>
     <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css?<%= countlyVersion %>" />
 	 <link rel="stylesheet" href="<%- cdn %>stylesheets/countly-icons/style.css?<%= countlyVersion %>" />
