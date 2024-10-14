@@ -2569,10 +2569,12 @@ var pluginManager = function pluginManager() {
                 }
                 return function(err, res) {
                     if (err) {
-                        logDbRead.e("Error reading " + collection + " %j %s %j", data, err, err);
-                        logDbRead.d("From connection %j", countlyDb._cly_debug);
-                        if (e) {
-                            logDbRead.e(e.stack);
+                        if (!(data && data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.indexOf(err.code) !== -1)) {
+                            logDbRead.e("Error reading " + collection + " %j %s %j", data, err, err);
+                            logDbRead.d("From connection %j", countlyDb._cly_debug);
+                            if (e) {
+                                logDbRead.e(e.stack);
+                            }
                         }
                     }
                     if (callback) {
