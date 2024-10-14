@@ -12,7 +12,7 @@
         },
         methods: {
             onRowClick: function(params) {
-                app.navigate("#/analytics/events/key/" + params.key, true);
+                app.navigate("#/analytics/events/key/" + JSON.stringify(params.key), true);
             },
             formatNumber: function(val) {
                 return countlyCommon.formatNumber(val);
@@ -151,7 +151,12 @@
             },
             change: {
                 type: String
-            }
+            },
+            testId: {
+                type: String,
+                default: 'events-breakdown-horizontal-tile-test-id',
+                required: false
+            },
         },
         template: '<div class="cly-events-breakdown-horizontal-tile bu-column">\
     <div class="cly-events-breakdown-horizontal-tile__wrapper">\
@@ -165,8 +170,8 @@
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\
                             <slot name="countValue"></slot>\
-                            <span v-if="trend === \'u\'" class="cly-events-breakdown-horizontal-tile__trend cly-trend-up bu-pl-2"><i class="cly-trend-up-icon ion-android-arrow-up"></i>{{change}}</span>\
-                            <span v-else class="cly-events-breakdown-horizontal-tile__trend cly-trend-down bu-pl-2"><i class="cly-trend-down-icon ion-android-arrow-down"></i>{{change}}</span>\
+                            <span v-if="trend === \'u\'" class="cly-events-breakdown-horizontal-tile__trend cly-trend-up bu-pl-2" :data-test-id="testId + \'-trend-value-label\'"><i class="cly-trend-up-icon ion-android-arrow-up" :data-test-id="testId + \'-trend-icon\'"></i>{{change}}</span>\
+                            <span v-else class="cly-events-breakdown-horizontal-tile__trend cly-trend-down bu-pl-2" :data-test-id="testId + \'-trend-value-label\'"><i class="cly-trend-down-icon ion-android-arrow-down" :data-test-id="testId + \'-trend-icon\'"></i>{{change}}</span>\
                             </div>\
                         </div>\
                         <slot name="totalPercentage">\
@@ -187,7 +192,12 @@
             },
             change: {
                 type: String
-            }
+            },
+            testId: {
+                type: String,
+                default: 'events-breakdown-horizontal-tile-test-id',
+                required: false
+            },
         },
         template: '<div class="cly-monitor-events-breakdown-horizontal-tile bu-column bu-is-6">\
     <div class="cly-monitor-events-breakdown-horizontal-tile__wrapper">\
@@ -201,8 +211,8 @@
                         <div class="bu-level-left">\
                             <div class="bu-level-item">\
                             <slot name="countValue"></slot>\
-                            <span v-if="trend === \'u\'" class="cly-trend-up cly-monitor-events-breakdown-horizontal-tile__trend bu-pl-2"><i class="cly-monitor-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-up"></i>{{change}}</span>\
-                            <span v-else class="cly-trend-down cly-monitor-events-breakdown-horizontal-tile__trend bu-pl-2"><i class="cly-monitor-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-down"></i>{{change}}</span>\
+                            <span v-if="trend === \'u\'" class="cly-trend-up cly-monitor-events-breakdown-horizontal-tile__trend bu-pl-2" :data-test-id="testId + \'-trend-value-label\'"><i class="cly-monitor-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-up" :data-test-id="testId + \'-trend-icon\'"></i>{{change}}</span>\
+                            <span v-else class="cly-trend-down cly-monitor-events-breakdown-horizontal-tile__trend bu-pl-2" :data-test-id="testId + \'-trend-value-label\'"><i class="cly-monitor-events-breakdown-horizontal-tile__arrow fas fa-arrow-circle-down" :data-test-id="testId + \'-trend-icon\'"></i>{{change}}</span>\
                             </div>\
                         </div>\
                     </div>\
@@ -243,7 +253,7 @@
                 this.$store.dispatch('countlyEventsOverview/fetchMonitorEvents');
             },
             onMetricClick: function(params) {
-                app.navigate("#/analytics/events/key/" + params.key, true);
+                app.navigate("#/analytics/events/key/" + JSON.stringify(params.key), true);
             },
             durCheck: function(item) {
                 var eventMapKey = item.eventKey;

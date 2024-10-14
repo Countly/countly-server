@@ -242,7 +242,7 @@ module.exports = function(grunt) {
                         'frontend/express/public/javascripts/dom/drop/drop-theme-countly.min.css',
                         'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.css',
                         'frontend/express/public/stylesheets/bulma/bulma-custom.css',
-                        'frontend/express/public/stylesheets/styles/manifest.css',
+                        'frontend/express/public/stylesheets/styles/manifest2.css',
                         'frontend/express/public/stylesheets/vue/element-tiptap.css',
                     ]
                 }
@@ -325,7 +325,25 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', ['mochaTest']);
 
-    grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'cssmin']);
+    grunt.registerTask('replace-paths', 'Replace image paths in prod CSS files', function() {
+        var cssFiles = [
+            {
+                filepath: 'frontend/express/public/stylesheets/styles/manifest.css',
+                lookup: '../../images',
+                replacement: '../images',
+                newPath: 'frontend/express/public/stylesheets/styles/manifest2.css'
+            }
+        ];
+
+        cssFiles.forEach(function(file) {
+            var content = grunt.file.read(file.filepath);
+            var newContent = content.replace(/\.\.\/\.\.\/images/g, file.replacement);
+            grunt.file.write(file.newPath, newContent);
+            grunt.log.writeln('Processed file: ' + file.filepath);
+        });
+    });
+
+    grunt.registerTask('dist', ['sass', 'concat', 'uglify', 'replace-paths', 'cssmin']);
 
     grunt.registerTask('plugins', 'Minify plugin JS / CSS files and copy images', function() {
         var js = [], css = [], img = [], fs = require('fs'), path = require('path');

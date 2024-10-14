@@ -175,5 +175,9 @@
 .cly-vue-more-options {
     .el-button {
         border: 1px solid #CFD6E4;
+        .is-reverse {
+            -webkit-transform: rotateZ(0);
+            transform: rotateZ(0);
+        }
     }
 }

@@ -240,7 +240,7 @@ describe('Writing app sessions', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 1, total_users: 1, new_users: 1, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "2.0", platforms: [], carriers: [], resolutions: []});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 1, total_users: 1, new_users: 1, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "2.0", platforms: [], carriers: [{ name: 'Unknown', value: 1, percent: 100 }], resolutions: []});
                     });
             });
         });
@@ -329,7 +329,7 @@ describe('Writing app sessions', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 2, total_users: 1, new_users: 1, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "3.0", platforms: [], carriers: [], resolutions: []});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 2, total_users: 1, new_users: 1, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "3.0", platforms: [], carriers: [{ name: 'Unknown', value: 2, percent: 100 }], resolutions: []});
                     });
             });
         });
@@ -418,7 +418,7 @@ describe('Writing app sessions', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "2.0", platforms: [], carriers: [], resolutions: []});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "0.0 min", avg_time: "0.0 min", avg_requests: "2.0", platforms: [], carriers: [{ name: 'Unknown', value: 3, percent: 100 }], resolutions: []});
                     });
             });
         });
@@ -507,7 +507,7 @@ describe('Writing app sessions', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "0.5 min", avg_time: "0.2 min", avg_requests: "2.5", platforms: [], carriers: [], resolutions: []});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "0.5 min", avg_time: "0.2 min", avg_requests: "2.5", platforms: [], carriers: [{ name: 'Unknown', value: 3, percent: 100 }], resolutions: []});
                     });
             });
         });
@@ -596,7 +596,7 @@ describe('Writing app sessions', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "0.5 min", avg_time: "0.2 min", avg_requests: "3.0", platforms: [], carriers: [], resolutions: []});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "0.5 min", avg_time: "0.2 min", avg_requests: "3.0", platforms: [], carriers: [{ name: 'Unknown', value: 3, percent: 100 }], resolutions: []});
                     });
             });
         });
@@ -685,7 +685,7 @@ describe('Writing app sessions', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "1.0 min", avg_time: "0.3 min", avg_requests: "3.5", platforms: [], carriers: [], resolutions: []});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "1.0 min", avg_time: "0.3 min", avg_requests: "3.5", platforms: [], carriers: [{ name: 'Unknown', value: 3, percent: 100 }], resolutions: []});
                     });
             });
         });
@@ -774,7 +774,7 @@ describe('Writing app sessions', function() {
                     .get('/o/analytics/dashboard?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID)
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "1.0 min", avg_time: "0.3 min", avg_requests: "3.5", platforms: [], carriers: [], resolutions: []});
+                        testUtils.validateDashboard(err, res, done, {total_sessions: 3, total_users: 2, new_users: 2, total_time: "1.0 min", avg_time: "0.3 min", avg_requests: "3.5", platforms: [], carriers: [{ name: 'Unknown', value: 3, percent: 100 }], resolutions: []});
                     });
             });
         });

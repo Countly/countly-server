@@ -9,13 +9,12 @@ var globalSeed = "Countly_is_awesome";
 var remoteConfig = {};
 
 /**
- * Function to process condition filter
- * @param  {Object} params - params object
+ * Function to check if the given query would match the given user
  * @param  {Object} user - user
  * @param  {Object} query - query
- * @returns {Boolean} query status
+ * @returns {Boolean} true if the query matches the user
  */
-remoteConfig.processFilter = function(params, user, query) {
+remoteConfig.processFilter = function(user, query) {
     var queryStatus = false, isCohort = false, hasValue = false;
 
     if (Object.keys(query).length) {

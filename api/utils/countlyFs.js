@@ -655,13 +655,19 @@ countlyFs.gridfs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.deleteFileById = function(category, id, callback) {
+    ob.deleteFileById = async function(category, id, callback) {
         var bucket = new GridFSBucket(db, { bucketName: category });
-        bucket.delete(id, function(error) {
+        try {
+            await bucket.delete(id);
             if (callback) {
-                callback(error);
+                callback(null);
             }
-        });
+        }
+        catch (ee) {
+            if (callback) {
+                callback(ee);
+            }
+        }
     };
 
     /**

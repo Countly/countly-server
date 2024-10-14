@@ -1106,6 +1106,17 @@
                 appsSelectorOption: appsSelectorOption,
                 filterStatus: "all",
                 filteredApps: [],
+                tableDynamicCols: [
+                    {
+                        value: "appNameList",
+                        label: "Application",
+                        default: true
+                    },
+                    {
+                        value: "conditionText",
+                        label: "Condition",
+                        default: true
+                    }],
                 localTableTrackedFields: ["enabled"],
                 isAdmin: countlyGlobal.member.global_admin,
                 deleteElement: null,

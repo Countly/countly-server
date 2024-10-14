@@ -12,7 +12,7 @@ const common = require('../../../api/utils/common.js');
 const drillCommon = require('../../../plugins/drill/api/common.js');
 
 const APP_ID = "";
-const EVENTS = []; //leave empty to delete all custom events
+const EVENTS = []; //If empty, no events will be deleted
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
@@ -28,11 +28,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         //GET EVENTS
         var events = EVENTS;
         if (!events.length) {
-            events = await countlyDb.collection("events").findOne({_id: app._id}, {_id: 0, list: 1});
-            events = (events && events.list) || [];
-        }
-        if (!events.length) {
-            close("No events found");
+            close("No events to delete");
         }
         else {
             //DELETE EVENTS
@@ -65,6 +61,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             await drillDb.collection(collectionName).drop();
             console.log("Dropped collection:", collectionName);
         }
+        //delete from aggregated drill event collection
+        await drillDb.collection('drill_events').remove({'a': appId + "", 'e': {$in: events}});
+        console.log("Cleared from drill_events");
         await drillDb.collection('drill_bookmarks').remove({'app_id': appId, 'event_key': {$in: events}});
         console.log("Cleared drill_bookmarks");
         await drillDb.collection("drill_meta").remove({'app_id': (appId + ""), "type": "e", "e": {$in: events}});
@@ -76,6 +75,10 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             var collectionName = 'events' + drillCommon.getEventHash(events[i], appId);
             await countlyDb.collection(collectionName).drop();
             console.log("Dropped collection:", collectionName);
+
+            //clear from merged collection
+            await countlyDb.collection("events_data").remove({'_id': {"$regex": "^" + appId + "_" + drillCommon.getEventHash(events[i], appId) + "_.*"}});
+            console.log("Cleared from agregated collection");
         }
     }
 

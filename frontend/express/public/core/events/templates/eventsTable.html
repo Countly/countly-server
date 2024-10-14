@@ -1,58 +1,58 @@
 <div v-bind:class="[componentId]">
-    <cly-datatable-n :rows="eventsTableRows" :force-loading="isTableLoading" :exportFormat="formatExportTable">
-      <template v-slot:header-left="selectScope">
-      </template>
-      <template v-slot="scope">
-        <el-table-column v-if="selectedSegment !== 'segment'" sortable :sort-method="customSortSegments" prop="curr_segment" :label="i18n('events.table.segmentation')">
-          <template v-slot="rowScope">
-            <div class="has-ellipsis">
-              {{rowScope.row.curr_segment}}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column v-else sortable="true" column-key="date" prop="dateVal" :sort-method="customSortSegments" :label="i18n('common.date')">
-          <template
-          date v-slot="rowScope">
-            <div>
-              {{rowScope.row.date}}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="isColumnAllowed('count')" sortable="true" prop="c" :label="labels.count">
-          <template v-slot="rowScope">
-            <div>
-              {{formatNumber(rowScope.row.c)}}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="isColumnAllowed('sum')" sortable="true" prop="s" :label="labels.sum">
-          <template v-slot="rowScope">
-            <div>
-              {{formatNumber(rowScope.row.s)}}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="isColumnAllowed('dur')" sortable="true" prop="dur" :label="labels.dur">
-          <template v-slot="rowScope">
-            <div>
-              {{formatDurNumber(rowScope.row.dur)}}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="isColumnAllowed('AvgSum')" sortable="true" prop="avgSum" :label="i18n('events.table.avg-sum')">
-          <template v-slot="rowScope">
-            <div>
-              {{formatNumber(rowScope.row.avgSum)}}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="isColumnAllowed('AvgDur')" sortable="true" prop="avgDur" :label="i18n('events.table.avg-dur')">
-          <template v-slot="rowScope">
-            <div>
-              {{formatDurNumber(rowScope.row.avgDur)}}
-            </div>
-          </template>
-        </el-table-column>
-      </template>
-    </cly-datatable-n>
-  </div>
+  <cly-datatable-n test-id="all-events-datatable" :rows="eventsTableRows" :force-loading="isTableLoading" :exportFormat="formatExportTable">
+    <template v-slot:header-left="selectScope">
+    </template>
+    <template v-slot="scope">
+      <el-table-column v-if="selectedSegment !== 'segment'" sortable :sort-method="customSortSegments" prop="curr_segment" :label="i18n('events.table.segmentation')">
+        <template v-slot="rowScope">
+          <div class="has-ellipsis" :data-test-id="'datatable-all-events-segment-' + rowScope.$index">
+            {{rowScope.row.curr_segment}}
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column v-else sortable="true" column-key="date" prop="dateVal" :sort-method="customSortSegments" :label="i18n('common.date')">
+        <template
+        date v-slot="rowScope">
+          <div :data-test-id="'datatable-all-events-date-' + rowScope.$index">
+            {{rowScope.row.date}}
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column v-if="isColumnAllowed('count')" sortable="true" prop="c" :label="labels.count">
+        <template v-slot="rowScope">
+          <div :data-test-id="'datatable-all-events-count-' + rowScope.$index">
+            {{formatNumber(rowScope.row.c)}}
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column v-if="isColumnAllowed('sum')" sortable="true" prop="s" :label="labels.sum">
+        <template v-slot="rowScope">
+          <div :data-test-id="'datatable-all-events-sum-' + rowScope.$index">
+            {{formatNumber(rowScope.row.s)}}
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column v-if="isColumnAllowed('dur')" sortable="true" prop="dur" :label="labels.dur">
+        <template v-slot="rowScope">
+          <div :data-test-id="'datatable-all-events-dur-' + rowScope.$index">
+            {{formatDurNumber(rowScope.row.dur)}}
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column v-if="isColumnAllowed('AvgSum')" sortable="true" prop="avgSum" :label="i18n('events.table.avg-sum')">
+        <template v-slot="rowScope">
+          <div :data-test-id="'datatable-all-events-avg-sum-' + rowScope.$index">
+            {{formatNumber(rowScope.row.avgSum)}}
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column v-if="isColumnAllowed('AvgDur')" sortable="true" prop="avgDur" :label="i18n('events.table.avg-dur')">
+        <template v-slot="rowScope">
+          <div :data-test-id="'datatable-all-events-avg-dur-' + rowScope.$index">
+            {{formatDurNumber(rowScope.row.avgDur)}}
+          </div>
+        </template>
+      </el-table-column>
+    </template>
+  </cly-datatable-n>
+</div>
