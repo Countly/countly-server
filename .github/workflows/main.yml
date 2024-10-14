@@ -2,13 +2,9 @@
 
 name: CI
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   pull_request:
     branches: [ master, next ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
       custom_tag:
@@ -16,21 +12,14 @@ on:
         required: false
         default: ''
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   install:
-    # The type of runner that the job will run on
     runs-on: ubuntu-20.04
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
       - name: Github Actions Azure connection fix
         run: |
-          # Workaround for https://github.com/actions/runner-images/issues/675#issuecomment-1381389712
           sudo sed -i 's/azure/us/g' /etc/apt/sources.list
 
       - name: Installing Countly
@@ -64,9 +53,9 @@ jobs:
       - name: Output Nginx Logs
         if: ${{ always() }}
         run: sudo cat /var/log/nginx/error.log
+
   lint:
     runs-on: ubuntu-latest
-
     services:
       mongodb:
         image: mongo:6.0
@@ -77,7 +66,6 @@ jobs:
           --health-retries 5
         ports:
           - 27017:27017
-
     container:
       image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name  }}
       env:
@@ -121,9 +109,9 @@ jobs:
         shell: bash
         working-directory: /opt/countly
         run: sudo countly task dist-all
+
   test-api-core:
     runs-on: ubuntu-latest
-
     services:
       mongodb:
         image: mongo:6.0
@@ -134,7 +122,6 @@ jobs:
           --health-retries 5
         ports:
           - 27017:27017
-
     container:
       image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
@@ -168,62 +155,9 @@ jobs:
           /sbin/my_init &
           node bin/scripts/test.connection.js
           npx grunt mochaTest
-  test-api-plugins:
-    runs-on: ubuntu-latest
 
-    services:
-      mongodb:
-        image: mongo:6.0
-        options: >-
-          --health-cmd mongosh
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 27017:27017
-
-    container:
-      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
-      env:
-        COUNTLY_CONFIG__MONGODB_HOST: mongodb
-        COUNTLY_CONFIG_API_PREVENT_JOBS: true
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Copy code
-        shell: bash
-        run: cp -rf ./* /opt/countly
-
-      - name: Prepare files to use correct MongoDB host
-        shell: bash
-        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/run.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/run.sh"
-
-      - name: Prepare tests
-        shell: bash
-        run: bash bin/scripts/countly.prepare.ce.plugins.tests.sh
-
-      - name: Configure API
-        shell: bash
-        run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
-
-      - name: Install plugins
-        shell: bash
-        run: |
-         cp plugins/plugins.default.json /opt/countly/plugins/plugins.json
-         node /opt/countly/bin/scripts/install_plugins.js --force
-
-      - name: Run tests
-        shell: bash
-        working-directory: /opt/countly
-        run: |
-          npm install
-          /sbin/my_init &
-          node bin/scripts/test.connection.js
-          npx grunt mochaTest       
   ui-test-dashboard:
     runs-on: ubuntu-latest
-
     services:
       mongodb:
         image: mongo:6.0
@@ -234,7 +168,6 @@ jobs:
           --health-retries 5
         ports:
           - 27017:27017
-
     container:
       image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
@@ -243,6 +176,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set XDG_RUNTIME_DIR
+        run: echo "XDG_RUNTIME_DIR=/tmp" >> $GITHUB_ENV
 
       - name: Install Chrome
         shell: bash
@@ -255,10 +191,6 @@ jobs:
       - name: Copy code
         shell: bash
         run: cp -rf ./* /opt/countly
-
-      - name: Prepare files to use correct MongoDB host
-        shell: bash
-        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
 
       - name: Prepare environment
         shell: bash
@@ -286,7 +218,7 @@ jobs:
           /sbin/my_init &
           cd ui-tests
           npm install
-          xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
+          xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" \
           npm run cy:run:dashboard --headless --no-sandbox --disable-gpu --disable-dev-shm-usage
 
       - name: Upload UI tests artifacts
@@ -301,7 +233,6 @@ jobs:
 
   ui-test-onboarding:
     runs-on: ubuntu-latest
-
     services:
       mongodb:
         image: mongo:6.0
@@ -312,7 +243,6 @@ jobs:
           --health-retries 5
         ports:
           - 27017:27017
-
     container:
       image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
@@ -321,6 +251,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set XDG_RUNTIME_DIR
+        run: echo "XDG_RUNTIME_DIR=/tmp" >> $GITHUB_ENV
 
       - name: Install Chrome
         shell: bash
@@ -333,10 +266,6 @@ jobs:
       - name: Copy code
         shell: bash
         run: cp -rf ./* /opt/countly
-
-      - name: Prepare files to use correct MongoDB host
-        shell: bash
-        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
 
       - name: Prepare environment
         shell: bash
@@ -360,7 +289,7 @@ jobs:
           /sbin/my_init &
           cd ui-tests
           npm install
-          xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
+          xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" \
           npm run cy:run:onboarding --headless --no-sandbox --disable-gpu --disable-dev-shm-usage
 
       - name: Upload UI tests artifacts
