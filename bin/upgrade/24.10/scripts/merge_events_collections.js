@@ -46,7 +46,7 @@ async function merge_data_from_collection(countlyDB, collection, mapped, resolve
         var app_id = mapped[collection].a;
         var prefix = app_id + "_" + collection.replace("events", "");
         var tscheck = Date.now().valueOf();
-        countlyDB.collection(collection).aggregate([{"$match": {"merged": {"$ne": true}}}, {"$addFields": {"_id": {"$concat": [prefix, "_", "$_id"]}, "tscheck": tscheck, "a": app_id, "e": mapped[collection].e}}, {"$merge": {"into": "events_data", "on": "_id", "whenMatched": "fail"}}], async function(err) {
+        countlyDB.collection(collection).aggregate([{"$match": {"merged": {"$ne": true}}}, {"$addFields": {"_id": {"$concat": [prefix, "_", "$_id"]}, "tscheck": tscheck, "a": app_id, "e": mapped[collection].e}}, {"$merge": {"into": "events_data", "on": "_id", "whenMatched": "fail"}}], {ignore_errors: [11000]}, async function(err) {
             if (err) {
                 console.log("Failed to merge with database  $merge operation. Doing each document one by one");
 
