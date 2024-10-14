@@ -222,6 +222,7 @@ describe('Create New Widget', () => {
             contactViaCheckboxLabelText: widget.contactViaCheckboxLabelText,
             contactEmail: widgetRate.contactEmail,
             submitButtonText: widget.submitButtonText,
+            consentText: 'I agree to the Terms and Conditions and Privacy Policy.',
             selectedMainColor: widget.mainColor,
             selectedFontColor: widget.FontColor,
             hasPoweredByLogo: true,

@@ -1145,7 +1145,7 @@
                         steps: null
                     };
                 }
-                if (Array.isArray(this.widget.links)) {
+                if (Array.isArray(this.widget.links) && this.widget.links.length) {
                     this.widget.links.forEach(function(link) {
                         if (link.linkValue.indexOf('term')) {
                             link.text = "Terms and Conditions";
@@ -1162,8 +1162,9 @@
                         link.linkValue = link.linkValue.replace(new RegExp('[?&]' + CLY_X_INT + '=[^&]*'), '').replace(/[?&]$/, '');
                     });
                     this.widget.links = {"link": this.widget.links, "finalText": this.widget.finalText};
+                    this.widget.consent = true;
                 }
-                if (!this.widget.links) {
+                else {
                     this.widget.links = {
                         "link": [
                             {
@@ -1182,6 +1183,7 @@
                         "finalText": "I agree to the Terms and Conditions and Privacy Policy."
 
                     };
+                    this.widget.consent = false;
                 }
                 if (!this.widget.rating_symbol) {
                     this.widget.rating_symbol = "emojis";

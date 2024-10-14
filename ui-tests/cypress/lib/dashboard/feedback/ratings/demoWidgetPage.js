@@ -16,6 +16,7 @@ const demoPageElements = {
     CONTACT_VIA_CHECKBOX: '#countly-feedback-show-email',
     CONTACT_VIA_LABEL: '#cf-email-text',
     CONTACT_VIA_INPUT: '#countly-feedback-contact-me-email',
+    CONSENT: '#consent',
     SUBMIT_BUTTON: '#cf-submit-button',
     LOGO_IMAGE: '#powered-by-countly',
     SUCCESS_ICON: '#thanks-area-logo',
@@ -54,6 +55,7 @@ const verifyDemoPageElementsAndRate = ({
     submitButtonText,
     submitButtonColor,
     submitButtonFontColor,
+    consentText = null,
     hasPoweredByLogo = true,
     thankYouMessageText,
     successIconColor
@@ -130,6 +132,12 @@ const verifyDemoPageElementsAndRate = ({
     }
     else {
         cy.shouldNotExist(demoPageElements.LOGO_IMAGE);
+    }
+
+    if (consentText != null) {
+        cy.getElement(demoPageElements.CONSENT)
+            .find('input[type="checkbox"]')
+            .click();
     }
 
     cy.clickElement(demoPageElements.SUBMIT_BUTTON);

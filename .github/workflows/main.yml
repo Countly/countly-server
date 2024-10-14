@@ -10,6 +10,11 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      custom_tag:
+        description: 'Custom Docker tag (optional)'
+        required: false
+        default: ''
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -64,7 +69,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:7.0
+        image: mongo:8.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -74,7 +79,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name  }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -121,7 +126,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:7.0
+        image: mongo:8.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -131,7 +136,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -173,7 +178,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:7.0
+        image: mongo:8.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -183,7 +188,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -231,7 +236,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:7.0
+        image: mongo:8.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -241,7 +246,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -296,7 +301,8 @@ jobs:
           /sbin/my_init &
           cd ui-tests
           npm install
-          npm run cy:run:dashboard
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
+          npm run cy:run:dashboard --headless --no-sandbox --disable-gpu --disable-dev-shm-usage
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
@@ -313,7 +319,7 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:6.0
+        image: mongo:8.0
         options: >-
           --health-cmd mongosh
           --health-interval 10s
@@ -323,7 +329,7 @@ jobs:
           - 27017:27017
 
     container:
-      image: countly/countly-core:pipelines-${{ github.base_ref || github.ref_name }}
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
         COUNTLY_CONFIG__MONGODB_HOST: mongodb
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
@@ -374,7 +380,8 @@ jobs:
           /sbin/my_init &
           cd ui-tests
           npm install
-          npm run cy:run:onboarding
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
+          npm run cy:run:onboarding --headless --no-sandbox --disable-gpu --disable-dev-shm-usage
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
