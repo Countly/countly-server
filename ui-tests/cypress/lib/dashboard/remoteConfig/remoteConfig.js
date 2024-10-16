@@ -50,7 +50,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: remoteConfigDataTableElements().COLUMN_NAME_AB_TESTING_STATUS_LABEL,
         labelText: "A/B Testing Status",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -74,7 +74,7 @@ const verifyFullDataPageElements = () => {
 const verifyRemoteConfigDataFromTable = ({
     index = 0,
     isEmpty = false,
-    shouldNotEqual= false,
+    shouldNotEqual = false,
     parameter = null,
     status = null,
     expireDate = null,
