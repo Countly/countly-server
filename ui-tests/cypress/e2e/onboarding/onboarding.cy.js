@@ -377,9 +377,9 @@ describe('Complete Onboarding', () => {
         //remoteConfigPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
         navigationHelpers.goToReportManagerPage();
         //reportManagerPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
+        navigationHelpers.goToDataManagerPage();
+        dataManagerEventsPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToDataManagerPage();
-        //dataManagerEventsPageHelpers.verifyFullDataPageElements();
         //dataManagerEventsPageHelpers.clickEventGroupsTab();
         //dataManagerEventGroupsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToDataPopulatorPage();
