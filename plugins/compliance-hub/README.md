@@ -1,6 +1,6 @@
 # Compliance Hub plugin
 
-The Compliance Hub plugin is designed to manage user consent and related metrics within the Countly analytics platform. This plugin ensures that user data is handled in compliance with various data protection regulations.
+The Compliance Hub plugin for Countly is designed to manage user consent and related metrics, ensuring compliance with various data protection regulations. It provides a comprehensive API for handling user consent, integrating seamlessly with the Countly analytics platform. The plugin includes robust functionality for managing and displaying consent data, featuring templates for consent history, export history, and user consent data tables. Additionally, it offers a dashboard for visualizing consent metrics, helping organizations maintain transparency and compliance.
 
 ## File structure
 File structure follows usual Countly plugin structure
