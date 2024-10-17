@@ -13,8 +13,8 @@ const remoteConfigDataTableElements = (index = 0) => ({
     EMPTY_TABLE_TITLE: 'remote-config-empty-title',
     EMPTY_TABLE_SUBTITLE: 'remote-config-empty-subtitle',
 
-    PARAMETER_LABEL: 'remote-config-label-parameter',
-    PARAMETER_SORTABLE_ICON: 'remote-config-sortable-icon-parameter',
+    COLUMN_NAME_PARAMETER_LABEL: 'remote-config-label-parameter',
+    COLUMN_NAME_PARAMETER_SORTABLE_ICON: 'remote-config-sortable-icon-parameter',
     COLUMN_NAME_STATUS_LABEL: 'remote-config-label-status',
     COLUMN_NAME_DESCRIPTION_LABEL: 'remote-config-label-description',
     COLUMN_NAME_CREATED_LABEL: 'remote-config-label-created',

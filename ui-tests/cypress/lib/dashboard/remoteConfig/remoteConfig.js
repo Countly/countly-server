@@ -27,8 +27,12 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.verifyElement({
-        labelElement: remoteConfigDataTableElements().PARAMETER_LABEL,
+        labelElement: remoteConfigDataTableElements().COLUMN_NAME_PARAMETER_LABEL,
         labelText: "Parameter",
+    });
+
+    cy.verifyElement({
+        element: remoteConfigDataTableElements().COLUMN_NAME_PARAMETER_SORTABLE_ICON,
     });
 
     cy.verifyElement({
@@ -44,6 +48,10 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         labelElement: remoteConfigDataTableElements().COLUMN_NAME_CREATED_LABEL,
         labelText: "Created",
+    });
+
+    cy.verifyElement({
+        element: remoteConfigDataTableElements().COLUMN_NAME_CREATED_SORTABLE_ICON,
     });
 
     cy.verifyElement({
