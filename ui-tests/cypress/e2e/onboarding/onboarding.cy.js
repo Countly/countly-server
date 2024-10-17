@@ -382,11 +382,11 @@ describe('Complete Onboarding', () => {
         dataManagerEventsPageHelpers.clickEventGroupsTab();
         //dataManagerEventGroupsPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
         navigationHelpers.goToDataPopulatorPage();
-        dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithTemplatePage(); 
+        dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithTemplatePage();
         dataPopulatorPageHelpers.clickPopulateWithEnvironmentTab();
         dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithEnvironmentPage();
         dataPopulatorPageHelpers.clickTemplatesTab();
-        dataPopulatorPageHelpers.verifyPageElementsOfTemplatesPage(); 
+        dataPopulatorPageHelpers.verifyPageElementsOfTemplatesPage();
         //TODO: Add the cases of the following pages
         //navigationHelpers.goToIncomingDataLogsPage();
         //incomingDataLogsPageHelpers.verifyFullDataPageElements();

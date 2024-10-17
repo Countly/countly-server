@@ -3,7 +3,7 @@ export const dataPopulatorPageElements = {
     TAB_TEMPLATES: '#tab-templates',
     TAB_POPULATE_WITH_TEMPLATE: 'tab-populate-with-template-title',
     TAB_POPULATE_WITH_ENVIRONMENT: 'tab-populate-with-environment-title'
-}
+};
 
 export const populateWithTemplatePageElements = {
     //Data Populator -> Populate With Template
