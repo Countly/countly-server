@@ -10,13 +10,13 @@ recaptcha/
 ├── api/
 │    └── api.js                               
 ├── frontend/
-│   ├── public
-│   │    ├── javascripts
-│   │    │    ├── countly.models.js           
-│   │    │    └── countly.views.js            
-│   │    ├── localization                     # all localization files
-│   │    └── stylesheets
-│   └── app.js                                # reCAPTCHA integration for Countly login
+│    ├── public
+│    │    ├── javascripts
+│    │    │    ├── countly.models.js           
+│    │    │    └── countly.views.js            
+│    │    ├── localization                     # all localization files
+│    │    └── stylesheets
+│    └── app.js                                # reCAPTCHA integration for Countly login
 ├── install.js
 ├── package.json
 ├── README.md
