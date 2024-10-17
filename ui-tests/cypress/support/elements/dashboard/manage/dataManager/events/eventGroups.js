@@ -22,7 +22,7 @@ const eventsGroupsDataTableElements = (index = 0) => ({
 
     //Columns' Rows' Datas Elements
     //TODO: data test id will be added
-    SELECT_EVENT_GROUP_CHECKBOX: 'datatable-manage-events-event-groups-select-event-group-checkbox-' + index, 
+    SELECT_EVENT_GROUP_CHECKBOX: 'datatable-manage-events-event-groups-select-event-group-checkbox-' + index,
     EVENT_GROUP_NAME: 'datatable-manage-events-event-groups-event-group-name-' + index,
     EVENT_GROUP_DESCRIPTION: 'datatable-manage-events-event-groups-event-group-description-' + index,
 

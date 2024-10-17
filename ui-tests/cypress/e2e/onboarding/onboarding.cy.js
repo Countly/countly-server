@@ -380,7 +380,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToDataManagerPage();
         dataManagerEventsPageHelpers.verifyFullDataPageElements();
 
-        dataManagerEventsPageHelpers.clickEventGroupsTab(); 
+        dataManagerEventsPageHelpers.clickEventGroupsTab();
         //dataManagerEventGroupsPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
         //TODO: Add the cases of the following pages
         //navigationHelpers.goToDataPopulatorPage();

@@ -86,7 +86,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: eventsDataTableElements().COLUMN_NAME_LAST_MODIFIED_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

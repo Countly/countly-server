@@ -50,7 +50,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: eventsGroupsDataTableElements().COLUMN_NAME_EVENT_GROUP_DESCRIPTION_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
