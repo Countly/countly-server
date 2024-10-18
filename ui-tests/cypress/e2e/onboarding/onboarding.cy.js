@@ -217,11 +217,11 @@ describe('Complete Onboarding', () => {
         dataManagerEventsPageHelpers.clickEventGroupsTab();
         dataManagerEventGroupsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToDataPopulatorPage();
-        dataPopulatorPageHelpers.verifyEmptyPageElementsOfDataPopulatorWithTemplatePage();
+        dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithTemplatePage();
         dataPopulatorPageHelpers.clickPopulateWithEnvironmentTab();
-        dataPopulatorPageHelpers.verifyEmptyPageElementsOfDataPopulatorWithEnvironmentPage();
+        dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithEnvironmentPage();
         dataPopulatorPageHelpers.clickTemplatesTab();
-        dataPopulatorPageHelpers.verifyEmptyPageElementsOfTemplatesPage();
+        dataPopulatorPageHelpers.verifyPageElementsOfTemplatesPage();
         navigationHelpers.goToIncomingDataLogsPage();
         incomingDataLogsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToSdkManagerPage();
@@ -373,23 +373,23 @@ describe('Complete Onboarding', () => {
         feedbackRatingWidgetsPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToCrashesOverviewPage();
         crashesPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToRemoteConfigPage();
+        //remoteConfigPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        navigationHelpers.goToReportManagerPage();
+        //reportManagerPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
+        navigationHelpers.goToDataManagerPage();
+        dataManagerEventsPageHelpers.verifyFullDataPageElements();
+        dataManagerEventsPageHelpers.clickEventGroupsTab();
+        //dataManagerEventGroupsPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
+        navigationHelpers.goToDataPopulatorPage();
+        dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithTemplatePage();
+        dataPopulatorPageHelpers.clickPopulateWithEnvironmentTab();
+        dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithEnvironmentPage();
+        dataPopulatorPageHelpers.clickTemplatesTab();
+        dataPopulatorPageHelpers.verifyPageElementsOfTemplatesPage();
+        navigationHelpers.goToIncomingDataLogsPage();
+        //incomingDataLogsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToRemoteConfigPage();
-        //remoteConfigPageHelpers.verifyFullDataPageElements();
-        //navigationHelpers.goToReportManagerPage();
-        //reportManagerPageHelpers.verifyFullDataPageElements();
-        //navigationHelpers.goToDataManagerPage();
-        //dataManagerEventsPageHelpers.verifyFullDataPageElements();
-        //dataManagerEventsPageHelpers.clickEventGroupsTab();
-        //dataManagerEventGroupsPageHelpers.verifyFullDataPageElements();
-        //navigationHelpers.goToDataPopulatorPage();
-        //dataPopulatorPageHelpers.verifyEmptyPageElementsOfDataPopulatorWithTemplatePage(); // TODO
-        //dataPopulatorPageHelpers.clickPopulateWithEnvironmentTab();
-        //dataPopulatorPageHelpers.verifyEmptyPageElementsOfDataPopulatorWithEnvironmentPage(); // TODO
-        //dataPopulatorPageHelpers.clickTemplatesTab();
-        //dataPopulatorPageHelpers.verifyEmptyPageElementsOfTemplatesPage(); // TODO
-        //navigationHelpers.goToIncomingDataLogsPage();
-        //incomingDataLogsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToSdkManagerPage();
         //sdkManagersPageHelpers.verifyFullDataPageElements();
         //sdkManagersPageHelpers.clickRequestStatsTab();
