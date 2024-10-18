@@ -30,7 +30,8 @@ const verifyStaticElementsOfPage = (isEnabled) => {
             element: loggerPageElements.STOP_AUTO_REFRESH_BUTTON,
             elementText: "Stop Auto-refresh",
         });
-    } else {
+    }
+    else {
         cy.verifyElement({
             element: loggerPageElements.ENABLE_AUTO_REFRESH_TOGGLE,
             labelElement: loggerPageElements.ENABLE_AUTO_REFRESH_LABEL,
@@ -78,7 +79,7 @@ const verifyStaticElementsOfPage = (isEnabled) => {
     cy.verifyElement({
         element: logsDataTableElements().COLUMN_NAME_INFORMATION_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -142,7 +143,7 @@ const verifyLogsDataTable = ({
         element: logsDataTableElements(index).INFORMATION,
         elementText: information,
     });
-}
+};
 
 module.exports = {
     verifyEmptyPageElements,
