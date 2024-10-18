@@ -107,9 +107,9 @@
             return monitorData;
         },
         getOverviewConfigureList: function(eventsList, groupList) {
-            var map = eventsList.map || {};
             var allEvents = [];
             if (eventsList && eventsList.list) {
+                var map = eventsList.map || {};
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
                         var label;
@@ -141,9 +141,9 @@
             return allEvents;
         },
         getEventMapping: function(eventsList, groupList) {
-            var map = eventsList.map || {};
             var mapping = {};
             if (eventsList && eventsList.list) {
+                var map = eventsList.map || {};
                 eventsList.list.forEach(function(item) {
                     var obj = {
                         "eventKey": item,
