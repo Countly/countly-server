@@ -43,7 +43,7 @@ times-of-day/
 
 ## Installation
 
-1. Navigate to the directory where the Cognito plugin is located. This could be a relative or absolute path depending on your environment setup:
+1. Navigate to the directory where the times-of-day plugin is located. This could be a relative or absolute path depending on your environment setup:
 
     ```bash
     cd /path/to/your/project/times-of-day
