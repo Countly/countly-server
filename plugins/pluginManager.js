@@ -1890,15 +1890,11 @@ var pluginManager = function pluginManager() {
         var dbOptions = {
             maxPoolSize: maxPoolSize,
             noDelay: true,
-            keepAlive: true,
-            keepAliveInitialDelay: 30000,
             connectTimeoutMS: 999999999,
             socketTimeoutMS: 999999999,
             serverSelectionTimeoutMS: 999999999,
             maxIdleTimeMS: 0,
-            waitQueueTimeoutMS: 0,
-            useNewUrlParser: true,
-            useUnifiedTopology: true
+            waitQueueTimeoutMS: 0
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);
@@ -1987,7 +1983,12 @@ var pluginManager = function pluginManager() {
          */
         function logDriver(eventName, logObject, logLevel) {
             logLevel = logLevel || "d";
-            client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
+            if (eventName === "serverHeartbeatFailed" || eventName === "topologyDescriptionChanged" || eventName === "serverDescriptionChanged" || eventName === "serverClosed") {
+                client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
+            }
+            else {
+                client.on(eventName, () => logObject[logLevel](eventName));
+            }
         }
 
         //connection pool
@@ -2110,6 +2111,7 @@ var pluginManager = function pluginManager() {
                     }
                 }
             }
+            return false;
         }
         return result;
     };
@@ -2196,7 +2198,7 @@ var pluginManager = function pluginManager() {
         if (!countlyDb.ObjectID) {
             countlyDb.ObjectID = function(id) {
                 try {
-                    return mongodb.ObjectId(id);
+                    return new mongodb.ObjectId(id);
                 }
                 catch (ex) {
                     logDbRead.i("Incorrect Object ID %j", ex);
@@ -2224,11 +2226,51 @@ var pluginManager = function pluginManager() {
             options: dbOptions
         });
 
-        countlyDb.admin().buildInfo({}, (err, result) => {
-            if (!err && result) {
+        countlyDb.admin().buildInfo().then((result) => {
+            if (result) {
                 countlyDb.build = result;
             }
+        }).catch(function(err) {
+            console.log("Cannot get build info", err);
         });
+
+        //promise compatability
+        var overwriteDbPromise = function(obj, name) {
+            obj["_" + name] = obj[name];
+            obj[name] = function(...args) {
+                var callback;
+                if (typeof args[args.length - 1] === "function") {
+                    callback = args[args.length - 1];
+                    args.pop();
+                }
+
+                var promise = obj["_" + name](...args);
+                if (typeof callback === "function") {
+                    promise = promise.then(function(res) {
+                        callback(undefined, res);
+                    }).catch(function(err) {
+                        if (typeof callback === "function") {
+                            callback(err, null);
+                        }
+                    });
+                }
+                return promise;
+            };
+        };
+        overwriteDbPromise(countlyDb, "aggregate");
+        overwriteDbPromise(countlyDb, "collections");
+        overwriteDbPromise(countlyDb, "command");
+        overwriteDbPromise(countlyDb, "createCollection");
+        overwriteDbPromise(countlyDb, "createIndex");
+        overwriteDbPromise(countlyDb, "dropCollection");
+        overwriteDbPromise(countlyDb, "dropDatabase");
+        overwriteDbPromise(countlyDb, "indexInformation");
+        overwriteDbPromise(countlyDb, "profilingLevel");
+        overwriteDbPromise(countlyDb, "removeUser");
+        overwriteDbPromise(countlyDb, "renameCollection");
+        overwriteDbPromise(countlyDb, "setProfilingLevel");
+        overwriteDbPromise(countlyDb, "stats");
+
 
         var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session", "omitReadPreference"];
 
@@ -2261,17 +2303,31 @@ var pluginManager = function pluginManager() {
              *  @param {Promise} promise - Promise object
              *  @param {Error} e - Error for tracing
              *  @param {Object} data - arguments and calling method
+             *  @param {Function} callback - callback
+             *  @param {Array} ignore_errors - array with error codes to ignore
              *  @returns {Promise} Promise to handle
              */
-            function handlePromiseErrors(promise, e, data) {
+            function handlePromiseErrors(promise, e, data, callback, ignore_errors) {
                 if (promise && promise.then) {
+                    if (typeof callback === "function") {
+                        promise = promise.then(function(res) {
+                            callback(undefined, res);
+                        });
+                    }
                     return promise.catch(function(err) {
-                        logDbWrite.e("Error in promise from " + collection + " %j %s %j", data, err, err);
-                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        if (e) {
-                            logDbWrite.e(e.stack);
+                        if (typeof callback === "function") {
+                            callback(err, null);
                         }
-                        throw err;
+                        else {
+                            if (ignore_errors && ignore_errors.indexOf(err.code) === -1) {
+                                logDbWrite.e("Error in promise from " + collection + " %j %s %j", data, err, err);
+                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                                if (e) {
+                                    logDbWrite.e(e.stack);
+                                }
+                            }
+                            throw err;
+                        }
                     });
                 }
                 return promise;
@@ -2357,7 +2413,6 @@ var pluginManager = function pluginManager() {
                     options: options
                 });
                 var e;
-                var args = arguments;
                 var at = "";
                 if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
                     e = new Error();
@@ -2368,15 +2423,14 @@ var pluginManager = function pluginManager() {
                 logDbWrite.d("From connection %j", countlyDb._cly_debug);
                 if (options.upsert) {
                     var self = this;
-
-                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function() {
+                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, function() {
                         logDbWrite.d("retrying findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
                         logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(args, "findAndModify")));
-                    }, e, copyArguments(arguments, "findAndModify"))), e, copyArguments(arguments, "findAndModify"));
+                        return handlePromiseErrors(self._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
+                    }, e, copyArguments(arguments, "findAndModify")));
                 }
                 else {
-                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify"))), e, copyArguments(arguments, "findAndModify"));
+                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
                 }
             };
 
@@ -2391,6 +2445,10 @@ var pluginManager = function pluginManager() {
                         options = options || {};
                     }
 
+                    if (typeof options.includeResultMetadata === "undefined") {
+                        options.includeResultMetadata = true;
+                    }
+
                     mngr.dispatch("/db/update", {
                         db: dbName,
                         operation: name,
@@ -2399,7 +2457,6 @@ var pluginManager = function pluginManager() {
                         update: doc,
                         options: options
                     });
-                    var args = arguments;
                     var e;
                     var at = "";
                     if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
@@ -2411,15 +2468,14 @@ var pluginManager = function pluginManager() {
                     logDbWrite.d("From connection %j", countlyDb._cly_debug);
                     if (options.upsert) {
                         var self = this;
-
-                        return handlePromiseErrors(this["_" + name](selector, doc, options, retryifNeeded(callback, function() {
+                        return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, function() {
                             logDbWrite.d("retrying " + name + " " + collection + " %j %j %j" + at, selector, doc, options);
                             logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                            self["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(args, name)));
-                        }, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
+                            return handlePromiseErrors(self["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                        }, e, copyArguments(arguments, name)));
                     }
                     else {
-                        return handlePromiseErrors(this["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
+                        return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
                     }
                 };
             };
@@ -2499,7 +2555,7 @@ var pluginManager = function pluginManager() {
 
                     logDbWrite.d(name + " " + collection + " %j %j" + at, selector, options);
                     logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                    return handlePromiseErrors(this["_" + name](selector, options, logForWrites(callback, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
+                    return handlePromiseErrors(this["_" + name](selector, options), e, copyArguments(arguments, name), logForWrites(callback, e, copyArguments(arguments, name)));
                 };
             };
             overwriteDefaultWrite(ob, "deleteOne");
@@ -2517,10 +2573,12 @@ var pluginManager = function pluginManager() {
                 }
                 return function(err, res) {
                     if (err) {
-                        logDbRead.e("Error reading " + collection + " %j %s %j", data, err, err);
-                        logDbRead.d("From connection %j", countlyDb._cly_debug);
-                        if (e) {
-                            logDbRead.e(e.stack);
+                        if (!(data && data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.indexOf(err.code) !== -1)) {
+                            logDbRead.e("Error reading " + collection + " %j %s %j", data, err, err);
+                            logDbRead.d("From connection %j", countlyDb._cly_debug);
+                            if (e) {
+                                logDbRead.e(e.stack);
+                            }
                         }
                     }
                     if (callback) {
@@ -2566,7 +2624,7 @@ var pluginManager = function pluginManager() {
                     }
                     logDbRead.d(name + " " + collection + " %j %j" + at, query, options);
                     logDbRead.d("From connection %j", countlyDb._cly_debug);
-                    return handlePromiseErrors(this["_" + name](query, options, logForReads(callback, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
+                    return handlePromiseErrors(this["_" + name](query, options), e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name)));
                 };
             };
 
@@ -2608,10 +2666,15 @@ var pluginManager = function pluginManager() {
                 };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(cb) {
-                    return handlePromiseErrors(cursor._toArray(logForReads(cb, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
+                    return handlePromiseErrors(cursor._toArray(), e, copyArguments(arguments, "aggregate"), logForReads(cb, e, copyArguments(args, "aggregate")));
                 };
-                cursor.isClosed = function() {
-                    return cursor.closed || cursor.killed;
+                cursor._forEach = cursor.forEach;
+                cursor.forEach = function(iterator, cb) {
+                    return handlePromiseErrors(cursor._forEach(iterator), e, copyArguments(arguments, "aggregate"), logForReads(cb, e, copyArguments(args, "aggregate")));
+                };
+                cursor._close = cursor.close;
+                cursor.close = function(cb) {
+                    return handlePromiseErrors(cursor._close(), e, copyArguments(arguments, "aggregate"), logForReads(cb, e, copyArguments(args, "aggregate")));
                 };
                 if (typeof callback === "function") {
                     return cursor.toArray(callback);
@@ -2675,13 +2738,105 @@ var pluginManager = function pluginManager() {
                 };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
-                    return handlePromiseErrors(cursor._toArray(logForReads(callback, e, copyArguments(args, "find"))), e, copyArguments(arguments, "find"));
+                    return handlePromiseErrors(cursor._toArray(), e, copyArguments(arguments, "find"), logForReads(callback, e, copyArguments(args, "find")));
                 };
-                cursor.isClosed = function() {
-                    return cursor.closed || cursor.killed;
+                cursor._forEach = cursor.forEach;
+                cursor.forEach = function(iterator, callback) {
+                    return handlePromiseErrors(cursor._forEach(iterator), e, copyArguments(arguments, "find"), logForReads(callback, e, copyArguments(args, "find")));
+                };
+                cursor._close = cursor.close;
+                cursor.close = function(cb) {
+                    return handlePromiseErrors(cursor._close(), e, copyArguments(arguments, "find"), logForReads(cb, e, copyArguments(args, "find")));
                 };
                 return cursor;
             };
+
+            //overwrite with ops logging
+            var logForOps = function(callback, e, data, ignore_errors) {
+                //we cannot enforce callback, to make it return promise
+                if (!callback) {
+                    return;
+                }
+                return function(err, res) {
+                    if (err) {
+                        if (ignore_errors && ignore_errors.indexOf(err.code) === -1) {
+                            logDbRead.d("Error reading " + collection + " %j %s %j", data, err, err);
+                            logDbRead.d("From connection %j", countlyDb._cly_debug);
+                            if (e) {
+                                logDbRead.e(e.stack);
+                            }
+                        }
+                    }
+                    if (callback) {
+                        callback(err, res);
+                    }
+                };
+            };
+
+            //promise compatability
+            var overwritePromise = function(obj, name, ignore_errors) {
+                obj["_" + name] = obj[name];
+                obj[name] = function(...args) {
+                    var callback;
+                    if (typeof args[args.length - 1] === "function") {
+                        callback = args[args.length - 1];
+                        args.pop();
+                    }
+
+                    var e;
+                    var at = "";
+                    if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                        e = new Error();
+                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                    }
+
+                    logDbRead.d(name + " " + collection + " %j" + at, args);
+                    logDbRead.d("From connection %j", countlyDb._cly_debug);
+                    return handlePromiseErrors(this["_" + name](...args), e, copyArguments(arguments, name), logForOps(callback, e, copyArguments(arguments, name), ignore_errors), ignore_errors);
+                };
+            };
+            overwritePromise(ob, "countDocuments");
+            overwritePromise(ob, "createIndex");
+            overwritePromise(ob, "createIndexes");
+            overwritePromise(ob, "distinct");
+            overwritePromise(ob, "drop", [26]);
+            overwritePromise(ob, "dropIndex");
+            overwritePromise(ob, "dropIndexes");
+            overwritePromise(ob, "estimatedDocumentCount");
+            overwritePromise(ob, "indexExists");
+            overwritePromise(ob, "indexInformation");
+            overwritePromise(ob, "indexes");
+            overwritePromise(ob, "isCapped");
+            overwritePromise(ob, "options");
+            overwritePromise(ob, "rename");
+
+            var overwriteBulkPromise = function(obj, name) {
+                obj["_" + name] = obj[name];
+                obj[name] = function(...args) {
+                    var e;
+                    var at = "";
+                    if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                        e = new Error();
+                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                    }
+
+                    logDbRead.d(name + " " + collection + " %j" + at, args);
+                    logDbRead.d("From connection %j", countlyDb._cly_debug);
+                    var bulk = this["_" + name](...args);
+                    bulk._execute = bulk.execute;
+                    bulk.execute = function(options, callback) {
+                        if (typeof options === "function") {
+                            callback = options;
+                            options = {};
+                        }
+                        return handlePromiseErrors(bulk._execute(options), e, copyArguments(arguments, name), logForOps(callback, e, copyArguments(arguments, name)));
+                    };
+                    return bulk;
+                };
+            };
+
+            overwriteBulkPromise(ob, "initializeOrderedBulkOp");
+            overwriteBulkPromise(ob, "initializeUnorderedBulkOp");
 
             //backwards compatability
 
@@ -2738,20 +2893,6 @@ var pluginManager = function pluginManager() {
 
             ob.findAndRemove = function(query, sort, options, callback) {
                 return ob.findOneAndDelete(query, options, callback);
-            };
-
-            ob._drop = ob.drop;
-            ob.drop = function() {
-                if (!arguments.length) {
-                    return ob._drop().catch(function(ex) {
-                        if (ex.code !== 26) {
-                            throw ex;
-                        }
-                    });
-                }
-                else {
-                    return ob._drop.apply(ob, arguments);
-                }
             };
 
             ob._save = ob.save;

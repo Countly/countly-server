@@ -59,6 +59,7 @@ plugins.setConfigs("logger", {
     };
 
     var processSDKRequest = function(params) {
+        params = params || {};
         log.d("Explicitly set logging_is_allowed => ", params.logging_is_allowed);
         const requestLoggerConfiguration = getRequestLoggerConfiguration(params);
         log.d("Logging config => ", requestLoggerConfiguration);
@@ -344,13 +345,15 @@ plugins.setConfigs("logger", {
             return true;
         }
         if (params.qstring.method === 'collection_info') {
-            validateRead(params, FEATURE_NAME, function(parameters) {
-                common.db.collection('logs' + parameters.app_id).stats(function(err, stats) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    common.returnOutput(parameters, stats && {capped: stats.capped, max: stats.max} || {});
-                });
+            validateRead(params, FEATURE_NAME, async function(parameters) {
+                try {
+                    var stats = await common.db.collection('logs' + parameters.app_id).aggregate([ { $collStats: { storageStats: { } } } ]).toArray();
+                    common.returnOutput(parameters, {capped: stats?.[0]?.storageStats?.capped, max: stats?.[0]?.storageStats?.max});
+                }
+                catch (ex) {
+                    console.log("Failed fetching logs collection info: ", ex);
+                    common.returnMessage(parameters, 400, 'Error fetching collection info');
+                }
             });
             return true;
         }

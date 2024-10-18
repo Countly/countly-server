@@ -57,6 +57,7 @@ const hooksPageHelpers = require('../../lib/dashboard/manage/hooks/hooks');
 const dbCountlyPageHelpers = require('../../lib/dashboard/manage/db/countly/dbCountly');
 const dbCountlyOutPageHelpers = require('../../lib/dashboard/manage/db/countlyOut/countlyOut');
 const dbCountlyFsPageHelpers = require('../../lib/dashboard/manage/db/countlyFs/countlyFs');
+const loginHelpers = require('../../lib/login/login');
 const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
 describe('Complete Onboarding', () => {
@@ -93,6 +94,10 @@ describe('Complete Onboarding', () => {
         });
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
+        navigationHelpers.goToLogoutPage();
+        navigationHelpers.goToLoginPage();
+        loginHelpers.login(user.email, user.password);
+        navigationHelpers.isNavigatedToDashboard();
     });
 
     it('should be complete onboarding flow with creating mobile type demo application and do not enable tracking and subscribe to newsletter', function() {
@@ -120,6 +125,10 @@ describe('Complete Onboarding', () => {
         });
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
+        navigationHelpers.goToLogoutPage();
+        navigationHelpers.goToLoginPage();
+        loginHelpers.login(user.email, user.password);
+        navigationHelpers.isNavigatedToDashboard();
     });
 
     it('should be complete onboarding flow with creating mobile type own application and verify all pages with empty data', function() {
@@ -283,6 +292,10 @@ describe('Complete Onboarding', () => {
         });
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.verifyDefaultPageElements();
+        navigationHelpers.goToLogoutPage();
+        navigationHelpers.goToLoginPage();
+        loginHelpers.login(user.email, user.password);
+        navigationHelpers.isNavigatedToDashboard();
     });
 
     it('should be complete onboarding flow with creating mobile type demo application and verify home page with Finance data', function() {
@@ -308,8 +321,118 @@ describe('Complete Onboarding', () => {
             isEnableTacking: true,
             isSubscribeToNewsletter: true
         });
+
         navigationHelpers.isNavigatedToDashboard();
         quickstartPopoeverHelpers.closeQuickStartPopover();
         homePageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToAnalyticsUsersOverview();
+        analyticsUsersOverviewPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToVisitorLoyalty();
+        analyticsLoyaltyUserActivityPageHelpers.verifyFullDataPageElements();
+        analyticsLoyaltyUserActivityPageHelpers.clickSlippingAwayTab();
+        analyticsLoyaltySlippingAwayPageHelpers.verifyFullDataPageElements();
+        analyticsLoyaltySlippingAwayPageHelpers.clickTimesOfDayTab();
+        analyticsLoyaltyTimesOfDayPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToAnalyticsSessionAnalyticsOverview();
+        analyticsSessionAnalyticsOverviewPageHelpers.verifyFullDataPageElements();
+        analyticsSessionAnalyticsOverviewPageHelpers.clickSessionDurationsTab();
+        analyticsSessionAnalyticsDurationsPageHelpers.verifyFullDataPageElements();
+        analyticsSessionAnalyticsDurationsPageHelpers.clickSessionFrequencyTab();
+        analyticsSessionFrequencyPageHelpers.verifyFullDataPageElements();
+        analyticsSessionFrequencyPageHelpers.clickViewsPerSessionTab();
+        analyticsViewsPerSessionPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToAnalyticsViews();
+        analyticsViewsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToAnalyticsSources();
+        analyticsSourcesPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToAnalyticsTechnologyPlatforms();
+        analyticsTechnologyPlatformsPageHelpers.verifyFullDataPageElements();
+        analyticsTechnologyPlatformsPageHelpers.clickDevicesAndTypesTab();
+        analyticsTechnologyDevicesAndTypesPageHelpers.verifyFullDataPageElements();
+        analyticsTechnologyDevicesAndTypesPageHelpers.clickResolutionsTab();
+        analyticsTechnologyResolutionsPageHelpers.verifyFullDataPageElements();
+        analyticsTechnologyResolutionsPageHelpers.clickAppVersionsTab();
+        analyticsTechnologyAppVersionsPageHelpers.verifyFullDataPageElements();
+        analyticsTechnologyAppVersionsPageHelpers.clickCarriersTab();
+        analyticsTechnologyCarriersPageHelpers.verifyFullDataPageElements();
+        analyticsTechnologyCarriersPageHelpers.clickDensitiesTab();
+        analyticsTechnologyDensitiesPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToAnalyticsGeoCountries();
+        analyticsGeoCountriesPageHelpers.verifyFullDataPageElements();
+        analyticsGeoCountriesPageHelpers.clickLanguagesTab();
+        analyticsGeoLanguagesPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToAnalyticsEventsOverview();
+        //analyticsEventsOverviewPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
+        navigationHelpers.goToAnalyticsAllEvents();
+        analyticsEventsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToPushNotifications();
+        messagingPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToFeedbackRatingsPage();
+        feedbackRatingsPageHelpers.verifyFullDataPageElements();
+        feedbackRatingsPageHelpers.clickRatingWidgetsTab();
+        feedbackRatingWidgetsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToCrashesOverviewPage();
+        crashesPageHelpers.verifyFullDataPageElements();
+        //TODO: Add the cases of the following pages
+        //navigationHelpers.goToRemoteConfigPage();
+        //remoteConfigPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToReportManagerPage();
+        //reportManagerPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToDataManagerPage();
+        //dataManagerEventsPageHelpers.verifyFullDataPageElements();
+        //dataManagerEventsPageHelpers.clickEventGroupsTab();
+        //dataManagerEventGroupsPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToDataPopulatorPage();
+        //dataPopulatorPageHelpers.verifyEmptyPageElementsOfDataPopulatorWithTemplatePage(); // TODO
+        //dataPopulatorPageHelpers.clickPopulateWithEnvironmentTab();
+        //dataPopulatorPageHelpers.verifyEmptyPageElementsOfDataPopulatorWithEnvironmentPage(); // TODO
+        //dataPopulatorPageHelpers.clickTemplatesTab();
+        //dataPopulatorPageHelpers.verifyEmptyPageElementsOfTemplatesPage(); // TODO
+        //navigationHelpers.goToIncomingDataLogsPage();
+        //incomingDataLogsPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToSdkManagerPage();
+        //sdkManagersPageHelpers.verifyFullDataPageElements();
+        //sdkManagersPageHelpers.clickRequestStatsTab();
+        //requestStatsPageHelpers.verifyFullDataPageElements();
+        //requestStatsPageHelpers.clickHealthCheckTab();
+        //healthCheckPageHelpers.verifyFullDataPageElements();
+        //healthCheckPageHelpers.clickSdkConfigurationTab();
+        //sdkConfigurationsPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToComplianceHubMetricsPage();
+        //complianceHubMetricsPageHelpers.verifyFullDataPageElements();
+        //complianceHubMetricsPageHelpers.clickUsersTab();
+        //complianceHubUsersPageHelpers.verifyFullDataPageElements();
+        //complianceHubUsersPageHelpers.clickConsentHistoryTab();
+        //complianceHubHistoryPageHelpers.verifyFullDataPageElements();
+        //complianceHubHistoryPageHelpers.clickExportPurgeHistoryTab();
+        //complianceHubExportPurgePageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToUserManagementPage();
+        //userManagementPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToApplicationsPage();
+        //applicationsPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToSettingsPage();
+        //settingsPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToDataPointsPage();
+        //dataPointsPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToLogsPage();
+        //errorLogsPageHelpers.verifyFullDataPageElements();
+        //errorLogsPageHelpers.clickAuditLogsTab();
+        //systemLogsPageHelpers.verifyFullDataPageElements();
+        //avigationHelpers.goToJobsPage();
+        //jobsPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToFeatureManagementPage();
+        //pluginsPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToEMailReportsPage();
+        //reportsPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToAlertsPage();
+        //alertsPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToHooksPage();
+        //hooksPageHelpers.verifyFullDataPageElements();
+        //navigationHelpers.goToDbViewerPage();
+        //dbCountlyPageHelpers.verifyFullDataPageElements();
+        //dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
+        //dbCountlyOutPageHelpers.verifyFullDataPageElements();
+        //dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
+        //dbCountlyFsPageHelpers.verifyFullDataPageElements();
     });
 });

@@ -1,3 +1,57 @@
+## Version 24.10
+Fixes:
+- [core] Interpreting carrier value of "--" as an unknown value
+- [crash] Fixed issues with visualisation of Flutter stack traces
+- [dashoards] If a user is given access to a dashboard, they will now be able to see all widgets even if they don't have access to the underlying data
+- [density] UI fixed
+- [events] Fixed issue where slower loading data would replace newest event selection
+
+Enterprise fixes:
+- [crashes-jira] Preventing crashing when jira authentification fails
+- [formulas] Removing HTML from tooltip localization
+
+Features:
+- Making user guide icons stand out more before first use
+- [alerts] UI improvements
+- [alerts] small improvements in email notifications
+- [code] Unifying bottom menu for bulk operations
+- [core] Aggregated events data collections merged together
+- [nps] UI improvements
+- [surveys] UI improvements
+- upgraded mongoDB to version 7
+- upgraded nodejs to version 20
+
+Enterprise Features:
+- [crash_symbolication] Added ability to set custom domain override for the symbolication server
+- [drill] Drill "by query" vizualization improved
+- [drill] Drill data collections merged together
+- [events] Added a quick transition to drill
+- [hooks] Added audit log entries for hook "create", "edit", "delete", "update" actions
+- [users] "Last Session" column in User Profiles is now sortable
+- [users] Crashes in the crashes tab can now be sorted
+- [users] UI improvements
+- [views] Added a quick transition to drill
+
+## Version 24.05.15
+Enterprise fixes:
+- [nps] Fixed UI issues in the widget editor related to the "user consent" section
+- [ratings] Fixed rendering issue for escaped values
+
+## Version 24.05.14
+Fixes:
+- [code] Added better handling for countly servers while deployed using subdirectory
+- [data-manager] Added missing "Create" button for event groups
+- [data-manager] Fixes for auto toggling data masking setting on redaction change
+- [populator] Fixed issues in case of wrongly structured data
+- [push] token shouldn't be revoked if it's already in db
+- [server-stats] Fixed a data point calculation bug
+
+Enterprise fixes:
+- [push_approver] Fixed issue with the plugin not handling being "soft disabled"
+- [surveys] fixed a bug with the Survey widget where the "submit" button could become non interactable
+- [surveys] fixed issues with dashboard editor in relation to the "terms and conditions"
+- [surveys] fixed issues with previewing, creating and editing nps widgets
+
 ## Version 24.05.13
 Fixes:
 - [alerts] Fixed bugs related to NPS alerts
@@ -14,7 +68,7 @@ Enterprise Features:
 ## Version 24.05.12
 Fixes:
 - [dashboards] Fixes for dashboards grid
-- [dasboards] UI fix for dashboard widget action menu
+- [dashboards] UI fix for dashboard widget action menu
 - [push] Refactored fcm API related code
 - [reports] Use config for encryption key in reports
 
@@ -32,7 +86,7 @@ Fixes:
 - [logs]  Show collected problems on logger
 
 Enterprise fixes:
-- [data-manager] Fixes n UI to allow events starting with "/"
+- [data-manager] Fixes in UI to allow events starting with "/"
 - [flows] Fixes for flows step generation
 - [surveys] Other is not allowed as a valid answer for required questions
 

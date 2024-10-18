@@ -768,6 +768,13 @@
         return id;
     };
 
+    /** Function gets array of view display names
+    * @returns {object}  - view names
+    */
+    countlyViews.getViewsNames = function() {
+        return _viewsNames;
+    };
+
     /** Reverse function. Returns 'view' value from display name
     * @param {string} name  - display name
     * @returns {string}  - view value
