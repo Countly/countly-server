@@ -1,0 +1,31 @@
+<div class="cly-vue-content-builder__layout-main__body" :class="{ 'bu-is-justify-content-flex-end': isLeftSidebarHidden, 'bu-is-justify-content-flex-start': hideRightSidebar, 'cly-vue-content-builder__layout-main__body__dashed-bg': hasDashedBackground }" :style="{'background-color': backgroundColor}">
+    <transition :name="toggleTransition" @enter="onViewEntered">
+        <div v-if="!isLeftSidebarHidden" class="cly-vue-content-builder__layout-main__body__left-sidebar">
+            <div class="cly-vue-content-builder__layout-main__body__left-sidebar__header">
+                <div class="cly-vue-content-builder__layout-main__body__left-sidebar__header__title">
+                    <h4>Screens</h4>
+                    <cly-tooltip-icon class="bu-ml-1" tooltip="Screens"></cly-tooltip-icon>
+                </div>
+                <div v-if="collapsible" class="cly-vue-content-builder__layout-main__body__collapse-button" @click="collapseBar('left')">
+                    <div class="cly-vue-content-builder__layout-main__body__collapse-button__icon color-warm-gray-80">
+                        <i class="cly-io cly-io-arrow-sm-left"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="cly-vue-content-builder__layout-main__body__left-sidebar__body">
+                <slot name="content-layout-left-sidebar"></slot>
+            </div>
+        </div>
+        <div v-else-if="!hideLeftSidebar && collapsible" class="cly-vue-content-builder__layout-main__body__collapse-button" @click="collapseBar('left')">
+            <div class="cly-vue-content-builder__layout-main__body__collapse-button__icon color-warm-gray-80">
+                <i class="cly-io cly-io-arrow-sm-left"></i>
+            </div>
+        </div>
+    </transition>
+    <slot name="content-layout-body"></slot>
+    <div v-if="!hideRightSidebar" class="cly-vue-content-builder__layout-main__body__right-sidebar" :style="{ 'width': this.rightSidebarWidth + 'px !important'}">
+        <vue-scroll :ops="scrollOps">
+            <slot name="content-layout-right-sidebar"></slot>
+        </vue-scroll>
+    </div>
+</div>
