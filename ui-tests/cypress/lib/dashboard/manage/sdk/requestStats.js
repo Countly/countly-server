@@ -178,45 +178,43 @@ const verifyRequestStatsMetricCard = ({
             element: requestStatsMetricCardElements.REQUESTS_QUEUED_PERCENTAGE,
             elementText: "NA",
         });
-
+        return;
     }
-    else {
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: requestStatsMetricCardElements.REQUESTS_RECEIVED_NUMBER,
-            elementText: requestsReceivedNumber,
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: requestStatsMetricCardElements.REQUESTS_RECEIVED_NUMBER,
+        elementText: requestsReceivedNumber,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: requestStatsMetricCardElements.REQUESTS_RECEIVED_PERCENTAGE,
-            elementText: requestsReceivedPercentage,
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: requestStatsMetricCardElements.REQUESTS_RECEIVED_PERCENTAGE,
+        elementText: requestsReceivedPercentage,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: requestStatsMetricCardElements.REQUESTS_CANCELED_NUMBER,
-            elementText: requestsCanceledNumber,
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: requestStatsMetricCardElements.REQUESTS_CANCELED_NUMBER,
+        elementText: requestsCanceledNumber,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: requestStatsMetricCardElements.REQUESTS_CANCELED_PERCENTAGE,
-            elementText: requestsCanceledPercentage,
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: requestStatsMetricCardElements.REQUESTS_CANCELED_PERCENTAGE,
+        elementText: requestsCanceledPercentage,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: requestStatsMetricCardElements.REQUESTS_QUEUED_NUMBER,
-            elementText: requestsQueuedNumber,
-        });
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: requestStatsMetricCardElements.REQUESTS_QUEUED_NUMBER,
+        elementText: requestsQueuedNumber,
+    });
 
-        cy.verifyElement({
-            shouldNot: !isEmpty,
-            element: requestStatsMetricCardElements.REQUESTS_QUEUED_PERCENTAGE,
-            elementText: requestsQueuedPercentage,
-        });
-    }
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: requestStatsMetricCardElements.REQUESTS_QUEUED_PERCENTAGE,
+        elementText: requestsQueuedPercentage,
+    });
 };
 
 const verifyRequestsEChart = ({
@@ -239,46 +237,43 @@ const verifyRequestsEChart = ({
             labelElement: requestsEChartElements.EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
-
+        return;
     }
-    else {
+    cy.verifyElement({
+        element: requestsEChartElements.SELECT_REQUESTS_CHART_TYPE,
+        elementPlaceHolder: "Select",
+        value: "Line",
+    });
 
-        cy.verifyElement({
-            element: requestsEChartElements.SELECT_REQUESTS_CHART_TYPE,
-            elementPlaceHolder: "Select",
-            value: "Line",
-        });
+    cy.verifyElement({
+        element: requestsEChartElements.CHART_TYPE_ANNOTATION_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: requestsEChartElements.CHART_TYPE_ANNOTATION_BUTTON,
-        });
+    cy.verifyElement({
+        element: requestsEChartElements.CHART_MORE_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: requestsEChartElements.CHART_MORE_BUTTON,
-        });
+    cy.verifyElement({
+        element: requestsEChartElements.CHART_REQUESTS,
+    });
 
-        cy.verifyElement({
-            element: requestsEChartElements.CHART_REQUESTS,
-        });
+    cy.verifyElement({
+        element: requestsEChartElements.RECEIVED_REQUESTS_ICON,
+        labelElement: requestsEChartElements.RECEIVED_REQUESTS_LABEL,
+        labelText: "Received requests",
+    });
 
-        cy.verifyElement({
-            element: requestsEChartElements.RECEIVED_REQUESTS_ICON,
-            labelElement: requestsEChartElements.RECEIVED_REQUESTS_LABEL,
-            labelText: "Received requests",
-        });
+    cy.verifyElement({
+        element: requestsEChartElements.CANCELED_REQUESTS_ICON,
+        labelElement: requestsEChartElements.CANCELED_REQUESTS_LABEL,
+        labelText: "Canceled requests",
+    });
 
-        cy.verifyElement({
-            element: requestsEChartElements.CANCELED_REQUESTS_ICON,
-            labelElement: requestsEChartElements.CANCELED_REQUESTS_LABEL,
-            labelText: "Canceled requests",
-        });
-
-        cy.verifyElement({
-            element: requestsEChartElements.QUEUED_REQUESTS_ICON,
-            labelElement: requestsEChartElements.QUEUED_REQUESTS_LABEL,
-            labelText: "Queued requests",
-        });
-    }
+    cy.verifyElement({
+        element: requestsEChartElements.QUEUED_REQUESTS_ICON,
+        labelElement: requestsEChartElements.QUEUED_REQUESTS_LABEL,
+        labelText: "Queued requests",
+    });
 };
 
 const verifyDelaysEChart = ({
@@ -299,46 +294,43 @@ const verifyDelaysEChart = ({
             labelElement: delaysEChartElements.EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
-
+        return;
     }
-    else {
+    cy.verifyElement({
+        element: delaysEChartElements.SELECT_DELAYS_CHART_TYPE,
+        elementPlaceHolder: "Select",
+        value: "Line",
+    });
 
-        cy.verifyElement({
-            element: delaysEChartElements.SELECT_DELAYS_CHART_TYPE,
-            elementPlaceHolder: "Select",
-            value: "Line",
-        });
+    cy.verifyElement({
+        element: delaysEChartElements.CHART_TYPE_ANNOTATION_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: delaysEChartElements.CHART_TYPE_ANNOTATION_BUTTON,
-        });
+    cy.verifyElement({
+        element: delaysEChartElements.CHART_MORE_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: delaysEChartElements.CHART_MORE_BUTTON,
-        });
+    cy.verifyElement({
+        element: delaysEChartElements.CHART_DELAYS,
+    });
 
-        cy.verifyElement({
-            element: delaysEChartElements.CHART_DELAYS,
-        });
+    cy.verifyElement({
+        element: delaysEChartElements.MINIMUM_DELAY_ICON,
+        labelElement: delaysEChartElements.MINIMUM_DELAY_LABEL,
+        labelText: "Minimum Delay",
+    });
 
-        cy.verifyElement({
-            element: delaysEChartElements.MINIMUM_DELAY_ICON,
-            labelElement: delaysEChartElements.MINIMUM_DELAY_LABEL,
-            labelText: "Minimum Delay",
-        });
+    cy.verifyElement({
+        element: delaysEChartElements.AVERAGE_DELAY_ICON,
+        labelElement: delaysEChartElements.AVERAGE_DELAY_LABEL,
+        labelText: "Average Delay",
+    });
 
-        cy.verifyElement({
-            element: delaysEChartElements.AVERAGE_DELAY_ICON,
-            labelElement: delaysEChartElements.AVERAGE_DELAY_LABEL,
-            labelText: "Average Delay",
-        });
-
-        cy.verifyElement({
-            element: delaysEChartElements.MAXIMUM_DELAY_ICON,
-            labelElement: delaysEChartElements.MAXIMUM_DELAY_LABEL,
-            labelText: "Maximum Delay",
-        });
-    }
+    cy.verifyElement({
+        element: delaysEChartElements.MAXIMUM_DELAY_ICON,
+        labelElement: delaysEChartElements.MAXIMUM_DELAY_LABEL,
+        labelText: "Maximum Delay",
+    });
 };
 
 const verifyReceivedRequestEChart = ({
@@ -359,72 +351,70 @@ const verifyReceivedRequestEChart = ({
             labelElement: receivedRequestEChartElements.EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
-
+        return;
     }
-    else {
 
-        cy.verifyElement({
-            element: receivedRequestEChartElements.CHART_RECEIVED_REQUESTS,
-        });
+    cy.verifyElement({
+        element: receivedRequestEChartElements.CHART_RECEIVED_REQUESTS,
+    });
 
-        cy.verifyElement({
-            element: receivedRequestEChartElements.CHART_MORE_BUTTON,
-        });
+    cy.verifyElement({
+        element: receivedRequestEChartElements.CHART_MORE_BUTTON,
+    });
 
-        cy.verifyElement({
-            element: receivedRequestEChartElements.APM_ICON,
-            labelElement: receivedRequestEChartElements.APM_LABEL,
-            labelText: "apm",
-        });
+    cy.verifyElement({
+        element: receivedRequestEChartElements.APM_ICON,
+        labelElement: receivedRequestEChartElements.APM_LABEL,
+        labelText: "apm",
+    });
 
-        cy.verifyElement({
-            element: receivedRequestEChartElements.BEGIN_SESSION_ICON,
-            labelElement: receivedRequestEChartElements.BEGIN_SESSION_LABEL,
-            labelText: "begin_session",
-        });
+    cy.verifyElement({
+        element: receivedRequestEChartElements.BEGIN_SESSION_ICON,
+        labelElement: receivedRequestEChartElements.BEGIN_SESSION_LABEL,
+        labelText: "begin_session",
+    });
 
-        cy.verifyElement({
-            element: receivedRequestEChartElements.CONSENT_ICON,
-            labelElement: receivedRequestEChartElements.CONSENT_LABEL,
-            labelText: "consent",
-        });
+    cy.verifyElement({
+        element: receivedRequestEChartElements.CONSENT_ICON,
+        labelElement: receivedRequestEChartElements.CONSENT_LABEL,
+        labelText: "consent",
+    });
 
-        cy.verifyElement({
-            element: receivedRequestEChartElements.CRASH_ICON,
-            labelElement: receivedRequestEChartElements.CRASH_LABEL,
-            labelText: "crash",
-        });
+    cy.verifyElement({
+        element: receivedRequestEChartElements.CRASH_ICON,
+        labelElement: receivedRequestEChartElements.CRASH_LABEL,
+        labelText: "crash",
+    });
 
-        cy.verifyElement({
-            element: receivedRequestEChartElements.END_SESSION_ICON,
-            labelElement: receivedRequestEChartElements.END_SESSION_LABEL,
-            labelText: "end_session",
-        });
+    cy.verifyElement({
+        element: receivedRequestEChartElements.END_SESSION_ICON,
+        labelElement: receivedRequestEChartElements.END_SESSION_LABEL,
+        labelText: "end_session",
+    });
 
-        cy.verifyElement({
-            element: receivedRequestEChartElements.EVENTS_ICON,
-            labelElement: receivedRequestEChartElements.EVENTS_LABEL,
-            labelText: "events",
-        });
+    cy.verifyElement({
+        element: receivedRequestEChartElements.EVENTS_ICON,
+        labelElement: receivedRequestEChartElements.EVENTS_LABEL,
+        labelText: "events",
+    });
 
-        cy.verifyElement({
-            element: receivedRequestEChartElements.SESSION_DURATION_ICON,
-            labelElement: receivedRequestEChartElements.SESSION_DURATION_LABEL,
-            labelText: "session_duration",
-        });
+    cy.verifyElement({
+        element: receivedRequestEChartElements.SESSION_DURATION_ICON,
+        labelElement: receivedRequestEChartElements.SESSION_DURATION_LABEL,
+        labelText: "session_duration",
+    });
 
-        cy.verifyElement({
-            element: receivedRequestEChartElements.TOKEN_SESSION_ICON,
-            labelElement: receivedRequestEChartElements.TOKEN_SESSION_LABEL,
-            labelText: "token_session",
-        });
+    cy.verifyElement({
+        element: receivedRequestEChartElements.TOKEN_SESSION_ICON,
+        labelElement: receivedRequestEChartElements.TOKEN_SESSION_LABEL,
+        labelText: "token_session",
+    });
 
-        cy.verifyElement({
-            element: receivedRequestEChartElements.USER_DETAILS_ICON,
-            labelElement: receivedRequestEChartElements.USER_DETAILS_LABEL,
-            labelText: "user_details",
-        });
-    }
+    cy.verifyElement({
+        element: receivedRequestEChartElements.USER_DETAILS_ICON,
+        labelElement: receivedRequestEChartElements.USER_DETAILS_LABEL,
+        labelText: "user_details",
+    });
 };
 
 const verifyCanceledRequestEChart = ({
@@ -445,19 +435,16 @@ const verifyCanceledRequestEChart = ({
             labelElement: canceledRequestEChartElements.EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
-
+        return;
     }
-    else {
+    //TODO : Data is not being generated with the populator. Need to generate the data
+    // cy.verifyElement({
+    //     element: canceledRequestEChartElements.CHART_CANCELED_REQUESTS,
+    // });
 
-        //TODO : Data is not being generated with the populator. Need to generate the data
-        // cy.verifyElement({
-        //     element: canceledRequestEChartElements.CHART_CANCELED_REQUESTS,
-        // });
-
-        // cy.verifyElement({
-        //     element: canceledRequestEChartElements.CHART_MORE_BUTTON,
-        // });
-    }
+    // cy.verifyElement({
+    //     element: canceledRequestEChartElements.CHART_MORE_BUTTON,
+    // });
 };
 
 const clickSdkStatsTab = () => {

@@ -231,7 +231,7 @@ describe('Complete Onboarding', () => {
         requestStatsPageHelpers.clickHealthCheckTab();
         healthCheckPageHelpers.verifyEmptyPageElements();
         healthCheckPageHelpers.clickSdkConfigurationTab();
-        sdkConfigurationsPageHelpers.verifyEmptyPageElements();
+        sdkConfigurationsPageHelpers.verifyPageElements({});
         navigationHelpers.goToComplianceHubMetricsPage();
         complianceHubMetricsPageHelpers.verifyEmptyPageElements();
         complianceHubMetricsPageHelpers.clickUsersTab();
@@ -393,12 +393,11 @@ describe('Complete Onboarding', () => {
         sdkManagersPageHelpers.verifyFullDataPageElements();
         sdkManagersPageHelpers.clickRequestStatsTab();
         requestStatsPageHelpers.verifyFullDataPageElements();
-
         requestStatsPageHelpers.clickHealthCheckTab();
         //healthCheckPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
+        healthCheckPageHelpers.clickSdkConfigurationTab();
+        sdkConfigurationsPageHelpers.verifyPageElements({});
         //TODO: Add the cases of the following pages
-        //healthCheckPageHelpers.clickSdkConfigurationTab();
-        //sdkConfigurationsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToComplianceHubMetricsPage();
         //complianceHubMetricsPageHelpers.verifyFullDataPageElements();
         //complianceHubMetricsPageHelpers.clickUsersTab();
