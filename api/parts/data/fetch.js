@@ -1323,10 +1323,10 @@ fetch.fetchEvents = function(params) {
 */
 fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
     fetchTimeObj(collection, params, isCustomEvent, options, function(output) {
-        if (params?.qstring?.event) {
+        if (params.qstring?.event) {
             output.eventName = params.qstring.event;
         }
-        common.returnOutput(params ?? {}, output);
+        common.returnOutput(params, output);
     });
 };
 
