@@ -1,19 +1,25 @@
-var request = require('supertest');
-var should = require('should');
-var testUtils = require("../../testUtils");
-var plugins = require("../../../plugins/pluginManager");
+let request = require('supertest');
+const should = require('should');
+const testUtils = require("../../testUtils");
+const plugins = require("../../../plugins/pluginManager");
+const { saveState, loadState, clearState } = require('./testState');
+
 request = request(testUtils.url);
 
-var TEMP_KEY = "";
-var API_KEY_ADMIN = "";
-var APP_ID = "";
-var APP_KEY = "";
+let TEMP_KEY = "";
+let API_KEY_ADMIN = "";
+let APP_ID = "";
+let APP_KEY = "";
 
 describe('Retrieve API-KEY', function() {
     before('Create db connection', async function() {
+        // Clear any existing state
+        clearState();
+
         testUtils.db = await plugins.dbConnection("countly");
         testUtils.client = testUtils.db.client;
     });
+
     it('should create user', function(done) {
         testUtils.db.collection("members").findOne({global_admin: true}, function(err, member) {
             if (err) {
@@ -28,6 +34,22 @@ describe('Retrieve API-KEY', function() {
             done();
         });
     });
+});
+
+// Save state after each test
+afterEach(function() {
+    const state = {
+        TEMP_KEY,
+        API_KEY_ADMIN,
+        API_KEY_USER: testUtils.get("API_KEY_USER"),
+        APP_ID,
+        APP_KEY,
+        USER_ID: testUtils.get("USER_ID"),
+        ADMIN_ID: testUtils.get("ADMIN_ID"),
+        username: testUtils.username,
+        email: testUtils.email
+    };
+    saveState(state);
 });
 
 describe('Creating users', function() {
