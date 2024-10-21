@@ -74,7 +74,7 @@ const verifyStaticElementsOfPage = () => {
         element: requestStatsPageElements.CANCELED_REQUEST_BREAKDOWN_BY_REASON_AS_TYPE_SELECT,
         elementText: "percentage",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -179,7 +179,8 @@ const verifyRequestStatsMetricCard = ({
             elementText: "NA",
         });
 
-    } else {
+    }
+    else {
         cy.verifyElement({
             shouldNot: !isEmpty,
             element: requestStatsMetricCardElements.REQUESTS_RECEIVED_NUMBER,
@@ -239,7 +240,8 @@ const verifyRequestsEChart = ({
             labelText: "No data found",
         });
 
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: requestsEChartElements.SELECT_REQUESTS_CHART_TYPE,
@@ -277,7 +279,7 @@ const verifyRequestsEChart = ({
             labelText: "Queued requests",
         });
     }
-}
+};
 
 const verifyDelaysEChart = ({
     isEmpty = false,
@@ -298,7 +300,8 @@ const verifyDelaysEChart = ({
             labelText: "No data found",
         });
 
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: delaysEChartElements.SELECT_DELAYS_CHART_TYPE,
@@ -336,7 +339,7 @@ const verifyDelaysEChart = ({
             labelText: "Maximum Delay",
         });
     }
-}
+};
 
 const verifyReceivedRequestEChart = ({
     isEmpty = false,
@@ -357,7 +360,8 @@ const verifyReceivedRequestEChart = ({
             labelText: "No data found",
         });
 
-    } else {
+    }
+    else {
 
         cy.verifyElement({
             element: receivedRequestEChartElements.CHART_RECEIVED_REQUESTS,
@@ -421,7 +425,7 @@ const verifyReceivedRequestEChart = ({
             labelText: "user_details",
         });
     }
-}
+};
 
 const verifyCanceledRequestEChart = ({
     isEmpty = false,
@@ -442,7 +446,8 @@ const verifyCanceledRequestEChart = ({
             labelText: "No data found",
         });
 
-    } else {
+    }
+    else {
 
         //TODO : Data is not being generated with the populator. Need to generate the data
         // cy.verifyElement({
@@ -453,7 +458,7 @@ const verifyCanceledRequestEChart = ({
         //     element: canceledRequestEChartElements.CHART_MORE_BUTTON,
         // });
     }
-}
+};
 
 const clickSdkStatsTab = () => {
     cy.scrollPageToTop();
