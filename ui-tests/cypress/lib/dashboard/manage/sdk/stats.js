@@ -303,24 +303,23 @@ const verifySdkStatsEChart = ({
             labelElement: sdkStatsEChartElements.EMPTY_TABLE_SUBTITLE,
             labelText: "No data found",
         });
+        return;
     }
-    else {
-        cy.verifyElement({
-            element: sdkStatsEChartElements.CHART_SDK_VERSION,
-        });
+    cy.verifyElement({
+        element: sdkStatsEChartElements.CHART_SDK_VERSION,
+    });
 
-        cy.verifyElement({
-            element: sdkStatsEChartElements.VERSION_ICONS,
-        });
+    cy.verifyElement({
+        element: sdkStatsEChartElements.VERSION_ICONS,
+    });
 
-        cy.verifyElement({
-            element: sdkStatsEChartElements.VERSION_NUMBERS,
-        });
+    cy.verifyElement({
+        element: sdkStatsEChartElements.VERSION_NUMBERS,
+    });
 
-        cy.verifyElement({
-            element: sdkStatsEChartElements.CHART_MORE_BUTTON,
-        });
-    }
+    cy.verifyElement({
+        element: sdkStatsEChartElements.CHART_MORE_BUTTON,
+    });
 };
 
 const verifySDKsDataFromTable = ({
