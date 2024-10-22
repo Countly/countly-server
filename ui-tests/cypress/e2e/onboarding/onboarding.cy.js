@@ -399,9 +399,9 @@ describe('Complete Onboarding', () => {
         sdkConfigurationsPageHelpers.verifyPageElements({});
         navigationHelpers.goToComplianceHubMetricsPage();
         complianceHubMetricsPageHelpers.verifyFullDataPageElements();
+        complianceHubMetricsPageHelpers.clickUsersTab();
+        complianceHubUsersPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //complianceHubMetricsPageHelpers.clickUsersTab();
-        //complianceHubUsersPageHelpers.verifyFullDataPageElements();
         //complianceHubUsersPageHelpers.clickConsentHistoryTab();
         //complianceHubHistoryPageHelpers.verifyFullDataPageElements();
         //complianceHubHistoryPageHelpers.clickExportPurgeHistoryTab();
