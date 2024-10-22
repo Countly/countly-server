@@ -1522,6 +1522,11 @@ common.unblockResponses = function(params) {
 * @param {object} heads - headers to add to the output
 */
 common.returnRaw = function(params, returnCode, body, heads) {
+    if (!params) {
+        console.error("Params is null or undefined, cannot proceed.");
+        return;
+    }
+
     params.response = {
         code: returnCode,
         body: body
@@ -1569,6 +1574,11 @@ common.returnRaw = function(params, returnCode, body, heads) {
 * @param {boolean} noResult - skip wrapping message object into stupid {result: }
 */
 common.returnMessage = function(params, returnCode, message, heads, noResult = false) {
+    if (!params) {
+        console.error("Params is null or undefined, cannot proceed.");
+        return;
+    }
+
     params.response = {
         code: returnCode,
         body: JSON.stringify(noResult && typeof message === 'object' ? message : {result: message}, escape_html_entities)
@@ -2629,7 +2639,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
         callback = no_meta;
         no_meta = false;
     }
-    if (Object.keys(update).length) {
+    if (update && Object.keys(update).length) {
         for (var i in update) {
             if (i.indexOf("$") !== 0) {
                 let err = "Unkown modifier " + i + " in " + update + " for " + params.href;
