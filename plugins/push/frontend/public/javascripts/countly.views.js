@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global countlyVue,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth,countlyGraphNotesCommon*/
+/* global countlyVue,countlyPlugins,app,CV,countlyPushNotification,countlyPushNotificationComponent,CountlyHelpers,countlyCommon,countlyGlobal,countlyAuth,countlyGraphNotesCommon*/
 
 (function() {
 
@@ -51,6 +51,7 @@
             isOnClickURLEnabled: false,
             isJsonEnabled: false,
             isUserDataEnabled: false,
+            isContentAvailableSet: false,
         },
         android: {
             isMediaURLEnabled: false,
@@ -134,7 +135,7 @@
                 selectedLocalizationFilter: countlyPushNotification.service.DEFAULT_LOCALIZATION_VALUE,
                 isConfirmed: false,
                 expandedPlatformSettings: [],
-                settings: JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState)),
+                settings: this.getInitialPushNotificationDrawerSettingsState(),
                 userPropertiesIdCounter: 0,
                 selectedUserPropertyId: null,
                 isAddUserPropertyPopoverOpen: {
@@ -331,6 +332,14 @@
             }
         },
         methods: {
+            getInitialPushNotificationDrawerSettingsState: function() {
+                const _InitialPushNotificationDrawerSettingsState = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
+                const settings = countlyPlugins.getConfigsData();
+                if (settings.push && settings.push.default_content_available) {
+                    _InitialPushNotificationDrawerSettingsState.ios.isContentAvailableSet = true;
+                }
+                return _InitialPushNotificationDrawerSettingsState;
+            },
             previewCohorts: function(cohorts) {
                 var selectedCohorts = this.cohortOptions.filter(function(cohort) {
                     return cohorts.some(function(selectedCohortId) {
@@ -646,7 +655,7 @@
                     title: false,
                     content: false
                 };
-                this.settings = JSON.parse(JSON.stringify(InitialPushNotificationDrawerSettingsState));
+                this.settings = this.getInitialPushNotificationDrawerSettingsState();
                 this.pushNotificationUnderEdit = JSON.parse(JSON.stringify(countlyPushNotification.helper.getInitialModel(this.type)));
             },
             onClose: function() {
@@ -1046,6 +1055,7 @@
                     this.settings[this.PlatformEnum.IOS].isJsonEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].json);
                     this.settings[this.PlatformEnum.IOS].isUserDataEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].userData.length);
                     this.settings[this.PlatformEnum.IOS].isSubtitleEnabled = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].subtitle);
+                    this.settings[this.PlatformEnum.IOS].isContentAvailableSet = Boolean(this.pushNotificationUnderEdit.settings[this.PlatformEnum.IOS].setContentAvailable);
                 }
             },
             updateAndroidPlatformSettingsStateIfFound: function() {
@@ -2796,7 +2806,7 @@
 
 
     /**
-     * 
+     *
      * @returns {Object} container data with create new message event handler
      */
     function getCreateNewMessageEventContainerData() {
@@ -2812,7 +2822,7 @@
         };
     }
     /**
-     * 
+     *
      * @returns {Object} container data with push notification drawer
      */
     function getDrawerContainerData() {
