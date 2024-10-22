@@ -337,7 +337,7 @@
         }
         var payload = {};
         var persistent = msg.persistent;
-        payload.text = countlyCommon.encodeHtml(msg.message);
+        payload.text = countlyCommon.encodeSomeHtml(msg.message);
         payload.autoHide = !msg.sticky;
         payload.id = msg.id;
         payload.width = msg.width;
