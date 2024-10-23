@@ -2,6 +2,11 @@
 (function(countlyVue) {
     Vue.component("cly-content-layout", countlyVue.components.create({
         props: {
+            popperClass: {
+                type: String,
+                required: false,
+                default: null
+            },
             backgroundColor: {
                 type: String,
                 required: false,
@@ -15,6 +20,9 @@
             };
         },
         computed: {
+            containerClass() {
+                return this.popperClass || 'cly-vue-content-builder__layout-main';
+            }
         },
         template: CV.T('/javascripts/countly/vue/templates/content/content.html'),
         methods: {
@@ -148,11 +156,6 @@
 
     Vue.component("cly-content-body", countlyVue.components.create({
         props: {
-            currentTab: {
-                type: String,
-                required: false,
-                default: null
-            },
             hideLeftSidebar: {
                 type: Boolean,
                 required: false,
