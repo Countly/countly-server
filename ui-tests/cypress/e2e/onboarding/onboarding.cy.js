@@ -401,9 +401,9 @@ describe('Complete Onboarding', () => {
         complianceHubMetricsPageHelpers.verifyFullDataPageElements();
         complianceHubMetricsPageHelpers.clickUsersTab();
         complianceHubUsersPageHelpers.verifyFullDataPageElements();
+        complianceHubUsersPageHelpers.clickConsentHistoryTab();
+        complianceHubHistoryPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //complianceHubUsersPageHelpers.clickConsentHistoryTab();
-        //complianceHubHistoryPageHelpers.verifyFullDataPageElements();
         //complianceHubHistoryPageHelpers.clickExportPurgeHistoryTab();
         //complianceHubExportPurgePageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToUserManagementPage();
