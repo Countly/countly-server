@@ -83,7 +83,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: actionLogsDataTableElements().COLUMN_NAME_TIME_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -152,7 +152,7 @@ const verifyActionLogsDataFromTable = ({
         labelElement: actionLogsDataTableElements(index).TIME,
         labelText: time,
     });
-}
+};
 
 const clickMetricsTab = () => {
     cy.scrollPageToTop();

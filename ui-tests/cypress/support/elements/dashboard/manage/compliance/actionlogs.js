@@ -3,7 +3,7 @@ export const actionLogsPageElements = {
     EXPORT_PURGE_HISTORY_FOR_LABEL: 'export-purge-history-for-label',
     EXPORT_PURGE_HISTORY_FILTER_SELECT: 'metrics-filter-pseudo-input-label',
     FILTER_DATE_PICKER: 'cly-datepicker-test-id-pseudo-input-label',
-    
+
     TAB_METRICS: 'tab-metrics-title',
     TAB_USERS: 'tab-export-purge-history-title',
     TAB_CONSENT_HISTORY: 'tab-consent-history-title',
