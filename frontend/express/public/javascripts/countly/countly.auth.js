@@ -39,7 +39,7 @@
         }
 
         if (!member.global_admin) {
-            var isPermissionObjectExistForAccessType = (typeof member.permission[accessType] === "object" && typeof member.permission[accessType][app_id] === "object");
+            var isPermissionObjectExistForAccessType = (member.permission && typeof member.permission[accessType] === "object" && typeof member.permission[accessType][app_id] === "object");
 
             var memberHasAllFlag = member.permission && member.permission[accessType] && member.permission[accessType][app_id] && member.permission[accessType][app_id].all;
             var memberHasAllowedFlag = false;
@@ -96,7 +96,7 @@
             return false;
         }
         if (!member.global_admin) {
-            var isPermissionObjectExistForRead = (typeof member.permission.r === "object" && typeof member.permission.r[app_id] === "object");
+            var isPermissionObjectExistForRead = (member.permission && typeof member.permission.r === "object" && typeof member.permission.r[app_id] === "object");
             // TODO: make here better. create helper method for these checks
             var memberHasAllFlag = member.permission && member.permission.r && member.permission.r[app_id] && member.permission.r[app_id].all;
             var memberHasAllowedFlag = false;
