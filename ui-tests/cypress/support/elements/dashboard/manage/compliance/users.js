@@ -31,6 +31,7 @@ const usersDataTableElements = (index = 0) => ({
     ID: 'datatable-users-id-' + index,
     DEVICE: 'datatable-users-device-' + index,
     APP_VERSION: 'datatable-users-app-version-' + index,
+    CONSENT: 'datatable-users-consent-' + index,
     CONSENT_OPT_IN_LABEL: 'datatable-users-consent-opt-in-label-' + index,
     CONSENT_OPT_IN_LIST: 'datatable-users-consent-opt-in-list-' + index,
     CONSENT_OPT_OUT_LABEL: 'datatable-users-consent-opt-out-label-' + index,
