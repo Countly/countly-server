@@ -1,6 +1,6 @@
-<div class="cly-vue-content-builder__layout-main__body" :class="{ 'bu-is-justify-content-flex-end': isLeftSidebarHidden, 'bu-is-justify-content-flex-start': hideRightSidebar, 'cly-vue-content-builder__layout-main__body__dashed-bg': hasDashedBackground }" :style="{'background-color': backgroundColor}">
+<div class="cly-vue-content-builder__layout-main__body" :class="{ 'bu-is-justify-content-flex-end': hideLeftSidebar, 'bu-is-justify-content-flex-start': hideRightSidebar, 'cly-vue-content-builder__layout-main__body__dashed-bg': hasDashedBackground }" :style="{'background-color': backgroundColor}">
     <transition :name="toggleTransition" @enter="onViewEntered">
-        <div v-if="!isLeftSidebarHidden" class="cly-vue-content-builder__layout-main__body__left-sidebar">
+        <div v-if="!hideLeftSidebar && (collapsible && !isCollapsed)" class="cly-vue-content-builder__layout-main__body__left-sidebar">
             <div class="cly-vue-content-builder__layout-main__body__left-sidebar__header">
                 <div class="cly-vue-content-builder__layout-main__body__left-sidebar__header__title">
                     <h4>Screens</h4>
@@ -22,7 +22,14 @@
             </div>
         </div>
     </transition>
-    <slot name="content-layout-body"></slot>
+    <!-- <component 
+        v-if="currentTabComponent" 
+        :is="currentTabComponent"
+        v-bind="currentTabProps"
+        class="cly-vue-content-builder__layout-main__body__content">
+    </component> -->
+    <slot name="content-layout-body">
+    </slot>
     <div v-if="!hideRightSidebar" class="cly-vue-content-builder__layout-main__body__right-sidebar" :style="{ 'width': this.rightSidebarWidth + 'px !important'}">
         <vue-scroll :ops="scrollOps">
             <slot name="content-layout-right-sidebar"></slot>
