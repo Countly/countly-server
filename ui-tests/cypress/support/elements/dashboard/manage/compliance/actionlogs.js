@@ -5,7 +5,7 @@ export const actionLogsPageElements = {
     FILTER_DATE_PICKER: 'cly-datepicker-test-id-pseudo-input-label',
 
     TAB_METRICS: 'tab-metrics-title',
-    TAB_USERS: 'tab-export-purge-history-title',
+    TAB_USERS: 'tab-users-title',
     TAB_CONSENT_HISTORY: 'tab-consent-history-title',
     TAB_EXPORT_PURGE_HISTORY: 'tab-export/purge-history-title'
 };
