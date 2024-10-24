@@ -147,37 +147,38 @@ const verifyUsersDataFromTable = ({
     });
 
     cy
-    .elementExists(usersDataTableElements(index).CONSENT_OPT_IN_LABEL)
-    .then((isExists) => {
-        if (isExists) {
-            cy.verifyElement({
-                labelElement: usersDataTableElements(index).CONSENT_OPT_IN_LABEL,
-                labelText: "Opt in",
-            });
-        
-            cy.verifyElement({
-                shouldNot: !isEmpty,
-                labelElement: usersDataTableElements(index).CONSENT_OPT_IN_LIST,
-                labelText: optIn,
-            });
-        
-            cy.verifyElement({
-                labelElement: usersDataTableElements(index).CONSENT_OPT_OUT_LABEL,
-                labelText: "Opt out",
-            });
-        
-            cy.verifyElement({
-                shouldNot: !isEmpty,
-                labelElement: usersDataTableElements(index).CONSENT_OPT_OUT_LIST,
-                labelText: optOut,
-            });
-        } else {
-            cy.verifyElement({
-                labelElement: usersDataTableElements(index).CONSENT,
-                labelText: "-",
-            });
-        }
-    });
+        .elementExists(usersDataTableElements(index).CONSENT_OPT_IN_LABEL)
+        .then((isExists) => {
+            if (isExists) {
+                cy.verifyElement({
+                    labelElement: usersDataTableElements(index).CONSENT_OPT_IN_LABEL,
+                    labelText: "Opt in",
+                });
+
+                cy.verifyElement({
+                    shouldNot: !isEmpty,
+                    labelElement: usersDataTableElements(index).CONSENT_OPT_IN_LIST,
+                    labelText: optIn,
+                });
+
+                cy.verifyElement({
+                    labelElement: usersDataTableElements(index).CONSENT_OPT_OUT_LABEL,
+                    labelText: "Opt out",
+                });
+
+                cy.verifyElement({
+                    shouldNot: !isEmpty,
+                    labelElement: usersDataTableElements(index).CONSENT_OPT_OUT_LIST,
+                    labelText: optOut,
+                });
+            }
+            else {
+                cy.verifyElement({
+                    labelElement: usersDataTableElements(index).CONSENT,
+                    labelText: "-",
+                });
+            }
+        });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
