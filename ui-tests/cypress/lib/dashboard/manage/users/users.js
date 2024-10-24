@@ -79,7 +79,7 @@ const verifyPageElements = () => {
         user: user.username,
         role: "Global Admin",
         email: user.email,
-        lastLogin: "less than a minute ago"
+        lastLogin: "2 minutes ago"
     });
 };
 
