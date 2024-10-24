@@ -1,10 +1,34 @@
 <cly-section>
-	<cly-datatable-n test-id="table-sdks" :rows="sdkRows" :resizable="true" :force-loading="isLoading">
+	<cly-datatable-n test-id="datatable-sdks" :rows="sdkRows" :resizable="true" :force-loading="isLoading">
 		<template v-slot="scope">
-			<el-table-column sortable="custom" prop="sdks" label="SDK"></el-table-column>
-			<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
-			<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
-			<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
+			<el-table-column sortable="custom" prop="sdks" label="SDK">
+				<template slot-scope="scope">
+					<div :data-test-id="'datatable-sdks-sdk-' + scope.$index">
+						{{scope.row.sdks}}
+					</div>
+				</template>
+			</el-table-column>
+			<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')">
+				<template slot-scope="scope">
+					<div :data-test-id="'datatable-sdks-total-sessions-' + scope.$index">
+						{{scope.row.t}}
+					</div>
+				</template>
+			</el-table-column>
+			<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')">
+				<template slot-scope="scope">
+					<div :data-test-id="'datatable-sdks-total-users-' + scope.$index">
+						{{scope.row.u}}
+					</div>
+				</template>
+			</el-table-column>
+			<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')">
+				<template slot-scope="scope">
+					<div :data-test-id="'datatable-sdks-new-users-' + scope.$index">
+						{{scope.row.n}}
+					</div>
+				</template>
+			</el-table-column>
 		</template>
 	</cly-datatable-n>
 </cly-section>

@@ -22,7 +22,7 @@
 			  </cly-metric-cards>
 		  </cly-section>
         <cly-section>
-            <cly-chart-line test-id="line-options-requests" xAxisLabelOverflow="unset" :option="lineOptionsRequests" :height="400" v-loading="isLoading" :force-loading="isLoading" category="session"></cly-chart-line>
+            <cly-chart-line test-id="requests" xAxisLabelOverflow="unset" :option="lineOptionsRequests" :height="400" v-loading="isLoading" :force-loading="isLoading" category="session"></cly-chart-line>
         </cly-section>
         <!--<cly-section>
 			<cly-metric-cards :multiline="false">
@@ -44,7 +44,7 @@
 			</cly-metric-cards>
 		  </cly-section>-->
           <cly-section>
-            <cly-chart-line test-id="line-options-delays" xAxisLabelOverflow="unset" :option="lineOptionsDelays" :valFormatter="lineOptionsDelays.valFormatter" :height="400" v-loading="isLoading" :force-loading="isLoading" category="session"></cly-chart-line>
+            <cly-chart-line test-id="delays" xAxisLabelOverflow="unset" :option="lineOptionsDelays" :valFormatter="lineOptionsDelays.valFormatter" :height="400" v-loading="isLoading" :force-loading="isLoading" category="session"></cly-chart-line>
         </cly-section>
 		<div class="bu-columns bu-is-gapless" style="margin-bottom:0;">
 			<h4 class="bu-pb-4" data-test-id="received-request-breakdown-by-type-as-label">Received request breakdown by type as </h4>
@@ -55,18 +55,18 @@
     		</div>
 		</div>
 		<cly-section>
-			<cly-chart-bar :option="lineOptionsReceived" :valFormatter="lineOptionsReceived.valFormatter" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
+			<cly-chart-bar test-id="received-request" :option="lineOptionsReceived" :valFormatter="lineOptionsReceived.valFormatter" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
 		</cly-section>
         <div class="bu-columns bu-is-gapless" style="margin-bottom:0;">
 			<h4 class="bu-pb-4" data-test-id="canceled-request-breakdown-by-reason-as-label">Canceled request breakdown by reason as </h4>
     		<div class ="selector_wrapper">
-      			<el-select test-id="canceled-request-reason" v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
-        			<el-option test-id="canceled-request-reason" :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
+      			<el-select test-id="canceled-request" v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
+        			<el-option test-id="canceled-request" :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
       			</el-select>
     		</div>
 		</div>
 		<cly-section>
-			<cly-chart-bar test-id="line-options-canceled" :option="lineOptionsCanceled" :valFormatter="lineOptionsCanceled.valFormatter" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
+			<cly-chart-bar test-id="canceled-request" :option="lineOptionsCanceled" :valFormatter="lineOptionsCanceled.valFormatter" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
 		</cly-section>
     </cly-main>
 </div>

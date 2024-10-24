@@ -26,6 +26,7 @@
                 <cly-metric-cards :multiline="false" :is-synced-scroll="true">
                     <cly-metric-card 
                         :is-percentage="true" 
+						:test-id="'sdk-stats-' + idx"
                         :column-width=3 
                         :color="item.color" 
                         :number="item.percent"
@@ -51,6 +52,7 @@
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
 					<cly-metric-cards :multiline="false" :is-synced-scroll="true">
 						<cly-metric-breakdown 
+							:test-id="'sdk-version-distribution-' + idx"
 							:name="item.name" 
 							:values="item.values" 
 							:key="idx"
@@ -59,7 +61,7 @@
 							v-for="(item, idx) in sdkVersions">
 						</cly-metric-breakdown>
 						<div v-if="!sdkItems.length && !isLoading" class="technology-analytics-wrapper-sdk__empty-card">
-							<div class="text-medium" >{{i18n('common.table.no-data')}}</div>
+							<div class="text-medium" data-test-id="sdk-version-distribution-metric-card-no-data-label" >{{i18n('common.table.no-data')}}</div>
 						</div>
 					</cly-metric-cards>
             </vue-scroll>

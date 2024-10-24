@@ -2,6 +2,26 @@ import sdkConfiguratonsPageElements from "../../../../support/elements/dashboard
 
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
+        element: sdkConfiguratonsPageElements.TAB_SDK_STATS,
+        elementText: "SDK Stats",
+    });
+
+    cy.verifyElement({
+        element: sdkConfiguratonsPageElements.TAB_REQUEST_STATS,
+        elementText: "Request Stats",
+    });
+
+    cy.verifyElement({
+        element: sdkConfiguratonsPageElements.TAB_HEALTH_CHECK,
+        elementText: "Health Check",
+    });
+
+    cy.verifyElement({
+        element: sdkConfiguratonsPageElements.TAB_SDK_CONFIGURATION,
+        elementText: "SDK Configuration",
+    });
+
+    cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.PAGE_TITLE,
         labelText: "SDK Configuration (Experimental)",
         tooltipElement: sdkConfiguratonsPageElements.PAGE_TITLE_TOOLTIP,
@@ -34,18 +54,21 @@ const verifyStaticElementsOfPage = () => {
     });
 };
 
-const verifyEmptyPageElements = () => {
+const verifyPageElements = ({
+    isSdkTrackingEnabled = true,
+    isSdkNetworkingEnabled = true
+}) => {
 
     verifyStaticElementsOfPage();
 
     cy.verifyElement({
         element: sdkConfiguratonsPageElements.SDK_TRACKING_SWITCH,
-        isChecked: true
+        isChecked: isSdkTrackingEnabled
     });
 
     cy.verifyElement({
         element: sdkConfiguratonsPageElements.SDK_NETWORKINF_SWITCH,
-        isChecked: true
+        isChecked: isSdkNetworkingEnabled
     });
 };
 
@@ -70,7 +93,7 @@ const clickSdkConfigurationTab = () => {
 };
 
 module.exports = {
-    verifyEmptyPageElements,
+    verifyPageElements,
     clickSdkStatsTab,
     clickRequestStatsTab,
     clickHealthCheckTab,
