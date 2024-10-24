@@ -241,7 +241,7 @@ describe('Complete Onboarding', () => {
         complianceHubHistoryPageHelpers.clickExportPurgeHistoryTab();
         complianceHubExportPurgePageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToUserManagementPage();
-        userManagementPageHelpers.usersPageElements();
+        userManagementPageHelpers.verifyPageElements();
         navigationHelpers.goToApplicationsPage();
         applicationsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToSettingsPage();
@@ -406,7 +406,7 @@ describe('Complete Onboarding', () => {
         complianceHubHistoryPageHelpers.clickExportPurgeHistoryTab();
         //complianceHubExportPurgePageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
         navigationHelpers.goToUserManagementPage();
-        userManagementPageHelpers.usersPageElements();
+        userManagementPageHelpers.verifyPageElements();
         //TODO: Add the cases of the following pages
         //navigationHelpers.goToApplicationsPage();
         //applicationsPageHelpers.verifyFullDataPageElements();
