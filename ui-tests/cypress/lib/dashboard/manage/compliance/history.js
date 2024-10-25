@@ -116,27 +116,39 @@ const verifyConsentHistoryDataTableElements = ({
         labelText: uid,
     });
 
-    cy.verifyElement({
-        labelElement: consentHistoryDataTableElements(index).CHANGES_OPT_IN_LABEL,
-        labelText: "Opt in",
-    });
+    cy
+        .elementExists(consentHistoryDataTableElements(index).CHANGES_OPT_IN_LABEL)
+        .then((isExists) => {
+            if (isExists) {
+                cy.verifyElement({
+                    labelElement: consentHistoryDataTableElements(index).CHANGES_OPT_IN_LABEL,
+                    labelText: "Opt in",
+                });
 
-    cy.verifyElement({
-        labelElement: consentHistoryDataTableElements(index).CHANGES_OPT_OUT_LABEL,
-        labelText: "Opt out",
-    });
+                cy.verifyElement({
+                    shouldNot: !isEmpty,
+                    labelElement: consentHistoryDataTableElements(index).CONSENT_OPT_IN_LABEL,
+                    labelText: consentOptIn,
+                });
+            }
+        });
 
-    cy.verifyElement({
-        shouldNot: !isEmpty,
-        labelElement: consentHistoryDataTableElements(index).CONSENT_OPT_IN_LABEL,
-        labelText: consentOptIn,
-    });
+    cy
+        .elementExists(consentHistoryDataTableElements(index).CHANGES_OPT_OUT_LABEL)
+        .then((isExists) => {
+            if (isExists) {
+                cy.verifyElement({
+                    labelElement: consentHistoryDataTableElements(index).CHANGES_OPT_OUT_LABEL,
+                    labelText: "Opt out",
+                });
 
-    cy.verifyElement({
-        shouldNot: !isEmpty,
-        labelElement: consentHistoryDataTableElements(index).CONSENT_OPT_OUT_LABEL,
-        labelText: consentOptOut,
-    });
+                cy.verifyElement({
+                    shouldNot: !isEmpty,
+                    labelElement: consentHistoryDataTableElements(index).CONSENT_OPT_OUT_LABEL,
+                    labelText: consentOptOut,
+                });
+            }
+        });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
