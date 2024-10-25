@@ -94,6 +94,7 @@ const verifyEmptyPageElements = () => {
 
     cy.verifyElement({
         element: applicationsPageElements.APPLICATION_NAME_VALUE_LABEL,
+        elementText: "Test",
     });
 
     cy.verifyElement({
