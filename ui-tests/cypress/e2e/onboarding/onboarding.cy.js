@@ -45,6 +45,7 @@ const complianceHubHistoryPageHelpers = require('../../lib/dashboard/manage/comp
 const complianceHubExportPurgePageHelpers = require('../../lib/dashboard/manage/compliance/actionlogs');
 const userManagementPageHelpers = require('../../lib/dashboard/manage/users/users');
 const applicationsPageHelpers = require('../../lib/dashboard/manage/apps/apps');
+const presetManagementPageHelpers = require('../../lib/dashboard/manage/datePresets/datePresets');
 const settingsPageHelpers = require('../../lib/dashboard/manage/configurations/configurations');
 const dataPointsPageHelpers = require('../../lib/dashboard/manage/dataPoints/dataPoints');
 const errorLogsPageHelpers = require('../../lib/dashboard/manage/logs/errorlogs');
@@ -243,9 +244,11 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToUserManagementPage();
         userManagementPageHelpers.verifyPageElements();
         navigationHelpers.goToApplicationsPage();
-        applicationsPageHelpers.verifyEmptyPageElements();
+        applicationsPageHelpers.verifyPageElements();
         navigationHelpers.goToSettingsPage();
         settingsPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToPresetManagementPage();
+        presetManagementPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToDataPointsPage();
         dataPointsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToLogsPage();
@@ -407,9 +410,12 @@ describe('Complete Onboarding', () => {
         //complianceHubExportPurgePageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
         navigationHelpers.goToUserManagementPage();
         userManagementPageHelpers.verifyPageElements();
+        navigationHelpers.goToApplicationsPage();
+        applicationsPageHelpers.verifyPageElements();
+        navigationHelpers.goToPresetManagementPage();
+        //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
+        
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToApplicationsPage();
-        //applicationsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToSettingsPage();
         //settingsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToDataPointsPage();

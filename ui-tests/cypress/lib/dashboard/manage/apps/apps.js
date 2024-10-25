@@ -88,7 +88,7 @@ const verifyStaticElementsOfPage = () => {
     });
 };
 
-const verifyEmptyPageElements = () => {
+const verifyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
@@ -126,5 +126,5 @@ const verifyEmptyPageElements = () => {
 };
 
 module.exports = {
-    verifyEmptyPageElements
+    verifyPageElements
 };
