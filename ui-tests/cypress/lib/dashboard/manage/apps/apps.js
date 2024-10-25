@@ -95,13 +95,13 @@ const verifyPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: applicationsPageElements.APPLICATION_NAME_VALUE_LABEL,
-        elementText: null, 
+        elementText: null,
     });
 
     cy.verifyElement({
         shouldNot: true,
         element: applicationsPageElements.APPLICATION_TYPE_VALUE_LABEL,
-        elementText: null, 
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -113,7 +113,7 @@ const verifyPageElements = () => {
     cy.verifyElement({
         shouldNot: true,
         element: applicationsPageElements.TIMEZONE_VALUE_LABEL,
-        elementText: null, 
+        elementText: null,
     });
 
     cy.verifyElement({
