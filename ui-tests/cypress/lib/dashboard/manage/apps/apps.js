@@ -94,19 +94,22 @@ const verifyEmptyPageElements = () => {
 
     cy.verifyElement({
         element: applicationsPageElements.APPLICATION_NAME_VALUE_LABEL,
-        elementText: "Test",
+        elementText: "My Mobile App", //ci-cd data
     });
 
     cy.verifyElement({
         element: applicationsPageElements.APPLICATION_TYPE_VALUE_LABEL,
+        elementText: "mobile", //ci-cd data
     });
 
     cy.verifyElement({
         element: applicationsPageElements.COUNTRY_VALUE_LABEL,
+        elementText: "TR", //ci-cd data
     });
 
     cy.verifyElement({
         element: applicationsPageElements.TIMEZONE_VALUE_LABEL,
+        elementText: "Europe/Istanbul", //ci-cd data
     });
 
     cy.verifyElement({
