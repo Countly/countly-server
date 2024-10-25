@@ -267,9 +267,9 @@ const goToApplicationsPage = () => {
 };
 
 const goToPresetManagementPage = () => {
-	cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.MANAGEMENT)
-	cy.clickElement(sidebarElements.SIDEBAR_MANAGEMENT_OPTIONS.PRESET_MANAGEMENT)
-}
+    cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.MANAGEMENT);
+    cy.clickElement(sidebarElements.SIDEBAR_MANAGEMENT_OPTIONS.PRESET_MANAGEMENT);
+};
 
 const goToSettingsPage = () => {
     cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.MANAGEMENT);

@@ -33,7 +33,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: datePresetsTableElements().COLUMN_NAME_VISIBILITY_LABEL,
         labelText: "Visibility",
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -41,7 +41,7 @@ const verifyEmptyPageElements = () => {
 
     verifyDatePresetsDataFromTable({
         isEmpty: true,
-    })
+    });
 };
 
 const verifyFullDataPageElements = () => {
@@ -107,7 +107,7 @@ const verifyDatePresetsDataFromTable = ({
     cy.verifyElement({
         element: datePresetsTableElements(index).MORE_BUTTON,
     });
-}
+};
 
 module.exports = {
     verifyEmptyPageElements,

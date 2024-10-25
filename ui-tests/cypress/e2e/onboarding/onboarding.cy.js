@@ -414,7 +414,7 @@ describe('Complete Onboarding', () => {
         applicationsPageHelpers.verifyPageElements();
         navigationHelpers.goToPresetManagementPage();
         //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
-        
+
         //TODO: Add the cases of the following pages
         //navigationHelpers.goToSettingsPage();
         //settingsPageHelpers.verifyFullDataPageElements();

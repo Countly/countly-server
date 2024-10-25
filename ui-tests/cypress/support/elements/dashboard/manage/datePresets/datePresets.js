@@ -1,9 +1,9 @@
 export const datePresetsElements = {
     PAGE_TITLE: 'header-title',
     CREATE_DATE_PRESET_BUTTON: 'new-date-preset-button',
-  }
-  
-  const datePresetsTableElements = (index = 0) => ({
+};
+
+const datePresetsTableElements = (index = 0) => ({
     EMPTY_TABLE_ICON: 'datatable-date-presets-empty-logo',
     EMPTY_TABLE_TITLE: 'datatable-date-presets-empty-title',
     EMPTY_TABLE_SUBTITLE: 'datatable-date-presets-empty-subtitle',
@@ -20,7 +20,7 @@ export const datePresetsElements = {
     OWNER: 'datatable-date-presets-owner-' + index,
     VISIBILITY: 'datatable-date-presets-visibility-' + index,
     MORE_BUTTON: 'datatable-date-presets-' + index + '-more-option-button',
-  
+
     //PAGINATION ELEMENTS
     ITEMS_PER_PAGE_LABEL: 'datatable-date-presets-items-per-page-label',
     PER_PAGE_COUNT_SELECT: 'datatable-date-presets-items-per-page-count-select-input-pseudo-input-label',
@@ -32,9 +32,9 @@ export const datePresetsElements = {
     PREVIOUS_PAGE_ARROW_BUTTON: 'datatable-date-presets-previous-page-arrow-button',
     NEXT_PAGE_ARROW_BUTTON: 'datatable-date-presets-next-page-arrow-button',
     LAST_PAGE_ARROW_BUTTON: 'datatable-date-presets-last-page-arrow-button'
-  });
-  
-  module.exports = {
+});
+
+module.exports = {
     datePresetsElements,
     datePresetsTableElements
-  };
+};
