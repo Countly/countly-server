@@ -245,10 +245,10 @@ describe('Complete Onboarding', () => {
         userManagementPageHelpers.verifyPageElements();
         navigationHelpers.goToApplicationsPage();
         applicationsPageHelpers.verifyPageElements();
-        navigationHelpers.goToSettingsPage();
-        settingsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToPresetManagementPage();
         presetManagementPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToSettingsPage();
+        settingsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToDataPointsPage();
         dataPointsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToLogsPage();

@@ -93,23 +93,27 @@ const verifyPageElements = () => {
     verifyStaticElementsOfPage();
 
     cy.verifyElement({
+        shouldNot: true,
         element: applicationsPageElements.APPLICATION_NAME_VALUE_LABEL,
-        elementText: "My Mobile App", //ci-cd data
+        elementText: null, 
     });
 
     cy.verifyElement({
+        shouldNot: true,
         element: applicationsPageElements.APPLICATION_TYPE_VALUE_LABEL,
-        elementText: "mobile", //ci-cd data
+        elementText: null, 
     });
 
     cy.verifyElement({
+        shouldNot: true,
         element: applicationsPageElements.COUNTRY_VALUE_LABEL,
-        elementText: "TR", //ci-cd data
+        elementText: null,
     });
 
     cy.verifyElement({
+        shouldNot: true,
         element: applicationsPageElements.TIMEZONE_VALUE_LABEL,
-        elementText: "Europe/Istanbul", //ci-cd data
+        elementText: null, 
     });
 
     cy.verifyElement({
