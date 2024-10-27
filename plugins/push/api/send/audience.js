@@ -2,7 +2,7 @@ const common = require('../../../../api/utils/common'),
     { PushError, ERROR } = require('./data/error'),
     { util } = require('./std'),
     { Message, State, TriggerKind, Result, dbext } = require('./data'),
-    { DEFAULTS, Time } = require('./data/const'),
+    { DEFAULTS } = require('./data/const'),
     { PLATFORM } = require('./platforms'),
     { Push } = require('./data/message'),
     { fields, TK } = require('./platforms'),
@@ -46,22 +46,6 @@ const common = require('../../../../api/utils/common'),
     };
 
 /**
- * Get current time, to be able to override it in tests
- * 
- * @returns {Number} current date in ms
- */
-let now = () => Date.now();
-
-/**
- * Set now function, for tests
- * 
- * @param {function} f now function
- */
-function setNow(f) {
-    now = f;
-}
-
-/**
  * Class encapsulating user selection / queue / message scheduling logic
  */
 class Audience {
@@ -89,7 +73,6 @@ class Audience {
             if (!this.app) {
                 throw new PushError(`App ${this.message.app} not found`, ERROR.EXCEPTION);
             }
-            this.plugins = await common.db.collection('plugins').findOne({_id: 'plugins'});
         }
         return this.app;
     }
@@ -195,9 +178,6 @@ class Audience {
         if (!project.tk) {
             project.tk = 1;
         }
-        if (!project.tz) {
-            project.tz = 1;
-        }
         steps.push({$project: project});
     }
 
@@ -232,7 +212,7 @@ class Audience {
         let query = filter.user;
         if (query) {
             let params = {
-                time: common.initTimeObj(this.app.timezone, now()),
+                time: common.initTimeObj(this.app.timezone, Date.now()),
                 qstring: Object.assign({app_id: this.app._id.toString()}, query),
                 app_id: this.app._id.toString()
             };
@@ -294,7 +274,7 @@ class Audience {
                 // drill().drill.openDrillDb();
 
                 let params = {
-                    time: common.initTimeObj(this.app.timezone, now()),
+                    time: common.initTimeObj(this.app.timezone, Date.now()),
                     qstring: Object.assign({app_id: this.app._id.toString()}, query),
                     app_id: this.app._id.toString()
                 };
@@ -423,7 +403,7 @@ class Mapper {
                 ret.pr[k] = user[k];
             }
         });
-        // common.log('push').d('mapped push', ret);
+        common.log('push').d('mapped push', ret);
         return ret;
     }
 }
@@ -444,12 +424,12 @@ class PlainApiMapper extends Mapper {
     map(user, date, c, offset = 0) {
         let d = date.getTime();
         if (this.trigger.tz) {
-            let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : parseFloat(user.tz) || 0) * 60000;
+            let utz = (user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0) * 60000;
             d = date.getTime() - this.trigger.sctz * 60000 - utz;
 
-            if (d < (now() - (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
+            if (d < Date.now()) {
                 if (this.trigger.reschedule) {
-                    d = d + Time.DAY;
+                    d = d + 24 * 60 * 60000;
                 }
                 else {
                     return null;
@@ -488,9 +468,9 @@ class CohortsEventsMapper extends Mapper {
             auto.setMilliseconds(0);
 
             inTz = auto.getTime() + this.trigger.time + (new Date().getTimezoneOffset() || 0) * 60000 - utz;
-            if (inTz < (now() - (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
+            if (inTz < Date.now()) {
                 if (this.trigger.reschedule) {
-                    d = inTz + Time.DAY;
+                    d = inTz + 24 * 60 * 60000;
                 }
                 else {
                     return null;
@@ -527,40 +507,6 @@ class CohortsEventsMapper extends Mapper {
 }
 
 /**
- * Plain or API triggers mapper - uses date calculation logic for those cases
- */
-class MultiRecurringMapper extends Mapper {
-    /**
-     * Map app_user object to message
-     * 
-     * @param {object} user app_user object
-     * @param {Date} date reference date (time of delivery in UTC, only user tz is what's left to add here for tz messages)
-     * @param {object[]} c [Content.json] overrides
-     * @param {int} offset rate limit offset
-     * @returns {object} push object ready to be inserted
-     */
-    map(user, date, c, offset) {
-        let d = date.getTime();
-
-        // send in user's timezone
-        if (this.trigger.tz) {
-            let utz = Number(user.tz === undefined || user.tz === null ? this.offset || 0 : user.tz || 0);
-            d -= (utz + date.getTimezoneOffset()) * 60000;
-        }
-
-        if (d < (now() - (Time.TOO_LATE_TO_SEND - Time.TIME_TO_SEND))) {
-            if (this.trigger.reschedule) {
-                d += Time.DAY;
-            }
-            else {
-                return null;
-            }
-        }
-
-        return super.map(user, d, c, offset);
-    }
-}
-/**
  * Pushing / popping notes to queue logic
  */
 class PusherPopper {
@@ -577,14 +523,8 @@ class PusherPopper {
             if (trigger.kind === TriggerKind.API || trigger.kind === TriggerKind.Plain) {
                 this.mappers[p + f] = new PlainApiMapper(audience.app, audience.message, trigger, p, f);
             }
-            else if (trigger.kind === TriggerKind.Recurring || trigger.kind === TriggerKind.Multi) {
-                this.mappers[p + f] = new MultiRecurringMapper(audience.app, audience.message, trigger, p, f);
-            }
-            else if (trigger.kind === TriggerKind.Event || trigger.kind === TriggerKind.Cohort) {
-                this.mappers[p + f] = new CohortsEventsMapper(audience.app, audience.message, trigger, p, f);
-            }
             else {
-                throw new PushError('Invalid trigger kind ' + trigger.kind);
+                this.mappers[p + f] = new CohortsEventsMapper(audience.app, audience.message, trigger, p, f);
             }
         }));
     }
@@ -723,8 +663,7 @@ class Pusher extends PusherPopper {
             offset = 0,
             curPeriod = 0,
             ratePeriod = (this.audience.app.plugins.push.rate || {}).period || 0,
-            rateNumber = (this.audience.app.plugins.push.rate || {}).rate || 0,
-            deduplicate = this.audience.plugins && this.audience.plugins.push && this.audience.plugins.push.deduplicate || false;
+            rateNumber = (this.audience.app.plugins.push.rate || {}).rate || 0;
 
         for await (let user of stream) {
             let push = user[TK][0],
@@ -792,161 +731,13 @@ class Pusher extends PusherPopper {
         }
 
         if (result.total) {
-            this.audience.log.d('inserting final batch of %d, %d records total', batch.length, batch.total);
-            await batch.flush([11000]);
-        }
-
-
-        if (result.total > 1 && deduplicate) {
-            this.audience.log.d('Checking for duplicates');
-
-            // group notifications just scheduled by token, message id and date up to a minute precision (won't work with heavy rate limiting)
-            // [
-            //     {$match: {m: this.audience.message._id}},
-            //     {$addFields: {d: {$dateToString: {date: '$_id', format: '%Y-%m-%dT%H:%M'}}}},
-            //     {$project: {_id: 1, t: 1, m: 1, d: 1}},
-            //     {$group: {_id: {t: '$t', m: '$m', d: '$d'}, dups: {$push: '$_id'}, count: {$sum: 1}}},
-            //     {$match: {count: {$gt: 1}}},
-            //     {$project: {_id: '$dups'}}
-            // ]
-            let dups = await common.db.collection(Push.collection).aggregate([
-                {$match: {m: this.audience.message._id}},
-                {$addFields: {d: {$dateToString: {date: '$_id', format: '%Y-%m-%dT%H:%M'}}}},
-                {$project: {_id: 1, t: 1, m: 1, d: 1, u: 1, p: 1, f: 1, 'la': '$pr.la'}},
-                {$group: {_id: {t: '$t', m: '$m', d: '$d'}, dups: {$push: {_id: '$_id', u: '$u', la: '$la', p: '$p', f: '$f'}}, count: {$sum: 1}}},
-                {$match: {count: {$gt: 1}}},
-                {$project: {_id: '$dups'}}
-            ]).toArray();
-
-            let left = dups.length,
-                notifications_to_remove = [],
-                push_users_to_remove = [],
-                app_users_to_unset = {},
-                push_tokens_to_unset = {};
-
-            if (left) {
-                this.audience.log.i('Going to check %d duplicate with same token', left);
-
-                let uids = new Set();
-                for (const doc of dups) {
-                    for (const dup of doc._id) {
-                        uids.add(dup.u);
-                    }
-                }
-                uids = Array.from(uids);
-                let [all_app_users, all_push_users] = await Promise.all([
-                    common.db.collection(`app_users${this.audience.app._id}`).find({uid: {$in: uids}}, {_id: 1, uid: 1, ls: 1}).toArray(),
-                    common.db.collection(`push_${this.audience.app._id}`).find({_id: {$in: uids}}, {_id: 1}).toArray()
-                ]);
-
-                all_app_users = arrayToKeyObject(all_app_users, 'uid');
-                all_push_users = arrayToKeyObject(all_push_users, '_id');
-
-                // iterating one by one is slow enough to have a switch in settings
-                for (const doc of dups) {
-                    let pushes = doc._id,
-                        dup_uids = pushes.map(d => d.u),
-                        app_users = dup_uids.map(uid => all_app_users[uid]).filter(x => !!x),
-                        push_users = dup_uids.map(uid => all_push_users[uid]).filter(x => !!x).map(u => u._id);
-
-                    let ghost_push_users = push_users.filter(u => app_users.filter(au => au.uid === u).length === 0);
-                    if (ghost_push_users.length) {
-                        this.audience.log.d('Found %d stale push user record(s), removing', ghost_push_users.length);
-                        for (let u of ghost_push_users) {
-                            push_users_to_remove.push(u);
-                            for (let push of pushes.filter(p => p.u === u)) {
-                                notifications_to_remove.push(push._id);
-                                if (updates['result.total']) {
-                                    updates['result.total'] -= 1;
-                                }
-                                if (updates[`result.subs.${push.p}.total`]) {
-                                    updates[`result.subs.${push.p}.total`] -= 1;
-                                }
-                                let la = push.la || 'default';
-                                if (updates[`result.subs.${push.p}.subs.${la}.total`]) {
-                                    updates[`result.subs.${push.p}.subs.${la}.total`] -= 1;
-                                }
-                            }
-                            pushes = pushes.filter(p => p.u !== u);
-                        }
-                    }
-
-                    app_users = app_users.filter(u => pushes.filter(p => p.u === u.uid).length !== 0);
-
-                    if (pushes.length && app_users.length > 1) {
-                        this.audience.log.d('Users %j have same token, their ls are %j, leaving only the recent one\'s token ', app_users.map(u => u._id), app_users.map(u => u.ls));
-                        app_users.sort((a, b) => b.ls - a.ls);
-                        while (app_users.length > 1) {
-                            let au = app_users.pop();
-                            for (let push of pushes.filter(p => p.u === au.uid)) {
-                                notifications_to_remove.push(push._id);
-                                if (updates['result.total']) {
-                                    updates['result.total'] -= 1;
-                                }
-                                if (updates[`result.subs.${push.p}.total`]) {
-                                    updates[`result.subs.${push.p}.total`] -= 1;
-                                }
-                                let la = push.la || 'default';
-                                if (updates[`result.subs.${push.p}.subs.${la}.total`]) {
-                                    updates[`result.subs.${push.p}.subs.${la}.total`] -= 1;
-                                }
-
-                                if (!app_users_to_unset[push.p + push.f]) {
-                                    app_users_to_unset[push.p + push.f] = [];
-                                }
-                                if (!push_tokens_to_unset[push.p + push.f]) {
-                                    push_tokens_to_unset[push.p + push.f] = [];
-                                }
-                                app_users_to_unset[push.p + push.f].push(au._id);
-                                push_tokens_to_unset[push.p + push.f].push(au.uid);
-                            }
-                        }
-                    }
-
-                    left--;
-
-                    if (left > 0 && left % 1000 === 0) {
-                        this.audience.log.i('... still checking duplicates, %d left', left);
-                    }
-                }
-
-                this.audience.log.d('Removing %d pushes with duplicate tokens', notifications_to_remove.length);
-                if (notifications_to_remove.length) {
-                    await common.db.collection(Push.collection).deleteMany({_id: {$in: notifications_to_remove}});
-                }
-
-                this.audience.log.d('Removing %d ghost push users', push_users_to_remove.length);
-                if (push_users_to_remove.length) {
-                    await common.db.collection(`push_${this.audience.app._id}`).deleteMany({_id: {$in: push_users_to_remove}});
-                }
-
-                let unsets = Object.values(app_users_to_unset).map(arr => arr.length).reduce((a, b) => a + b, 0);
-                this.audience.log.d('Unsetting %d duplicate user tokens in app_users', unsets);
-                if (unsets) {
-                    for (let pf in app_users_to_unset) {
-                        await common.db.collection(`app_users${this.audience.app._id}`).updateMany({_id: {$in: app_users_to_unset[pf]}}, {$unset: {['tk' + pf]: 1}});
-                    }
-                }
-
-                unsets = Object.values(push_tokens_to_unset).map(arr => arr.length).reduce((a, b) => a + b, 0);
-                this.audience.log.d('Unsetting %d duplicate user tokens in push_ collection', unsets);
-                if (unsets) {
-                    for (let pf in push_tokens_to_unset) {
-                        await common.db.collection(`push_${this.audience.app._id}`).updateMany({_id: {$in: push_tokens_to_unset[pf]}}, {$unset: {['tk.' + pf]: 1}});
-                    }
-                }
-            }
-        }
-        else {
-            this.audience.log.d('No duplicates found');
-        }
-
-        if (result.total) {
             let update = {$inc: updates};
             if (Object.keys(virtuals).length) {
                 update.$set = virtuals;
             }
             await this.audience.message.update(update, () => {});
+            this.audience.log.d('inserting final batch of %d, %d records total, message update %j', batch.length, batch.total, update);
+            await batch.flush([11000]);
         }
 
         return result;
@@ -1028,19 +819,4 @@ class Popper extends PusherPopper {
     }
 }
 
-/**
- * Convert array of objects into a map indexed by given key, they key must be present in all objects
- * 
- * @param {Object[]} arr array of objects
- * @param {String} key key
- * @returns {Object} resulting object
- */
-function arrayToKeyObject(arr, key) {
-    let obj = {};
-    for (const e of arr) {
-        obj[e[key]] = e;
-    }
-    return obj;
-}
-
-module.exports = { Audience, MultiRecurringMapper, setNow };
+module.exports = { Audience };
