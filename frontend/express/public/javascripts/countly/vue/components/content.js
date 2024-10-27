@@ -195,7 +195,7 @@
         data: function() {
             return {
                 toggleTransition: 'stdt-slide-left',
-                isLeftSidebarHidden: this.hideLeftSidebar,
+                isCollapsed: false,
                 scrollOps: {
                     vuescroll: {},
                     scrollPanel: {
@@ -220,7 +220,7 @@
         methods: {
             collapseBar: function(position) {
                 if (position === 'left') {
-                    this.isLeftSidebarHidden = !this.isLeftSidebarHidden;
+                    this.isCollapsed = !this.isCollapsed;
                 }
             },
             onViewEntered: function() { //?
