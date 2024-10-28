@@ -311,4 +311,23 @@
 			border-top: 1px;
 		}
 	}
+
+	.crash-confirm-delete {
+		&__text-clickable {
+			color:#0166D6
+		}
+
+		&__list {
+			max-height: 150px;
+			overflow: scroll;
+			background-color: #F6F6F6;
+			ul {
+				list-style: none; padding: 0;
+				li {
+					padding-left: 16px
+				}
+			}
+		}
+	}
+	
 }

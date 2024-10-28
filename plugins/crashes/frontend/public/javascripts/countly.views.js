@@ -454,6 +454,23 @@
                 hasDrillPermission: countlyAuth.validateRead('drill'),
                 showDeleteDialog: false,
                 selectedGroups: [],
+                defaultScrollOps: {
+                    vuescroll: {},
+                    scrollPanel: {
+                        initialScrollX: false,
+                    },
+                    rail: {
+                        gutterOfSide: "1px",
+                        gutterOfEnds: "15px"
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        specifyBorderRadius: "3px",
+                        keepShow: false
+                    }
+                },
+                deleteDialogListVisibile: false,
             };
         },
         computed: {
@@ -564,6 +581,14 @@
                 var text = "crashes.groups-confirm-delete";
                 text = this.selectedGroups.length > 1 ? text + "-plural" : text;
                 return CV.i18n(text, this.selectedGroups.length);
+            },
+            listArrow: function() {
+                if (this.deleteDialogListVisibile) {
+                    return "cly-io-chevron-up";
+                }
+                else {
+                    return "cly-io-chevron-down";
+                }
             }
         },
         methods: {
@@ -688,12 +713,16 @@
             unpatchSelectedGroups: function() {
                 this.handleSelectionChange([], true);
             },
-            toggleDeleteDialog: function() {
+            showDeleteForm: function() {
                 this.showDeleteDialog = true;
             },
             closeDeleteForm: function() {
                 this.showDeleteDialog = false;
+                this.deleteDialogListVisibile = false;
             },
+            showList: function() {
+                this.deleteDialogListVisibile = !this.deleteDialogListVisibile;
+            }
         },
         beforeCreate: function() {
             var query = {};
