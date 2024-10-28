@@ -248,7 +248,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToPresetManagementPage();
         presetManagementPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToSettingsPage();
-        settingsPageHelpers.verifyEmptyPageElements();
+        settingsPageHelpers.verifyPageElements();
         navigationHelpers.goToDataPointsPage();
         dataPointsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToLogsPage();
@@ -414,10 +414,10 @@ describe('Complete Onboarding', () => {
         applicationsPageHelpers.verifyPageElements();
         navigationHelpers.goToPresetManagementPage();
         //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
+        navigationHelpers.goToSettingsPage();
+        settingsPageHelpers.verifyPageElements();
 
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToSettingsPage();
-        //settingsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToDataPointsPage();
         //dataPointsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToLogsPage();

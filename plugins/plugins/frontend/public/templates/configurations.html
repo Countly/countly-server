@@ -58,13 +58,13 @@
                                         </div>
                                     </div>
                                     <div class="bu-column bu-is-2"></div>
-                                    <div class="bu-column bu-is-3 bu-is-flex bu-is-justify-content-end bu-pb-1" :data-test-id="'settings-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-') + '-' + key.toLowerCase().replaceAll('_', '-') + '-textarea'">
+                                    <div class="bu-column bu-is-3 bu-is-flex bu-is-justify-content-end bu-pb-1" :data-test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-textarea'">
                                         <div 
                                             v-if="getInputType(key) === 'function'" 
                                             v-html="predefinedInputs[selectedConfig + '.' + key](configsData[selectedConfig][key])">
                                         </div>
                                         <el-input
-                                            :test-id="'settings-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-') + '-' + key.toLowerCase().replaceAll('_', '-') + '-input'"
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-input'"
                                             v-else-if="getInputType(key) === 'el-input'" 
                                             @input="onChange(key, $event)"
                                             :value="configsData[selectedConfig][key]"
@@ -72,7 +72,7 @@
                                             >
                                         </el-input>
                                         <el-select 
-                                            :test-id="'settings-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-') + '-' + key.toLowerCase().replaceAll('_', '-')"
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-')"
                                             v-else-if="getInputType(key) === 'el-select'" 
                                             @change="onChange(key, $event)"
                                             :value="configsData[selectedConfig][key]"
@@ -80,28 +80,28 @@
                                             <el-option :key="option.value" :value="option.value" :label="option.label" v-for="option in predefinedInputs[selectedConfig + '.' + key].list"></el-option>
                                         </el-select>
                                         <el-slider 
-                                            :test-id="'settings-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-') + '-' + key.toLowerCase().replaceAll('_', '-')"
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-')"
                                             v-else-if="getInputType(key) === 'el-slider'" 
                                             @change="onChange(key, $event)"
                                             :value="configsData[selectedConfig][key]"
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                         </el-slider>
                                         <el-button
-                                            :data-test-id="'settings-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-') + '-' + key.toLowerCase().replaceAll('_', '-') + '-button'"
+                                            :data-test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-button'"
                                             v-else-if="getInputType(key) === 'el-button'" 
                                             @click="predefinedInputs[selectedConfig + '.' + key].click()"
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                             {{predefinedInputs[selectedConfig + '.' + key].label}}
                                         </el-button>
                                         <el-switch 
-                                            :test-id="'settings-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-') + '-' + key.toLowerCase().replaceAll('_', '-')"
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-')"
                                             v-else-if="getInputType(key) === 'el-switch'"
                                             @change="onChange(key, $event)"
                                             :value="configsData[selectedConfig][key]"
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                         </el-switch>
                                         <el-input-number 
-                                            :test-id="'settings-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-') + '-' + key.toLowerCase().replaceAll('_', '-') + '-input-number'"
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-input-number'"
                                             v-else-if="getInputType(key) === 'el-input-number'" 
                                             @change="onChange(key, $event)"
                                             :max='2147483647' 
@@ -110,14 +110,14 @@
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                         </el-input-number>
                                         <el-color-picker 
-                                            :test-id="'settings-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-') + '-' + key.toLowerCase().replaceAll('_', '-') + '-color-picker'"
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-color-picker'"
                                             v-else-if="getInputType(key) === 'el-color-picker'" 
                                             @change="onChange(key, $event)"
                                             :value="configsData[selectedConfig][key]"
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                         </el-color-picker>
                                         <cly-colorpicker 
-                                            :test-id="'settings-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-') + '-' + key.toLowerCase().replaceAll('_', '-') + '-color-picker'"
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-color-picker'"
                                             v-else-if="getInputType(key) === 'cly-colorpicker'" 
                                             v-model="configsData[selectedConfig][key]"
                                             :value="configsData[selectedConfig][key]"
@@ -126,7 +126,7 @@
                                             style="display:inline">
                                         </cly-colorpicker>
                                         <el-upload
-                                            :data-test-id="'settings-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-') + '-' + key.toLowerCase().replaceAll('_', '-') + '-upload'"
+                                            :data-test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-upload'"
                                             v-else-if="getInputType(key) === 'image'" 
                                             :show-file-list="false"
                                             :before-upload="predefinedInputs[selectedConfig + '.' + key].before"
@@ -136,7 +136,7 @@
                                             <div :class="predefinedInputs[selectedConfig + '.' + key].image_size">
                                                 <div v-if="configsData[selectedConfig][key]" class="image-delete bu-is-flex">
                                                     <el-button 
-                                                    :test-id="'settings-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-') + '-' + getLabelName(key).toLowerCase().replaceAll(/\s/g, '-')"
+                                                    :test-id="'settings-' + getLabelName(key).toLowerCase().replaceAll(/\s/g, '-')"
                                                     size="small" 
                                                     type="text" 
                                                     @click.stop="onChange(key, '')"
