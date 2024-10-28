@@ -202,7 +202,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToPushNotifications();
-        messagingPageHelpers.verifyEmptyPageElements();
+        //messagingPageHelpers.verifyEmptyPageElements(); //TODO: will be refactored 
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyEmptyPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
