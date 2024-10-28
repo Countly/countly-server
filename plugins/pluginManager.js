@@ -2243,7 +2243,12 @@ var pluginManager = function pluginManager() {
                 var promise = obj["_" + name](...args);
                 if (typeof callback === "function") {
                     promise = promise.then(function(res) {
-                        callback(undefined, res);
+                        if (name === "createCollection") {
+                            callback(undefined, obj.collection(args[0]));
+                        }
+                        else {
+                            callback(undefined, res);
+                        }
                     }).catch(function(err) {
                         if (typeof callback === "function") {
                             callback(err, null);
