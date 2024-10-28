@@ -40,7 +40,7 @@ function setup() {
                 });
             }
             else {
-                collection = col;
+                collection = common.db.collection(COLLECTION);
                 setImmediate(periodic);
             }
         });
