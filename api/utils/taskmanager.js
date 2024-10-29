@@ -471,7 +471,7 @@ taskmanager.saveResult = function(options, data, callback) {
         options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
     }
     options.db.collection("long_tasks").findOne({_id: options.id}, function(error, task) {
-        if (task.dirty && task.dirty < task.start) {
+        if (task && task.dirty && task.dirty < task.start) {
             update.dirty = false;
         }
         if (options.gridfs || (task && task.gridfs)) {

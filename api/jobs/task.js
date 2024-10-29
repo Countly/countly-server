@@ -56,7 +56,7 @@ class MonitorJob extends job.Job {
                 return true;
             }
 
-            if(task.dirty){
+            if (task.dirty) {
                 return true;
             }
 
