@@ -394,7 +394,7 @@
      * title is the text that will be dispalyed for the backlink url. 
      */
     CountlyHelpers.goTo = function(options) {
-        if (options.url && options.url.startsWith('https://')) {
+        if (options.isExternalLink) {
             window.open(options.url, '_blank', 'noopener,noreferrer');
         }
         else {
