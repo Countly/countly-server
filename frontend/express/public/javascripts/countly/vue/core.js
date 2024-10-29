@@ -62,6 +62,15 @@
         }
     };
 
+    function _i18nWithPlaceholders() {
+        let localizedText = _i18n.apply(null, arguments);
+        return localizedText
+            .replace(/{gt}/g, '>')
+            .replace(/{lt}/g, '<')
+            .replace(/{amp}/g, '&')
+            .replace(/{quot}/g, '"');
+    }
+
     var _$ = {
         ajax: function(request, options) {
             options = options || {};
@@ -125,7 +134,7 @@
     // @vue/component
     var i18nMixin = {
         methods: {
-            i18n: _i18n,
+            i18n: _i18nWithPlaceholders,
             i18nM: _i18nM
         }
     };
@@ -1063,7 +1072,7 @@
     };
 
     var rootElements = {
-        i18n: _i18n,
+        i18n: _i18nWithPlaceholders,
         i18nM: _i18nM,
         $: _$,
         mixins: _mixins,
