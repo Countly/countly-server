@@ -313,7 +313,11 @@
             CountlyHelpers.notify({
                 message: CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.title") + " " + CV.i18n("assistant.taskmanager.longTaskAlreadyRunning.message"),
                 info: CV.i18n("assistant.taskmanager.longTaskTooLong.info"),
-                type: "info"
+                type: "info",
+                goTo: {
+                    title: CV.i18n("common.go-to-task-manager"),
+                    url: "#/manage/tasks"
+                }
             });
         },
         completed: function(fetchedTasks) {

@@ -986,33 +986,35 @@
                 :class="dynamicClasses"
             >
                 <div class="bu-is-flex bu-is-justify-content-space-between bu-p-3">
-                    <div class="bu-is-flex">
+                    <div class="bu-is-flex" style="width:100%">
                         <img
                             class="alert-image bu-mr-3"
                             data-test-id="cly-notification-img"
                             :src="image"
                         >
-                        <slot>
+                        <div :style="dynamicStyle">
+                            <slot>
+                                <span
+                                    class="alert-text"
+                                    data-test-id="cly-notification-text"
+                                    style="margin-block:auto"
+                                    v-html="innerText"
+                                >
+                                    {{ text }}
+                                </span>
+                            </slot>
                             <span
-                                class="alert-text"
-                                data-test-id="cly-notification-text"
-                                style="margin-block:auto"
-                                v-html="innerText"
+                                v-if="goTo.title"
+                                class="bu-is-flex cursor-pointer"
                             >
-                                {{ text }}
+                                <a
+                                    class="bu-level-item bu-has-text-link bu-has-text-weight-medium"
+                                    @click="goToUrl"
+                                >
+                                    {{ goTo.title }}
+                                </a>
                             </span>
-                        </slot>
-                    </div>
-                    <div
-                        v-if="goTo.title"
-                        class="bu-is-flex bu-ml-auto"
-                    >
-                        <a
-                            class="bu-level-item bu-has-text-link bu-has-text-weight-medium"
-                            @click="goToUrl"
-                        >
-                            {{ goTo.title }}
-                        </a>
+                        </div>
                     </div>
                     <div v-if="closable">
                         <div
@@ -1050,6 +1052,7 @@
                 type: Object
             },
             customWidth: { default: "", type: String },
+            toast: { default: false, type: Boolean }
         },
         data: function() {
             return {
@@ -1112,6 +1115,20 @@
                     return this.text;
                 }
                 return "";
+            },
+            dynamicStyle: function() {
+                let style = {
+                    "display": "flex",
+                    "flex-direction": this.toast ? "column" : "row",
+                    "width": "100%"
+                };
+                if (this.toast) {
+                    style.gap = "5px";
+                }
+                else {
+                    style["justify-content"] = "space-between";
+                }
+                return style;
             }
         },
         methods: {
