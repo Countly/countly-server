@@ -547,7 +547,7 @@
                 eventLimit.goTo = {
                     title: CV.i18n("common.go-to-settings"),
                     url: "#/manage/configurations/api"
-                }
+                };
                 limitAlert.push(eventLimit);
             }
             if (!context.state.selectedEventName.startsWith('[CLY]_group')) {

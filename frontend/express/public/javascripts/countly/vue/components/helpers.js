@@ -1119,14 +1119,14 @@
             dynamicStyle: function() {
                 let style = {
                     "display": "flex",
-                    "flex-direction":  this.toast ? "column" : "row",
+                    "flex-direction": this.toast ? "column" : "row",
                     "width": "100%"
-                }
+                };
                 if (this.toast) {
-                    style["gap"] = "5px";
+                    style.gap = "5px";
                 }
                 else {
-                    style["justify-content"] = "space-between"; 
+                    style["justify-content"] = "space-between";
                 }
                 return style;
             }
