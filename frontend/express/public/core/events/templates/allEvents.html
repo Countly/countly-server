@@ -28,7 +28,7 @@
 		</div>
 		<div class="bu-column bu-is-9">
 			<div class="bu-mr-5 cly-vue-events-alerts" v-for="item in limitAlerts" :key="item" :value="item">
-		    	<cly-notification v-if="item.show" class="bu-mb-5 cly-vue-events-all__alerts" :text="item.message" color="light-warning">
+		    	<cly-notification v-if="item.show" class="bu-mb-5 cly-vue-events-all__alerts" :text="item.message" :goTo="item.goTo" color="light-warning">
 				</cly-notification>
 			</div>
 		  <div class="cly-vue-events-all" v-if="!groupData.isGroup" data-test-id="event-title">

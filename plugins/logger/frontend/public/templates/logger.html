@@ -15,7 +15,7 @@
     </cly-header>
     <cly-main>
         <div style="margin-bottom: 24px;">
-            <cly-notification v-if="showTurnedOff" :text="i18n('logger.state-off-warning', appId)"></cly-notification>
+            <cly-notification v-if="showTurnedOff" :text="i18n('logger.state-off-warning')" :goTo="goTo"></cly-notification>
         </div>
         <cly-section>
             <cly-datatable-n
