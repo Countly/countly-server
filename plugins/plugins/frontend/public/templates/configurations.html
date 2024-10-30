@@ -66,6 +66,7 @@
                                         <el-input
                                             :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-input'"
                                             v-else-if="getInputType(key) === 'el-input'" 
+                                            :data-test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-textarea'"
                                             @input="onChange(key, $event)"
                                             :value="configsData[selectedConfig][key]"
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs"
