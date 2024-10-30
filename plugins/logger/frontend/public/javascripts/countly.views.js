@@ -118,6 +118,12 @@
             },
             showTurnedOff: function() {
                 return this.isTurnedOff;
+            },
+            goTo: function() {
+                return {
+                    title: CV.i18n("common.go-to-settings"),
+                    url: "#/" + this.appId + "/manage/configurations"
+                };
             }
         },
         mixins: [
