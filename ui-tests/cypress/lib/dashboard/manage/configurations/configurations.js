@@ -262,7 +262,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         element: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.SAFE}).SELECTED_SUBFEATURE_CHECKBOX,
-        isChecked: true
+        isChecked: false
     });
 
     cy.verifyElement({
