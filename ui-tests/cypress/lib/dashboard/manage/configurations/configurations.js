@@ -277,7 +277,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         element: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.DOMAIN}).SELECTED_SUBFEATURE_INPUT,
-        value: "https://canangun-ce.count.ly"
+        value: "http://localhost"
     });
 
     cy.verifyElement({
