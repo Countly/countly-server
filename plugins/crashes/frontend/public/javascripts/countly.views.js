@@ -455,19 +455,23 @@
                 showDeleteDialog: false,
                 selectedGroups: [],
                 defaultScrollOps: {
-                    vuescroll: {},
+                    vuescroll: {
+                        sizeStrategy: 'number',
+                    },
                     scrollPanel: {
                         initialScrollX: false,
+                        maxHeight: '150px',
+                        minHeight: '36px',
+                        keepShow: true,
                     },
                     rail: {
-                        gutterOfSide: "1px",
-                        gutterOfEnds: "15px"
+                        gutterOfSide: "4px",
+                        gutterOfEnds: "16px",
                     },
                     bar: {
                         background: "#A7AEB8",
                         size: "6px",
-                        specifyBorderRadius: "3px",
-                        keepShow: false
+                        keepShow: false,
                     }
                 },
                 deleteDialogListVisibile: false,
