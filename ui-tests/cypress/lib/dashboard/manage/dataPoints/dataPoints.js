@@ -69,7 +69,7 @@ const verifyStaticElementsOfPage = () => {
         labelText: "Change in Data Points",
         element: dataPointsDataTableElements().COLUMN_NAME_CHANGE_IN_DATA_POINTS_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

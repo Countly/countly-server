@@ -2,7 +2,7 @@ export const dataPointsPageElements = {
     PAGE_TITLE: 'header-title',
     PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
     TOP_APPLICATIONS_BY_DATA_POINTS_LABEL: 'top-applications-by-data-points-in-the-last-two-hours-label',
-}
+};
 
 const dataPointsMetricCardElements = (index = 0) => ({
     APP_NAME_LABEL: 'metric-card-datapoint-app-' + index + '-column-label',
