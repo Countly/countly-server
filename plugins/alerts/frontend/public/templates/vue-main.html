@@ -44,7 +44,9 @@
                 class="cly-vue-alerts-table"
                 :tracked-fields="localTableTrackedFields"
                 :rows="tableRows"
-                :resizable="false">
+                :resizable="false"
+                :default-sort="{prop: 'createdAt', order: 'descending'}"
+            >
                 <template v-slot:header-left="scope">
                     <div class="alerts-table-app-selector">
                         <cly-select-x
@@ -67,21 +69,21 @@
                         </template>
                     </el-table-column>
 
-                    <el-table-column fixed min-width="240" prop="alertName" :label="i18n('alert.Alert_Name')" sortable="true">
+                    <el-table-column fixed min-width="240" prop="alertName" :label="i18n('alerts.Alert_Name')" sortable="true">
                         <template slot-scope="scope">
                             <div style="text-overflow: ellipsis; overflow: hidden;" :data-test-id="'datatable-alert-name-' + scope.$index" v-html="scope.row.alertName"></div>
                         </template>
                     </el-table-column>
 
                     <template v-for="(col, idx) in scope.dynamicCols">
-                        <el-table-column min-width="175" v-if="col.value === 'appNameList'" prop="appNameList" sortable="true" :label="i18n('alert.Application')">
+                        <el-table-column min-width="175" v-if="col.value === 'appNameList'" prop="appNameList" sortable="true" :label="i18n('alerts.Application')">
                             <template slot-scope="scope">
                                 <div :data-test-id="'datatable-application-' + scope.$index">
                                     {{scope.row.appNameList}}
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column min-width="415" v-if="col.value === 'conditionText'" prop="conditionText" sortable="true" :label="i18n('alert.Condition')">
+                        <el-table-column min-width="415" v-if="col.value === 'conditionText'" prop="conditionText" sortable="true" :label="i18n('alerts.Condition')">
                             <template slot-scope="scope" sortable="true">
                                 <span :data-test-id="'datatable-condition-' + scope.$index">
                                     {{unescapeHtml(scope.row.condtionText)}}
@@ -90,7 +92,7 @@
                         </el-table-column>
                     </template>
 
-                    <el-table-column  min-width="130" sortable="true"  prop="createdByUser" :label="i18n('alert.CreateBy')">
+                    <el-table-column  min-width="130" sortable="true"  prop="createdByUser" :label="i18n('alerts.CreateBy')">
                         <template slot-scope="scope">
                             <div class="bu-level">
                                 <div class="bu-level-left">
