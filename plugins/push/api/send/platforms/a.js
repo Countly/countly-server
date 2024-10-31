@@ -198,7 +198,15 @@ class FCM extends Splitter {
                             // check if the sdk error is mapped to an internal error.
                             // set to default if its not.
                             let internalErrorCode = sdkError?.mapTo ?? ERROR.DATA_PROVIDER;
-                            let internalErrorMessage = sdkError?.message ?? "Invalid error message";
+                            let internalErrorMessage = sdkError?.message;
+                            if (!internalErrorMessage) {
+                                if (error.code && error.message) {
+                                    internalErrorMessage = "[" + error.code + "] " + error.message;
+                                }
+                                else {
+                                    internalErrorMessage = "Invalid error message";
+                                }
+                            }
                             errorObject(internalErrorCode, internalErrorMessage)
                                 .addAffected(pushes[i]._id, one);
                         }
@@ -502,5 +510,4 @@ module.exports = {
     fields,
     map,
     connection: FCM,
-
 };
