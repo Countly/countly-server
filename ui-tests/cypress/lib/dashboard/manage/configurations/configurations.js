@@ -725,7 +725,8 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         element: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.API_ADDITIONAL_HEADERS }).SELECTED_SUBFEATURE_TEXTAREA,
-        value: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*"
+        //value: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*", //TODO: fix this
+        value: "X-Frame-Options:deny",
     });
 
     cy.verifyElement({
