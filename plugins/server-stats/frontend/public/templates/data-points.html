@@ -13,7 +13,7 @@
 		</div>
 		<cly-section v-if="!subPage" class="bu-mt-4">
 			<cly-metric-cards :multiline="false" v-loading="isLoading" style="min-height:100px;">
-				<cly-metric-card formatting="long" :is-percentage="false" :box-type="3" :label="item.name" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in topApps">
+				<cly-metric-card :test-id="'datapoint-app-' + idx " formatting="long" :is-percentage="false" :box-type="3" :label="item.name" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in topApps">
 					<template v-slot:number>{{item.value}}</template>
 				</cly-metric-card>
 				
@@ -21,12 +21,12 @@
 		</cly-section>
 		<cly-section>
 			<cly-date-picker-g class="bu-m-5"></cly-date-picker-g>
-			<cly-chart-bar v-if="useBasicGraph" :legend="{show:false}" :option="dataPointsGraph" :height="520" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
+			<cly-chart-bar test-id="chart-datapoint" v-if="useBasicGraph" :legend="{show:false}" :option="dataPointsGraph" :height="520" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
 			<cly-chart-generic v-else :height="520"  :option="dataPointsGraph" v-loading="isLoading" :force-loading="isLoading"></cly-chart-generic>
         </cly-section>
 		
 		<cly-section>
-            <cly-datatable-n data-test-id="apps-table" :exportFormat="formatExportFunction" :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
+            <cly-datatable-n test-id="datatable-apps-datapoint" :exportFormat="formatExportFunction" :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
 				<el-table-column min-width="200" type="clickable" sortable="custom" prop="appName" :show-overflow-tooltip="true" :label="i18n('compare.apps.app-name')" fixed="left">
 					<template slot-scope="scope">
 						<a v-if="!subPage && scope.row.appId" :href='"#/manage/data-points/" +scope.row.appId'>{{scope.row.appName}}</a>
