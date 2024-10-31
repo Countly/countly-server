@@ -522,7 +522,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         element: configurationsListBoxElements({ subFeature: SETTINGS.FRONTED.COUNTLY_TRACKING }).SELECTED_SUBFEATURE_CHECKBOX,
-        isChecked: true
+        isChecked: false
     });
 
     cy.verifyElement({
