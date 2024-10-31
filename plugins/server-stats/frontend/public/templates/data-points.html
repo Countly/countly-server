@@ -29,22 +29,31 @@
             <cly-datatable-n test-id="datatable-apps-datapoint" :exportFormat="formatExportFunction" :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
 				<el-table-column min-width="200" type="clickable" sortable="custom" prop="appName" :show-overflow-tooltip="true" :label="i18n('compare.apps.app-name')" fixed="left">
 					<template slot-scope="scope">
-						<a v-if="!subPage && scope.row.appId" :href='"#/manage/data-points/" +scope.row.appId'>{{scope.row.appName}}</a>
-						<span v-else class="i_am_not_clickable">{{scope.row.appName}}</span>
+						<a v-if="!subPage && scope.row.appId" :href='"#/manage/data-points/" +scope.row.appId' :data-test-id="'datatable-datapoints-app-name-' + scope.$index">{{scope.row.appName}}</a>
+						<span v-else class="i_am_not_clickable" data-test-id="datatable-all-datapoints">{{scope.row.appName}}</span>
 					</template>
 				</el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="sessions" :label="i18n('sidebar.analytics.sessions')">
 					<template v-slot:header>
 						{{i18n('sidebar.analytics.sessions')}}
-						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.sessions-description')"></span>
+						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.sessions-description')" data-test-id="datatable-apps-datapoint-tooltip-sessions"></span>
+					</template>
+					<template #default="scope">
+						<span
+							:data-test-id="'datatable-datapoints-sessions-' + scope.$index"
+						>
+							{{ eventsNumberFormatter(scope.row.sessions) }}
+						</span>
 					</template>
 				</el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="events" :label="i18n('server-stats.events')">
 					<template v-slot:header>
 						{{i18n('server-stats.events')}}
-						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.events-description')"></span>
+						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.events-description')" data-test-id="datatable-apps-datapoint-tooltip-non-session-datapoints"></span>
 					</template>
-					<div slot-scope="scopeRow">
+
+					<template #default="scopeRow">
+					<div :data-test-id="'datatable-datapoints-no-session-datapoints-' + scopeRow.$index">
 						<el-popover
 							trigger="hover"
 							placement="right"
@@ -68,9 +77,22 @@
 							<span slot="reference">{{eventsNumberFormatter(scopeRow.row.events)}}</span>
 						</el-popover>
 					</div>
+				</template>
 				</el-table-column>
-				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="data-points" :label="i18n('server-stats.total-datapoints')"></el-table-column>
-				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="change" :label="i18n('server-stats.datapoint-change')"></el-table-column>
+				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="data-points" :label="i18n('server-stats.total-datapoints')">
+					<template v-slot="rowScope">
+                        <div :data-test-id="'datatable-datapoints-total-datapoints-' + rowScope.$index">
+                            {{ eventsNumberFormatter(rowScope.row['data-points']) }}
+                        </div>
+                    </template>
+				</el-table-column>
+				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="change" :label="i18n('server-stats.datapoint-change')">
+					<template v-slot="rowScope">
+						<div :data-test-id="'datatable-datapoints-datapoint-change-' + rowScope.$index">
+							{{ eventsNumberFormatter(rowScope.row['change']) }}
+						</div>
+					</template>
+				</el-table-column>
 			</cly-datatable-n>
 		</cly-section>
 	</cly-main>

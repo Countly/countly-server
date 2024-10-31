@@ -25,7 +25,7 @@ const analyticsGeoCountriesPageHelpers = require('../../lib/dashboard/analytics/
 const analyticsGeoLanguagesPageHelpers = require('../../lib/dashboard/analytics/geo/languages/languages');
 const analyticsEventsOverviewPageHelpers = require('../../lib/dashboard/analytics/events/overview');
 const analyticsEventsPageHelpers = require('../../lib/dashboard/analytics/events/events');
-const messagingPageHelpers = require('../../lib/dashboard/messaging/messaging');
+//const messagingPageHelpers = require('../../lib/dashboard/messaging/messaging');
 const feedbackRatingsPageHelpers = require('../../lib/dashboard/feedback/ratings/ratings');
 const feedbackRatingWidgetsPageHelpers = require('../../lib/dashboard/feedback/ratings/widgets');
 const crashesPageHelpers = require('../../lib/dashboard/crashes/crashes');
@@ -416,10 +416,9 @@ describe('Complete Onboarding', () => {
         //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
         navigationHelpers.goToSettingsPage();
         settingsPageHelpers.verifyPageElements();
-
+        navigationHelpers.goToDataPointsPage();
+        dataPointsPageHelpers.verifyFullDataPageElements();
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToDataPointsPage();
-        //dataPointsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToLogsPage();
         //errorLogsPageHelpers.verifyFullDataPageElements();
         //errorLogsPageHelpers.clickAuditLogsTab();
