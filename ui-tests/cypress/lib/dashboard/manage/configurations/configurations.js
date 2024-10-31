@@ -989,7 +989,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         element: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.PROXY_TYPE }).SELECTED_SUBFEATURE_INPUT,
-        value: "http"
+        value: "https"
     });
 
     cy.verifyElement({
