@@ -192,10 +192,17 @@ const verifyDataTableElements = ({
     }
 
     cy.verifyElement({
-        shouldNot: !isEmpty,
-        labelElement: dataPointsDataTableElements(index).APP_NAME,
-        labelText: appName,
+        labelElement: dataPointsDataTableElements(0).APP_NAME_ALL_DATAPOINTS,
+        labelText: "(All Datapoints)"
     });
+
+    if (index != 0) {
+        cy.verifyElement({
+            shouldNot: !isEmpty,
+            labelElement: dataPointsDataTableElements(index).APP_NAME,
+            labelText: appName,
+        });
+    }
 
     cy.verifyElement({
         shouldNot: !isEmpty,
