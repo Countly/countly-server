@@ -88,6 +88,10 @@ const verifyFullDataPageElements = () => {
 
     verifyStaticElementsOfPage();
 
+    verifyMetricCardElements({
+        isEmpty: false
+    });
+    
     verifyGraphElements({
         isEmpty: false
     });
