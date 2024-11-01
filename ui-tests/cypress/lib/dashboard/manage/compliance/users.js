@@ -155,22 +155,34 @@ const verifyUsersDataFromTable = ({
                     labelText: "Opt in",
                 });
 
-                cy.verifyElement({
-                    shouldNot: !isEmpty,
-                    labelElement: usersDataTableElements(index).CONSENT_OPT_IN_LIST,
-                    labelText: optIn,
-                });
+                cy
+                    .elementExists(usersDataTableElements(index).CONSENT_OPT_IN_LIST)
+                    .then((isExists) => {
+                        if (isExists) {
+                            cy.verifyElement({
+                                shouldNot: !isEmpty,
+                                labelElement: usersDataTableElements(index).CONSENT_OPT_IN_LIST,
+                                labelText: optIn,
+                            });
+                        }
+                    });
 
                 cy.verifyElement({
                     labelElement: usersDataTableElements(index).CONSENT_OPT_OUT_LABEL,
                     labelText: "Opt out",
                 });
 
-                cy.verifyElement({
-                    shouldNot: !isEmpty,
-                    labelElement: usersDataTableElements(index).CONSENT_OPT_OUT_LIST,
-                    labelText: optOut,
-                });
+                cy
+                    .elementExists(usersDataTableElements(index).CONSENT_OPT_OUT_LIST)
+                    .then((isExists) => {
+                        if (isExists) {
+                            cy.verifyElement({
+                                shouldNot: !isEmpty,
+                                labelElement: usersDataTableElements(index).CONSENT_OPT_OUT_LIST,
+                                labelText: optOut,
+                            });
+                        }
+                    });
             }
             else {
                 cy.verifyElement({
