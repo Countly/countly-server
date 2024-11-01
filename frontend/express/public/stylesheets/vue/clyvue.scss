@@ -4501,6 +4501,30 @@
     }
 }
 
+.cly-list-drawer {
+    &__text-clickable {
+        color:#0166D6
+    }
+
+    &__list {
+        height: auto;
+        min-height: 36px;
+        max-height: 150px;
+        background-color: #F6F6F6;
+        overflow: auto;
+        ul {
+            list-style: none; padding: 0;
+            li {
+                padding-left: 16px;
+                padding-bottom: 0.5rem;
+            }
+            li:last-child {
+                padding-bottom: 0;
+            }
+        }
+    }
+}
+
 .cly-vue-device-selector {
     background-color: #FFF;
     border-radius: 10px;

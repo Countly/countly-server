@@ -454,27 +454,6 @@
                 hasDrillPermission: countlyAuth.validateRead('drill'),
                 showDeleteDialog: false,
                 selectedGroups: [],
-                defaultScrollOps: {
-                    vuescroll: {
-                        sizeStrategy: 'number',
-                    },
-                    scrollPanel: {
-                        initialScrollX: false,
-                        maxHeight: '150px',
-                        minHeight: '36px',
-                        keepShow: true,
-                    },
-                    rail: {
-                        gutterOfSide: "4px",
-                        gutterOfEnds: "16px",
-                    },
-                    bar: {
-                        background: "#A7AEB8",
-                        size: "6px",
-                        keepShow: false,
-                    }
-                },
-                deleteDialogListVisibile: false,
             };
         },
         computed: {
@@ -586,14 +565,6 @@
                 text = this.selectedGroups.length > 1 ? text + "-plural" : text;
                 return CV.i18n(text, this.selectedGroups.length);
             },
-            listArrow: function() {
-                if (this.deleteDialogListVisibile) {
-                    return "cly-io-chevron-up";
-                }
-                else {
-                    return "cly-io-chevron-down";
-                }
-            }
         },
         methods: {
             refresh: function(force) {
@@ -722,11 +693,7 @@
             },
             closeDeleteForm: function() {
                 this.showDeleteDialog = false;
-                this.deleteDialogListVisibile = false;
             },
-            showList: function() {
-                this.deleteDialogListVisibile = !this.deleteDialogListVisibile;
-            }
         },
         beforeCreate: function() {
             var query = {};

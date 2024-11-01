@@ -1293,6 +1293,68 @@
                     </div>'
     });
 
+    Vue.component("cly-list-drawer", countlyBaseComponent.extend({
+        props: {
+            list: {
+                type: Array,
+                required: true,
+            },
+            dropdownText: {
+                type: String,
+                default: 'Listed item(s) will be affected by this action',
+                required: false,
+            },
+        },
+        data: function() {
+            return {
+                isOpen: false,
+                options: {
+                    vuescroll: {
+                        sizeStrategy: 'number',
+                    },
+                    scrollPanel: {
+                        initialScrollX: false,
+                        maxHeight: '150px',
+                        minHeight: '36px',
+                    },
+                    rail: {
+                        gutterOfSide: "4px",
+                        gutterOfEnds: "16px",
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                    }
+                },
+            };
+        },
+        computed: {
+            listArrow: function() {
+                if (this.isOpen) {
+                    return "cly-io-chevron-up";
+                }
+                else {
+                    return "cly-io-chevron-down";
+                }
+            }
+        },
+        methods: {
+            toggleList: function() {
+                this.isOpen = !this.isOpen;
+            },
+        },
+        template: '<div class="cly-list-drawer">\
+                        <div class="cly-list-drawer__text-clickable bu-pt-4 bu-pb-3 bu-has-text-weight-medium" @click="toggleList">{{dropdownText}}<i class="cly-io-16 cly-io" :class="listArrow"></i></div>\
+                            <div v-if="isOpen" class="cly-list-drawer__list">\
+                                <vue-scroll :ops="options">\
+                                    <ul>\
+                                        <li v-for="ev in list">{{ev}}</li>\
+                                    </ul>\
+                                </vue-scroll>\
+                            </div>\
+                    </div>'
+    }));
+
     Vue.component("cly-auto-refresh-toggle", countlyBaseComponent.extend({
         template: "<div class='cly-vue-auto-refresh-toggle'>\
                         <div v-if='autoRefresh' class='bu-level-item'>\
