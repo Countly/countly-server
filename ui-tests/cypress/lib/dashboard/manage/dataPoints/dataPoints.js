@@ -75,6 +75,8 @@ const verifyEmptyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
+    cy.scrollPageToCenter();
+
     verifyGraphElements({
         isEmpty: true
     });
