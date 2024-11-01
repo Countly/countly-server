@@ -91,7 +91,7 @@ const verifyFullDataPageElements = () => {
     verifyMetricCardElements({
         isEmpty: false
     });
-    
+
     verifyGraphElements({
         isEmpty: false
     });
