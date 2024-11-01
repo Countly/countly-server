@@ -10,7 +10,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: alertsPageElements.PAGE_TITLE,
         labelText: "Alerts",
         tooltipElement: alertsPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Overview of all alerts set up. Create new alerts to receive emails when<br/> specific conditions related to metrics are met."
+        tooltipText: "Overview of all alerts set up. Create new alerts to receive emails when specific conditions related to metrics are met."
     });
 
     cy.verifyElement({
