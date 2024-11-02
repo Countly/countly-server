@@ -108,7 +108,7 @@ const verifySystemLogsDataTable = ({
 
     cy.verifyElement({
         element: systemLogsDataTableElements(index).EXPAND_ROW,
-        elementText: "With following data",
+        elementText: "Following data was changed",
     });
 };
 
