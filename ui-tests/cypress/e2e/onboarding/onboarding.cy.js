@@ -256,7 +256,7 @@ describe('Complete Onboarding', () => {
         errorLogsPageHelpers.clickAuditLogsTab();
         systemLogsPageHelpers.verifyPageElements();
         navigationHelpers.goToJobsPage();
-        jobsPageHelpers.verifyEmptyPageElements();
+        jobsPageHelpers.verifyPageElements();
         navigationHelpers.goToFeatureManagementPage();
         pluginsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToEMailReportsPage();
@@ -418,14 +418,13 @@ describe('Complete Onboarding', () => {
         settingsPageHelpers.verifyPageElements();
         navigationHelpers.goToDataPointsPage();
         dataPointsPageHelpers.verifyFullDataPageElements();
-
         navigationHelpers.goToLogsPage();
         errorLogsPageHelpers.verifyPageElements();
         errorLogsPageHelpers.clickAuditLogsTab();
         systemLogsPageHelpers.verifyPageElements();
+        navigationHelpers.goToJobsPage();
+        jobsPageHelpers.verifyPageElements();
         //TODO: Add the cases of the following pages
-        //avigationHelpers.goToJobsPage();
-        //jobsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToFeatureManagementPage();
         //pluginsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToEMailReportsPage();

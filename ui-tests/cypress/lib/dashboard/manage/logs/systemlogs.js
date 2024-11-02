@@ -67,8 +67,9 @@ const verifyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
-    verifySystemLogsDataTable({});
-
+    verifySystemLogsDataTable({
+        shouldNotEqual: true,
+    });
 };
 
 const verifySystemLogsDataTable = ({
