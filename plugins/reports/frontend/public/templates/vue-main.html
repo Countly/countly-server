@@ -31,12 +31,13 @@
     <cly-datatable-n
         :force-loading="!initialized"
         class="cly-vue-reports-table"
+        test-id="datatable-reports"
         :tracked-fields="localTableTrackedFields"
         :rows="tableRows" :resizable="false" >
         <template v-slot="scope">
             <el-table-column type="switch" fixed="left" width="88" prop="enabled">
                 <template v-slot="rowScope">
-                    <el-switch :value="rowScope.row.enabled" class="bu-ml-4  bu-mr-2" :disabled="!rowScope.row._canUpdate"
+                    <el-switch :test-id="'datatable-reports-toggle-' + rowScope.$index" :value="rowScope.row.enabled" class="bu-ml-4  bu-mr-2" :disabled="!rowScope.row._canUpdate"
                         @input="scope.patch(rowScope.row, {enabled: !rowScope.row.enabled})">
                     </el-switch>
                 </template>
@@ -44,24 +45,28 @@
            
             <el-table-column fixed :label="i18n('report.report-title')"  min-width="200" sortable="true">
                 <template slot-scope="scope">
-                    <div v-html="scope.row.title"></div>
+                    <div v-html="scope.row.title" :data-test-id = "'datatable-reports-report-name' + scope.$index"></div>
                 </template>
             </el-table-column> 
 
             <el-table-column min-width="230" :label="(i18n('reports.emails'))" sortable="true">
             <template slot-scope="scope" sortable="true">
-                <div class="email-column" v-html="scope.row.emails.join(' ')"></div>
+                <div class="email-column" v-html="scope.row.emails.join(' ')" :data-test-id = "'datatable-reports-emails-' + scope.$index"></div>
             </template>
                 
             </el-table-column>
 
             <el-table-column  min-width="230" sortable="true"  prop="dataColumn" :label="i18n('reports.metrics')">
-                
+                <template v-slot="scope">
+                    <div :data-test-id="'datatable-reports-data-' + scope.$index">
+                        {{ scope.row.dataColumn }}
+                    </div>
+                </template>
             </el-table-column>
 
             <el-table-column  min-width="130" sortable="true" :label="i18n('reports.frequency')">
                 <template slot-scope="scope" sortable="true">
-                    <span class="text-medium color-cool-gray-50">{{i18n("reports." + scope.row.frequency)}}</span>
+                    <span class="text-medium color-cool-gray-50" :data-test-id="'datatable-reports-frequency-' + scope.$index">{{i18n("reports." + scope.row.frequency)}}</span>
                 </template>
             </el-table-column>
 <!-- 
@@ -73,7 +78,7 @@
                 <template slot-scope="scope">
                     <div class="bu-is-flex">
                         <div class="bu-is-flex-grow-1">
-                            <div class="is-created-by-col">
+                            <div class="is-created-by-col" :data-test-id="'datatable-reports-time-' + scope.$index">
                                 {{scope.row.timeColumn}}
                              </div>
                         </div> 
@@ -82,7 +87,7 @@
             </el-table-column>
             <el-table-column type="options">
                 <template v-slot="rowScope">
-                    <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleReportEditCommand($event,rowScope)">
+                    <cly-more-options :test-id="'datatable-reports-' + rowScope.$index" v-if="rowScope.row.hover" size="small" @command="handleReportEditCommand($event,rowScope)">
                         <el-dropdown-item v-if="rowScope.row._canUpdate" icon="el-icon-document-copy" command="edit-comment">
                             Edit
                         </el-dropdown-item>
