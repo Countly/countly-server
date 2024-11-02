@@ -252,9 +252,9 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToDataPointsPage();
         dataPointsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToLogsPage();
-        errorLogsPageHelpers.verifyEmptyPageElements();
+        errorLogsPageHelpers.verifyPageElements();
         errorLogsPageHelpers.clickAuditLogsTab();
-        systemLogsPageHelpers.verifyEmptyPageElements();
+        systemLogsPageHelpers.verifyPageElements();
         navigationHelpers.goToJobsPage();
         jobsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToFeatureManagementPage();
@@ -418,11 +418,12 @@ describe('Complete Onboarding', () => {
         settingsPageHelpers.verifyPageElements();
         navigationHelpers.goToDataPointsPage();
         dataPointsPageHelpers.verifyFullDataPageElements();
+
+        navigationHelpers.goToLogsPage();
+        errorLogsPageHelpers.verifyPageElements();
+        errorLogsPageHelpers.clickAuditLogsTab();
+        systemLogsPageHelpers.verifyPageElements();
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToLogsPage();
-        //errorLogsPageHelpers.verifyFullDataPageElements();
-        //errorLogsPageHelpers.clickAuditLogsTab();
-        //systemLogsPageHelpers.verifyFullDataPageElements();
         //avigationHelpers.goToJobsPage();
         //jobsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToFeatureManagementPage();
