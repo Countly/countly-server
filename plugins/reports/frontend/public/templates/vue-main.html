@@ -45,7 +45,7 @@
            
             <el-table-column fixed :label="i18n('report.report-title')"  min-width="200" sortable="true">
                 <template slot-scope="scope">
-                    <div v-html="scope.row.title" :data-test-id = "'datatable-reports-report-name' + scope.$index"></div>
+                    <div v-html="scope.row.title" :data-test-id = "'datatable-reports-report-name-' + scope.$index"></div>
                 </template>
             </el-table-column> 
 

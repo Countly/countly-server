@@ -426,9 +426,9 @@ describe('Complete Onboarding', () => {
         jobsPageHelpers.verifyPageElements();
         navigationHelpers.goToFeatureManagementPage();
         pluginsPageHelpers.verifyPageElements();
+        navigationHelpers.goToEMailReportsPage();
+        //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToEMailReportsPage();
-        //reportsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToAlertsPage();
         //alertsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToHooksPage();
