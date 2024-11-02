@@ -429,8 +429,6 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToEMailReportsPage();
         //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToAlertsPage();
-        //alertsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToHooksPage();
         //hooksPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToDbViewerPage();
