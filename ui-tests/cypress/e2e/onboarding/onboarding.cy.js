@@ -258,7 +258,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToJobsPage();
         jobsPageHelpers.verifyPageElements();
         navigationHelpers.goToFeatureManagementPage();
-        pluginsPageHelpers.verifyEmptyPageElements();
+        pluginsPageHelpers.verifyPageElements();
         navigationHelpers.goToEMailReportsPage();
         reportsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAlertsPage();
@@ -424,9 +424,9 @@ describe('Complete Onboarding', () => {
         systemLogsPageHelpers.verifyPageElements();
         navigationHelpers.goToJobsPage();
         jobsPageHelpers.verifyPageElements();
+        navigationHelpers.goToFeatureManagementPage();
+        pluginsPageHelpers.verifyPageElements();
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToFeatureManagementPage();
-        //pluginsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToEMailReportsPage();
         //reportsPageHelpers.verifyFullDataPageElements();
         //navigationHelpers.goToAlertsPage();
