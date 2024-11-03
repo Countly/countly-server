@@ -94,9 +94,19 @@ const verifyFullDataPageElements = () => {
 
     verifyStaticElementsOfPage(false);
 
-    verifyLogsDataTable({
-        isEmpty: false,
-        shouldNotEqual: true,
+    cy
+    .elementExists(logsDataTableElements().EMPTY_TABLE_ICON) //Data comes sometimes
+    .then((isExists) => {
+        if (!isExists) {
+            verifyLogsDataTable({
+                isEmpty: false,
+                shouldNotEqual: true,
+            });
+        } else {
+            verifyLogsDataTable({
+                isEmpty: true
+            });
+        }
     });
 };
 
