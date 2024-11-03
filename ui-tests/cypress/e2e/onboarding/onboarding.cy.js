@@ -266,11 +266,11 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToHooksPage();
         hooksPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToDbViewerPage();
-        dbCountlyPageHelpers.verifyPageElements();
+        dbCountlyPageHelpers.verifyEmptyPageElements();
         dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
-        dbCountlyOutPageHelpers.verifyPageElements();
+        dbCountlyOutPageHelpers.verifyEmptyPageElements();
         dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
-        dbCountlyFsPageHelpers.verifyPageElements();
+        dbCountlyFsPageHelpers.verifyEmptyPageElements();
     });
 
     it('should be complete onboarding flow with creating own desktop type application with default app key and enable tracking and subscribe to newsletter', function() {
@@ -366,6 +366,7 @@ describe('Complete Onboarding', () => {
         analyticsGeoLanguagesPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToAnalyticsEventsOverview();
         //analyticsEventsOverviewPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
+        analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToPushNotifications();
@@ -378,12 +379,15 @@ describe('Complete Onboarding', () => {
         crashesPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToRemoteConfigPage();
         //remoteConfigPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        remoteConfigPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToReportManagerPage();
         //reportManagerPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
+        reportManagerPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToDataManagerPage();
         dataManagerEventsPageHelpers.verifyFullDataPageElements();
         dataManagerEventsPageHelpers.clickEventGroupsTab();
         //dataManagerEventGroupsPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
+        dataManagerEventGroupsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToDataPopulatorPage();
         dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithTemplatePage();
         dataPopulatorPageHelpers.clickPopulateWithEnvironmentTab();
@@ -392,12 +396,14 @@ describe('Complete Onboarding', () => {
         dataPopulatorPageHelpers.verifyPageElementsOfTemplatesPage();
         navigationHelpers.goToIncomingDataLogsPage();
         //incomingDataLogsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
+        incomingDataLogsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToSdkManagerPage();
         sdkManagersPageHelpers.verifyFullDataPageElements();
         sdkManagersPageHelpers.clickRequestStatsTab();
         requestStatsPageHelpers.verifyFullDataPageElements();
         requestStatsPageHelpers.clickHealthCheckTab();
         //healthCheckPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
+        healthCheckPageHelpers.verifyEmptyPageElements();
         healthCheckPageHelpers.clickSdkConfigurationTab();
         sdkConfigurationsPageHelpers.verifyPageElements({});
         navigationHelpers.goToComplianceHubMetricsPage();
@@ -408,12 +414,14 @@ describe('Complete Onboarding', () => {
         complianceHubHistoryPageHelpers.verifyFullDataPageElements();
         complianceHubHistoryPageHelpers.clickExportPurgeHistoryTab();
         //complianceHubExportPurgePageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
+        complianceHubExportPurgePageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToUserManagementPage();
         userManagementPageHelpers.verifyPageElements();
         navigationHelpers.goToApplicationsPage();
         applicationsPageHelpers.verifyPageElements();
         navigationHelpers.goToPresetManagementPage();
         //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
+        presetManagementPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToSettingsPage();
         settingsPageHelpers.verifyPageElements();
         navigationHelpers.goToDataPointsPage();
@@ -424,17 +432,21 @@ describe('Complete Onboarding', () => {
         systemLogsPageHelpers.verifyPageElements();
         navigationHelpers.goToJobsPage();
         //jobsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        jobsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToFeatureManagementPage();
         pluginsPageHelpers.verifyPageElements();
         navigationHelpers.goToEMailReportsPage();
         //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
+        reportsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToHooksPage();
         //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
+        hooksPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToDbViewerPage();
-        dbCountlyPageHelpers.verifyPageElements();
+        dbCountlyPageHelpers.verifyFullDataPageElements();
         dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
-        dbCountlyOutPageHelpers.verifyPageElements();
+        //dbCountlyOutPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        dbCountlyOutPageHelpers.verifyEmptyPageElements();
         dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
-        dbCountlyFsPageHelpers.verifyPageElements();
+        dbCountlyFsPageHelpers.verifyFullDataPageElements();
     });
 });
