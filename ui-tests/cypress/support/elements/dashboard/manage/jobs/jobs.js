@@ -8,6 +8,10 @@ const jobsDataTableElements = (index = 0) => ({
     EXPORT_AS_BUTTON: 'datatable-jobs-export-as-button',
     TABLE_SEARCH_INPUT: 'datatable-jobs-datatable-search-input',
 
+    EMPTY_TABLE_ICON: 'datatable-jobs-empty-logo',
+    EMPTY_TABLE_TITLE: 'datatable-jobs-empty-title',
+    EMPTY_TABLE_SUBTITLE: 'datatable-jobs-empty-subtitle',
+
     COLUMN_NAME_NAME_LABEL: 'datatable-jobs-label-name',
     COLUMN_NAME_NAME_SORTABLE_ICON: 'datatable-jobs-sortable-icon-name',
     COLUMN_NAME_STATUS_LABEL: 'datatable-jobs-label-status',

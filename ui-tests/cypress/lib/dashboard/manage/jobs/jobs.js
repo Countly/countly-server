@@ -54,17 +54,27 @@ const verifyStaticElementsOfPage = () => {
     });
 };
 
-const verifyPageElements = () => {
+const verifyEmptyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
     verifyJobsDataTable({
-        shouldNotEqual: true,
+        isEmpty: true,
+    });
+};
+
+const verifyFullDataPageElements = () => {
+
+    verifyStaticElementsOfPage();
+
+    verifyJobsDataTable({
+        isEmpty: false,
     });
 };
 
 const verifyJobsDataTable = ({
     index = 0,
+    isEmpty = false,
     shouldNotEqual = false,
     name = null,
     status = null,
@@ -75,6 +85,24 @@ const verifyJobsDataTable = ({
     lastRun = null,
     total = null
 }) => {
+
+    if (isEmpty) {
+        cy.verifyElement({
+            element: jobsDataTableElements().EMPTY_TABLE_ICON,
+        });
+
+        cy.verifyElement({
+            labelElement: jobsDataTableElements().EMPTY_TABLE_TITLE,
+            labelText: "...hmm, seems empty here",
+        });
+
+        cy.verifyElement({
+            labelElement: jobsDataTableElements().EMPTY_TABLE_SUBTITLE,
+            labelText: "Create reports to receive e-mails periodically.",
+        });
+
+        return;
+    }
 
     cy.verifyElement({
         shouldNot: shouldNotEqual,
@@ -128,6 +156,7 @@ const verifyJobsDataTable = ({
 };
 
 module.exports = {
-    verifyPageElements,
+    verifyEmptyPageElements,
+    verifyFullDataPageElements,
     verifyJobsDataTable
 };

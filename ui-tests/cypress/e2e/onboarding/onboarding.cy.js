@@ -256,7 +256,7 @@ describe('Complete Onboarding', () => {
         errorLogsPageHelpers.clickAuditLogsTab();
         systemLogsPageHelpers.verifyPageElements();
         navigationHelpers.goToJobsPage();
-        jobsPageHelpers.verifyPageElements();
+        jobsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToFeatureManagementPage();
         pluginsPageHelpers.verifyPageElements();
         navigationHelpers.goToEMailReportsPage();
@@ -423,14 +423,13 @@ describe('Complete Onboarding', () => {
         errorLogsPageHelpers.clickAuditLogsTab();
         systemLogsPageHelpers.verifyPageElements();
         navigationHelpers.goToJobsPage();
-        jobsPageHelpers.verifyPageElements();
+        //jobsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
         navigationHelpers.goToFeatureManagementPage();
         pluginsPageHelpers.verifyPageElements();
         navigationHelpers.goToEMailReportsPage();
         //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
         navigationHelpers.goToHooksPage();
         //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
-        //TODO: Add the cases of the following pages
         navigationHelpers.goToDbViewerPage();
         dbCountlyPageHelpers.verifyPageElements();
         dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
