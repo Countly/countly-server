@@ -71,33 +71,33 @@ const verifyReportsDataTable = ({
 
     cy.verifyElement({
         isElementVisible: false,
-        labelElement: reportsDataTableElements(index).COLUMN_NAME_REPORT_NAME_LABEL,
+        labelElement: reportsDataTableElements().COLUMN_NAME_REPORT_NAME_LABEL,
         labelText: "Report Name",
-        element: reportsDataTableElements(index).COLUMN_NAME_REPORT_NAME_SORTABLE_ICON,
+        element: reportsDataTableElements().COLUMN_NAME_REPORT_NAME_SORTABLE_ICON,
     });
 
     cy.verifyElement({
-        labelElement: reportsDataTableElements(index).COLUMN_NAME_EMAILS_LABEL,
+        labelElement: reportsDataTableElements().COLUMN_NAME_EMAILS_LABEL,
         labelText: "Emails",
-        element: reportsDataTableElements(index).COLUMN_NAME_EMAILS_SORTABLE_ICON,
+        element: reportsDataTableElements().COLUMN_NAME_EMAILS_SORTABLE_ICON,
     });
 
     cy.verifyElement({
-        labelElement: reportsDataTableElements(index).COLUMN_NAME_DATA_LABEL,
+        labelElement: reportsDataTableElements().COLUMN_NAME_DATA_LABEL,
         labelText: "Data",
-        element: reportsDataTableElements(index).COLUMN_NAME_DATA_SORTABLE_ICON,
+        element: reportsDataTableElements().COLUMN_NAME_DATA_SORTABLE_ICON,
     });
 
     cy.verifyElement({
-        labelElement: reportsDataTableElements(index).COLUMN_NAME_FREQUENCY_LABEL,
+        labelElement: reportsDataTableElements().COLUMN_NAME_FREQUENCY_LABEL,
         labelText: "Frequency",
-        element: reportsDataTableElements(index).COLUMN_NAME_FREQUENCY_SORTABLE_ICON,
+        element: reportsDataTableElements().COLUMN_NAME_FREQUENCY_SORTABLE_ICON,
     });
 
     cy.verifyElement({
-        labelElement: reportsDataTableElements(index).COLUMN_NAME_TIME_LABEL,
+        labelElement: reportsDataTableElements().COLUMN_NAME_TIME_LABEL,
         labelText: "Time",
-        element: reportsDataTableElements(index).COLUMN_NAME_TIME_SORTABLE_ICON,
+        element: reportsDataTableElements().COLUMN_NAME_TIME_SORTABLE_ICON,
     });
 
     cy.verifyElement({

@@ -428,10 +428,10 @@ describe('Complete Onboarding', () => {
         pluginsPageHelpers.verifyPageElements();
         navigationHelpers.goToEMailReportsPage();
         //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
+        navigationHelpers.goToHooksPage();
+        //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
         //TODO: Add the cases of the following pages
-        //navigationHelpers.goToHooksPage();
-        //hooksPageHelpers.verifyFullDataPageElements();
-        //navigationHelpers.goToDbViewerPage();
+        navigationHelpers.goToDbViewerPage();
         //dbCountlyPageHelpers.verifyFullDataPageElements();
         //dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
         //dbCountlyOutPageHelpers.verifyFullDataPageElements();
