@@ -95,19 +95,20 @@ const verifyFullDataPageElements = () => {
     verifyStaticElementsOfPage(false);
 
     cy
-    .elementExists(logsDataTableElements().EMPTY_TABLE_ICON) //Data comes sometimes
-    .then((isExists) => {
-        if (!isExists) {
-            verifyLogsDataTable({
-                isEmpty: false,
-                shouldNotEqual: true,
-            });
-        } else {
-            verifyLogsDataTable({
-                isEmpty: true
-            });
-        }
-    });
+        .elementExists(logsDataTableElements().EMPTY_TABLE_ICON) //Data comes sometimes
+        .then((isExists) => {
+            if (isExists) {
+                verifyLogsDataTable({
+                    isEmpty: true
+                });
+            }
+            else {
+                verifyLogsDataTable({
+                    isEmpty: false,
+                    shouldNotEqual: true,
+                });
+            }
+        });
 };
 
 const verifyLogsDataTable = ({
