@@ -52,7 +52,7 @@ const verifyStaticElementsOfPage = () => {
     });
 };
 
-const verifyEmptyPageElements = () => {
+const verifyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
@@ -92,7 +92,7 @@ const clickCountlyFileSystemDatabaseTab = () => {
 };
 
 module.exports = {
-    verifyEmptyPageElements,
+    verifyPageElements,
     clickCountlyDatabaseTab,
     clickCountlyOutDatabaseTab,
     clickCountlyFileSystemDatabaseTab

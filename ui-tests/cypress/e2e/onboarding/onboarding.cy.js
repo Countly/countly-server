@@ -266,11 +266,11 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToHooksPage();
         hooksPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToDbViewerPage();
-        dbCountlyPageHelpers.verifyEmptyPageElements();
+        dbCountlyPageHelpers.verifyPageElements();
         dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
-        dbCountlyOutPageHelpers.verifyEmptyPageElements();
+        dbCountlyOutPageHelpers.verifyPageElements();
         dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
-        dbCountlyFsPageHelpers.verifyEmptyPageElements();
+        dbCountlyFsPageHelpers.verifyPageElements();
     });
 
     it('should be complete onboarding flow with creating own desktop type application with default app key and enable tracking and subscribe to newsletter', function() {
@@ -432,10 +432,10 @@ describe('Complete Onboarding', () => {
         //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
         //TODO: Add the cases of the following pages
         navigationHelpers.goToDbViewerPage();
-        //dbCountlyPageHelpers.verifyFullDataPageElements();
-        //dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
-        //dbCountlyOutPageHelpers.verifyFullDataPageElements();
-        //dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
-        //dbCountlyFsPageHelpers.verifyFullDataPageElements();
+        dbCountlyPageHelpers.verifyPageElements();
+        dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
+        dbCountlyOutPageHelpers.verifyPageElements();
+        dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
+        dbCountlyFsPageHelpers.verifyPageElements();
     });
 });
