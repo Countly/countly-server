@@ -98,7 +98,7 @@ const verifyJobsDataTable = ({
 
         cy.verifyElement({
             labelElement: jobsDataTableElements().EMPTY_TABLE_SUBTITLE,
-            labelText: "Create reports to receive e-mails periodically.",
+            labelText: "No data found",
         });
 
         return;

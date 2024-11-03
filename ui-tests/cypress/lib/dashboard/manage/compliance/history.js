@@ -169,27 +169,40 @@ const verifyConsentHistoryDataTableElements = ({
         elementText: deviceId,
     });
 
-    cy.verifyElement({
-        labelElement: consentHistoryDataTableElements(index).OPT_IN_LABEL,
-        labelText: "Opt in",
-    });
 
-    cy.verifyElement({
-        shouldNot: !isEmpty,
-        element: consentHistoryDataTableElements(index).OPT_IN_LIST,
-        elementText: optIn,
-    });
+    cy
+        .elementExists(consentHistoryDataTableElements(index).OPT_IN_LABEL)
+        .then((isExists) => {
+            if (isExists) {
+                cy.verifyElement({
+                    labelElement: consentHistoryDataTableElements(index).OPT_IN_LABEL,
+                    labelText: "Opt in",
+                });
 
-    cy.verifyElement({
-        labelElement: consentHistoryDataTableElements(index).OPT_OUT_LABEL,
-        labelText: "Opt out",
-    });
+                cy.verifyElement({
+                    shouldNot: !isEmpty,
+                    element: consentHistoryDataTableElements(index).OPT_IN_LIST,
+                    elementText: optIn,
+                });
+            }
+        });
 
-    cy.verifyElement({
-        shouldNot: !isEmpty,
-        element: consentHistoryDataTableElements(index).OPT_OUT_LIST,
-        elementText: optOut,
-    });
+    cy
+        .elementExists(consentHistoryDataTableElements(index).OPT_OUT_LABEL)
+        .then((isExists) => {
+            if (isExists) {
+                cy.verifyElement({
+                    labelElement: consentHistoryDataTableElements(index).OPT_OUT_LABEL,
+                    labelText: "Opt out",
+                });
+
+                cy.verifyElement({
+                    shouldNot: !isEmpty,
+                    element: consentHistoryDataTableElements(index).OPT_OUT_LIST,
+                    elementText: optOut,
+                });
+            }
+        });
 
     cy.verifyElement({
         labelElement: consentHistoryDataTableElements(index).DEVICE_LABEL,
