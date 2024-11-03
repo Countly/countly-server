@@ -2,7 +2,7 @@ export const reportsPageElements = {
     PAGE_TITLE: 'header-title',
     PAGE_TITLE_TOOLTIP: 'header-title-tooltip',
     CREATE_NEW_REPORT_BUTTON: 'create-new-report-button',
-}
+};
 
 const reportsDataTableElements = (index = 0) => ({
     TABLE_ROWS: '.el-table__row',

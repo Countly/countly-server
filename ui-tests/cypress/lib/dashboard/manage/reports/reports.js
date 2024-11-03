@@ -15,7 +15,7 @@ const verifyStaticElementsOfPage = () => {
         element: reportsPageElements.CREATE_NEW_REPORT_BUTTON,
         elementText: 'Create new report'
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 

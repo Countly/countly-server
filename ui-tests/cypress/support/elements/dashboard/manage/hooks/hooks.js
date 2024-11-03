@@ -7,7 +7,7 @@ export const hooksPageElements = {
     ENABLED_HOOKS_RADIO_BUTTON: 'enabled-hooks-radio-button',
     DISABLED_HOOKS_RADIO_BUTTON: 'disabled-hooks-radio-button',
     APPLICATION_SELECT_BOX: 'cly-select-x-test-id'
-}
+};
 
 const hooksDataTableElements = (index = 0) => ({
     TABLE_ROWS: '.el-table__row',

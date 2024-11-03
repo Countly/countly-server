@@ -76,7 +76,7 @@ const verifyStaticElementsOfPage = () => {
         labelText: "Create by",
         element: hooksDataTableElements().COLUMN_NAME_CREATE_BY_SORTABLE_ICON,
     });
-}
+};
 
 const verifyEmptyPageElements = () => {
 
@@ -166,7 +166,7 @@ const verifyHooksDataTable = ({
         element: hooksDataTableElements(index).CREATE_DATE,
         elementText: createdDate,
     });
-}
+};
 
 module.exports = {
     verifyEmptyPageElements,
