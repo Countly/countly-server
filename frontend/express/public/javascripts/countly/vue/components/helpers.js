@@ -410,7 +410,7 @@
         computed: {
             tooltipConf: function() {
                 return {
-                    content: this.tooltip,
+                    content: countlyCommon.unescapeHtml(this.tooltip),
                     placement: this.placement
                 };
             }
