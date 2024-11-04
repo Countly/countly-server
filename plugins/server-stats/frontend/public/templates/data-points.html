@@ -36,7 +36,7 @@
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="sessions" :label="i18n('sidebar.analytics.sessions')">
 					<template v-slot:header>
 						{{i18n('sidebar.analytics.sessions')}}
-						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.sessions-description')" data-test-id="datatable-apps-datapoint-tooltip-sessions"></span>
+						<cly-tooltip-icon class="bu-pl-1" :tooltip="i18n('server-stats.sessions-description')" placement="top-center" data-test-id="datatable-apps-datapoint-tooltip-sessions"></cly-tooltip-icon>
 					</template>
 					<template #default="scope">
 						<span
@@ -49,7 +49,7 @@
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="events" :label="i18n('server-stats.events')">
 					<template v-slot:header>
 						{{i18n('server-stats.events')}}
-						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.events-description')" data-test-id="datatable-apps-datapoint-tooltip-non-session-datapoints"></span>
+						<cly-tooltip-icon class="bu-pl-1" :tooltip="i18n('server-stats.events-description')" placement="top-center" data-test-id="datatable-apps-datapoint-tooltip-non-session-datapoints"></cly-tooltip-icon>
 					</template>
 
 					<template #default="scopeRow">
