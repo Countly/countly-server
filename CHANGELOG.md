@@ -1,3 +1,6 @@
+## Version 24.10.1
+Integrating 24.05.16 fixes
+
 ## Version 24.10
 Fixes:
 - [core] Interpreting carrier value of "--" as an unknown value
@@ -31,6 +34,22 @@ Enterprise Features:
 - [users] Crashes in the crashes tab can now be sorted
 - [users] UI improvements
 - [views] Added a quick transition to drill
+
+## Version 24.05.16
+Fixes:
+- [core] Replaced "Users" with "Sessions" label on technology home widgets
+- [push] Replaced push plugin with an earlier version of the plugin
+
+Enterprise fixes:
+- [license] Fixed bug with MAU type of licenses that would prevent the server from starting
+- [nps] Fixed bug where it was possible to submit empty nps surveys
+- [ratings] Fixed bug with user consent
+
+Security:
+- Bumped cookie-parser from 1.4.6 to 1.4.7
+- Bumped express-rate-limit from 7.4.0 to 7.4.1
+- Bumped moment-timezone from 0.5.45 to 0.5.46
+- Bumped sass from 1.79.3 to 1.79.4
 
 ## Version 24.05.15
 Enterprise fixes:

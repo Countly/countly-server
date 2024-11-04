@@ -3,7 +3,7 @@
             <div class="bu-is-relative">
             <div class="bu-level-left bu-p-5" v-if="typeof name !== 'undefined'">
                 <span class="text-medium">{{name}}</span>
-                <span v-if="description" class="cly-vue-tooltip-icon ion ion-help-circled has-tooltip bu-ml-3" v-tooltip.top-center="description"></span>
+                <cly-tooltip-icon v-if="description" class="bu-ml-3" :tooltip="description" placement="top-center"></cly-tooltip-icon>
             </div>
             <div class="bu-level-left bu-p-2" v-if="typeof name === 'undefined'"></div>
             <div v-if="values.length === 0" class="bu-pl-3 bu-pr-3 cly-vue-metric-breakdown__empty" style="height: 264px;">
