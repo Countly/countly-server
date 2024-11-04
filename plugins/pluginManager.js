@@ -76,10 +76,9 @@ var pluginManager = function pluginManager() {
     };
     /**
      * TTL collections to clean up periodically
-     * @type {{collection: string, property: string, expireAfterSeconds: number}[]}
+     * @type {{collection: string, db: mongodb.Db, property: string, expireAfterSeconds: number}[]}
      */
     this.ttlCollections = [];
-
     /**
      *  Custom configuration files for different databases for docker env
      */
