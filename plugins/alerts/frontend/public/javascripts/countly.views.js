@@ -992,10 +992,10 @@
 
 
                     if (newState.alertBy === "email") {
-                        if (newState?.allGroups?.length) {
+                        if (newState.allGroups?.length) {
                             this.selectedRadioButton = "toGroup";
                         }
-                        if (newState?.alertValues?.length) {
+                        if (newState.alertValues?.length) {
                             this.selectedRadioButton = "specificAddress";
                         }
                     }
