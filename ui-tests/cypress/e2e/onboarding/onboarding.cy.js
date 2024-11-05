@@ -395,8 +395,7 @@ describe('Complete Onboarding', () => {
         dataPopulatorPageHelpers.clickTemplatesTab();
         dataPopulatorPageHelpers.verifyPageElementsOfTemplatesPage();
         navigationHelpers.goToIncomingDataLogsPage();
-        //incomingDataLogsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
-        incomingDataLogsPageHelpers.verifyEmptyPageElements();
+        incomingDataLogsPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToSdkManagerPage();
         sdkManagersPageHelpers.verifyFullDataPageElements();
         sdkManagersPageHelpers.clickRequestStatsTab();
