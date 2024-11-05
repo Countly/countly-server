@@ -1314,29 +1314,21 @@
                     },
                     scrollPanel: {
                         initialScrollX: false,
-                        maxHeight: '150px',
-                        minHeight: '36px',
+                        // heigh: '50px',
+                        // maxHeight: '150px',
                     },
                     rail: {
                         gutterOfSide: "4px",
                         gutterOfEnds: "16px",
+                        keepShow: false,
                     },
                     bar: {
                         background: "#A7AEB8",
                         size: "6px",
+                        keepShow: false,
                     }
                 },
             };
-        },
-        computed: {
-            listArrow: function() {
-                if (this.isOpen) {
-                    return "cly-io-chevron-up";
-                }
-                else {
-                    return "cly-io-chevron-down";
-                }
-            }
         },
         methods: {
             toggleList: function() {
@@ -1344,14 +1336,19 @@
             },
         },
         template: '<div class="cly-list-drawer">\
-                        <div class="cly-list-drawer__text-clickable bu-pt-4 bu-pb-3 bu-has-text-weight-medium" @click="toggleList">{{dropdownText}}<i class="cly-io-16 cly-io" :class="listArrow"></i></div>\
-                            <div v-if="isOpen" class="cly-list-drawer__list">\
-                                <vue-scroll :ops="options">\
+                        <div class="cly-list-drawer__text-clickable bu-pt-4 bu-pb-3 bu-has-text-weight-medium" @click="toggleList">\
+                            {{ dropdownText }}\
+                            <i class="cly-io-16 cly-io cly-io-chevron-down" :class="{ \'rotate-icon\': isOpen }"></i>\
+                        </div>\
+                        <div v-if="isOpen" class="cly-list-drawer__list">\
+                            <vue-scroll :ops="options">\
+                                <div>\
                                     <ul>\
                                         <li v-for="ev in list">{{ev}}</li>\
                                     </ul>\
-                                </vue-scroll>\
-                            </div>\
+                                </div>\
+                            </vue-scroll>\
+                        </div>\
                     </div>'
     }));
 
