@@ -178,6 +178,13 @@
 	}
 	loadMeterialIcons(true);
     </script>
+    <script>
+        if (typeof window._ !== 'undefined') {
+            if (typeof _ !== 'undefined' && typeof _.noConflict === 'function') {
+                _.noConflict(); // Restore _ back from Lodash to Underscore
+            }
+        }
+    </script>
     <% if (typeof inject_template.css != 'undefined') { %>
 	<style><%- inject_template.css %></style>
 	<% } %>
