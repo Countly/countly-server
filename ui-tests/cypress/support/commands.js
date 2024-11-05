@@ -136,7 +136,7 @@ Cypress.Commands.add("shouldBeEqual", (element, text) => {
 
 Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
     cy.getElement(element).invoke('text').then((actualText) => {
-        expect(actualText.trim()).not.to.equal(text.trim());
+        expect(actualText).not.to.equal(text);
     });
 });
 
@@ -198,6 +198,16 @@ Cypress.Commands.add('checkPaceActive', () => {
         .then((isExists) => {
             if (isExists) {
                 cy.shouldNotExist('.pace-active');
+            }
+        });
+});
+
+Cypress.Commands.add('checkLoadingSpinner', () => {
+    cy
+        .elementExists('.el-loading-spinner')
+        .then((isExists) => {
+            if (isExists) {
+                cy.shouldNotExist('.el-loading-spinner');
             }
         });
 });
@@ -312,18 +322,11 @@ Cypress.Commands.add('verifyElement', ({
 
         if (element != null && isElementVisible === true) {
             cy.shouldBeVisible(element);
-        }
-
-        if (elementText != null) {
             cy.shouldNotBeEqual(element, elementText);
-
         }
 
         if (labelElement != null && isElementVisible === true) {
             cy.shouldBeVisible(labelElement);
-        }
-
-        if (labelText != null) {
             cy.shouldNotBeEqual(labelElement, labelText);
         }
     }

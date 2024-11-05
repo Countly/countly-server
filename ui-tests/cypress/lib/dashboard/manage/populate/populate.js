@@ -1,229 +1,343 @@
-import managePopulatePageElements from "../../../../support/elements/dashboard/manage/populate/populate";
+import {
+    dataPopulatorPageElements,
+    populateWithTemplatePageElements,
+    populateWithEnvironmentPageElements,
+    popUpElements,
+    templatesPageElements,
+    templatesDataTableElements
+} from "../../../../support/elements/dashboard/manage/populate/populate";
 
 const verifyStaticElementsOfDataPopulatorPage = () => {
     cy.verifyElement({
-        labelElement: managePopulatePageElements.DATA_POPULATOR_PAGE_TITLE,
+        labelElement: populateWithTemplatePageElements.DATA_POPULATOR_PAGE_TITLE,
         labelText: "Data Populator",
-        tooltipElement: managePopulatePageElements.DATA_POPULATOR_PAGE_TITLE_TOOLTIP,
+        tooltipElement: populateWithTemplatePageElements.DATA_POPULATOR_PAGE_TITLE_TOOLTIP,
         tooltipText: "Populate a Countly app with random data (typically for testing or demonstration)"
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.TAB_DATA_POPULATOR,
+        element: dataPopulatorPageElements.TAB_DATA_POPULATOR,
         elementText: "Data Populator",
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.TAB_TEMPLATES,
+        element: dataPopulatorPageElements.TAB_TEMPLATES,
         elementText: "Templates",
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.TAB_POPULATE_WITH_TEMPLATE,
+        element: dataPopulatorPageElements.TAB_POPULATE_WITH_TEMPLATE,
         elementText: "Populate with Template",
 
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.TAB_POPULATE_WITH_ENVIRONMENT,
+        element: dataPopulatorPageElements.TAB_POPULATE_WITH_ENVIRONMENT,
         elementText: "Populate with Environment",
     });
 };
 
-const verifyEmptyPageElementsOfDataPopulatorWithTemplatePage = () => {
+const verifyPageElementsOfDataPopulatorWithTemplatePage = () => {
 
     verifyStaticElementsOfDataPopulatorPage();
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.TEMPLATE_DATA_TEMPLATE_LABEL,
+        labelElement: populateWithTemplatePageElements.TEMPLATE_DATA_TEMPLATE_LABEL,
         labelText: "Data template",
-        tooltipElement: managePopulatePageElements.TEMPLATE_DATA_TEMPLATE_TOOLTIP,
+        tooltipElement: populateWithTemplatePageElements.TEMPLATE_DATA_TEMPLATE_TOOLTIP,
         tooltipText: "Choose a template for data population. If you can't find a suitable template, you can create a new one from the “Templates” tab above."
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.TEMPLATE_DATA_TEMPLATE_SELECT,
+        element: populateWithTemplatePageElements.TEMPLATE_DATA_TEMPLATE_SELECT,
         elementPlaceHolder: "Select a template",
     });
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.TEMPLATE_DATE_RANGE_LABEL,
+        labelElement: populateWithTemplatePageElements.TEMPLATE_DATE_RANGE_LABEL,
         labelText: "Date range",
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.TEMPLATE_DATE_RANGE_SELECT,
+        element: populateWithTemplatePageElements.TEMPLATE_DATE_RANGE_SELECT,
     });
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.TEMPLATE_NUMBER_OF_RUNS_LABEL,
+        labelElement: populateWithTemplatePageElements.TEMPLATE_NUMBER_OF_RUNS_LABEL,
         labelText: "Number of runs",
-        tooltipElement: managePopulatePageElements.TEMPLATE_NUMBER_OF_RUNS_TOOLTIP,
+        tooltipElement: populateWithTemplatePageElements.TEMPLATE_NUMBER_OF_RUNS_TOOLTIP,
         tooltipText: "Each run will go through each unique user in the environment/template and will trigger one sequence per user"
     });
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.TEMPLATE_NUMBER_OF_RUNS_10_LABEL,
+        labelElement: populateWithTemplatePageElements.TEMPLATE_NUMBER_OF_RUNS_10_LABEL,
         labelText: "10"
     });
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.TEMPLATE_NUMBER_OF_RUNS_50_LABEL,
+        labelElement: populateWithTemplatePageElements.TEMPLATE_NUMBER_OF_RUNS_50_LABEL,
         labelText: "50"
     });
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.TEMPLATE_NUMBER_OF_RUNS_100_LABEL,
+        labelElement: populateWithTemplatePageElements.TEMPLATE_NUMBER_OF_RUNS_100_LABEL,
         labelText: "100"
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.TEMPLATE_SAVE_ENVIRONMENT_SWITCHBOX,
-        labelElement: managePopulatePageElements.TEMPLATE_SAVE_ENVIRONMENT_LABEL,
+        element: populateWithTemplatePageElements.TEMPLATE_SAVE_ENVIRONMENT_SWITCHBOX,
+        labelElement: populateWithTemplatePageElements.TEMPLATE_SAVE_ENVIRONMENT_LABEL,
         labelText: "Save environment",
-        tooltipElement: managePopulatePageElements.TEMPLATE_SAVE_ENVIRONMENT_TOOLTIP,
+        tooltipElement: populateWithTemplatePageElements.TEMPLATE_SAVE_ENVIRONMENT_TOOLTIP,
         tooltipText: "Choose an environment for data population. If no environments are available, initiate the populator with a template first and then save to create an environment. Environments enable you to execute the populator with a consistent user set, ensuring uniform data across multiple runs."
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.TEMPLATE_SAVE_ENVIRONMENT_INPUT,
+        element: populateWithTemplatePageElements.TEMPLATE_SAVE_ENVIRONMENT_INPUT,
         elementPlaceHolder: "Enter an environment name",
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.TEMPLATE_GENERATE_DEMO_DATA_BUTTON,
+        element: populateWithTemplatePageElements.TEMPLATE_GENERATE_DEMO_DATA_BUTTON,
         elementText: "Generate Demo Data",
     });
 };
 
-const verifyEmptyPageElementsOfDataPopulatorWithEnvironmentPage = () => {
+const verifyPageElementsOfDataPopulatorWithEnvironmentPage = () => {
 
     verifyStaticElementsOfDataPopulatorPage();
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.ENVIRONMENT_LABEL,
+        labelElement: populateWithEnvironmentPageElements.ENVIRONMENT_LABEL,
         labelText: "Environment",
-        tooltipElement: managePopulatePageElements.ENVIRONMENT_TOOLTIP,
+        tooltipElement: populateWithEnvironmentPageElements.ENVIRONMENT_TOOLTIP,
         tooltipText: "Choose an environment for data population. If no environments are available, initiate the populator with a template first and then save to create an environment. Environments enable you to execute the populator with a consistent user set, ensuring uniform data across multiple runs."
     });
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.ENVIRONMENT_DATE_RANGE_LABEL,
+        labelElement: populateWithEnvironmentPageElements.ENVIRONMENT_DATE_RANGE_LABEL,
         labelText: "Date range",
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.ENVIRONMENT_DATE_RANGE_SELECT,
+        element: populateWithEnvironmentPageElements.ENVIRONMENT_DATE_RANGE_SELECT,
     });
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.ENVIRONMENT_NUMBER_OF_RUNS_LABEL,
+        labelElement: populateWithEnvironmentPageElements.ENVIRONMENT_NUMBER_OF_RUNS_LABEL,
         labelText: "Number of runs",
-        tooltipElement: managePopulatePageElements.ENVIRONMENT_NUMBER_OF_RUNS_TOOLTIP,
+        tooltipElement: populateWithEnvironmentPageElements.ENVIRONMENT_NUMBER_OF_RUNS_TOOLTIP,
         tooltipText: "Each run will go through each unique user in the environment/template and will trigger one sequence per user"
     });
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.ENVIRONMENT_NUMBER_OF_RUNS_10_LABEL,
+        labelElement: populateWithEnvironmentPageElements.ENVIRONMENT_NUMBER_OF_RUNS_10_LABEL,
         labelText: "10"
     });
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.ENVIRONMENT_NUMBER_OF_RUNS_50_LABEL,
+        labelElement: populateWithEnvironmentPageElements.ENVIRONMENT_NUMBER_OF_RUNS_50_LABEL,
         labelText: "50"
     });
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.ENVIRONMENT_NUMBER_OF_RUNS_100_LABEL,
+        labelElement: populateWithEnvironmentPageElements.ENVIRONMENT_NUMBER_OF_RUNS_100_LABEL,
         labelText: "100"
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.ENVIRONMENT_GENERATE_DEMO_DATA_BUTTON,
+        element: populateWithEnvironmentPageElements.ENVIRONMENT_GENERATE_DEMO_DATA_BUTTON,
         elementText: "Generate Demo Data",
     });
 };
 
-const verifyEmptyPageElementsOfTemplatesPage = () => {
+const verifyPageElementsOfTemplatesPage = () => {
 
     cy.verifyElement({
-        element: managePopulatePageElements.TAB_DATA_POPULATOR,
+        element: dataPopulatorPageElements.TAB_DATA_POPULATOR,
         elementText: "Data Populator",
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.TAB_TEMPLATES,
+        element: dataPopulatorPageElements.TAB_TEMPLATES,
         elementText: "Templates",
     });
 
     cy.verifyElement({
-        labelElement: managePopulatePageElements.TEMPLATES_PAGE_TITLE,
+        labelElement: templatesPageElements.TEMPLATES_PAGE_TITLE,
         labelText: "Templates",
-        tooltipElement: managePopulatePageElements.TEMPLATES_PAGE_TITLE_TOOLTIP,
+        tooltipElement: templatesPageElements.TEMPLATES_PAGE_TITLE_TOOLTIP,
         tooltipText: "Manage your templates for data population"
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.CREATE_NEW_TEMPLATE_BUTTON,
+        element: templatesPageElements.CREATE_NEW_TEMPLATE_BUTTON,
         elementText: "Create New Template",
     });
 
     cy.verifyElement({
-        element: managePopulatePageElements.TEMPLATES_DATATABLE
+        element: templatesDataTableElements().DATATABLE_SEARCH_INPUT,
+    });
+
+    cy.verifyElement({
+        labelElement: templatesDataTableElements().COLUMN_NAME_TEMPLATE_LABEL,
+        labelText: "Template",
+    });
+
+    cy.verifyElement({
+        element: templatesDataTableElements().COLUMN_NAME_TEMPLATE_SORTABLE_ICON
+    });
+
+    cy.verifyElement({
+        labelElement: templatesDataTableElements().COLUMN_NAME_NUMBER_OF_USERS_LABEL,
+        labelText: "Number of Users",
+    });
+
+    cy.verifyElement({
+        element: templatesDataTableElements().COLUMN_NAME_NUMBER_OF_USERS_SORTABLE_ICON,
+    });
+
+    cy.verifyElement({
+        labelElement: templatesDataTableElements().COLUMN_NAME_NUMBER_OF_EVENTS_LABEL,
+        labelText: "Number of Events",
+    });
+
+    cy.verifyElement({
+        element: templatesDataTableElements().COLUMN_NAME_NUMBER_OF_EVENTS_SORTABLE_ICON,
+    });
+
+    cy.verifyElement({
+        labelElement: templatesDataTableElements().COLUMN_NAME_VIEWS_LABEL,
+        labelText: "Views",
+    });
+
+    cy.verifyElement({
+        element: templatesDataTableElements().COLUMN_NAME_VIEWS_SORTABLE_ICON,
+    });
+
+    cy.verifyElement({
+        labelElement: templatesDataTableElements().COLUMN_NAME_SEQUENCES_LABEL,
+        labelText: "Sequences",
+    });
+
+    cy.verifyElement({
+        element: templatesDataTableElements().COLUMN_NAME_SEQUENCES_SORTABLE_ICON,
+    });
+
+    cy.verifyElement({
+        labelElement: templatesDataTableElements().COLUMN_NAME_GENERATED_ON_LABEL,
+        labelText: "Generated On",
+    });
+
+    cy.verifyElement({
+        element: templatesDataTableElements().COLUMN_NAME_GENERATED_ON_SORTABLE_ICON,
+    });
+
+    verifyTemplatesDataTable({
+        index: 0,
+        shouldNotEqual: true,
+    });
+};
+
+const verifyTemplatesDataTable = ({
+    index = 0,
+    shouldNotEqual = false,
+    template = null,
+    numberOfUsers = null,
+    numberOfEvents = null,
+    views = null,
+    sequences = null,
+    generatedOn = null
+}) => {
+
+    cy.verifyElement({
+        element: templatesDataTableElements(index).TEMPLATE,
+        elementText: template,
+        shouldNotEqual: shouldNotEqual,
+    });
+
+    cy.verifyElement({
+        element: templatesDataTableElements(index).NUMBER_OF_USERS,
+        elementText: numberOfUsers,
+        shouldNotEqual: shouldNotEqual,
+    });
+
+    cy.verifyElement({
+        element: templatesDataTableElements(index).NUMBER_OF_EVENTS,
+        elementText: numberOfEvents,
+        shouldNotEqual: shouldNotEqual,
+    });
+
+    cy.verifyElement({
+        element: templatesDataTableElements(index).VIEWS,
+        elementText: views,
+        shouldNotEqual: shouldNotEqual,
+    });
+
+    cy.verifyElement({
+        element: templatesDataTableElements(index).SEQUENCES,
+        elementText: sequences,
+        shouldNotEqual: shouldNotEqual,
+    });
+
+    cy.verifyElement({
+        element: templatesDataTableElements(index).GENERATED_ON,
+        elementText: generatedOn,
+        shouldNotEqual: shouldNotEqual,
     });
 };
 
 const selectDataTemplate = (template) => {
     var elementItemSelector = 'el-option-test-id-' + template + '-el-options';
-    cy.clickElement(managePopulatePageElements.TEMPLATE_DATA_TEMPLATE_SELECT);
+    cy.clickElement(populateWithTemplatePageElements.TEMPLATE_DATA_TEMPLATE_SELECT);
     cy.clickElement(elementItemSelector);
 };
 
 const selectDateRange = (startDate, endDate) => {
-    cy.clickElement(managePopulatePageElements.TEMPLATE_DATE_RANGE_SELECT);
-    cy.typeInput(managePopulatePageElements.TEMPLATE_DATE_RANGE_START_DATE, startDate);
-    cy.typeInput(managePopulatePageElements.TEMPLATE_DATE_RANGE_END_DATE, endDate);
-    cy.clickElement(managePopulatePageElements.TEMPLATE_DATE_RANGE_APPLY_BUTTON);
+    cy.clickElement(populateWithTemplatePageElements.TEMPLATE_DATE_RANGE_SELECT);
+    cy.typeInput(populateWithTemplatePageElements.TEMPLATE_DATE_RANGE_START_DATE, startDate);
+    cy.typeInput(populateWithTemplatePageElements.TEMPLATE_DATE_RANGE_END_DATE, endDate);
+    cy.clickElement(populateWithTemplatePageElements.TEMPLATE_DATE_RANGE_APPLY_BUTTON);
 };
 
 const clickNumberOfRunsAs10 = () => {
-    cy.clickElement(managePopulatePageElements.TEMPLATE_NUMBER_OF_RUNS_10_LABEL);
+    cy.clickElement(populateWithTemplatePageElements.TEMPLATE_NUMBER_OF_RUNS_10_LABEL);
 };
 
 const clickNumberOfRunsAs50 = () => {
-    cy.clickElement(managePopulatePageElements.TEMPLATE_NUMBER_OF_RUNS_50_LABEL);
+    cy.clickElement(populateWithTemplatePageElements.TEMPLATE_NUMBER_OF_RUNS_50_LABEL);
 };
 
 const clickNumberOfRunsAs100 = () => {
-    cy.clickElement(managePopulatePageElements.TEMPLATE_NUMBER_OF_RUNS_100_LABEL);
+    cy.clickElement(populateWithTemplatePageElements.TEMPLATE_NUMBER_OF_RUNS_100_LABEL);
 };
 
 const clickGenerateDemoDataButton = () => {
-    cy.clickElement(managePopulatePageElements.TEMPLATE_GENERATE_DEMO_DATA_BUTTON);
+    cy.clickElement(populateWithTemplatePageElements.TEMPLATE_GENERATE_DEMO_DATA_BUTTON);
 };
 
 const clickYesPopulateDataButton = () => {
-    cy.clickElement(managePopulatePageElements.CONFIRM_POP_UP_SAVE_BUTTON);
+    cy.clickElement(popUpElements.CONFIRM_POP_UP_SAVE_BUTTON);
 };
 
 const clickNavigateToHomeButton = () => {
-    cy.clickElement(managePopulatePageElements.SUCCESS_POP_UP_GO_TO_HOME_BUTTON);
+    cy.clickElement(popUpElements.SUCCESS_POP_UP_GO_TO_HOME_BUTTON);
 };
 
 const clickDataPopulatorTab = () => {
-    cy.clickElement(managePopulatePageElements.TAB_DATA_POPULATOR);
+    cy.clickElement(dataPopulatorPageElements.TAB_DATA_POPULATOR);
 };
 
 const clickTemplatesTab = () => {
-    cy.clickElement(managePopulatePageElements.TAB_TEMPLATES);
+    cy.clickElement(dataPopulatorPageElements.TAB_TEMPLATES);
 };
 
 const clickPopulateWithTemplateTab = () => {
-    cy.clickElement(managePopulatePageElements.TAB_POPULATE_WITH_TEMPLATE);
+    cy.clickElement(dataPopulatorPageElements.TAB_POPULATE_WITH_TEMPLATE);
 };
 
 const clickPopulateWithEnvironmentTab = () => {
-    cy.clickElement(managePopulatePageElements.TAB_POPULATE_WITH_ENVIRONMENT);
+    cy.clickElement(dataPopulatorPageElements.TAB_POPULATE_WITH_ENVIRONMENT);
 };
 
 const generateData = ({
@@ -252,10 +366,10 @@ const generateData = ({
     clickYesPopulateDataButton();
 
     cy
-        .elementExists(managePopulatePageElements.GENERATING_POP_UP_PROGRESS_BAR)
+        .elementExists(popUpElements.GENERATING_POP_UP_PROGRESS_BAR)
         .then((isExists) => {
             if (isExists) {
-                cy.shouldNotExist(managePopulatePageElements.GENERATING_POP_UP_PROGRESS_BAR);
+                cy.shouldNotExist(popUpElements.GENERATING_POP_UP_PROGRESS_BAR);
             }
         });
 
@@ -267,9 +381,10 @@ module.exports = {
     clickTemplatesTab,
     clickPopulateWithTemplateTab,
     clickPopulateWithEnvironmentTab,
-    verifyEmptyPageElementsOfDataPopulatorWithTemplatePage,
-    verifyEmptyPageElementsOfDataPopulatorWithEnvironmentPage,
-    verifyEmptyPageElementsOfTemplatesPage,
+    verifyPageElementsOfDataPopulatorWithTemplatePage,
+    verifyPageElementsOfDataPopulatorWithEnvironmentPage,
+    verifyPageElementsOfTemplatesPage,
+    verifyTemplatesDataTable,
     selectDataTemplate,
     selectDateRange,
     clickNumberOfRunsAs10,
