@@ -182,9 +182,6 @@ plugins.register("/permissions/features", function(ob) {
                 common.recordCustomMetric(params, "sdks", params.app_id, ["q"], parseInt(params.qstring.rr, 10) - parseInt(dbAppUser.rr, 10));
             }
         }
-        else if (typeof dbAppUser.rr !== "undefined") {
-            common.recordCustomMetric(params, "sdks", params.app_id, ["q"], -1);
-        }
 
         //record request delay
         common.recordCustomMeasurement(params, "sdks", params.app_id, ["d"], Math.round(Math.max(Date.now() - params.time.mstimestamp, 0) / 1000));
@@ -194,6 +191,7 @@ plugins.register("/permissions/features", function(ob) {
                     params.qstring.hc = JSON.parse(params.qstring.hc);
                 }
                 catch (ex) {
+                    console.log(params.qstring.hc);
                     console.log("Parse hc failed", ex);
                 }
             }
@@ -225,6 +223,7 @@ plugins.register("/permissions/features", function(ob) {
                     params.qstring.hc = JSON.parse(params.qstring.hc);
                 }
                 catch (ex) {
+                    console.log(params.qstring.hc);
                     console.log("Parse hc failed", ex);
                 }
             }

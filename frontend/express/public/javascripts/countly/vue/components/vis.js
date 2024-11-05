@@ -1,4 +1,4 @@
-/* global Vue, countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon */
+/* global Vue, countlyCommon, countlyLocation, _mergeWith, CommonConstructor, countlyGlobal, Vue2Leaflet, CV, moment, L, countlyGraphNotesCommon, countlyAuth */
 // _mergeWith is Lodash mergeWith - /frontend/express/public/javascripts/utils/lodash.mergeWith.js
 
 (function(countlyVue) {
@@ -1871,9 +1871,20 @@
                 },
             };
         },
+        computed: {
+            hasCreateRight: function() {
+                return countlyAuth.validateCreate("core");
+            },
+            hasUpdateRight: function() {
+                return countlyAuth.validateUpdate("core");
+            }
+        },
         methods: {
             refresh: function() {
                 this.$emit('refresh');
+            },
+            getIconUrl: function(icon) {
+                return `${countlyGlobal.path}/images/annotation/${icon}.svg`;
             }
         },
         components: {
@@ -1881,14 +1892,14 @@
         },
         template:
             '<div class="chart-type-annotation-wrapper">\
-                <el-dropdown trigger="click" @command="graphNotesHandleCommand($event)">\
+                <el-dropdown data-test-id="chart-type-annotation-button" trigger="click" @command="graphNotesHandleCommand($event)">\
                     <el-button size="small">\
-                        <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon"/>\
+                        <img src="../images/annotation/notation-icon.svg" class="chart-type-annotation-wrapper__icon" data-test-id="chart-type-annotation-icon"/>\
                     </el-button>\
                     <el-dropdown-menu slot="dropdown">\
-                        <el-dropdown-item command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
-                        <el-dropdown-item command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
-                        <el-dropdown-item command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item data-test-id="chart-type-annotation-item-add-note" v-if="hasCreateRight" command="add"><img src="../images/annotation/add-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/><span>{{i18n("notes.add-note")}}</span></el-dropdown-item>\
+                        <el-dropdown-item data-test-id="chart-type-annotation-item-manage-notes" command="manage"><img src="../images/annotation/manage-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-4"/>{{i18n("notes.manage-notes")}}</el-dropdown-item>\
+                        <el-dropdown-item data-test-id="chart-type-annotation-item-hide-notes" v-if="hasUpdateRight" command="show"><img src="../images/annotation/show-icon.svg" class="chart-type-annotation-wrapper__img bu-mr-3"/>{{!areNotesHidden ? i18n("notes.hide-notes") : i18n("notes.show-notes")}}</el-dropdown-item>\
                     </el-dropdown-menu>\
                 </el-dropdown>\
                 <drawer :settings="drawerSettings" :controls="drawers.annotation" @cly-refresh="refresh"></drawer>\
@@ -2088,9 +2099,9 @@
                                 :class="[\'cly-vue-chart-legend__s-series\',\
                                         {\'cly-vue-chart-legend__s-series--deselected\': item.status === \'off\'}]"\
                                 @click="onClick(item, index)">\
-                                <div :data-test-id="testId + \'-legend-icon\'" class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div :data-test-id="testId + \'-legend-label\'" class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
-                                <div class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replaceAll(\' \', \'-\').toLowerCase() + \'-legend-icon\'" class="cly-vue-chart-legend__s-rectangle" :style="{backgroundColor: item.displayColor}"></div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replaceAll(\' \', \'-\').toLowerCase() + \'-legend-label\'" class="cly-vue-chart-legend__s-title has-ellipsis">{{item.label || item.name}}</div>\
+                                <div :data-test-id="testId + \'-\' + item.name.replaceAll(\' \', \'-\').toLowerCase() + \'-legend-percentage\'" class="cly-vue-chart-legend__s-percentage" v-if="item.percentage">{{item.percentage}}%</div>\
                             </div>\
                         </vue-scroll>\
                     </div>'
@@ -2106,6 +2117,10 @@
             },
             onClick: {
                 type: Function
+            },
+            testId: {
+                type: String,
+                default: "primary-legend-test-id"
             }
         },
         template: '<div class="cly-vue-chart-legend__primary">\
@@ -2116,24 +2131,24 @@
                                     {\'cly-vue-chart-legend__p-series--deselected\': item.status === \'off\'}]"\
                             @click="onClick(item, index)">\
                             <div class="cly-vue-chart-legend__first-row">\
-                                <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}"></div>\
-                                <div class="cly-vue-chart-legend__p-title">{{item.label || item.name}}</div>\
+                                <div class="cly-vue-chart-legend__p-checkbox" :style="{backgroundColor: item.displayColor}" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-icon\'"></div>\
+                                <div class="cly-vue-chart-legend__p-title" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-label\'">{{item.label || item.name}}</div>\
                                 <div class="cly-vue-chart-legend__p-tooltip" v-if="item.tooltip">\
-                                    <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled"></cly-tooltip-icon>\
+                                    <cly-tooltip-icon :tooltip="item.tooltip" icon="ion-help-circled" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-tooltip\'"></cly-tooltip-icon>\
                                 </div>\
                             </div>\
                             <div class="cly-vue-chart-legend__second-row">\
-                                <div class="cly-vue-chart-legend__p-number is-estimate" v-if="item.isEstimate" v-tooltip="item.estimateTooltip">~{{item.value}}</div>\
-                                <div class="cly-vue-chart-legend__p-number" v-else>{{item.value}}</div>\
+                                <div class="cly-vue-chart-legend__p-number is-estimate" v-if="item.isEstimate" v-tooltip="item.estimateTooltip" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-value\'">~{{item.value}}</div>\
+                                <div class="cly-vue-chart-legend__p-number" v-else :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-value\'">{{item.value}}</div>\
                                 <div\
                                     :class="[\'cly-vue-chart-legend__p-trend\', \
                                             {\'cly-vue-chart-legend__p-trend--trend-up\': item.trend === \'up\'}, \
                                             {\'cly-vue-chart-legend__p-trend--trend-down\': item.trend === \'down\'}]"\
                                 >\
-                                    <i class="cly-trend-up-icon ion-android-arrow-up" v-if="item.trend === \'up\'"></i>\
-                                    <i class="cly-trend-down-icon ion-android-arrow-down" v-if="item.trend === \'down\'"></i>\
-                                    <span v-if="typeof item.percentage === \'number\' && !isNaN(item.percentage)">{{item.percentage}}%</span>\
-                                    <span v-if="typeof item.percentage === \'string\' && item.percentage.length">{{item.percentage}}</span>\
+                                    <i class="cly-trend-up-icon ion-android-arrow-up" v-if="item.trend === \'up\'" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-trend-icon\'"\></i>\
+                                    <i class="cly-trend-down-icon ion-android-arrow-down" v-if="item.trend === \'down\'" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-trend-icon\'"\></i>\
+                                    <span v-if="typeof item.percentage === \'number\' && !isNaN(item.percentage)" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-percentage\'">{{item.percentage}}%</span>\
+                                    <span v-if="typeof item.percentage === \'string\' && item.percentage.length" :data-test-id="testId + \'-\' + (item.label ? item.label.replaceAll(\' \', \'-\').toLowerCase() : item.name.replaceAll(\' \', \'-\').toLowerCase()) + \'-percentage\'">{{item.percentage}}</span>\
                                 </div>\
                             </div>\
                         </div>\
@@ -2256,6 +2271,7 @@
         template: '<div class="cly-vue-chart-legend" :class="legendClasses">\
                         <template v-if="options.type === \'primary\'">\
                             <primary-legend\
+                                :testId="testId"\
                                 :data="legendData"\
                                 :onClick="onLegendClick">\
                             </primary-legend>\
@@ -2447,11 +2463,16 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            testId: {
+                type: String,
+                default: 'cly-chart-line-default-test-id',
+                required: false
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles" :data-test-id="testId + \'-chart\'">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                        <chart-header :chart-type="\'line\'" :category="this.category" :hide-notation="this.hideNotation" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
+                        <chart-header :test-id="testId + \'-header\'" :chart-type="\'line\'" :category="this.category" :hide-notation="this.hideNotation" ref="header" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -2470,19 +2491,19 @@
                                 @datazoom="onDataZoom">\
                             </echarts>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
+                                    <cly-empty-chart :test-id="testId" :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
                         <custom-legend\
                             ref="legend"\
+                            :test-id="testId + \'-legend\'"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
                             v-if="legendOptions.show && !isChartEmpty">\
                         </custom-legend>\
                     </div>'
     }));
-
 
     Vue.component("cly-chart-time", BaseLineChart.extend({
         data: function() {
@@ -2511,6 +2532,11 @@
             noHourly: {
                 type: Boolean,
                 default: false,
+                required: false
+            },
+            testId: {
+                type: String,
+                default: 'cly-chart-time-default-test-id',
                 required: false
             }
         },
@@ -2611,12 +2637,12 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
-                        <chart-header :test-id="testId" ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
+                        <chart-header :test-id="testId + \'-header\'" ref="header" :category="this.category" :hide-notation="this.hideNotation" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload" @graph-notes-refresh="refresh" @notes-visibility="notesVisibility">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
                             </chart-header>\
-                            <div :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']" style="min-height: 0">\
+                            <div :data-test-id="testId + \'-chart\'" :class="[isChartEmpty && \'bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center\', \'bu-is-flex-grow-1\']" style="min-height: 0">\
                                 <echarts\
                                     v-if="!isChartEmpty"\
                                     :updateOptions="echartUpdateOptions"\
@@ -2628,11 +2654,12 @@
                                     :autoresize="autoresize"\
                                     @datazoom="onDataZoom"/>\
                                 <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
+                                    <cly-empty-chart :test-id="testId" :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
                         <custom-legend\
+                            :test-id="testId + \'-legend\'"\
                             ref="legend"\
                             :options="legendOptions"\
                             :seriesType="seriesType"\
@@ -2676,7 +2703,7 @@
                 return opt;
             }
         },
-        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
+        template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles" :data-test-id="testId + \'-chart\'">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1 bu-is-flex-shrink-1" style="min-height: 0">\
                             <chart-header :chart-type="\'bar\'" ref="header" v-if="!isChartEmpty" :test-id="testId" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
@@ -2716,6 +2743,13 @@
                 forwardedSlots: ["chart-left", "chart-right"]
             };
         },
+        props: {
+            testId: {
+                type: String,
+                default: "cly-chart-pie-test-id",
+                required: false
+            }
+        },
         components: {
             'chart-header': ChartHeader,
             'custom-legend': CustomLegend
@@ -2753,7 +2787,7 @@
         },
         template: '<div class="cly-vue-chart" :class="chartClasses" :style="chartStyles">\
                         <div class="cly-vue-chart__echart bu-is-flex bu-is-flex-direction-column bu-is-flex-grow-1" style="height: 100%">\
-                            <chart-header ref="header" :chart-type="\'pie\'" v-if="!isChartEmpty" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
+                            <chart-header ref="header" :chart-type="\'pie\'" v-if="!isChartEmpty" :test-id="testId" @series-toggle="onSeriesChange" :show-zoom="showZoom" :show-toggle="showToggle" :show-download="showDownload">\
                                 <template v-for="item in forwardedSlots" v-slot:[item]="slotScope">\
                                     <slot :name="item" v-bind="slotScope"></slot>\
                                 </template>\
@@ -2786,7 +2820,7 @@
 									</div>\
 								</div>\
                                 <div class="bu-column bu-is-flex-direction-column bu-is-align-items-center" v-if="isChartEmpty && !isLoading">\
-                                    <cly-empty-chart :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
+                                    <cly-empty-chart :test-id="testId" :classes="{\'bu-py-0\': true}"></cly-empty-chart>\
                                 </div>\
                             </div>\
                         </div>\
@@ -2835,7 +2869,7 @@
                 tileFeed: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 tileAttribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
                 markerIcon: L.icon({
-                    iconUrl: '/images/leaflet/marker-icon.svg',
+                    iconUrl: 'images/leaflet/marker-icon.svg',
                     iconSize: [32, 32],
                     iconAnchor: [ 16, 32],
                 }),
@@ -3353,7 +3387,7 @@
                     return false;
                 }
                 else {
-                    return "/images/flags/" + code.toLowerCase() + ".png";
+                    return "images/flags/" + code.toLowerCase() + ".png";
                 }
             },
             getMarkerTooltipTitle: function(code) {
@@ -3379,10 +3413,10 @@
                 var self = this;
                 this.loadingGeojson = true;
 
-                var url = '/geodata/world.geojson';
+                var url = 'geodata/world.geojson';
 
                 if (country) {
-                    url = '/geodata/region/' + country + '.geojson';
+                    url = 'geodata/region/' + country + '.geojson';
                 }
 
                 return CV.$.ajax({

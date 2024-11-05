@@ -45,6 +45,10 @@ var pluginManager = function pluginManager() {
     var finishedSyncing = true;
     var expireList = [];
     var masking = {};
+    var fullPluginsMap = {};
+    var coreList = ["api", "core"];
+    var dependencyMap = {};
+
 
     /**
      *  Registered app types
@@ -80,16 +84,45 @@ var pluginManager = function pluginManager() {
         countly_fs: "PLUGINFS"
     };
 
+    this.loadDependencyMap = function() {
+        var pluginNames = [];
+        var pluginsList = fs.readdirSync(path.resolve(__dirname, './')); //all plugins in folder
+        //filter out just folders
+        for (var z = 0; z < pluginsList.length; z++) {
+            var p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+            if (p.isDirectory() || p.isSymbolicLink()) {
+                pluginNames.push(pluginsList[z]);
+            }
+        }
+        dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
+    };
+
     /**
     * Initialize api side plugins
     **/
     this.init = function() {
-        for (let i = 0, l = plugins.length; i < l; i++) {
+        var pluginNames = [];
+        var pluginsList = fs.readdirSync(path.resolve(__dirname, './')); //all plugins in folder
+        //filter out just folders
+        for (var z = 0; z < pluginsList.length; z++) {
+            var p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+            if (p.isDirectory() || p.isSymbolicLink()) {
+                pluginNames.push(pluginsList[z]);
+            }
+        }
+        dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
+
+
+        for (let i = 0, l = pluginNames.length; i < l; i++) {
+            fullPluginsMap[pluginNames[i]] = true;
             try {
-                pluginsApis[plugins[i]] = require("./" + plugins[i] + "/api/api");
+                pluginsApis[pluginNames[i]] = require("./" + pluginNames[i] + "/api/api");
+
             }
             catch (ex) {
+                console.log('Skipping plugin ' + pluginNames[i] + ' as we could not load it because of errors.');
                 console.error(ex.stack);
+                console.log("Saving this plugin as disabled in db");
             }
         }
     };
@@ -136,6 +169,7 @@ var pluginManager = function pluginManager() {
     this.initPlugin = function(pluginName) {
         try {
             pluginsApis[pluginName] = require("./" + pluginName + "/api/api");
+            fullPluginsMap[pluginName] = true;
         }
         catch (ex) {
             console.error(ex.stack);
@@ -194,6 +228,27 @@ var pluginManager = function pluginManager() {
 
         });
     };
+
+    this.reloadEnabledPluginList = function(db, callback) {
+        this.loadDependencyMap();
+        db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+            if (err) {
+                console.log(err);
+            }
+            res = res || {};
+            if (Object.keys(fullPluginsMap).length > 0) {
+                for (var pp in res.plugins) {
+                    if (!fullPluginsMap[pp]) {
+                        delete res.plugins[pp];
+                    }
+                }
+            }
+            pluginConfig = res.plugins || {}; //currently enabled plugins
+            if (callback) {
+                callback();
+            }
+        });
+    };
     /**
     * Load configurations from database
     * @param {object} db - database connection for countly db
@@ -203,6 +258,22 @@ var pluginManager = function pluginManager() {
     this.loadConfigs = function(db, callback/*, api*/) {
         var self = this;
         db.collection("plugins").findOne({_id: "plugins"}, function(err, res) {
+            if (err) {
+                console.log(err);
+            }
+            var pluginNames = [];
+            var pluginsList = fs.readdirSync(path.resolve(__dirname, './'));
+            for (var z = 0; z < pluginsList.length; z++) {
+                var p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+                if (p.isDirectory() || p.isSymbolicLink()) {
+                    pluginNames.push(pluginsList[z]);
+                }
+            }
+
+            for (let i = 0, l = pluginNames.length; i < l; i++) {
+                fullPluginsMap[pluginNames[i]] = true;
+            }
+
             if (err) {
                 console.log(err);
             }
@@ -216,12 +287,13 @@ var pluginManager = function pluginManager() {
                 }
                 configs = res;
                 delete configs._id;
+                pluginConfig = res.plugins || {}; //currently enabled plugins
                 self.checkConfigs(db, configs, defaultConfigs, function() {
-                    pluginConfig = res.plugins || {}; //currently enabled plugins
+
                     var installPlugins = [];
-                    for (var z = 0; z < plugins.length; z++) {
-                        if (typeof pluginConfig[plugins[z]] === 'undefined') {
-                            pluginConfig[plugins[z]] = true;
+                    for (var z1 = 0; z1 < plugins.length; z1++) {
+                        if (typeof pluginConfig[plugins[z1]] === 'undefined') {
+                            pluginConfig[plugins[z1]] = true;
                             //installPlugins.push(plugins[z]);
                         }
                     }
@@ -462,14 +534,17 @@ var pluginManager = function pluginManager() {
     **/
     this.updateConfigs = function(db, namespace, conf, callback) {
         var update = {};
-        if (namespace === "_id" || namespace === "plugins" && !this.getConfig("api").sync_plugins) {
+        if (namespace === "_id") {
             if (callback) {
                 callback();
             }
         }
         else {
             update[namespace] = conf;
-            db.collection("plugins").update({_id: "plugins"}, {$set: flattenObject(update)}, {upsert: true}, function() {
+            db.collection("plugins").update({_id: "plugins"}, {$set: flattenObject(update)}, {upsert: true}, function(err) {
+                if (err) {
+                    console.log(err);
+                }
                 if (callback) {
                     callback();
                 }
@@ -624,7 +699,7 @@ var pluginManager = function pluginManager() {
         }
     };
     this.isPluginOn = function(name) {
-        if (plugins.indexOf(name) > -1) { //is one of plugins
+        if (coreList.indexOf(name) === -1) { //is one of plugins
             if (pluginConfig[name]) {
                 return true;
             }
@@ -701,7 +776,7 @@ var pluginManager = function pluginManager() {
             try {
                 for (let i = 0, l = events[event].length; i < l; i++) {
                     var isEnabled = true;
-                    if (events[event][i].name && plugins.indexOf(events[event][i].name) > -1 && !pluginConfig[events[event][i].name]) {
+                    if (fullPluginsMap[events[event][i].name] && pluginConfig[events[event][i].name] === false) {
                         isEnabled = false;
                     }
 
@@ -785,16 +860,27 @@ var pluginManager = function pluginManager() {
     * @param {object} express - reference to express js
     **/
     this.loadAppStatic = function(app, countlyDb, express) {
-        for (let i = 0, l = plugins.length; i < l; i++) {
+        var pluginNames = [];
+        var pluginsList = fs.readdirSync(path.resolve(__dirname, './')); //all plugins in folder
+        //filter out just folders
+        for (var z = 0; z < pluginsList.length; z++) {
+            var p = fs.lstatSync(path.resolve(__dirname, './' + pluginsList[z]));
+            if (p.isDirectory() || p.isSymbolicLink()) {
+                pluginNames.push(pluginsList[z]);
+            }
+        }
+
+        for (let i = 0, l = pluginNames.length; i < l; i++) {
             try {
-                var plugin = require("./" + plugins[i] + "/frontend/app");
-                plugs.push({'name': plugins[i], "plugin": plugin});
-                app.use(countlyConfig.path + '/' + plugins[i], express.static(__dirname + '/' + plugins[i] + "/frontend/public", { maxAge: 31557600000 }));
+                var plugin = require("./" + pluginNames[i] + "/frontend/app");
+                plugs.push({'name': pluginNames[i], "plugin": plugin});
+                app.use(countlyConfig.path + '/' + pluginNames[i], express.static(__dirname + '/' + pluginNames[i] + "/frontend/public", { maxAge: 31557600000 }));
                 if (plugin.staticPaths) {
                     plugin.staticPaths(app, countlyDb, express);
                 }
             }
             catch (ex) {
+                console.log("skipping plugin because of errors:" + pluginNames[i]);
                 console.error(ex.stack);
             }
         }
@@ -810,16 +896,61 @@ var pluginManager = function pluginManager() {
         for (let i = 0; i < plugs.length; i++) {
             try {
                 //plugs[i].init(app, countlyDb, express);
-                plugs[i].plugin.init({
-                    name: plugs[i].name,
-                    get: function(pathTo, callback) {
-                        var pluginName = this.name;
-                        if (!callback) {
-                            app.get(pathTo);
-                        }
-                        else {
-                            app.get(pathTo, function(req, res, next) {
-                                if (pluginConfig[pluginName]) {
+                if (plugs[i] && plugs[i].plugin && plugs[i].plugin.init && typeof plugs[i].plugin.init === 'function') {
+                    plugs[i].plugin.init({
+                        name: plugs[i].name,
+                        get: function(pathTo, callback) {
+                            var pluginName = this.name;
+                            if (!callback) {
+                                app.get(pathTo);
+                            }
+                            else {
+                                app.get(pathTo, function(req, res, next) {
+                                    if (pluginConfig[pluginName]) {
+                                        callback(req, res, next);
+                                    }
+                                    else {
+                                        next();
+                                    }
+                                });
+                            }
+                        },
+                        post: function(pathTo, callback) {
+                            var pluginName = this.name;
+                            app.post(pathTo, function(req, res, next) {
+                                if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
+                                    callback(req, res, next);
+                                }
+                                else {
+                                    next();
+                                }
+                            });
+                        },
+                        use: function(pathTo, callback) {
+                            if (!callback) {
+                                callback = pathTo;
+                                pathTo = '/';//fallback to default
+                            }
+
+                            var pluginName = this.name;
+                            app.use(pathTo, function(req, res, next) {
+                                if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
+                                    callback(req, res, next);
+                                }
+                                else {
+                                    next();
+                                }
+                            });
+                        },
+                        all: function(pathTo, callback) {
+                            if (!callback) {
+                                callback = pathTo;
+                                pathTo = '/';//fallback to default
+                            }
+
+                            var pluginName = this.name;
+                            app.all(pathTo, function(req, res, next) {
+                                if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
                                     callback(req, res, next);
                                 }
                                 else {
@@ -827,51 +958,8 @@ var pluginManager = function pluginManager() {
                                 }
                             });
                         }
-                    },
-                    post: function(pathTo, callback) {
-                        var pluginName = this.name;
-                        app.post(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
-                                callback(req, res, next);
-                            }
-                            else {
-                                next();
-                            }
-                        });
-                    },
-                    use: function(pathTo, callback) {
-                        if (!callback) {
-                            callback = pathTo;
-                            pathTo = '/';//fallback to default
-                        }
-
-                        var pluginName = this.name;
-                        app.use(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
-                                callback(req, res, next);
-                            }
-                            else {
-                                next();
-                            }
-                        });
-                    },
-                    all: function(pathTo, callback) {
-                        if (!callback) {
-                            callback = pathTo;
-                            pathTo = '/';//fallback to default
-                        }
-
-                        var pluginName = this.name;
-                        app.all(pathTo, function(req, res, next) {
-                            if (pluginConfig[pluginName] && callback && typeof callback === 'function') {
-                                callback(req, res, next);
-                            }
-                            else {
-                                next();
-                            }
-                        });
-                    }
-                }, countlyDb, express);
+                    }, countlyDb, express);
+                }
             }
             catch (ex) {
                 console.error(ex.stack);
@@ -974,25 +1062,82 @@ var pluginManager = function pluginManager() {
         }, {});
     };
 
-    /**
-    * Get array of enabled plugin names
-	* @param {boolean} returnOnlyEnabled  - if true will return only enabled plugins
-    * @returns {array} with plugin names
-    **/
-    this.getPlugins = function(returnOnlyEnabled) {
-        //fix it to return only enabled based on db settings
-        var list = [];
-        if (!returnOnlyEnabled) {
-
-            return JSON.parse(JSON.stringify(plugins));
+    this.fixOrderBasedOnDependency = function(plugs_list) {
+        var map0 = {};
+        var new_list = [];
+        for (var z = 0; z < plugs_list.length; z++) {
+            map0[plugs_list[z]] = true;
         }
-        else {
-            for (var key in pluginConfig) {
-                if (pluginConfig[key] && plugins.indexOf(key) > -1) {
-                    list.push(key);
+        /**
+         * 
+         * @param {string} pluginName - pluginName 
+         */
+        function add_Me(pluginName) {
+            if (dependencyMap) {
+                if (dependencyMap && dependencyMap.dpcs && dependencyMap.dpcs[pluginName] && dependencyMap.dpcs[pluginName].up) {
+                    for (var z1 = 0; z1 < dependencyMap.dpcs[pluginName].up.length; z1++) {
+                        if (map0[dependencyMap.dpcs[pluginName].up[z1]]) {
+                            add_Me(dependencyMap.dpcs[pluginName].up[z1]);
+                        }
+                    }
                 }
             }
-            return list;
+            if (map0[pluginName]) {
+                new_list.push(pluginName);
+                map0[pluginName] = false;
+            }
+        }
+
+        for (var plugname in map0) {
+            add_Me(plugname);
+        }
+        return new_list;
+    };
+
+    /**
+    * Get array of enabled plugin names
+	* @param {boolean} returnFullList  - if true will return all available plugins
+    * @returns {array} with plugin names
+    **/
+    this.getPlugins = function(returnFullList) {
+        //fix it to return only enabled based on db settings
+        var list = [];
+        if (returnFullList) {
+            for (var key2 in fullPluginsMap) {
+                list.push(key2);
+            }
+            if (pluginConfig && Object.keys(pluginConfig).length > 0) {
+                for (var key0 in pluginConfig) {
+                    if (!fullPluginsMap[key0]) {
+                        list.push(key0);
+                    }
+                }
+            }
+            else {
+                for (var kk = 0; kk < plugins.length; kk++) {
+                    if (!fullPluginsMap[plugins[kk]]) {
+                        list.push(plugins[kk]);
+                    }
+                }
+            }
+            return this.fixOrderBasedOnDependency(list);
+        }
+        else {
+            if (pluginConfig && Object.keys(pluginConfig).length > 0) {
+                for (var key in pluginConfig) {
+                    if (pluginConfig[key]) {
+                        list.push(key);
+                    }
+                }
+            }
+
+            for (var k = 0; k < plugins.length; k++) {
+                if (typeof pluginConfig[plugins[k]] === 'undefined') {
+                    list.push(plugins[k]);
+                }
+            }
+
+            return this.fixOrderBasedOnDependency(list);
         }
     };
 
@@ -1032,7 +1177,8 @@ var pluginManager = function pluginManager() {
     * @returns {boolean} if plugin is enabled
     **/
     this.isPluginEnabled = function(plugin) {
-        if (plugins.indexOf(plugin) === -1) {
+        var enabledPlugins = this.getPlugins();
+        if (coreList.indexOf(plugin) === -1 && enabledPlugins.indexOf(plugin) === -1) { //it is plugin, but it is not enabled
             return false;
         }
         return true;
@@ -1268,7 +1414,11 @@ var pluginManager = function pluginManager() {
                 resolve(errors);
             }
             else if (!self.getConfig("api").offline_mode) {
-                const cmd = spawn('npm', ["install"], {cwd: cwd});
+                var args = ["install"];
+                if (apiCountlyConfig.symlinked === true) {
+                    args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                }
+                const cmd = spawn('npm', args, {cwd: cwd});
                 var error2 = "";
 
                 cmd.stdout.on('data', (data) => {
@@ -1298,8 +1448,11 @@ var pluginManager = function pluginManager() {
             }
         }).then(function(result) {
             var scriptPath = path.join(__dirname, plugin, 'install.js');
-            var m = cp.spawn("nodejs", [scriptPath]);
-
+            var args = [scriptPath];
+            if (apiCountlyConfig.symlinked === true) {
+                args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+            }
+            var m = cp.spawn("nodejs", args);
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
             });
@@ -1367,7 +1520,11 @@ var pluginManager = function pluginManager() {
             }
         }).then(function(result) {
             var scriptPath = path.join(__dirname, plugin, 'install.js');
-            var m = cp.spawn("nodejs", [scriptPath]);
+            var args = [scriptPath];
+            if (apiCountlyConfig.symlinked === true) {
+                args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+            }
+            var m = cp.spawn("nodejs", args);
 
             m.stdout.on('data', (data) => {
                 console.log(data.toString());
@@ -1398,7 +1555,11 @@ var pluginManager = function pluginManager() {
         callback = callback || function() {};
         var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
         var errors = false;
-        var m = cp.spawn("nodejs", [scriptPath]);
+        var args = [scriptPath];
+        if (apiCountlyConfig.symlinked === true) {
+            args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+        }
+        var m = cp.spawn("nodejs", args);
 
         m.stdout.on('data', (data) => {
             console.log(data.toString());
@@ -1601,21 +1762,47 @@ var pluginManager = function pluginManager() {
     * @returns {string} modified connection string
     **/
     this.replaceDatabaseString = function(str, db) {
+        if (!db) {
+            db = "countly";
+        }
         var i = str.lastIndexOf('/countly');
         var k = str.lastIndexOf('/' + db);
         if (i !== k && i !== -1 && db) {
             return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+        }
+        else if (i === -1 && k === -1) {
+            //no db found in the string, we should insert the needed one
+            var urlparts = str.split("://");
+            if (typeof urlparts[1] === "string") {
+                var parts = urlparts[1].split("/");
+                if (parts.length === 1) {
+                    parts[0] += "/" + db;
+                }
+                else {
+                    parts[parts.length - 1] = db + parts[parts.length - 1];
+                }
+                urlparts[1] = parts.join("/");
+            }
+            return urlparts.join("://");
         }
         return str;
     };
 
     this.connectToAllDatabases = async() => {
         let dbs = ['countly', 'countly_out', 'countly_fs'];
-        if (this.isPluginEnabled('drill')) {
+        if (fs.existsSync(path.resolve(__dirname, 'drill'))) {
             dbs.push('countly_drill');
         }
 
-        const databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+        let databases = [];
+        if (apiCountlyConfig && apiCountlyConfig.shared_connection) {
+            console.log("using shared connection pool");
+            databases = await this.dbConnection(dbs);
+        }
+        else {
+            console.log("using separate connection pool");
+            databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+        }
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
         let common = require('../api/utils/common');
@@ -1640,14 +1827,13 @@ var pluginManager = function pluginManager() {
     this.dbConnection = async function(config) {
         var db, maxPoolSize = 10;
         var mngr = this;
+        var dbList = [];
 
         if (!cluster.isMaster) {
             //we are in worker
             maxPoolSize = 100;
         }
-        if (process.argv[1] && process.argv[1].endsWith('executor.js')) {
-            maxPoolSize = 3;
-        }
+
         var useConfig = JSON.parse(JSON.stringify(countlyConfig));
         if (process.argv[1] && process.argv[1].endsWith('api/api.js') && !cluster.isMaster) {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
@@ -1674,6 +1860,10 @@ var pluginManager = function pluginManager() {
                 config = useConfig;
             }
         }
+        else if (Array.isArray(config)) {
+            dbList = config;
+            config = useConfig;
+        }
         else {
             config = config || useConfig;
         }
@@ -1688,19 +1878,19 @@ var pluginManager = function pluginManager() {
             maxPoolSize = config.mongodb.max_pool_size || maxPoolSize;
         }
 
+        if (process.argv[1] && process.argv[1].endsWith('executor.js')) {
+            maxPoolSize = 3;
+        }
+
         var dbName;
         var dbOptions = {
             maxPoolSize: maxPoolSize,
             noDelay: true,
-            keepAlive: true,
-            keepAliveInitialDelay: 30000,
             connectTimeoutMS: 999999999,
             socketTimeoutMS: 999999999,
             serverSelectionTimeoutMS: 999999999,
             maxIdleTimeMS: 0,
-            waitQueueTimeoutMS: 0,
-            useNewUrlParser: true,
-            useUnifiedTopology: true
+            waitQueueTimeoutMS: 0
         };
         if (typeof config.mongodb === 'string') {
             dbName = this.replaceDatabaseString(config.mongodb, db);
@@ -1789,7 +1979,12 @@ var pluginManager = function pluginManager() {
          */
         function logDriver(eventName, logObject, logLevel) {
             logLevel = logLevel || "d";
-            client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
+            if (eventName === "serverHeartbeatFailed" || eventName === "topologyDescriptionChanged" || eventName === "serverDescriptionChanged" || eventName === "serverClosed") {
+                client.on(eventName, (event) => logObject[logLevel](eventName + " %j", event));
+            }
+            else {
+                client.on(eventName, () => logObject[logLevel](eventName));
+            }
         }
 
         //connection pool
@@ -1807,11 +2002,11 @@ var pluginManager = function pluginManager() {
 
         //SDAM
         logDriver("serverOpening", logDriverDb);
-        logDriver("serverClosed", logDriverDb);
-        logDriver("serverDescriptionChanged", logDriverDb);
+        logDriver("serverClosed", logDriverDb, "i");
+        logDriver("serverDescriptionChanged", logDriverDb, "i");
         logDriver("topologyOpening", logDriverDb);
         logDriver("topologyClosed", logDriverDb);
-        logDriver("topologyDescriptionChanged", logDriverDb);
+        logDriver("topologyDescriptionChanged", logDriverDb, "i");
         logDriver("serverHeartbeatStarted", logDriverDb);
         logDriver("serverHeartbeatSucceeded", logDriverDb);
         logDriver("serverHeartbeatFailed", logDriverDb, "e");
@@ -1828,10 +2023,12 @@ var pluginManager = function pluginManager() {
             return mngr.wrapDatabase(client._db(database, options), client, db_name, dbName, dbOptions);
         };
 
-        if (db_name === "countly") {
-            var wrapped = client.db(db_name);
-            //await this.fetchMaskingConf({db: wrapped});
-            return wrapped;
+        if (dbList.length) {
+            var ret = [];
+            for (let i = 0; i < dbList.length; i++) {
+                ret.push(client.db(dbList[i]));
+            }
+            return ret;
         }
         else {
             return client.db(db_name);
@@ -1891,34 +2088,51 @@ var pluginManager = function pluginManager() {
             return value;
         }
         else {
-            return !!myOb;
+            if (myOb === true) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
     }
     this.isAnyMasked = function() {
+        var result = false;
         if (masking && masking.apps) {
             for (var app in masking.apps) {
-                if (masking.apps[app] && masking.apps[app].masking) {
-                    return hasAnyValueTrue(masking.apps[app].masking);
+                if (masking.apps[app]) {
+                    result = result || hasAnyValueTrue(masking.apps[app]);
+                    if (result) {
+                        return true;
+                    }
                 }
             }
             return false;
         }
-        else {
-            return false;
-        }
+        return result;
     };
 
     this.getMaskingSettings = function(appID) {
         if (appID === 'all') {
             if (masking && masking.apps) {
-                return JSON.parse(JSON.stringify(masking.apps));
+                try {
+                    return JSON.parse(JSON.stringify(masking.apps));
+                }
+                catch (ex) {
+                    return {};
+                }
             }
             else {
                 return {};
             }
         }
         else if (masking && masking.apps && masking.apps[appID]) {
-            return JSON.parse(JSON.stringify(masking.apps[appID]));
+            try {
+                return JSON.parse(JSON.stringify(masking.apps[appID]));
+            }
+            catch (ex) {
+                return {};
+            }
         }
         else {
             return {};
@@ -1980,7 +2194,7 @@ var pluginManager = function pluginManager() {
         if (!countlyDb.ObjectID) {
             countlyDb.ObjectID = function(id) {
                 try {
-                    return mongodb.ObjectId(id);
+                    return new mongodb.ObjectId(id);
                 }
                 catch (ex) {
                     logDbRead.i("Incorrect Object ID %j", ex);
@@ -2008,13 +2222,53 @@ var pluginManager = function pluginManager() {
             options: dbOptions
         });
 
-        countlyDb.admin().buildInfo({}, (err, result) => {
-            if (!err && result) {
+        countlyDb.admin().buildInfo().then((result) => {
+            if (result) {
                 countlyDb.build = result;
             }
+        }).catch(function(err) {
+            console.log("Cannot get build info", err);
         });
 
-        var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session"];
+        //promise compatability
+        var overwriteDbPromise = function(obj, name) {
+            obj["_" + name] = obj[name];
+            obj[name] = function(...args) {
+                var callback;
+                if (typeof args[args.length - 1] === "function") {
+                    callback = args[args.length - 1];
+                    args.pop();
+                }
+
+                var promise = obj["_" + name](...args);
+                if (typeof callback === "function") {
+                    promise = promise.then(function(res) {
+                        callback(undefined, res);
+                    }).catch(function(err) {
+                        if (typeof callback === "function") {
+                            callback(err, null);
+                        }
+                    });
+                }
+                return promise;
+            };
+        };
+        overwriteDbPromise(countlyDb, "aggregate");
+        overwriteDbPromise(countlyDb, "collections");
+        overwriteDbPromise(countlyDb, "command");
+        overwriteDbPromise(countlyDb, "createCollection");
+        overwriteDbPromise(countlyDb, "createIndex");
+        overwriteDbPromise(countlyDb, "dropCollection");
+        overwriteDbPromise(countlyDb, "dropDatabase");
+        overwriteDbPromise(countlyDb, "indexInformation");
+        overwriteDbPromise(countlyDb, "profilingLevel");
+        overwriteDbPromise(countlyDb, "removeUser");
+        overwriteDbPromise(countlyDb, "renameCollection");
+        overwriteDbPromise(countlyDb, "setProfilingLevel");
+        overwriteDbPromise(countlyDb, "stats");
+
+
+        var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session", "omitReadPreference"];
 
         countlyDb._collection_cache = {};
         //overwrite some methods
@@ -2045,17 +2299,31 @@ var pluginManager = function pluginManager() {
              *  @param {Promise} promise - Promise object
              *  @param {Error} e - Error for tracing
              *  @param {Object} data - arguments and calling method
+             *  @param {Function} callback - callback
+             *  @param {Array} ignore_errors - array with error codes to ignore
              *  @returns {Promise} Promise to handle
              */
-            function handlePromiseErrors(promise, e, data) {
+            function handlePromiseErrors(promise, e, data, callback, ignore_errors) {
                 if (promise && promise.then) {
+                    if (typeof callback === "function") {
+                        promise = promise.then(function(res) {
+                            callback(undefined, res);
+                        });
+                    }
                     return promise.catch(function(err) {
-                        logDbWrite.e("Error in promise from " + collection + " %j %s %j", data, err, err);
-                        logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        if (e) {
-                            logDbWrite.e(e.stack);
+                        if (typeof callback === "function") {
+                            callback(err, null);
                         }
-                        throw err;
+                        else {
+                            if (ignore_errors && ignore_errors.indexOf(err.code) === -1) {
+                                logDbWrite.e("Error in promise from " + collection + " %j %s %j", data, err, err);
+                                logDbWrite.d("From connection %j", countlyDb._cly_debug);
+                                if (e) {
+                                    logDbWrite.e(e.stack);
+                                }
+                            }
+                            throw err;
+                        }
                     });
                 }
                 return promise;
@@ -2141,7 +2409,6 @@ var pluginManager = function pluginManager() {
                     options: options
                 });
                 var e;
-                var args = arguments;
                 var at = "";
                 if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
                     e = new Error();
@@ -2152,15 +2419,14 @@ var pluginManager = function pluginManager() {
                 logDbWrite.d("From connection %j", countlyDb._cly_debug);
                 if (options.upsert) {
                     var self = this;
-
-                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function() {
+                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, function() {
                         logDbWrite.d("retrying findAndModify " + collection + " %j %j %j %j" + at, query, sort, doc, options);
                         logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                        self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(args, "findAndModify")));
-                    }, e, copyArguments(arguments, "findAndModify"))), e, copyArguments(arguments, "findAndModify"));
+                        return handlePromiseErrors(self._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
+                    }, e, copyArguments(arguments, "findAndModify")));
                 }
                 else {
-                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify"))), e, copyArguments(arguments, "findAndModify"));
+                    return handlePromiseErrors(this._findAndModify(query, sort, doc, options), e, copyArguments(arguments, "findAndModify"), retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
                 }
             };
 
@@ -2175,6 +2441,10 @@ var pluginManager = function pluginManager() {
                         options = options || {};
                     }
 
+                    if (typeof options.includeResultMetadata === "undefined") {
+                        options.includeResultMetadata = true;
+                    }
+
                     mngr.dispatch("/db/update", {
                         db: dbName,
                         operation: name,
@@ -2183,7 +2453,6 @@ var pluginManager = function pluginManager() {
                         update: doc,
                         options: options
                     });
-                    var args = arguments;
                     var e;
                     var at = "";
                     if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
@@ -2195,15 +2464,14 @@ var pluginManager = function pluginManager() {
                     logDbWrite.d("From connection %j", countlyDb._cly_debug);
                     if (options.upsert) {
                         var self = this;
-
-                        return handlePromiseErrors(this["_" + name](selector, doc, options, retryifNeeded(callback, function() {
+                        return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, function() {
                             logDbWrite.d("retrying " + name + " " + collection + " %j %j %j" + at, selector, doc, options);
                             logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                            self["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(args, name)));
-                        }, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
+                            return handlePromiseErrors(self["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                        }, e, copyArguments(arguments, name)));
                     }
                     else {
-                        return handlePromiseErrors(this["_" + name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
+                        return handlePromiseErrors(this["_" + name](selector, doc, options), e, copyArguments(arguments, name), retryifNeeded(callback, null, e, copyArguments(arguments, name)));
                     }
                 };
             };
@@ -2283,7 +2551,7 @@ var pluginManager = function pluginManager() {
 
                     logDbWrite.d(name + " " + collection + " %j %j" + at, selector, options);
                     logDbWrite.d("From connection %j", countlyDb._cly_debug);
-                    return handlePromiseErrors(this["_" + name](selector, options, logForWrites(callback, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
+                    return handlePromiseErrors(this["_" + name](selector, options), e, copyArguments(arguments, name), logForWrites(callback, e, copyArguments(arguments, name)));
                 };
             };
             overwriteDefaultWrite(ob, "deleteOne");
@@ -2301,10 +2569,12 @@ var pluginManager = function pluginManager() {
                 }
                 return function(err, res) {
                     if (err) {
-                        logDbRead.e("Error reading " + collection + " %j %s %j", data, err, err);
-                        logDbRead.d("From connection %j", countlyDb._cly_debug);
-                        if (e) {
-                            logDbRead.e(e.stack);
+                        if (!(data && data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.indexOf(err.code) !== -1)) {
+                            logDbRead.e("Error reading " + collection + " %j %s %j", data, err, err);
+                            logDbRead.d("From connection %j", countlyDb._cly_debug);
+                            if (e) {
+                                logDbRead.e(e.stack);
+                            }
                         }
                     }
                     if (callback) {
@@ -2350,7 +2620,7 @@ var pluginManager = function pluginManager() {
                     }
                     logDbRead.d(name + " " + collection + " %j %j" + at, query, options);
                     logDbRead.d("From connection %j", countlyDb._cly_debug);
-                    return handlePromiseErrors(this["_" + name](query, options, logForReads(callback, e, copyArguments(arguments, name))), e, copyArguments(arguments, name));
+                    return handlePromiseErrors(this["_" + name](query, options), e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name)));
                 };
             };
 
@@ -2392,10 +2662,15 @@ var pluginManager = function pluginManager() {
                 };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(cb) {
-                    return handlePromiseErrors(cursor._toArray(logForReads(cb, e, copyArguments(args, "aggregate"))), e, copyArguments(arguments, "aggregate"));
+                    return handlePromiseErrors(cursor._toArray(), e, copyArguments(arguments, "aggregate"), logForReads(cb, e, copyArguments(args, "aggregate")));
                 };
-                cursor.isClosed = function() {
-                    return cursor.closed || cursor.killed;
+                cursor._forEach = cursor.forEach;
+                cursor.forEach = function(iterator, cb) {
+                    return handlePromiseErrors(cursor._forEach(iterator), e, copyArguments(arguments, "aggregate"), logForReads(cb, e, copyArguments(args, "aggregate")));
+                };
+                cursor._close = cursor.close;
+                cursor.close = function(cb) {
+                    return handlePromiseErrors(cursor._close(), e, copyArguments(arguments, "aggregate"), logForReads(cb, e, copyArguments(args, "aggregate")));
                 };
                 if (typeof callback === "function") {
                     return cursor.toArray(callback);
@@ -2459,13 +2734,105 @@ var pluginManager = function pluginManager() {
                 };
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback) {
-                    return handlePromiseErrors(cursor._toArray(logForReads(callback, e, copyArguments(args, "find"))), e, copyArguments(arguments, "find"));
+                    return handlePromiseErrors(cursor._toArray(), e, copyArguments(arguments, "find"), logForReads(callback, e, copyArguments(args, "find")));
                 };
-                cursor.isClosed = function() {
-                    return cursor.closed || cursor.killed;
+                cursor._forEach = cursor.forEach;
+                cursor.forEach = function(iterator, callback) {
+                    return handlePromiseErrors(cursor._forEach(iterator), e, copyArguments(arguments, "find"), logForReads(callback, e, copyArguments(args, "find")));
+                };
+                cursor._close = cursor.close;
+                cursor.close = function(cb) {
+                    return handlePromiseErrors(cursor._close(), e, copyArguments(arguments, "find"), logForReads(cb, e, copyArguments(args, "find")));
                 };
                 return cursor;
             };
+
+            //overwrite with ops logging
+            var logForOps = function(callback, e, data, ignore_errors) {
+                //we cannot enforce callback, to make it return promise
+                if (!callback) {
+                    return;
+                }
+                return function(err, res) {
+                    if (err) {
+                        if (ignore_errors && ignore_errors.indexOf(err.code) === -1) {
+                            logDbRead.d("Error reading " + collection + " %j %s %j", data, err, err);
+                            logDbRead.d("From connection %j", countlyDb._cly_debug);
+                            if (e) {
+                                logDbRead.e(e.stack);
+                            }
+                        }
+                    }
+                    if (callback) {
+                        callback(err, res);
+                    }
+                };
+            };
+
+            //promise compatability
+            var overwritePromise = function(obj, name, ignore_errors) {
+                obj["_" + name] = obj[name];
+                obj[name] = function(...args) {
+                    var callback;
+                    if (typeof args[args.length - 1] === "function") {
+                        callback = args[args.length - 1];
+                        args.pop();
+                    }
+
+                    var e;
+                    var at = "";
+                    if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                        e = new Error();
+                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                    }
+
+                    logDbRead.d(name + " " + collection + " %j" + at, args);
+                    logDbRead.d("From connection %j", countlyDb._cly_debug);
+                    return handlePromiseErrors(this["_" + name](...args), e, copyArguments(arguments, name), logForOps(callback, e, copyArguments(arguments, name), ignore_errors), ignore_errors);
+                };
+            };
+            overwritePromise(ob, "countDocuments");
+            overwritePromise(ob, "createIndex");
+            overwritePromise(ob, "createIndexes");
+            overwritePromise(ob, "distinct");
+            overwritePromise(ob, "drop", [26]);
+            overwritePromise(ob, "dropIndex");
+            overwritePromise(ob, "dropIndexes");
+            overwritePromise(ob, "estimatedDocumentCount");
+            overwritePromise(ob, "indexExists");
+            overwritePromise(ob, "indexInformation");
+            overwritePromise(ob, "indexes");
+            overwritePromise(ob, "isCapped");
+            overwritePromise(ob, "options");
+            overwritePromise(ob, "rename");
+
+            var overwriteBulkPromise = function(obj, name) {
+                obj["_" + name] = obj[name];
+                obj[name] = function(...args) {
+                    var e;
+                    var at = "";
+                    if (log.getLevel("db") === "debug" || log.getLevel("db") === "info") {
+                        e = new Error();
+                        at += e.stack.replace(/\r\n|\r|\n/g, "\n").split("\n")[2];
+                    }
+
+                    logDbRead.d(name + " " + collection + " %j" + at, args);
+                    logDbRead.d("From connection %j", countlyDb._cly_debug);
+                    var bulk = this["_" + name](...args);
+                    bulk._execute = bulk.execute;
+                    bulk.execute = function(options, callback) {
+                        if (typeof options === "function") {
+                            callback = options;
+                            options = {};
+                        }
+                        return handlePromiseErrors(bulk._execute(options), e, copyArguments(arguments, name), logForOps(callback, e, copyArguments(arguments, name)));
+                    };
+                    return bulk;
+                };
+            };
+
+            overwriteBulkPromise(ob, "initializeOrderedBulkOp");
+            overwriteBulkPromise(ob, "initializeUnorderedBulkOp");
 
             //backwards compatability
 
@@ -2522,20 +2889,6 @@ var pluginManager = function pluginManager() {
 
             ob.findAndRemove = function(query, sort, options, callback) {
                 return ob.findOneAndDelete(query, options, callback);
-            };
-
-            ob._drop = ob.drop;
-            ob.drop = function() {
-                if (!arguments.length) {
-                    return ob._drop().catch(function(ex) {
-                        if (ex.code !== 26) {
-                            throw ex;
-                        }
-                    });
-                }
-                else {
-                    return ob._drop.apply(ob, arguments);
-                }
             };
 
             ob._save = ob.save;

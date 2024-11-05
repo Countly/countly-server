@@ -36,6 +36,18 @@ const widgetProperties = {
         required: false,
         type: "String"
     },
+    consent: {
+        required: false,
+        type: "Boolean"
+    },
+    links: {
+        required: false,
+        type: "Array"
+    },
+    finalText: {
+        required: false,
+        type: "String"
+    },
     popup_comment_callout: {
         required: false,
         type: "String"
@@ -158,6 +170,19 @@ const widgetPropertyPreprocessors = {
         }
         catch (jsonParseError) {
             return null;
+        }
+    },
+    links: function(links) {
+        try {
+            return JSON.parse(links);
+        }
+        catch (jsonParseError) {
+            if (Array.isArray(links)) {
+                return links;
+            }
+            else {
+                return [];
+            }
         }
     },
     ratings_texts: function(ratingsTexts) {
@@ -664,7 +689,7 @@ function uploadFile(myfile, id, callback) {
             common.db.collection("feedback_widgets").findAndModify({"_id": widgetId }, {}, {$set: changes}, function(err, widget) {
                 if (!err && widget) {
                     widget = widget.value;
-                    if (cohortsEnabled && (widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting)) {
+                    if (cohortsEnabled && ((widget.cohortID && !changes.targeting) || JSON.stringify(changes.targeting) !== JSON.stringify(widget.targeting))) {
                         if (widget.cohortID) {
                             if (changes.targeting) { //we are not setting to empty one
                                 //changes.targeting.app_id = widget.app_id + "";
@@ -850,7 +875,7 @@ function uploadFile(myfile, id, callback) {
                     */
                     currEvent.segmentation.platform = currEvent.segmentation.platform || "undefined"; //because we have a lot of old data with undefined
                     currEvent.segmentation.rating = currEvent.segmentation.rating || "undefined";
-                    currEvent.segmentation.ratingSum = currEvent.segmentation.rating || 0;
+                    currEvent.segmentation.ratingSum = Number(currEvent.segmentation.rating) || 0;
                     currEvent.segmentation.widget_id = currEvent.segmentation.widget_id || "undefined";
                     currEvent.segmentation.app_version = currEvent.segmentation.app_version || "undefined";
                     currEvent.segmentation.platform_version_rate = currEvent.segmentation.platform + "**" + currEvent.segmentation.app_version + "**" + currEvent.segmentation.rating + "**" + currEvent.segmentation.widget_id + "**";
@@ -1045,7 +1070,7 @@ function uploadFile(myfile, id, callback) {
             query.device_id = params.qstring.device_id;
         }
         if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-            query.comment = {"$regex": new RegExp(".*" + params.qstring.sSearch + ".*", 'i')};
+            query.$text = { $search: params.qstring.sSearch };
         }
         if (params.qstring.iSortCol_0) {
             try {
@@ -1376,15 +1401,16 @@ function uploadFile(myfile, id, callback) {
             }
             countlyCommon.setPeriod(params.qstring.period, true);
             var periodObj = countlyCommon.periodObj;
-            var collectionName = 'events' + crypto.createHash('sha1').update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
+            var collectionName = crypto.createHash('sha1').update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
+            var id_prefix = params.qstring.app_id + "_" + collectionName + "_";
             var documents = [];
             for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
-                documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
+                documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i]);
                 for (var m = 0; m < common.base64.length; m++) {
-                    documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                    documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
                 }
             }
-            common.db.collection(collectionName).find({
+            common.db.collection("events_data").find({
                 '_id': {
                     $in: documents
                 }
@@ -1427,6 +1453,9 @@ function uploadFile(myfile, id, callback) {
         common.db.collection('feedback' + appId).ensureIndex({
             "ts": 1
         }, function() {});
+        common.db.collection('feedback' + appId).ensureIndex({
+            comment: 'text', email: 'text'
+        }, () => {});
     });
     plugins.register("/i/apps/delete", function(ob) {
         var appId = ob.appId;
@@ -1469,6 +1498,9 @@ function uploadFile(myfile, id, callback) {
             common.db.collection('feedback' + appId).ensureIndex({
                 "ts": 1
             }, function() {});
+            common.db.collection('feedback' + appId).ensureIndex({
+                comment: 'text', email: 'text'
+            }, () => {});
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if (common.drillDb) {
@@ -1488,6 +1520,9 @@ function uploadFile(myfile, id, callback) {
             common.db.collection('feedback' + appId).ensureIndex({
                 "ts": 1
             }, function() {});
+            common.db.collection('feedback' + appId).ensureIndex({
+                comment: 'text', email: 'text'
+            }, () => {});
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
         if (common.drillDb) {
@@ -1743,6 +1778,7 @@ function uploadFile(myfile, id, callback) {
             newAtt.cohort_name = "[CLY]_" + type + id;
 
             if (!newAtt.user_segmentation || !newAtt.user_segmentation.query) {
+                newAtt.user_segmentation = newAtt.user_segmentation || {};
                 newAtt.user_segmentation.query = "{}";
                 newAtt.user_segmentation.queryText = "{}";
             }

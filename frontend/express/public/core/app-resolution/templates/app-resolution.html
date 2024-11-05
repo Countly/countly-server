@@ -17,20 +17,44 @@
 		<cly-section>
 			<div class="bu-columns bu-is-gapless bu-mt-2 technology-pie-graphs">
 				<div class="bu-column bu-is-6">
-					<cly-chart-pie :option="pieOptionsNew" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
+					<cly-chart-pie test-id="pie-new" :option="pieOptionsNew" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
 				</div>
 				<div class="bu-column bu-is-6">
-					<cly-chart-pie :option="pieOptionsTotal" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
+					<cly-chart-pie test-id="pie-total" :option="pieOptionsTotal" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
 				</div>
 			</div>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :rows="appResolutionRows" :resizable="true" :force-loading="isLoading">
+			<cly-datatable-n  test-id="resolutions" :rows="appResolutionRows" :resizable="true" :force-loading="isLoading">
 				<template v-slot="scope">
-					<el-table-column sortable="custom" prop="resolutions" :label="i18n('resolutions.table.resolution')"></el-table-column>
-					<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
-					<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
-					<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
+					<el-table-column sortable="custom" prop="resolutions" :label="i18n('resolutions.table.resolution')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-resolutions-resolution-' + rowScope.$index">
+								{{ rowScope.row.resolutions }}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-resolutions-total-sessions-' + rowScope.$index">
+								{{ rowScope.row.t }}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-resolutions-total-users-' + rowScope.$index">
+								{{ rowScope.row.u }}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-resolutions-new-users-' + rowScope.$index">
+								{{ rowScope.row.n }}
+							</div>
+						</template>
+					</el-table-column>
 				</template>
 			</cly-datatable-n>
 		</cly-section>

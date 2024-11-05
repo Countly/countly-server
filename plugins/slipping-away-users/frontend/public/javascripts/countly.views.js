@@ -17,7 +17,7 @@
             },
 
             showDrillFilter: function() {
-                if (countlyAuth.validateRead('drill')) {
+                if (countlyAuth.validateRead('drill') && countlyGlobal.plugins.indexOf("drill") !== -1) {
                     return true;
                 }
                 else {
@@ -103,6 +103,7 @@
         pluginName: "slipping-away-users",
         title: CV.i18n('slipping-away-users.title'),
         route: "#/analytics/loyalty/slipping-away-users",
+        dataTestId: "slipping-away",
         component: SlippingAwayUsersView,
         vuex: [{
             clyModel: countlySlippingAwayUsers

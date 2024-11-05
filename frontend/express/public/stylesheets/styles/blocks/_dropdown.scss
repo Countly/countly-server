@@ -159,10 +159,25 @@
     &__pop-container {
         word-break: initial;
     }
+
+    &__dropdown-icon {
+        width: 16px;
+        line-height: 16px;
+        height: 16px;
+        background-size: 16px 16px;
+        border-radius: 4px;
+        background-position: center;
+        background-color: #017AFF;
+        display: inline-block;
+    }
 }
 
 .cly-vue-more-options {
     .el-button {
         border: 1px solid #CFD6E4;
+        .is-reverse {
+            -webkit-transform: rotateZ(0);
+            transform: rotateZ(0);
+        }
     }
 }

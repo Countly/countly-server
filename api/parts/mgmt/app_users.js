@@ -572,6 +572,7 @@ usersApi.mergeUserProperties = function(newAppUserP, oldAppUser) {
     newAppUserP.merged_uid = oldAppUser.uid;
     newAppUserP.merged_did = oldAppUser.did;
     newAppUserP.merges = (newAppUserP.merges || 0) + 1;
+    newAppUserP.last_merge = Date.now().valueOf();
 };
 
 /*
@@ -763,6 +764,7 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
 var deleteMyExport = function(exportID) { //tries to delete packed file, exported folder and saved export in gridfs
     //normally there should be only export in gridfs. Cleaning all to be sure.
     //rejects only if there stays any saved data for export
+    log.d("deleteMyExport:" + exportID);
     return new Promise(function(resolve, reject) {
         //remove archive
         var errors = [];
@@ -774,7 +776,6 @@ var deleteMyExport = function(exportID) { //tries to delete packed file, exporte
                 errors.push(err);
             }
         }
-
         countlyFs.gridfs.deleteFile("appUsers", path.resolve(__dirname, './../../../export/AppUser/' + exportID + '.tar.gz'), {id: exportID + '.tar.gz'}, function(error) {
             if (error && error.message && error.message.substring(0, 12) !== "FileNotFound" && error.message.substring(0, 14) !== 'File not found') {
                 log.e(error.message.substring(0, 14));
@@ -805,6 +806,18 @@ var deleteMyExport = function(exportID) { //tries to delete packed file, exporte
             }
         });
 
+
+    }).then(function() {
+        return new Promise(function(resolve, reject) {
+            common.db.collection("exports").remove({"_eid": exportID}, function(err0) {
+                if (err0) {
+                    reject(err0);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
     });
 };
 
@@ -821,46 +834,42 @@ usersApi.deleteExport = function(filename, params, callback) {
             //remove archive
             deleteMyExport(base_name[0]).then(
                 function() {
-                    common.db.collection("exports").remove({"_eid": base_name[0]}, function(err0) {
-                        if (err0) {
-                            log.e(err0);
-                        }
-                        if (name_parts.length === 3 && name_parts[2] !== 'HASH') {
-                            //update user info
-                            common.db.collection('app_users' + name_parts[1]).update({"uid": name_parts[2]}, {$unset: {"appUserExport": ""}}, {upsert: false, multi: true}, function(err) {
-                                if (err) {
-                                    callback(err, "");
-                                }
-                                else {
-                                    plugins.dispatch("/systemlogs", {
-                                        params: params,
-                                        action: "export_app_user_deleted",
-                                        data: {
-                                            result: "ok",
-                                            uids: name_parts[2],
-                                            id: base_name[0],
-                                            app_id: name_parts[1],
-                                            info: "Exported data deleted"
-                                        }
-                                    });
-                                    callback(null, "Export deleted");
-                                }
-                            });
-                        }
-                        else {
-                            plugins.dispatch("/systemlogs", {
-                                params: params,
-                                action: "export_app_user_deleted",
-                                data: {
-                                    result: "ok",
-                                    id: base_name[0],
-                                    app_id: name_parts[1],
-                                    info: "Exported data deleted"
-                                }
-                            });
-                            callback(null, "Export deleted");
-                        }
-                    });
+                    if (name_parts.length === 3 && name_parts[2] !== 'HASH') {
+                        //update user info
+                        common.db.collection('app_users' + name_parts[1]).update({"uid": name_parts[2]}, {$unset: {"appUserExport": ""}}, {upsert: false, multi: true}, function(err) {
+                            if (err) {
+                                callback(err, "");
+                            }
+                            else {
+                                plugins.dispatch("/systemlogs", {
+                                    params: params,
+                                    action: "export_app_user_deleted",
+                                    data: {
+                                        result: "ok",
+                                        uids: name_parts[2],
+                                        id: base_name[0],
+                                        app_id: name_parts[1],
+                                        info: "Exported data deleted"
+                                    }
+                                });
+                                callback(null, "Export deleted");
+                            }
+                        });
+                    }
+                    else {
+                        plugins.dispatch("/systemlogs", {
+                            params: params,
+                            action: "export_app_user_deleted",
+                            data: {
+                                result: "ok",
+                                id: base_name[0],
+                                app_id: name_parts[1],
+                                info: "Exported data deleted"
+                            }
+                        });
+                        callback(null, "Export deleted");
+                    }
+
                 },
                 function(err) {
                     console.log(err);
@@ -1072,12 +1081,20 @@ usersApi.export = function(app_id, query, params, callback) {
             // else {
             // resolve();
             // }
-            new Promise(function(resolve) {
-                log.d("collection marked");
-                //export data from metric_changes
 
-                export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]}).finally(function() {
-                    resolve();
+            //try deleting old export
+            deleteMyExport(export_id).then(function(err) {
+                if (err) {
+                    log.e(err);
+                }
+                log.d("old export deleted");
+                return new Promise(function(resolve) {
+                    log.d("collection marked");
+                    //export data from metric_changes
+
+                    export_safely({projection: {"appUserExport": 0}, export_id: export_id, app_id: app_id, args: [...dbargs, "--collection", "metric_changes" + app_id, "-q", '{"uid":{"$in": ["' + res[0].uid.join('","') + '"]}}', "--out", export_folder + "/metric_changes" + app_id + ".json"]}).finally(function() {
+                        resolve();
+                    });
                 });
             }).then(function() {
                 log.d("metric_changes exported");

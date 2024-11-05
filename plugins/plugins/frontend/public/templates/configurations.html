@@ -6,7 +6,9 @@
             <cly-back-link :title="i18n('plugins.back-to-settings')" v-if="back" link="#/manage/configurations"></cly-back-link>
         </template>
         <template v-slot:header-right class="cly-vue-listbox__header bu-p-3">
+            <form>
             <el-input
+                test-id="search-in-settings-input"
                 ref="searchBox"
                 autocomplete="off"
                 v-model="searchQuery"
@@ -17,12 +19,14 @@
                 <i slot="prefix" class="el-input__icon el-icon-search"></i>
                 <i slot="suffix" class="el-input__icon el-icon-circle-close" @click="clearSearch"></i>
             </el-input>
+        </form>
         </template>
     </cly-header>
     <cly-main class="bu-pt-4">
         <div v-if="!back" class="bu-columns bu-is-gapless">
             <div class="bu-column bu-is-3 bu-mr-5" style="max-height:681px; max-width:223px">
                 <cly-listbox
+                    test-id="configurations-listbox"
                     skin="jumbo"
                     height="624"
                     searchPlaceholder="Search"
@@ -33,10 +37,10 @@
             </div>
             <div class="bu-column bu-is-9 selected-config" v-if="predefinedStructure[selectedConfig]">
                 <form>
-                    <h2 class="bu-mb-4"> {{selectedConfigName}} </h2>
-                    <div v-if="predefinedStructure[selectedConfig].description" class="bu-mb-4 text-medium">{{i18n(predefinedStructure[selectedConfig].description)}}</div>
+                    <h2 class="bu-mb-4" :data-test-id="'selected-config-name-label-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-')"> {{selectedConfigName}} </h2>
+                    <div v-if="predefinedStructure[selectedConfig].description" class="bu-mb-4 text-medium" :data-test-id="'selected-config-description-label-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-')">{{i18n(predefinedStructure[selectedConfig].description)}}</div>
                     <div :id="group.label" :key="index" v-for="(group, index) in predefinedStructure[selectedConfig].groups">
-                        <h3 v-if="predefinedStructure[selectedConfig].groups.length > 1 || group.label" class="bu-my-4"> 
+                        <h3 v-if="predefinedStructure[selectedConfig].groups.length > 1 || group.label" class="bu-my-4" :data-test-id="'selected-config-group-label-' + i18n(group.label).toLowerCase().replaceAll(/\s/g, '-')"> 
                             {{group.label && i18n(group.label)}}
                             <cly-tooltip-icon class="ion ion-help-circled" placement="bottom"></cly-tooltip-icon>
                         </h3>
@@ -47,8 +51,8 @@
                                     v-for="key in group.list" :key="key" 
                                     class="bu-columns bu-is-vcentered bu-p-5 config-section">
                                     <div class="bu-column bu-is-7">
-                                        <p class="bu-has-text-weight-medium">{{getLabelName(key)}}</p>
-                                        <p class="bu-has-text-weight-normal bu-mt-2" v-html="getHelperLabel(key)" v-if="getHelperLabel(key)"></p>
+                                        <p class="bu-has-text-weight-medium" :data-test-id="'settings-title-label-' + key.toLowerCase().replaceAll('_', '-')">{{getLabelName(key)}}</p>
+                                        <p class="bu-has-text-weight-normal bu-mt-2" v-html="getHelperLabel(key)" v-if="getHelperLabel(key)" :data-test-id="'settings-description-label-' + key.toLowerCase().replaceAll('_', '-')"></p>
                                         <div v-if="checkIfOverwritten(key)" class="config-section-overwritten">
                                             <a :href="checkIfOverwritten(key).href" target="_blank">{{checkIfOverwritten(key).label}}</a>
                                         </div>
@@ -60,13 +64,16 @@
                                             v-html="predefinedInputs[selectedConfig + '.' + key](configsData[selectedConfig][key])">
                                         </div>
                                         <el-input
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-input'"
                                             v-else-if="getInputType(key) === 'el-input'" 
+                                            :data-test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-textarea'"
                                             @input="onChange(key, $event)"
                                             :value="configsData[selectedConfig][key]"
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs"
                                             >
                                         </el-input>
                                         <el-select 
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-')"
                                             v-else-if="getInputType(key) === 'el-select'" 
                                             @change="onChange(key, $event)"
                                             :value="configsData[selectedConfig][key]"
@@ -74,24 +81,28 @@
                                             <el-option :key="option.value" :value="option.value" :label="option.label" v-for="option in predefinedInputs[selectedConfig + '.' + key].list"></el-option>
                                         </el-select>
                                         <el-slider 
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-')"
                                             v-else-if="getInputType(key) === 'el-slider'" 
                                             @change="onChange(key, $event)"
                                             :value="configsData[selectedConfig][key]"
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                         </el-slider>
                                         <el-button
+                                            :data-test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-button'"
                                             v-else-if="getInputType(key) === 'el-button'" 
                                             @click="predefinedInputs[selectedConfig + '.' + key].click()"
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                             {{predefinedInputs[selectedConfig + '.' + key].label}}
                                         </el-button>
                                         <el-switch 
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-')"
                                             v-else-if="getInputType(key) === 'el-switch'"
                                             @change="onChange(key, $event)"
                                             :value="configsData[selectedConfig][key]"
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                         </el-switch>
                                         <el-input-number 
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-input-number'"
                                             v-else-if="getInputType(key) === 'el-input-number'" 
                                             @change="onChange(key, $event)"
                                             :max='2147483647' 
@@ -100,12 +111,14 @@
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                         </el-input-number>
                                         <el-color-picker 
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-color-picker'"
                                             v-else-if="getInputType(key) === 'el-color-picker'" 
                                             @change="onChange(key, $event)"
                                             :value="configsData[selectedConfig][key]"
                                             v-bind="predefinedInputs[selectedConfig + '.' + key].attrs">
                                         </el-color-picker>
                                         <cly-colorpicker 
+                                            :test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-color-picker'"
                                             v-else-if="getInputType(key) === 'cly-colorpicker'" 
                                             v-model="configsData[selectedConfig][key]"
                                             :value="configsData[selectedConfig][key]"
@@ -114,6 +127,7 @@
                                             style="display:inline">
                                         </cly-colorpicker>
                                         <el-upload
+                                            :data-test-id="'settings-' + key.toLowerCase().replaceAll('_', '-') + '-upload'"
                                             v-else-if="getInputType(key) === 'image'" 
                                             :show-file-list="false"
                                             :before-upload="predefinedInputs[selectedConfig + '.' + key].before"
@@ -123,6 +137,7 @@
                                             <div :class="predefinedInputs[selectedConfig + '.' + key].image_size">
                                                 <div v-if="configsData[selectedConfig][key]" class="image-delete bu-is-flex">
                                                     <el-button 
+                                                    :test-id="'settings-' + getLabelName(key).toLowerCase().replaceAll(/\s/g, '-')"
                                                     size="small" 
                                                     type="text" 
                                                     @click.stop="onChange(key, '')"
@@ -294,6 +309,28 @@
                 </div>
             </div>
         </div>
-        <cly-diff-helper :diff="diff" @discard="unpatch" @save="save"></cly-diff-helper>
+        <cly-diff-helper :diff="diff" @discard="unpatch" @save="save" :isModal="true">
+            <template v-slot:main>
+                <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
+                    <span class="selected-count-blue bu-pl-1 text-medium">
+                        <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{diff.length}}</span>
+                        <span v-if="diff.length>1" class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made") }}</span>
+                        <span v-else class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made-single") }}</span>
+                        <span v-if="diff.length>1" class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep") }}</span>
+                        <span v-else class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep-single") }}</span>
+                    </span>
+                    <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
+                    <el-button skin="red" class="bu-mr-2" size="small" type="default" @click="save">
+                        <i class="cly-io-16 cly-io cly-io-save-disc" style="font-size: larger;"></i>
+                        <span class="bu-ml-1">
+                            {{ i18n('dashboards.save-changes') }}
+                        </span>
+                    </el-button>
+                    <el-button class="x-button" @click="unpatch">
+                        <i class="cly-io-16 cly-io cly-io-x color-cool-gray-50"></i>
+                    </el-button>
+                </div>
+            </template>
+        </cly-diff-helper>
     </cly-main>
 </div>

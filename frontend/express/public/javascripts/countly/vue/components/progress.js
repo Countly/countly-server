@@ -54,7 +54,8 @@
             percentage: {required: false}, // vck: type constraint removed due to a similar reason explained above
             color: {type: String, required: false},
             backgroundColor: {type: String, required: false},
-            tooltip: {type: String, required: false, default: null}
+            tooltip: {type: String, required: false, default: null},
+            testId: {type: String, required: false, default: 'cly-progress-bar-test-id'}
         },
         computed: {
             barStacks: function() {
@@ -166,7 +167,7 @@
         template: '<div class="cly-progress-bar-container">\
                         <template v-for="(item, index) in barStacks">\
                                 <div :key="index" v-if="item.tooltipMode !== \'popover\'" v-tooltip="getBarStackTooltip(item)" class="cly-progress-bar-stack-container" v-bind:style="getBarStackStyleWidth(item)">\
-                                    <el-progress v-bind:class="getBarStackClasses(index)" :show-text="false" :stroke-width="height" :percentage="100" :color="item.color"> </el-progress>\
+                                    <el-progress :data-test-id="testId + \'-progress-bar\'" v-bind:class="getBarStackClasses(index)" :show-text="false" :stroke-width="height" :percentage="100" :color="item.color"> </el-progress>\
                                 </div>\
                                 <div v-else :key="index" class="cly-progress-bar-stack-container" v-bind:style="getBarStackStyleWidth(item)">\
                                     <cly-popover size="auto-chart">\

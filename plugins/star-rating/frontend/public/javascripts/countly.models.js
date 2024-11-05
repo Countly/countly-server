@@ -32,13 +32,17 @@
         "logo",
         "logoType",
         "globalLogo",
-        "internalName"
+        "internalName",
+        "consent",
+        "links",
+        "finalText"
     ];
 
     var widgetJSONProperties = [
         "targeting",
         "ratings_texts",
-        "target_pages"
+        "target_pages",
+        "links"
     ];
 
     starRatingPlugin.extractWidgetProperties = function(props) {
@@ -142,7 +146,7 @@
      */
     starRatingPlugin.requestFeedbackData = function(filterObj) {
         var data = {app_id: countlyCommon.ACTIVE_APP_ID};
-        if (filterObj.period) {
+        if (filterObj && filterObj.period) {
             if (filterObj.period !== 'noperiod') {
                 data.period = filterObj.period;
             }

@@ -5,6 +5,7 @@
                 <div class="dbviewer-tab__sidebar bg-white">
                     <div class="dbviewer-tab__app-selector-dropdown">
                         <cly-select-x
+                            test-id="dbviewer-app-select"
                             @change="onAppChange($event)"
                             v-model="appFilter"
                             :options="apps">
@@ -12,6 +13,7 @@
                     </div>
                     <cly-listbox
                         class="dbviewer-tab__collections-list"
+                        test-id="collections-listbox"
                         skin="jumbo"
                         v-model="selectedCollection"
                         :searchable="true"
@@ -24,9 +26,9 @@
             <div class="bu-column">
                 <div class="bu-level">
                     <div class="bu-level-left">
-                        <div v-if="db" class="dbviewer-tab__content">
-                            <div class="bu-has-text-weight-normal bu-is-size-5">
-                                <span v-if="index">{{ i18n('dbviewer.indexes-of') }} </span>{{ decodeHtml(collections[db].map[collection]) }}
+                        <div v-if="localDb" class="dbviewer-tab__content">
+                            <div class="bu-has-text-weight-normal bu-is-size-5" data-test-id="collection-and-app-name-label">
+                                <span v-if="index">{{ i18n('dbviewer.indexes-of') }} </span>{{ decodeHtml(collections[localDb].map[localCollection]) }}
                             </div>
                         </div>
                     </div>
@@ -39,11 +41,11 @@
                     </div>
                 </div>
                 <cly-section class="dbviewer-tab__result-table bu-mt-3">
-                    <cly-datatable-n :force-loading="forceLoading" row-key="_id" :expand-row-keys="expandKeys" :hide-top="false" :show-header="false" :data-source="remoteTableDataSource" :export-query="getExportQuery" @search-query-changed="setSearchQuery" @row-click="handleTableRowClick" ref="table" :row-class-name="tableRowClassName">
+                    <cly-datatable-n row-key="_id" :expand-row-keys="expandKeys" :hide-top="false" :show-header="false" :data-source="remoteTableDataSource" :export-query="getExportQuery" @search-query-changed="setSearchQuery" @row-click="handleTableRowClick" ref="table" :row-class-name="tableRowClassName">
                         <template slot="header-left">
-                            <el-button @click="toggleExpand()">{{ isExpanded ? i18n('dbviewer.collapse-all') : i18n('dbviewer.expand-all') }}</el-button>
-                            <el-button v-if="queryFilter" @click="removeFilters()" icon="fas fa-minus-square"> {{ i18n('dbviewer.remove-filters') }} </el-button>
-                            <el-button @click="showFilterPopup()" icon="fas fa-filter"> {{ i18n('dbviewer.filter') }}</el-button>
+                            <el-button @click="toggleExpand()" data-test-id="collapse-or-expand-button">{{ isExpanded ? i18n('dbviewer.collapse-all') : i18n('dbviewer.expand-all') }}</el-button>
+                            <el-button v-if="queryFilter" @click="removeFilters()" icon="fas fa-minus-square" data-test-id="remove-filters-button"> {{ i18n('dbviewer.remove-filters') }} </el-button>
+                            <el-button @click="showFilterPopup()" icon="fas fa-filter" data-test-id="filter-button"> {{ i18n('dbviewer.filter') }}</el-button>
                         </template>
                         <template v-slot="scope">
                             <el-table-column fixed type="expand">
@@ -80,7 +82,7 @@
                             type="textarea"
                             v-model="formDialogScope.editedObject.filter"
                             placeholder="{}">
-                    </el-input>
+                        </el-input>
                     </div>
                     <div class="dbviewer-tab__projection">
                         <el-checkbox
@@ -88,31 +90,24 @@
                             v-model="formDialogScope.editedObject.projectionEnabled">
                                 <span class="bu-has-text-weight-normal">{{ i18n('dbviewer.select-fields-to-return') }}</span>
                         </el-checkbox>
-                        <div>
+                        <div v-if="formDialogScope.editedObject.projectionEnabled">
                             <label
                                 for="dbviewer-tab__projection-selector"
-                                v-if="formDialogScope.editedObject.projectionEnabled"
                                 class="text-small bu-mt-2">
                                 {{ i18n('dbviewer.projection') }}
                             </label>
-                            <el-select
-                                :popper-append-to-body="false"
-                                multiple
-                                id="dbviewer-tab__projection-selector"
-                                class="bu-mt-1"
-                                :label="i18n('dbviewer.projection')"
-                                v-if="formDialogScope.editedObject.projectionEnabled"
-                                v-model="formDialogScope.editedObject.projection"
+                            <cly-select-x
+                                :options="projectionOptions"
                                 :placeholder="i18n('dbviewer.projection')"
-                            >
-                                <el-option
-                                    v-for="item in projectionOptions"
-                                    :key="item"
-                                    :label="item"
-                                    :value="item"
+                                :show-search="true"
+                                :searchable="true"
+                                v-model="formDialogScope.editedObject.projection"
+                                class="bu-mt-1"
+                                :hide-all-options-tab="true"
+                                mode="multi-check"
+                                :popper-append-to-body="false"
                                 >
-                                </el-option>
-                            </el-select>
+                                </cly-select-x>
                         </div>
                     </div>
                     <div class="dbviewer-tab__sort">
@@ -121,33 +116,26 @@
                             v-model="formDialogScope.editedObject.sortEnabled">
                             <span class="bu-has-text-weight-normal"> {{ i18n('dbviewer.select-fields-to-sort') }}</span>
                         </el-checkbox>
-                        <div>
+                        <div v-if="formDialogScope.editedObject.sortEnabled">
                             <label
                                 for="dbviewer-tab__sort-selector"
-                                v-if="formDialogScope.editedObject.sortEnabled"
                                 class="text-small bu-mt-2">
                                 {{ i18n('dbviewer.sort-options') }}
                             </label>
                             <div class="dbviewer-tab__sort-inputs">
-                                <el-select
-                                    id="dbviewer-tab__sort-selector"
-                                    class="bu-mt-1"
-                                    :popper-append-to-body="false"
-                                    :label="i18n('dbviewer.sort-options')"
-                                    v-if="formDialogScope.editedObject.sortEnabled"
-                                    v-model="formDialogScope.editedObject.sort"
-                                    :placeholder="i18n('dbviewer.sort-options')">
-                                    <el-option
-                                        v-for="item in projectionOptions"
-                                        :key="item"
-                                        :label="item"
-                                        :value="item"
-                                    >
-                                    </el-option>
-                                </el-select>
+                                <cly-select-x
+                                :options="projectionOptions"
+                                :placeholder="i18n('dbviewer.sort-options')"
+                                :show-search="true"
+                                :searchable="true"
+                                v-model="formDialogScope.editedObject.sort"
+                                class="bu-mt-1"
+                                :hide-all-options-tab="true"
+                                :popper-append-to-body="false"
+                                >
+                                </cly-select-x>
                                 <el-switch
                                     id="dbviewer-tab__sort-type-selector"
-                                    v-if="formDialogScope.editedObject.sortEnabled"
                                     v-model="isDescentSort"
                                     :active-text="i18n('dbviewer.descending')"
                                     :inactive-text="i18n('dbviewer.ascending')">

@@ -18,20 +18,44 @@
 		<cly-section>
 			<div class="bu-columns bu-is-gapless technology-pie-graphs">
 				<div class="bu-column bu-is-6">
-					<cly-chart-pie :option="pieOptionsNew" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
+					<cly-chart-pie test-id="pie-new" :option="pieOptionsNew" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
 				</div>
 				<div class="bu-column bu-is-6">
-					<cly-chart-pie :option="pieOptionsTotal" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
+					<cly-chart-pie test-id="pie-total" :option="pieOptionsTotal" :showToggle="false" v-loading="isLoading" :force-loading="isLoading"></cly-chart-pie>
 				</div>
 			</div>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :rows="appCarrierRows" :resizable="true" :force-loading="isLoading">
+			<cly-datatable-n  test-id="carriers" :rows="appCarrierRows" :resizable="true" :force-loading="isLoading">
 				<template v-slot="scope">
-					<el-table-column sortable="custom"  prop="carriers" :label="i18n('carriers.table.carrier')"></el-table-column>
-					<el-table-column sortable="custom" :formatter="numberFormatter" prop="t" :label="i18n('common.table.total-sessions')"></el-table-column>
-					<el-table-column sortable="custom" :formatter="numberFormatter" prop="u" :label="i18n('common.table.total-users')"></el-table-column>
-					<el-table-column sortable="custom" :formatter="numberFormatter" prop="n" :label="i18n('common.table.new-users')"></el-table-column>
+					<el-table-column sortable="custom"  prop="carriers" :label="i18n('carriers.table.carrier')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-carriers-carrier-' + rowScope.$index">
+								{{ rowScope.row.carriers }}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" :formatter="numberFormatter" prop="t" :label="i18n('common.table.total-sessions')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-carriers-total-sessions-' + rowScope.$index">
+								{{ rowScope.row.t }}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" :formatter="numberFormatter" prop="u" :label="i18n('common.table.total-users')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-carriers-total-users-' + rowScope.$index">
+								{{ rowScope.row.u }}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" :formatter="numberFormatter" prop="n" :label="i18n('common.table.new-users')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-carriers-new-users-' + rowScope.$index">
+								{{ rowScope.row.n }}
+							</div>
+						</template>
+					</el-table-column>
 				</template>
 			</cly-datatable-n>
 		</cly-section>

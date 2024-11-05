@@ -11,7 +11,9 @@ var API_KEY = "0d87fb49bd48ddc510306b7b4faf209a";
 
 //dry run without deleting events
 var DRY_RUN = true;
+var SERVER_URL = "https://yourserver.count.ly";
 
+var requestsToRun = [];
 
 
 var plugins = require("../../../plugins/pluginManager");
@@ -21,7 +23,14 @@ var requestOptions = {
     uri: (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + "/i/events/edit_map",
     method: 'POST'
 };
+if (!SERVER_URL) {
+    SERVER_URL = (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost");
+}
 plugins.dbConnection().then(async function(db) {
+
+    var date = new Date();
+    var yy = date.getFullYear();
+
     var apps = await db.collection("apps").find().toArray();
     var appCheck = {};
     for (var l = 0; l < apps.length; l++) {
@@ -36,7 +45,7 @@ plugins.dbConnection().then(async function(db) {
             for (var j = 0; j < events[i].list.length; j++) {
                 if (events[i].list[j]) {
                     var eventSegmentCounts = {};
-                    var eventMeta = await db.collection("events" + crypto.createHash('sha1').update(events[i].list[j] + events[i]._id).digest('hex')).find({"m": "2022:0"}).toArray();
+                    var eventMeta = await db.collection("events" + crypto.createHash('sha1').update(events[i].list[j] + events[i]._id).digest('hex')).find({"m": yy + ":0"}).toArray();
                     for (var k = 0; k < eventMeta.length; k++) {
                         if (eventMeta[k] && eventMeta[k].meta_v2 && eventMeta[k].meta_v2.segments) {
                             for (let segment in eventMeta[k].meta_v2.segments) {
@@ -75,19 +84,36 @@ plugins.dbConnection().then(async function(db) {
                 }
             }
         }
-        if (Object.keys(omitted_segments).length && !DRY_RUN) {
-            requestOptions.json = {
-                omitted_segments: JSON.stringify(omitted_segments),
-                event_map: JSON.stringify(event_map),
-                app_id: events[i]._id,
-                api_key: API_KEY
-            };
-            await new Promise(function(resolve) {
-                request(requestOptions, function(error, response, body) {
-                    console.log("request finished", body);
-                    resolve();
+        if (Object.keys(omitted_segments).length) {
+            if (DRY_RUN) {
+                //as it is dry run  - output request
+                var props = [
+                    "omitted_segments=" + JSON.stringify(omitted_segments),
+                    "event_map=" + JSON.stringify(event_map),
+                    "app_id=" + events[i]._id,
+                    "api_key=" + API_KEY
+                ];
+                requestsToRun.push(SERVER_URL + "/i/events/edit_map?" + props.join("&"));
+            }
+            else {
+                requestOptions.json = {
+                    omitted_segments: JSON.stringify(omitted_segments),
+                    event_map: JSON.stringify(event_map),
+                    app_id: events[i]._id,
+                    api_key: API_KEY
+                };
+                await new Promise(function(resolve) {
+                    request(requestOptions, function(error, response, body) {
+                        console.log("request finished", body);
+                        resolve();
+                    });
                 });
-            });
+            }
+        }
+    }
+    if (requestsToRun.length) {
+        for (var z = 0; z < requestsToRun.length; z++) {
+            console.log(requestsToRun[z]);
         }
     }
     db.close();

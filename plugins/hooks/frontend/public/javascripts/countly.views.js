@@ -387,6 +387,8 @@
                 internalEventOptions: [
                     {value: "/cohort/enter", label: "/cohort/enter"},
                     {value: "/cohort/exit", label: "/cohort/exit"},
+                    {value: "/profile-group/enter", label: "/profile-group/enter"},
+                    {value: "/profile-group/exit", label: "/profile-group/exit"},
                     {value: "/i/app_users/create", label: "/i/app_users/create"},
                     {value: "/i/app_users/update", label: "/i/app_users/update"},
                     {value: "/i/app_users/delete", label: "/i/app_users/delete"},
@@ -403,6 +405,7 @@
                     {value: "/alerts/trigger", label: "/alerts/trigger"}
                 ],
                 cohortOptions: [],
+                groupOptions: [],
                 hookOptions: [],
                 alertOptions: []
             };
@@ -448,10 +451,17 @@
                     dataType: "json",
                     success: function(cohorts) {
                         var cohortItems = [];
+                        var groupsItems = [];
                         cohorts.forEach(function(c) {
-                            cohortItems.push({ value: c._id, label: c.name});
+                            if (c.type === 'manual') {
+                                groupsItems.push({ value: c._id, label: c.name});
+                            }
+                            else {
+                                cohortItems.push({ value: c._id, label: c.name});
+                            }
                         });
                         self.cohortOptions = Object.assign([], cohortItems);
+                        self.groupOptions = Object.assign([], groupsItems);
                     }
                 });
             },
@@ -477,17 +487,32 @@
             },
             getAlertOptions: function() {
                 var self = this;
-                var selectedApps = [this.$props.app];
                 $.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.data.r + '/alert/list',
                     data: {app_id: this.$props.app},
                     dataType: "json",
                     success: function(data) {
-                        self.alertOptions = data.alertsList
-                            .filter(alert => alert.alertBy === "hook")
-                            .filter(alert => alert.selectedApps.includes(selectedApps[0]))
-                            .map(({ _id, alertName }) => ({ value: _id, label: alertName }));
+                        if (self.alertOptions.length === 0) {
+                            self.alertOptions = data.alertsList.map(({ _id, alertName }) => ({ value: _id, label: alertName }));
+                        }
+                        else {
+                            self.alertOptions = self.alertOptions.concat(data.alertsList.map(({ _id, alertName }) => ({ value: _id, label: alertName })));
+                        }
+
+                    }
+                });
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.data.r,
+                    dataType: "json",
+                    data: {
+                        app_id: countlyCommon.ACTIVE_APP_ID,
+                        method: "concurrent_alerts",
+                        preventGlobalAbort: true,
+                    },
+                    success: function(data) {
+                        self.alertOptions = self.alertOptions.concat(data.map(item => ({ value: item._id, label: item.name })));
                     }
                 });
             },

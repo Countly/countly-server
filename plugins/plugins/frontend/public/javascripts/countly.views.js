@@ -1133,16 +1133,6 @@
 
     app.configurationsView.registerInput("security.proxy_password", {input: "el-input", attrs: {type: "textarea", rows: 1}});
 
-    app.configurationsView.registerInput("security.proxy_type", {
-        input: "el-select",
-        attrs: {},
-        list: [
-            {value: 'https', label: 'https'},
-            {value: 'http', label: 'http'}
-        ]
-    });
-
-
     app.configurationsView.registerInput("api.reports_regenerate_interval", {
         input: "el-select",
         attrs: {},
@@ -1221,6 +1211,7 @@
                 "big_list_limit": true,
                 "record_big_list": true,
                 "cache_threshold": true,
+                "use_union_with": true,
                 "correct_estimation": true,
                 "custom_property_limit": true,
                 "list_limit": true,

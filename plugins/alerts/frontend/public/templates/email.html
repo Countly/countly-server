@@ -80,7 +80,7 @@
                     <td style="padding: 30px 0px 30px 0px;" class="logo" align="center">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%" >
                             <tr>
-                                <td bgcolor="#ffffff" width="100" align="left"><img alt="Logo" src="<%= host %>/images/pre-login/countly-logo-dark.svg" width="150" style="display: block; font-family: Helvetica, Arial, sans-serif; color: #666666; font-size: 16px;" border="0"></td>
+                                <td bgcolor="#FFFFFF" width="100" align="left"><img alt="Logo" src="<%= typeof localhost !== 'undefined' ? localhost : host %>/images/pre-login/countly-logo-dark.png" width="150" style="display: block; font-family: Helvetica, Arial, sans-serif; color: #666666; font-size: 16px;" border="0"></td>
                             </tr>
                         </table>
                     </td>
@@ -99,7 +99,7 @@
                     <td>
                         <table width="100%" border="0" cellspacing="0" cellpadding="0">
                             <tr>
-                                <td id="report-title" align="left" style="font-size: 35px; font-family: Helvetica, Arial, sans-serif; color: #333333; padding-top: 0px; line-height: 36px; font-weight: 600;" ><%= subTitle %></td>
+                                <td id="report-title" align="left" style="font-size: 24px; font-family: Helvetica, Arial, sans-serif; color: #333C48; padding-top: 0px; line-height: 32px; font-weight: 500; letter-spacing: 0.3%;" ><%= subTitle %><span style="color: #0166D6; display: inline;"><%= apps[0].name %> app.</span></td>
                             </tr>
                         </table>
                     </td>
@@ -125,32 +125,19 @@
                                             <td style="padding: 0 0 10px 0;">
                                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                                     <tr>
-                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 20px; font-weight:bold;">
-                                                            <img src="<%= host %>/appimages/<%= apps[i].id %>.png" style="float:left; width:20px; height:20px; border-radius:5px; border:1px solid #DDD;"/>
-                                                            <div style="float:left; padding-top:0px; margin-left:10px;"><%=  apps[i].name%></div>
+                                                        <td align="left" style="font-family: Inter; color: #333C48; font-size: 16px; font-weight:400; line-height: 22px;">
+                                                            You're receiving this email because the
+                                                            <span style="color: #0166D6; display: inline; font-family: Inter; font-weight: 400; font-size: 16px;"><%= alertName %></span>
+                                                            you set up was triggered.
                                                         </td>
                                                     </tr>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr> 
-                <tr>
-                    <td style="padding: 10px 0 0 0; border-bottom: 1px dashed #DDDDDD; ">
-                        <table cellspacing="0" cellpadding="0" border="0" width="100%">
-                            <tr>
-                                <td valign="top" class="mobile-wrapper">
-                                    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%;" align="left">
-                                        <tr>
-                                            <td style="padding: 0 0 10px 0;">
-                                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                                     <tr>
-                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 16px; font-weight: bold;">
-                                                            <%= compareDescribe %>
+                                                        <td align="left" style="font-family: Inter; color: #333C48; font-size: 16px; font-weight:400; line-height: 22px;">
+                                                            <% if (alertDataType === "crashes" && alertDataSubType === "new crash/error" && extra && extra._id) { %>
+                                                                <a href="<%= host %>/dashboard#/<%= apps[i].id %>/crashes/<%= extra._id %>">
+                                                                    Click to access the crash details.
+                                                                </a>
+                                                            <% } %>
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -246,10 +233,10 @@
                                     <!-- BULLETPROOF BUTTON -->
                                     <table width="100%" border="0" cellspacing="0" cellpadding="0" class="mobile-button-container">
                                         <tr>
-                                            <td align="center" style="padding: 25px 0 0 0;" class="padding-copy">
+                                            <td align="left" style="padding: 25px 0 0 0;" class="padding-copy">
                                                 <table border="0" cellspacing="0" cellpadding="0" class="responsive-table">
                                                     <tr>
-                                                        <td align="center"><a href="<%= host %>/dashboard" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; font-weight: normal; color: #ffffff; text-decoration: none; background-color: #3a9d3e; border-top: 15px solid #3a9d3e; border-bottom: 15px solid #3a9d3e; border-left: 25px solid #3a9d3e; border-right: 25px solid #3a9d3e; border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; display: inline-block;" class="mobile-button">Go to Dashboard</a></td>
+                                                        <td align="left"><a href="<%= host %>/dashboard" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; font-weight: normal; color: #ffffff; text-decoration: none; background-color: #3a9d3e; border-top: 15px solid #3a9d3e; border-bottom: 15px solid #3a9d3e; border-left: 25px solid #3a9d3e; border-right: 25px solid #3a9d3e; border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; display: inline-block;" class="mobile-button">Go to Dashboard</a></td>
                                                     </tr>
                                                 </table>
                                             </td>

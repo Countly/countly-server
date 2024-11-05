@@ -9,7 +9,7 @@ var countlyFs = require('../../../api/utils/countlyFs.js');
 var cp = require('child_process'); //call process
 var spawn = cp.spawn; //for calling comannd line
 const os = require('os'); //hostname, eol
-const request = require('countly-request');
+const request = require('countly-request')(plugins.getConfig("security"));
 var common = require('../../../api/utils/common.js');
 
 module.exports = function(my_db) {
@@ -185,7 +185,7 @@ module.exports = function(my_db) {
             if (err) {
                 log.e("Unable to update export status in db");
             }
-            if ((status === 'failed' || status === 'finished')) {
+            else if ((status === 'failed' || status === 'finished')) {
                 db.collection("data_migrations").findOne({_id: my_exportid}, function(err1, res) {
                     if (err1) {
                         log.e("db error");
@@ -376,9 +376,7 @@ module.exports = function(my_db) {
             child.on('exit', function(code) {
                 if (code === 0) {
                     if (update && exp_count > 0 && exportid && exportid !== "") {
-                        if (update_progress(exportid, "exporting", "progress", 1, "") === false) {
-                            return reject(Error("data-migration.export-stoppedStopped exporting process"));
-                        }
+                        update_progress(exportid, "exporting", "progress", 1, "");
                     }
                     return resolve();
                 }
@@ -404,13 +402,20 @@ module.exports = function(my_db) {
                         if (res[j].list && res[j].list.length > 0) {
                             for (var z = 0; z < res[j].list.length; z++) {
                                 var eventCollName = "events" + crypto.createHash('sha1').update(res[j].list[z] + data.appid).digest('hex');
+                                //old data, can be removed once we are sure that we are only using merged events_data collection
                                 scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', eventCollName, '--out', data.my_folder]});
+
                                 if (plugins.isPluginEnabled('drill')) {
                                     eventCollName = "drill_events" + crypto.createHash('sha1').update(res[j].list[z] + data.appid).digest('hex');
                                     scripts.push({cmd: 'mongodump', args: [...data.dbargs_drill, '--collection', eventCollName, '--out', data.my_folder]});
                                 }
                             }
                         }
+                    }
+                    //new data
+                    scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', "events_data", '-q', '{ "_id": {"$in":{"$regex":"^' + data.appid + '_.*"}}}}', '--out', data.my_folder]});
+                    if (plugins.isPluginEnabled('drill')) {
+                        scripts.push({cmd: 'mongodump', args: [...data.dbargs_drill, '--collection', "drill_events", '-q', '{ "a": "' + data.appid + '"}', '--out', data.my_folder]});
                     }
                 }
                 resolve(scripts);
@@ -532,6 +537,11 @@ module.exports = function(my_db) {
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohortdata', '-q', '{ "a": "' + appid + '"}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohorts', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'server_stats_data_points', '-q', '{ "a": "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'consent_history', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'flow_schemas', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'flow_data', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'times_of_day', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
+
                     //concurrent_users
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'concurrent_users_max', '-q', '{"$or":[{ "app_id": "' + appid + '"},{ "_id": {"$in" :["' + appid + '_overall", "' + appid + '_overall_new"]}}]}', '--out', my_folder]});
                     scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'concurrent_users_alerts', '-q', '{ "app": "' + appid + '"}', '--out', my_folder]});
@@ -540,7 +550,7 @@ module.exports = function(my_db) {
                     var sameStructures = ["browser", "carriers", "cities", "consents", "crashdata", "density", "device_details", "devices", "langs", "sources", "users", "retention_daily", "retention_weekly", "retention_monthly", "server_stats_data_points"];
 
                     for (var k = 0; k < sameStructures.length; k++) {
-                        scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', sameStructures[k], '-q', '{ "_id": {"$regex": "' + appid + '_.*" }}', '--out', my_folder]});
+                        scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', sameStructures[k], '-q', '{ "_id": {"$regex": "^' + appid + '_.*" }}', '--out', my_folder]});
                     }
                     if (dbargs_out && dbargs_out.length) {
                         scripts.push({cmd: 'mongodump', args: [...dbargs_out, '--collection', "ab_testing_experiments" + appid, '--out', my_folder]});
@@ -578,6 +588,7 @@ module.exports = function(my_db) {
 
                         scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', 'drill_bookmarks', '-q', '{ "app_id": "' + appid + '" }', '--out', my_folder]});
                         scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', 'drill_meta' + appid, '--out', my_folder]});
+                        scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', 'drill_meta', '-q', '{ "_id": {"$regex": "^' + appid + '_.*" }}', '--out', my_folder]});
                     }
                     //export symbolication files
                     if (data.aditional_files) {
@@ -651,7 +662,7 @@ module.exports = function(my_db) {
         });
     };
 
-    var pack_data = function(my_exportid, pack_path, target_path) {
+    var pack_data = function(my_exportid, target_path) {
         return new Promise(function(resolve, reject) {
             update_progress(my_exportid, "packing", "progress", 0, "", true);
             var my_command = "tar";
@@ -932,6 +943,8 @@ module.exports = function(my_db) {
                                 if (msg.result) {
                                     msg = msg.result;
                                 }
+                                log.e('Failue to report import');
+                                log.e(msg);
                             }
                             catch (SyntaxError) {
                                 log.e(SyntaxError);
@@ -1129,8 +1142,8 @@ module.exports = function(my_db) {
         });
     };
 
-    this.update_progress = function(my_exportid, step, status, dif, reason, reset_progress, more_fields, myparams) {
-        update_progress(my_exportid, step, status, dif, reason, reset_progress, more_fields, myparams);
+    this.update_progress = function(my_exportid, step, status, dif, reason, reset_progress, more_fields) {
+        update_progress(my_exportid, step, status, dif, reason, reset_progress, more_fields);
     };
     this.export_data = function(apps, my_params, passed_db, passed_log) {
         return new Promise(function(resolve, reject) {
@@ -1288,7 +1301,7 @@ module.exports = function(my_db) {
                                                 if (Array.isArray(result1)) {
                                                     log_me(my_logpath, result1, false);
                                                 }
-                                                return pack_data(exportid, path.resolve(__dirname, './../export/' + exportid), filepath);
+                                                return pack_data(exportid, filepath);
                                             })
                                             .then(
                                                 function() {
@@ -1309,7 +1322,7 @@ module.exports = function(my_db) {
                                                         function() {
                                                             log_me(my_logpath, "Clean up failed", false);
                                                             if (params.qstring.only_export && params.qstring.only_export === true) {
-                                                                update_progress(exportid, "exporting", "finished", 0, "data-migration.export-completed-unable-to-delete", true, {}, params);
+                                                                update_progress(exportid, "exporting", "finished", 0, "data-migration.export-completed-unable-to-delete", true, {});
                                                             }
                                                             else {
                                                                 log_me(my_logpath, "Preparing for sending files", false);
@@ -1319,12 +1332,12 @@ module.exports = function(my_db) {
                                                     );
                                                 },
                                                 function(err) {
-                                                    update_progress(exportid, "packing", "failed", 0, err.message, true, {}, params);
+                                                    update_progress(exportid, "packing", "failed", 0, err.message, true, {});
                                                 }
                                             );
                                     },
                                     function(err) {
-                                        update_progress(exportid, "exporting", "failed", 0, err.message, true, {}, params);
+                                        update_progress(exportid, "exporting", "failed", 0, err.message, true, {});
                                     });
 
                             }
@@ -1334,7 +1347,7 @@ module.exports = function(my_db) {
 
                         },
                         function(error) {
-                            update_progress(exportid, "exporting", "failed", 0, error.message, true, {}, params);
+                            update_progress(exportid, "exporting", "failed", 0, error.message, true, {});
                             reject(Error('data-migration.failed-generate-scripts'));
                         });
                 },
@@ -1379,10 +1392,10 @@ module.exports = function(my_db) {
             log_me(logpath, err.message, true);
         }
 
-        import_process(my_file, my_params, logpath, passed_log, foldername, current_dir + "/" + foldername);
+        import_process(my_file, logpath, foldername, current_dir + "/" + foldername);
     };
 
-    var import_process = function(import_file, my_params, logpath, passed_log, foldername, process_dir) {
+    var import_process = function(import_file, logpath, foldername, process_dir) {
         if (!process_dir) {
             process_dir = path.resolve(__dirname, './../import/' + foldername);
         }
@@ -1456,7 +1469,7 @@ module.exports = function(my_db) {
         uploadFile(my_file)
             .then(function() {
                 log_me(logpath, 'File uploaded sucessfully', false);
-                import_process(path.resolve(__dirname, './../import/' + my_file.name), my_params, logpath, passed_log, foldername);
+                import_process(path.resolve(__dirname, './../import/' + my_file.name), logpath, foldername);
             }).catch(err => {
                 report_import(params, err.message, "failed", foldername);
             });

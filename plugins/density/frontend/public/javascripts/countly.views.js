@@ -42,6 +42,7 @@
                     {
                         title: CV.i18n('density.title'),
                         name: "density-table",
+                        dataTestId: "densities-table",
                         component: countlyVue.views.create({
                             template: CV.T("/density/templates/density_table.html"),
                             computed: {
@@ -65,6 +66,7 @@
                     {
                         title: CV.i18n('density.versions'),
                         name: "version-table",
+                        dataTestId: "versions-table",
                         component: countlyVue.views.create({
                             template: CV.T("/density/templates/version_table.html"),
                             data: function() {
@@ -160,6 +162,16 @@
             },
             numberFormatter: function(row, col, value) {
                 return countlyCommon.formatNumber(value, 0);
+            },
+            countTotals: function(data) {
+                var totalCount = 0;
+                data.forEach(element => {
+                    element.values.forEach(value => {
+                        totalCount += parseInt(value.description, 10);
+                    });
+                    element.total = totalCount;
+                    totalCount = 0;
+                });
             }
         },
         computed: {
@@ -199,6 +211,13 @@
                         "color": k > 3 ? this.graphColors[k % 4] : this.graphColors[k]
                     });
                 }
+                display.sort(function(a, b) {
+                    let totalDiff = b.value - a.value;
+                    if (totalDiff === 0) {
+                        return a.name.localeCompare(b.name);
+                    }
+                    return totalDiff;
+                });
                 return display;
             },
             densityVersions: function() {
@@ -229,7 +248,14 @@
                     });
                     returnData[i].values = returnData[i].values.slice(0, 12);
                 }
-
+                this.countTotals(returnData);
+                returnData.sort(function(a, b) {
+                    let totalDiff = b.total - a.total;
+                    if (totalDiff === 0) {
+                        return a.label.localeCompare(b.label);
+                    }
+                    return totalDiff;
+                });
                 return returnData;
             },
             appDensityRows: function() {
@@ -263,6 +289,7 @@
         permission: FEATURE_NAME,
         route: "#/analytics/technology/densities",
         title: CV.i18n('density.title'),
+        dataTestId: "technology-densities",
         component: AppDensityView
     });
 })();

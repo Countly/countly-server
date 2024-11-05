@@ -1,4 +1,4 @@
-/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge */
+/* global jQuery, Vue, _, CV, countlyCommon, countlyGlobal, CountlyHelpers, countlyTaskManager, _merge, Sortable */
 
 (function(countlyVue, $) {
 
@@ -109,6 +109,9 @@
                     });
                 }
                 var filteredTotal = currentArray.length;
+                if (this.displayMode === 'list') {
+                    this.controlParams.perPage = currentArray.length;
+                }
                 if (this.controlParams.perPage < currentArray.length) {
                     var startIndex = (this.controlParams.page - 1) * this.controlParams.perPage,
                         endIndex = startIndex + this.controlParams.perPage;
@@ -671,10 +674,7 @@
                 if (selectedMenuItem && selectedMenuItem.item && selectedMenuItem.item.title) {
                     sectionName = this.i18n(selectedMenuItem.item.title);
                 }
-                var appName = "";
-                if (this.$store.getters["countlyCommon/getActiveApp"]) {
-                    appName = this.$store.getters["countlyCommon/getActiveApp"].name;
-                }
+                var appName = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].name;
                 var date = countlyCommon.getDateRangeForCalendar();
 
                 var filename = siteName + " - " + appName + " - " + sectionName + " " + "(" + date + ")";
@@ -946,6 +946,17 @@
                 type: String,
                 default: 'cly-datatable-n-test-id',
                 required: false
+            },
+            sortable: {
+                type: Boolean,
+                default: false
+            },
+            displayMode: {
+                type: String,
+                default: null,
+                validator: function(value) {
+                    return ['list', /** add others if needed */].indexOf(value) !== -1;
+                }
             }
         },
         data: function() {
@@ -999,7 +1010,9 @@
                 if (!this.forceLoading && this.dataSource && this.externalStatus === 'silent-pending') {
                     classes.push("silent-loading");
                 }
-
+                if (this.displayMode) {
+                    classes.push("display-mode--" + this.displayMode);
+                }
                 return classes;
             },
             sourceRows: function() {
@@ -1014,7 +1027,23 @@
                 };
             }
         },
-        template: CV.T('/javascripts/countly/vue/templates/datatable.html')
+        template: CV.T('/javascripts/countly/vue/templates/datatable.html'),
+        mounted: function() {
+            var self = this;
+            if (this.sortable) {
+                const table = document.querySelector('.el-table__body-wrapper tbody');
+                Sortable.create(table, {
+                    animation: 150,
+                    handle: '.el-table__row',
+                    onStart({oldIndex}) {
+                        self.$emit('drag-start', oldIndex);
+                    },
+                    onEnd({ newIndex, oldIndex }) {
+                        self.$emit('drag-end', { newIndex, oldIndex });
+                    }
+                });
+            }
+        }
     }));
 
     Vue.component("cly-datatable-undo-row", countlyBaseComponent.extend({

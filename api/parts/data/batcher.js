@@ -4,7 +4,24 @@ const plugins = require('../../../plugins/pluginManager.js');
 const log = require('../../utils/log.js')("batcher");
 const common = require('../../utils/common.js');
 
+var batcherStats = {
+    key: 'BATCHER_STATS',
+    pid: process.pid,
+    insert_queued: 0,
+    insert_processing: 0,
+    insert_errored_fallback: 0,
+    insert_errored_no_fallback: 0,
+    insert_errored_no_fallback_last_error: "",
+    update_queued: 0,
+    update_processing: 0,
+    update_errored_fallback: 0,
+    update_errored_no_fallback: 0,
+    update_errored_no_fallback_last_error: "",
+};
 
+setInterval(function() {
+    log.i('%j', batcherStats);
+}, 10000);
 /**
  *  Class for batching database insert operations
  *  @example
@@ -52,9 +69,12 @@ class InsertBatcher {
      */
     async flush(db, collection) {
         var no_fallback_errors = [10334, 17419, 14, 56];
+        var notify_fallback_errors = [10334, 17419];
         if (this.data[db][collection].length) {
             var docs = this.data[db][collection];
             this.data[db][collection] = [];
+            batcherStats.insert_queued -= docs.length;
+            batcherStats.insert_processing += docs.length;
             try {
                 await new Promise((resolve, reject) => {
                     this.dbs[db].collection(collection).insertMany(docs, {ordered: false, ignore_errors: [11000]}, function(err, res) {
@@ -62,6 +82,7 @@ class InsertBatcher {
                             reject(err);
                             return;
                         }
+                        batcherStats.insert_processing -= docs.length;
                         resolve(res);
                     });
                 });
@@ -74,9 +95,20 @@ class InsertBatcher {
                 //trying to rollback operations to try again on next iteration
                 if (ex.writeErrors && ex.writeErrors.length) {
                     for (let i = 0; i < ex.writeErrors.length; i++) {
+                        batcherStats.insert_processing--;
                         if (no_fallback_errors.indexOf(ex.writeErrors[i].code) !== -1) {
+                            batcherStats.insert_errored_no_fallback++;
+                            batcherStats.insert_errored_no_fallback_last_error = ex.writeErrors[i].errmsg;
+                            //dispatch failure
+                            if (notify_fallback_errors.indexOf(ex.writeErrors[i].code) !== -1) {
+                                var index0 = ex.writeErrors[i].index;
+                                plugins.dispatch("/batcher/fail", {collection: collection, db: db, data: docs[index0], error: ex.writeErrors[i].errmsg});
+                            }
+                            // common.recordCustomMetric(params, "diagnostic", "batcher", metrics, 1, segs);
+                            //we could record in diagnostic data
                             continue;
                         }
+                        batcherStats.insert_errored_fallback++;
                         let index = ex.writeErrors[i].index;
                         if (docs[index]) {
                             this.data[db][collection].push(docs[index]);
@@ -128,8 +160,10 @@ class InsertBatcher {
                 for (let i = 0; i < doc.length; i++) {
                     this.data[db][collection].push(doc[i]);
                 }
+                batcherStats.insert_queued += doc.length;
             }
             else {
+                batcherStats.insert_queued++;
                 this.data[db][collection].push(doc);
             }
             if (!this.process) {
@@ -189,6 +223,7 @@ class WriteBatcher {
      */
     async flush(db, collection) {
         var no_fallback_errors = [10334, 17419, 14, 56];
+        var notify_errors = [10334, 17419];
         if (Object.keys(this.data[db][collection]).length) {
             var queries = [];
             for (let key in this.data[db][collection]) {
@@ -197,12 +232,14 @@ class WriteBatcher {
                         updateOne: {
                             filter: {_id: this.data[db][collection][key].id},
                             update: this.data[db][collection][key].value,
-                            upsert: true
+                            upsert: this.data[db][collection][key].upsert
                         }
                     });
                 }
             }
             this.data[db][collection] = {};
+            batcherStats.update_queued -= queries.length;
+            batcherStats.update_processing += queries.length;
             try {
                 await new Promise((resolve, reject) => {
                     this.dbs[db].collection(collection).bulkWrite(queries, {ordered: false, ignore_errors: [11000]}, function(err, res) {
@@ -210,6 +247,7 @@ class WriteBatcher {
                             reject(err);
                             return;
                         }
+                        batcherStats.update_processing -= queries.length;
                         resolve(res);
                     });
                 });
@@ -222,9 +260,20 @@ class WriteBatcher {
                 //trying to rollback operations to try again on next iteration
                 if (ex.writeErrors && ex.writeErrors.length) {
                     for (let i = 0; i < ex.writeErrors.length; i++) {
+                        batcherStats.update_processing--;
                         if (no_fallback_errors.indexOf(ex.writeErrors[i].code) !== -1) {
+                            batcherStats.update_errored_no_fallback++;
+                            batcherStats.update_errored_no_fallback_last_error = ex.writeErrors[i].errmsg;
+                            //dispatch failure
+                            if (notify_errors.indexOf(ex.writeErrors[i].code) !== -1) {
+                                var index0 = ex.writeErrors[i].index;
+                                plugins.dispatch("/batcher/fail", {collection: collection, db: db, data: queries[index0], error: ex.writeErrors[i].errmsg});
+                            }
+                            // common.recordCustomMetric(params, "diagnostic", "batcher", metrics, 1, segs);
+                            //we could record in diagnostic data
                             continue;
                         }
+                        batcherStats.update_errored_fallback++;
                         let index = ex.writeErrors[i].index;
                         if (queries[index]) {
                             //if we don't have anything for this document yet just use query
@@ -291,17 +340,25 @@ class WriteBatcher {
      *  @param {string} id - id of the document
      *  @param {object} operation - operation
      *  @param {string} db - name of the database for which to write data
+     *  @param {object=} options - options for operation ((upsert: false) - if you don't want to upsert document)
      */
-    add(collection, id, operation, db = "countly") {
+    add(collection, id, operation, db = "countly", options) {
         if (!this.shared || cluster.isMaster) {
             if (!this.data[db][collection]) {
                 this.data[db][collection] = {};
             }
             if (!this.data[db][collection][id]) {
-                this.data[db][collection][id] = {id: id, value: operation};
+                this.data[db][collection][id] = {id: id, value: operation, upsert: true};
+                if (options && options.upsert === false) {
+                    this.data[db][collection][id].upsert = false;
+                }
+                batcherStats.update_queued++;
             }
             else {
                 this.data[db][collection][id].value = common.mergeQuery(this.data[db][collection][id].value, operation);
+                if (options && options.upsert === false) {
+                    this.data[db][collection][id].upsert = this.data[db][collection][id].upsert || false;
+                }
             }
             if (!this.process) {
                 this.flush(db, collection);

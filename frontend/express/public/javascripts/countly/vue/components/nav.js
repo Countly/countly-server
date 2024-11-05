@@ -193,14 +193,16 @@
                             <div :class="tabListClasses" :style="customStyle">\
                                 <div\
                                     v-for="tab in tabs"\
+                                    v-tooltip="tab.tooltip ? tab.tooltip : undefined"\
+                                    :style="{cursor: tab.disabled ? \'not-allowed\' : \'pointer\', opacity: tab.disabled ? 0.5 : 1}"\
                                     v-bind:key="tab.name"\
                                     v-bind:class="[tabClasses, activeClasses(tab.name)]"\
                                     v-on:click="setTab(tab.name)"\
                                     v-if="(!tab.type) || (tab.type === \'mobile\' && !apps[app_id].type) || (apps[app_id].type === tab.type)"\
                                     >\
                                         <slot :name="tab.name" :tab="tab">\
-                                            <a v-if=\'tab.route\' :href="tab.route" :data-test-id="tab.dataTestId + \'-link\'"><span :data-test-id="tab.dataTestId + \'-title\'">{{ i18n(tab.title) }}</span></a>\
-                                            <span :data-test-id="tab.dataTestId + \'-title\'" v-else>{{ i18n(tab.title) }}</span>\
+                                            <a v-if=\'tab.route\' :href="tab.route" :data-test-id="\'tab-\' + (tab.dataTestId ? tab.dataTestId : tab.title.toLowerCase().replaceAll(\' \', \'-\')) + \'-link\'"><span :data-test-id="\'tab-\' + (tab.dataTestId ? tab.dataTestId : tab.title.toLowerCase().replaceAll(\' \', \'-\')) + \'-title\'">{{ i18n(tab.title) }}</span></a>\
+                                            <span :data-test-id="\'tab-\' + (tab.dataTestId ? tab.dataTestId : tab.title.toLowerCase().replaceAll(\' \', \'-\')) + \'-title\'" v-else>{{ i18n(tab.title) }}</span>\
                                         </slot>\
                                         <div class="bu-is-inline-block" v-if="tab.name === customIcon.implementedTab" v-html="customIcon.iconTemplate"></div>\
                                 </div>\

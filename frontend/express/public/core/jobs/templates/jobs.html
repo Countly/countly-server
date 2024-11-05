@@ -4,38 +4,48 @@
     >
     </cly-header>
     <cly-main>
-		<cly-section>
-			<cly-datatable-n :data-source="remoteTableDataSource" v-on:row-click="goTo" :isClickable="true" :default-sort="{prop: 'name', order: 'ascending'}">
+		<cly-section data-test-id="table-jobs">
+			<cly-datatable-n test-id="datatable-jobs" :data-source="remoteTableDataSource" v-on:row-click="goTo" :isClickable="true" :default-sort="{prop: 'name', order: 'ascending'}">
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="name" :label="i18n('jobs.job-name')" type="clickable">
+                        <template slot-scope="scope">
+                            <span :data-test-id="'datatable-jobs-name-' + scope.$index">
+                                {{ scope.row.name }}
+                            </span>
+                        </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="status" :label="i18n('jobs.job-status')">
                         <template slot-scope="scope">   
-                            <cly-status-tag :text="scope.row.status" :color="getColor(scope.row)"></cly-status-tag>
+                            <span :data-test-id="'datatable-jobs-status-' + scope.$index">
+                                 <cly-status-tag :text="scope.row.status" :color="getColor(scope.row)"></cly-status-tag>
+                            </span>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="schedule" :label="i18n('jobs.job-schedule')">
                         <template slot-scope="scope">
-                            <p>{{scope.row.scheduleLabel}}</p>
-                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.scheduleDetail}}</p>
+                            <p :data-test-id="'datatable-jobs-schedule-' + scope.$index">{{scope.row.scheduleLabel}}</p>
+                            <p :data-test-id="'datatable-jobs-schedule-detail-' + scope.$index" style="color:#A7AEB8; font-size: 12px;">{{scope.row.scheduleDetail}}</p>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="next" :label="i18n('jobs.job-next-run')">
                         <template slot-scope="scope">
-                            <p>{{scope.row.nextRunDate}}</p>
-                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.nextRunTime}}</p>
+                            <p :data-test-id="'datatable-jobs-next-run-date-' + scope.$index">{{scope.row.nextRunDate}}</p>
+                            <p :data-test-id="'datatable-jobs-next-run-time-' + scope.$index" style="color:#A7AEB8; font-size: 12px;">{{scope.row.nextRunTime}}</p>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="finished" :label="i18n('jobs.job-last-run')">
                         <template slot-scope="scope">
-                            <p v-html="scope.row.lastRun"></p>
+                            <p v-html="scope.row.lastRun" :data-test-id="'datatable-jobs-last-run-' + scope.$index"></p>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="total" :label="i18n('jobs.job-total-scheduled')">
+                        <template slot-scope="scope">
+                            <p :data-test-id="'datatable-jobs-total-' + scope.$index">{{scope.row.total}}</p>
+                        </template>
                     </el-table-column>
                     <el-table-column align="center" type="options">
                         <template v-slot="scope">
-                            <cly-more-options v-if="scope.row.status !== 'RUNNING' && canSuspendJob && scope.row.hover" @command="handleCommand($event, scope.row)" placement="bottom-end">
+                            <cly-more-options v-if="scope.row.status !== 'RUNNING' && canSuspendJob && scope.row.hover" @command="handleCommand($event, scope.row)" placement="bottom-end" :test-id="'datatable-jobs-' + scope.$index">
                                 <el-dropdown-item command="change-job-status">{{scope.row.status === 'SUSPENDED' ? i18n('jobs.schedule') : i18n('jobs.suspend')}}</el-dropdown-item>
                             </cly-more-options>
                         </template>

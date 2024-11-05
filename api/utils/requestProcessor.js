@@ -22,7 +22,7 @@ const validateUserForDataReadAPI = validateRead;
 const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
-const request = require('countly-request');
+const request = require('countly-request')(plugins.getConfig("security"));
 const Handle = require('../../api/parts/jobs/index.js');
 
 var loaded_configs_time = 0;
@@ -41,6 +41,7 @@ const countlyApi = {
         appUsers: require('../parts/mgmt/app_users.js'),
         eventGroups: require('../parts/mgmt/event_groups.js'),
         cms: require('../parts/mgmt/cms.js'),
+        datePresets: require('../parts/mgmt/date_presets.js'),
     }
 };
 
@@ -106,26 +107,108 @@ const processRequest = (params) => {
      * @type {object}
      * @global
      * @property {string} href - full URL href
-     * @property {res} res - nodejs response object
-     * @property {req} req - nodejs request object
+     * @property {http.ServerResponse} res - The HTTP response object
+     * @property {http.IncomingMessage} req - The HTTP request object
      * @param {APICallback} params.APICallback - API output handler. Which should handle API response
      * @property {object} qstring - all the passed fields either through query string in GET requests or body and query string for POST requests
-     * @property {string} apiPath - two top level url path, for example /i/analytics
+     * @property {string} apiPath - two top level url path, for example /i/analytics, first two segments from the fullPath
      * @property {string} fullPath - full url path, for example /i/analytics/dashboards
      * @property {object} files - object with uploaded files, available in POST requests which upload files
+     * @property {Object} [files.app_image] - Uploaded app image file
+     * @property {string} files.app_image.path - The temporary path of the uploaded app image file
+     * @property {string} files.app_image.name - The original name of the uploaded app image file
+     * @property {string} files.app_image.type - The MIME type of the uploaded app image file
+     * @property {number} files.app_image.size - The size (in bytes) of the uploaded app image file
      * @property {string} cancelRequest - Used for skipping SDK requests, if contains true, then request should be ignored and not processed. Can be set at any time by any plugin, but API only checks for it in beggining after / and /sdk events, so that is when plugins should set it if needed. Should contain reason for request cancelation
+     * @property {boolean} [blockResponses=false] - Flag to block responses from being sent
+     * @property {boolean} [forceProcessingRequestTimeout=false] - Flag to force processing request timeout
      * @property {boolean} bulk - True if this SDK request is processed from the bulk method
-     * @property {array} promises - Array of the promises by different events. When all promises are fulfilled, request counts as processed
+     * @property {Array<Promise>} promises - Array of the promises by different events. When all promises are fulfilled, request counts as processed
      * @property {string} ip_address - IP address of the device submitted request, exists in all SDK requests
      * @property {object} user - Data with some user info, like country geolocation, etc from the request, exists in all SDK requests
+     * @property {string} user.country - User's country
+     * @property {string} user.city - User's city
+     * @property {number} [user.tz] - User's timezone offset (in minutes)
      * @property {object} app_user - Document from the app_users collection for current user, exists in all SDK requests after validation
+     * @property {string} app_user.uid - Application user ID
+     * @property {string} app_user.did - Device ID
+     * @property {string} app_user.country - User's country
+     * @property {string} app_user.city - User's city
+     * @property {number} app_user.tz - User's timezone offset (in minutes)
+     * @property {Object} [app_user.custom] - Custom properties for the application user
      * @property {object} app_user_id - ID of app_users document for the user, exists in all SDK requests after validation
      * @property {object} app - Document for the app sending request, exists in all SDK requests after validation and after validateUserForDataReadAPI validation
+     * @property {string} app._id - ID of the app document
+     * @property {string} app.name - Name of the app
+     * @property {string} app.country - Country of the app
+     * @property {string} app.category - Category of the app
+     * @property {string} app.timezone - Timezone of the app
+     * @property {string} app.type - Type of the app
+     * @property {boolean} app.locked - Flag indicating if the app is locked
+     * @property {Object} app.plugins - Plugin-specific configuration for the app
      * @property {ObjectID} app_id - ObjectID of the app document, available after validation
      * @property {string} app_cc - Selected app country, available after validation
      * @property {string} appTimezone - Selected app timezone, available after validation
      * @property {object} member - All data about dashboard user sending the request, exists on all requests containing api_key, after validation through validation methods
+     * @property {string} member._id - ID of the dashboard user
+     * @property {boolean} member.global_admin - Flag indicating if the user has global admin rights
+     * @property {string} member.auth_token - The authentication token for the user
+     * @property {boolean} member.locked - Flag indicating if the user is locked
+     * @property {Array} [member.admin_of] - Array of app IDs the user is an admin of (legacy)
+     * @property {Array} [member.user_of] - Array of app IDs the user has user access to (legacy)
+     * @property {string} member.username - Username of the dashboard user
+     * @property {string} member.email - Email address of the dashboard user
+     * @property {string} member.full_name - Full name of the dashboard user
+     * @property {string} member.api_key - API key of the dashboard user
+     * @property {Object} member.permission - Object containing user's access permissions
+     * @property {Object} member.permission._ - Object containing special permissions
+     * @property {Array} member.permission._.u - Array of arrays containing app IDs the user has user access to
+     * @property {Array} member.permission._.a - Array of app IDs the user has admin access to
+     * @property {Object} [member.permission.c] - Object containing create permissions for specific apps
+     * @property {Object} [member.permission.c[app_id]] - Object containing create permissions for a specific app
+     * @property {boolean} [member.permission.c[app_id].all] - Flag indicating if the user has create access to all features in the app
+     * @property {Object} [member.permission.c[app_id].allowed] - Object containing allowed create permissions for the app
+     * @property {Object} [member.permission.r] - Object containing read permissions for specific apps
+     * @property {Object} [member.permission.r[app_id]] - Object containing read permissions for a specific app
+     * @property {boolean} [member.permission.r[app_id].all] - Flag indicating if the user has read access to all features in the app
+     * @property {Object} [member.permission.r[app_id].allowed] - Object containing allowed read permissions for the app
+     * @property {Object} [member.permission.u] - Object containing update permissions for specific apps
+     * @property {Object} [member.permission.u[app_id]] - Object containing update permissions for a specific app
+     * @property {boolean} [member.permission.u[app_id].all] - Flag indicating if the user has update access to all features in the app
+     * @property {Object} [member.permission.u[app_id].allowed] - Object containing allowed update permissions for the app
+     * @property {Object} [member.permission.d] - Object containing delete permissions for specific apps
+     * @property {Object} [member.permission.d[app_id]] - Object containing delete permissions for a specific app
+     * @property {boolean} [member.permission.d[app_id].all] - Flag indicating if the user has delete access to all features in the app
+     * @property {Object} [member.permission.d[app_id].allowed] - Object containing allowed delete permissions for the app
+     * @property {Object} member.eventList - Object containing event collections with replaced app names
+     * @property {Object} member.viewList - Object containing view collections with replaced app names
      * @property {timeObject} time - Time object for the request
+     * @property {string} request_hash - Hash of the request data
+     * @property {string} [previous_session] - ID of the user's previous session
+     * @property {number} [previous_session_start] - Start timestamp of the user's previous session
+     * @property {string} request_id - Unique ID for this request
+     * @property {string} [user_id] - ID of the user making the request
+     * @property {string} [formDataUrl] - URL encoded form data
+     * @property {boolean} [retry_request] - Flag indicating if this is a retry of a failed request
+     * @property {boolean} [populator] - Flag indicating if this request is from the populator
+     * @property {Object} urlParts - Parsed URL parts
+     * @property {Object} urlParts.query - Parsed query string as key-value pairs
+     * @property {string} urlParts.pathname - The URL path
+     * @property {string} urlParts.href - The full URL
+     * @property {Array<string>} paths - The URL path split into segments
+     * @property {function} [output] - Callback function to handle the API response
+     * @property {boolean} [waitForResponse] - If false, return immediately and do not wait for plugin chain execution to complete
+     * @property {string} [app_name] - Name of the app
+     * @property {number} time.mstimestamp - Request timestamp in milliseconds
+     * @property {Object} [app_user.ls] - Last session timestamp of the app user
+     * @property {boolean} [truncateEventValuesList=false] - Flag indicating whether to truncate event values list
+     * @property {number} [session_duration] - Total session duration
+     * @property {boolean} [is_os_processed=false] - Flag indicating if OS and OS version have been processed
+     * @property {Object} [processed_metrics] - Processed metrics data
+     * @property {boolean} [app_user.has_ongoing_session] - Flag indicating if the user has an ongoing session
+     * @property {number} [app_user.last_req] - Timestamp of the user's last request
+     * @property {Object} [dbDateIds] - Object with date IDs for different time periods
+     * @property {boolean} [dataTransformed=false] - Flag indicating if the data is already transformed
      */
     params.href = urlParts.href;
     params.qstring = params.qstring || {};
@@ -216,7 +299,7 @@ const processRequest = (params) => {
                     common.returnMessage(params, 400, 'Invalid parameter "requests"');
                     return false;
                 }
-                if (!plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                if (!params.qstring.safe_api_response && !plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
                     common.returnMessage(params, 200, 'Success');
                 }
                 common.blockResponses(params);
@@ -1741,6 +1824,9 @@ const processRequest = (params) => {
                 switch (paths[3]) {
                 case 'all':
                     validateRead(params, 'core', () => {
+                        if (!params.qstring.query) {
+                            params.qstring.query = {};
+                        }
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1781,6 +1867,9 @@ const processRequest = (params) => {
                     break;
                 case 'count':
                     validateRead(params, 'core', () => {
+                        if (!params.qstring.query) {
+                            params.qstring.query = {};
+                        }
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -1813,6 +1902,9 @@ const processRequest = (params) => {
                     break;
                 case 'list':
                     validateRead(params, 'core', () => {
+                        if (!params.qstring.query) {
+                            params.qstring.query = {};
+                        }
                         if (typeof params.qstring.query === "string") {
                             try {
                                 params.qstring.query = JSON.parse(params.qstring.query);
@@ -2038,8 +2130,16 @@ const processRequest = (params) => {
 
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
                             if (hasAccess) {
+                                var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
+                                var db = "";
+                                if (params.qstring.db && dbs[params.qstring.db]) {
+                                    db = dbs[params.qstring.db];
+                                }
+                                else {
+                                    db = common.db;
+                                }
                                 countlyApi.data.exports.fromDatabase({
-                                    db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
+                                    db: db,
                                     params: params,
                                     collection: params.qstring.collection,
                                     query: params.qstring.query,
@@ -2903,6 +3003,55 @@ const processRequest = (params) => {
                 }
                 break;
             }
+            case '/o/date_presets': {
+                switch (paths[3]) {
+                case 'getAll':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.datePresets.getAll, params);
+                    break;
+                case 'getById':
+                    validateUserForMgmtReadAPI(countlyApi.mgmt.datePresets.getById, params);
+                    break;
+                default:
+                    if (!plugins.dispatch(apiPath, {
+                        params: params,
+                        validateUserForDataReadAPI: validateUserForDataReadAPI,
+                        validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                        paths: paths,
+                        validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                    })) {
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /getAll /getById');
+                    }
+                    break;
+                }
+                break;
+            }
+            case '/i/date_presets': {
+                switch (paths[3]) {
+                case 'create':
+                    validateUserForWrite(params, countlyApi.mgmt.datePresets.create);
+                    break;
+                case 'update':
+                    validateUserForWrite(params, countlyApi.mgmt.datePresets.update);
+                    break;
+                case 'delete':
+                    validateUserForWrite(params, countlyApi.mgmt.datePresets.delete);
+                    break;
+                default:
+                    if (!plugins.dispatch(apiPath, {
+                        params: params,
+                        validateUserForDataReadAPI: validateUserForDataReadAPI,
+                        validateUserForMgmtReadAPI: validateUserForMgmtReadAPI,
+                        paths: paths,
+                        validateUserForDataWriteAPI: validateUserForDataWriteAPI,
+                        validateUserForGlobalAdmin: validateUserForGlobalAdmin
+                    })) {
+                        common.returnMessage(params, 400, 'Invalid path, must be one of /create /update or /delete');
+                    }
+                    break;
+                }
+                break;
+            }
             default:
                 if (!plugins.dispatch(apiPath, {
                     params: params,
@@ -3052,7 +3201,7 @@ const processBulkRequest = (i, requests, params) => {
     const appKey = params.qstring.app_key;
     if (i === requests.length) {
         common.unblockResponses(params);
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+        if (params.qstring.safe_api_response || plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
             common.returnMessage(params, 200, 'Success');
         }
         return;
@@ -3061,9 +3210,10 @@ const processBulkRequest = (i, requests, params) => {
     if (!requests[i] || (!requests[i].app_key && !appKey)) {
         return processBulkRequest(i + 1, requests, params);
     }
-
+    if (params.qstring.safe_api_response) {
+        requests[i].safe_api_response = true;
+    }
     params.req.body = JSON.stringify(requests[i]);
-
     const tmpParams = {
         'app_id': '',
         'app_cc': '',
@@ -3232,13 +3382,13 @@ function validateRedirect(ob) {
                 log.e("Redirect error", error, body, opts, app, params);
             }
 
-            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+            if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
                 common.returnMessage(params, code, message);
             }
         });
         params.cancelRequest = "Redirected: " + app.redirect_url;
         params.waitForResponse = false;
-        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe) {
+        if (plugins.getConfig("api", params.app && params.app.plugins, true).safe || params.qstring?.safe_api_response) {
             params.waitForResponse = true;
         }
         return false;

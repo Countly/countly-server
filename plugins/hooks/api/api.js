@@ -2,7 +2,6 @@ const Triggers = require('./parts/triggers/index.js');
 const Effects = require('./parts/effects/index.js');
 const asyncLib = require('async');
 const EventEmitter = require('events');
-
 const common = require('../../../api/utils/common.js');
 const { validateRead, validateCreate, validateDelete, validateUpdate } = require('../../../api/utils/rights.js');
 const plugins = require('../../pluginManager.js');
@@ -87,6 +86,17 @@ class Hooks {
         db && db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray(function(err, result) {
             log.d("Fetch rules:", result, err, process.pid);
             if (result) {
+                //change profile group triggers to cohorts triggers. There are no events which starts with /profile-group, in reality it is just cohort events 
+                for (var z = 0; z < result.length; z++) {
+                    if (result[z].trigger && result[z].trigger.type === "InternalEventTrigger" && result[z].trigger.configuration && result[z].trigger.configuration.eventType) {
+                        if (result[z].trigger.configuration.eventType === "/profile-group/enter") {
+                            result[z].trigger.configuration.eventType = "/cohort/enter";
+                        }
+                        else if (result[z].trigger.configuration.eventType === "/profile-group/exit") {
+                            result[z].trigger.configuration.eventType = "/cohort/exit";
+                        }
+                    }
+                }
                 self._cachedRules = result;
                 self.syncRulesWithTrigger();
             }
@@ -265,6 +275,11 @@ plugins.register("/i/hook/save", function(ob) {
 
     validateCreate(ob.params, FEATURE_NAME, function(params) {
         let hookConfig = params.qstring.hook_config;
+        if (!hookConfig) {
+            common.returnMessage(params, 400, 'Invalid hookConfig');
+            return true;
+        }
+
         try {
             hookConfig = JSON.parse(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
@@ -273,7 +288,7 @@ plugins.register("/i/hook/save", function(ob) {
                 return true;
             }
 
-            if (hookConfig && hookConfig.effects && !validateEffects(hookConfig.effects)) {
+            if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
                 common.returnMessage(params, 400, 'Invalid configuration for effects');
                 return true;
             }
@@ -288,6 +303,21 @@ plugins.register("/i/hook/save", function(ob) {
                     {new: true},
                     function(err, result) {
                         if (!err) {
+                            // Audit log: Hook updated
+                            if (result && result.value) {
+                                plugins.dispatch("/systemlogs", {
+                                    params: params,
+                                    action: "hook_updated",
+                                    data: {
+                                        updatedHookID: result.value._id,
+                                        updatedBy: params.member._id,
+                                        updatedHookName: result.value.name
+                                    }
+                                });
+                            }
+                            else {
+                                common.returnMessage(params, 500, "No result found");
+                            }
                             common.returnOutput(params, result && result.value);
                         }
                         else {
@@ -302,6 +332,16 @@ plugins.register("/i/hook/save", function(ob) {
                 function(err, result) {
                     log.d("insert new hook:", err, result);
                     if (!err && result && result.insertedIds && result.insertedIds[0]) {
+                        // Audit log: Hook created
+                        plugins.dispatch("/systemlogs", {
+                            params: params,
+                            action: "hook_created",
+                            data: {
+                                createdHookID: hookConfig._id,
+                                createdBy: params.member._id,
+                                createdHookName: hookConfig.name
+                            }
+                        });
                         common.returnOutput(params, result.insertedIds[0]);
                     }
                     else {
@@ -498,6 +538,12 @@ plugins.register("/i/hook/status", function(ob) {
         }
         Promise.all(batch).then(function() {
             log.d("hooks all updated.");
+            // Audit log: Hook status updated
+            plugins.dispatch("/systemlogs", {
+                params: params,
+                action: "hook_status_updated",
+                data: { updatedHooksCount: Object.keys(statusList).length, requestedBy: params.member._id }
+            });
             common.returnOutput(params, true);
         });
     }, paramsInstance);
@@ -532,6 +578,15 @@ plugins.register("/i/hook/delete", function(ob) {
                 function(err, result) {
                     log.d(err, result, "delete an hook");
                     if (!err) {
+                        // Audit log: Hook deleted
+                        plugins.dispatch("/systemlogs", {
+                            params: params,
+                            action: "hook_deleted",
+                            data: {
+                                deletedHookID: hookID,
+                                requestedBy: params.member._id
+                            }
+                        });
                         common.returnMessage(params, 200, "Deleted an hook");
                     }
                 }
@@ -551,6 +606,11 @@ plugins.register("/i/hook/test", function(ob) {
 
     validateCreate(paramsInstance, FEATURE_NAME, async(params) => {
         let hookConfig = params.qstring.hook_config;
+        if (!hookConfig) {
+            common.returnMessage(params, 400, 'Invalid hookConfig');
+            return true;
+        }
+
         try {
             hookConfig = JSON.parse(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
@@ -560,7 +620,7 @@ plugins.register("/i/hook/test", function(ob) {
                 common.returnMessage(params, 403, "hook config invalid");
             }
 
-            if (hookConfig && hookConfig.effects && !validateEffects(hookConfig.effects)) {
+            if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
                 common.returnMessage(params, 400, 'Config invalid');
                 return true;
             }

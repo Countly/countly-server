@@ -59,7 +59,7 @@
                 </div>
             </div>
         </cly-populator-section-detail>
-        <cly-populator-section-detail v-if="isSequenceSectionActive" :title="i18n('populator-template.sequence-probabilities')" class="bu-mt-4" key="sequence-behavior">
+        <cly-populator-section-detail :title="i18n('populator-template.sequence-probabilities')" class="bu-mt-4" key="sequence-behavior">
             <div v-if="behavior.sequences.length" class="populator-template__behavior--sequences-container">
                 <div class="bu-is-flex bu-mt-4">
                     <div class="sequence-text">
@@ -72,9 +72,11 @@
                 </div>
                 <div class="bu-mt-2" v-for="(sequence, sequenceIndex) in behavior.sequences">
                     <div class="bu-is-flex bu-is-align-items-center">
-                        <span class="text-smallish bu-is-capitalized sequence-text"> {{ sequence.key === 'random' ? i18n('populator-template.random-sequence') : i18n('populator-template.sequence-incremental', sequenceIndex + 1) }} </span>
+                        <span class="text-smallish bu-is-capitalized sequence-text" :class="{'color-cool-gray-50': sequence.disabled}">
+                            {{ sequence.key === 'random' ? i18n('populator-template.random-sequence') : i18n('populator-template.sequence-incremental', sequenceIndex + 1) }}
+                        </span>
                         <validation-provider name="probability_sequence_value" rules="required|integer|min_value:0|max_value:100" v-slot="v">
-                            <el-input v-model="sequence.probability" class="sequence-probability" :class="{'is-error': v.errors.length > 0}">
+                            <el-input v-model="sequence.probability" :disabled="sequence.disabled" class="sequence-probability" :class="{'is-error': v.errors.length > 0}">
                                 <template slot="suffix">
                                     <span class="text-medium color-cool-gray-50">%</span>
                                 </template>
@@ -95,9 +97,11 @@
                     <div class="bu-is-flex bu-is-flex-direction-column bu-is-align-items-end condition-values">
                         <div class="bu-mt-2" v-for="(value, valueIndex) in item.values">
                             <div class="bu-is-flex bu-is-align-items-center">
-                                <span class="text-smallish bu-is-capitalized sequence-condition-label"> {{ value.key === 'random' ? i18n('populator-template.random-sequence') : i18n('populator-template.sequence-incremental', valueIndex + 1) }} </span>
+                                <span class="text-smallish bu-is-capitalized sequence-condition-label" :class="{'color-cool-gray-50': value.disabled}">
+                                    {{ value.key === 'random' ? i18n('populator-template.random-sequence') : i18n('populator-template.sequence-incremental', valueIndex + 1) }}
+                                </span>
                                 <validation-provider name="probability_sequence_condition" rules="required|integer|min_value:0|max_value:100" v-slot="v">
-                                    <el-input v-model="value.probability" class="sequence-condition-probability" :class="{'is-error': v.errors.length > 0}">
+                                    <el-input v-model="value.probability" :disabled="value.disabled" class="sequence-condition-probability" :class="{'is-error': v.errors.length > 0}">
                                         <template slot="suffix">
                                             <span class="text-medium color-cool-gray-50">%</span>
                                         </template>

@@ -136,6 +136,9 @@ plugins.setConfigs("dashboards", {
                             if (hasEditAccess) {
                                 dashboard.is_editable = true;
                             }
+                            else {
+                                dashboard.is_editable = false;
+                            }
 
                             if (ownerData && ownerData.length) {
                                 dashboard.owner = ownerData[0];
@@ -484,6 +487,9 @@ plugins.setConfigs("dashboards", {
 
                             if (hasEditAccess) {
                                 dashboard.is_editable = true;
+                            }
+                            else {
+                                dashboard.is_editable = false;
                             }
 
                             if (ownerData && ownerData.length) {
@@ -1389,7 +1395,7 @@ plugins.setConfigs("dashboards", {
                                 //$(".funnels table colgroup col:last-child").width("80px");
                                 //};
 
-                                options.waitForRegex = new RegExp(/o\/dashboards?/gi);
+                                options.waitForRegex = new RegExp(/o\/dashboards?/i);
 
                                 options.id = "#content";
 
@@ -2153,7 +2159,7 @@ plugins.setConfigs("dashboards", {
         appIds = [...new Set(appIds)];
         let strDependencies = JSON.stringify(dependencies);
         appIds.forEach(appId=>{
-            strDependencies.replace(appId, 'APP_ID');
+            strDependencies = strDependencies.replace(appId, 'APP_ID');
         });
         return JSON.parse(strDependencies);
     }

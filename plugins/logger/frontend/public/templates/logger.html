@@ -5,21 +5,22 @@
         :tooltip="{description: getTitleTooltip()}"
     >
         <template v-slot:header-bottom>
-            <span class='cly-vue-logger__subtitle text-small'>
+            <span class='cly-vue-logger__subtitle text-small' data-test-id="manage-logger-subtitle">
                 {{collectionInfo}}
             </span>
         </template>
         <template v-slot:header-right>
-            <cly-auto-refresh-toggle ref="loggerAutoRefreshToggle" feature="logger"></cly-auto-refresh-toggle>
+            <cly-auto-refresh-toggle test-id="enable-auto-refresh" ref="loggerAutoRefreshToggle" feature="logger"></cly-auto-refresh-toggle>
         </template>
     </cly-header>
     <cly-main>
         <div style="margin-bottom: 24px;">
-            <cly-notification v-if="showTurnedOff" :text="i18n('logger.state-off-warning', appId)"></cly-notification>
+            <cly-notification v-if="showTurnedOff" :text="i18n('logger.state-off-warning')" :goTo="goTo"></cly-notification>
         </div>
         <cly-section>
             <cly-datatable-n
                 ref="requestLogTable"
+                test-id="datatable-logs"
                 :rows="logsData"
                 :resizable="false"
                 :force-loading="isLoading"
@@ -67,6 +68,8 @@
 							<strong v-if="rowScope.row.c" class='red-text'>{{i18n('logger.request-canceled')}}</strong>
 							<div v-if="rowScope.row.c" class="bu-pt-2" >{{rowScope.row.c}}</div>
                             <logger-info :info="rowScope.row.t" :filter="loggerFilter"></logger-info>
+                            <strong v-if="rowScope.row.p" class='red-text'>{{i18n('logger.problems')}}</strong>
+							<div v-if="rowScope.row.p" v-for="p in rowScope.row.p" class="bu-pt-2" >{{p}}</div>
                         </template>
                     </el-table-column>
                 </template>

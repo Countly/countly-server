@@ -155,7 +155,10 @@
             }
         },
         onReady: function(context, rows) {
-            var selected = context.rootState.countlyViews.selectedViews || [];
+            var selected = [];
+            if (context && context.rootState && context.rootState.countlyViews) {
+                selected = context.rootState.countlyViews.selectedViews;
+            }
             var addSelected = 0;
             var addedSelected = [];
             if (selected.length === 0 && (context && context.state && context.state.params && context.state.params.page && context.state.params.page === 1)) { //if first page and nothing selected
@@ -765,6 +768,13 @@
         return id;
     };
 
+    /** Function gets array of view display names
+    * @returns {object}  - view names
+    */
+    countlyViews.getViewsNames = function() {
+        return _viewsNames;
+    };
+
     /** Reverse function. Returns 'view' value from display name
     * @param {string} name  - display name
     * @returns {string}  - view value
@@ -826,8 +836,8 @@
 
             //if refresh
             for (var i = 0; i < _selectedViews.length; i++) {
-                if (periodIsOk && ((_segment === "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]]['_no-segment'] && Object.keys(_graphDataObj[_selectedViews[i]]['_no-segment']) !== 0) ||
-                    (_segment !== "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]][_segment] && Object.keys(_graphDataObj[_selectedViews[i]][_segment]) !== 0))
+                if (periodIsOk && ((_segment === "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]]['_no-segment'] && Object.keys(_graphDataObj[_selectedViews[i]]['_no-segment']).length !== 0) ||
+                    (_segment !== "" && _graphDataObj[_selectedViews[i]] && _graphDataObj[_selectedViews[i]][_segment] && Object.keys(_graphDataObj[_selectedViews[i]][_segment]).length !== 0))
                 ) {
                     selected.push({'view': _selectedViews[i], "action": "refresh"});
                 }

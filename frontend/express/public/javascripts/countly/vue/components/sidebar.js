@@ -15,7 +15,7 @@
                             apps = this.sortBy(apps, countlyGlobal.member.appSortList);
                         }
                         apps = apps.map(function(a) {
-                            a.image = countlyGlobal.path + "appimages/" + a._id + ".png";
+                            a.image = countlyGlobal.path + "/appimages/" + a._id + ".png";
                             a.label = a.name;
                             a.value = a._id;
                             return a;
@@ -30,7 +30,7 @@
                     });
 
                     if (active) {
-                        active.image = countlyGlobal.path + "appimages/" + active._id + ".png";
+                        active.image = countlyGlobal.path + "/appimages/" + active._id + ".png";
                     }
                     return active || {};
                 },
@@ -108,6 +108,7 @@
                     this.$emit("close");
                 },
                 onChange: function(id) {
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                     var selectedApp = this.allApps.find(function(a) {
                         return a._id === id;
                     });
@@ -188,6 +189,9 @@
                         message: this.errorMessage,
                         type: "error"
                     });
+                },
+                unselectCountlyGuides: function() {
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                 }
             }
         });
@@ -315,6 +319,7 @@
                 },
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "analytics", item: item});
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -449,6 +454,7 @@
             methods: {
                 onMenuItemClick: function(item) {
                     this.$store.dispatch("countlySidebar/updateSelectedMenuItem", {menu: "management", item: item});
+                    this.$store.dispatch("countlySidebar/deselectGuidesButton");
                 },
                 identifySelected: function() {
                     var currLink = Backbone.history.fragment;
@@ -569,7 +575,7 @@
                     versionInfo: countlyGlobal.countlyTypeName,
                     countlySidebarVersionPath: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/versions',
                     showMainMenu: true,
-                    redirectHomePage: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID,
+                    redirectHomePage: 'dashboard#/' + countlyCommon.ACTIVE_APP_ID,
                     onOptionsMenu: false,
                     onMainMenu: false,
                     enableGuides: CountlyHelpers.isPluginEnabled('guides'),
@@ -637,10 +643,10 @@
                 otherMenuOptions: function() {
                     var menuOptions = [
                         {
-                            name: "help-center",
-                            icon: "cly-icon-sidebar-help-center",
+                            name: this.enableGuides ? "countly-guides" : "help-center",
+                            icon: this.enableGuides ? "cly-icon-sidebar-countly-guides" : "cly-icon-sidebar-help-center",
                             noSelect: true,
-                            tooltip: "Help Center"
+                            tooltip: this.enableGuides ? "Countly Guides" : "Help Center"
                         },
                         {
                             name: "user",
@@ -697,15 +703,39 @@
                 pseudoSelectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state === 'selected') {
+                        return 'guides';
+                    }
+
                     if (!this.selectedMenuOptionLocal && selected) {
                         return selected.menu;
                     }
+                    return this.selectedMenuOptionLocal;
+                },
+                visibleSidebarMenu: function() {
+                    var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
+                    if (!this.selectedMenuOptionLocal && selected) {
+                        return selected.menu;
+                    }
                     return this.selectedMenuOptionLocal;
                 },
                 selectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
                     return selected && selected.menu;
+                },
+                guidesButtonDynamicClass: function() {
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state === 'selected') {
+                        return 'color:#12AF51; font-size:larger;';
+                    }
+                    else if (state === 'hover' || state === 'highlighted') {
+                        return 'color:white; font-size:larger;';
+                    }
+                    else {
+                        return 'color:#A7AEB8; font-size:larger;';
+                    }
                 },
                 helpCenterLink: function() {
                     return this.enableGuides ? '#/guides' : "https://support.count.ly";
@@ -715,14 +745,30 @@
                 }
             },
             methods: {
+                guidesMouseOver: function() {
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state !== 'selected' && state !== 'highlighted') {
+                        this.$store.dispatch("countlySidebar/highlightGuidesButton");
+                    }
+                },
+                guidesMouseLeave: function() {
+                    var state = this.$store.getters["countlySidebar/getGuidesButton"];
+                    if (state !== 'selected' && state !== 'highlighted') {
+                        this.$store.dispatch("countlySidebar/deselectGuidesButton");
+                    }
+                },
                 onClick: function(option) {
                     if (!option.noSelect) {
                         this.selectedMenuOptionLocal = option.name;
                         this.showMainMenu = true;
+                        this.$store.dispatch("countlySidebar/deselectGuidesButton");
                     }
 
                     if (option.name === "toggle") {
                         this.onToggleClick();
+                    }
+                    else if (option.name === "countly-guides") {
+                        this.$store.dispatch("countlySidebar/selectGuidesButton");
                     }
                 },
                 onToggleClick: function() {
@@ -910,6 +956,7 @@
                     countlyCMS.fetchEntry("server-guide-config").then(function(config) {
                         self.enableGuides = (config && config.data && config.data[0] && config.data[0].enableGuides) || false;
                     });
+                    this.$store.dispatch("countlySidebar/highlightGuidesButton", 'highlighted');
                 }
             }
         });

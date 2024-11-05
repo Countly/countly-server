@@ -323,6 +323,89 @@ taskmanager.createTask = function(options, callback) {
     }
 };
 
+var checkIfAllRulesMatch = function(rules, data) {
+    var match = true;
+    for (var key in rules) {
+        if (data[key]) {
+            if (rules[key] === data[key]) {
+                continue;
+            }
+            else {
+                if (typeof rules[key] === "object") {
+                    if (!checkIfAllRulesMatch(rules[key], data[key])) {
+                        return false;
+                    }
+                }
+                else {
+                    if (data[key].$in) {
+                        if (data[key].$in.indexOf(rules[key]) === -1) {
+                            return false;
+                        }
+                    }
+                    else if (data[key].$nin) {
+                        if (data[key].$nin.indexOf(rules[key]) !== -1) {
+                            return false;
+                        }
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+        }
+        else {
+            return false;
+        }
+    }
+    return match;
+};
+
+taskmanager.markReportsDirtyBasedOnRule = function(options, callback) {
+    common.db.collection("long_tasks").find({
+        autoRefresh: true,
+    }).toArray(function(err, tasks) {
+        var ids_to_mark_dirty = [];
+        if (err) {
+            log.e("Error while fetching tasks", err);
+            if (callback && typeof callback === "function") {
+                callback();
+            }
+            return;
+
+        }
+        tasks = tasks || [];
+        for (var z = 0; z < tasks.length; z++) {
+            try {
+                var req = JSON.parse(tasks[z].request);
+                if (checkIfAllRulesMatch(options.rules, req.json.queryObject)) {
+                    ids_to_mark_dirty.push(tasks[z]._id);
+                }
+            }
+            catch (e) {
+                log.e(' got error while process task request parse', e);
+            }
+
+        }
+        if (ids_to_mark_dirty.length > 0) {
+            common.db.collection("long_tasks").updateMany({_id: {$in: ids_to_mark_dirty}}, {$set: {dirty: new Date().getTime()}}, function(err3) {
+                if (err3) {
+                    log.e("Error while updating reports", err3);
+                }
+                if (callback && typeof callback === "function") {
+                    callback();
+                }
+            });
+        }
+        else {
+            if (callback && typeof callback === "function") {
+                callback();
+            }
+        }
+
+
+    });
+
+};
 /**
 * Save result from the task
 * @param {object} options - options for the task
@@ -388,6 +471,9 @@ taskmanager.saveResult = function(options, data, callback) {
         options.db.collection("long_tasks").update({_id: options.subtask}, updateObj, {'upsert': false}, function() {});
     }
     options.db.collection("long_tasks").findOne({_id: options.id}, function(error, task) {
+        if (task && task.dirty && task.dirty < task.start) {
+            update.dirty = false;
+        }
         if (options.gridfs || (task && task.gridfs)) {
             //let's store it in gridfs
             update.data = {};
@@ -607,6 +693,7 @@ taskmanager.checkResult = function(options, callback) {
 * @param {funciton} callback - callback for the result
 */
 taskmanager.checkIfRunning = function(options, callback) {
+    options = options || {};
     options.db = options.db || common.db;
     var query = {};
     if (options.id) {
@@ -885,6 +972,8 @@ taskmanager.errorResults = function(options, callback) {
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {string} options.id - id of the task result
+* @param {boolean} options.autoUpdate - if auto update is needed or not
+* @param {boolean} options.dirty - if dirty is true then it means some part of report is wrong. It should be regenerated fully.
 * @param {funciton} callback - callback for the result
 */
 taskmanager.rerunTask = function(options, callback) {
@@ -956,15 +1045,19 @@ taskmanager.rerunTask = function(options, callback) {
                                 errored: true,
                                 request: reqData
                             }, body);
-
                         }
+                    }
+                    if (options.autoUpdate) { //as it is auto from task, do callback only after finishing calculations.
+                        callback1(null, "Success");
                     }
                 }
             };
             if (common.processRequest) {
                 common.processRequest(params);
             }
-            callback1(null, "Success");
+            if (!options.autoUpdate) {
+                callback1(null, "Success");
+            }
         });
     }
 
@@ -978,13 +1071,14 @@ taskmanager.rerunTask = function(options, callback) {
                 reqData = {};
             }
             if (reqData.uri) {
+                reqData.json = reqData.json || {};
                 reqData.json.task_id = options.id;
                 reqData.strictSSL = false;
                 if (reqData.json && reqData.json.period && Array.isArray(reqData.json.period)) {
                     reqData.json.period = JSON.stringify(reqData.json.period);
                 }
                 options.subtask = res.subtask;
-                reqData.json.autoUpdate = options.autoUpdate || false;
+                reqData.json.autoUpdate = ((!options.dirty) && (options.autoUpdate || false)); //If dirty  set autoUpdate to false
                 if (!reqData.json.api_key && res.creator) {
                     options.db.collection("members").findOne({_id: common.db.ObjectID(res.creator)}, function(err1, member) {
                         if (member && member.api_key) {

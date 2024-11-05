@@ -5,27 +5,30 @@
     >
     </cly-header>
     <cly-main>
-        <cly-qb-bar v-if="showDrillFilter" feature="slipping_away_users" v-model="slippingAwayUsersFilters" queryStore="slipping-away-users" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}"></cly-qb-bar>
+        <cly-qb-bar v-if="showDrillFilter" feature="slipping_away_users" v-model="slippingAwayUsersFilters" queryStore="slipping-away-users" format="mongo" style="margin-bottom:32px" :propertySourceConfig="{'wrappedUserProperties': false}" show-in-the-last-hours show-in-the-last-minutes></cly-qb-bar>
         <cly-section>
-            <cly-chart-bar :option="slippingAwayUsersOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
+            <cly-chart-bar test-id="slipping-away" :option="slippingAwayUsersOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="slippingAwayUsersRows" :resizable="true" :force-loading="isLoading">
+            <cly-datatable-n test-id="slipping-away" :rows="slippingAwayUsersRows" :resizable="true" :force-loading="isLoading">
                 <template v-slot="scope">
-                    <el-table-column sortable="custom"  prop="period" :label="i18n('slipping-away-users.table-period')">
+                    <el-table-column test-id="slipping-away-no-session-in" sortable="custom"  prop="period" :label="i18n('slipping-away-users.table-period')">
+                        <template slot-scope="scope">
+                            <div :data-test-id="'datatable-no-sessions-in-' + scope.$index">{{scope.row.period}}</div>
+                        </template>
                     </el-table-column>
                     <el-table-column sortable="custom"  prop="count" :label="i18n('slipping-away-users.table-count')">
                         <template slot-scope="scope">
-                            {{formatNumber(scope.row.count)}}
+                            <div :data-test-id="'datatable-slipping-away-user-count-' + scope.$index">{{formatNumber(scope.row.count)}}</div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom"  prop="percentage" :label="i18n('slipping-away-users.table-percentage')">
                         <template slot-scope="scope">
                             <div class="bu-level-left" style="padding: 7px 28px 7px 0;">
-                                <div class="bu-level-item slipping-away-users-table__data-item">
+                                <div class="bu-level-item slipping-away-users-table__data-item" :data-test-id="'datatable-percentage-' + scope.$index">
                                     <span>{{scope.row.percentage}}%</span>
                                 </div>
-                                <cly-progress-bar :percentage="parseInt(scope.row.percentage)" :color="progressBarColor"> </cly-progress-bar>
+                                <cly-progress-bar :data-test-id="'datatable-percentage-progress-bar-' + scope.$index" :percentage="parseInt(scope.row.percentage)" :color="progressBarColor"> </cly-progress-bar>
                             </div>
                         </template>
                     </el-table-column>

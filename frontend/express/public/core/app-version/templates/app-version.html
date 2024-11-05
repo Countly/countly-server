@@ -15,29 +15,53 @@
   <cly-main>
   <cly-date-picker-g class="app-version-date-picker-container"></cly-date-picker-g>
   <div class="bu-columns bu-is-gapless bu-mt-2">
-    <h4>App versions for </h4>
+    <h4 data-test-id="app-versions-for-label">App versions for </h4>
     <div class ="selector_wrapper">
-      <el-select v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
-        <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
+      <el-select test-id="app-versions-for" v-model="selectedProperty" :arrow="false" :adaptiveLength="true">
+        <el-option :test-id="item.value" :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseProperties"></el-option>
       </el-select>
     </div>
-    <h4>&nbsp;&nbsp;as </h4>
+    <h4 data-test-id="as-label">&nbsp;&nbsp;as </h4>
     <div class ="selector_wrapper">
-      <el-select v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
-        <el-option :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
+      <el-select test-id="as-value" v-model="selectedDisplay" :arrow="false" :adaptiveLength="true">
+        <el-option :test-id="item.value" :key="item.value" :value="item.value" :label="item.name" v-for="item in chooseDisplay"></el-option>
       </el-select>
     </div>
   </div>
   <cly-section>
-    <cly-chart-bar :valFormatter="appVersionStackedOptions.valFormatter" :option="appVersionStackedOptions" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
+    <cly-chart-bar test-id="app-versions" :valFormatter="appVersionStackedOptions.valFormatter" :option="appVersionStackedOptions" :patch-x-axis="false" :no-hourly="true" v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-bar>
   </cly-section>
   <cly-section>
-    <cly-datatable-n  :rows="appVersionRows" :resizable="true" :force-loading="isLoading">
+    <cly-datatable-n  test-id="app-versions" :rows="appVersionRows" :resizable="true" :force-loading="isLoading">
       <template v-slot="scope">
-        <el-table-column sortable="custom" prop="app_versions" :label="i18n('app-versions.table.app-version')"></el-table-column>
-        <el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
-        <el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
-        <el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
+        <el-table-column sortable="custom" prop="app_versions" :label="i18n('app-versions.table.app-version')">
+          <template v-slot="rowScope">
+            <div :data-test-id="'datatable-app-versions-app-version-' + rowScope.$index">
+              {{ rowScope.row.app_versions }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')">
+          <template v-slot="rowScope">
+            <div :data-test-id="'datatable-app-versions-total-sessions-' + rowScope.$index">
+              {{ rowScope.row.t }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')">
+          <template v-slot="rowScope">
+            <div :data-test-id="'datatable-app-versions-total-users-' + rowScope.$index">
+              {{ rowScope.row.u }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')">
+          <template v-slot="rowScope">
+            <div :data-test-id="'datatable-app-versions-new-users-' + rowScope.$index">
+              {{ rowScope.row.n }}
+            </div>
+          </template>
+        </el-table-column>
       </template>
     </cly-datatable-n>
   </cly-section>

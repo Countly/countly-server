@@ -1,5 +1,6 @@
 const mail = require("../../../../api/parts/mgmt/mail");
-const request = require('countly-request');
+const plugins = require('../../../../plugins/pluginManager.js');
+const request = require('countly-request')(plugins.getConfig("security"));
 const moment = require('moment-timezone');
 
 const common = require('../../../../api/utils/common.js');
@@ -146,8 +147,8 @@ utils.getHost = function() {
 
 utils.getAppInfo = function(appID) {
     return new Promise(function(resolve, reject) {
-        if (appID === "all-apps") {
-            return resolve({ _id: "all-apps", name: "All apps"});
+        if (appID === "all") {
+            return resolve({ _id: "all", name: "All apps"});
         }
         common.db.collection('apps').findOne({ _id: common.db.ObjectID(appID)}, function(err, app) {
             if (err) {

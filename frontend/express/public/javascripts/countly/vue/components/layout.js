@@ -14,6 +14,10 @@
                         placement: "bottom-end"
                     };
                 }
+            },
+            testId: {
+                type: String,
+                default: "cly-guide-test-id"
             }
         },
         data: function() {
@@ -32,7 +36,7 @@
         template: `
             <div>\
                 <template v-if="enableGuides">\
-                    <view-guide :tooltip="tooltip"></view-guide>\
+                    <view-guide :test-id="testId" :tooltip="tooltip"></view-guide>\
                 </template>\
                 <template v-else-if="tooltip && tooltip.description">\
                     <cly-tooltip-icon :tooltip="tooltip.description" icon="ion ion-help-circled" style="margin-left:8px" :placement="tooltip.placement"></cly-tooltip-icon>\
@@ -49,6 +53,10 @@
                 default: function() {
                     return null;
                 },
+            },
+            testId: {
+                type: String,
+                default: "header-title"
             },
             headerClass: {
                 type: Object,
@@ -103,12 +111,12 @@
                             </div>\
                         </template> \
                         <div :class="[midLevelClasses]">\
-                            <div class="bu-level-left bu-is-flex-shrink-1" data-test-id="header-title" style="min-width: 0;"> \
+                            <div class="bu-level-left bu-is-flex-shrink-1" :data-test-id="testId" style="min-width: 0;"> \
                                 <template> \
                                     <slot name="header-left">\
                                         <div class="bu-level-item">\
                                             <h2 class="bu-mr-2">{{title}}</h2>\
-                                            <cly-guide v-if="title" :tooltip="tooltip"></cly-guide>\
+                                            <cly-guide v-if="title" :test-id="testId" :tooltip="tooltip"></cly-guide>\
                                         </div>\
                                     </slot>\
                                 </template> \
@@ -129,7 +137,7 @@
 
     var PersistentNotifications = {
         template: '<div class="persistent-notifications" :class="additionalClasses">\
-            <cly-notification v-for="notification in persistentNotifications" :key="notification.id" :closable="false" :text="notification.text" :color="notification.color"></cly-notification>\
+            <cly-notification v-for="notification in persistentNotifications" :key="notification.id" :closable="false" :text="notification.text" :goTo="notification.goTo" :color="notification.color"></cly-notification>\
         </div>',
         computed: {
             persistentNotifications: function() {

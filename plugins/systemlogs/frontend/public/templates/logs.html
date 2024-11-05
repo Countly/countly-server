@@ -8,39 +8,50 @@
     </cly-header>
     <cly-main>
 		<cly-date-picker-g class="bu-mb-4"></cly-date-picker-g>
-		<cly-section class="bu-mt-4">
-			<cly-datatable-n :data-source="remoteTableDataSource" :export-api="getExportAPI" :default-sort="{prop: 'ts', order: 'descending'}" @row-click="handleTableRowClick" ref="table" :row-class-name="tableRowClassName">
+		<cly-section class="bu-mt-4" data-test-id="table-audit-logs">
+			<cly-datatable-n test-id="datatable-audit-logs" :data-source="remoteTableDataSource" :export-api="getExportAPI" :default-sort="{prop: 'ts', order: 'descending'}" @row-click="handleTableRowClick" ref="table" :row-class-name="tableRowClassName">
                 <template v-slot="scope">
                     <el-table-column type="expand">
                         <template slot-scope="rowScope">
-                            <expand-table v-if="detailData[rowScope.row._id]" :row="detailData[rowScope.row._id]"></expand-table>
+                            <div :data-test-id="'datatable-audit-logs-expand-row-' + rowScope.$index">
+                                <expand-table v-if="detailData[rowScope.row._id]" :row="detailData[rowScope.row._id]"></expand-table>
+                            </div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="ts" :label="i18n('systemlogs.timestamp')">
                         <template slot-scope="scope">
-                            {{scope.row.displayTs}}
+                            <div :data-test-id="'datatable-audit-logs-time-' + scope.$index">
+                                {{scope.row.displayTs}}
+                            </div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="u" :label="i18n('systemlogs.user')">
                         <template slot-scope="scope">
-                            <a :href='scope.row.href' :title='scope.row.u'>{{scope.row.u}}</a>
+                            <a :href='scope.row.href' :title='scope.row.u' :data-test-id="'datatable-audit-logs-user-' + scope.$index">{{scope.row.u}}</a>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="ip" :label="i18n('systemlogs.ip-address')"></el-table-column>
+                    <el-table-column sortable="custom" prop="ip" :label="i18n('systemlogs.ip-address')">
+                        <template slot-scope="scope">
+                            <div :data-test-id="'datatable-audit-logs-ip-' + scope.$index">
+                                {{scope.row.ip}}
+                            </div>
+                        </template>
+                    </el-table-column>
                     <el-table-column :label="i18n('systemlogs.action')">
                         <template slot-scope="scope">
-                            <p>{{scope.row.actionName}}</p>
-                            <p v-if="scope.row.app_name" :title="scope.row.i.app_id">{{scope.row.app_name}}</p>
-                            <p v-if="scope.row.user_name" :title="scope.row.i.user_id">{{scope.row.user_name}}</p>
-                            <p v-if="scope.row.campaign_id" :title="scope.row.i.campaign_id">{{scope.row.campaign_id}}</p>
-                            <p v-if="scope.row.crash_id" :title="scope.row.i.crash_id">{{scope.row.crash_id}}</p>
-                            <p v-if="scope.row.appuser_id" :title="scope.row.i.appuser_id">{{scope.row.appuser_id}}</p>
-                            <p v-if="scope.row.name" :title="scope.row.name">{{scope.row.name}}</p>
+                            <p :data-test-id="'datatable-audit-logs-action-action-name-' + scope.$index">{{scope.row.actionName}}</p>
+                            <p v-if="scope.row.app_name" :title="scope.row.i.app_id" :data-test-id="'datatable-audit-logs-action-app-name-' + scope.$index">{{scope.row.app_name}}</p>
+                            <p v-if="scope.row.user_name" :title="scope.row.i.user_id" :data-test-id="'datatable-audit-logs-action-user-name-' + scope.$index">{{scope.row.user_name}}</p>
+                            <p v-if="scope.row.campaign_id" :title="scope.row.i.campaign_id" :data-test-id="'datatable-audit-logs-action-campaign-id-' + scope.$index">{{scope.row.campaign_id}}</p>
+                            <p v-if="scope.row.crash_id" :title="scope.row.i.crash_id" :data-test-id="'datatable-audit-logs-action-crash-id-' + scope.$index">{{scope.row.crash_id}}</p>
+                            <p v-if="scope.row.appuser_id" :title="scope.row.i.appuser_id" :data-test-id="'datatable-audit-logs-action-appuser-id-' + scope.$index">{{scope.row.appuser_id}}</p>
+                            <p v-if="scope.row.name" :title="scope.row.name" :data-test-id="'datatable-audit-logs-action-id-' + scope.$index">{{scope.row.name}}</p>
                         </template>
                     </el-table-column>
                 </template>
                 <template v-slot:header-left>
                     <cly-select-x
+                        test-id="action-select"
                         :search-placeholder="i18n('common.search')"
                         placeholder=""
                         v-model="selectAction"
@@ -48,6 +59,7 @@
                         :options="allActions">
                     </cly-select-x>
                     <cly-select-x
+                        test-id="user-select"
                         :search-placeholder="i18n('common.search')"
                         placeholder=""
                         v-model="selectUser"

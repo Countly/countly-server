@@ -1,4 +1,4 @@
-/*global _,countlyQueryBuilder, app, moment, countlyGlobal, countlyVue, countlyCommon, countlyAuth, CV, CountlyHelpers, countlyRemoteConfig */
+/*global _, VeeValidate, countlyQueryBuilder, app, moment, countlyGlobal, countlyVue, countlyCommon, countlyAuth, CV, CountlyHelpers, countlyRemoteConfig */
 
 (function() {
     var FEATURE_NAME = "remote_config";
@@ -35,29 +35,43 @@
         l: CV.i18n("remote-config.type.l")
     };
 
+    VeeValidate.extend('oneDay', {
+        validate: function(inpValue) {
+            var valid = true;
+
+            if (moment.duration(moment(inpValue).diff(moment())).asDays() < 1) {
+                valid = false;
+            }
+
+            return {
+                valid: valid,
+            };
+        },
+    });
+
     var ConditionStats = countlyVue.views.BaseView.extend({
         template: '	<table class="cly-vue-remote-config-percentages-breakdown">\
 			<thead>\
 				<tr>\
-					<th class="cly-vue-remote-config-percentages-breakdown__sequence__heading bu-pl-2">\
+					<th class="cly-vue-remote-config-percentages-breakdown__sequence__heading bu-pl-2" :data-test-id="testId + \'-hash-label\'">\
 						#\
 					</th>\
-					<th class="cly-vue-remote-config-percentages-breakdown__condition__heading">\
+					<th class="cly-vue-remote-config-percentages-breakdown__condition__heading" :data-test-id="testId + \'-condition-label\'">\
 						{{i18n("remote-config.condition")}}\
 					</th>\
-                    <th class="cly-vue-remote-config-percentages-breakdown__percentage__heading">\
+                    <th class="cly-vue-remote-config-percentages-breakdown__percentage__heading" :data-test-id="testId + \'-percentage-label\'">\
 						{{i18n("remote-config.percentage")}}\
 					</th>\
 				</tr>\
 			</thead>\
 			<tbody>\
-                <tr><td class="cly-vue-remote-config-percentages-breakdown__sequence__heading"><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2">1</div></td><td class="has-ellipsis cly-vue-remote-config-percentages-breakdown__condition__heading bu-pr-1"><div class="has-ellipsis cly-vue-remote-config-percentages-breakdown__data bu-py-2 bu-px-1  cly-vue-remote-config-percentages-breakdown__default-value"><span class="bu-ml-2 bu-mr-3 text-medium">{{i18n("remote-config.default-value")}}</span><span class="cly-vue-remote-config-percentages-breakdown__default-value__value bu-py-1 bu-px-2 text-small" v-tooltip="defaultValue.value">{{defaultValue.value}}</span></div></td><td class="cly-vue-remote-config-percentages-breakdown__percentage__heading"><div class="bu-is-flex"><div class="text-big font-weight-bold">{{defaultValue.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1">{{i18n("remote-config.percent.of.total")}}</div></div></td></tr>\
+                <tr><td class="cly-vue-remote-config-percentages-breakdown__sequence__heading"><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2" :data-test-id="testId + \'-order-label\'">1</div></td><td class="has-ellipsis cly-vue-remote-config-percentages-breakdown__condition__heading bu-pr-1"><div class="has-ellipsis cly-vue-remote-config-percentages-breakdown__data bu-py-2 bu-px-1  cly-vue-remote-config-percentages-breakdown__default-value"><span class="bu-ml-2 bu-mr-3 text-medium" :data-test-id="testId + \'-default-value-label\'">{{i18n("remote-config.default-value")}}</span><span class="cly-vue-remote-config-percentages-breakdown__default-value__value bu-py-1 bu-px-2 text-small" v-tooltip="defaultValue.value" :data-test-id="testId + \'-default-value\'">{{defaultValue.value}}</span></div></td><td class="cly-vue-remote-config-percentages-breakdown__percentage__heading"><div class="bu-is-flex"><div class="text-big font-weight-bold" :data-test-id="testId + \'-percentage\'">{{defaultValue.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1" :data-test-id="testId + \'-percent-of-total\'">{{i18n("remote-config.percent.of.total")}}</div></div></td></tr>\
 				<tr v-if="isDrillEnabled" v-for="(condition, i) in conditions" :key="i">\
-                    <td class="cly-vue-remote-config-percentages-breakdown__sequence__heading"><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2">{{i+2}}</div>\
+                    <td class="cly-vue-remote-config-percentages-breakdown__sequence__heading"><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2" :data-test-id="testId + \'other-order-label\'">{{i+2}}</div>\
                     </td>\
-					<td class="has-ellipsis cly-vue-remote-config-percentages-breakdown__condition__heading bu-pr-1"><div class="has-ellipsis cly-vue-remote-config-percentages-breakdown__data bu-py-2 bu-px-1 cly-vue-remote-config-percentages-breakdown__condition" :style="{backgroundColor: condition.color}"><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align"><img src="/remote-config/images/call_split.svg"/></span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align bu-ml-2 bu-mr-3 text-medium">{{condition.name}}</span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align cly-vue-remote-config-percentages-breakdown__condition__value bu-py-1 bu-px-2 text-small" v-tooltip="condition.value">{{condition.value}}</span></div></td>\
+					<td class="has-ellipsis cly-vue-remote-config-percentages-breakdown__condition__heading bu-pr-1"><div class="has-ellipsis cly-vue-remote-config-percentages-breakdown__data bu-py-2 bu-px-1 cly-vue-remote-config-percentages-breakdown__condition" :style="{backgroundColor: condition.color}"><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align"><img src="/remote-config/images/call_split.svg"/></span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align bu-ml-2 bu-mr-3 text-medium" :data-test-id="testId + \'condition-name-label\'">{{condition.name}}</span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align cly-vue-remote-config-percentages-breakdown__condition__value bu-py-1 bu-px-2 text-small" v-tooltip="condition.value" :data-test-id="testId + \'condition-value\'">{{condition.value}}</span></div></td>\
 					<td class="cly-vue-remote-config-percentages-breakdown__percentage__heading">\
-                    <div class="bu-is-flex"><div class="text-big font-weight-bold">{{condition.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1">{{i18n("remote-config.percent.of.total")}}</div></div>\
+                    <div class="bu-is-flex"><div class="text-big font-weight-bold" :data-test-id="testId + \'percentage-label\'">{{condition.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1" :data-test-id="testId + \'percent-of-label\'">{{i18n("remote-config.percent.of.total")}}</div></div>\
 					</td>\
 				</tr>\
 			</tbody>\
@@ -68,7 +82,12 @@
                 default: function() {
                     return {};
                 }
-            }
+            },
+            testId: {
+                type: String,
+                default: 'condition-stats-default-test-id',
+                required: false
+            },
         },
         computed: {
             isDrillEnabled: function() {
@@ -325,6 +344,7 @@
     });
     var ParametersDrawer = countlyVue.views.create({
         template: CV.T("/remote-config/templates/parameters-drawer.html"),
+        mixins: [countlyVue.mixins.commonFormatters],
         components: {
             "json-editor": JsonEditor,
 
@@ -377,7 +397,37 @@
                 createdCondition: {}
             };
         },
+        watch: {
+            showExpirationDate: {
+                immediate: true,
+                handler: function(newValue) {
+                    if (this.$refs.clyDrawer) {
+                        if (newValue === true) {
+                            if (!this.$refs.clyDrawer.editedObject.expiry_dttm) {
+                                var currentTime = moment();
+                                this.$refs.clyDrawer.editedObject.expiry_dttm = currentTime.add(moment.duration(25, 'hours')).valueOf();
+                            }
+                        }
+                        else if (newValue === false) {
+                            this.$refs.clyDrawer.editedObject.expiry_dttm = null;
+                        }
+                    }
+                },
+            },
+        },
         methods: {
+            handleOpen: function() {
+                if (this.$refs.clyDrawer.editedObject.description) {
+                    this.$refs.clyDrawer.editedObject.description = this.unescapeHtml(this.$refs.clyDrawer.editedObject.description);
+                }
+
+                var self = this;
+                setTimeout(function() {
+                    if (self.$refs.expirationValidator) {
+                        self.$refs.expirationValidator.validate();
+                    }
+                }, 300);
+            },
             getOffset: function() {
                 var activeAppId = countlyCommon.ACTIVE_APP_ID;
                 var timeZone = countlyGlobal.apps[activeAppId].timezone ? countlyGlobal.apps[activeAppId].timezone : 'UTC';
@@ -441,10 +491,10 @@
                 };
             },
             onSubmit: function(doc) {
-                if (doc.expiry_dttm && doc.showExpirationDate) {
+                if (doc.expiry_dttm && this.showExpirationDate) {
                     doc.expiry_dttm = doc.expiry_dttm + new Date().getTimezoneOffset() * 60 * 1000;
                 }
-                if (!doc.showExpirationDate) {
+                if (!this.showExpirationDate) {
                     doc.expiry_dttm = null;
                 }
                 var self = this;
@@ -481,7 +531,7 @@
                         doc.expiry_dttm = doc.expiry_dttm - new Date().getTimezoneOffset() * 60 * 1000;
                     }
                     this.showExpirationDate = false;
-                    this.defaultValue = doc.default_value;
+                    this.defaultValue = doc.default_value + '';
 
                     if (doc.description === "-") {
                         doc.description = "";
@@ -550,6 +600,7 @@
     });
     var ConditionsDrawer = countlyVue.views.create({
         template: CV.T("/remote-config/templates/conditions-drawer.html"),
+        mixins: [countlyVue.mixins.commonFormatters],
         props: {
             controls: {
                 type: Object
@@ -604,6 +655,11 @@
             };
         },
         methods: {
+            handleOpen: function() {
+                if (this.$refs.clyDrawer.editedObject.condition_description) {
+                    this.$refs.clyDrawer.editedObject.condition_description = this.unescapeHtml(this.$refs.clyDrawer.editedObject.condition_description);
+                }
+            },
             onSubmit: function(doc) {
                 var self = this;
                 doc.condition_color = this.selectedTag.value ? this.selectedTag.value : 1;
@@ -706,6 +762,13 @@
             }
         },
         methods: {
+            displayDescription: function(description) {
+                if (description && description.length) {
+                    return this.unescapeHtml(description);
+                }
+
+                return '-';
+            },
             getOffset: function() {
                 var activeAppId = countlyCommon.ACTIVE_APP_ID;
                 var timeZone = countlyGlobal.apps[activeAppId].timezone ? countlyGlobal.apps[activeAppId].timezone : 'UTC';
@@ -736,19 +799,22 @@
             create: function() {
                 this.openDrawer("parameters", countlyRemoteConfig.factory.parameters.getEmpty());
             },
-            startParameter: function(row) {
+            toggleParameterState(rowObj, status) {
+                var row = Object.assign({}, rowObj);
+                var refresh = this.refresh;
                 if (row.expiry_dttm < Date.now()) {
                     row.expiry_dttm = null;
                 }
-                row.status = "Running";
-                this.$store.dispatch("countlyRemoteConfig/parameters/update", row);
+                row.status = status;
+                this.$store.dispatch("countlyRemoteConfig/parameters/update", row).then(function() {
+                    refresh();
+                });
             },
-            stopParameter: function(row) {
-                if (row.expiry_dttm < Date.now()) {
-                    row.expiry_dttm = null;
-                }
-                row.status = "Stopped";
-                this.$store.dispatch("countlyRemoteConfig/parameters/update", row);
+            startParameter: function(rowObj) {
+                this.toggleParameterState(rowObj, "Running");
+            },
+            stopParameter: function(rowObj) {
+                this.toggleParameterState(rowObj, "Stopped");
             },
             handleCommand: function(command, scope, row) {
                 var self = this;
@@ -772,7 +838,7 @@
                 }
             },
             onSubmit: function() {
-                this.$store.dispatch("countlyRemoteConfig/initialize");
+                this.refresh();
             },
             handleTableRowClick: function(row) {
                 // Only expand row if text inside of it are not highlighted
@@ -798,6 +864,9 @@
                 }
                 return table;
 
+            },
+            refresh: function() {
+                this.$store.dispatch("countlyRemoteConfig/initialize");
             },
         },
         created: function() {
@@ -829,6 +898,13 @@
             }
         },
         methods: {
+            displayDescription: function(description) {
+                if (description && description.length) {
+                    return this.unescapeHtml(description);
+                }
+
+                return '-';
+            },
             create: function() {
                 this.openDrawer("conditions", countlyRemoteConfig.factory.conditions.getEmpty());
             },
@@ -881,6 +957,7 @@
 
     var MainComponent = countlyVue.views.BaseView.extend({
         template: "#remote-config-main",
+        mixins: [countlyVue.mixins.commonFormatters],
         data: function() {
             var tabs = [
                 {
@@ -912,7 +989,7 @@
         methods: {
             refresh: function() {
                 this.$store.dispatch("countlyRemoteConfig/initialize");
-            }
+            },
         }
     });
 

@@ -1,6 +1,6 @@
 
 <transition :name="toggleTransition" @enter="onViewEntered">
-    <div class="cly-vue-drawer" tabindex="0" v-show="isOpened" @keydown.esc="escKeyEvent" ref="rootEl"
+    <div class="cly-vue-drawer" tabindex="0" v-show="isOpened" @keydown.esc="escKeyEvent" ref="rootEl" :id="id"
         :class="rootClasses">
         <div class="cly-vue-drawer__sidecars-view" v-show="hasSidecars">
             <slot name="sidecars"
@@ -36,7 +36,7 @@
                             </div>
                             <div v-else class="cly-vue-drawer__title-container bu-is-flex bu-is-justify-content-space-between">
                                 <h3 :data-test-id="testId + '-header-title'" class="cly-vue-drawer__title-header">{{title}}</h3>
-                                <span :data-test-id="testId + '-close-button'" class="cly-vue-drawer__close-button bu-p-1 bu-mr-5" v-on:click="doClose">
+                                <span :data-test-id="testId + '-close-button'" class="cly-vue-drawer__close-button" v-on:click="doClose">
                                     <i class="ion-ios-close-empty"></i>
                                 </span>
                             </div>
@@ -53,7 +53,7 @@
                                                         <img :data-test-id="testId + '-step-' + (i + 1)" src="images/icons/check-icon.svg">
                                                     </span>                                                     
                                                 </div>
-                                                <div :data-test-id="testId + '-' + (currentContent && currentContent.name ? currentContent.name.toLowerCase().replace(/[\s&]+/g, '-') + '-label' : 'content-label')" class="cly-vue-drawer__step-title text-small font-weight-bold color-cool-gray-40">{{currentContent.name}}</div>
+                                                <div :data-test-id="testId + '-' + (currentContent && currentContent.name ? currentContent.name.toLowerCase().replaceAll(/[\s&]+/g, '-') + '-label' : 'content-label')" class="cly-vue-drawer__step-title text-small font-weight-bold color-cool-gray-40">{{currentContent.name}}</div>
                                             </div>
                                         </div>
                                         <div :data-test-id="testId + '-seperator-' + i" :key="'sep_' + i" class="cly-vue-drawer__step-separator" v-if="i < stepContents.length - 1"></div>

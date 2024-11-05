@@ -18,15 +18,6 @@
             description: {
                 type: String,
                 required: false,
-            },
-            tooltip: {
-                type: String,
-                required: false,
-            },
-            size: {
-                type: String,
-                default: 'medium',
-                required: false
             }
         },
         data: function() {
@@ -43,17 +34,6 @@
             },
             hasDefaultSlot: function() {
                 return Boolean(this.$slots.default);
-            },
-            calculatedHeight() {
-                if (this.size === 'small') {
-                    return '60px';
-                }
-                else if (this.size === 'large') {
-                    return '110px';
-                }
-                else {
-                    return '97px';
-                }
             }
         },
         template: "#large-radio-button-with-description"
@@ -78,11 +58,6 @@
                 required: false,
             },
             border: {
-                type: Boolean,
-                required: false,
-                default: false,
-            },
-            disabled: {
                 type: Boolean,
                 required: false,
                 default: false,
@@ -894,7 +869,6 @@
             return {
                 PlatformEnum: countlyPushNotification.service.PlatformEnum,
                 MessageTypeEnum: countlyPushNotification.service.MessageTypeEnum,
-                platformsForSummary: ["ios", "android"]
             };
         },
         computed: {
@@ -1009,32 +983,8 @@
             convertDaysInMsToDays: function(daysInMs) {
                 return daysInMs / this.DAY_TO_MS_RATIO;
             },
-            formatDateAndTime: function(date, isMultiple) {
-                if (isMultiple) {
-                    const dates = date.map(function(eachDate) {
-                        return countlyPushNotification.helper.formatDateTime(eachDate, 'MMMM Do YYYY h:mm a').toString();
-                    });
-                    return dates.join(", ");
-                }
+            formatDateAndTime: function(date) {
                 return countlyPushNotification.helper.formatDateTime(date, 'MMMM Do, YYYY, h:mm a');
-            },
-            formatDateTime: function(dateTime, format) {
-                return countlyPushNotification.helper.formatDateTime(dateTime, format);
-            },
-            formatRepetitionDays: function(repetitionDays) {
-                const days = this.weeklyRepetitionOptions.map(option => option.label);
-                const selectedDays = repetitionDays.map(day => days[day - 1]);
-                return selectedDays.join(', ');
-            },
-            calculateDeliveryDates: function(prev, last) {
-                var nextDeliveryDates = [];
-                if (prev && prev > Date.now()) {
-                    nextDeliveryDates.push(this.formatDateTime(prev, 'DD MMMM YYYY'));
-                }
-                if (last && last > Date.now() && last !== prev) {
-                    nextDeliveryDates.push(this.formatDateTime(last, 'DD MMMM YYYY'));
-                }
-                return nextDeliveryDates.join(', ');
             },
             setCohorts: function(cohorts) {
                 this.cohorts = cohorts;

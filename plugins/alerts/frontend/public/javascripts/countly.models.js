@@ -49,7 +49,7 @@
             url: countlyCommon.API_PARTS.data.r,
             data: {
                 app_id: appId,
-                method: "get_cohorts",
+                method: "get_cohorts"
             },
             dataType: "json",
             success: function(res) {
@@ -245,7 +245,7 @@
             },
             dataType: "json",
             success: function(res) {
-                if (res && res.aaData && res.aaData.length > 0 && callback) {
+                if (res && res.aaData && res.aaData.length > 0) {
                     var data = [];
                     for (var i = 0; i < res.aaData.length; i++) {
                         data.push({
@@ -253,6 +253,7 @@
                             name: res.aaData[i].view,
                         });
                     }
+
                     return callback(data);
                 }
 
@@ -479,7 +480,7 @@
                                 appNameList = _.map(
                                     alertsList[i].selectedApps,
                                     function(appID) {
-                                        if (appID === "all-apps") {
+                                        if (appID === "all") {
                                             return "All apps";
                                         }
                                         return (
@@ -491,7 +492,7 @@
                             }
                             /*eslint-disable */
                             var rowData0 = Object.assign({}, alertsList[i]);
-                            raowData0 = Object.assign(rowData0, {
+                            rowData0 = Object.assign(rowData0, {
                                 _id: alertsList[i]._id,
                                 app_id: alertsList[i].selectedApps[0],
                                 appNameList: appNameList.join(", "),
@@ -513,7 +514,7 @@
                                     alertsList[i].selectedApps[0]
                                 ),
                             });
-                            tableData.push(raowData0);
+                            tableData.push(rowData0);
                             /*eslint-enable */
                         }
 

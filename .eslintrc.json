@@ -135,7 +135,7 @@
             },
             "env": {
                 "browser": true,
-                "es6": true
+                "es2020": true
             },
             "rules": {
                 "valid-jsdoc": [
@@ -208,11 +208,11 @@
             ],
             "excludedFiles": "plugins/*/frontend/public/**/*.js",
             "env": {
-                "es6": true,
+                "es2020": true,
                 "node": true
             },
             "parserOptions": {
-                "ecmaVersion": 2020
+                "ecmaVersion": 2023
             },
             "rules": {
                 "no-console": "off",
@@ -235,9 +235,6 @@
                     }
                 ],
                 "for-direction": [
-                    "off"
-                ],
-                "no-console": [
                     "off"
                 ],
                 "no-control-regex": [
@@ -288,7 +285,7 @@
             ],
             "excludedFiles": "plugins/*/tests.js",
             "env": {
-                "es6": true,
+                "es2020": true,
                 "node": true
             },
             "parserOptions": {
@@ -305,7 +302,7 @@
                 "plugins/*/tests.js"
             ],
             "env": {
-                "es6": true,
+                "es2020": true,
                 "node": true,
                 "mocha": true
             },
@@ -324,7 +321,7 @@
                 "ui-tests/**/*.js"
             ],
             "env": {
-                "es6": true,
+                "es2020": true,
                 "node": true,
                 "mocha": true
             },

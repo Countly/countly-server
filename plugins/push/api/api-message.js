@@ -1,10 +1,9 @@
-const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES, Template, PLATFORM } = require('./send'),
-    { DEFAULTS, RecurringType } = require('./send/data/const'),
+const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES } = require('./send'),
+    { DEFAULTS } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
-    { request } = require('./proxy'),
-    {ObjectId} = require("mongodb");
+    { request } = require('./proxy');
 
 
 /**
@@ -30,7 +29,6 @@ async function validate(args, draft = false) {
             },
             triggers: {
                 type: Trigger.scheme,
-                discriminator: Trigger.discriminator.bind(Trigger),
                 array: true,
                 'min-length': 1
             },
@@ -63,15 +61,6 @@ async function validate(args, draft = false) {
         }
     }
 
-    for (let trigger of msg.triggers) {
-        if (trigger.kind === TriggerKind.Plain && trigger._data.tz === false && typeof trigger._data.sctz === 'number') {
-            throw new ValidationError('Please remove tz parameter from trigger definition');
-        }
-        if (trigger.kind === TriggerKind.Recurring && (trigger.bucket === RecurringType.Monthly || trigger.bucket === RecurringType.Weekly) && !trigger.on) {
-            throw new ValidationError('"on" is required for monthly and weekly recurring triggers');
-        }
-    }
-
     let app = await common.db.collection('apps').findOne(msg.app);
     if (app) {
         msg.info.appName = app.name;
@@ -83,13 +72,8 @@ async function validate(args, draft = false) {
                     throw new ValidationError(`No push credentials for ${PLATFORMS_TITLES[p]} platform`);
                 }
             }
-            let creds = await common.db.collection(Creds.collection).find({
-                _id: {
-                    $in: msg.platforms
-                        .map(p => common.dot(app, `plugins.push.${p}._id`))
-                        .map(oid => ObjectId(oid.toString())) // cast to ObjectId (it gets broken after an update in app settings page)
-                }
-            }).toArray();
+
+            let creds = await common.db.collection(Creds.collection).find({_id: {$in: msg.platforms.map(p => common.dot(app, `plugins.push.${p}._id`))}}).toArray();
             if (creds.length !== msg.platforms.length) {
                 throw new ValidationError('No push credentials in db');
             }
@@ -149,7 +133,7 @@ async function validate(args, draft = false) {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/test Message / test
- * @apiName message test
+ * @apiName message/test
  * @apiDescription Send push notification to test users specified in application plugin configuration
  * @apiGroup Push Notifications
  *
@@ -256,7 +240,7 @@ module.exports.test = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/create Message / create
- * @apiName message create
+ * @apiName message/create
  * @apiDescription Create push notification.
  * Set status to "draft" to create a draft, leave it unspecified otherwise.
  * @apiGroup Push Notifications
@@ -274,9 +258,9 @@ module.exports.create = async params => {
     msg.info.created = msg.info.updated = new Date();
     msg.info.createdBy = msg.info.updatedBy = params.member._id;
     msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
+
     if (demo) {
         msg.info.demo = true;
-        msg.info.title = params.qstring.args && params.qstring.args.info && params.qstring.args.info.title ? params.qstring.args.info.title : "";
     }
 
     if (params.qstring.status === Status.Draft) {
@@ -295,6 +279,7 @@ module.exports.create = async params => {
         log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
     }
+
     if (demo && demo !== 'no-data') {
         await generateDemoData(msg, demo);
     }
@@ -308,7 +293,7 @@ module.exports.create = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/update Message / update
- * @apiName message update
+ * @apiName message/update
  * @apiDescription Update push notification
  * @apiGroup Push Notifications
  *
@@ -365,7 +350,7 @@ module.exports.update = async params => {
         }
         else {
             await msg.save();
-            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable) || msg.is(State.Created))) {
+            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable))) {
                 await msg.schedule(log, params);
             }
             common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
@@ -383,7 +368,7 @@ module.exports.update = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/remove Message / remove
- * @apiName message remove
+ * @apiName message/remove
  * @apiDescription Remove message by marking it as deleted (it stays in the database for consistency)
  * @apiGroup Push Notifications
  *
@@ -441,7 +426,7 @@ module.exports.remove = async params => {
  * @param {object} params params object
  * 
  * @api {POST} i/push/message/toggle Message / API or Automated / toggle
- * @apiName message toggle
+ * @apiName message/toggle
  * @apiDescription Stop active or start inactive API or automated message
  * @apiGroup Push Notifications
  *
@@ -494,8 +479,8 @@ module.exports.toggle = async params => {
         return true;
     }
 
-    if (!msg.triggerAutoOrApi() && !msg.triggerRescheduleable()) {
-        throw new ValidationError(`The message doesn't have Cohort, Event, Multi or Recurring trigger`);
+    if (!msg.triggerAutoOrApi()) {
+        throw new ValidationError(`The message doesn't have Cohort or Event trigger`);
     }
 
     if (data.active && msg.is(State.Streamable)) {
@@ -525,7 +510,7 @@ module.exports.toggle = async params => {
  * @param {object} params params object
  * 
  * @api {POST} o/push/message/estimate Message / estimate audience
- * @apiName message estimate
+ * @apiName message/estimate
  * @apiDescription Estimate message audience
  * @apiGroup Push Notifications
  *
@@ -568,6 +553,7 @@ module.exports.estimate = async params => {
             required: false
         }
     }, true);
+
     if (data.result) {
         data = data.obj;
         if (!data.filter) {
@@ -590,7 +576,6 @@ module.exports.estimate = async params => {
         common.returnMessage(params, 400, {errors: ['No such app']}, null, true);
         return true;
     }
-
     for (let p of data.platforms) {
         let id = common.dot(app, `plugins.push.${p}._id`);
         if (!id || id === 'demo') {
@@ -598,17 +583,23 @@ module.exports.estimate = async params => {
         }
     }
 
-    let steps = await new Audience(log, new Message(data), app).steps({la: 1}),
-        cnt = await common.db.collection(`app_users${data.app}`).aggregate(steps.concat([{$count: 'count'}])).toArray(),
-        count = cnt[0] && cnt[0].count || 0,
-        las = await common.db.collection(`app_users${data.app}`).aggregate(steps.concat([
-            {$project: {_id: '$la'}},
-            {$group: {_id: '$_id', count: {$sum: 1}}}
-        ])).toArray(),
-        locales = las.reduce((a, b) => {
-            a[b._id || 'default'] = b.count;
-            return a;
-        }, {default: 0});
+    const steps = await new Audience(log, new Message(data), app).steps({la: 1});
+    const cnt = await common.db.collection(`app_users${data.app}`)
+        .aggregate(steps.concat([{$count: 'count'}]))
+        .toArray();
+    const count = cnt[0] && cnt[0].count || 0;
+    const las = await common.db.collection(`app_users${data.app}`)
+        .aggregate(
+            steps.concat([
+                {$project: {_id: '$la'}},
+                {$group: {_id: '$_id', count: {$sum: 1}}}
+            ])
+        )
+        .toArray();
+    const locales = las.reduce((a, b) => {
+        a[b._id || 'default'] = b.count;
+        return a;
+    }, {default: 0});
 
     common.returnOutput(params, {count, locales});
 };
@@ -619,7 +610,7 @@ module.exports.estimate = async params => {
  * @param {object} params params object
  * 
  * @api {GET} o/push/message/mime Message / attachment MIME
- * @apiName message mime
+ * @apiName message/mime
  * @apiDescription Get MIME information of the URL specified by sending HEAD request and then GET if HEAD doesn't work. Respects proxy setting, follows redirects and returns end URL along with content type & length.
  * @apiGroup Push Notifications
  *
@@ -686,7 +677,7 @@ module.exports.mime = async params => {
  * @param {object} params params object
  * 
  * @api {GET} o/push/message/GET Message / GET
- * @apiName message
+ * @apiName message/GET
  * @apiDescription Get message by ID
  * @apiGroup Push Notifications
  *
@@ -744,7 +735,6 @@ module.exports.one = async params => {
  * @apiSuccess {Object} [notifications] Map of notification ID to array of epochs this message was sent to the user
  * @apiSuccess {Object[]} [messages] Array of messages, returned if "messages" param is set to "true"
  * 
- * @apiDeprecated use now (#Push_Notifications:notifications)
  * @apiUse PushValidationError
  * @apiError NotFound Message Not Found
  * @apiErrorExample {json} NotFound
@@ -810,229 +800,21 @@ module.exports.user = async params => {
 };
 
 /**
- * Get notifications sent to a particular user
- * 
- * @param {object} params params
- * @returns {Promise} resolves to true
- * 
- * @api {GET} o/push/notifications Sent notifications
- * @apiName notifications
- * @apiDescription Get notifications sent to a particular user.
- * Makes a look up either by user id (uid) or did (device id). Returns notifications sent to a user if any.
- * @apiGroup Push Notifications
- *
- * @apiQuery {String} app_id, Application ID
- * @apiQuery {String} [id] User ID (uid). Either id or did must be specified.
- * @apiQuery {String} [did] User device ID (did). Either id or did must be specified.
- * @apiQuery {Boolean} full Return full messages along with simplified notifications. Note that true here will limit number of returned notifications to 10.
- * @apiQuery {String} platform Platform for notifications to return
- * @apiQuery {Integer} skip Pagination skip
- * @apiQuery {Integer} limit Pagination limit, must be in 1..50 range
- * 
- * @apiSuccess {Object[]} notifications Array of simplified notifications objects with _id, title, message and date properties representing a notification sent to a user at a particular date. 
- * Please note that returned title & message might not be accurate for cases when notification content was overridden in a message/push call as Countly doesn't keep this data after sending notifications. Default title & message will be returned in such cases.
- * Also note that current user profile properties are used for message content personalization when it's set.
- * @apiSuccess {String} notifications._id Noficiation message id
- * @apiSuccess {String} notifications.date ISO date when notification was sent to this user, +- few seconds
- * @apiSuccess {String} [notifications.title] Noficiation title string, if any
- * @apiSuccess {String} [notifications.message] Noficiation message string, if any
- * 
- * @apiUse PushValidationError
- * @apiError NotFound Message Not Found
- * @apiErrorExample {json} NotFound
- *      HTTP/1.1 404 Not Found
- *      {
- *          "errors": ["User with the did specified is not found"]
- *      }
- * @apiSuccessExample {json} Success-Response
- *      HTTP/1.1 200 Success
- *      {
- *          "notifications": [
- *		        {
- *			        "_id": "6480d8a03f9ea25502c816ce",
- *			        "title": "Offers!",
- *			        "message": "Hi James, check out your personal limited offer",
- *			        "date": "2023-06-07T19:26:08.683Z"
- *		        },
- *		        {
- *			        "_id": "6465fede1276bf50b2662765",
- *			        "title": "Balance",
- *			        "message": "James, your balance is reaching 0",
- *			        "date": "2023-06-08T19:00:08.683Z"
- *		        }
- *          ]
- *      }
- * 
- * @apiSuccessExample {json} Success-Response-full=true
- *      HTTP/1.1 200 Success
- *      {
- *          "notifications": [
- *		        {
- *			        "_id": "6480d8a03f9ea25502c816ce",
- *			        "title": "Offers!",
- *			        "message": "Hi James, check out your personal limited offer",
- *			        "date": "2023-06-07T19:26:08.683Z"
- *		        },
- *		        {
- *			        "_id": "6465fede1276bf50b2662765",
- *			        "title": "Balance",
- *			        "message": "James, your balance is reaching 0",
- *			        "date": "2023-06-08T19:00:08.683Z"
- *		        }
- *          ],
- *          "messages": [
- *              {
- *       			"_id": "6480d8a03f9ea25502c816ce",
- *                  "app": "5fbb72974e19c6614411d95f",
- *                  "contents": [
- *                      {
- *                          "title": "Offers!",
- *                          "message": "Hi James, check out your personal limited offer",
- *                          "expiration": 604800000
- *                      },
- *                      {
- *                          "p": "a",
- *                          "sound": "default"
- *                      },
- *                      {
- *                          "p": "i",
- *                          "sound": "default"
- *                      }
- *                  ],
- *                  "filter": {},
- *                  "other message fields": "..."
- *              },
- *              {
- *       			"_id": "6465fede1276bf50b2662765",
- *                  "app": "5fbb72974e19c6614411d95f",
- *                  "contents": [
- *                      {
- *      			        "title": "Balance",
- *		        	        "message": "James, your balance is reaching 0",
- *                          "expiration": 604800000
- *                      },
- *                      {
- *                          "p": "a",
- *                          "sound": "default"
- *                      },
- *                      {
- *                          "p": "i",
- *                          "sound": "default"
- *                      }
- *                  ],
- *                  "filter": {},
- *                  "other message fields": "..."
- *              }
- *          ]
- *      }
- */
-module.exports.notificationsForUser = async params => {
-    let data = common.validateArgs(params.qstring, {
-        id: {type: 'String', required: false},
-        did: {type: 'String', required: false},
-        app_id: {type: 'String', required: true},
-        platform: {type: 'String', in: platforms, required: true},
-        full: {type: 'BooleanString', required: true},
-        limit: {type: 'IntegerString', required: true, min: 1, max: 50},
-        skip: {type: 'IntegerString', required: true, min: 0},
-    }, true);
-    if (data.result) {
-        data = data.obj;
-    }
-    else {
-        common.returnMessage(params, 400, {errors: data.errors}, null, true);
-        return true;
-    }
-
-    if (!data.did && !data.id) {
-        common.returnMessage(params, 400, {errors: ['One of id & did parameters is required']}, null, true);
-        return true;
-    }
-
-    if (data.full) {
-        data.limit = Math.min(data.limit, 10);
-    }
-
-    let uid = data.id,
-        app_user;
-    if (!uid && data.did) {
-        app_user = await common.db.collection(`app_users${data.app_id}`).findOne({did: data.did});
-        if (!app_user) {
-            common.returnMessage(params, 404, {errors: ['User with the did specified is not found']}, null, true);
-            return true;
-        }
-        uid = app_user.uid;
-    }
-    else {
-        app_user = await common.db.collection(`app_users${data.app_id}`).findOne({uid: uid});
-        if (!app_user) {
-            common.returnMessage(params, 404, {errors: ['User with the uid specified is not found']}, null, true);
-            return true;
-        }
-    }
-
-    let push = await common.db.collection(`push_${data.app_id}`).findOne({_id: uid});
-    if (!push) {
-        common.returnOutput(params, {notifications: []});
-        return true;
-    }
-
-    let id_dates = Object.keys(push.msgs || {}).map(id => push.msgs[id].map(date => [id, date])).flat();
-    if (!id_dates.length) {
-        common.returnOutput(params, {notifications: []});
-        return true;
-    }
-
-    id_dates.sort(([, date1], [, date2]) => date1 > date2 ? -1 : 1);
-    id_dates = id_dates.slice(data.skip, data.skip + data.limit);
-
-    let ids = Array.from(new Set(id_dates.map(idd => idd[0]))).map(common.dbext.oid),
-        messages = await common.db.collection('messages').find({_id: {$in: ids}}).toArray();
-
-    let notifications = id_dates.map(([id, date]) => {
-        let m = messages.find(msg => msg._id.toString() === id.toString());
-        if (m) {
-            m = new Message(m);
-        }
-        else {
-            return [];
-        }
-        if (!m.platforms.includes(data.platform)) {
-            return [];
-        }
-
-        let o = new Template(m, PLATFORM[data.platform]).guess_compile({m: m._id, h: 0, pr: app_user});
-        o.date = new Date(date);
-        return o;
-    }).flat();
-
-    let ret = {notifications};
-
-    if (data.full) {
-        ret.messages = messages;
-    }
-
-    common.returnOutput(params, ret, true);
-
-    return true;
-};
-/**
  * Get messages
  * 
  * @param {object} params params
  * @returns {Promise} resolves to true
  * 
  * @api {GET} o/push/message/all Message / find
- * @apiName message all
+ * @apiName message/all
  * @apiDescription Get messages
  * Returns one of three groups: one time messages (neither auto, nor api params set or set to false), automated messages (auto = "true"), API messages (api = "true")
  * @apiGroup Push Notifications
  *
  * @apiQuery {String} app_id Application ID
- * @apiQuery {Boolean} auto *Deprecated.* Whether to return only automated messages
- * @apiQuery {Boolean} api *Deprecated.* Whether to return only API messages
- * @apiQuery {String[]} kind Required. Array of message kinds (Trigger kinds) to return, overrides *auto* & *api* if set.
- * @apiQuery {Boolean} removed Whether to return removed messages (set it to true to return removed messages)
+ * @apiQuery {Boolean} auto Whether to return only automated messages
+ * @apiQuery {Boolean} api Whether to return only API messages
+ * @apiQuery {Boolean} removed Whether to return removed messages (set to true to return removed messages)
  * @apiQuery {String} [sSearch] A search term to look for in title or message of content objects
  * @apiQuery {Number} [iDisplayStart] Skip this much messages
  * @apiQuery {Number} [iDisplayLength] Return this much messages at most
@@ -1048,15 +830,10 @@ module.exports.notificationsForUser = async params => {
  * @apiUse PushValidationError
  */
 module.exports.all = async params => {
-    const platformTypes = require('./send/platforms').platforms;
     let data = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
-        platform: {type: 'String', required: false, in: () => platformTypes},
         auto: {type: 'BooleanString', required: false},
         api: {type: 'BooleanString', required: false},
-        multi: {type: 'BooleanString', required: false},
-        rec: {type: 'BooleanString', required: false},
-        kind: {type: 'String[]', required: false, in: Object.values(TriggerKind)}, // not required for backwards compatibility only
         removed: {type: 'BooleanString', required: false},
         sSearch: {type: 'RegExp', required: false, mods: 'gi'},
         iDisplayStart: {type: 'IntegerString', required: false},
@@ -1066,26 +843,6 @@ module.exports.all = async params => {
         sEcho: {type: 'String', required: false},
         status: {type: 'String', required: false}
     }, true);
-    // backwards compatibility
-    if (!data.kind) {
-        data.kind = [];
-        if (data.api) {
-            data.kind.push(TriggerKind.API);
-        }
-        else if (data.auto) {
-            data.kind.push(TriggerKind.Event);
-            data.kind.push(TriggerKind.Cohort);
-        }
-        else if (data.multi) {
-            data.kind.push(TriggerKind.Multi);
-        }
-        else if (data.rec) {
-            data.kind.push(TriggerKind.Recurring);
-        }
-        else {
-            data.kind = Object.values(TriggerKind);
-        }
-    }
 
     if (data.result) {
         data = data.obj;
@@ -1093,15 +850,20 @@ module.exports.all = async params => {
         let query = {
             app: data.app_id,
             state: {$bitsAllClear: State.Deleted},
-            'triggers.kind': {$in: data.kind}
         };
-
-        if (data.platform && data.platform.length) {
-            query.platforms = data.platform; //{$in: [data.platforms]};
-        }
 
         if (data.removed) {
             delete query.state;
+        }
+
+        if (data.auto) {
+            query['triggers.kind'] = {$in: [TriggerKind.Event, TriggerKind.Cohort]};
+        }
+        else if (data.api) {
+            query['triggers.kind'] = TriggerKind.API;
+        }
+        else {
+            query['triggers.kind'] = TriggerKind.Plain;
         }
 
         if (data.sSearch) {
@@ -1141,14 +903,8 @@ module.exports.all = async params => {
                 else if (data.api) {
                     dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
                 }
-                else if (data.multi) {
-                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Multi]}, as: "item"}}}}});
-                }
-                else if (data.rec) {
-                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Recurring]}, as: "item"}}}}});
-                }
                 else {
-                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", Object.values(TriggerKind)]}, as: "item"}}}}});
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
                 }
 
                 dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}, "info.isDraft": {"$cond": [{"$eq": ["$status", "draft"]}, 1, 0]}}});
@@ -1178,36 +934,37 @@ module.exports.all = async params => {
             else if (data.api) {
                 dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
             }
-            else if (data.multi) {
-                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Multi]}, as: "item"}}}}});
-            }
-            else if (data.rec) {
-                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Recurring]}, as: "item"}}}}});
-            }
             else {
-                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", Object.values(TriggerKind)]}, as: "item"}}}}});
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
             }
             dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}}});
         }
 
         pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
+        common.db.collection(Message.collection).aggregate(pipeline, function(err, res) {
+            res = res || [];
+            res = res[0] || {};
 
+            var items = res.data || [];
+            var total = 0;
+            if (res.total && res.total[0] && res.total[0].cn) {
+                total = res.total[0].cn;
+            }
 
-        let res = (await common.db.collection(Message.collection).aggregate(pipeline).toArray() || [])[0] || {},
-            items = res.data || [],
-            total = res.total && res.total[0] && res.total[0].cn || 0;
-        common.returnOutput(params, {
-            sEcho: data.sEcho,
-            iTotalRecords: total || items.length,
-            iTotalDisplayRecords: total || items.length,
-            aaData: items
-        }, true);
+            common.returnOutput(params, {
+                sEcho: data.sEcho,
+                iTotalRecords: total || items.length,
+                iTotalDisplayRecords: total || items.length,
+                aaData: items || []
+            }, true);
+
+        });
+
     }
     else {
         common.returnMessage(params, 400, {errors: data.errors}, null, true);
+        return true;
     }
-
-    return true;
 };
 
 /**
@@ -1424,7 +1181,7 @@ function mimeInfo(url, method = 'HEAD') {
     return new Promise((resolve, reject) => {
         let req = request(url.toString(), method, conf);
 
-        req.on('response', res => {
+        req.once('response', res => {
             let status = res.statusCode,
                 headers = res.headers,
                 data = 0;

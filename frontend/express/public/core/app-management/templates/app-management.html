@@ -3,7 +3,7 @@
         :title="i18n('management-applications.title')"
     >
         <template v-if="!firstApp" v-slot:header-right>
-            <el-button v-if="isGlobalAdmin" type="success" icon="el-icon-circle-plus" @click="createNewApp">{{i18n('common.add-new-app-button')}}</el-button>
+            <el-button v-if="isGlobalAdmin" type="success" icon="el-icon-circle-plus" @click="createNewApp" data-test-id="add-new-app-button">{{i18n('common.add-new-app-button')}}</el-button>
         </template>
     </cly-header>
     <cly-main class="bu-pt-4">
@@ -11,6 +11,7 @@
             <div v-if="!firstApp" class="bu-column bu-is-3 bu-mr-5 app-management-list">
                 <cly-listbox
                     skin="jumbo"
+                    test-id="app-list"
                     height="624"
                     :searchPlaceholder="appListCount"
                     :options="appList"
@@ -23,17 +24,18 @@
             </div>
             <div v-if="firstApp" class="bu-column bu-is-1"></div>
             <div v-if="firstApp" class="bu-column bu-is-3 bu-mr-5">
-                <h1>{{i18n("management-applications.create-first-app-title")}}</h1>
-                <p>{{i18n("management-applications.create-first-app-description")}}</p>
+                <h1 data-test-id="empty-page-create-first-app-title">{{i18n("management-applications.create-first-app-title")}}</h1>
+                <p data-test-id="empty-page-create-first-app-description">{{i18n("management-applications.create-first-app-description")}}</p>
             </div>
             <div v-if="firstApp" class="bu-column bu-is-1"></div>
             <div :class="{'bu-column':true, 'bu-is-6':firstApp, 'bu-is-9':!firstApp}">
-                <cly-more-options v-if="!newApp && isGlobalAdmin" size="small" class="bu-is-pulled-right" @command="handleMenuCommand">
-                    <el-dropdown-item :disabled="isDisabled()" :class="{'el-dropdown-menu__item--divided__fix-broken':item.divided, 'add-border':!item.value}" :key="idx" v-for="(item, idx) in topOptions" :divided="item.divided" :command="item.value">
+                <cly-more-options test-id="app-management" v-if="!newApp && isGlobalAdmin" size="small" class="bu-is-pulled-right" @command="handleMenuCommand">
+                    <el-dropdown-item :data-test-id="`app-management-more-button-option-item-${idx}`"  :disabled="isDisabled()" :class="{'el-dropdown-menu__item--divided__fix-broken':item.divided, 'add-border':!item.value}" :key="idx" v-for="(item, idx) in topOptions" :divided="item.divided" :command="item.value">
                         <el-link :disabled="isDisabled()" class="bu-ml-1">{{item.label}}</el-link>
                     </el-dropdown-item>
                 </cly-more-options>
                 <el-switch
+                    test-id="set-app-lock"
                     v-if="!newApp && isGlobalAdmin"
                     v-model="apps[selectedApp].locked"
                     :active-text="apps[selectedApp].locked ? i18n('common.locked') : i18n('common.unlocked')"
@@ -42,7 +44,7 @@
                     v-tooltip.top-start="apps[selectedApp].locked ? {content: i18n('management-applications.application-tooltip-locked-text')} 
                     : {content: i18n('management-applications.application-tooltip-unlocked-text')}">
                 </el-switch>
-                <h2 class="bu-mb-4"> {{apps[selectedApp] ? apps[selectedApp].name : i18n('common.add-new-app')}} </h2>
+                <h2 class="bu-mb-4" data-test-id="selected-app-name-title"> {{apps[selectedApp] ? apps[selectedApp].name : i18n('common.add-new-app')}} </h2>
                 <cly-section>
                     <div class="bu-columns bu-m-0">
                         <div class="bu-column bu-is-8 bu-py-5">
@@ -52,16 +54,17 @@
                                 ref="appForm">
                                 <template v-slot="formScope">
                                     <cly-form-step :id="formId" class="app-section">
-                                        <div style="display: flex;justify-content: space-between; line-height: 30px;">
+                                        <div style="display: flex;justify-content: space-between; line-height: 30px;" data-test-id="app-information-label">
                                             APP INFORMATION
-                                            <el-button v-show="edited && (isGlobalAdmin || isAppAdmin)" @click="edit()" class="bu-mr-2" type="text">Edit</el-button>
+                                            <el-button data-test-id="edit-button" v-show="edited && (isGlobalAdmin || isAppAdmin)" @click="edit()" class="bu-mr-2" type="text">Edit</el-button>
                                         </div>
                                         <div>
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.application-name')">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.application-name')" test-id="app-name">
                                                 {{formScope.editedObject.name}}
                                             </cly-inline-form-field>
-                                            <cly-inline-form-field v-else rules="required" :label="i18n('management-applications.application-name')" prop="name">
+                                            <cly-inline-form-field v-else rules="required" :label="i18n('management-applications.application-name')" prop="name" test-id="empty-page-app-name">
                                                 <el-input
+                                                    test-id="empty-page-app-name-input"
                                                     :disabled="isDisabled()"
                                                     :placeholder="i18n('management-applications.application-name')"
                                                     v-model="formScope.editedObject.name">
@@ -69,11 +72,12 @@
                                             </cly-inline-form-field>
                                         </div>
                                         <div>
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.type')" :help="i18n('management-applications.type.hint')">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.type')" :help="i18n('management-applications.type.hint')" test-id="app-type">
                                                 {{formScope.editedObject.type}}
                                             </cly-inline-form-field>
-                                            <cly-inline-form-field v-else rules="required" :label="i18n('management-applications.type')" :help="i18n('management-applications.type.hint')" prop="type">
+                                            <cly-inline-form-field v-else rules="required" :label="i18n('management-applications.type')" :help="i18n('management-applications.type.hint')" prop="type" test-id="empty-page-app-type">
                                                 <el-select
+                                                    test-id="empty-page-app-type"
                                                     :disabled="isDisabled()"
                                                     :placeholder="i18n('management-applications.type')"
                                                     v-model="formScope.editedObject.type">
@@ -82,11 +86,12 @@
                                             </cly-inline-form-field>
                                         </div>
                                         <div>
-                                            <cly-inline-form-field v-if="edited" :label="i18n('countries.table.country')" :help="i18n('management-applications.country.hint')">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('countries.table.country')" :help="i18n('management-applications.country.hint')" test-id="country">
                                                 {{formScope.editedObject.country}}
                                             </cly-inline-form-field>
-                                            <cly-inline-form-field v-else rules="required" :label="i18n('countries.table.country')" prop="country" :help="i18n('management-applications.country.hint')">
+                                            <cly-inline-form-field v-else rules="required" :label="i18n('countries.table.country')" prop="country" :help="i18n('management-applications.country.hint')" test-id="empty-page-country">
                                                 <cly-select-x
+                                                    test-id="empty-page-country-select"
                                                     :disabled="isDisabled()"
                                                     :placeholder="i18n('countries.table.country')"
                                                     v-model="formScope.editedObject.country"
@@ -95,11 +100,12 @@
                                             </cly-inline-form-field>
                                         </div>
                                         <div>
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.time-zone')" :help="i18n('management-applications.time-zone.hint')">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.time-zone')" :help="i18n('management-applications.time-zone.hint')" test-id="timezone">
                                                 {{formScope.editedObject.timezone}}
                                             </cly-inline-form-field>
-                                            <cly-inline-form-field v-else rules="required" :label="i18n('management-applications.time-zone')" prop="timezone"  :help="i18n('management-applications.time-zone.hint')">
+                                            <cly-inline-form-field v-else rules="required" :label="i18n('management-applications.time-zone')" prop="timezone"  :help="i18n('management-applications.time-zone.hint')" test-id="empty-page-timezone">
                                                 <cly-select-x
+                                                    test-id="empty-page-timezone-select"
                                                     :disabled="isDisabled()"
                                                     :placeholder="i18n('management-applications.time-zone')"
                                                     v-model="formScope.editedObject.timezone"
@@ -108,11 +114,12 @@
                                             </cly-inline-form-field>
                                         </div>
                                         <div>
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.checksum-salt')" :help="i18n('management-applications.checksum-salt.hint')">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.checksum-salt')" :help="i18n('management-applications.checksum-salt.hint')" test-id="salt-for-checksum">
                                                 {{formScope.editedObject.salt}}
                                             </cly-inline-form-field>
-                                            <cly-inline-form-field v-else :label="i18n('management-applications.checksum-salt')" prop="salt"  :help="i18n('management-applications.checksum-salt.hint')">
+                                            <cly-inline-form-field v-else :label="i18n('management-applications.checksum-salt')" prop="salt"  :help="i18n('management-applications.checksum-salt.hint')" test-id="empty-page-salt-for-checksum">
                                                 <el-input
+                                                    test-id="empty-page-salt-for-checksum-input"
                                                     :disabled="isDisabled()"
                                                     :placeholder="i18n('management-applications.checksum-salt')"
                                                     v-model="formScope.editedObject.salt">
@@ -120,11 +127,12 @@
                                             </cly-inline-form-field>
                                         </div>
                                         <div>
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-id')" :help="i18n('management-applications.app-id.hint')">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-id')" :help="i18n('management-applications.app-id.hint')" test-id="app-id">
                                                 {{formScope.editedObject._id}}
                                             </cly-inline-form-field>
-                                            <cly-inline-form-field v-if="!newApp && !edited" :label="i18n('management-applications.app-id')" prop="_id"  :help="i18n('management-applications.app-id.hint')">
+                                            <cly-inline-form-field v-if="!newApp && !edited" :label="i18n('management-applications.app-id')" prop="_id"  :help="i18n('management-applications.app-id.hint')" test-id="empty-page-app-id">
                                                 <el-input
+                                                    test-id="empty-page-app-id-input"
                                                     readonly
                                                     onclick="select()"
                                                     :placeholder="i18n('management-applications.app-id')"
@@ -133,18 +141,20 @@
                                             </cly-inline-form-field>
                                         </div>
                                         <div>
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-key')" :help="i18n('management-applications.app-key.hint')">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-key')" :help="i18n('management-applications.app-key.hint')" test-id="app-key">
                                                 {{formScope.editedObject.key}}
                                             </cly-inline-form-field>
                                             <cly-inline-form-field 
                                                 v-else 
                                                 prop="key" 
+                                                test-id="empty-page-app-key"
                                                 :rules="rules(formScope.editedObject)" 
                                                 :custom-messages="customMessages()"
                                                 :label="i18n('management-applications.app-key')" 
                                                 :help="i18n('management-applications.app-key.hint')"
                                             >
                                                 <el-input
+                                                    test-id="empty-page-app-key-input"
                                                     :readonly="isDisabled()"
                                                     onclick="select()"
                                                     :placeholder="i18n(newApp ? 'management-applications.app-key.generate' : 'management-applications.app-key')"
@@ -153,7 +163,7 @@
                                             </cly-inline-form-field>
                                         </div>
                                         <div v-if="formScope.editedObject.type === 'web'">
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-domain')">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.app-domain')" test-id="app-domain">
                                                 {{formScope.editedObject.app_domain}}
                                             </cly-inline-form-field>
                                             <cly-inline-form-field v-else :label="i18n('management-applications.app-domain')" prop="app_domain">
@@ -165,7 +175,7 @@
                                             </cly-inline-form-field>
                                         </div>
 										<div v-if="!newApp && apps[selectedApp] && apps[selectedApp].redirect_url">
-                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.redirect_url')" :help="i18n('management-applications.redirect_url.help')">
+                                            <cly-inline-form-field v-if="edited" :label="i18n('management-applications.redirect_url')" :help="i18n('management-applications.redirect_url.help')" test-id="redirect-url">
                                                 {{formScope.editedObject.redirect_url}}
 											</cly-inline-form-field>
 											<cly-inline-form-field v-else rules="" :label="i18n('management-applications.redirect_url')" prop="redirect_url" :help="i18n('management-applications.redirect_url.help')">
@@ -182,6 +192,7 @@
                                         <el-button
                                             :disabled="isDisabled() || !formScope.isSubmissionAllowed"
                                             @click="formScope.submit()"
+                                            data-test-id="empty-page-create-new-app-button"
                                             type="primary">{{i18n( newApp ? 'common.create' : 'common.apply')}}
                                         </el-button>
                                     </div>
@@ -191,16 +202,38 @@
                                         @discard="discardForm()" 
                                         @save="save(formScope.editedObject)"
                                         :disabled="isSaveDisabled(formScope.editedObject)"
+                                        :isModal="true"
                                     >
+                                    <template v-slot:main>
+                                        <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
+                                            <span class="selected-count-blue bu-pl-1 text-medium">
+                                                <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{compare(formScope.editedObject,apps[selectedApp]).length}}</span>
+                                                <span v-if="compare(formScope.editedObject,apps[selectedApp]).length>1" class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made") }}</span>
+                                                <span v-else class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made-single") }}</span>
+                                                <span v-if="compare(formScope.editedObject,apps[selectedApp]).length>1" class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep") }}</span>
+                                                <span v-else class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep-single") }}</span>
+                                            </span>
+                                            <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
+                                            <el-button skin="red" class="bu-mr-2" size="small" type="default" @click="save(formScope.editedObject)">
+                                                <i class="cly-io-16 cly-io cly-io-save-disc" style="font-size: larger;"></i>
+                                                <span class="bu-ml-1">
+                                                    {{ i18n('dashboards.save-changes') }}
+                                                </span>
+                                            </el-button>
+                                            <el-button class="x-button" @click="discardForm">
+                                                <i class="cly-io-16 cly-io cly-io-x color-cool-gray-50"></i>
+                                            </el-button>
+                                        </div>
+                                    </template>
                                     </cly-diff-helper>
                                 </template>
                             </cly-form>
                         </div>
                         <div v-if="!firstApp" class="account-settings-avatar-box bu-is-3 bu-column">
                             <div v-if="!newApp" class="bu-is-vcentered">
-                                <p class="bu-has-text-weight-medium bu-mb-6" style="margin: 0px;font-size: 14px;">{{i18n('management-applications.icon')}}</p>
+                                <p class="bu-has-text-weight-medium bu-mb-6" style="margin: 0px;font-size: 14px;" data-test-id="app-icon-label">{{i18n('management-applications.icon')}}</p>
                                 <div>
-                                    <div class="account-settings-avatar" :style="app_icon"></div>
+                                    <div class="account-settings-avatar" :style="app_icon" data-test-id="avatar-app-icon"></div>
                                 </div>
                                 <p>&nbsp;</p>
                                     <el-upload
@@ -212,9 +245,9 @@
                                     :limit="1"
                                     name="app_image"
                                     accept="image/png, image/jpeg, image/gif">
-                                        <el-button size="small" type="text">Add Icon</el-button>
+                                        <el-button size="small" type="text" data-test-id="add-icon-button">Add Icon</el-button>
                                     </el-upload>
-                                <p class="account-upload-instructions">{{i18n('management-applications.icon-error')}}</p>
+                                <p class="account-upload-instructions" data-test-id="account-upload-instructions-label">{{i18n('management-applications.icon-error')}}</p>
                             </div>
                         </div>
                     </div>
@@ -353,7 +386,29 @@
                                 </cly-inline-form-field>
                             </el-collapse-item>
                         </el-collapse>
-                        <cly-diff-helper :diff="changeKeys" @discard="onDiscard" @save="saveSettings" :disabled="v.invalid" :emitSaveWhenDisabled="true"></cly-diff-helper>
+                        <cly-diff-helper :diff="changeKeys" @discard="onDiscard" @save="saveSettings" :disabled="v.invalid" :emitSaveWhenDisabled="true" :isModal="true">
+                            <template v-slot:main>
+                                <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
+                                    <span class="selected-count-blue bu-pl-1 text-medium">
+                                        <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{changeKeys.length}}</span>
+								        <span v-if="changeKeys.length>1" class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made") }}</span>
+										<span v-else class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{ i18n("common.diff-helper.changes-made-single") }}</span>
+										<span v-if="changeKeys.length>1" class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep") }}</span>
+										<span v-else class="text-medium color-cool-gray-50">{{ i18n("common.diff-helper.keep-single") }}</span>
+                                    </span>
+                                    <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
+                                    <el-button skin="red" class="bu-mr-2" size="small" type="default" @click="saveSettings">
+                                        <i class="cly-io-16 cly-io cly-io-save-disc" style="font-size: larger;"></i>
+                                        <span class="bu-ml-1">
+                                            {{ i18n('dashboards.save-changes') }}
+                                        </span>
+                                    </el-button>
+                                    <el-button class="x-button" @click="onDiscard">
+                                        <i class="cly-io-16 cly-io cly-io-x color-cool-gray-50"></i>
+                                    </el-button>
+                                </div>
+                            </template>
+                        </cly-diff-helper>
                     </validation-observer>
                 </cly-section>
                 <el-card class="box-card color-cool-gray-100" v-if="!newApp && isCode">

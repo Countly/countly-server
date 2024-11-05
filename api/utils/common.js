@@ -79,6 +79,24 @@ common.escape_html = function(string, more) {
 
     return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
 };
+/**
+ * Function to escape unicode characters
+ * @param {string} str  - string for which to escape
+ * @returns  {string} escaped string
+ */
+common.encodeCharacters = function(str) {
+    try {
+        str = str + "";
+        str = str.replace(/\u0000/g, "&#9647");
+        str.replace(/[^\x00-\x7F]/g, function(c) {
+            return encodeURI(c);
+        });
+        return str;
+    }
+    catch {
+        return str;
+    }
+};
 
 /**
 * Decode escaped html 
@@ -163,13 +181,14 @@ function getJSON(val) {
     }
     return ret;
 }
+
 /**
-* Logger object for creating module specific logging
-* @type {module:api/utils/log~Logger} 
-* @example
-* var log = common.log('myplugin:api');
-* log.i('myPlugin got a request: %j', params.qstring);
-*/
+ * Logger object for creating module-specific logging
+ * @type {function(string): Logger}
+ * @example
+ * const log = common.log('myplugin:api');
+ * log.i('myPlugin got a request: %j', params.qstring);
+ */
 common.log = logger;
 
 /**
@@ -217,7 +236,8 @@ common.dbUserMap = {
     'last_end_session_timestamp': 'lest',
     'has_ongoing_session': 'hos',
     'previous_events': 'pe',
-    'resolution': 'r'
+    'resolution': 'r',
+    'has_hinge': 'hh',
 };
 
 common.dbUniqueMap = {
@@ -1029,7 +1049,7 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     }
                     else if (typeof args[arg] === 'string') {
                         if (mongodb.ObjectId.isValid(args[arg])) {
-                            parsed = mongodb.ObjectId(args[arg]);
+                            parsed = new mongodb.ObjectId(args[arg]);
                         }
                         else {
                             if (returnErrors) {
@@ -1111,6 +1131,31 @@ common.validateArgs = function(args, argProperties, returnErrors) {
                     else {
                         if (returnErrors) {
                             returnObj.errors.push("Invalid JSON for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                }
+                else if (Array.isArray(argProperties[arg].type) && argProperties[arg].multiple) { //ALLOW MULTIPLE TYPES FOR ARGUMENT
+                    const argType = typeof args[arg];
+                    const allowedTypes = argProperties[arg].type.map(t => t.toLowerCase());
+
+                    if (!Array.isArray(args[arg]) && !allowedTypes.includes(argType)) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
+                            returnObj.result = false;
+                            argState = false;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    else if (Array.isArray(args[arg]) && !allowedTypes.includes('array')) {
+                        if (returnErrors) {
+                            returnObj.errors.push("Invalid type for " + arg);
                             returnObj.result = false;
                             argState = false;
                         }
@@ -2631,6 +2676,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                     update.$set.lac = params.time.timestamp;
                 }
                 update.$set.last_sync = Math.round(Date.now() / 1000);
+                update.$set.lu = new Date();
             }
 
             if (!user.sdk) {
@@ -2709,11 +2755,21 @@ common.updateAppUser = function(params, update, no_meta, callback) {
                 update.$set.tz = params.qstring.tz;
             }
         }
+        if (params.app_user.uid && !(update && update.$set && update.$set.uid)) {
+            update.$setOnInsert = update.$setOnInsert || {};
+            update.$setOnInsert.uid = params.app_user.uid;
+        }
+
+        if (params.app_user.did && !(update && update.$set && update.$set.did)) {
+            update.$setOnInsert = update.$setOnInsert || {};
+            update.$setOnInsert.did = params.app_user.did;
+        }
 
         if (callback) {
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
                 new: true,
-                upsert: true
+                upsert: true,
+                skipDataMasking: true
             }, function(err, res) {
                 if (!err && res && res.value) {
                     params.app_user = res.value;
@@ -2737,13 +2793,19 @@ common.updateAppUser = function(params, update, no_meta, callback) {
 * @param {object} metrics - metrics object from SDK request
 */
 common.processCarrier = function(metrics) {
-    if (metrics && metrics._carrier) {
+    // Initialize metrics if undefined
+    metrics = metrics || {};
+    if (metrics._carrier) {
         var carrier = metrics._carrier + "";
 
         //random hash without spaces
-        if (carrier.length === 16 && carrier.indexOf(" ") === -1) {
+        if ((carrier.length === 16 && carrier.indexOf(" ") === -1)) {
             delete metrics._carrier;
-            return;
+        }
+
+        // Since iOS 16.04 carrier returns value "--", interpret as Unknown by deleting
+        if (carrier === "--") {
+            delete metrics._carrier;
         }
 
         //random code
@@ -2755,15 +2817,16 @@ common.processCarrier = function(metrics) {
             }
             else {
                 delete metrics._carrier;
-                return;
             }
         }
 
         carrier = carrier.replace(/\w\S*/g, function(txt) {
             return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
         });
+
         metrics._carrier = carrier;
     }
+    metrics._carrier = metrics._carrier ? metrics._carrier : "Unknown";
 };
 
 /**
@@ -3351,7 +3414,7 @@ common.mergeQuery = function(ob1, ob2) {
 common.dbext = {
     ObjectID: function(id) {
         try {
-            return mongodb.ObjectId(id);
+            return new mongodb.ObjectId(id);
         }
         catch (ex) {
             return id;
@@ -3377,7 +3440,7 @@ common.dbext = {
      * @returns {ObjectID} id
      */
     oid: function(id) {
-        return !id ? id : id instanceof mongodb.ObjectId ? id : mongodb.ObjectId(id);
+        return !id ? id : id instanceof mongodb.ObjectId ? id : new mongodb.ObjectId(id);
     },
 
     /**

@@ -146,12 +146,14 @@
 
     var getUserLoyaltyView = function() {
         var tabsVuex = countlyVue.container.tabsVuex(["/analytics/loyalty"]);
+        var templates = [];
+        if (countlyGlobal.plugins.indexOf("drill") !== -1) {
+            templates.push("/drill/templates/query.builder.v2.html");
+        }
         return new countlyVue.views.BackboneWrapper({
             component: UserLoyaltyView,
             vuex: tabsVuex,
-            templates: [
-                "/drill/templates/query.builder.v2.html"
-            ]
+            templates: templates
         });
     };
 
@@ -188,6 +190,7 @@
         permission: "core",
         title: 'user-activity.title',
         route: "#/analytics/loyalty/user-activity",
+        dataTestId: "user-activity",
         component: UserActivityView,
         vuex: [{
             clyModel: countlyUserActivity

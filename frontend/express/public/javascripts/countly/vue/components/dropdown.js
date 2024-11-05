@@ -69,8 +69,8 @@
                         readonly="readonly" \
                         v-model="description"\
                         :placeholder="placeholder">\
-                        <template v-slot:prefix="scope">\
-                            <slot name="prefix" v-bind="scope"></slot>\
+                        <template v-slot:prefix>\
+                            <slot name="prefix"></slot>\
                         </template>\
                         <template slot="suffix" v-if="arrow">\
                             <i class="el-select__caret" :class="[iconClass]"></i>\
@@ -107,6 +107,18 @@
             },
             popClass: {
                 type: String
+            },
+            id: {
+                type: String
+            },
+            widthSameAsTrigger: {
+                type: Boolean,
+                default: false
+            },
+            testId: {
+                type: String,
+                default: "cly-dropdown-default-test-id",
+                required: false
             }
         },
         inject: {
@@ -132,7 +144,7 @@
             };
         },
         template: '<div class="cly-vue-dropdown el-select"\
-                    v-click-outside="handleOutsideClick">\
+                    v-click-outside="handleOutsideClick" :data-test-id="testId + \'-dropdown-el-select\'">\
                     <trigger-proxy\
                         ref="reference"\
                         @click.native.stop="handleToggle"\
@@ -144,8 +156,9 @@
                         </slot>\
                     </trigger-proxy>\
                     <el-select-dropdown\
+                        :id="id"\
                         ref="popper"\
-                        :width="width"\
+                        :width="computedWidth"\
                         :append-to-body="popperAppendToBody"\
                         :placement="placement"\
                         :visible-arrow="false"\
@@ -160,7 +173,8 @@
         data: function() {
             return {
                 visible: false,
-                focused: false
+                focused: false,
+                computedWidth: ""
             };
         },
         beforeDestroy: function() {
@@ -193,6 +207,19 @@
                 this.visible = !this.visible;
                 if (!this.visible) {
                     this.$emit("hide", true);
+                }
+                else {
+                    if (this.width) {
+                        this.computedWidth = this.width;
+                    }
+                    else {
+                        if (this.widthSameAsTrigger) {
+                            this.computedWidth = this.$refs.reference.$el.offsetWidth;
+                        }
+                        else {
+                            this.computedWidth = this.width;
+                        }
+                    }
                 }
             },
             updateDropdown: function() {
@@ -355,9 +382,9 @@
                                         <el-button class="cly-multi-select__reset" :data-test-id="testId + \'-reset\'" @click="reset" type="text">{{resetLabel}}</el-button>\
                                     </div>\
                                     <table v-for="field in fields" :key="field.key">\
-                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field"><span :data-test-id="testId + \'-\' + field.label.toString().replace(\' \', \'-\').toLowerCase() + \'-label\'">{{field.label}}</span></tr>\
+                                        <tr v-if="showThis(field.key)" class="cly-multi-select__field"><span :data-test-id="testId + \'-\' + field.label.toString().replaceAll(\' \', \'-\').toLowerCase() + \'-label\'">{{field.label}}</span></tr>\
                                         <tr v-if="\'items\' in field && showThis(field.key)">\
-                                            <cly-select-x :test-id="testId + \'-\' + field.label.toString().replace(\' \', \'-\').toLowerCase() + \'-input\'" :options="field.items" :disabledOptions="field.disabled" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
+                                            <cly-select-x :test-id="testId + \'-\' + field.label.toString().replaceAll(\' \', \'-\').toLowerCase() + \'-input\'" :options="field.items" :disabledOptions="field.disabled" :show-search="field.searchable" :searchable="field.searchable" class="cly-multi-select__field-dropdown" :width="selectXWidth" :placeholder="optionLabel(field, unsavedValue[field.key])" v-model="unsavedValue[field.key]" style="margin-top:2px">\
                                             </cly-select-x>\
                                         </tr>\
                                         <tr v-else-if="\'options\' in field">\
@@ -517,11 +544,12 @@
     Vue.component("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
-        template: '<cly-dropdown class="cly-vue-more-options" ref="dropdown" :placement="placement" :disabled="disabled" v-on="$listeners">\
+        template: '<cly-dropdown class="cly-vue-more-options" ref="dropdown" :widthSameAsTrigger="widthSameAsTrigger" :placement="placement" :disabled="disabled" @hide="toggleArrowState" @show="toggleArrowState" v-on="$listeners">\
                         <template v-slot:trigger>\
                             <slot name="trigger">\
-                                <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type">\
-                                <span :data-test-id="testId + \'-more-option-text\'" v-if="text">{{text}}</span>\
+                                <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type" :disabled="disabledButton">\
+                                    <span :data-test-id="testId + \'-more-option-text\'" v-if="text">{{text}}</span>\
+                                    <i v-if="showArrows" style="display:inline-block; margin: 0px 0px 0px 8px;" :class="iconClass"></i>\
                                 </el-button>\
                             </slot>\
                         </template>\
@@ -551,6 +579,10 @@
                 type: Boolean,
                 default: false
             },
+            disabledButton: {
+                type: Boolean,
+                default: false,
+            },
             placement: {
                 type: String,
                 default: 'bottom-end'
@@ -558,7 +590,21 @@
             testId: {
                 type: String,
                 default: 'cly-more-options-test-id'
+            },
+            showArrows: {
+                type: Boolean,
+                default: false
+            },
+            widthSameAsTrigger: {
+                type: Boolean,
+                default: false
             }
+        },
+        data: function() {
+            return {
+                arrowState: false,
+                iconClass: 'el-collapse-item__arrow ion-arrow-down-b'
+            };
         },
         mounted: function() {
             this.$on('menu-item-click', this.handleMenuItemClick);
@@ -568,6 +614,15 @@
                 if (!this.disabled) {
                     this.$emit('command', command, instance);
                     this.$refs.dropdown.handleClose();
+                }
+            },
+            toggleArrowState: function() {
+                this.arrowState = !this.$refs.dropdown.visible;
+                if (this.arrowState) {
+                    this.iconClass = 'el-collapse-item__arrow ion-arrow-down-b';
+                }
+                else {
+                    this.iconClass = 'el-collapse-item__arrow ion-arrow-down-b is-active';
                 }
             }
         },

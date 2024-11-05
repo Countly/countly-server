@@ -156,9 +156,9 @@ plugins.connectToAllDatabases().then(function() {
             console.log("Successfully stored batch state");
         }
         catch (ex) {
-            console.log("Could not store batch state");
+            console.log("Could not store batch state", ex);
         }
-        process.exit(code);
+        process.exit(typeof code === "number" ? code : 1);
     }
 
     /**
@@ -282,8 +282,12 @@ plugins.connectToAllDatabases().then(function() {
         for (let i = 0; i < workerCount; i++) {
             // there's no way to define inspector port of a worker in the code. So if we don't
             // pick a unique port for each worker, they conflict with each other.
-            const inspectorPort = i + 1 + (common?.config?.masterInspectorPort || 9229);
-            const worker = cluster.fork({ NODE_OPTIONS: "--inspect-port=" + inspectorPort });
+            let nodeOptions = {};
+            if (countlyConfig?.symlinked !== true) { // countlyConfig.symlinked is passed when running in a symlinked setup
+                const inspectorPort = i + 1 + (common?.config?.masterInspectorPort || 9229);
+                nodeOptions = { NODE_OPTIONS: "--inspect-port=" + inspectorPort };
+            }
+            const worker = cluster.fork(nodeOptions);
             workers.push(worker);
         }
 
@@ -366,10 +370,18 @@ plugins.connectToAllDatabases().then(function() {
                 }
 
                 const form = new formidable.IncomingForm(formidableOptions);
-                req.body = '';
-                req.on('data', (data) => {
-                    req.body += data;
-                });
+                if (/crash_symbols\/(add_symbol|upload_symbol)/.test(req.url)) {
+                    req.body = [];
+                    req.on('data', (data) => {
+                        req.body.push(data);
+                    });
+                }
+                else {
+                    req.body = '';
+                    req.on('data', (data) => {
+                        req.body += data;
+                    });
+                }
 
                 let multiFormData = false;
                 // Check if we have 'multipart/form-data'

@@ -23,7 +23,7 @@ let leader, // leader doc
  */
 function setup() {
     if (!collection) {
-        common.db.createCollection(COLLECTION, (err, col) => {
+        common.db.createCollection(COLLECTION, (err) => {
             if (err) {
                 log.d('collection exists');
                 collection = common.db.collection(COLLECTION);
@@ -40,7 +40,7 @@ function setup() {
                 });
             }
             else {
-                collection = col;
+                collection = common.db.collection(COLLECTION);
                 setImmediate(periodic);
             }
         });
@@ -188,7 +188,7 @@ function imAlive(callback) {
         else if (doc && doc.ok) {
             me = doc.value;
             log.d('updated ls');
-            if (leader.runner === me._id) {
+            if (me && leader.runner === me._id) {
                 log.d('updating leader ls');
                 let update = {ls: me.ls},
                     locking = !leader.lock;

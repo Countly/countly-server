@@ -7,7 +7,7 @@ const plugins = require('../../pluginManager'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, test, create, update, toggle, remove, all, one, mime, user, notificationsForUser } = require('./api-message'),
+    { estimate, test, create, update, toggle, remove, all, one, mime, user } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
     { legacyApis } = require('./legacy'),
@@ -27,7 +27,6 @@ const plugins = require('../../pluginManager'),
                 GET: [validateRead, one, '_id'],
             },
             user: [validateRead, user],
-            notifications: [validateRead, notificationsForUser],
         },
         i: {
             message: {
@@ -58,7 +57,6 @@ plugins.setConfigs(FEATURE_NAME, {
         rate: '',
         period: ''
     },
-    deduplicate: false,
     sendahead: 60000, // send pushes scheduled up to 60 sec in the future
     connection_retries: 3, // retry this many times on recoverable errors
     connection_factor: 1000, // exponential backoff factor
@@ -66,7 +64,7 @@ plugins.setConfigs(FEATURE_NAME, {
     pool_bytes: 10000, // bytes mode streams high water mark
     pool_concurrency: 5, // max number of same type connections
     pool_pools: 10, // max number of connections in total
-    message_timeout: 3600000, // timeout for a message not sent yet (for TooLateToSend error)
+    default_content_available: false, // sets content-available: 1 by default for ios
 });
 
 plugins.internalEvents.push('[CLY]_push_sent');
@@ -85,9 +83,6 @@ plugins.register('/master', function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
-    setTimeout(() => {
-        require('../../../api/parts/jobs').job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
-    }, 10000);
 });
 
 plugins.register('/master/runners', runners => {
@@ -104,7 +99,7 @@ plugins.register('/master/runners', runners => {
                 sender = undefined;
             }
             catch (e) {
-                log.e('Sending stopped with an error', e);
+                log.e('Sender crached', e);
                 sender = undefined;
             }
         }
@@ -166,9 +161,6 @@ plugins.register('/i', async ob => {
                         log.i('Invalid segmentation for [CLY]_push_action from %s: %j (msg %s, count %j)', params.qstring.device_id, event.segmentation, msg ? 'found' : 'not found', event.segmentation.count);
                         continue;
                     }
-                    else {
-                        log.d('Recording push action: [%s] (%s) {%d}, %j', msg.id, params.app_user.uid, count, event);
-                    }
 
                     let p = event.segmentation.p,
                         a = msg.triggers.filter(tr => tr.kind === TriggerKind.Cohort || tr.kind === TriggerKind.Event).length > 0,
@@ -227,7 +219,7 @@ plugins.register('/i', async ob => {
 
 /**
  * Handy function for handling api calls (see apis obj above)
- * 
+ *
  * @param {object} apisObj apis.i or apis.o
  * @param {object} ob object from pluginManager ({params, qstring, ...})
  * @returns {boolean} true if the call has been handled
@@ -274,7 +266,7 @@ function apiCall(apisObj, ob) {
 
 /**
  * Wrap push endpoint catching any push-specific errors from it
- * 
+ *
  * @param {string} method endpoint name
  * @param {function} fn actual endpoint returning a promise
  * @returns {function} CRUD callback
@@ -367,7 +359,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
 
 /**
  * @apiDefine PushMessageBody
- * 
+ *
  * @apiBody {ObjectID} app Application ID
  * @apiBody {String[]} platforms Array of platforms to send to
  * @apiBody {String="draft"} [status] Message status, only set to draft when creating or editing a draft message, don't set otherwise
@@ -386,9 +378,9 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiBody {Number} [triggers.time] [only for event, cohort triggers] Time in ms since 00:00 in case event or cohort message is to be sent in users' timezones
  * @apiBody {Boolean} [triggers.reschedule] [only for event, cohort triggers] Allow rescheduling to next day if it's too late to send on scheduled day
  * @apiBody {Number} [triggers.delay] [only for event, cohort triggers] Milliseconds to delay sending of event or cohort message
- * @apiBody {Number} [triggers.cap] [only for event, cohort & api triggers] Set maximum number of notifications sent to a particular user 
+ * @apiBody {Number} [triggers.cap] [only for event, cohort & api triggers] Set maximum number of notifications sent to a particular user
  * @apiBody {Number} [triggers.sleep] [only for event, cohort & api triggers] Set minimum time in ms between two notifications for a particular user (a notification is discarded if it's less than that)
- * @apiBody {String[]} [triggers.events] [only for event trigger] Event keys 
+ * @apiBody {String[]} [triggers.events] [only for event trigger] Event keys
  * @apiBody {String[]} [triggers.cohorts] [only for cohort trigger] Cohort ids
  * @apiBody {Boolean} [triggers.entry] [only for cohort trigger] Send on cohort entry (true) or exit (false)
  * @apiBody {Boolean} [triggers.cancels] [only for cohort trigger] A notification is to be discarded if user exits cohort (when entry = true) before notification is sent
@@ -415,7 +407,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
 
 /**
  * @apiDefine PushMessage
- * 
+ *
  * @apiSuccess {ObjectID} _id Message ID
  * @apiSuccess {ObjectID} app Application ID
  * @apiSuccess {String[]} platforms Array of platforms to send to
@@ -436,9 +428,9 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiSuccess {Number} [triggers.time] [only for event, cohort triggers] Time in ms since 00:00 in case event or cohort message is to be sent in users' timezones
  * @apiSuccess {Boolean} [triggers.reschedule] [only for event, cohort triggers] Allow rescheduling to next day if it's too late to send on scheduled day
  * @apiSuccess {Number} [triggers.delay] [only for event, cohort triggers] Milliseconds to delay sending of event or cohort message
- * @apiSuccess {Number} [triggers.cap] [only for event, cohort & api triggers] Set maximum number of notifications sent to a particular user 
+ * @apiSuccess {Number} [triggers.cap] [only for event, cohort & api triggers] Set maximum number of notifications sent to a particular user
  * @apiSuccess {Number} [triggers.sleep] [only for event, cohort & api triggers] Set minimum time in ms between two notifications for a particular user (a notification is discarded if it's less than that)
- * @apiSuccess {String[]} [triggers.events] [only for event trigger] Event keys 
+ * @apiSuccess {String[]} [triggers.events] [only for event trigger] Event keys
  * @apiSuccess {String[]} [triggers.cohorts] [only for cohort trigger] Cohort ids
  * @apiSuccess {Boolean} [triggers.entry] [only for cohort trigger] Send on cohort entry (true) or exit (false)
  * @apiSuccess {Boolean} [triggers.cancels] [only for cohort trigger] A notification is to be discarded if user exits cohort (when entry = true) before notification is sent
@@ -467,7 +459,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiSuccess {Object} [result.sent] Number notifications sent successfully
  * @apiSuccess {Object} [result.actioned] Number notifications with positive user reactions (notification taps & button clicks)
  * @apiSuccess {Object} [result.errored] Number notifications which weren't sent due to various errors
- * @apiSuccess {Object[]} [result.lastErrors] Array of last 10 errors 
+ * @apiSuccess {Object[]} [result.lastErrors] Array of last 10 errors
  * @apiSuccess {Object[]} [result.lastRuns] Array of last 10 sending runs
  * @apiSuccess {Date} [result.next] Next sending date
  * @apiSuccess {Object} [result.subs] Sub results - a map of subresult key to Result object. Subresults are used to store platform and locale specific results.

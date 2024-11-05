@@ -1160,7 +1160,7 @@ var AppRouter = Backbone.Router.extend({
         });
 
         if (countlyAuth.validateRead('core')) {
-            self.addSubMenu("management", {code: "longtasks", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
+            self.addSubMenu("management", {code: "longtasks", permission: "core", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
         }
 
         //management is also a menu category which goes in default menu i.e. visible to all users
@@ -1414,7 +1414,7 @@ var AppRouter = Backbone.Router.extend({
         * <span>{{#limitString value 15}}{{/limitString}}</span>
 		*/
         Handlebars.registerHelper('limitString', function(string, limit) {
-            if (string.length > limit) {
+            if (string && string.length > limit) {
                 return (string || '').substr(0, limit) + "..";
             }
             else {

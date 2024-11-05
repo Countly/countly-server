@@ -71,11 +71,11 @@
                     <p class="text-big color-cool-gray-100">{{i18n('token_manager.table.limit-title')}}<i class="el-icon-question bu-ml-2"></i></p>
                 </div>
                 <div class="cly-vue-drawer-step__line cly-vue-drawer-step__line--aligned">
-                    <el-radio class="is-autosized color-cool-gray-100 bu-p-4" v-model="tokenExpiration" label="0" border>
+                    <el-radio class="is-autosized is-multiline color-cool-gray-100 bu-p-4" v-model="tokenExpiration" label="0" border>
                         {{i18n('token_manager.table.limit-allow.label')}}
                         <p class="text-small color-cool-gray-50 bu-mt-1">{{i18n('token_manager.table.limit-allow.text')}}</p>
                     </el-radio>
-                    <el-radio class="is-autosized color-cool-gray-100 bu-p-4" v-model="tokenExpiration" label="1" border>
+                    <el-radio class="is-autosized is-multiline color-cool-gray-100 bu-p-4" v-model="tokenExpiration" label="1" border>
                         {{i18n('token_manager.table.limit-limit.label')}}
                         <p class="text-small color-cool-gray-50 bu-mt-1">{{i18n('token_manager.table.limit-limit.text')}}</p>
                     </el-radio>

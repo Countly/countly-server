@@ -53,11 +53,21 @@ class InternalEventTrigger {
      */
     async process(ob, eventType) {
         let rules = [];
-        if (ob.is_mock === true) {
+        if (ob && ob.is_mock === true) {
             return ob;
         }
         if (eventType === '/master') {
             this._rules = await common.db.collection("hooks").find({"enabled": true}, {error_logs: 0}).toArray();
+            for (var z = 0; z < this._rules.length; z++) {
+                if (this._rules[z].trigger && this._rules[z].trigger.type === "InternalEventTrigger" && this._rules[z].trigger.configuration && this._rules[z].trigger.configuration.eventType) {
+                    if (this._rules[z].trigger.configuration.eventType === "/profile-group/enter") {
+                        this._rules[z].trigger.configuration.eventType = "/cohort/enter";
+                    }
+                    else if (this._rules[z].trigger.configuration.eventType === "/profile-group/exit") {
+                        this._rules[z].trigger.configuration.eventType = "/cohort/exit";
+                    }
+                }
+            }
         }
         rules = this._rules.filter((r) => {
             return r.trigger.configuration.eventType === eventType;

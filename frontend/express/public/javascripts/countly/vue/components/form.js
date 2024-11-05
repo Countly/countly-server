@@ -364,6 +364,10 @@
                 required: false
             },
             tooltip: {type: String, default: null},
+            direction: {
+                type: String,
+                default: "column" // column, row
+            },
             testId: {
                 type: String,
                 default: "cly-form-field-test-id"
@@ -377,16 +381,31 @@
                 return "form";
             },
             topClasses: function() {
+                let classes = ["cly-vue-form-step__section"];
+                if (this.direction === "row") {
+                    classes.push("bu-is-flex", "bu-is-flex-direction-row", "bu-is-align-items-center");
+                    return classes;
+                }
                 if (this.inline) {
                     return null;
                 }
-                return "cly-vue-form-step__section";
+                return classes;
+            },
+            titleClasses: function() {
+                let classes = ["font-weight-bold"];
+                if (this.direction === "row") {
+                    classes.push("text-small", "color-cool-gray-40");
+                }
+                if (this.direction === "column") {
+                    classes.push("text-smallish", "bu-mb-2");
+                }
+                return classes;
             }
         },
         mixins: [countlyVue.mixins.i18n],
         template: '<div class="cly-vue-form-field" :class="topClasses">\
-                        <div class="bu-is-flex bu-is-justify-content-space-between" v-if="!inline || tooltip || label || optional">\
-                            <div class="text-smallish font-weight-bold bu-mb-1" v-if="label" :data-test-id="testId + \'-header\'">{{label}}</div>\
+                        <div class="bu-is-flex bu-is-justify-content-space-between bu-mr-2" v-if="!inline || tooltip || label || optional">\
+                            <div :class="titleClasses" v-if="label" :data-test-id="testId + \'-header\'">{{label}}</div>\
                             <cly-tooltip-icon v-if="tooltip" :data-test-id="testId + \'-tooltip\'" class="bu-is-flex-grow-1 bu-ml-2" :tooltip="tooltip"></cly-tooltip-icon>\
                             <div v-show="optional" class="text-small text-heading color-cool-gray-40">{{i18n("common.optional")}}</div>\
                         </div>\
@@ -410,6 +429,7 @@
         props: {
             label: String,
             help: String,
+            testId: {type: String, default: 'cly-inline-form-field-default-test-id', required: false}
         },
         computed: {
             hasRequiredRule: function() {
@@ -421,10 +441,10 @@
         },
         template: '<div class="cly-vue-form-field cly-vue-form-step__section bu-columns bu-is-vcentered bu-px-1 bu-mx-1">\
                         <div class="bu-column bu-is-4 bu-p-0">\
-                            <p class="bu-has-text-weight-medium">{{label}} <span v-if="$attrs.rules && hasRequiredRule">*</span></p>\
-                            <p v-if="help" v-html="help"></p>\
+                            <p class="bu-has-text-weight-medium" :data-test-id="testId + \'-label\'">{{label}} <span v-if="$attrs.rules && hasRequiredRule">*</span></p>\
+                            <p v-if="help" v-html="help" :data-test-id="testId + \'-description\'"></p>\
                         </div>\
-                        <div class="bu-column bu-is-8 bu-has-text-left bu-p-0">\
+                        <div class="bu-column bu-is-8 bu-has-text-left bu-p-0" :data-test-id="testId + \'-value\'">\
                             <validation-provider v-if="$attrs.rules" :name="label" v-bind="$attrs" v-on="$listeners" v-slot="validation">\
                                 <div class="cly-vue-form-field__inner el-form-item el-form-item__content" :class="{\'is-error\': validation.errors.length > 0}">\
                                     <slot v-bind="validation"/>\
@@ -436,6 +456,56 @@
                             </div>\
                         </div>\
                   </div>'
+    }));
+
+    Vue.component("cly-form-field-checklistbox", countlyBaseComponent.extend({
+        mixins: [countlyVue.mixins.i18n],
+        props: {
+            value: { type: Array },
+            name: { type: String },
+            label: { type: String },
+            required: { type: Boolean, default: false },
+            options: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            searchable: { type: Boolean, default: true },
+            searchPlaceholder: { type: String, default: 'Search' }
+        },
+        methods: {
+            deleteValue: function(item) {
+                let newValue = this.value;
+                newValue.splice(newValue.indexOf(item), 1);
+                this.$emit('input', newValue);
+            },
+            updateValue: function(value) {
+                this.$emit('input', value);
+            }
+        },
+        template: '<div class="cly-vue-form-checklistbox">\
+                        <cly-form-field :name="name" :required="required" direction="row" inline v-slot:default>\
+                            <div class="cly-vue-form-checklistbox-field">\
+                                <div class="bu-is-flex bu-is-align-items-center" style="height: 25px;">\
+                                    <span class="text-small color-cool-gray-40 font-weight-bold">{{ label }}</span>\
+                                </div>\
+                                <div v-for="item in value" class="cly-vue-form-checklistbox-field__item">\
+                                    <span class="text-smallish color-warm-gray-100 has-ellipsis">{{ item }}</span>\
+                                    <i class="bu-is-clickable color-cool-gray-20 cly-io cly-io-x" @click="deleteValue(item)"></i>\
+                                </div>\
+                            </div>\
+                        </cly-form-field>\
+                        <cly-checklistbox\
+                            :options="options"\
+                            :searchable="searchable"\
+                            :search-placeholder="searchPlaceholder"\
+                            height="auto"\
+                            :value="value"\
+                            :no-match-found-placeholder="i18n(\'common.search.no-match-found\')"\
+                            @input="updateValue"\
+                        ></cly-checklistbox>\
+                    </div>'
     }));
 
     countlyVue.mixins.MultiStepForm = MultiStepFormMixin;

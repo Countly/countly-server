@@ -4,8 +4,8 @@
     countlyAlerts,
     jQuery,
     countlyVue,
-    app,
     countlyCommon,
+    app,
     countlyAuth,
     CV,
     groupsModel,
@@ -33,7 +33,6 @@
                 saveButtonLabel: "",
                 apps: [""],
                 allowAll: false,
-                showFilter: false,
                 filterButton: false,
                 showSubType1: true,
                 showSubType2: false,
@@ -155,14 +154,14 @@
                     onlineUsers: {
                         target: [
                             {
-                                value: "# of online users",
+                                value: "t",
                                 label: "# of online users",
                             },
                             {
-                                value: "overall record",
+                                value: "o",
                                 label: "overall record",
                             },
-                            { value: "30-day record", label: "30-day record" },
+                            { value: "m", label: "30-day record" },
                         ],
                     },
                     cohorts: {
@@ -170,6 +169,14 @@
                             {
                                 value: "# of users in the cohort",
                                 label: "# of users in the cohort",
+                            },
+                        ],
+                    },
+                    profile_groups: {
+                        target: [
+                            {
+                                value: "# of users in the profile group",
+                                label: "# of users in the profile group",
                             },
                         ],
                     },
@@ -251,14 +258,14 @@
                     "new survey response",
                     "new NPS response",
                     "new rating response",
+                    "new crash/error",
                     "o",
                     "m",
                 ];
-                if (
-                    disabledMetrics.includes(
-                        this.$refs.drawerData.editedObject.alertDataSubType
-                    )
-                ) {
+                if (this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) {
+                    return false;
+                }
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
                     return false;
                 }
                 return true;
@@ -268,24 +275,30 @@
                     "new survey response",
                     "new NPS response",
                     "new rating response",
+                    "new crash/error",
                     "o",
                     "m",
                 ];
-                if (
-                    disabledMetrics.includes(
-                        this.$refs.drawerData.editedObject.alertDataSubType
-                    )
-                ) {
+                if (this.$refs.drawerData.editedObject.alertDataType === "crashes" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) {
+                    return false;
+                }
+                if (disabledMetrics.includes(this.$refs.drawerData.editedObject.alertDataSubType)) {
                     return false;
                 }
                 return true;
             },
             alertTimeOptions() {
                 if (
-                    this.$refs.drawerData.editedObject.alertDataType ===
-                    "rating"
+                    (this.$refs.drawerData.editedObject.alertDataType ===
+                    "rating" && (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)) ||
+                    (this.$refs.drawerData.editedObject.alertDataType ===
+                    "events" && (this.alertDataFilterValue)) ||
+                    (this.$refs.drawerData.editedObject.alertDataType ===
+                    "nps" && ((typeof this.alertDataFilterValue) === "string")) ||
+                    (this.$refs.drawerData.editedObject.alertDataType ===
+                    "events" && this.filterButton)
                 ) {
-                    // Filter out the "hour" option if the alert data type is "rating"
+                    // The hour option is no longer available when the filter is added.
                     return this.defaultAlertTime.time.filter(
                         (periodItem) => periodItem.value !== "hourly"
                     );
@@ -312,6 +325,10 @@
                         label: jQuery.i18n.map["alert.Online-users"],
                         value: "onlineUsers",
                     },
+                    {
+                        label: jQuery.i18n.map["alert.Profile-groups"],
+                        value: "profile_groups",
+                    },
                     { label: jQuery.i18n.map["alert.Rating"], value: "rating" },
                     {
                         label: jQuery.i18n.map["alert.Revenue"],
@@ -325,10 +342,21 @@
                     { label: jQuery.i18n.map["alert.User"], value: "users" },
                     { label: jQuery.i18n.map["alert.View"], value: "views" },
                 ];
-                if (this.externalDataTypeOptions) {
-                    alertDataTypeOptions = alertDataTypeOptions.concat(
-                        this.externalDataTypeOptions
-                    );
+                // disable enterprise plugins if they are not available
+                if (!countlyGlobal.plugins.includes("concurrent_users")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "onlineUsers");
+                }
+                if (!countlyGlobal.plugins.includes("surveys")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "survey" && value !== "nps");
+                }
+                if (!countlyGlobal.plugins.includes("revenue")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "revenue");
+                }
+                if (!countlyGlobal.plugins.includes("cohorts")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "cohorts" && value !== "profile_groups");
+                }
+                if (!countlyGlobal.plugins.includes("users")) {
+                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "users");
                 }
                 return alertDataTypeOptions;
             },
@@ -353,6 +381,16 @@
                 }
                 return alertDataSubTypeOptions;
             },
+            alertDataVariableOptions: function() {
+                var alertDataVariableOptions;
+                if (this.$refs.drawerData.editedObject.alertDataType === "onlineUsers") {
+                    alertDataVariableOptions = this.onlineUsersAlertVariable.condition;
+                }
+                else {
+                    alertDataVariableOptions = this.defaultAlertVariable.condition;
+                }
+                return alertDataVariableOptions;
+            },
             elSelectKey: function() {
                 var key = this.allGroups
                     .map(function(g) {
@@ -362,6 +400,25 @@
 
                 return key;
             },
+            periodTooltipReminder: function() {
+                if (this.$refs.drawerData.editedObject.period === "hourly") {
+                    return jQuery.i18n.map["alerts.period-select-reminder-hourly"];
+                }
+                else if (this.$refs.drawerData.editedObject.period === "daily") {
+                    return jQuery.i18n.map["alerts.period-select-reminder-daily"];
+                }
+                else {
+                    return;
+                }
+            },
+            filteredEmailOptions: function() {
+                if (!countlyGlobal.plugins.includes("groups")) {
+                    return this.emailOptions.filter(
+                        (option) => option.value !== "toGroup"
+                    );
+                }
+                return this.emailOptions;
+            }
         },
         props: {
             placeholder: { type: String, default: "Select" },
@@ -371,17 +428,19 @@
         },
         mounted: function() {
             var self = this;
-            groupsModel.initialize().then(function() {
-                var groups = _.sortBy(groupsModel.data(), "name");
-                var userGroups = groups.map(function(g) {
-                    return {
-                        name: g.name,
-                        value: g._id,
-                        users: g.users,
-                    };
+            if (countlyGlobal.plugins.includes("groups")) {
+                groupsModel.initialize().then(function() {
+                    var groups = _.sortBy(groupsModel.data(), "name");
+                    var userGroups = groups.map(function(g) {
+                        return {
+                            name: g.name,
+                            value: g._id,
+                            users: g.users,
+                        };
+                    });
+                    self.allGroups = userGroups;
                 });
-                self.allGroups = userGroups;
-            });
+            }
         },
         methods: {
             subType2Label: function(obj) {
@@ -392,6 +451,8 @@
                     return "View";
                 case "cohorts":
                     return "Cohort";
+                case "profile_groups":
+                    return "Profile Group";
                 case "survey":
                     return "Widget Name";
                 case "nps":
@@ -415,6 +476,10 @@
             getMetrics: function() {
                 const formData = this.$refs.drawerData.editedObject;
                 this.alertDataSubType2Options = [];
+                if (formData.selectedApps === 'all') {
+                    formData.alertDataType = 'dataPoints';
+                    formData.alertDataSubType = 'total data points';
+                }
                 if (!formData.selectedApps) {
                     return;
                 }
@@ -424,7 +489,7 @@
                         (viewList) => {
                             this.alertDataSubType2Options = viewList.map(
                                 (v) => {
-                                    return { value: v.value, label: v.name };
+                                    return { value: v.value, label: countlyCommon.unescapeHtml(v.name) };
                                 }
                             );
                         }
@@ -435,7 +500,7 @@
                         formData.selectedApps,
                         ({ events, segments }) => {
                             this.alertDataSubType2Options = events.map((e) => {
-                                return { value: e.value, label: e.name };
+                                return { value: e.value, label: countlyCommon.unescapeHtml(e.name) };
                             });
                             this.alertDataFilterObject = segments;
                         }
@@ -445,8 +510,34 @@
                     countlyAlerts.getCohortsForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((c) => {
-                                return { value: c._id, label: c.name };
+                            var filtered = data.filter(function(c) {
+                                if (c.type !== "manual") {
+                                    return true;
+                                }
+                                else {
+                                    return false;
+                                }
+                            });
+                            this.alertDataSubType2Options = filtered.map((c) => {
+                                return { value: c._id, label: countlyCommon.unescapeHtml(c.name) };
+                            });
+                        }
+                    );
+                }
+                if (formData.alertDataType === "profile_groups") {
+                    countlyAlerts.getCohortsForApp(
+                        formData.selectedApps,
+                        (data) => {
+                            var filtered = data.filter(function(c) {
+                                if (c.type === "manual") {
+                                    return true;
+                                }
+                                else {
+                                    return false;
+                                }
+                            });
+                            this.alertDataSubType2Options = filtered.map((c) => {
+                                return { value: c._id, label: countlyCommon.unescapeHtml(c.name) };
                             });
                         }
                     );
@@ -455,8 +546,8 @@
                     countlyAlerts.getSurveysForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((s) => {
-                                return { value: s._id, label: s.name };
+                            this.alertDataSubType2Options = data.filter(s => s.status).map((s) => {
+                                return { value: s._id, label: countlyCommon.unescapeHtml(s.name) };
                             });
                         }
                     );
@@ -465,8 +556,8 @@
                     countlyAlerts.getNPSForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((n) => {
-                                return { value: n._id, label: n.name };
+                            this.alertDataSubType2Options = data.filter(n => n.status).map((n) => {
+                                return { value: n._id, label: countlyCommon.unescapeHtml(n.name) };
                             });
                         }
                     );
@@ -475,10 +566,10 @@
                     countlyAlerts.getRatingForApp(
                         formData.selectedApps,
                         (data) => {
-                            this.alertDataSubType2Options = data.map((r) => {
+                            this.alertDataSubType2Options = data.filter(r => r.is_active === 'true').map((r) => {
                                 return {
                                     value: r._id,
-                                    label: r.popup_header_text,
+                                    label: countlyCommon.unescapeHtml(r.popup_header_text),
                                 };
                             });
                         }
@@ -497,23 +588,12 @@
                 if (val === "crashes" || val === "rating" || val === "nps") {
                     this.setFilterValueOptions();
                 }
-                var validDataTypesForFilter = [
-                    "events",
-                    "crashes",
-                    "nps",
-                    "rating",
-                ];
-                if (validDataTypesForFilter.includes(val)) {
-                    this.showFilter = true;
-                }
-                else {
-                    this.showFilter = false;
-                }
 
                 var validDataTypesForSubType2 = [
                     "events",
                     "views",
                     "cohorts",
+                    "profile_groups",
                     "survey",
                     "nps",
                     "rating",
@@ -595,13 +675,48 @@
                     ];
                 }
                 if (formData.alertDataType === "nps") {
-                    this.alertDataFilterValue = [];
+                    this.alertDataFilterValue = "";
                     this.alertDataFilterKey = "NPS scale";
                     this.alertDataFilterValueOptions = [
                         { label: "detractor", value: "detractor" },
                         { label: "passive", value: "passive" },
                         { label: "promoter", value: "promoter" },
                     ];
+                }
+            },
+            subType2Padding: function(obj) {
+                if (this.showFilterButton(obj) && !this.showFilter) {
+                    return "bu-pb-2";
+                }
+            },
+            dataTypeIcons: function(dataType) {
+                switch (dataType) {
+                case "crashes":
+                    return "cly-io-16 cly-is cly-is-crashes";
+                case "cohorts":
+                    return "cly-io-16 cly-io cly-io-cohorts";
+                case "dataPoints":
+                    return "cly-io-16 cly-is cly-is-punchcard";
+                case "events":
+                    return "cly-io-16 cly-is cly-is-calendar";
+                case "nps":
+                    return "cly-io-16 cly-is cly-is-emoji-happy";
+                case "onlineUsers":
+                    return "cly-io-16 cly-is cly-is-user-circle";
+                case "profile_groups":
+                    return "cly-io-16 cly-is cly-is-user-group";
+                case "rating":
+                    return "cly-io-16 cly-is cly-is-star";
+                case "revenue":
+                    return "cly-io-16 cly-is cly-is-currency-dollar";
+                case "sessions":
+                    return "cly-io-16 cly-is cly-is-clock";
+                case "survey":
+                    return "cly-io-16 cly-is cly-is-clipboard-list";
+                case "users":
+                    return "cly-io-16 cly-is cly-is-users";
+                case "views":
+                    return "cly-io-16 cly-is cly-is-eye";
                 }
             },
             handleFilterClosing: function() {
@@ -649,7 +764,6 @@
                 this.showSubType2 = false;
                 this.showCondition = true;
                 this.showConditionValue = true;
-                this.showFilter = false;
                 this.filterButton = false;
             },
             resetFilterCondition: function() {
@@ -658,51 +772,7 @@
                 this.alertDataFilterKey = null;
                 this.alertDataFilterValue = null;
             },
-            // alertDataSubTypeSelected: function(alertDataSubType, notReset) {
-            //     this.resetAlertConditionShow();
-            //     switch (alertDataSubType) {
-            //     case 'New crash occurence':
-            //         this.showSubType2 = false;
-            //         this.showCondition = false;
-            //         this.showConditionValue = false;
-            //         break;
-            //     case 'Number of ratings':
-            //         if (!notReset) {
-            //             this.resetAlertConditionShow();
-            //         }
-            //         this.showSubType2 = true;
-            //         this.alertDataSubType2Options = countlyAlerts.RatingOptions;
-            //         break;
-            //     case 'Number of page views':
-            //     case 'Bounce rate':
-            //         this.resetAlertConditionShow();
-            //         this.showSubType2 = true;
-            //         var self = this;
-            //         countlyAlerts.getViewForApp(this.apps[0], function(viewList) {
-            //             self.alertDataSubType2Options = viewList.map(function(v) {
-            //                 return {value: v.value, label: v.name};
-            //             });
-            //         });
-            //         break;
-            //     case 't':
-            //         this.showUserCount = true;
-            //         this.showSubType2 = false;
-            //         this.showCondition = false;
-            //         this.showConditionValue = false;
-            //         break;
-            //     case 'o':
-            //     case 'm':
-            //         this.showSubType2 = false;
-            //         this.showCondition = false;
-            //         this.showConditionValue = false;
-            //         break;
-            //     default:
-            //         if (!notReset) {
-            //             this.resetAlertConditionShow();
-            //         }
-            //         return;
-            //     }
-            // },
+
             onSubmit: function(settings) {
                 settings.selectedApps = [settings.selectedApps];
                 if (settings._id) {
@@ -730,13 +800,22 @@
                         }
                     }
                 }
-                if (this.alertDataFilterValue) {
+                const validFilter = (Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue.length)
+                    || (!Array.isArray(this.alertDataFilterValue) && this.alertDataFilterValue);
+                if (validFilter) {
                     settings.filterKey = this.alertDataFilterKey;
                     settings.filterValue = this.alertDataFilterValue;
                 }
+                else {
+                    settings.filterKey = null;
+                    settings.filterValue = null;
+                }
 
                 var target = settings.alertDataSubType;
-                var subTarget = settings.alertDataSubType2;
+                if (settings.alertDataSubType2) {
+                    var subTarget = this.alertDataSubType2Options
+                        .find(({value}) => value === settings.alertDataSubType2).label;
+                }
 
                 let describePeriod;
                 switch (settings.period) {
@@ -749,6 +828,12 @@
                 case "monthly":
                     describePeriod = "month";
                     break;
+                }
+
+                if (!this.isCompareTypeSelectAvailable) {
+                    settings.compareType = null;
+                    settings.compareValue = null;
+                    settings.period = null;
                 }
 
                 if (settings.period) {
@@ -832,54 +917,6 @@
                 else {
                     settings.compareDescribe = target;
                 }
-                // switch (settings.alertDataType) {
-                // case "event":
-                //     target = target.split("***")[1];
-                //     break;
-                // case "rating":
-                //     subTarget = countlyAlerts.RatingOptions[subTarget].label;
-                //     if (target === 'Bounce rate' || target === 'Number of page views') {
-                //         this.alertDataSubType2Options.forEach(function(item) {
-                //             if (item.value === settings.alertDataSubType2) {
-                //                 subTarget = item.label;
-                //             }
-                //         });
-                //     }
-                //     break;
-                // case "metric":
-                //     if (
-                //         target === "Bounce rate" ||
-                //             target === "Number of page views"
-                //     ) {
-                //         this.alertDataSubType2Options.forEach(function(
-                //             item
-                //         ) {
-                //             if (item.value === settings.alertDataSubType2) {
-                //                 subTarget = item.label;
-                //             }
-                //         });
-                //     }
-                //     break;
-                // }
-
-                // var target2 = settings.alertDataSubType2
-                //     ? " (" + subTarget + ")"
-                //     : "";
-                // settings.compareDescribe = target + target2;
-
-                // switch (settings.alertDataSubType) {
-                // case "New crash occurence":
-                //     break;
-                // default:
-                //     settings.compareDescribe +=
-                //             " " +
-                //             settings.compareType +
-                //             " " +
-                //             settings.compareValue +
-                //             "%";
-                //     break;
-                // }
-                // delete settings.createdBy;
 
                 if (settings.alertDataType === "onlineUsers") {
                     var config = {
@@ -892,6 +929,8 @@
                         users: parseInt(settings.compareValue, 10),
                         minutes: parseInt(settings.compareValue2, 10),
                         email: settings.alertValues,
+                        alertBy: settings.alertBy,
+                        allGroups: settings.allGroups,
                         enabled: true,
                     };
                     if (settings._id) {
@@ -900,8 +939,8 @@
                     if (config.type === "t") {
                         config.condition_title = jQuery.i18n.prop(
                             "concurrent-users.condition-title",
-                            jQuery.i18n.map["concurrent-users." + config.def],
-                            countlyCommon.formatNumber(config.users),
+                            config.def,
+                            config.users,
                             config.minutes
                         );
                     }
@@ -937,18 +976,71 @@
                 this.showCondition = false;
                 this.showConditionValue = false;
                 newState.selectedApps = newState.selectedApps[0];
-                // this.onAppChange(newState.selectedApps, true);
-                // this.alertDataSubTypeSelected(newState.alertDataSubType, true);
-                //this.resetAlertCondition();
+                newState.alertName = countlyCommon.unescapeHtml(newState.alertName);
+                newState.alertValues = newState.alertValues.map((email) => countlyCommon.unescapeHtml(email));
                 this.getMetrics();
-
+                this.setFilterKeyOptions();
+                this.setFilterValueOptions();
                 if (newState._id !== null) {
                     this.title = jQuery.i18n.map["alert.Edit_Your_Alert"];
                     this.saveButtonLabel = jQuery.i18n.map["alert.save-alert"];
+                    this.filterButton = Array.isArray(newState.filterValue)
+                        ? !!newState.filterValue.length
+                        : !!newState.filterValue;
+                    this.alertDataFilterKey = countlyCommon.unescapeHtml(newState.filterKey);
+                    this.alertDataFilterValue = countlyCommon.unescapeHtml(newState.filterValue);
+
+
+                    if (newState.alertBy === "email") {
+                        if (newState.allGroups?.length) {
+                            this.selectedRadioButton = "toGroup";
+                        }
+                        if (newState.alertValues?.length) {
+                            this.selectedRadioButton = "specificAddress";
+                        }
+                    }
+                    else if (newState.alertBy === "hook") {
+                        this.selectedRadioButton = "dontSend";
+                    }
+
                     return;
+                }
+                else {
+                    this.resetAlertConditionShow();
                 }
                 this.title = jQuery.i18n.map["alert.Create_New_Alert"];
                 this.saveButtonLabel = jQuery.i18n.map["alert.save"];
+            },
+            isNumberKeyPressEvent(evt) {
+                evt = (evt) ? evt : window.event;
+                var charCode = (evt.which) ? evt.which : evt.keyCode;
+                if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
+                    evt.preventDefault();
+                }
+                else {
+                    return true;
+                }
+            },
+            calculateWidth(value) {
+                if (!value) {
+                    return;
+                }
+                let tmpEl = document.createElement("span");
+                tmpEl.textContent = value;
+                tmpEl.style.cssText = `
+                    visibility: hidden;
+                    position: fixed;
+                    font-size: 13px;
+                    font-family: Arial, sans-serif !important;
+                    box-sizing: border-box;
+                    font-weight: 600;
+                    padding: 10px
+                `;
+                document.body.appendChild(tmpEl);
+                const tempSelectWidth = tmpEl.getBoundingClientRect().width;
+                tmpEl.remove();
+                //this.changeColor(this.$refs.alertDataSubTypeSelect.$el); 
+                return tempSelectWidth;
             },
             // Handle the change event of the element
             handleChange(element) {
@@ -956,24 +1048,12 @@
                 if (element.nodeName !== "SELECT") {
                     return;
                 }
-                let tempSelect = document.createElement("element"),
-                    tempOption = document.createElement("option");
-                tempOption.textContent =
-                    element.options[element.selectedIndex].text;
-                tempSelect.style.cssText +=
-                    "visibility:hidden;position:fixed;font-weight:500;padding:6px;font-size:13px";
-                tempSelect.appendChild(tempOption);
-                element.after(tempSelect);
-                const tempSelectWidth =
-                    tempSelect.getBoundingClientRect().width;
-                element.style.width = `${tempSelectWidth}px`;
-                tempSelect.remove();
             },
             changeColor(element) {
                 // Set the background color of the element to green when a selection is made
                 element.style.backgroundColor = "#E1EFFF";
                 element.style.color = "#333C48";
-                element.style.fontWeight = "500";
+                element.style.fontWeight = "600";
             },
             resetColor(element) {
                 // Remove the inline background color style to reset to default
@@ -1026,6 +1106,17 @@
                 appsSelectorOption: appsSelectorOption,
                 filterStatus: "all",
                 filteredApps: [],
+                tableDynamicCols: [
+                    {
+                        value: "appNameList",
+                        label: "Application",
+                        default: true
+                    },
+                    {
+                        value: "conditionText",
+                        label: "Condition",
+                        default: true
+                    }],
                 localTableTrackedFields: ["enabled"],
                 isAdmin: countlyGlobal.member.global_admin,
                 deleteElement: null,
@@ -1198,43 +1289,4 @@
         text: "alert.plugin-title",
         priority: 100,
     });
-
-    var conUpdateConcurrentUser =
-        countlyAuth.validateUpdate("concurrent_users");
-    var canCreateConcurrentUser =
-        countlyAuth.validateCreate("concurrent_users");
-    if (
-        countlyGlobal.plugins.indexOf("concurrent_users") > -1 &&
-        (canCreateConcurrentUser || conUpdateConcurrentUser)
-    ) {
-        countlyVue.container.registerData("/alerts/data-type");
-        countlyVue.container.registerData("/alerts/data-define", {
-            onlineUsers: {
-                target: [
-                    {
-                        value: "t",
-                        label: jQuery.i18n.map["concurrent-users.alert-type.t"],
-                    },
-                    {
-                        value: "o",
-                        label: jQuery.i18n.map["concurrent-users.alert-type.o"],
-                    },
-                    {
-                        value: "m",
-                        label: jQuery.i18n.map["concurrent-users.alert-type.m"],
-                    },
-                ],
-                condition: [
-                    {
-                        value: "gt",
-                        label: jQuery.i18n.map["concurrent-users.gt"],
-                    },
-                    {
-                        value: "lt",
-                        label: jQuery.i18n.map["concurrent-users.lt"],
-                    },
-                ],
-            },
-        });
-    }
 })();

@@ -2,10 +2,10 @@
   <template v-slot="scope">
       <el-table-column prop="comment" :label="i18n('feedback.comment')" min-width="260">
         <template v-slot="rowScope">
-          <div class="has-ellipsis" v-tooltip="{content:rowScope.row.comment,placement:'auto'}">
-            <span class="text-medium" :data-test-id="'ratings-comment-table-comment-row-' + rowScope.$index">
-              {{ rowScope.row.comment }}
-            </span>
+            <div class="comment-table__text-cursor" v-tooltip="{content:rowScope.row.comment,placement:'auto'}">
+              <p class="text-medium" :data-test-id="'ratings-comment-table-comment-row-' + rowScope.$index">
+                {{ rowScope.row.comment }}
+              </p>
           </div>
         </template>
       </el-table-column>
@@ -23,7 +23,7 @@
       </el-table-column>
       <el-table-column prop="email" :label="i18n('feedback.email')" min-width="200">
         <template v-slot="rowScope">
-            <span class="text-medium" :data-test-id="'ratings-comment-table-time-email-row' + rowScope.$index">
+            <span class="text-medium" :data-test-id="'ratings-comment-table-email-row-' + rowScope.$index">
               {{ rowScope.row.email }}
             </span>
         </template>

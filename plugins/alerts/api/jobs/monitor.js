@@ -11,6 +11,7 @@ const ALERT_MODULES = {
     "users": require("../alertModules/users.js"),
     "sessions": require("../alertModules/sessions.js"),
     "survey": require("../alertModules/survey.js"),
+    "nps": require("../alertModules/nps.js"),
     "revenue": require("../alertModules/revenue.js"),
     "events": require("../alertModules/events.js"),
     "rating": require("../alertModules/rating.js"),
@@ -47,6 +48,9 @@ class MonitorJob extends Job {
             }
             log.d('Runing alerts Monitor Job ....');
             log.d("job info:", self._json, alertConfigs);
+            if (alertConfigs.alertDataType === 'profile_groups') {
+                alertConfigs.alertDataType = 'cohorts';
+            }
             const module = ALERT_MODULES[alertConfigs.alertDataType];
             if (module) {
                 try {

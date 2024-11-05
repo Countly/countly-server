@@ -15,19 +15,19 @@ const key = 'i';
 
 /**
  * Extract token & field from token_session request
- * 
+ *
  * @param {object} qstring request params
  * @returns {string[]|undefined} array of [platform, field, token] if qstring has platform-specific token data, undefined otherwise
  */
 function extractor(qstring) {
     if (qstring.ios_token !== undefined && qstring.test_mode in FIELDS) {
-        return [key, FIELDS[qstring.test_mode], qstring.ios_token, util.hashInt(qstring.ios_token)];
+        return [key, FIELDS[qstring.test_mode], qstring.ios_token, util.hash(qstring.ios_token)];
     }
 }
 
 /**
  * Make an estimated guess about request platform
- * 
+ *
  * @param {string} userAgent user-agent header
  * @returns {string} platform key if it looks like request made by this platform
  */
@@ -50,9 +50,9 @@ const FIELDS = {
  * A number comes from SDK, we need to map it into smth like tkip/tkid/tkia
  */
 const FIELDS_TITLES = {
-    '0': 'iOS Production Token', // prod
-    '1': 'iOS Development Token', // debug
-    '2': 'iOS AdHoc / TestFlight Token', // ad hoc
+    '0': 'APN Production Token', // prod
+    '1': 'APN Development Token', // debug
+    '2': 'APN AdHoc / TestFlight Token', // ad hoc
 };
 
 /**
@@ -67,7 +67,7 @@ const CREDS = {
     'apn_universal': class CertCreds extends Creds {
         /**
          * Validation scheme of this class
-         * 
+         *
          * @returns {object} validateArgs scheme
          */
         static get scheme() {
@@ -86,7 +86,7 @@ const CREDS = {
 
         /**
          * Get TLS options
-         * 
+         *
          * @returns {object} with cert & key keys set to PEM-encoded certificate & private key
          */
         get tls() {
@@ -108,7 +108,7 @@ const CREDS = {
 
         /**
          * Check credentials for correctness, throw PushError otherwise
-         * 
+         *
          * @throws PushError in case the check fails
          * @returns {undefined}
          */
@@ -171,10 +171,10 @@ const CREDS = {
                                 for (var i = 0; i < tpks.length; i++) {
                                     for (var j = 0; j < tpks.length; j++) {
                                         if (i !== j && tpks[j].indexOf(tpks[i]) === 0) {
-                                            if (topics.indexOf(tpks[i]) === -1 && tpks[i] && tpks[i].indexOf('.') !== -1) {
+                                            if (topics.indexOf(tpks[i]) === -1 && tpks[i] && tpks[i].indexOf('.') !== -1 && tpks[i].indexOf(".") !== 0) {
                                                 topics.push(tpks[i]);
                                             }
-                                            if (topics.indexOf(tpks[j]) === -1 && tpks[j] && tpks[j].indexOf('.') !== -1) {
+                                            if (topics.indexOf(tpks[j]) === -1 && tpks[j] && tpks[j].indexOf('.') !== -1 && tpks[j].indexOf(".") !== 0) {
                                                 topics.push(tpks[j]);
                                             }
                                         }
@@ -228,7 +228,7 @@ const CREDS = {
 
         /**
          * "View" json, that is some truncated/simplified version of credentials that is "ok" to display
-         * 
+         *
          * @returns {object} json without sensitive information
          */
         get view() {
@@ -252,7 +252,7 @@ const CREDS = {
 
         /**
          * Validation scheme of this class
-         * 
+         *
          * @returns {object} validateArgs scheme
          */
         static get scheme() {
@@ -268,7 +268,7 @@ const CREDS = {
 
         /**
          * Check credentials for correctness, throw PushError otherwise
-         * 
+         *
          * @throws PushError in case the check fails
          * @returns {undefined}
          */
@@ -303,7 +303,7 @@ const CREDS = {
 
         /**
          * "View" json, that is some truncated/simplified version of credentials that is "ok" to display
-         * 
+         *
          * @returns {object} json without sensitive information
          */
         get view() {
@@ -343,7 +343,7 @@ const CREDS = {
 
 /**
  * Create new empty payload for the note object given
- * 
+ *
  * @param {Note} note Note object
  * @returns {object} empty payload object
  */
@@ -368,7 +368,7 @@ const fields = [
  */
 const map = {
     /**
-     * Sends sound 
+     * Sends sound
      * @param {Template} t template
      * @param {string} sound sound string
      */
@@ -379,7 +379,7 @@ const map = {
     },
 
     /**
-     * Sends badge 
+     * Sends badge
      * @param {Template} t template
      * @param {number} badge badge (0..N)
      */
@@ -390,7 +390,7 @@ const map = {
     /**
      * Sends buttons
      * !NOTE! buttons & messagePerLocale are inter-dependent as buttons urls/titles are locale-specific
-     * 
+     *
      * @param {Template} t template
      * @param {number} buttons buttons (1..2)
      */
@@ -403,7 +403,7 @@ const map = {
 
     /**
      * Set title string
-     * 
+     *
      * @param {Template} t template
      * @param {String} title title string
      */
@@ -416,7 +416,7 @@ const map = {
 
     /**
      * Set message string
-     * 
+     *
      * @param {Template} t template
      * @param {String} message message string
      */
@@ -429,7 +429,7 @@ const map = {
 
     /**
      * Send content-available. It's set automatically when there's no alert and no sound.
-     * 
+     *
      * @param {Template} template template
      * @param {boolean} ca contentAvailable of the Note
      */
@@ -441,7 +441,7 @@ const map = {
 
     /**
      * Send notification-tap url
-     * 
+     *
      * @param {Template} template template
      * @param {string} url on-tap url
      */
@@ -452,7 +452,7 @@ const map = {
     /**
      * Send media (picture, video, gif, etc) along with the message.
      * Sets mutable-content in order for iOS extension to be run.
-     * 
+     *
      * @param {Template} template template
      * @param {string} media attached media url
      */
@@ -463,7 +463,7 @@ const map = {
 
     /**
      * Sends custom data along with the message
-     * 
+     *
      * @param {Template} template template
      * @param {Object} data data to be sent
      */
@@ -473,7 +473,7 @@ const map = {
 
     /**
      * Sends user props along with the message
-     * 
+     *
      * @param {Template} template template
      * @param {[string]} extras extra user props to be sent
      * @param {Object} data personalization
@@ -495,7 +495,7 @@ const map = {
 
     /**
      * Sends platform specific fields
-     * 
+     *
      * @param {Template} template template
      * @param {object} specific platform specific props to be sent
      */
@@ -504,6 +504,9 @@ const map = {
             if (specific.subtitle) {
                 template.result.aps.alert = template.result.aps.alert || {};
                 template.result.aps.alert.subtitle = specific.subtitle;
+            }
+            if (specific.setContentAvailable) {
+                template.result.aps["content-available"] = 1;
             }
         }
     },
@@ -549,6 +552,8 @@ class APN extends Base {
             ':method': 'POST',
             ':scheme': 'https',
             ':authority': authority,
+            // this is being added before the actual request depending on weather message have setContentAvailable
+            // "apns-priority": 5,
             [HTTP2.sensitiveHeaders]: ['authorization', ':path', 'apns-id', 'apns-expiration', 'apns-collapse-id']
         };
         this.headersSecondWithToken = token => {
@@ -568,7 +573,7 @@ class APN extends Base {
 
     /**
      * Get template by message id, create if none exists
-     * 
+     *
      * @param {string} id message id
      * @param {map} map platform mapping object
      * @returns {Template} template instance
@@ -579,22 +584,14 @@ class APN extends Base {
     }
 
     /**
-     * A getter for Base to check if running a rety worth a shot
-     */
-    get cannotRetry() {
-        return !this.session || this.session.closed || this.session.destroyed;
-    }
-
-    /**
      * Send push notifications
-     * 
+     *
      * @param {Object[]} pushesData pushes to send
      * @param {integer} length number of bytes in data
      * @returns {Promise} sending promise
      */
     send(pushesData, length) {
         if (!this.session) {
-            this.log.i('Reconnecting to APN');
             return this.connect().then(ok => {
                 if (ok) {
                     return this.send(pushesData, length);
@@ -602,18 +599,12 @@ class APN extends Base {
                 else {
                     return ok;
                 }
-            }).catch(err => {
-                this.log.e('Failed to reconnect to APN, rejecting %d pushes', pushesData.length, err);
-                err.addAffected(pushesData.map(p => p._id), length);
-                this.send_push_fail(err);
-                throw err;
             });
         }
         return this.with_retries(pushesData, length, (pushes, bytes, attempt) => new Promise((resolve, reject) => {
             this.log.d('%d-th attempt for %d bytes', attempt, bytes);
 
             let self = this,
-                session = this.session,
                 nonRecoverableError,
                 recoverableErrors = 0,
                 oks = [],
@@ -621,7 +612,7 @@ class APN extends Base {
                 one = Math.ceil(bytes / pushes.length),
                 /**
                  * Get an error for given code & message, create it if it doesn't exist yet
-                 * 
+                 *
                  * @param {number} code error code
                  * @param {string} message error message
                  * @returns {SendError} error instance
@@ -638,22 +629,18 @@ class APN extends Base {
                 /**
                  * Called on stream completion, returns results for this batch
                  */
-                streamDone = session.streamDone = function() {
-                    session.streamDoneCount--;
-                    // self.log.d('streamDone (left %j) %j %j %j %j %j', session.streamDoneCount, oks.length, recoverableErrors, nonRecoverableError && nonRecoverableError.left.length || 0, nonRecoverableError && nonRecoverableError.affected.length || 0, pushes.length);
-                    if (oks.length + recoverableErrors + (nonRecoverableError && nonRecoverableError.left.length || 0) + (nonRecoverableError && nonRecoverableError.affected.length || 0) === pushes.length) {
+                streamDone = () => {
+                    if (oks.length + recoverableErrors + (nonRecoverableError && nonRecoverableError.left.length || 0) === pushes.length) {
                         let errored = nonRecoverableError && nonRecoverableError.bytes || 0;
                         if (oks.length) {
-                            self.send_results(oks, bytes - errored);
+                            this.send_results(oks, bytes - errored);
                         }
                         for (let k in errors) {
                             errored += errors[k].affectedBytes;
-                            self.send_push_error(errors[k]);
+                            this.send_push_error(errors[k]);
                         }
                         if (nonRecoverableError) {
-                            self.send_push_fail(nonRecoverableError);
                             reject(nonRecoverableError);
-                            delete self.session;
                         }
                         else {
                             resolve();
@@ -661,184 +648,146 @@ class APN extends Base {
                     }
                 };
 
-            // session.handleError = function(err) {
-            //     if (!(err instanceof ConnectionError)) {
-            //         err = nonRecoverableError = new ConnectionError(`SessionClosedOrDestroyed`, ERROR.CONNECTION_PROVIDER);
-            //     }
-            //     else {
-            //         nonRecoverableError = err;
-            //     }
-
-            //     while (session.streamDoneCount-- > 0) {
-            //         streamDone
-            //     }
-            // }
-
-            session.streamDoneCount = 0;
             this.log.d('sending %d streams', pushes.length);
-            pushes.forEach(p => {
-                session.streamDoneCount = (session.streamDoneCount || 0) + 1;
-                // self.log.d('[%s]: sending %s', p._id, p._id);
-                // if (i % 200 === 0) {
-                //     self.log.d('[%s] %j / %j', p._id, session.closed, session.destroyed);
-                // }
+            pushes.forEach((p, i) => {
+                // this.log.d('%d: sending', i);
+                if (i % 200 === 0) {
+                    this.log.d('state', this.session.state);
+                }
                 if (nonRecoverableError) {
-                    self.log.d('[%s]: nonRecoverableError', p._id);
                     nonRecoverableError.addLeft(p._id, one);
                     streamDone();
                     return;
                 }
 
-                if (!self.messages[p.m]) {
-                    self.log.e('No message %s', p.m);
+                if (!this.messages[p.m]) {
+                    this.log.e('No message %s', p.m);
                 }
 
-                if (session.closed || session.destroyed || session.goawayed) {
-                    if (!nonRecoverableError) {
-                        nonRecoverableError = new ConnectionError(`SessionClosedOrDestroyed`, ERROR.CONNECTION_PROVIDER).addLeft(p._id, one);
+                let content = this.template(p.m).compile(p),
+                    reqHeaders = self.headersSecondWithToken(p.t);
+                // find if we need to add the priority header (check if content-available set)
+                delete reqHeaders["apns-priority"];
+                const message = self.messages[p.m];
+                if (message && Array.isArray(message.contents)) {
+                    const contentItem = message.contents.find(cont => Array.isArray(cont.specific));
+                    if (contentItem) {
+                        const obj = contentItem.specific.find(cont => cont.setContentAvailable !== undefined);
+                        if (obj && obj.setContentAvailable) {
+                            reqHeaders["apns-priority"] = 5;
+                        }
                     }
-                    else {
-                        nonRecoverableError.addLeft(p._id, one);
-                    }
-                    streamDone();
-                    return;
                 }
-
-                try {
-                    let content = self.template(p.m).compile(p),
-                        stream = session.request(self.headersSecondWithToken(p.t)),
-                        status,
-                        data = '';
-                    stream.on('error', err => {
-                        self.log.e('[%s]: stream error %j %j / %j', p._id, session.state, session.closed, session.destroyed, err);
-                        if (!nonRecoverableError) {
-                            nonRecoverableError = new ConnectionError(`APN Stream Error: ${err && err.message || 'check logs'}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
-                        }
-                        else {
-                            nonRecoverableError.addAffected(p._id, one);
-                        }
-                        streamDone();
-                    });
-                    stream.on('frameError', (type, code, id) => {
-                        self.log.e('[%s] stream frameError %d, %d, %d', p._id, type, code, id);
-                    });
-                    stream.on('timeout', () => {
-                        self.log.e('[%s] stream timeout %s', p._id);
-                        if (!nonRecoverableError) {
-                            nonRecoverableError = new ConnectionError(`APN Stream Error: timeout`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
-                        }
-                        else {
-                            nonRecoverableError.addAffected(p._id, one);
-                        }
-                        streamDone();
-                    });
-                    stream.on('response', function(headers) {
-                        status = headers[':status'];
-                        if (status === 200) {
-                            // self.log.d('[%s] response done %d', p._id, status);
-                            oks.push(p._id);
-                            stream.destroy();
-                            streamDone();
-                            // self.log.d('[%s] response done %d', p._id, status);
-                        }
-                        else if (status === 410) {
-                            // self.log.d('[%s]: status %d: %j / %j', p._id, status, session.closed, session.destroyed);
-                            stream.destroy();
-                            error(ERROR.DATA_TOKEN_EXPIRED, 'ExpiredToken').addAffected(p._id, one);
-                            streamDone();
-                            // self.log.d('[%s] response done %d', p._id, status);
-                        }
-                        else if (status === 500 || status === 503 || status === 404 || status === 405 || status === 413) {
-                            self.log.e('[%s]: APN returned error %d, destroying session', p._id, status);
-                            stream.destroy();
-                            session && session.destroy();
-                            if (!nonRecoverableError) {
-                                nonRecoverableError = new ConnectionError(`APN Server Error: ${status}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
-                            }
-                            else {
-                                nonRecoverableError.addAffected(p._id, one);
-                            }
-                        }
-                        else if (status === 400 || status === 403 || status === 429) {
-                            self.log.d('[%s]: status %d: %j / %j', p._id, status, session.closed, session.destroyed);
-                            // handle in on('end') because we need response error code
-                        }
-                    });
-                    stream.on('data', dt => {
-                        data += dt;
-                    });
-                    stream.on('end', () => {
-                        self.log.d('[%s] end %s', p._id, status);
-                        if (status === 400 || status === 403 || status === 429) {
-                            self.log.d('[%s]: end %d: %j / %j', p._id, status, session.closed, session.destroyed);
-                            try {
-                                let json = JSON.parse(data);
-                                if (status === 400) {
-                                    if (json.reason) {
-                                        if (json.reason === 'DeviceTokenNotForTopic' || json.reason === 'BadDeviceToken') {
-                                            error(ERROR.DATA_TOKEN_INVALID, json.reason).addAffected(p._id, one);
-                                        }
-                                        else {
-                                            error(ERROR.DATA_COUNTLY, json.reason).addAffected(p._id, one);
-                                        }
-                                    }
-                                    else {
-                                        self.log.e('[%s] provider returned %d: %j', p._id, status, json);
-                                        error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
-                                    }
-                                }
-                                else if (status === 403) {
-                                    if (!nonRecoverableError) {
-                                        nonRecoverableError = new ConnectionError(`APN Unauthorized: ${status} (${json.reason})`, ERROR.INVALID_CREDENTIALS).addAffected(p._id, one);
-                                    }
-                                    else {
-                                        nonRecoverableError.addAffected(p._id, one);
-                                    }
-                                }
-                                else if (status === 429) {
-                                    self.log.e('[%s] provider returned %d: %j', p._id, status, json);
-                                    error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
-                                }
-                                else {
-                                    throw new PushError('IMPOSSIBRU');
-                                }
-                            }
-                            catch (e) {
-                                self.log.e('provider returned %d: %s', status, data, e);
-                                error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
-                            }
-                            streamDone();
-                        }
-                        else if (!status) {
-                            // most likely a timeout
-                            streamDone();
-                        }
-                    });
-                    stream.setEncoding('utf-8');
-                    stream.setTimeout(10000, () => {
-                        self.log.w('[%s]: cancelling stream on timeout', p._id);
-                        stream.close(HTTP2.constants.NGHTTP2_CANCEL);
-                    });
-                    stream.end(content);
-                    // self.log.d('[%s]: sent %s', p._id, content);
-                }
-                catch (err) {
-                    self.log.e('[%s] http/2 exception when trying to send a request, recording as non recoverable (%j / %j): %j', p._id, session.closed, session.destroyed, err);
+                // =======0========000=================0========000=================0========0
+                console.log(JSON.stringify(reqHeaders, null, 2), JSON.stringify(content, null, 2));
+                let stream = this.session.request(reqHeaders),
+                    status,
+                    data = '';
+                stream.on('error', err => {
                     if (!nonRecoverableError) {
                         nonRecoverableError = new ConnectionError(`APN Stream Error: ${err.message}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
                     }
                     else {
                         nonRecoverableError.addAffected(p._id, one);
                     }
+                });
+                stream.on('frameError', (type, code, id) => {
+                    this.log.e('stream frameError %d, %d, %d', type, code, id);
+                });
+                stream.on('timeout', () => {
+                    this.log.e('stream timeout');
+                    if (!nonRecoverableError) {
+                        nonRecoverableError = new ConnectionError(`APN Stream Error: timeout`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
+                    }
+                    else {
+                        nonRecoverableError.addAffected(p._id, one);
+                    }
                     streamDone();
-                }
+                });
+                stream.on('response', function(headers) {
+                    status = headers[':status'];
+                    // self.log.d('%d: status %d: %j', i, status, self.session.state);
+                    if (status === 200) {
+                        oks.push(p._id);
+                        stream.destroy();
+                        streamDone();
+                    }
+                    else if (status === 410) {
+                        stream.destroy();
+                        error(ERROR.DATA_TOKEN_EXPIRED, 'ExpiredToken').addAffected(p._id, one);
+                        streamDone();
+                    }
+                    else if (status === 500 || status === 503 || status === 404 || status === 405 || status === 413) {
+                        stream.destroy();
+                        this.session.destroy();
+                        if (!nonRecoverableError) {
+                            nonRecoverableError = new ConnectionError(`APN Server Error: ${status}`, ERROR.CONNECTION_PROVIDER).addAffected(p._id, one);
+                        }
+                        else {
+                            nonRecoverableError.addAffected(p._id, one);
+                        }
+                    }
+                    else if (status === 400 || status === 403 || status === 429) {
+                        // handle in on('end') because we need response error code
+                    }
+                });
+                stream.on('data', dt => {
+                    data += dt;
+                });
+                stream.on('end', () => {
+                    if (status === 400 || status === 403 || status === 429) {
+                        try {
+                            let json = JSON.parse(data);
+                            if (status === 400) {
+                                if (json.reason) {
+                                    if (json.reason === 'DeviceTokenNotForTopic' || json.reason === 'BadDeviceToken') {
+                                        error(ERROR.DATA_TOKEN_INVALID, json.reason).addAffected(p._id, one);
+                                    }
+                                    else {
+                                        error(ERROR.DATA_COUNTLY, json.reason).addAffected(p._id, one);
+                                    }
+                                }
+                                else {
+                                    self.log.e('provider returned %d: %j', status, json);
+                                    error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
+                                }
+                            }
+                            else if (status === 403) {
+                                if (!nonRecoverableError) {
+                                    nonRecoverableError = new ConnectionError(`APN Unauthorized: ${status} (${json.reason})`, ERROR.INVALID_CREDENTIALS).addAffected(p._id, one);
+                                }
+                                else {
+                                    nonRecoverableError.addAffected(p._id, one);
+                                }
+                            }
+                            else if (status === 429) {
+                                self.log.e('provider returned %d: %j', status, json);
+                                error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
+                            }
+                            else {
+                                throw new PushError('IMPOSSIBRU');
+                            }
+                        }
+                        catch (e) {
+                            self.log.e('provider returned %d: %s', status, data, e);
+                            error(ERROR.DATA_PROVIDER, data).addAffected(p._id, one);
+                        }
+                        streamDone();
+                    }
+                });
+                stream.setEncoding('utf-8');
+                stream.setTimeout(10000, () => {
+                    self.log.w('%d: cancelling stream %d for push %s / %s', i, stream.id, p._id, p.t);
+                    stream.close(HTTP2.constants.NGHTTP2_CANCEL);
+                });
+                stream.end(content);
             });
         }));
     }
 
     /**
      * Connect
-     * 
+     *
      * @param {Object[]|undefined} messages messages array
      */
     async connect(messages) {
@@ -867,50 +816,10 @@ class APN extends Base {
 
                     let session = HTTP2.connect(this.authority, this.sessionOptions);
 
-                    // session.setTimeout(10000);
-
                     session.on('error', err => {
-                        this.log.e('session error %d', session.streamDoneCount, err);
+                        this.log.e('session error', err);
                         reject(new ConnectionError(err.message, ERROR.CONNECTION_PROVIDER));
-                    });
-
-                    session.on('timeout', (err, lastStreamId, opaqueData) => {
-                        try {
-                            this.log.e('session timeout %d', session.streamDoneCount, err, lastStreamId, opaqueData, opaqueData && opaqueData.toString('utf-8'));
-                        }
-                        catch (e) {
-                            this.log.e('session timeout %d', session.streamDoneCount, err, lastStreamId, opaqueData);
-                        }
-                        while (session.streamDoneCount > 0) {
-                            session.streamDone();
-                        }
-                        session.goawayed = true;
-                        delete this.session;
-                        reject(new ConnectionError(err && err.message || 'Session timeout', ERROR.CONNECTION_PROVIDER));
-                        // session.destroy();
-                    });
-
-                    session.on('close', err => {
-                        this.log.e('session close %d', session.streamDoneCount, err);
-                        while (session.streamDoneCount > 0) {
-                            session.streamDone();
-                        }
-                        session.goawayed = true;
-                        delete this.session;
-                        // session.destroy();
-                        reject(new ConnectionError(err && err.message || 'Session close', ERROR.CONNECTION_PROVIDER));
-                        this.log.e('session closed %d', session.streamDoneCount, err);
-                    });
-
-                    session.on('goaway', err => {
-                        this.log.e('session goaway %d', session.streamDoneCount, err);
-                        while (session.streamDoneCount > 0) {
-                            session.streamDone();
-                        }
-                        session.goawayed = true;
-                        delete this.session;
-                        reject(new ConnectionError(err && err.message || 'Session goaway', ERROR.CONNECTION_PROVIDER));
-                        // session.destroy();
+                        session.destroy();
                     });
 
                     session.on('connect', () => {
@@ -924,7 +833,7 @@ class APN extends Base {
                         });
                         stream.on('response', headers => {
                             let status = headers[':status'];
-                            this.log.d('first request provider returned %d', status);
+                            this.log.d('provider returned %d', status);
                             if (status === 403 || status === 400) {
                                 if (status === 400) {
                                     this.session = session;
@@ -954,7 +863,7 @@ class APN extends Base {
 
     /**
      * Ensure connection to proxy server
-     * 
+     *
      * @param {string} host APN hostname
      * @param {int} port APN port
      * @param {function} callback callback to call in the end, first param is error
@@ -984,7 +893,7 @@ class APN extends Base {
 
     /**
      * Gracefully shutdown the worker
-     * 
+     *
      * @param {Error} error optional error
      * @param {function} callback callback to call once done destroying
      */

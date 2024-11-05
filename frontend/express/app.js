@@ -30,7 +30,6 @@ var versionInfo = require('./version.info'),
     fs = require('fs'),
     path = require('path'),
     jimp = require('jimp'),
-    request = require('countly-request'),
     flash = require('connect-flash'),
     cookieParser = require('cookie-parser'),
     formidable = require('formidable'),
@@ -47,6 +46,7 @@ var versionInfo = require('./version.info'),
     common = require('../../api/utils/common.js'),
     preventBruteforce = require('./libs/preventBruteforce.js'),
     plugins = require('../../plugins/pluginManager.js'),
+    request = require('countly-request')(plugins.getConfig("security")),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app'),
     url = require('url'),
@@ -486,12 +486,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.sendFile(__dirname + '/public/images/default_app_icon.png');
         }
         else {
-            countlyFs.getStats("appimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err, stats) {
+            countlyFs.getStats("appimages", __dirname + '/public/appimages/' + req.params[0], {id: req.params[0]}, function(err, stats) {
                 if (err || !stats || !stats.size) {
                     res.sendFile(__dirname + '/public/images/default_app_icon.png');
                 }
                 else {
-                    countlyFs.getStream("appimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err2, stream) {
+                    countlyFs.getStream("appimages", __dirname + '/public/appimages/' + req.params[0], {id: req.params[0]}, function(err2, stream) {
                         if (err2 || !stream) {
                             res.sendFile(__dirname + '/public/images/default_app_icon.png');
                         }
@@ -942,123 +942,128 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             stringifyIds(countlyGlobalApps);
             stringifyIds(countlyGlobalAdminApps);
 
-            var defaultApp = userOfApps[0];
-            var serverSideRendering = req.query.ssr;
-            _.extend(req.config, configs);
-            var countlyGlobal = {
-                COUNTLY_CONTAINER: process.env.COUNTLY_CONTAINER,
-                countlyTitle: req.countly.title,
-                company: req.countly.company,
-                languages: languages,
-                countlyVersion: req.countly.version,
-                countlyFavicon: req.countly.favicon,
-                pluginsSHA: sha1Hash(plugins.getPlugins()),
-                apps: countlyGlobalApps,
-                defaultApp: defaultApp,
-                admin_apps: countlyGlobalAdminApps,
-                csrf_token: req.csrfToken(),
-                auth_token: req.session.auth_token,
-                member: member,
-                config: req.config,
-                security: plugins.getConfig("security"),
-                plugins: plugins.getPlugins(true),
-                pluginsFull: plugins.getPlugins(),
-                path: countlyConfig.path || "",
-                cdn: countlyConfig.cdn || "",
-                message: req.flash("message"),
-                licenseNotification,
-                licenseError,
-                ssr: serverSideRendering,
-                timezones: timezones,
-                countlyTypeName: COUNTLY_NAMED_TYPE,
-                countlyTypeTrack: COUNTLY_TRACK_TYPE,
-                countly_tracking,
-                countly_domain,
-                frontend_app: versionInfo.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',
-                frontend_server: versionInfo.frontend_server || 'https://stats.count.ly/',
-                usermenu: {
+            plugins.reloadEnabledPluginList(common.db, function() {
+
+                var defaultApp = userOfApps[0];
+                var serverSideRendering = req.query.ssr;
+                _.extend(req.config, configs);
+                var countlyGlobal = {
+                    COUNTLY_CONTAINER: process.env.COUNTLY_CONTAINER,
+                    countlyTitle: req.countly.title,
+                    company: req.countly.company,
+                    languages: languages,
+                    countlyVersion: req.countly.version,
+                    countlyFavicon: req.countly.favicon,
+                    pluginsSHA: sha1Hash(plugins.getPlugins()),
+                    apps: countlyGlobalApps,
+                    defaultApp: defaultApp,
+                    admin_apps: countlyGlobalAdminApps,
+                    csrf_token: req.csrfToken(),
+                    auth_token: req.session.auth_token,
+                    member: member,
+                    config: req.config,
+                    security: plugins.getConfig("security"),
+                    plugins: plugins.getPlugins(),
+                    pluginsFull: plugins.getPlugins(true),
+                    path: countlyConfig.path || "",
+                    cdn: countlyConfig.cdn || "",
+                    message: req.flash("message"),
+                    licenseNotification,
+                    licenseError,
+                    ssr: serverSideRendering,
+                    timezones: timezones,
+                    countlyTypeName: COUNTLY_NAMED_TYPE,
+                    countlyTypeTrack: COUNTLY_TRACK_TYPE,
+                    countly_tracking,
+                    countly_domain,
+                    frontend_app: versionInfo.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',
+                    frontend_server: versionInfo.frontend_server || 'https://stats.count.ly/',
+                    usermenu: {
+                        feedbackLink: COUNTLY_FEEDBACK_LINK,
+                        documentationLink: COUNTLY_DOCUMENTATION_LINK,
+                        helpCenterLink: COUNTLY_HELPCENTER_LINK,
+                        featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
+                    },
+                };
+
+
+                var toDashboard = {
+                    countlyTitle: req.countly.title,
+                    languages: languages,
+                    countlyFavicon: req.countly.favicon,
+                    adminOfApps: adminOfApps,
+                    userOfApps: userOfApps,
+                    defaultApp: defaultApp,
+                    member: member,
+                    intercom: countlyConfig.web.use_intercom,
+                    track: countlyConfig.web.track || false,
+                    installed: req.session.install || false,
+                    cpus: require('os').cpus().length,
+                    countlyVersion: req.countly.version,
+                    countlyType: COUNTLY_TYPE_CE,
+                    countlyTrial: COUNTLY_TRIAL,
+                    countlyTypeName: COUNTLY_NAMED_TYPE,
                     feedbackLink: COUNTLY_FEEDBACK_LINK,
                     documentationLink: COUNTLY_DOCUMENTATION_LINK,
                     helpCenterLink: COUNTLY_HELPCENTER_LINK,
                     featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
-                },
-            };
+                    countlyTypeTrack: COUNTLY_TRACK_TYPE,
+                    frontend_app: versionInfo.frontend_app,
+                    frontend_server: versionInfo.frontend_server,
+                    production: configs.production || false,
+                    pluginsSHA: sha1Hash(plugins.getPlugins()),
+                    plugins: plugins.getPlugins(),
+                    config: req.config,
+                    path: countlyConfig.path || "",
+                    cdn: countlyConfig.cdn || "",
+                    use_google: configs.use_google || false,
+                    themeFiles: theme,
+                    inject_template: req.template,
+                    javascripts: [],
+                    stylesheets: [],
+                    offline_mode: configs.offline_mode || false
+                };
+                // google services cannot work when offline mode enable
+                if (toDashboard.offline_mode) {
+                    toDashboard.use_google = false;
+                }
+                if (countlyGlobal.config.offline_mode) {
+                    countlyGlobal.config.use_google = false;
+                }
 
-            var toDashboard = {
-                countlyTitle: req.countly.title,
-                languages: languages,
-                countlyFavicon: req.countly.favicon,
-                adminOfApps: adminOfApps,
-                userOfApps: userOfApps,
-                defaultApp: defaultApp,
-                member: member,
-                intercom: countlyConfig.web.use_intercom,
-                track: countlyConfig.web.track || false,
-                installed: req.session.install || false,
-                cpus: require('os').cpus().length,
-                countlyVersion: req.countly.version,
-                countlyType: COUNTLY_TYPE_CE,
-                countlyTrial: COUNTLY_TRIAL,
-                countlyTypeName: COUNTLY_NAMED_TYPE,
-                feedbackLink: COUNTLY_FEEDBACK_LINK,
-                documentationLink: COUNTLY_DOCUMENTATION_LINK,
-                helpCenterLink: COUNTLY_HELPCENTER_LINK,
-                featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
-                countlyTypeTrack: COUNTLY_TRACK_TYPE,
-                frontend_app: versionInfo.frontend_app,
-                frontend_server: versionInfo.frontend_server,
-                production: configs.production || false,
-                pluginsSHA: sha1Hash(plugins.getPlugins(true)),
-                plugins: plugins.getPlugins(true),
-                config: req.config,
-                path: countlyConfig.path || "",
-                cdn: countlyConfig.cdn || "",
-                use_google: configs.use_google || false,
-                themeFiles: theme,
-                inject_template: req.template,
-                javascripts: [],
-                stylesheets: [],
-                offline_mode: configs.offline_mode || false
-            };
-            // google services cannot work when offline mode enable
-            if (toDashboard.offline_mode) {
-                toDashboard.use_google = false;
-            }
-            if (countlyGlobal.config.offline_mode) {
-                countlyGlobal.config.use_google = false;
-            }
 
-            var plgns = [].concat(plugins.getPlugins());
-            if (plgns.indexOf('push') !== -1) {
-                plgns.splice(plgns.indexOf('push'), 1);
-                plgns.unshift('push');
-            }
-            plgns.forEach(plugin => {
-                try {
-                    let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/javascripts`) || [];
-                    toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+                var plgns = [].concat(plugins.getPlugins());
+                if (plgns.indexOf('push') !== -1) {
+                    plgns.splice(plgns.indexOf('push'), 1);
+                    plgns.unshift('push');
                 }
-                catch (e) {
-                    console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
+                plgns.forEach(plugin => {
+                    try {
+                        let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/javascripts`) || [];
+                        toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+                    }
+                    catch (e) {
+                        console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
+                    }
+                    try {
+                        let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/stylesheets`) || [];
+                        toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => typeof n === 'string' && n.includes('.css') && n.length > 4 && n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
+                    }
+                    catch (e) {
+                        console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
+                    }
+                });
+
+                if (req.session.install) {
+                    req.session.install = null;
+                    res.clearCookie('install');
                 }
-                try {
-                    let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/stylesheets`) || [];
-                    toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => typeof n === 'string' && n.includes('.css') && n.length > 4 && n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
-                }
-                catch (e) {
-                    console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
-                }
+                plugins.callMethod("renderDashboard", {req: req, res: res, next: next, data: {member: member, adminApps: countlyGlobalAdminApps, userApps: countlyGlobalApps, countlyGlobal: countlyGlobal, toDashboard: toDashboard}});
+
+                res.expose(countlyGlobal, 'countlyGlobal');
+
+                res.render('dashboard', toDashboard);
             });
-
-            if (req.session.install) {
-                req.session.install = null;
-                res.clearCookie('install');
-            }
-            plugins.callMethod("renderDashboard", {req: req, res: res, next: next, data: {member: member, adminApps: countlyGlobalAdminApps, userApps: countlyGlobalApps, countlyGlobal: countlyGlobal, toDashboard: toDashboard}});
-
-            res.expose(countlyGlobal, 'countlyGlobal');
-
-            res.render('dashboard', toDashboard);
         });
     }
 
@@ -1086,7 +1091,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 
                         countlyDb.collection('members').update(
                             { _id: common.db.ObjectID(member._id) },
-                            { $inc: { session_count: 1 } },
+                            {
+                                $inc: { session_count: 1 },
+                                $set: {
+                                    last_login: Math.round(new Date().getTime() / 1000),
+                                    lu: new Date()
+                                }
+                            }
                         );
 
                         if (member.global_admin) {

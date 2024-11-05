@@ -384,13 +384,7 @@ function getPeriodObject(prmPeriod, bucket) {
 
     var period = prmPeriod || _period;
 
-    endTimestamp = _currMoment.clone().endOf("day");
-
-    if (period.since) {
-        period = [period.since, Date.now()];
-    }
-
-    if (period && typeof period === 'string' && period.indexOf(",") !== -1) {
+    if (typeof period === 'string' && period.indexOf(",") !== -1) {
         try {
             period = JSON.parse(period);
         }
@@ -398,6 +392,18 @@ function getPeriodObject(prmPeriod, bucket) {
             console.log("period JSON parse failed");
             period = "30days";
         }
+    }
+
+    var excludeCurrentDay = period.exclude_current_day || false;
+
+    if (period.period) {
+        period = period.period;
+    }
+
+    endTimestamp = excludeCurrentDay ? _currMoment.clone().subtract(1, 'days').endOf('day') : _currMoment.clone().endOf('day');
+
+    if (period.since) {
+        period = [period.since, endTimestamp.clone().valueOf()];
     }
 
     if (Array.isArray(period)) {
@@ -422,6 +428,7 @@ function getPeriodObject(prmPeriod, bucket) {
 
         startTimestamp = fromDate.clone().startOf("day");
         endTimestamp = toDate.clone().endOf("day");
+
         fromDate.tz(_appTimezone);
         toDate.tz(_appTimezone);
 
@@ -519,7 +526,7 @@ function getPeriodObject(prmPeriod, bucket) {
     }
     else if (/([1-9][0-9]*)minutes/.test(period)) {
         let nMinutes = parseInt(/([1-9][0-9]*)minutes/.exec(period)[1]);
-        startTimestamp = _currMoment.clone().startOf("minute").subtract(nMinutes, "minutes");
+        startTimestamp = _currMoment.clone().startOf("minute").subtract(nMinutes - 1, "minutes");
         cycleDuration = moment.duration(nMinutes, "minutes");
         Object.assign(periodObject, {
             dateString: "HH:mm",
@@ -528,7 +535,7 @@ function getPeriodObject(prmPeriod, bucket) {
     }
     else if (/([1-9][0-9]*)hours/.test(period)) {
         let nHours = parseInt(/([1-9][0-9]*)hours/.exec(period)[1]);
-        startTimestamp = _currMoment.clone().startOf("hour").subtract(nHours, "hours");
+        startTimestamp = _currMoment.clone().startOf("hour").subtract(nHours - 1, "hours");
         cycleDuration = moment.duration(nHours, "hours");
         Object.assign(periodObject, {
             dateString: "HH:mm",
@@ -757,6 +764,46 @@ function getPeriodObject(prmPeriod, bucket) {
 
     return periodObject;
 }
+
+/**
+ * Checks if the period parameter is valid
+ * @param {string} period - period parameter
+ * @returns {boolean} true if period is valid, false if not
+*/
+countlyCommon.isValidPeriodParam = function(period) {
+
+    if (period && typeof period === 'string' && period.indexOf(",") !== -1) {
+        try {
+            period = JSON.parse(period);
+        }
+        catch (SyntaxError) {
+            return false;
+        }
+    }
+
+    if (Array.isArray(period)) {
+        return period.length === 2;
+    }
+
+    if (typeof period === 'object') {
+        if (Object.prototype.hasOwnProperty.call(period, 'period')) {
+            return countlyCommon.isValidPeriodParam(period.period);
+        }
+        else {
+            return Object.prototype.hasOwnProperty.call(period, 'since');
+        }
+    }
+
+    return period === 'month' ||
+        period === 'prevMonth' ||
+        period === 'day' ||
+        period === 'yesterday' ||
+        period === 'hour' ||
+        /([1-9][0-9]*)days/.test(period) ||
+        /([1-9][0-9]*)weeks/.test(period) ||
+        /([1-9][0-9]*)months/.test(period) ||
+        /([1-9][0-9]*)years/.test(period);
+};
 
 // Public Properties
 /**
@@ -1486,9 +1533,6 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
         periodObj = countlyCommon.periodObj;
     }
 
-    if (!rangeArray) {
-        return {"chartData": tableData};
-    }
     var periodMin = 0,
         periodMax = 0,
         dataObj = {},
@@ -1496,6 +1540,10 @@ countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, data
         propertyNames = underscore.pluck(dataProperties, "name"),
         propertyFunctions = underscore.pluck(dataProperties, "func"),
         propertyValue = 0;
+
+    if (!rangeArray) {
+        return {"chartData": tableData};
+    }
 
     if (!periodObj.isSpecialPeriod) {
         periodMin = periodObj.periodMin;

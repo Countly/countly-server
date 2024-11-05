@@ -1885,9 +1885,6 @@
 
             countlyCommon.periodObj = getPeriodObj();
 
-            if (!rangeArray) {
-                return { "chartData": tableData };
-            }
             var periodMin = 0,
                 periodMax = 0,
                 dataObj = {},
@@ -1895,6 +1892,10 @@
                 propertyNames = _.pluck(dataProperties, "name"),
                 propertyFunctions = _.pluck(dataProperties, "func"),
                 propertyValue = 0;
+
+            if (!rangeArray) {
+                return { "chartData": tableData };
+            }
 
             if (!countlyCommon.periodObj.isSpecialPeriod) {
                 periodMin = countlyCommon.periodObj.periodMin;
@@ -2258,10 +2259,10 @@
                 //Subtract the extra delta from the last value
                 deltaFixEl = barData.length - 1;
             }
-
-            barData[deltaFixEl].percent += 100 - totalPercent;
-            barData[deltaFixEl].percent = countlyCommon.round(barData[deltaFixEl].percent, 1);
-
+            if (barData.length > 0) {
+                barData[deltaFixEl].percent += 100 - totalPercent;
+                barData[deltaFixEl].percent = countlyCommon.round(barData[deltaFixEl].percent, 1);
+            }
             if (rangeNames.length < maxItems) {
                 maxItems = rangeNames.length;
             }
@@ -4562,7 +4563,7 @@
         * @example trimTo = 2, "Xh Xm Xs" result will be trimmed to "Xh Xm"
         */
         countlyCommon.formatSecond = function(second, trimTo = 5) {
-            var timeLeft = parseInt(second);
+            var timeLeft = parseFloat(second);
             var dict = [
                 {k: 'year', v: 31536000},
                 {k: 'day', v: 86400},
@@ -4573,7 +4574,17 @@
             var result = {year: 0, day: 0, hour: 0, minute: 0, second: 0};
             var resultStrings = [];
             for (var i = 0; i < dict.length && resultStrings.length < 3; i++) {
-                result[dict[i].k] = Math.floor(timeLeft / dict[i].v);
+                if (dict[i].k === "second") {
+                    if (timeLeft < 0.1) {
+                        result.second = 0;
+                    }
+                    else {
+                        result.second = Math.round(timeLeft * 10) / 10;
+                    }
+                }
+                else {
+                    result[dict[i].k] = Math.floor(timeLeft / dict[i].v);
+                }
                 timeLeft = timeLeft % dict[i].v;
                 if (result[dict[i].k] > 0) {
                     if (result[dict[i].k] === 1) {
@@ -4739,7 +4750,21 @@
         */
         countlyCommon.getPeriodRange = function(period, baseTimeStamp) {
             var periodRange;
-            if (period && period.indexOf(",") !== -1) {
+            period = period || countlyCommon.DEFAULT_PERIOD;
+
+            var excludeCurrentDay = false;
+            if (period.period) {
+                excludeCurrentDay = period.exclude_current_day || false;
+                period = period.period;
+            }
+
+            var start;
+            var endTimeStamp = excludeCurrentDay ? moment(baseTimeStamp).subtract(1, 'day').hour(23).minute(59).second(59).toDate().getTime() : baseTimeStamp;
+
+            if (period.since) {
+                period = [period.since, endTimeStamp];
+            }
+            else if (period.indexOf(",") !== -1) {
                 try {
                     period = JSON.parse(period);
                 }
@@ -4747,12 +4772,12 @@
                     period = countlyCommon.DEFAULT_PERIOD;
                 }
             }
+
             if (Object.prototype.toString.call(period) === '[object Array]' && period.length === 2) { //range
                 periodRange = [period[0] + countlyCommon.getOffsetCorrectionForTimestamp(period[0]), period[1] + countlyCommon.getOffsetCorrectionForTimestamp(period[1])];
                 return periodRange;
             }
-            var endTimeStamp = baseTimeStamp;
-            var start;
+
             switch (period) {
             case 'hour':
                 start = moment(baseTimeStamp).hour(0).minute(0).second(0);
@@ -4772,11 +4797,26 @@
                 start = moment(baseTimeStamp).month(0).date(1).hour(0).minute(0).second(0);
                 break;
             default:
-                if (/([0-9]+)days/.test(period)) {
-                    var match = /([0-9]+)days/.exec(period);
-                    if (match[1] && (parseInt(match[1]) > 1)) {
-                        start = moment(baseTimeStamp).subtract(parseInt(match[1]) - 1, 'day').hour(0).minute(0);
-                    }
+                if (/([1-9][0-9]*)days/.test(period)) {
+                    let nDays = parseInt(/([1-9][0-9]*)days/.exec(period)[1]);
+                    start = moment(baseTimeStamp).startOf("day").subtract(nDays - 1, "days");
+                }
+                else if (/([1-9][0-9]*)weeks/.test(period)) {
+                    const nWeeks = parseInt(/([1-9][0-9]*)weeks/.exec(period)[1]);
+                    start = moment(baseTimeStamp).startOf("week").subtract((nWeeks - 1), "weeks");
+                }
+                else if (/([1-9][0-9]*)months/.test(period)) {
+                    const nMonths = parseInt(/([1-9][0-9]*)months/.exec(period)[1]);
+                    start = moment(baseTimeStamp).startOf("month").subtract((nMonths - 1), "months");
+                }
+                else if (/([1-9][0-9]*)years/.test(period)) {
+                    const nYears = parseInt(/([1-9][0-9]*)years/.exec(period)[1]);
+                    start = moment(baseTimeStamp).startOf("year").subtract((nYears - 1), "years");
+                }
+                //incorrect period, defaulting to 30 days
+                else {
+                    let nDays = 30;
+                    start = moment(baseTimeStamp).startOf("day").subtract(nDays - 1, "days");
                 }
             }
             periodRange = [start.toDate().getTime(), endTimeStamp];
@@ -4966,7 +5006,9 @@
                         noteSortByApp[note.app_id].push(note);
                     });
                     appIds.forEach(function(appId) {
-                        window.countlyGlobal.apps[appId].notes = noteSortByApp[appId] || [];
+                        if (window.countlyGlobal.apps[appId]) {
+                            window.countlyGlobal.apps[appId].notes = noteSortByApp[appId] || [];
+                        }
                     });
                     callBack && callBack(notes);
                 }
@@ -5182,6 +5224,10 @@
             else if (period.endsWith("months")) {
                 inferredLevel = "months";
                 inferredType = "last-n";
+            }
+            else if (period.endsWith('years')) {
+                inferredLevel = 'years';
+                inferredType = 'last-n';
             }
             else {
                 inferredType = "all-time";

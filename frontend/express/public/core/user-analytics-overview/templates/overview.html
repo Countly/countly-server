@@ -5,7 +5,7 @@
 	>
         <template v-slot:header-left>
             <h2> {{i18n('user-analytics.overview-title')}} </h2>
-			<cly-tooltip-icon :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
+			<cly-tooltip-icon data-test-id="header-title-tooltip" :tooltip="description" icon="ion ion-help-circled" style="margin-left:8px" placement="bottom-end"> </cly-tooltip-icon>
         </template>
 		<template v-slot:header-right>
           <cly-more-options v-if="topDropdown" size="small">
@@ -19,19 +19,31 @@
     <cly-main>
 		<cly-date-picker-g class="app-version-date-picker-container"></cly-date-picker-g>
 		<cly-section>
-		<cly-chart-time :option="lineOptions" :legend="lineLegend"  v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-time>
+		<cly-chart-time test-id="user-analytics-overview" :option="lineOptions" :legend="lineLegend"  v-loading="isLoading" :force-loading="isLoading" category="user-analytics"> </cly-chart-time>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n :exportFormat="formatExportFunction"  :default-sort="{prop: 'dateVal', order: 'ascending'}" v-loading="isLoading" :force-loading="isLoading" :rows="tableData" :resizable="true" >
+			<cly-datatable-n test-id="user-analytics-overview" :exportFormat="formatExportFunction"  :default-sort="{prop: 'dateVal', order: 'ascending'}" v-loading="isLoading" :force-loading="isLoading" :rows="tableData" :resizable="true" >
 				<template v-slot="scope">
 					<el-table-column sortable="custom" prop="dateVal" :label="i18n('common.date')">
 						<template slot-scope="scope">
-							{{scope.row.date}}
+							<div :data-test-id="'datatable-user-analytics-overview-date-' + scope.$index">{{scope.row.date}}</div>
 						</template>
 					</el-table-column>
-					<el-table-column sortable="custom" prop="u" :label="i18n('common.total-users')"><template slot-scope="scope">{{formatNumber(scope.row.u)}}</template></el-table-column>
-					<el-table-column sortable="custom" prop="n" :label="i18n('common.new-users')"><template slot-scope="scope">{{formatNumber(scope.row.n)}}</template></el-table-column>
-					<el-table-column sortable="custom" prop="returning" :label="i18n('common.returning-users')"><template slot-scope="scope">{{formatNumber(scope.row.returning)}}</template></el-table-column>
+					<el-table-column sortable="custom" prop="u" :label="i18n('common.total-users')">
+						<template slot-scope="scope">
+							<div :data-test-id="'datatable-user-analytics-overview-total-users-' + scope.$index">{{formatNumber(scope.row.u)}}</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="n" :label="i18n('common.new-users')">
+						<template slot-scope="scope">
+							<div :data-test-id="'datatable-user-analytics-overview-new-users-' + scope.$index">{{formatNumber(scope.row.n)}}</div>						
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="returning" :label="i18n('common.returning-users')">
+						<template slot-scope="scope">
+							<div :data-test-id="'datatable-user-analytics-overview-returning-users-' + scope.$index">{{formatNumber(scope.row.returning)}}</div>	
+						</template>
+					</el-table-column>
 				</template>
 			</cly-datatable-n>
 		</cly-section>

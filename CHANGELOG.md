@@ -1,3 +1,405 @@
+## Version 24.10.1
+Integrating 24.05.16 fixes
+
+## Version 24.10
+Fixes:
+- [core] Interpreting carrier value of "--" as an unknown value
+- [crash] Fixed issues with visualisation of Flutter stack traces
+- [dashoards] If a user is given access to a dashboard, they will now be able to see all widgets even if they don't have access to the underlying data
+- [density] UI fixed
+- [events] Fixed issue where slower loading data would replace newest event selection
+
+Enterprise fixes:
+- [crashes-jira] Preventing crashing when jira authentification fails
+- [formulas] Removing HTML from tooltip localization
+
+Features:
+- Making user guide icons stand out more before first use
+- [alerts] UI improvements
+- [alerts] small improvements in email notifications
+- [code] Unifying bottom menu for bulk operations
+- [core] Aggregated events data collections merged together
+- [nps] UI improvements
+- [surveys] UI improvements
+- upgraded mongoDB to version 7
+- upgraded nodejs to version 20
+
+Enterprise Features:
+- [crash_symbolication] Added ability to set custom domain override for the symbolication server
+- [drill] Drill "by query" vizualization improved
+- [drill] Drill data collections merged together
+- [events] Added a quick transition to drill
+- [hooks] Added audit log entries for hook "create", "edit", "delete", "update" actions
+- [users] "Last Session" column in User Profiles is now sortable
+- [users] Crashes in the crashes tab can now be sorted
+- [users] UI improvements
+- [views] Added a quick transition to drill
+
+## Version 24.05.16
+Fixes:
+- [core] Replaced "Users" with "Sessions" label on technology home widgets
+- [push] Replaced push plugin with an earlier version of the plugin
+
+Enterprise fixes:
+- [license] Fixed bug with MAU type of licenses that would prevent the server from starting
+- [nps] Fixed bug where it was possible to submit empty nps surveys
+- [ratings] Fixed bug with user consent
+
+Security:
+- Bumped cookie-parser from 1.4.6 to 1.4.7
+- Bumped express-rate-limit from 7.4.0 to 7.4.1
+- Bumped moment-timezone from 0.5.45 to 0.5.46
+- Bumped sass from 1.79.3 to 1.79.4
+
+## Version 24.05.15
+Enterprise fixes:
+- [nps] Fixed UI issues in the widget editor related to the "user consent" section
+- [ratings] Fixed rendering issue for escaped values
+
+## Version 24.05.14
+Fixes:
+- [code] Added better handling for countly servers while deployed using subdirectory
+- [data-manager] Added missing "Create" button for event groups
+- [data-manager] Fixes for auto toggling data masking setting on redaction change
+- [populator] Fixed issues in case of wrongly structured data
+- [push] token shouldn't be revoked if it's already in db
+- [server-stats] Fixed a data point calculation bug
+
+Enterprise fixes:
+- [push_approver] Fixed issue with the plugin not handling being "soft disabled"
+- [surveys] fixed a bug with the Survey widget where the "submit" button could become non interactable
+- [surveys] fixed issues with dashboard editor in relation to the "terms and conditions"
+- [surveys] fixed issues with previewing, creating and editing nps widgets
+
+## Version 24.05.13
+Fixes:
+- [alerts] Fixed bugs related to NPS alerts
+- [crash] Reworked symbol files upload to support larger symbol files
+- [push] Fixed bug that would surface when sending Array or Object related payload
+
+Enterprise fixes:
+- [ab-testing] Slight improvements to the UI and UX
+- [remote-config] Slight improvements to the UI and UX
+
+Enterprise Features:
+- [ab-testing] Improved UI for selecting AB test expiration
+
+## Version 24.05.12
+Fixes:
+- [dashboards] Fixes for dashboards grid
+- [dashboards] UI fix for dashboard widget action menu
+- [push] Refactored fcm API related code
+- [reports] Use config for encryption key in reports
+
+Enterprise fixes:
+ - [retention] Fixes for byval retention query calculation
+
+## Version 24.05.11
+Fixes:
+- [cache] Use a cursor without timeout
+
+## Version 24.05.10
+Fixes:
+- [alerts] Alerts improvements
+- [core] Various fixes for frontend to support running countly from subdirectory
+- [logs]  Show collected problems on logger
+
+Enterprise fixes:
+- [data-manager] Fixes in UI to allow events starting with "/"
+- [flows] Fixes for flows step generation
+- [surveys] Other is not allowed as a valid answer for required questions
+
+## Version 24.05.9
+Fixes:
+- [crashes] Fix crashes template paths and add data check
+
+Enterprise fixes:
+- [license] Fix for License warning appears is Flex server
+- [drill] Fix typo in view regeneration api response
+
+## Version 24.05.8
+Fixes:
+- [scripts] script to check settings limits
+- [crashes] Update custom field cleanup script with streaming
+- [core] Skip data masking on internal appUsers data refetching query
+- [core][bugfix] Correct validation on "is any plugin masked"
+- [scripts] Delete custom events scripts
+- [dashboards] Show edit option also for invalid widgets
+- [core] batcher stats added
+- [dependencies] Bump xlsx-write-stream from 1.0.2 to 1.0.3
+
+Enterprise fixes:
+- [data-manager] changes to allow skipping query rewriting using passed property
+- [os] fix for changing default repository of CentOS 8 to vault because OS reached EOL
+  
+## Version 24.05.7
+Fixes:
+- [countly-request]Fix countly-request get and post methods
+- [core] Improvements to prevent XSS
+- [push] objects are not allowed for the properties inside "data" key of the payload in new FCM API
+- [populator] Fixes for handling bulk requests
+
+Enterprise fixes:
+- [adjust] Added adjust plugin
+- [surveys] UI changes for table
+
+## Version 24.05.6
+Fixes:
+- [data-manager] Fix for event deletion timeout
+- [alerts] Fix for special character problem in value part for all data types
+- [scripts] Fix for old views script
+- [server-stats] Add monthly data points endpoint
+
+Enterprise fixes:
+- [config-transfer] Correct check when adding config transfer menu item
+- [users] Changes to show sample document download for all users
+- [funnels] Prevent autofill from Chrome on inputs
+- [drill] Fix for case when it is not possible to download table in drill
+- [surveys] Update popup height attribute in survey widgets
+- [license] Get correct license metric values
+- [okta] Add config extender code for OKTA
+
+## Version 24.05.5
+Fixes:
+- [push] p12 file parsing bug fixed
+- [views] script to delete old views
+
+Enterprise fixes:
+- [active_users] Fixes for Active users recalculation
+
+## Version 24.05.4
+Fixes:
+- [core] Make sure Unicode characters are escaped for events segment values on incoming data
+- [dashboard] Small UI fixes for dealing with unexpected appid values
+
+Features:
+- [core]  Script for getting document counts of drill collections
+
+Enterprise fixes:
+- [drill] Make sure Unicode characters are escaped for events segment values on incoming data
+
+## Version 24.05.3
+Fixes:
+- [core] Bugfix for newsletter check
+- [core] Presets UI fixes
+- [core] Security Vulnerabilities and bugs
+- [events] Fix event chart selection
+- [push] Hotfix: removed the projection from push token query
+- [star-rating] Text and link sanitization
+
+Features:
+- [core]  Run once option for crash removal script
+- [populator] Add warning in case salt is set to application
+
+Enterprise fixes:
+- [block] Add user prop support for crash blocking and isset operator overall
+- [drill] Fixes for query builder when dealing with values starting with an empty string
+
+
+## Version 24.05.2
+Fixes:
+- [dashboards] Disable intercom for custom dashboards
+- [data-manager] Fix duplicate Create Event Group button
+- [push] Push config is not being loaded properly
+- [push] Push FCM SDK is not using proxy while sending messages
+- [core] Fix height inconsistency in datepicker popup
+- [core] Fixes to prevent scheduling duplicated jobs
+- [core] Making sure "Exclude current day" works everywhere
+- [dashboards] Fix issues in note widget
+- [flows] Nullcheck in default flows creation function.
+
+Enterprise fixes:
+- [flows] Nullcheck in default flows creation function
+- [drill] Nullcheck when fetching snapshots data
+
+## Version 24.05.1
+Fixes:
+- [populator] Bugfix for - Can't edit populator template
+- [surveys] fix nps/survey background color
+- [alerts] fix for old data remains when the alerts metric is updated 
+- [star-rating] tooltips updates  
+- [populator] fix for correctly checking if different plugins enabled
+  
+Enterprise fixes:
+- [formulas] null checks
+- [surveys] survey/nps tooltips updates
+- [surveys] fix for nps/survey color hover
+- [surveys] Fix submit button
+- [users] add hinge back in user
+
+## Version 24.05
+Features:
+- [alerts] Alerts plugin revamp
+- [core] Ensure consistency when deleting dashboard user
+- [crashes] Contains operator for (App Version) filter on the Crash Overview page
+- [crashes] Sort crashes by filtered results
+- [dashboard] Show in UI which values are estimated
+- [dashboards] Improve dashboard list loading time
+- [data-manager] Add option to delete source events when merging
+- [date-picker] Date picker presets
+- [dev] Remote process profiling option
+- [events] Ensure consistency when deleting an event
+- [plugins] Dynamic plugins including docker
+- [populator] Crash and Symbolication examples
+- [populator] New Data Populator
+- [push] Move to new FCM API
+- [versions] View to display history of upgrades for server
+- [views] Visualize omitted views just like we visualize omited events in events section
+
+Enterprise Features:
+- [data-manager] Delete user property value
+- [data-manager] Transformation to copy event segmentation to user custom properties
+- [date-picker] Add "hours" and "minutes" options to "in the last" filtering
+- [flows] Allow disabling flows
+- [flows] Merge Flow plugin collections into single one
+- [license] Improve license emails
+- [surveys] Add "Internal Label" field to Surveys and Ratings
+- [surveys] Add custom properties to surveys
+- [surveys] Add optional ToC and Privacy Policy checkbox with URLs to feedback widgets
+- [surveys] Faster table loading through server side tables
+- [surveys] Removing connect.sid cookie in case of nps
+- [surveys] Responsiveness for survey/NPS/rating widget contents
+- [users] Profile Groups
+- [users] Purging user profiles in bulk
+- [users] Record hinge as user property 
+- [users] Select/deselect users
+- [users] User Profiles widget in dashboards
+
+## Version 23.11.22
+Features:
+- [views] Added deselect All button
+  
+Fixes:
+- [push] Fix for p12 file not being parsed correctly
+
+Enterprise Features:
+ - [ab-testing] Improved query to match experiments to users
+ - [cohorts] Optimization to not calculate full period buckets when loading cohort meta data. Speeds up meta-loading and reduces memory usage.
+   
+Enterprise Fixes:
+- [cohorts] Correctly preprocess drill query for cohort values.
+- [drill] Correct time interval for drill meta job.
+- [drill] Select users correctly when navigating from drill to user profiles
+- [retention] UI fixes
+
+## Version 23.11.21
+Fixes:
+- [sdks] Fix negative request queue
+- [server-stats] Fix for duplicated data points due to consolidation
+- [dbviewer] Cache beautified collection names to speed up loading dbviewer
+
+Enterprise Fixes:
+- [license-manager] Fix for multiple expire-today emails
+- [formulas] Fix for for formula percent not showing decimals
+
+## Version 23.11.20
+Fixes:
+- [core] Nullcheck in data exports
+- [events] changed formatSecond to show decimals
+  
+Enterprise Fixes:
+- [core] missing proxy setting added for  enterprise features
+- [drill] fix for select users correctly when navigating from drill to user
+
+## Version 23.11.19
+Features:
+- [core] Increase log level for specific mongodb driver events
+- [reports] log subscribe/unsubscribe to audit logs
+- [scripts] Additions to checking data per cd in drill
+- [scripts] Additional crash deletion scripts
+  
+Fixes:
+- [core] Date picker fixes
+- [data-points] Correct counting data points to do not include events that are discarded from recording or only update user properties.
+  
+Enterprise Features:
+- [drill] Outputing extra columns in drill byval download with unformatted values.
+  
+Enterprise Fixes:
+- [block] Check for valid rule in block
+- [drill] Added missing columns in byval table download
+- [funnels] Localization value fixes
+- [users] Fixed bug - when the session is selected, the event timeline dropdown is not working. 
+  
+## Version 23.11.18
+Fixes:
+- [scripts] Create script for deleting old crashgroups
+- [scripts] Script to validate based on cd field for which dates data was recorded 
+- [reports] Use localhost only in case of dashboard
+- [push] Added a chart to show number of sent and acted events
+- [push] Added the ability to set content-available by default into push settings
+
+Enterprise Fixes:
+- [block] Transform for crash object for crashes to work in block
+- [crash_symbolication] Init countly request correctly
+- [acitve_directory] bugfix for AD user App key null issue
+
+## Version 23.11.17
+Fixes:
+- [core] Always read session store from primary
+- [core] Configuration for shard database connection
+- [core] Fixes for Graph notes user messages
+- [core] Fixes for null_id fixing script
+- [core] Signature consistency for countly-request
+- [core] Store last time merge happened
+- [data-masking]Try-catch on data masking setting check.
+- [reports] Bugfix for Email reports timing out
+- [rights] Optimize dbLoadEventsData
+- [star-rating] Enable email search for feedback
+
+Enterprise Fixes:
+- [drill] Nullcheck in cohorts on user merge
+- [performance-monitoring] Error while redirecting to "../performance-monitoring/all-issues"
+- [block] check for crashes in filtering rules
+- [ab-testing] Add indexes for ab-testing queries
+- [flows] Included custom user properties in filtering rules
+- [drill] Make drill graphs and tables correct for byval queries if there are null and '0' keys.
+
+## Version 23.11.16
+Fixes:
+- [scripts] custom indexes for customers
+- [report-manager] Fix warning on adding report manager submenu
+- [push] Add content-available to apns request payload
+  
+## Version 23.11.15
+Fixes:
+- [views] Updated views processing logic to prevent data mismatch in cases where there are multiple records in same request decribing same view event
+- [core] Script to attempt issues with users having uid as null
+- [core] Fixed TypeError currEvent.key.indexOf is not a function
+- [core] Script to reset merge count in app_users documents
+- [views] job catch error
+- [jobs] log error instead of crashing
+- [core] Added code to ensure uid and did in app_users documents in case of deletion/merging inconsistencies
+- [core] Updates for event omitting script
+- [core] Updates for diagnostic script
+- [core] Additions to diagnostic scripts
+- [core] Script to check user mismatch between app users and drill collections
+
+Enterprise Fixes:
+- [license] Update metrics check timestamp after the metrics are fetched
+- [license] Fix for license metrics calculations
+- [cohorts] Fix return type in getNames to return all cohorts
+- [ab-testing] Skip calculation of ab-tests on listing page
+- [config-transfer] List drill reports in config transfer
+- [views] Added tests in drill module for cases with multiple events in same request for same view
+- [flows] add sytemlogs records for flows operations
+- [data-manager] Fix query run in data manager on setting configs
+- [block] Add check for valid rule in blocks
+
+## Version 23.11.14
+Fixes:
+- [core] Fixes for proxy agent
+- [core] Script to list all indexes
+- [core] Script to set TTL index on timeline collection
+- [core] Ensure persistent _id, api_key, and member creation date
+- [events] Show dropdown with omitted segments even if all segments are omitted
+- [views] Auto omit views segment from aggregated data on document overflow or too many values for a single segment.
+
+Enterprise Fixes:
+- [dashboard] Fixed bug with duplicate graph lines for dill widgets
+- [drill] Record maximum original duration on duration update
+- [ldap] postinstall script to copy config.js
+
 ## Version 23.11.13
 Fixes:
 - [star-rating] Changes to add view user button in ratings
