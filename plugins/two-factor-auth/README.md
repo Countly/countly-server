@@ -16,3 +16,32 @@ Sends requests to enable or disable 2FA and handles success and error responses.
 
 Registers the TwoFAUser component in the Countly Vue container under the account settings page.
 This plugin provides a comprehensive solution for managing 2FA settings within the Countly application, enhancing the security of user accounts by requiring an additional authentication step.
+
+
+## Installation
+
+To install the 2FA, follow these steps:
+
+1. Navigate to the 2FA
+
+```bash
+cd two-factor-auth
+```
+
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Enable the plugin in Countly
+
+```bash
+countly plugin enable two-factor-auth
+```
+
+4. Restart Countly to apply changes
+
+```bash
+countly restart
+```
