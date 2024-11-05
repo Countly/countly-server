@@ -94,6 +94,8 @@ const verifyFullDataPageElements = () => {
 
     verifyStaticElementsOfPage(false);
 
+    cy.checkLoadingSpinner();
+
     cy
         .elementExists(logsDataTableElements().EMPTY_TABLE_ICON) //Data comes sometimes
         .then((isExists) => {
