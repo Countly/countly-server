@@ -9,6 +9,7 @@
                 currentTab: "data-populator",
                 dialog: {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: '', params: {}},
                 selectedTemplate: '',
+                selectedFeatures: [],
                 generateDataModal: {showDialog: false},
                 percentage: 0,
                 templates: [],
@@ -47,6 +48,21 @@
                     }
                 ];
             },
+            availableFeatures: function() {
+                const plugins = [
+                    {value: "ab-testing", label: CV.i18n("ab-testing.title")},
+                    {value: "attribution", label: CV.i18n("attribution.title")},
+                    {value: "cohorts", label: CV.i18n("cohorts.cohorts")},
+                    {value: "crash_symbolication", label: CV.i18n("crash_symbolication.title")},
+                    {value: "funnels", label: CV.i18n("funnels.plugin-title")},
+                    {value: "push", label: CV.i18n("push-notification.title")},
+                    {value: "star-rating", label: CV.i18n("star-rating.plugin-title")},
+                    {value: "surveys", label: CV.i18n("surveys.plugin-title")},
+                ]
+                return plugins.filter(function(plugin) {
+                    return CountlyHelpers.isPluginEnabled(plugin.value);
+                }); 
+            }
         },
         methods: {
             refreshTable: function(res) {
@@ -304,6 +320,7 @@
                 }
                 else {
                     countlyPopulator.setSelectedTemplate(self.selectedTemplate);
+                    countlyPopulator.setSelectedFeatures(this.selectedFeatures);
                     this.selectedTemplateInformation.saveEnvironment = this.isOpen;
                     this.selectedTemplateInformation.environmentName = this.environmentName;
                     countlyPopulator.generateUsers(self.selectedRunCount, this.selectedTemplateInformation);
