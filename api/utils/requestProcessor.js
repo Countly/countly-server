@@ -3718,7 +3718,7 @@ function processUser(params, initiator, done, try_times) {
             });
         }
         //check if device id was changed
-        else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
+        else if (params && params.qstring && params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
             const old_id = common.crypto.createHash('sha1')
                 .update(params.qstring.app_key + params.qstring.old_device_id + "")
                 .digest('hex');
