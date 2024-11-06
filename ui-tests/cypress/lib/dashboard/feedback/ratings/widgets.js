@@ -188,7 +188,7 @@ const verifySettingsPageElements = ({
     }
 
     cy.scrollPageToBottom('.cly-vue-drawer__steps-container.is-multi-step');
-    
+
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.BUTTON_CALLOUT_LABEL,
         labelText: "Button Callout",

@@ -10,13 +10,13 @@ const { RATING_SYMBOLS } = require('../../../../support/constants');
 const helper = require('../../../../support/helper');
 
 describe('Create New Widget', () => {
-    beforeEach(function () {
+    beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
         navigationHelpers.goToFeedbackRatingsWidgetsPage();
     });
 
-    it('Verify default values of page and create a widget with that values and then update the widget data', function () {
+    it('Verify default values of page and create a widget with that values and then update the widget data', function() {
         widgetsHelpers.clickAddNewWidgetButton();
         widgetsHelpers.verifySettingsPageDefaultElements();
         widgetsHelpers.typeWidgetName("My New Widget");
@@ -189,7 +189,7 @@ describe('Create New Widget', () => {
 
         widgetsHelpers.clickNextStepButton(),
 
-            widgetsHelpers.clickShowOnlyCheckbox();
+        widgetsHelpers.clickShowOnlyCheckbox();
         widgetsHelpers.typeShowOnlyPages(...['/homepage', '/shopping', '/checkout']);
 
         widgetsHelpers.clickSaveButton();
@@ -273,11 +273,11 @@ describe('Create New Widget', () => {
         });
     });
 
-    it('Create a widget with updated text then stop the widget from details page', function () {
+    it('Create a widget with updated text then stop the widget from details page', function() {
         const widget = generateWidgetFixture();
 
         widgetsHelpers.clickAddNewWidgetButton(),
-            widgetsHelpers.typeWidgetName(widget.widgetName);
+        widgetsHelpers.typeWidgetName(widget.widgetName);
         widgetsHelpers.typeQuestion(widget.question);
         widgetsHelpers.typeEmojiOneText(widget.emojiOneText);
         widgetsHelpers.typeEmojiTwoText(widget.emojiTwoText);
@@ -341,7 +341,7 @@ describe('Create New Widget', () => {
 
         widgetsHelpers.clickNextStepButton(),
 
-            widgetsHelpers.clickShowOnlyCheckbox();
+        widgetsHelpers.clickShowOnlyCheckbox();
         widgetsHelpers.typeShowOnlyPages(...['/homepage', '/shopping', '/checkout']);
 
         widgetsHelpers.clickSaveButton();
@@ -417,7 +417,7 @@ describe('Create New Widget', () => {
         });
     });
 
-    it('Verify next step button activation, the entered data exist when returning to the previous pages and creating a passive widget and deleting the widget', function () {
+    it('Verify next step button activation, the entered data exist when returning to the previous pages and creating a passive widget and deleting the widget', function() {
         const widget = generateWidgetFixture();
 
         widgetsHelpers.clickAddNewWidgetButton();
@@ -533,7 +533,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.shouldBeWidgetDeleted(widget.question);
     });
 
-    it('Verify widget details comment and rating tab data', function () {
+    it('Verify widget details comment and rating tab data', function() {
         widgetsHelpers.clickAddNewWidgetButton();
         const widget = generateWidgetFixture();
 
