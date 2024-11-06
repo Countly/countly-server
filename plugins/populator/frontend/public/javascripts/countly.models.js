@@ -1875,6 +1875,10 @@
             });
         }
 
+        /**
+         *  Create 3 survey widgets
+         *  @param {function} callback - callback method
+         */
         function generateSurveryWidgets(callback) {
             if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys") && _featuresToPopulate.includes("surveys")) {
                 generateSurveyWidgets1(function() {
@@ -1895,7 +1899,7 @@
                 }, 100);
             });
         });
-       
+
     }
 
 

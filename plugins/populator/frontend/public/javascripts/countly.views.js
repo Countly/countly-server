@@ -58,10 +58,10 @@
                     {value: "push", label: CV.i18n("push-notification.title")},
                     {value: "star-rating", label: CV.i18n("star-rating.plugin-title")},
                     {value: "surveys", label: CV.i18n("surveys.plugin-title")},
-                ]
+                ];
                 return plugins.filter(function(plugin) {
                     return CountlyHelpers.isPluginEnabled(plugin.value);
-                }); 
+                });
             }
         },
         methods: {
