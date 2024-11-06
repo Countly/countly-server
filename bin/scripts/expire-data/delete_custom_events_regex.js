@@ -50,14 +50,26 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     }
                 ]).toArray();
                 events = events.length ? events[0].list : [];
-                var metaEvents = await drillDb.collection("drill_meta").find(
+                const metaEvents = await drillDb.collection("drill_meta").aggregate([
                     {
-                        'app_id': app._id + "",
-                        "type": "e",
-                        "e": {$regex: regex, $options: CASE_INSENSITIVE ? "i" : "", $nin: events}
+                        $match: {
+                            'app_id': app._id + "",
+                            "type": "e",
+                            "e": { $regex: regex, $options: CASE_INSENSITIVE ? "i" : "", $nin: events }
+                        }
                     },
-                    { _id: 0, e: 1}
-                ).toArray();
+                    {
+                        $group: {
+                            _id: "$e"
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            e: "$_id"
+                        }
+                    }
+                ]).toArray();
                 events = events.concat(metaEvents.map(e => e.e));
             }
             catch (err) {
