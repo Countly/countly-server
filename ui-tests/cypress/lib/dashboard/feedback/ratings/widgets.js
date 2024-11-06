@@ -1,5 +1,6 @@
 import {
     feedbackRatingWidgetsPageElements,
+    feedbackRatingWidgetAddUserConsentElements,
     widgetsDataTableElements,
     feedbackRatingWidgetDetailsPageElements,
     feedbackRatingWidgetDetailsCommentsDataTableElements,
@@ -65,6 +66,9 @@ const verifySettingsPageElements = ({
     commentText,
     isCheckedViaContact,
     viaContactText,
+    isCheckedAddConsent,
+    consentText,
+    consentItems = [],
     submitButtonText,
     thanksMessageText
 }) => {
@@ -73,7 +77,7 @@ const verifySettingsPageElements = ({
 
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.WIDGET_NAME_LABEL,
-        labelText: "surveys.drawer.internal.name",
+        labelText: "surveys.drawer.internal.name", //TODO: Will be updated after SER-2121 fixed  
         element: feedbackRatingWidgetsPageElements.WIDGET_NAME_INPUT,
         value: widgetName,
         elementPlaceHolder: "Widget Name"
@@ -138,6 +142,53 @@ const verifySettingsPageElements = ({
             value: viaContactText,
         });
     }
+
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_LABEL,
+        labelText: "surveys.drawer.consent", //TODO:Updated after SER-2121 fixed 
+        element: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_CHECKBOX,
+        isChecked: isCheckedAddConsent
+    });
+
+    if (isCheckedAddConsent) {
+        cy.verifyElement({
+            labelElement: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_TEXT_LABEL,
+            labelText: "Text",
+        });
+
+        cy.verifyElement({
+            element: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_TEXT_INPUT,
+            value: consentText,
+        });
+
+        cy.verifyElement({
+            labelElement: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_LINK_LABEL,
+            labelText: "Link(s)",
+            tooltipElement: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_LINK_TOOLTIP,
+            tooltipText: "Matching link texts inside the consent text are modified to be links",
+        });
+
+        cy.verifyElement({
+            element: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_CONSENT_ADD_LINK_BUTTON,
+        });
+
+        consentItems.forEach((consent, index) => {
+            const consentLinkElements = feedbackRatingWidgetAddUserConsentElements(index);
+
+            cy.verifyElement({
+                element: consentLinkElements.ADD_USER_CONSENT_CONSENT_LINKS_TEXT_INPUT,
+                value: consent.text,
+            });
+
+            cy.verifyElement({
+                element: consentLinkElements.ADD_USER_CONSENT_CONSENT_LINKS_URL_INPUT,
+                value: consent.link,
+            });
+        });
+    }
+
+    cy.scrollPageToBottom('.cly-vue-drawer__steps-container.is-multi-step');
+    
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.BUTTON_CALLOUT_LABEL,
         labelText: "Button Callout",
@@ -449,6 +500,22 @@ const typeContactViaCheckboxLabelText = (email) => {
     cy.typeInput(feedbackRatingWidgetsPageElements.CONTACT_VIA_INPUT, email);
 };
 
+const clickAddUserConsentCheckbox = () => {
+    cy.clickElement(feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_CHECKBOX);
+};
+
+const typeAddUserConsentText = (text) => {
+    cy.typeInput(feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_TEXT_INPUT, text);
+};
+
+const typeAddUserConsentLinkText = (index, text) => {
+    cy.typeInput(feedbackRatingWidgetAddUserConsentElements(index).ADD_USER_CONSENT_CONSENT_LINKS_TEXT_INPUT, text);
+};
+
+const typeAddUserConsentLinkUrl = (index, link) => {
+    cy.typeInput(feedbackRatingWidgetAddUserConsentElements(index).ADD_USER_CONSENT_CONSENT_LINKS_URL_INPUT, link);
+};
+
 const typeButtonCallOut = (buttonText) => {
     cy.typeInput(feedbackRatingWidgetsPageElements.BUTTON_CALLOUT_INPUT, buttonText);
 };
@@ -681,6 +748,8 @@ const verifyPreviewRatingsPopUpElements = ({
     commentCheckboxLabelText,
     isCheckedViaContact,
     viaContactCheckboxLabelText,
+    isCheckedAddConsent = false,
+    consentText,
     submitButtonText,
     submitButtonColor,
     submitButtonFontColor,
@@ -732,6 +801,15 @@ const verifyPreviewRatingsPopUpElements = ({
         element: feedbackRatingWidgetsPageElements.RATINGS_POPUP_CONTACT_VIA_CHECKBOX,
         isChecked: isCheckedViaContact
     });
+
+    if (isCheckedAddConsent) {
+        cy.verifyElement({
+            labelElement: feedbackRatingWidgetsPageElements.RATINGS_POPUP_CONSENT_LABEL,
+            labelText: consentText,
+            element: feedbackRatingWidgetsPageElements.RATINGS_POPUP_CONSENT_CHECKBOX,
+            isChecked: isCheckedAddConsent
+        });
+    }
 
     cy.verifyElement({
         element: feedbackRatingWidgetsPageElements.RATINGS_POPUP_SUBMIT_BUTTON,
@@ -1125,6 +1203,10 @@ module.exports = {
     typeAddCommentCheckboxLabelText,
     clickContactViaCheckbox,
     typeContactViaCheckboxLabelText,
+    clickAddUserConsentCheckbox,
+    typeAddUserConsentText,
+    typeAddUserConsentLinkText,
+    typeAddUserConsentLinkUrl,
     typeButtonCallOut,
     typeThanksMessage,
     selectRatingSymbol,

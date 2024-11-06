@@ -10,13 +10,13 @@ const { RATING_SYMBOLS } = require('../../../../support/constants');
 const helper = require('../../../../support/helper');
 
 describe('Create New Widget', () => {
-    beforeEach(function() {
+    beforeEach(function () {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
         navigationHelpers.goToFeedbackRatingsWidgetsPage();
     });
 
-    it('Verify default values of page and create a widget with that values and then update the widget data', function() {
+    it('Verify default values of page and create a widget with that values and then update the widget data', function () {
         widgetsHelpers.clickAddNewWidgetButton();
         widgetsHelpers.verifySettingsPageDefaultElements();
         widgetsHelpers.typeWidgetName("My New Widget");
@@ -141,6 +141,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.typeAddCommentCheckboxLabelText(widget.addCommentCheckboxLabelText);
         widgetsHelpers.clickContactViaCheckbox();
         widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText);
+        widgetsHelpers.clickAddUserConsentCheckbox();
         widgetsHelpers.typeButtonCallOut(widget.buttonCallOut);
         widgetsHelpers.typeThanksMessage(widget.thanksMessage);
         widgetsHelpers.clickNextStepButton();
@@ -166,6 +167,8 @@ describe('Create New Widget', () => {
             commentCheckboxLabelText: widget.comment,
             isCheckedViaContact: true,
             viaContactCheckboxLabelText: widget.contactVia,
+            isCheckedAddConsent: true,
+            consentText: "I agree to the Terms and Conditions and Privacy Policy.",
             submitButtonText: widget.buttonCallOut,
             submitButtonColor: widget.mainColor,
             submitButtonFontColor: widget.FontColor,
@@ -186,7 +189,7 @@ describe('Create New Widget', () => {
 
         widgetsHelpers.clickNextStepButton(),
 
-        widgetsHelpers.clickShowOnlyCheckbox();
+            widgetsHelpers.clickShowOnlyCheckbox();
         widgetsHelpers.typeShowOnlyPages(...['/homepage', '/shopping', '/checkout']);
 
         widgetsHelpers.clickSaveButton();
@@ -270,11 +273,11 @@ describe('Create New Widget', () => {
         });
     });
 
-    it('Create a widget with updated text then stop the widget from details page', function() {
+    it('Create a widget with updated text then stop the widget from details page', function () {
         const widget = generateWidgetFixture();
 
         widgetsHelpers.clickAddNewWidgetButton(),
-        widgetsHelpers.typeWidgetName(widget.widgetName);
+            widgetsHelpers.typeWidgetName(widget.widgetName);
         widgetsHelpers.typeQuestion(widget.question);
         widgetsHelpers.typeEmojiOneText(widget.emojiOneText);
         widgetsHelpers.typeEmojiTwoText(widget.emojiTwoText);
@@ -285,6 +288,12 @@ describe('Create New Widget', () => {
         widgetsHelpers.typeAddCommentCheckboxLabelText(widget.addCommentCheckboxLabelText);
         widgetsHelpers.clickContactViaCheckbox();
         widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText);
+        widgetsHelpers.clickAddUserConsentCheckbox();
+        widgetsHelpers.typeAddUserConsentText(widget.consentText);
+        widgetsHelpers.typeAddUserConsentLinkText(0, widget.firstConsentLinkText);
+        widgetsHelpers.typeAddUserConsentLinkUrl(0, widget.firstConsentLinkUrl);
+        widgetsHelpers.typeAddUserConsentLinkText(1, widget.secondConsentLinkText);
+        widgetsHelpers.typeAddUserConsentLinkUrl(1, widget.secondConsentLinkUrl);
         widgetsHelpers.typeButtonCallOut(widget.buttonCallOut);
         widgetsHelpers.typeThanksMessage(widget.thanksMessage);
         widgetsHelpers.clickNextStepButton();
@@ -310,6 +319,8 @@ describe('Create New Widget', () => {
             commentCheckboxLabelText: widget.comment,
             isCheckedViaContact: true,
             viaContactCheckboxLabelText: widget.contactVia,
+            isCheckedAddConsent: true,
+            consentText: widget.consentText,
             submitButtonText: widget.buttonCallOut,
             submitButtonColor: widget.mainColor,
             submitButtonFontColor: widget.FontColor,
@@ -330,7 +341,7 @@ describe('Create New Widget', () => {
 
         widgetsHelpers.clickNextStepButton(),
 
-        widgetsHelpers.clickShowOnlyCheckbox();
+            widgetsHelpers.clickShowOnlyCheckbox();
         widgetsHelpers.typeShowOnlyPages(...['/homepage', '/shopping', '/checkout']);
 
         widgetsHelpers.clickSaveButton();
@@ -363,6 +374,7 @@ describe('Create New Widget', () => {
             contactViaCheckboxLabelText: widget.contactViaCheckboxLabelText,
             contactEmail: widgetRate.contactEmail,
             submitButtonText: widget.submitButtonText,
+            consentText: widget.consentText,
             selectedMainColor: widget.mainColor,
             selectedFontColor: widget.FontColor,
             hasPoweredByLogo: true,
@@ -400,13 +412,12 @@ describe('Create New Widget', () => {
             index: 0,
             question: widget.question,
             internalName: widget.widgetName,
-            //There is still an issue TODO
-            //pages: "/homepage, /shopping, /checkout",
+            pages: "/homepage, /shopping, /checkout",
             isActive: false
         });
     });
 
-    it('Verify next step button activation, the entered data exist when returning to the previous pages and creating a passive widget and deleting the widget', function() {
+    it('Verify next step button activation, the entered data exist when returning to the previous pages and creating a passive widget and deleting the widget', function () {
         const widget = generateWidgetFixture();
 
         widgetsHelpers.clickAddNewWidgetButton();
@@ -429,6 +440,12 @@ describe('Create New Widget', () => {
         widgetsHelpers.typeAddCommentCheckboxLabelText(widget.addCommentCheckboxLabelText);
         widgetsHelpers.clickContactViaCheckbox();
         widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText);
+        widgetsHelpers.clickAddUserConsentCheckbox();
+        widgetsHelpers.typeAddUserConsentText(widget.consentText);
+        widgetsHelpers.typeAddUserConsentLinkText(0, widget.firstConsentLinkText);
+        widgetsHelpers.typeAddUserConsentLinkUrl(0, widget.firstConsentLinkUrl);
+        widgetsHelpers.typeAddUserConsentLinkText(1, widget.secondConsentLinkText);
+        widgetsHelpers.typeAddUserConsentLinkUrl(1, widget.secondConsentLinkUrl);
         widgetsHelpers.typeButtonCallOut(widget.buttonCallOut);
         widgetsHelpers.clickNextStepButton();
 
@@ -458,6 +475,17 @@ describe('Create New Widget', () => {
             addCommentCheckboxLabelText: widget.addCommentCheckboxLabelText,
             isCheckedViaContact: true,
             contactViaCheckboxLabelText: widget.contactViaCheckboxLabelText,
+            consentText: widget.consentText,
+            consentItems: [
+                {
+                    text: widget.firstConsentLinkText,
+                    link: widget.firstConsentLinkUrl
+                },
+                {
+                    text: widget.secondConsentLinkText,
+                    link: widget.secondConsentLinkUrl
+                }
+            ],
             submitButtonText: widget.buttonCallOut,
             thanksMessageText: widget.thanksMessage,
         });
@@ -505,7 +533,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.shouldBeWidgetDeleted(widget.question);
     });
 
-    it('Verify widget details comment and rating tab data', function() {
+    it('Verify widget details comment and rating tab data', function () {
         widgetsHelpers.clickAddNewWidgetButton();
         const widget = generateWidgetFixture();
 
