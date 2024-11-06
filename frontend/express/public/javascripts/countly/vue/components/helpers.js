@@ -1314,8 +1314,6 @@
                     },
                     scrollPanel: {
                         initialScrollX: false,
-                        // heigh: '50px',
-                        // maxHeight: '150px',
                     },
                     rail: {
                         gutterOfSide: "4px",

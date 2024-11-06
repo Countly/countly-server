@@ -4509,28 +4509,34 @@
     .cly-list-drawer__text-clickable i {
         transition: transform 0.3s, -webkit-transform .3s;
     }
-    
     .rotate-icon {
         transform: rotate(180deg);
     }
-
     .cly-io {
         display: inline-block;
     }
+    .__view {
+        min-height: auto !important; 
+    }
 
     &__list {
-        height: 100px;
+        height: 150px;
         background-color: #F6F6F6;
         overflow: auto;
+        border-radius: 4px;
         ul {
             list-style: none;
             padding: 0px;
+            margin: 0px;
             li {
                 padding-left: 16px;
-                padding-bottom: 0.5rem;
+                padding-top: 0.5rem;
+            }
+            li:first-child {
+                padding-top: 1rem;
             }
             li:last-child {
-                padding-bottom: 0px;
+                padding-bottom: 1rem;
             }
         }
     }
