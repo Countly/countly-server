@@ -55,11 +55,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     {
                         'app_id': app._id + "",
                         "type": "e",
-                        "e": {$regex: regex, $options: CASE_INSENSITIVE ? "i" : ""}
+                        "e": {$regex: regex, $options: CASE_INSENSITIVE ? "i" : "", $nin: events}
                     },
                     { _id: 0, e: 1}
                 ).toArray();
-                events = [...new Set(events.concat(metaEvents.map(e => e.e)))];
+                events = events.concat(metaEvents.map(e => e.e));
             }
             catch (err) {
                 close("Invalid regex");
