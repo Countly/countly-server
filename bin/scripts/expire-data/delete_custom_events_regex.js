@@ -6,7 +6,6 @@
  */
 
 
-const { ObjectId } = require('mongodb');
 const pluginManager = require('../../../plugins/pluginManager.js');
 const common = require('../../../api/utils/common.js');
 const drillCommon = require('../../../plugins/drill/api/common.js');
