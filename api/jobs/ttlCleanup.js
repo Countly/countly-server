@@ -13,49 +13,29 @@ class TTLCleanup extends job.Job {
     async run() {
         log.d("Started running TTL clean up job");
         for (let i = 0; i < plugins.ttlCollections.length; i++) {
-            const ttl = plugins.ttlCollections[i];
-            let {
+            const {
+                db = "countly",
                 collection,
-                db,
                 property,
-                expireAfterSeconds = 0,
-                // private for internal usage:
-                isRunning = false,
-                lastRun = 0,
-            } = ttl;
-
-            if (!db) {
-                db = common.db;
+                expireAfterSeconds = 0
+            } = plugins.ttlCollections[i];
+            let dbInstance;
+            switch (db) {
+            case "countly": dbInstance = common.db; break;
+            case "countly_drill": dbInstance = common.drillDb; break;
+            case "countly_out": dbInstance = common.outDb; break;
             }
-
-            // Check if the previous job for this collection is still running
-            if (isRunning) {
-                continue;
-            }
-
-            // Check if time has passed enough to run again
-            if (lastRun + expireAfterSeconds * 1000 > Date.now()) {
-                continue;
+            if (!dbInstance) {
+                return log.e("Invalid db selection:", db);
             }
 
             log.d("Started cleaning up", collection);
-            ttl.isRunning = true;
-            db.collection(collection)
-                .deleteMany({
-                    [property]: {
-                        $lte: new Date(Date.now() - expireAfterSeconds * 1000)
-                    }
-                })
-                .then(result => {
-                    log.d("Finished cleaning up", result.deletedCount, "records from", collection);
-                })
-                .catch(err => {
-                    log.e("Error while cleaning up ttl collection", collection, err);
-                })
-                .finally(() => {
-                    ttl.isRunning = false;
-                    ttl.lastRun = Date.now();
-                });
+            const result = await dbInstance.collection(collection).deleteMany({
+                [property]: {
+                    $lte: new Date(Date.now() - expireAfterSeconds * 1000)
+                }
+            });
+            log.d("Finished cleaning up", result.deletedCount, "records from", collection);
 
             // Sleep 1 second to prevent sending too many deleteMany queries
             await new Promise(res => setTimeout(res, 1000));
