@@ -41,10 +41,10 @@
                         <template v-slot="props">
                             <cly-section>
                                 <el-tabs type="card" value="data">
-                                    <el-tab-pane name="data" label="Data">
+                                    <el-tab-pane name="data" label="Data" data-test-id="datatable-logs-expand-data">
                                         <vue-json-pretty :data="jsonParser(props.row.q)"/>
                                     </el-tab-pane>  
-                                    <el-tab-pane name="header" label="Header">
+                                    <el-tab-pane name="header" label="Header" data-test-id="datatable-logs-expand-header">
                                         <vue-json-pretty :data="props.row.h"/>
                                     </el-tab-pane>
                                 </el-tabs>
@@ -54,22 +54,22 @@
                     <el-table-column class="request-date" sortable="custom"
                         :label="i18n('logger.requests')" vertical-align="middle" prop="reqts" min-width="283">
                         <template slot-scope="rowScope">
-                            <logger-readable-date :timestamp="rowScope.row.reqts"></logger-readable-date>
+                            <logger-readable-date :timestamp="rowScope.row.reqts" :data-test-id="'datatable-logs-request-received-' + rowScope.$index"></logger-readable-date>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="details" :label="i18n('logger.details')" min-width="413">
                         <template slot-scope="rowScope">
                             <logger-details :device="rowScope.row.d" :version="rowScope.row.v" :sdk="rowScope.row.s"
-                                :location="rowScope.row.l"></logger-details>
+                                :location="rowScope.row.l" :data-test-id="'datatable-logger-details-' + rowScope.$index"></logger-details>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="info" :label="i18n('logger.info')" min-width="283">
                         <template slot-scope="rowScope">
-							<strong v-if="rowScope.row.c" class='red-text'>{{i18n('logger.request-canceled')}}</strong>
-							<div v-if="rowScope.row.c" class="bu-pt-2" >{{rowScope.row.c}}</div>
-                            <logger-info :info="rowScope.row.t" :filter="loggerFilter"></logger-info>
-                            <strong v-if="rowScope.row.p" class='red-text'>{{i18n('logger.problems')}}</strong>
-							<div v-if="rowScope.row.p" v-for="p in rowScope.row.p" class="bu-pt-2" >{{p}}</div>
+							<strong v-if="rowScope.row.c" class='red-text' :data-test-id="'datatable-logs-information-canceled-' + rowScope.$index">{{i18n('logger.request-canceled')}}</strong>
+							<div v-if="rowScope.row.c" class="bu-pt-2" :data-test-id="'datatable-logs-information-c-' + rowScope.$index">{{rowScope.row.c}}</div>
+                            <logger-info :info="rowScope.row.t" :filter="loggerFilter" :data-test-id="'datatable-logs-information-filter-' + rowScope.$index"></logger-info>
+                            <strong v-if="rowScope.row.p" class='red-text' :data-test-id="'datatable-logs-information-problems-' + rowScope.$index">{{i18n('logger.problems')}}</strong>
+							<div v-if="rowScope.row.p" v-for="p in rowScope.row.p" class="bu-pt-2" :data-test-id="'datatable-logs-information-p-' + rowScope.$index">{{p}}</div>
                         </template>
                     </el-table-column>
                 </template>
