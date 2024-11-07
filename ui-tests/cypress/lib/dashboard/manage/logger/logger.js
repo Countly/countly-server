@@ -94,7 +94,7 @@ const verifyFullDataPageElements = () => {
 
     verifyStaticElementsOfPage(false);
 
-    cy.checkLoadingSpinner();
+    cy.checkPaceActive();
 
     cy
         .elementExists(logsDataTableElements().EMPTY_TABLE_ICON) //Data comes sometimes
@@ -179,11 +179,15 @@ const verifyLogsDataTable = ({
 
     cy.clickElement(logsDataTableElements(index).REQUEST_RECEIVED);
 
+    cy.clickElement(logsDataTableElements().TAB_DATA);
+
     cy.verifyElement({
         labelElement: logsDataTableElements().TAB_DATA,
         labelText: "Data",
         element: logsDataTableElements().EXPAND_DATA,
     });
+
+    cy.clickElement(logsDataTableElements().TAB_HEADER);
 
     cy.verifyElement({
         labelElement: logsDataTableElements().TAB_HEADER,
