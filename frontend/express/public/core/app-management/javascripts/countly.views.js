@@ -849,6 +849,9 @@
                         return countlyGlobal.apps[key].plugins.consolidate.includes(self.selectedApp);
                     }
                 }) || [];
+            },
+            handleCancelForm: function() {
+                CountlyHelpers.goTo({url: "/manage/apps"});
             }
         },
         mounted: function() {
