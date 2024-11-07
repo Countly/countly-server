@@ -202,16 +202,6 @@ Cypress.Commands.add('checkPaceActive', () => {
         });
 });
 
-Cypress.Commands.add('checkLoadingSpinner', () => {
-    cy
-        .elementExists('.el-loading-spinner')
-        .then((isExists) => {
-            if (isExists) {
-                cy.shouldNotExist('.el-loading-spinner');
-            }
-        });
-});
-
 Cypress.Commands.add("scrollPageToBottom", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('bottom', { ensureScrollable: false });
 });
