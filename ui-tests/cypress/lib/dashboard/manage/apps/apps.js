@@ -88,24 +88,32 @@ const verifyStaticElementsOfPage = () => {
     });
 };
 
-const verifyEmptyPageElements = () => {
+const verifyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
     cy.verifyElement({
+        shouldNot: true,
         element: applicationsPageElements.APPLICATION_NAME_VALUE_LABEL,
+        elementText: null,
     });
 
     cy.verifyElement({
+        shouldNot: true,
         element: applicationsPageElements.APPLICATION_TYPE_VALUE_LABEL,
+        elementText: null,
     });
 
     cy.verifyElement({
+        shouldNot: true,
         element: applicationsPageElements.COUNTRY_VALUE_LABEL,
+        elementText: null,
     });
 
     cy.verifyElement({
+        shouldNot: true,
         element: applicationsPageElements.TIMEZONE_VALUE_LABEL,
+        elementText: null,
     });
 
     cy.verifyElement({
@@ -122,5 +130,5 @@ const verifyEmptyPageElements = () => {
 };
 
 module.exports = {
-    verifyEmptyPageElements
+    verifyPageElements
 };

@@ -360,43 +360,43 @@ const verifyCrashGroupsDataFromTable = ({
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashGroupsDataTableElements(index).CRASH_GROUP,
-        elementText: crashGroup,
+        labelText: crashGroup,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashGroupsDataTableElements(index).CRASH_GROUP_BADGE_TYPE_1,
-        elementText: badgetType,
+        labelText: badgetType,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashGroupsDataTableElements(index).PLATFORM,
-        elementText: platform,
+        labelText: platform,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashGroupsDataTableElements(index).OCCURRENCES,
-        elementText: occurrences,
+        labelText: occurrences,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashGroupsDataTableElements(index).LAST_OCCURANCES,
-        elementText: lastOccurrences,
+        labelText: lastOccurrences,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashGroupsDataTableElements(index).AFFECTED_USERS,
-        elementText: affectedUsers,
+        labelText: affectedUsers,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashGroupsDataTableElements(index).LATEST_APP_VERSION,
-        elementText: latestAppVersion,
+        labelText: latestAppVersion,
     });
 };
 
@@ -471,73 +471,73 @@ const verifyCrashStatisticsMetricCard = ({
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().AFFECTED_USERS_NUMBER_LABEL,
-        elementText: affectedUsersPercentage,
+        labelText: affectedUsersPercentage,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().AFFECTED_USERS_DESCRIPTION_LABEL,
-        elementText: affectedUsersTotal,
+        labelText: affectedUsersTotal,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().RESOLUTION_STATUS_NUMBER_LABEL,
-        elementText: affectedUsersPercentage,
+        labelText: affectedUsersPercentage,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().AFFECTED_USERS_DESCRIPTION_LABEL,
-        elementText: resolutionStatusPercentage,
+        labelText: resolutionStatusPercentage,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().RESOLUTION_STATUS_DESCRIPTION_LABEL,
-        elementText: resolutionStatusTotal,
+        labelText: resolutionStatusTotal,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().CRASH_FATALITY_NUMBER_LABEL,
-        elementText: crashFatalityPercentage,
+        labelText: crashFatalityPercentage,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().CRASH_FATALITY_DESCRIPTION_LABEL,
-        elementText: crashFatalityTotal,
+        labelText: crashFatalityTotal,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().TOP_PLATFORM_NAME,
-        elementText: platformName,
+        labelText: platformName,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().TOP_PLATFORM_USER_PERCENTAGE,
-        elementText: platformUsersPercentage,
+        labelText: platformUsersPercentage,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().NEW_CRASHES_NUMBER_LABEL,
-        elementText: newCrashes,
+        labelText: newCrashes,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().REOCCURRED_CRASHES_NUMBER_LABEL,
-        elementText: reoccurredCrashes,
+        labelText: reoccurredCrashes,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsMetricCardElements().REVENUE_LOSS_NUMBER_LABEL,
-        elementText: revenueLoss,
+        labelText: revenueLoss,
     });
 };
 
@@ -606,61 +606,61 @@ const verifyCrashStatisticsEChartElements = ({
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsEChartElements.TOTAL_OCCURENCES_NUMBER_LABEL,
-        elementText: totalOccurences,
+        labelText: totalOccurences,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsEChartElements.TOTAL_OCCURENCES_CHANGE_VALUE_LABEL,
-        elementText: totalOccurencePercentage,
+        labelText: totalOccurencePercentage,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsEChartElements.UNIQUE_CRASHES_NUMBER_LABEL,
-        elementText: uniqueCrashes,
+        labelText: uniqueCrashes,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsEChartElements.UNIQUE_CRASHES_CHANGE_VALUE_LABEL,
-        elementText: uniqueCrashesPercentage,
+        labelText: uniqueCrashesPercentage,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsEChartElements.CRASHES_OR_SESSIONS_NUMBER_LABEL,
-        elementText: crashesSessions,
+        labelText: crashesSessions,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsEChartElements.CRASHES_OR_SESSIONS_CHANGE_VALUE_LABEL,
-        elementText: crashesSessionsPercentage,
+        labelText: crashesSessionsPercentage,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsEChartElements.CRASH_FREE_USERS_NUMBER_LABEL,
-        elementText: crashFreeUsers,
+        labelText: crashFreeUsers,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsEChartElements.CRASH_FREE_USERS_CHANGE_VALUE_LABEL,
-        elementText: crashFreeUsersPercentage,
+        labelText: crashFreeUsersPercentage,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsEChartElements.CRASH_FREE_SESSIONS_NUMBER_LABEL,
-        elementText: crashFreeSessions,
+        labelText: crashFreeSessions,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: crashStatisticsEChartElements.CRASH_FREE_SESSIONS_CHANGE_VALUE_LABEL,
-        elementText: crashFreeSessionsPercentage,
+        labelText: crashFreeSessionsPercentage,
     });
 
     cy.verifyElement({

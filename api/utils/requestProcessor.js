@@ -1011,44 +1011,46 @@ const processRequest = (params) => {
                                 catch (SyntaxError) {
                                     update_array.overview = []; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', params.req.url, params.req.body);
                                 }
-                                if (update_array.overview && Array.isArray(update_array.overview) && update_array.overview.length > 12) {
-                                    common.returnMessage(params, 400, "You can't add more than 12 items in overview");
-                                    return;
-                                }
-                                //sanitize overview
-                                var allowedEventKeys = event.list;
-                                var allowedProperties = ['dur', 'sum', 'count'];
-                                var propertyNames = {
-                                    'dur': 'Dur',
-                                    'sum': 'Sum',
-                                    'count': 'Count'
-                                };
-                                for (let i = 0; i < update_array.overview.length; i++) {
-                                    update_array.overview[i].order = i;
-                                    update_array.overview[i].eventKey = update_array.overview[i].eventKey || "";
-                                    update_array.overview[i].eventProperty = update_array.overview[i].eventProperty || "";
-                                    if (allowedEventKeys.indexOf(update_array.overview[i].eventKey) === -1 || allowedProperties.indexOf(update_array.overview[i].eventProperty) === -1) {
-                                        update_array.overview.splice(i, 1);
-                                        i = i - 1;
+                                if (update_array.overview && Array.isArray(update_array.overview)) {
+                                    if (update_array.overview.length > 12) {
+                                        common.returnMessage(params, 400, "You can't add more than 12 items in overview");
+                                        return;
                                     }
-                                    else {
-                                        update_array.overview[i].is_event_group = (typeof update_array.overview[i].is_event_group === 'boolean' && update_array.overview[i].is_event_group) || false;
-                                        update_array.overview[i].eventName = update_array.overview[i].eventName || update_array.overview[i].eventKey;
-                                        update_array.overview[i].propertyName = propertyNames[update_array.overview[i].eventProperty];
+                                    //sanitize overview
+                                    var allowedEventKeys = event.list;
+                                    var allowedProperties = ['dur', 'sum', 'count'];
+                                    var propertyNames = {
+                                        'dur': 'Dur',
+                                        'sum': 'Sum',
+                                        'count': 'Count'
+                                    };
+                                    for (let i = 0; i < update_array.overview.length; i++) {
+                                        update_array.overview[i].order = i;
+                                        update_array.overview[i].eventKey = update_array.overview[i].eventKey || "";
+                                        update_array.overview[i].eventProperty = update_array.overview[i].eventProperty || "";
+                                        if (allowedEventKeys.indexOf(update_array.overview[i].eventKey) === -1 || allowedProperties.indexOf(update_array.overview[i].eventProperty) === -1) {
+                                            update_array.overview.splice(i, 1);
+                                            i = i - 1;
+                                        }
+                                        else {
+                                            update_array.overview[i].is_event_group = (typeof update_array.overview[i].is_event_group === 'boolean' && update_array.overview[i].is_event_group) || false;
+                                            update_array.overview[i].eventName = update_array.overview[i].eventName || update_array.overview[i].eventKey;
+                                            update_array.overview[i].propertyName = propertyNames[update_array.overview[i].eventProperty];
+                                        }
                                     }
-                                }
-                                //check for duplicates
-                                var overview_map = Object.create(null);
-                                for (let p = 0; p < update_array.overview.length; p++) {
-                                    if (!overview_map[update_array.overview[p].eventKey]) {
-                                        overview_map[update_array.overview[p].eventKey] = {};
-                                    }
-                                    if (!overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty]) {
-                                        overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty] = 1;
-                                    }
-                                    else {
-                                        update_array.overview.splice(p, 1);
-                                        p = p - 1;
+                                    //check for duplicates
+                                    var overview_map = Object.create(null);
+                                    for (let p = 0; p < update_array.overview.length; p++) {
+                                        if (!overview_map[update_array.overview[p].eventKey]) {
+                                            overview_map[update_array.overview[p].eventKey] = {};
+                                        }
+                                        if (!overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty]) {
+                                            overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty] = 1;
+                                        }
+                                        else {
+                                            update_array.overview.splice(p, 1);
+                                            p = p - 1;
+                                        }
                                     }
                                 }
                             }
@@ -3657,7 +3659,7 @@ const restartRequest = (params, initiator, done, try_times, fail) => {
  */
 function processUser(params, initiator, done, try_times) {
     return new Promise((resolve) => {
-        if (!params.app_user.uid) {
+        if (params && params.app_user && !params.app_user.uid) {
             //first time we see this user, we need to id him with uid
             countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
                 plugins.dispatch("/i/app_users/create", {
@@ -3716,7 +3718,7 @@ function processUser(params, initiator, done, try_times) {
             });
         }
         //check if device id was changed
-        else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
+        else if (params && params.qstring && params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
             const old_id = common.crypto.createHash('sha1')
                 .update(params.qstring.app_key + params.qstring.old_device_id + "")
                 .digest('hex');

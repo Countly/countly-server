@@ -80,6 +80,18 @@ const verifyEmptyPageElements = () => {
     });
 };
 
+const verifyFullDataPageElements = () => {
+
+    verifyStaticElementsOfPage();
+
+    cy.verifyElement({
+        labelElement: dbCountlyPageElements.COLLECTION_AND_APP_NAME_LABEL,
+        labelText: "app_crashes"
+    });
+
+    cy.shouldNotExist(dbCountlyPageElements.EMPTY_TABLE_ICON);
+};
+
 const clickCountlyDatabaseTab = () => {
     cy.scrollPageToTop();
     cy.clickElement(dbCountlyPageElements.TAB_COUNTLY_DATABASE);
@@ -97,6 +109,7 @@ const clickCountlyFileSystemDatabaseTab = () => {
 
 module.exports = {
     verifyEmptyPageElements,
+    verifyFullDataPageElements,
     clickCountlyDatabaseTab,
     clickCountlyOutDatabaseTab,
     clickCountlyFileSystemDatabaseTab
