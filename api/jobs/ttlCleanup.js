@@ -26,7 +26,8 @@ class TTLCleanup extends job.Job {
             case "countly_out": dbInstance = common.outDb; break;
             }
             if (!dbInstance) {
-                return log.e("Invalid db selection:", db);
+                log.e("Invalid db selection:", db);
+                continue;
             }
 
             log.d("Started cleaning up", collection);
