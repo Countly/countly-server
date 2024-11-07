@@ -679,7 +679,6 @@ class APN extends Base {
                     }
                 }
                 // =======0========000=================0========000=================0========0
-                console.log(JSON.stringify(reqHeaders, null, 2), JSON.stringify(content, null, 2));
                 let stream = this.session.request(reqHeaders),
                     status,
                     data = '';
@@ -708,7 +707,8 @@ class APN extends Base {
                     status = headers[':status'];
                     // self.log.d('%d: status %d: %j', i, status, self.session.state);
                     if (status === 200) {
-                        oks.push(p._id);
+                        const apnsUniqueId = headers?.["apns-unique-id"];
+                        oks.push({ p: p._id, r: apnsUniqueId });
                         stream.destroy();
                         streamDone();
                     }

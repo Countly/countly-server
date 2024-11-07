@@ -1064,6 +1064,25 @@
                             </el-button>
                         </div>
                     </div>
+                    <div class="cly-vue-push-notification-drawer__section-group bu-mb-3 bu-py-3">
+                        <div class="bu-levelbu-is-flex-direction-column bu-is-align-items-flex-start">
+                            <div class="cly-vue-push-notification-drawer__review-section-group-subheader bu-mb-3">
+                                {{i18n('push-notification.debugging')}}
+                            </div>
+                            <div class="bu-is-flex bu-is-align-items-center">
+                                <el-checkbox v-model="pushNotificationUnderEdit.saveStats"></el-checkbox>
+                                <div class="cly-vue-push-notification-review-section-row__value bu-ml-1">
+                                    {{i18n('push-notification.save-push-stats')}}
+                                </div>
+                            </div>
+
+                            <cly-notification
+                                v-if="pushNotificationUnderEdit.saveStats"
+                                :closable="false"
+                                class="bu-mt-3"
+                                :text="i18n('push-notification.push-stats-warning')" />
+                        </div>
+                    </div>
                     <div class="cly-vue-push-notification-drawer__section-group bu-py-3">
                         <div class="bu-levelbu-is-flex-direction-column bu-is-align-items-flex-start">
                             <div class="cly-vue-push-notification-drawer__review-section-group-subheader bu-mb-3">
