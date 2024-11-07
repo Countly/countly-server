@@ -136,6 +136,16 @@ describe('Testing Hooks', function() {
                         done();
                     });
             });
+            it('should fail to fetch hook details with invalid hook ID', function(done) {
+                const invalidHookId = "invalid-id"; // Invalid hook ID
+                request.get(getRequestURL('/o/hook/list') + '&id=' + invalidHookId)
+                    .expect(404) // Not found error for invalid hook ID
+                    .end(function(err, res) {
+                        // Test response
+                        res.body.should.have.property('hooksList').which.is.an.Array().and.have.lengthOf(0);
+                        done();
+                    });
+            });
         });
 
 
