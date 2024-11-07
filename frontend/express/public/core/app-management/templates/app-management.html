@@ -188,13 +188,22 @@
                                             </cly-inline-form-field>
                                         </div>
                                     </cly-form-step>
-                                    <div v-if="newApp" class="bu-has-text-right" @mouseenter="formScope.validate()">
+                                    <div v-if="newApp" class="bu-level-right">
                                         <el-button
-                                            :disabled="isDisabled() || !formScope.isSubmissionAllowed"
-                                            @click="formScope.submit()"
-                                            data-test-id="empty-page-create-new-app-button"
-                                            type="primary">{{i18n( newApp ? 'common.create' : 'common.apply')}}
+                                            @click="handleCancelForm"
+                                            data-test-id="create-new-app-cancel-button"
+                                            type="secondary"
+                                        >
+                                            {{i18n('common.cancel')}}
                                         </el-button>
+                                        <div class="bu-ml-2" @mouseenter="formScope.validate()">
+                                            <el-button
+                                                :disabled="isDisabled() || !formScope.isSubmissionAllowed"
+                                                @click="formScope.submit()"
+                                                data-test-id="empty-page-create-new-app-button"
+                                                type="primary">{{i18n( newApp ? 'common.create' : 'common.apply')}}
+                                            </el-button>
+                                        </div>
                                     </div>
                                     <cly-diff-helper 
                                         v-if="!edited" 
