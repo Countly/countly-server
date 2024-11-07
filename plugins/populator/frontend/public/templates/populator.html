@@ -47,6 +47,14 @@
                                 <el-input class="populator-wrapper__save-field" v-model="environmentName" :placeholder="i18n('populator.save-as-environment')" test-id="populate-with-template-save-environment-input"></el-input>
                             </div>
                         </cly-sub-section>
+                        <cly-sub-section class="bu-columns bu-is-vcentered">
+                            <div class="bu-column bu-is-2 populator-input-area">
+                                <span class="text-medium font-weight-bold text-uppercase" data-test-id="populate-with-template-include-features-label">{{ i18n('populator.include-features') }}</span>
+                                <cly-tooltip-icon :tooltip="i18n('populator.include-features-tooltip')" data-test-id="populate-with-template-include-features-tooltip"></cly-tooltip-icon>
+                            </div>
+                            <div class="bu-column main-page-container">
+                                <cly-select-x class="main-page-inputs" v-model="selectedFeatures" :options="availableFeatures" :placeholder="i18n('populator.select-features')" mode="multi-check" test-id="populate-with-template-features-select"></cly-select-x>                            </div>
+                        </cly-sub-section>
                         <cly-sub-section class="bu-level-right">
                             <el-button type="success" :disabled="!selectedTemplate.length || (isOpen && !environmentName.length)" @click="openDialog()" data-test-id="populate-with-template-generate-demo-data-button">{{ i18n('populator.start') }}</el-button>
                         </cly-sub-section>
