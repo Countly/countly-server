@@ -1,3 +1,7 @@
+## Version 24.05.XX
+Enterprise fixes:
+- [nps] Fixed bug in the editor where the "internal name" field was not mandatory
+
 ## Version 24.05.16
 Fixes:
 - [core] Replaced "Users" with "Sessions" label on technology home widgets
