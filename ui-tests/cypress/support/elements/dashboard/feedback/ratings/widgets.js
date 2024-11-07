@@ -112,7 +112,8 @@ export const feedbackRatingWidgetsPageElements = {
     RATINGS_POPUP_ADD_COMMENT_LABEL: 'ratings-drawer-ratingspopup-comment-label',
     RATINGS_POPUP_CONTACT_VIA_CHECKBOX: 'ratings-drawer-ratingspopup-contact-checkbox-el-checkbox-input',
     RATINGS_POPUP_CONTACT_VIA_LABEL: 'ratings-drawer-ratingspopup-contact-label',
-    RATINGS_POPUP_CONSENT_TEXT: 'ratings-drawer-ratingspopup-consent-text',
+    RATINGS_POPUP_CONSENT_LABEL: 'ratings-drawer-ratingspopup-consent-text',
+    RATINGS_POPUP_CONSENT_CHECKBOX: 'ratings-drawer-ratingspopup-consent-checkbox',
     RATINGS_POPUP_SUBMIT_BUTTON: 'ratings-drawer-ratingspopup-submit-button',
     RATINGS_POPUP_POWEREDBY_LOGO: 'ratings-drawer-ratingspopup-poweredby-label',
 

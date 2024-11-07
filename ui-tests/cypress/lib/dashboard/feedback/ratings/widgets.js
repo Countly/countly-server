@@ -807,7 +807,8 @@ const verifyPreviewRatingsPopUpElements = ({
             labelElement: feedbackRatingWidgetsPageElements.RATINGS_POPUP_CONSENT_LABEL,
             labelText: consentText,
             element: feedbackRatingWidgetsPageElements.RATINGS_POPUP_CONSENT_CHECKBOX,
-            isChecked: isCheckedAddConsent
+            attr: "checked",
+            attrText: "checked",
         });
     }
 
