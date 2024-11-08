@@ -193,6 +193,8 @@
                             <div :class="tabListClasses" :style="customStyle">\
                                 <div\
                                     v-for="tab in tabs"\
+                                    v-tooltip="tab.tooltip ? tab.tooltip : undefined"\
+                                    :style="{cursor: tab.disabled ? \'not-allowed\' : \'pointer\', opacity: tab.disabled ? 0.5 : 1}"\
                                     v-bind:key="tab.name"\
                                     v-bind:class="[tabClasses, activeClasses(tab.name)]"\
                                     v-on:click="setTab(tab.name)"\

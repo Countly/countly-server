@@ -10,6 +10,11 @@ const generator = () => {
     const emojiFiveText = faker.lorem.words({ min: 1, max: 3 });
     const addCommentCheckboxLabelText = faker.lorem.words({ min: 1, max: 3 });
     const contactViaCheckboxLabelText = faker.lorem.words({ min: 1, max: 3 });
+    const firstConsentLinkText = faker.lorem.words({ min: 1, max: 3 });
+    const firstConsentLinkUrl = faker.internet.url();
+    const secondConsentLinkText = faker.lorem.words({ min: 1, max: 3 });
+    const secondConsentLinkUrl = faker.internet.url();
+    const consentText = faker.lorem.words({ min: 1, max: 3 }) + ' ' + firstConsentLinkText + ' and ' + secondConsentLinkText + ' ' + faker.lorem.words({ min: 1, max: 3 });
     const buttonCallOut = faker.lorem.words({ min: 1, max: 3 });
     const thanksMessage = faker.lorem.words({ min: 1, max: 3 });
     const mainColor = faker.color.rgb({ format: 'hex', casing: 'upper' });
@@ -27,6 +32,11 @@ const generator = () => {
         emojiFiveText,
         addCommentCheckboxLabelText,
         contactViaCheckboxLabelText,
+        consentText,
+        firstConsentLinkText,
+        firstConsentLinkUrl,
+        secondConsentLinkText,
+        secondConsentLinkUrl,
         buttonCallOut,
         thanksMessage,
         mainColor,

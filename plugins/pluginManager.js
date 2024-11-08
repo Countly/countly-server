@@ -2088,21 +2088,28 @@ var pluginManager = function pluginManager() {
             return value;
         }
         else {
-            return !!myOb;
+            if (myOb === true) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
     }
     this.isAnyMasked = function() {
+        var result = false;
         if (masking && masking.apps) {
             for (var app in masking.apps) {
                 if (masking.apps[app]) {
-                    return hasAnyValueTrue(masking.apps[app].masking);
+                    result = result || hasAnyValueTrue(masking.apps[app]);
+                    if (result) {
+                        return true;
+                    }
                 }
             }
             return false;
         }
-        else {
-            return false;
-        }
+        return result;
     };
 
     this.getMaskingSettings = function(appID) {
@@ -2562,10 +2569,12 @@ var pluginManager = function pluginManager() {
                 }
                 return function(err, res) {
                     if (err) {
-                        logDbRead.e("Error reading " + collection + " %j %s %j", data, err, err);
-                        logDbRead.d("From connection %j", countlyDb._cly_debug);
-                        if (e) {
-                            logDbRead.e(e.stack);
+                        if (!(data && data.args && data.args[1] && data.args[1].ignore_errors && data.args[1].ignore_errors.indexOf(err.code) !== -1)) {
+                            logDbRead.e("Error reading " + collection + " %j %s %j", data, err, err);
+                            logDbRead.d("From connection %j", countlyDb._cly_debug);
+                            if (e) {
+                                logDbRead.e(e.stack);
+                            }
                         }
                     }
                     if (callback) {
