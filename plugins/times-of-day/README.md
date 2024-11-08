@@ -54,3 +54,34 @@ times-of-day/
     ```bash
     npm install
     ```
+
+## Using Times of Day
+
+The Times of Day feature allows you to analyze user activity based on specific time criteria. Follow these steps to effectively use this tool.
+
+### Step 1: Selecting Criteria
+
+- **Criteria Options**: Start by selecting a criteria from the **Dropdown Menu** at the top left. Available options include:
+  - **Sessions**
+  - **Events**
+  - **Consent**
+  - **Push Action**
+
+- **Time Period**: Use the **Dropdown Menu** at the top right to specify a time range. This will automatically refresh the data chart and data table with the relevant activity details.
+
+### Step 2: Understanding the Data Chart
+
+- The **Data Chart** shows activity by **hour of the day** (in 24-hour format on the x-axis) and **day of the week** (on the y-axis).
+- **Colored circles** represent activity levels at each time and day intersection. The larger the circle, the higher the number of users.
+- You can download this chart as a **PNG image** by clicking the **Downward Arrow** button at the top right of the chart.
+
+### Step 3: Understanding the Data Table
+
+- Below the Data Chart is the **Data Table**, which provides the information in a detailed, tabular format with specific user counts.
+- The table includes:
+  - **Hours**: Each hour of the day, in hourly segments.
+  - **Days**: Columns for each day of the week showing the active user count per hour.
+
+- You can export the table in **CSV, JSON, or XLSX** format by clicking the **Downward Arrow** button at the top right of the table.
+
+This feature is ideal for visualizing and exporting user activity based on selected criteria and time frames for further analysis.
