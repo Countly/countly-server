@@ -2599,7 +2599,7 @@
     };
 
     countlyPopulator.setSelectedFeatures = function(value) {
-        _featuresToPopulate = (values === "all") ? _allFeatures : value;
+        _featuresToPopulate = (value === "all") ? _allFeatures : value;
     };
 
     countlyPopulator.getTemplate = function(templateId, callback) {
