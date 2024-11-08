@@ -496,7 +496,7 @@ plugins.register("/o/hook/list", function(ob) {
             });
         }
         catch (err) {
-            log.e('get hook list failed', { error: err });
+            log.e('get hook list failed', err);
             common.returnMessage(params, 500, "Failed to get hook list" + err.message);
         }
     }, paramsInstance);
@@ -546,8 +546,8 @@ plugins.register("/i/hook/status", function(ob) {
             });
             common.returnOutput(params, true);
         }).catch(function(err) {
-            log.e('Failed to update hook statuses: ', { error: err }); // Hata detaylarını logla
-            common.returnMessage(params, 500, "Failed to update hook statuses: " + err.message); // Hata mesajını döndür
+            log.e('Failed to update hook statuses: ', err);
+            common.returnMessage(params, 500, "Failed to update hook statuses: " + err.message);
         });
     }, paramsInstance);
     return true;
@@ -596,7 +596,7 @@ plugins.register("/i/hook/delete", function(ob) {
             );
         }
         catch (err) {
-            log.e('delete hook failed', { hookID, error: err });
+            log.e('delete hook failed', hookID, err);
             common.returnMessage(params, 500, "Failed to delete an hook" + err.message);
         }
     }, paramsInstance);
@@ -678,7 +678,7 @@ plugins.register("/i/hook/test", function(ob) {
             return false;
         }
         catch (e) {
-            log.e("hook test error", { error: e, hookConfig });
+            log.e("hook test error", e, hookConfig);
             common.returnMessage(params, 503, "Hook test failed." + e.message);
             return;
         }
