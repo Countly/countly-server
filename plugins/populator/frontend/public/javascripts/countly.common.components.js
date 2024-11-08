@@ -328,7 +328,7 @@
         data: function() {
             return {
                 users: [],
-                conditionPropertyValues: []
+                conditionPropertyValues: [],
             };
         },
         created() {
@@ -373,11 +373,13 @@
             onAddUserProperty: function() {
                 this.users.push({
                     "key": "",
-                    "values": [{key: "", probability: 0}],
+                    "values": [{key: "", probability: 100}],
+                    "isProbabilitiesEqual": true,
                 });
             },
             onAddAnotherValue: function(index) {
                 this.users[index].values.push({key: "", probability: 0});
+                this.calculatePropertyProbabilities(index);
             },
             checkRemoveValue: function(key, value) {
                 let usedProperties = [];
@@ -435,6 +437,7 @@
                 }
                 try {
                     this.users[index].values.splice(valueIndex, 1);
+                    this.calculatePropertyProbabilities(index);
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -480,6 +483,17 @@
                 const item = this.users.find(user => user.key === selectedConditionProp);
                 if (item) {
                     this.conditionPropertyValues = item.values.map(valueItem => valueItem.key || null);
+                }
+            },
+            calculatePropertyProbabilities: function(index) {
+                if (this.users[index].isProbabilitiesEqual) {
+                    var valueCount = Object.keys(this.users[index].values).length,
+                        equalProbability = 100 / valueCount;
+                    const updatedValues = this.users[index].values.map(item => ({
+                        ...item,
+                        probability: equalProbability // Set the new probability value
+                    }));
+                    this.users[index].values = updatedValues;
                 }
             }
         },

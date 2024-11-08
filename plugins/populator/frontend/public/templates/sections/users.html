@@ -25,14 +25,17 @@
             </div>
             <div>
                 <div>
-                    <span class="text-smallish bu-has-text-weight-medium">{{i18n('populator-template.probability')}}</span>
+                    <span class="text-smallish bu-has-text-weight-medium">
+                        <el-switch v-model="user.isProbabilitiesEqual" class="bu-mr-2" @change="calculatePropertyProbabilities(index)"></el-switch>
+                        {{i18n('populator-template.probability')}}
+                    </span>
                     <cly-tooltip-icon :tooltip="i18n('populator-template.probability-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
                 </div>
                 <div>
                     <div class="bu-is-flex" v-for="(value, valueIndex) in user.values">
                         <div class="bu-mt-2">
                             <validation-provider name="probability" v-slot="v" rules="required|integer|min_value:0|max_value:100">
-                                <el-input class="input" v-model="value.probability" :class="{'is-error': v.errors.length > 0}">
+                                <el-input class="input" v-model="value.probability" :class="{'is-error': v.errors.length > 0}" :disabled="!!user.isProbabilitiesEqual">
                                   <template slot="suffix">
                                     <span class="text-medium color-cool-gray-50">%</span>
                                   </template>
