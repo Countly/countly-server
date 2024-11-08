@@ -1,6 +1,7 @@
 ## Version 24.05.XX
 Enterprise fixes:
 - [nps] Fixed bug in the editor where the "internal name" field was not mandatory
+- [data-manager] Fixed UI bug where rules were not visible when editing "Merge by regex" transformations
 
 ## Version 24.05.16
 Fixes:
