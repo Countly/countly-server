@@ -55,6 +55,7 @@
                     {value: "cohorts", label: CV.i18n("cohorts.cohorts")},
                     {value: "crashes", label: CV.i18n(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" ? "web.crashes.title" : "crashes.title")},
                     {value: "funnels", label: CV.i18n("funnels.plugin-title")},
+                    {value: "performance-monitoring", label: CV.i18n("performance-monitoring.title")},
                     {value: "star-rating", label: CV.i18n("star-rating.plugin-title")},
                     {value: "surveys", label: CV.i18n("surveys.plugin-title")},
                 ];

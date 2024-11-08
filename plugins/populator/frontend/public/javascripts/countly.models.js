@@ -1106,10 +1106,13 @@
                 if (template && template.events && template.events.length) {
                     events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace(), ignore_cooldown: '1'};
+                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, ignore_cooldown: '1'};
                 req.events = req.events.concat(this.getHeatmapEvents());
                 req.events = req.events.concat(this.getFeedbackEvents());
                 req.events = req.events.concat(this.getScrollmapEvents());
+                if (_featuresToPopulate.includes("performance-monitoring")) {
+                    req.apm = this.getTrace();
+                }
             }
             else {
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
@@ -1120,7 +1123,10 @@
                 if (template && template.events && template.events.length) {
                     events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace(), ignore_cooldown: '1'};
+                req = {timestamp: this.ts, begin_session: 1, events: events, ignore_cooldown: '1'};
+                if (_featuresToPopulate.includes("performance-monitoring")) {
+                    req.apm = this.getTrace();
+                }
             }
 
             if (Math.random() > 0.10) {
