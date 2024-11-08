@@ -53,7 +53,7 @@
                     {value: "ab-testing", label: CV.i18n("ab-testing.title")},
                     {value: "attribution", label: CV.i18n("attribution.title")},
                     {value: "cohorts", label: CV.i18n("cohorts.cohorts")},
-                    {value: "crash_symbolication", label: CV.i18n("crash_symbolication.title")},
+                    {value: "crashes", label: CV.i18n(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" ? "web.crashes.title" : "crashes.title")},
                     {value: "funnels", label: CV.i18n("funnels.plugin-title")},
                     {value: "star-rating", label: CV.i18n("star-rating.plugin-title")},
                     {value: "surveys", label: CV.i18n("surveys.plugin-title")},

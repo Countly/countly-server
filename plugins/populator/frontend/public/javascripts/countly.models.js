@@ -1130,7 +1130,7 @@
                 req[this.platform.toLowerCase() + "_token"] = randomString(8);
             }
 
-            if (Math.random() > 0.50) {
+            if (Math.random() > 0.50 && _featuresToPopulate.includes("crashes")) {
                 req.crash = this.getCrash();
             }
 
@@ -2518,7 +2518,7 @@
             }
         }
 
-        if (countlyGlobal.plugins.indexOf('crash_symbolication') !== -1 && countlyAuth.validateCreate('crash_symbolication') && _featuresToPopulate.includes("crash_symbolication")) {
+        if (countlyGlobal.plugins.indexOf('crash_symbolication') !== -1 && countlyAuth.validateCreate('crash_symbolication') && _featuresToPopulate.includes("crashes")) {
             const crashPlatforms = Object.keys(crashSymbolVersions).filter(key => crashSymbolVersions[key].length);
 
 
