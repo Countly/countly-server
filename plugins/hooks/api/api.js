@@ -502,8 +502,8 @@ plugins.register("/o/hook/list", function(ob) {
             });
         }
         catch (err) {
-            log.e('get hook list failed');
-            common.returnMessage(params, 500, "Failed to get hook list");
+            log.e('get hook list failed', err);
+            common.returnMessage(params, 500, "Failed to get hook list" + err.message);
         }
     }, paramsInstance);
     return true;
@@ -551,6 +551,9 @@ plugins.register("/i/hook/status", function(ob) {
                 data: { updatedHooksCount: Object.keys(statusList).length, requestedBy: params.member._id }
             });
             common.returnOutput(params, true);
+        }).catch(function(err) {
+            log.e('Failed to update hook statuses: ', err);
+            common.returnMessage(params, 500, "Failed to update hook statuses: " + err.message);
         });
     }, paramsInstance);
     return true;
@@ -599,8 +602,8 @@ plugins.register("/i/hook/delete", function(ob) {
             );
         }
         catch (err) {
-            log.e('delete hook failed', hookID);
-            common.returnMessage(params, 500, "Failed to delete an hook");
+            log.e('delete hook failed', hookID, err);
+            common.returnMessage(params, 500, "Failed to delete an hook" + err.message);
         }
     }, paramsInstance);
     return true;
@@ -627,7 +630,7 @@ plugins.register("/i/hook/test", function(ob) {
             const mockData = JSON.parse(params.qstring.mock_data);
 
             if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
-                common.returnMessage(params, 403, "hook config invalid");
+                common.returnMessage(params, 403, "hook config invalid" + JSON.stringify(hookConfig));
                 return; // Add return to exit early
             }
 
@@ -692,8 +695,8 @@ plugins.register("/i/hook/test", function(ob) {
             return false;
         }
         catch (e) {
-            log.e("hook test error", e);
-            common.returnMessage(params, 503, "Hook test failed.");
+            log.e("hook test error", e, hookConfig);
+            common.returnMessage(params, 503, "Hook test failed." + e.message);
             return;
         }
     }, paramsInstance);
