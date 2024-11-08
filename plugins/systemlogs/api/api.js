@@ -156,11 +156,11 @@ plugins.setConfigs("systemlogs", {
                                         res[i].name = info.name;
                                     }
                                     if (info.before || info.after) {
-                                        res[i].before = JSON.stringify(info.before).replace(/"(\\"[^"]+\\"|\w+)":/g, '$1:');
-                                        res[i].after = JSON.stringify(info.after).replace(/"(\\"[^"]+\\"|\w+)":/g, '$1:');
+                                        res[i].before = JSON.stringify(info.before);
+                                        res[i].after = JSON.stringify(info.after);
                                     }
                                     else if (info) {
-                                        res[i].value = JSON.stringify(info).replace(/"(\\"[^"]+\\"|\w+)":/g, '$1:');
+                                        res[i].value = JSON.stringify(info);
                                     }
                                 }
                             }
