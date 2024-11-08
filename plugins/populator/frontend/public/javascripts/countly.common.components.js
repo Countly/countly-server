@@ -221,7 +221,8 @@
                         selectedKey: this.selectedProperty,
                         selectedValue: this.selectedValue,
                         conditionType: this.conditionType,
-                        values: [{key: "", probability: 0}]
+                        values: [{key: "", probability: 100}],
+                        "isProbabilitiesEqual": true,
                     });
                     this.$emit('input', conditions);
                 }
@@ -454,9 +455,11 @@
                 try {
                     if (this.users[index].conditions[conditionIndex].values.length === 1) {
                         this.users[index].conditions.splice(conditionIndex, 1);
+                        this.calculateConditionProbabilities(index, conditionIndex);
                     }
                     else {
                         this.users[index].conditions[conditionIndex].values.splice(valueIndex, 1);
+                        this.calculateConditionProbabilities(index, conditionIndex);
                     }
                 }
                 catch (error) {
@@ -470,6 +473,7 @@
             onAddAnotherConditionValue: function(index, conditionIndex) {
                 try {
                     this.users[index].conditions[conditionIndex].values.push({key: "", probability: 0});
+                    this.calculateConditionProbabilities(index, conditionIndex);
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -494,6 +498,17 @@
                         probability: equalProbability // Set the new probability value
                     }));
                     this.users[index].values = updatedValues;
+                }
+            },
+            calculateConditionProbabilities: function(index, conditionIndex) {
+                if (this.users[index].conditions[conditionIndex].isProbabilitiesEqual) {
+                    var valueCount = Object.keys(this.users[index].conditions[conditionIndex].values).length,
+                        equalProbability = 100 / valueCount;
+                    const updatedValues = this.users[index].conditions[conditionIndex].values.map(item => ({
+                        ...item,
+                        probability: equalProbability // Set the new probability value
+                    }));
+                    this.users[index].conditions[conditionIndex].values = updatedValues;
                 }
             }
         },
