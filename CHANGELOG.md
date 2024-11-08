@@ -35,6 +35,18 @@ Enterprise Features:
 - [users] UI improvements
 - [views] Added a quick transition to drill
 
+## Version 24.05.17
+Fixes:
+- [push] Improved ability to observe push related errors
+
+Enterprise fixes:
+- [cohorts] Fixed issues with nightly cleanup
+- [data-manager] Fixed UI bug where rules were not visible when editing "Merge by regex" transformations
+- [drill] Fixed wrong pie chart label  tooltip in dashboard widget
+- [flows] Fixed bug in case of null data in schema
+- [nps] Fixed bug in the editor where the "internal name" field was not mandatory
+- [ratings] Fixed UI bug where "Internal name" was not a mandatory field
+
 ## Version 24.05.16
 Fixes:
 - [core] Replaced "Users" with "Sessions" label on technology home widgets
