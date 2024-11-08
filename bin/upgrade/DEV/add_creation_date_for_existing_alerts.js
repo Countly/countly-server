@@ -9,7 +9,7 @@ pluginManager.dbConnection().then(async(countlyDb) => {
             [
                 {
                     $set: {
-                        createdAt: { $toLong: { $toDate: "$_id" } }
+                        createdAt: { $toDouble: { $toDate: "$_id" } }
                     }
                 }
             ]
