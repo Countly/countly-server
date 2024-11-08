@@ -159,7 +159,7 @@ plugins.setConfigs("systemlogs", {
                                         res[i].before = JSON.stringify(info.before);
                                         res[i].after = JSON.stringify(info.after);
                                     }
-                                    else if (info) {
+                                    else {
                                         res[i].value = JSON.stringify(info);
                                     }
                                 }
