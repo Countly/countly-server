@@ -155,7 +155,7 @@ class FCM extends Splitter {
                 return errors[err];
             };
 
-            const messages = pushes.map(p => p.t).map((token) => ({
+            const messages = pushes.map(({ t: token }) => ({
                 token,
                 ...content,
             }));
@@ -178,27 +178,29 @@ class FCM extends Splitter {
                 .sendEach(messages)
                 .then(async result => {
                     const allPushIds = pushes.map(p => p._id);
-
-                    if (!result.failureCount) {
-                        this.send_results(allPushIds, bytes);
-                        return;
-                    }
-
                     // array of successfully sent push._id:
                     const sentSuccessfully = [];
 
                     // check for each message
                     for (let i = 0; i < result.responses.length; i++) {
-                        const { success, error } = result.responses[i];
+                        const { success, error, messageId } = result.responses[i];
                         if (success) {
-                            sentSuccessfully.push(allPushIds[i]);
+                            sentSuccessfully.push({ p: allPushIds[i], r: messageId });
                         }
                         else {
                             const sdkError = FCM_SDK_ERRORS[error.code];
                             // check if the sdk error is mapped to an internal error.
                             // set to default if its not.
                             let internalErrorCode = sdkError?.mapTo ?? ERROR.DATA_PROVIDER;
-                            let internalErrorMessage = sdkError?.message ?? "Invalid error message";
+                            let internalErrorMessage = sdkError?.message;
+                            if (!internalErrorMessage) {
+                                if (error.code && error.message) {
+                                    internalErrorMessage = "[" + error.code + "] " + error.message;
+                                }
+                                else {
+                                    internalErrorMessage = "Invalid error message";
+                                }
+                            }
                             errorObject(internalErrorCode, internalErrorMessage)
                                 .addAffected(pushes[i]._id, one);
                         }
@@ -502,5 +504,4 @@ module.exports = {
     fields,
     map,
     connection: FCM,
-
 };
