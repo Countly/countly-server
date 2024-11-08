@@ -293,7 +293,7 @@ plugins.register("/i/hook/save", function(ob) {
                     common.returnMessage(params, 400, 'Invalid configuration for effects');
                     return true;
                 }
-            
+
                 if (hookConfig._id) {
                     const id = hookConfig._id;
                     delete hookConfig._id;
@@ -324,7 +324,7 @@ plugins.register("/i/hook/save", function(ob) {
                             else {
                                 common.returnMessage(params, 500, "Failed to save an hook");
                             }
-                        }  
+                        }
                     );
                 }
 
@@ -332,7 +332,7 @@ plugins.register("/i/hook/save", function(ob) {
             if (hookConfig) {
                 hookConfig.createdBy = params.member._id; // Accessing property now with proper check
                 hookConfig.created_at = new Date().getTime();
-            } 
+            }
             return common.db.collection("hooks").insert(
                 hookConfig,
                 function(err, result) {
