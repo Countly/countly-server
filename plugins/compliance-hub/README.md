@@ -38,7 +38,7 @@ compliance-hub/
 ## Using the Compliance Hub
 
 Access the Compliance Hub via Main Menu > Utilities > Compliance Hub. The Compliance Hub offers the following views:
-- **Metrics View:** Track opt-ins and opt-outs across various features (e.g., sessions, crashes) over time in a time-series graph.
-- **Users View:** List users with consent histories. Each entry shows user ID, device info, app version, and consent types. Options include viewing consent history, exporting user data, and purging data if required.
-- **Consent History:** A complete list of all opt-in and opt-out actions across metrics, allowing for easy tracking.
-- **Export/Purge History:** See a record of all data export and deletion actions for compliance tracking.
+1. **Metrics View:** Track opt-ins and opt-outs across various features (e.g., sessions, crashes) over time in a time-series graph.
+2. **Users View:** List users with consent histories. Each entry shows user ID, device info, app version, and consent types. Options include viewing consent history, exporting user data, and purging data if required.
+3. **Consent History:** A complete list of all opt-in and opt-out actions across metrics, allowing for easy tracking.
+4. **Export/Purge History:** See a record of all data export and deletion actions for compliance tracking.

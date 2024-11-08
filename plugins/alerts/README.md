@@ -43,10 +43,10 @@ alerts/
 
 ## Key Features
 
--**Customizable Alerts:** Define specific conditions for metrics such as crashes, cohorts, data points, events, Net Promoter Score (NPS), online users, rating, revenue, sessions, surveys, users, and views. Get notified whenever these conditions are met.
--**Real-Time Notifications:** Receive email alerts for immediate awareness of changes in your metrics.
--**Detailed Monitoring:** Track a broad range of metrics, including user engagement, performance, user feedback, and error rates.
--**Easy Setup:** Simple configuration allows you to set and customize alerts quickly to fit your needs.
+- **Customizable Alerts:** Define specific conditions for metrics such as crashes, cohorts, data points, events, Net Promoter Score (NPS), online users, rating, revenue, sessions, surveys, users, and views. Get notified whenever these conditions are met.
+- **Real-Time Notifications:** Receive email alerts for immediate awareness of changes in your metrics.
+- **Detailed Monitoring:** Track a broad range of metrics, including user engagement, performance, user feedback, and error rates.
+- **Easy Setup:** Simple configuration allows you to set and customize alerts quickly to fit your needs.
 
 ## Example Use Case
 
