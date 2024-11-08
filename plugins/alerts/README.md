@@ -1,6 +1,6 @@
 # Alerts plugin
 
-The Alerts plugin is designed to monitor various metrics and events within the Countly analytics platform. It provides a structured way to set up alerts for different types of data, ensuring that users are notified when specific conditions are met. Below is a detailed breakdown of the plugin's file structure and its components:
+The Alerts plugin in Countly is a reactive tool designed to keep you informed about critical changes in your application’s metrics, even when you’re not monitoring dashboards. It sends email notifications when specific conditions on important metrics are met, enabling you to respond quickly to potential issues. This feature helps ensure your app maintains high performance and provides a positive user experience by alerting you to areas that may need immediate attention.
 
 ## File structure
 File structure follows usual Countly plugin structure
@@ -40,6 +40,17 @@ alerts/
 ├── README.md
 └── tests.js                                    # plugin tests
 ```
+
+## Key Features
+
+-**Customizable Alerts:** Define specific conditions for metrics such as crashes, cohorts, data points, events, Net Promoter Score (NPS), online users, rating, revenue, sessions, surveys, users, and views. Get notified whenever these conditions are met.
+-**Real-Time Notifications:** Receive email alerts for immediate awareness of changes in your metrics.
+-**Detailed Monitoring:** Track a broad range of metrics, including user engagement, performance, user feedback, and error rates.
+-**Easy Setup:** Simple configuration allows you to set and customize alerts quickly to fit your needs.
+
+## Example Use Case
+
+Imagine you’ve released a new version of your app. Although it passed all tests, some critical bugs may still slip through. These bugs might prevent users from fully using the app. By setting up alerts for sudden spikes in crashes or decreased user activity, you can catch these issues early and work to resolve them, ensuring minimal disruption.
 
 ## Generate alerts job
 
