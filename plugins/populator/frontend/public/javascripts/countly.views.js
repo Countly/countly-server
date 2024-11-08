@@ -64,6 +64,8 @@
                 }
                 return plugins.filter(function(plugin) {
                     return CountlyHelpers.isPluginEnabled(plugin.value);
+                }).sort(function(a, b) {
+                    return a.label.localeCompare(b.label);
                 });
             }
         },
