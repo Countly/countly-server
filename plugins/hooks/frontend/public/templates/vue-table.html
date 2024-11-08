@@ -58,7 +58,7 @@
             <template v-for="(col,idx) in scope.dynamicCols">
                 <el-table-column 
                     v-if="col.value === 'triggerCount'"  
-                    sortable="true" align="right" prop="triggerCount" :label="i18n('hooks.trigger-count')" min-width="155">
+                    sortable="true" align="center" prop="triggerCount" :label="i18n('hooks.trigger-count')" min-width="155">
                         <template slot-scope="scope">
                             <span :data-test-id="'datatable-hooks-trigger-count-' + scope.$index">{{scope.row.triggerCount}}</span>
                         </template>
