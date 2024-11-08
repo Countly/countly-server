@@ -1342,6 +1342,7 @@
     var abExampleCount = 1;
     var abExampleName = "Pricing";
     var _templateType = '';
+    var _allFeatures = ["ab-testing", "attribution", "cohorts", "crashes", "funnels", "performance-monitoring", "push", "star-rating", "surveys"];
     var _featuresToPopulate = [];
     var runCount = 0;
     var completedRequestCount = 0;
@@ -2598,7 +2599,7 @@
     };
 
     countlyPopulator.setSelectedFeatures = function(value) {
-        _featuresToPopulate = value;
+        _featuresToPopulate = (values === "all") ? _allFeatures : value;
     };
 
     countlyPopulator.getTemplate = function(templateId, callback) {

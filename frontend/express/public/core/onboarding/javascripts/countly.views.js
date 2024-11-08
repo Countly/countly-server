@@ -99,6 +99,7 @@
                 countlyPopulator.setStartTime(countlyCommon.periodObj.start / 1000);
                 countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
                 countlyPopulator.setSelectedTemplate(selectedAppTemplate);
+                countlyPopulator.setSelectedFeatures("all");
                 countlyPopulator.getTemplate(selectedAppTemplate, function(template) {
                     countlyPopulator.generateUsers(10, template);
                     self.populatorProgress = 0;
