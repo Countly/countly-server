@@ -359,7 +359,7 @@
                 this.totalViewCount = this.$store.state.countlyViews.totalViewsCount;
                 if (this.totalViewCount >= countlyGlobal.views_limit) {
                     this.showViewCountWarning = true;
-                    this.totalViewCountWarning = CV.i18n('views.max-views-limit').replace("{0}", countlyGlobal.views_limit);
+                    this.totalViewCountWarning = CV.i18n('views.max-views-limit', countlyGlobal.views_limit);
                 }
             },
             showActionsMapColumn: function() {

@@ -44,7 +44,11 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
         if (typeof alertID === 'string') {
             alertID = common.db.ObjectID(alertID);
         }
-        common.db.collection("jobs").remove({ 'data.alertID': alertID }, function() {
+        common.db.collection("jobs").remove({ 'data.alertID': alertID }, function(err) {
+            if (err) {
+                log.e('delete job failed, alertID:', alertID, err);
+                return;
+            }
             log.d('delete job, alertID:', alertID);
             if (callback) {
                 callback();
@@ -241,8 +245,8 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                 );
             }
             catch (err) {
-                log.e('Parse alert failed', alertConfig);
-                common.returnMessage(params, 500, "Failed to create an alert");
+                log.e('Parse alert failed', alertConfig, err);
+                common.returnMessage(params, 500, "Failed to create an alert" + err.message);
             }
         });
         return true;
@@ -284,8 +288,8 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                 );
             }
             catch (err) {
-                log.e('delete alert failed', alertID);
-                common.returnMessage(params, 500, "Failed to delete an alert");
+                log.e('delete alert failed', alertID, err);
+                common.returnMessage(params, 500, "Failed to delete an alert" + err.message);
             }
         });
         return true;
@@ -411,8 +415,8 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                 });
             }
             catch (err) {
-                log.e('get alert list failed');
-                common.returnMessage(params, 500, "Failed to get alert list");
+                log.e('get alert list failed', err);
+                common.returnMessage(params, 500, "Failed to get alert list" + err.message);
             }
         });
         return true;
