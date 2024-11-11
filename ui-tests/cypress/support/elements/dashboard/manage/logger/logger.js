@@ -30,10 +30,16 @@ const logsDataTableElements = (index = 0) => ({
     COLUMN_NAME_INFORMATION_SORTABLE_ICON: 'datatable-logs-sortable-icon-information',
 
     //Columns' Rows' Datas Elements 
-    //TODO: Data test id is missing, will be added later
     REQUEST_RECEIVED: 'datatable-logs-request-received-' + index,
-    DETAILS: 'datatable-logs-details-' + index,
-    INFORMATION: 'datatable-logs-information-' + index,
+    DETAILS: 'datatable-logger-details-' + index,
+    INFORMATION_FILTER: 'datatable-logs-information-filter-' + index,
+    INFORMATION_PROBLEMS: 'datatable-logs-information-problems-' + index,
+    INFORMATION_DESC: 'datatable-logs-information-p-' + index,
+
+    TAB_DATA: '#tab-data',
+    TAB_HEADER: '#tab-header',
+    EXPAND_DATA: 'datatable-logs-expand-data',
+    EXPAND_HEADER: 'datatable-logs-expand-header',
 
     //PAGINATION ELEMENTS
     ITEMS_PER_PAGE_LABEL: 'report-manager-manually-created-items-per-page-label',

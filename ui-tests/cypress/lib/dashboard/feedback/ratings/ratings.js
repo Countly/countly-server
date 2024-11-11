@@ -267,12 +267,10 @@ const verifyRatingsEChartElements = ({
         element: ratingsEChartElements.RATING_ICON,
     });
 
-    cy.pause();
     cy.verifyElement({
         element: ratingsEChartElements.RATING,
         elementText: "Ratings",
     });
-    cy.pause();
 };
 
 const verifyRatingsDataFromTable = ({
