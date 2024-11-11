@@ -613,7 +613,7 @@
             handleMenuItemClick: function(command, instance) {
                 if (!this.disabled) {
                     if (command && command.url) {
-                        CountlyHelpers.goTo({url: command.url});
+                        CountlyHelpers.goTo({url: command.url, download: !!command.download, isExternalLink: !!command.isExternalLink});
                     }
                     else {
                         this.$emit('command', command, instance);
