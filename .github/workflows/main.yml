@@ -302,7 +302,7 @@ jobs:
           cd ui-tests
           npm install
           xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
-          npm run cy:run:dashboard --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --browser electron
+          npm run cy:run:dashboard
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
@@ -381,7 +381,7 @@ jobs:
           cd ui-tests
           npm install
           xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
-          npm run cy:run:onboarding --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --browser electron
+          npm run cy:run:onboarding
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
