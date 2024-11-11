@@ -1,4 +1,4 @@
-/* global jQuery, Vue, ELEMENT, CV */
+/* global jQuery, Vue, ELEMENT, CV, CountlyHelpers */
 
 (function(countlyVue) {
 
