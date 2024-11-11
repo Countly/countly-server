@@ -612,7 +612,12 @@
         methods: {
             handleMenuItemClick: function(command, instance) {
                 if (!this.disabled) {
-                    this.$emit('command', command, instance);
+                    if (command && command.url) {
+                        CountlyHelpers.goTo({url: command.url});
+                    }
+                    else {
+                        this.$emit('command', command, instance);
+                    }
                     this.$refs.dropdown.handleClose();
                 }
             },
