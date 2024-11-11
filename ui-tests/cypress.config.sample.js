@@ -7,7 +7,7 @@ module.exports = defineConfig({
         defaultCommandTimeout: 30000,
         viewportWidth: 2000,
         viewportHeight: 1100,
-        numTestsKeptInMemory: 1,
+        numTestsKeptInMemory: 0,
         experimentalMemoryManagement: true,
         projectId: "000000",
         chromeWebSecurity: false,
