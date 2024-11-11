@@ -571,7 +571,8 @@
             onAddEventSegmentation: function(index) {
                 this.events[index].segmentations.push({
                     "key": "",
-                    "values": [{key: "", probability: 0}],
+                    "values": [{key: "", probability: 100}],
+                    "isProbabilitiesEqual": true,
                 });
             },
             checkRemoveValue: function(key, value, index) {
@@ -628,6 +629,7 @@
                         return;
                     }
                     this.events[index].segmentations[segmentIndex].values.splice(valueIndex, 1);
+                    this.calculateSegmentProbabilities(index, segmentIndex);
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -640,6 +642,7 @@
             onAddAnotherValue: function(index, segmentIndex) {
                 try {
                     this.events[index].segmentations[segmentIndex].values.push({key: "", probability: 0});
+                    this.calculateSegmentProbabilities(index, segmentIndex);
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -651,6 +654,7 @@
             },
             onAddAnotherConditionValue: function(index, segmentIndex, conditionIndex) {
                 this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.push({key: "", probability: 0});
+                this.calculateConditionProbabilities(index, segmentIndex, conditionIndex);
             },
             onRemoveConditionValue: function(index, segmentIndex, valueIndex, conditionIndex) {
                 try {
@@ -659,6 +663,7 @@
                     }
                     else {
                         this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.splice(valueIndex, 1);
+                        this.calculateConditionProbabilities(index, segmentIndex, conditionIndex);
                     }
                 }
                 catch (error) {
@@ -676,6 +681,30 @@
                 const item = this.events[index].segmentations.find(segment => segment.key === selectedConditionProp);
                 if (item) {
                     this.conditionPropertyValues = item.values.map(valueItem => valueItem.key || null);
+                }
+            },
+            calculateSegmentProbabilities: function(index, segmentIndex) {
+                if (this.events[index].segmentations[segmentIndex].isProbabilitiesEqual) {
+                    var valueCount = Object.keys(this.events[index].segmentations[segmentIndex].values).length,
+                        equalProbability = 100 / valueCount;
+                    const updatedValues = this.events[index].segmentations[segmentIndex].values.map(item => ({
+                        ...item,
+                        probability: equalProbability // Set the new probability value
+                    }));
+                    this.events[index].segmentations[segmentIndex].values = updatedValues;
+                    this.events[index].segmentations[segmentIndex].probabilitySum = equalProbability * valueCount;
+                }
+            },
+            calculateConditionProbabilities: function(index, segmentIndex, conditionIndex) {
+                if (this.events[index].segmentations[segmentIndex].conditions[conditionIndex].isProbabilitiesEqual) {
+                    var valueCount = Object.keys(this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values).length,
+                        equalProbability = 100 / valueCount;
+                    const updatedValues = this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.map(item => ({
+                        ...item,
+                        probability: equalProbability // Set the new probability value
+                    }));
+                    this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values = updatedValues;
+                    this.events[index].segmentations[segmentIndex].conditions[conditionIndex].probabilitySum = equalProbability * valueCount;
                 }
             }
         },
