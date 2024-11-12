@@ -33,13 +33,14 @@ class Message extends Mongoable {
 
     /**
      * Validation scheme of this class
-     * 
+     *
      * @returns {object} validateArgs scheme
      */
     static get scheme() {
         return {
             _id: { required: false, type: 'ObjectID' },
             app: { required: true, type: 'ObjectID' },
+            saveStats: { required: false, type: 'Boolean' },
             platforms: { required: true, type: 'String[]', in: () => require('../platforms').platforms },
             state: { type: 'Number' },
             status: { type: 'String', in: Object.values(Status) },
@@ -149,8 +150,31 @@ class Message extends Mongoable {
     }
 
     /**
+     * Getter for message.saveStats
+     *
+     * @returns {boolean} saveStats
+     */
+    get saveStats() {
+        return this._data.saveStats;
+    }
+
+    /**
+        * Setter for message.saveStats
+        *
+        * @param {boolean} value value to set
+        */
+    set saveStats(value) {
+        if (typeof value !== "boolean") {
+            this._data.saveStats = false;
+        }
+        else {
+            this._data.saveStats = value;
+        }
+    }
+
+    /**
      * Getter for platforms
-     * 
+     *
      * @returns {string[]|undefined} platforms array
      */
     get platforms() {
@@ -159,7 +183,7 @@ class Message extends Mongoable {
 
     /**
      * Setter for platforms
-     * 
+     *
      * @param {string[]|undefined} arr platforms array
      */
     set platforms(arr) {

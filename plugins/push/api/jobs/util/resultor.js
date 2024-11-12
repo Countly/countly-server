@@ -1,6 +1,23 @@
 const { FRAME, FRAME_NAME } = require('../../send/proto'),
     { DoFinish } = require('./do_finish'),
     { ERROR, TriggerKind, State, Status, PushError, Result } = require('../../send/data');
+/**
+ * @typedef {import("mongodb").ObjectId} ObjectId
+ */
+
+/**
+ * PushStat object (collection: push_stats)
+ * @typedef  {Object}    PushStat
+ * @property {ObjectId}  a - application id
+ * @property {ObjectId}  m - message id from "messages" collection
+ * @property {string}    u - uid from app_users{appId}
+ * @property {string}    t - token from "push_{appId}" collection
+ * @property {string=}   r - id returned from provider
+ * @property {Date}      d - date this message sent to this user
+ * @property {string=}   e - error message
+ * @property {string}    p - platform: "a" for android, "i" for ios and "h" for huawei
+ * @property {string}    f - token type: "p" for production
+ */
 
 /**
  * Stream responsible for handling sending results:
@@ -34,7 +51,10 @@ class Resultor extends DoFinish {
         this.fatalErrors = {}; // {mid: []}
         this.toDelete = []; // [push id, push id, ...]
         this.count = 0; // number of results cached
-        this.last = null; // time of last data from 
+        this.last = null; // time of last data from
+
+        /** @type {PushStat[]} */
+        this.pushStats = [];
 
         this.data.on('app', app => {
             this.changed[app._id] = {};
@@ -118,10 +138,16 @@ class Resultor extends DoFinish {
                         if (id < 0) {
                             return;
                         }
-                        let {p, m, pr} = this.data.pushes[id],
+                        const p = this.data.pushes[id];
+                        let {p: platform, m, pr} = p,
                             msg = this.data.message(m),
                             result,
                             rp, rl;
+
+                        // additional fields to keep this in push_stats
+                        if (msg && msg.saveStats) {
+                            this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: null, e: results.toString() });
+                        }
 
                         if (msg) {
                             result = msg.result;
@@ -131,7 +157,7 @@ class Resultor extends DoFinish {
                         else {
                             result = this.noMessage[m] || (this.noMessage[m] = new Result());
                         }
-                        rp = result.sub(p, undefined, PLATFORM[p].parent);
+                        rp = result.sub(platform, undefined, PLATFORM[platform].parent);
                         rl = rp.sub(pr.la || 'default');
 
                         result.processed++;
@@ -141,8 +167,8 @@ class Resultor extends DoFinish {
                         rl.recordError(results.message, 1);
                         rl.processed++;
 
-                        if (PLATFORM[p].parent) {
-                            rp = result.sub(PLATFORM[p].parent),
+                        if (PLATFORM[platform].parent) {
+                            rp = result.sub(PLATFORM[platform].parent),
                             rl = rp.sub(pr.la || 'default');
                             rp.recordError(results.message, 1);
                             rp.processed++;
@@ -159,15 +185,20 @@ class Resultor extends DoFinish {
             }
             else {
                 results.forEach(res => {
-                    let id, token;
-                    if (typeof res === 'string') {
-                        this.log.d('Ok for %s', id);
-                        id = res;
-                    }
-                    else {
+                    let id, resultId, token;
+
+                    if (Array.isArray(res)) {
                         this.log.d('New token for %s', id);
                         id = res[0];
                         token = res[1];
+                    }
+                    else {
+                        id = res;
+                    }
+
+                    if (typeof id !== "string") {
+                        resultId = id.r;
+                        id = id.p;
                     }
 
                     let p = this.data.pushes[id];
@@ -175,13 +206,18 @@ class Resultor extends DoFinish {
                         return;
                     }
 
-                    this.data.decSending(p.m);
-
-                    let m = this.data.message(p.m),
+                    let msg = this.data.message(p.m),
                         result, rp, rl;
 
-                    if (m) {
-                        result = m.result;
+                    // additional fields to keep this in push_stats
+                    if (msg && msg.saveStats) {
+                        this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: resultId, e: null });
+                    }
+
+                    this.data.decSending(p.m);
+
+                    if (msg) {
+                        result = msg.result;
                         result.lastRun.processed++;
                     }
                     else {
@@ -220,14 +256,6 @@ class Resultor extends DoFinish {
                 });
                 this.log.d('Added %d results', results.length);
             }
-
-            // // in case no more data is expected, we can safely close the stream
-            // if (this.check()) {
-            //     for (let _ in this.state.pushes) {
-            //         return;
-            //     }
-            //     this.do_flush(() => this.end());
-            // }
         }
         else if (frame & FRAME.ERROR) {
             let error = results.messageError(),
@@ -241,13 +269,20 @@ class Resultor extends DoFinish {
                         return;
                     }
                     this.log.d('Error %d %s for %s', results.type, results.name, id);
-                    let {m, p, pr} = this.data.pushes[id],
+                    const p = this.data.pushes[id];
+                    let {m, p: platform, pr} = p,
                         result, rp, rl;
+                    let msg = this.data.message(m);
+
+                    // additional fields to keep this in push_stats
+                    if (msg && msg.saveStats) {
+                        this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: null, e: results.toString() });
+                    }
+
                     mids[m] = (mids[m] || 0) + 1;
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
 
-                    let msg = this.data.message(m);
                     if (msg) {
                         result = msg.result;
                     }
@@ -255,14 +290,14 @@ class Resultor extends DoFinish {
                         result = this.noMessage[m] || (this.noMessage[m] = new Result());
                     }
 
-                    rp = result.sub(p, undefined, PLATFORM[p].parent);
+                    rp = result.sub(platform, undefined, PLATFORM[platform].parent);
                     rl = rp.sub(pr.la || 'default');
 
                     rp.processed++;
                     rl.processed++;
 
-                    if (PLATFORM[p].parent) {
-                        rp = result.sub(PLATFORM[p].parent),
+                    if (PLATFORM[platform].parent) {
+                        rp = result.sub(PLATFORM[platform].parent),
                         rl = rp.sub(pr.la || 'default');
                         rp.processed++;
                         rl.processed++;
@@ -512,6 +547,11 @@ class Resultor extends DoFinish {
                 this.log.d('Running batch of %d updates for %s', updates[c].length, c);
                 promises.push(this.db.collection(c).bulkWrite(updates[c]));
             }
+        }
+
+        if (this.pushStats.length) {
+            promises.push(this.db.collection("push_stats").insertMany(this.pushStats));
+            this.pushStats = [];
         }
 
         Promise.all(promises).then(() => {

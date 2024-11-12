@@ -6,7 +6,6 @@
  */
 
 
-const { ObjectId } = require('mongodb');
 const pluginManager = require('../../../plugins/pluginManager.js');
 const common = require('../../../api/utils/common.js');
 const drillCommon = require('../../../plugins/drill/api/common.js');
@@ -25,7 +24,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
     //GET APP
     try {
-        const app = await countlyDb.collection("apps").findOne({_id: ObjectId(APP_ID)}, {_id: 1, name: 1});
+        const app = await countlyDb.collection("apps").findOne({_id: countlyDb.ObjectID(APP_ID)}, {_id: 1, name: 1});
         console.log("App:", app.name);
         //GET EVENTS
         var events = [];
@@ -51,6 +50,27 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     }
                 ]).toArray();
                 events = events.length ? events[0].list : [];
+                const metaEvents = await drillDb.collection("drill_meta").aggregate([
+                    {
+                        $match: {
+                            'app_id': app._id + "",
+                            "type": "e",
+                            "e": { $regex: regex, $options: CASE_INSENSITIVE ? "i" : "", $nin: events }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$e"
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            e: "$_id"
+                        }
+                    }
+                ]).toArray();
+                events = events.concat(metaEvents.map(e => e.e));
             }
             catch (err) {
                 close("Invalid regex");
@@ -85,6 +105,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         console.log("App not found");
         close(err);
     }
+
 
     async function deleteDrillEvents(appId, events) {
         for (let i = 0; i < events.length; i++) {
