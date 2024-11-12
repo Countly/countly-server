@@ -742,6 +742,9 @@
                 },
                 helpCenterTarget: function() {
                     return this.enableGuides ? '_self' : "_blank";
+                },
+                isCommunityEdition: function() {
+                    return countlyGlobal.countlyTypeCE;
                 }
             },
             methods: {
@@ -893,6 +896,12 @@
                         }
 
                         return menu;
+                    });
+                },
+                handleButtonClick: function() {
+                    CountlyHelpers.goTo({
+                        url: "https://flex.countly.com",
+                        isExternalLink: true
                     });
                 }
             },
