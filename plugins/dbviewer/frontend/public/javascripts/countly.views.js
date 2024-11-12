@@ -10,10 +10,6 @@
                 countlyVue.mixins.hasFormDialogs("queryFilter")
             ],
             props: {
-                apps: {
-                    type: Array,
-                    default: []
-                },
                 collections: {
                     type: Object,
                     default: {}
@@ -155,11 +151,6 @@
                 }
             },
             methods: {
-                onAppChange: function(val) {
-                    if (val !== "all") {
-                        this.appFilter = countlyGlobal.apps[val].label;
-                    }
-                },
                 toggleExpand: function() {
                     this.isExpanded = !this.isExpanded;
                     if (this.isExpanded) {
@@ -322,7 +313,7 @@
                     var self = this;
                     return this.collections[this.localDb].list.filter(function(collection) {
                         if (self.appFilter !== "all") {
-                            return collection.label.indexOf(self.appFilter) > -1;
+                            return collection.value.indexOf(self.appFilter) > -1;
                         }
                         else {
                             return collection;
@@ -400,7 +391,6 @@
                     db: (this.$route.params && this.$route.params.db) || null,
                     collection: (this.$route.params && this.$route.params.collection) || null,
                     tabs: [],
-                    apps: [],
                     collections: {},
                     index: (this.$route.params && this.$route.params.index) || null,
                 };
@@ -444,34 +434,6 @@
                     }
 
                     return parts.join(" ") + " Database";
-                },
-                prepareApps: function() {
-                    var apps = countlyGlobal.apps || {};
-                    var appKeys = Object.keys(apps);
-                    var formattedApps = [];
-                    for (var i = 0; i < appKeys.length; i++) {
-                        formattedApps.push({
-                            label: apps[appKeys[i]].name,
-                            value: apps[appKeys[i]]._id
-                        });
-                    }
-
-                    formattedApps.sort(function(a, b) {
-                        if (a.label < b.label) {
-                            return -1;
-                        }
-                        if (a.label > b.label) {
-                            return 1;
-                        }
-                        return 0;
-                    });
-
-                    formattedApps.unshift({
-                        label: 'All Apps',
-                        value: 'all'
-                    });
-
-                    this.apps = formattedApps;
                 }
             },
             created: function() {
@@ -490,8 +452,6 @@
                     this.prepareTabs(dbs);
                     this.prepareCollectionList(dbs);
                 }
-
-                this.prepareApps();
             }
         });
 

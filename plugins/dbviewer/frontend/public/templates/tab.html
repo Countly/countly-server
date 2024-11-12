@@ -4,12 +4,13 @@
             <div class="bu-column bu-is-one-third">
                 <div class="dbviewer-tab__sidebar bg-white">
                     <div class="dbviewer-tab__app-selector-dropdown">
-                        <cly-select-x
+                        <cly-app-select
                             test-id="dbviewer-app-select"
-                            @change="onAppChange($event)"
+                            style="width: 100%;"
                             v-model="appFilter"
-                            :options="apps">
-                        </cly-select-x>
+                            allowAll
+                            showAppImage>
+                        </cly-app-select>
                     </div>
                     <cly-listbox
                         class="dbviewer-tab__collections-list"
