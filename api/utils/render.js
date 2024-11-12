@@ -61,6 +61,7 @@ exports.renderView = function(options, cb) {
             }
 
             var settings = {
+                dumpio: true,
                 headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox'],
                 ignoreHTTPSErrors: true,
