@@ -453,7 +453,8 @@ var GridComponent = countlyVue.views.create({
                 return;
             }
             else {
-                return this.$emit('command', event);
+                this.$emit('command', event);
+                return;
             }
         },
     }
