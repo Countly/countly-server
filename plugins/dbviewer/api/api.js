@@ -5,19 +5,88 @@ var common = require('../../../api/utils/common.js'),
     countlyFs = require('../../../api/utils/countlyFs.js'),
     _ = require('underscore'),
     taskManager = require('../../../api/utils/taskmanager.js'),
-    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight } = require('../../../api/utils/rights.js'),
+    { getCollectionName, dbUserHasAccessToCollection, dbLoadEventsData, validateUser, getUserApps, validateGlobalAdmin, hasReadRight, getBaseAppFilter } = require('../../../api/utils/rights.js'),
     exported = {};
 const { MongoInvalidArgumentError } = require('mongodb');
 
 const { EJSON } = require('bson');
 
 const FEATURE_NAME = 'dbviewer';
+const whiteListedAggregationStages = {
+    "$addFields": true,
+    "$bucket": true,
+    "$bucketAuto": true,
+    //"$changeStream": false,
+    //"$changeStreamSplitLargeEvents": false,
+    //"$collStats": false,
+    "$count": true,
+    //"$currentOp": false,
+    "$densify": true,
+    //"$documents": false
+    "$facet": true,
+    "$fill": true,
+    "$geoNear": true,
+    "$graphLookup": true,
+    "$group": true,
+    //"$indexStats": false,
+    "$limit": true,
+    //"$listLocalSessions": false
+    //"$listSampledQueries": false
+    //"$listSearchIndexes": false
+    //"$listSessions": false
+    //"$lookup": false
+    "$match": true,
+    //"$merge": false
+    //"$mergeCursors": false
+    //"$out": false
+    //"$planCacheStats": false,
+    "$project": true,
+    "$querySettings": true,
+    "$redact": true,
+    "$replaceRoot": true,
+    "$replaceWith": true,
+    "$sample": true,
+    "$search": true,
+    "$searchMeta": true,
+    "$set": true,
+    "$setWindowFields": true,
+    //"$sharedDataDistribution": false,
+    "$skip": true,
+    "$sort": true,
+    "$sortByCount": true,
+    //"$unionWith": false,
+    "$unset": true,
+    "$unwind": true,
+    "$vectorSearch": true //atlas specific
+};
 var spawn = require('child_process').spawn,
     child;
+
 (function() {
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
+    /**
+     * Function removes not allowed aggregation stages from the pipeline
+     * @param {array} aggregation  - current aggregation pipeline
+     * @returns {object} changes - object with information which operations were removed
+     */
+    function escapeNotAllowedAggregationStages(aggregation) {
+        var changes = {};
+        for (var z = 0; z < aggregation.length; z++) {
+            for (var key in aggregation[z]) {
+                if (!whiteListedAggregationStages[key]) {
+                    changes[key] = true;
+                    delete aggregation[z][key];
+                }
+            }
+            if (Object.keys(aggregation[z]).length === 0) {
+                aggregation.splice(z, 1);
+                z--;
+            }
+        }
+        return changes;
+    }
 
     /**
      * @api {get} /o/db Access database
@@ -179,6 +248,25 @@ var spawn = require('child_process').spawn,
                 filter = {};
             }
 
+            var base_filter = {};
+            if (!params.member.global_admin) {
+                base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection);
+            }
+
+            if (base_filter && Object.keys(base_filter).length > 0) {
+                for (var key in base_filter) {
+                    if (filter[key]) {
+                        filter.$and = filter.$and || [];
+                        filter.$and.push({[key]: base_filter[key]});
+                        filter.$and.push({[key]: filter[key]});
+                        delete filter[key];
+                    }
+                    else {
+                        filter[key] = base_filter[key];
+                    }
+                }
+            }
+
             if (dbs[dbNameOnParam]) {
                 try {
                     var cursor = dbs[dbNameOnParam].collection(params.qstring.collection).find(filter, { projection });
@@ -191,6 +279,7 @@ var spawn = require('child_process').spawn,
                         common.returnMessage(params, 400, "Invalid collection name: Collection names can not contain '$' or other invalid characters");
                     }
                     else {
+                        log.e(error);
                         common.returnMessage(params, 500, "An unexpected error occurred.");
                     }
                     return false;
@@ -291,7 +380,7 @@ var spawn = require('child_process').spawn,
                             async.each(results, function(col, done) {
                                 if (col.collectionName.indexOf("system.indexes") === -1 && col.collectionName.indexOf("sessions_") === -1) {
                                     userHasAccess(params, col.collectionName, params.qstring.app_id, function(hasAccess) {
-                                        if (hasAccess) {
+                                        if (hasAccess || col.collectionName === "events_data" || col.collectionName === "drill_events") {
                                             ob = parseCollectionName(col.collectionName, lookup);
                                             db.collections[ob.pretty] = ob.name;
                                         }
@@ -318,8 +407,9 @@ var spawn = require('child_process').spawn,
         * Get aggregated result by the parameter on the url
         * @param {string} collection - collection will be applied related query
         * @param {object} aggregation - aggregation object
+        * @param {object} changes - object referencing removed stages from pipeline
         * */
-        function aggregate(collection, aggregation) {
+        function aggregate(collection, aggregation, changes) {
             if (params.qstring.iDisplayLength) {
                 aggregation.push({ "$limit": parseInt(params.qstring.iDisplayLength) });
             }
@@ -338,6 +428,10 @@ var spawn = require('child_process').spawn,
                 }
                 else if (collection === 'auth_tokens') {
                     aggregation.splice(addProjectionAt, 0, {"$addFields": {"_id": "***redacted***"}});
+                }
+                else if ((collection === "events_data" || collection === "drill_events") && !params.member.global_admin) {
+                    var base_filter = getBaseAppFilter(params.member, dbNameOnParam, params.qstring.collection);
+                    aggregation.splice(0, 0, {"$match": base_filter});
                 }
                 // check task is already running?
                 taskManager.checkIfRunning({
@@ -375,7 +469,7 @@ var spawn = require('child_process').spawn,
                             },
                             outputData: function(aggregationErr, result) {
                                 if (!aggregationErr) {
-                                    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result });
+                                    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: 0, iTotalDisplayRecords: 0, "aaData": result, "removed": (changes || {}) });
                                 }
                                 else {
                                     common.returnMessage(params, 500, aggregationErr);
@@ -409,7 +503,12 @@ var spawn = require('child_process').spawn,
 
             if (appId) {
                 if (hasReadRight(FEATURE_NAME, appId, parameters.member)) {
-                    return dbUserHasAccessToCollection(parameters, collection, appId, callback);
+                    if (collection === "events_data" || collection === "drill_events") {
+                        return callback(true);
+                    }
+                    else {
+                        return dbUserHasAccessToCollection(parameters, collection, appId, callback);
+                    }
                 }
             }
             else {
@@ -485,10 +584,14 @@ var spawn = require('child_process').spawn,
                 }
                 else {
                     userHasAccess(params, params.qstring.collection, function(hasAccess) {
-                        if (hasAccess) {
+                        if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
                             try {
                                 let aggregation = EJSON.parse(params.qstring.aggregation);
-                                aggregate(params.qstring.collection, aggregation);
+                                var changes = escapeNotAllowedAggregationStages(aggregation);
+                                if (changes && Object.keys(changes).length > 0) {
+                                    log.d("Removed stages from pipeline: ", JSON.stringify(changes));
+                                }
+                                aggregate(params.qstring.collection, aggregation, changes);
                             }
                             catch (e) {
                                 common.returnMessage(params, 500, 'Aggregation object is not valid.');
@@ -508,7 +611,7 @@ var spawn = require('child_process').spawn,
                 }
                 else {
                     userHasAccess(params, params.qstring.collection, function(hasAccess) {
-                        if (hasAccess) {
+                        if (hasAccess || params.qstring.collection === "events_data" || params.qstring.collection === "drill_events") {
                             dbGetCollection();
                         }
                         else {
