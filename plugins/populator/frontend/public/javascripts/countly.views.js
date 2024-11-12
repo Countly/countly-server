@@ -56,7 +56,7 @@
                     {value: "funnels", label: CV.i18n("funnels.plugin-title")},
                     {value: "performance-monitoring", label: CV.i18n("performance-monitoring.title")},
                     {value: "star-rating", label: CV.i18n("star-rating.plugin-title")},
-                    {value: "surveys", label: CV.i18n("surveys.plugin-title")},
+                    {value: "surveys", label: CV.i18n("surveys.nps.plugin-title")},
                 ];
                 if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
                     plugins.push({value: "push", label: CV.i18n("push-notification.title")});
