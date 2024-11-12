@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -2128,7 +2128,7 @@ const processRequest = (params) => {
                         }
 
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
-                            if (hasAccess) {
+                            if (hasAccess || (params.qstring.db === "countly_drill" && params.qstring.collection === "drill_events") || (params.qstring.db === "countly" && params.qstring.collection === "events_data")) {
                                 var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
                                 var db = "";
                                 if (params.qstring.db && dbs[params.qstring.db]) {
@@ -2136,6 +2136,23 @@ const processRequest = (params) => {
                                 }
                                 else {
                                     db = common.db;
+                                }
+                                if (!params.member.global_admin && params.qstring.collection === "drill_events" || params.qstring.collection === "events_data") {
+                                    var base_filter = getBaseAppFilter(params.member, params.qstring.db, params.qstring.collection);
+                                    if (base_filter && Object.keys(base_filter).length > 0) {
+                                        params.qstring.query =  params.qstring.query || {};
+                                        for (var key in base_filter) {
+                                            if (params.qstring.query[key]) {
+                                                params.qstring.query.$and = params.qstring.query.$and || [];
+                                                params.qstring.query.$and.push({[key]: base_filter[key]});
+                                                params.qstring.query.$and.push({[key]: params.qstring.query[key]});
+                                                delete params.qstring.query[key];
+                                            }
+                                            else {
+                                                params.qstring.query[key] = base_filter[key];
+                                            }
+                                        }
+                                    }
                                 }
                                 countlyApi.data.exports.fromDatabase({
                                     db: db,
