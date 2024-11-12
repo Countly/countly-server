@@ -526,7 +526,7 @@
             },
             showAppImage: {
                 type: Boolean,
-                default: false,
+                default: true,
                 required: false
             }
         },
