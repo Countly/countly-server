@@ -383,6 +383,9 @@ jobs:
           xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
           npm run cy:run:onboarding
 
+          echo "Memory Usage After Tests:"
+          node -e "console.log(process.memoryUsage())"
+
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
         shell: bash
