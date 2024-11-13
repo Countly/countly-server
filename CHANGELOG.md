@@ -9,10 +9,12 @@ Enterprise fixes:
 - [flows] Fixed bug in case of null data in schema
 - [nps] Fixed bug in the editor where the "internal name" field was not mandatory
 - [ratings] Fixed UI bug where "Internal name" was not a mandatory field
-- [block] Fixed the "contains" filtering rule so that it works for crash errors and crash titles
 
 Security:
 - Fixing minor vulnerability that would allow for unauthorized file upload
+
+Enterprise Features:
+- [block] Added a way to filter crashes by their error (stacktrace)
 
 ## Version 24.05.16
 Fixes:
