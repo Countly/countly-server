@@ -1,3 +1,6 @@
+## Version 24.10.2
+Integrating 24.05.17 fixes
+
 ## Version 24.10.1
 Integrating 24.05.16 fixes
 
