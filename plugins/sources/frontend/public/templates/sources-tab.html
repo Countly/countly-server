@@ -5,14 +5,8 @@
   >
       <template v-slot:header-right>
         <cly-more-options v-if="topDropdown" size="small">
-          <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-            <!--<span :class="item.icon"></span>-->
-            <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
-          </el-dropdown-item>
-          <el-dropdown-item>
-            <!--<span class="ion-settings"></span>-->
-            <a href="#/manage/configurations/sources" class="bu-ml-1">{{ i18n('sources.plugin-settings') }}</a>
-          </el-dropdown-item>
+          <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown" :command="{url: item.value}">{{ item.label }}</el-dropdown-item>
+          <el-dropdown-item :command="{url: '#/manage/configurations/sources'}">{{ i18n('sources.plugin-settings') }}</el-dropdown-item>
         </cly-more-options>
       </template>
   </cly-header>
