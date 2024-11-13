@@ -13,6 +13,9 @@ Enterprise fixes:
 Security:
 - Fixing minor vulnerability that would allow for unauthorized file upload
 
+Enterprise Features:
+- [block] Added a way to filter crashes by their error (stacktrace)
+
 ## Version 24.05.16
 Fixes:
 - [core] Replaced "Users" with "Sessions" label on technology home widgets
