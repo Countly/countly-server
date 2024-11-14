@@ -47,6 +47,9 @@ Enterprise fixes:
 - [nps] Fixed bug in the editor where the "internal name" field was not mandatory
 - [ratings] Fixed UI bug where "Internal name" was not a mandatory field
 
+Security:
+- Fixing minor vulnerability that would allow for unauthorized file upload
+
 ## Version 24.05.16
 Fixes:
 - [core] Replaced "Users" with "Sessions" label on technology home widgets
