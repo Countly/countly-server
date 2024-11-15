@@ -99,7 +99,7 @@ function sendRequest(params, callback) {
         const options = {
             uri: url.href,
             method: params.requestType,
-            json: JSON.stringify(body),
+            json: body,
             strictSSL: false
         };
 
