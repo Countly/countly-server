@@ -1,5 +1,9 @@
 ## Version 24.05.17
 Fixes:
+- [script] Fixing bug with "delete_old_members" script that led to malformed requests
+
+## Version 24.05.17
+Fixes:
 - [push] Improved ability to observe push related errors
 
 Enterprise fixes:
