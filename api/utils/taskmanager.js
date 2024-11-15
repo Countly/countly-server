@@ -960,13 +960,9 @@ taskmanager.stopTask = function(options, callback) {
 
     /**
     * Stop task
-    * @param {object} op_id - operation id for mongo process
-    * @param {object} options1.db - database connection
-    * @param {string} options1.id - id of the task result
-    * @param {object} reqData  -  request data
     * @param {funciton} callback1 - callback for the result
     */
-    function stopTask(op_id) {
+    function stopTask() {
         callback(null, "Operation could not be stopped");
     }
 
