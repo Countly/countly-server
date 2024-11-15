@@ -1,4 +1,4 @@
-## Version 24.05.17
+## Version 24.05.XX
 Fixes:
 - [script] Fixing bug with "delete_old_members" script that led to malformed requests
 
