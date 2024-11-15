@@ -956,36 +956,7 @@ taskmanager.rerunTask = function(options, callback) {
 };
 
 taskmanager.stopTask = function(options, callback) {
-    options.db = options.db || common.db;
-
-    /**
-    * Stop task
-    * @param {funciton} callback1 - callback for the result
-    */
-    function stopTask() {
-        callback(null, "Operation could not be stopped");
-    }
-
-    options.db.collection("long_tasks").findOne({ _id: options.id }, function(err, res) {
-        if (res) {
-            if (res.creator) {
-                options.db.collection("members").findOne({ _id: common.db.ObjectID(res.creator) }, function(err1, member) {
-                    if (member) {
-                        stopTask(res.op_id);
-                    }
-                    else {
-                        callback(null, "No permission to stop this task");
-                    }
-                });
-            }
-            else {
-                stopTask(res.op_id);
-            }
-        }
-        else {
-            callback(null, "Task does not exist");
-        }
-    });
+    callback(null, "Operation could not be stopped");
 };
 
 /**
