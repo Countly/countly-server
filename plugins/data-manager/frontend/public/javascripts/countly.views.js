@@ -1052,9 +1052,6 @@
                 else if (event === 'import-schema') {
                     this.importDialogVisible = true;
                 }
-                else if (event === 'navigate-settings') {
-                    app.navigate("#/manage/configurations/data-manager", true);
-                }
             },
             onSaveImport: function() {
                 var self = this;
