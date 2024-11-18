@@ -1342,7 +1342,7 @@
     var abExampleCount = 1;
     var abExampleName = "Pricing";
     var _templateType = '';
-    var _allFeatures = ["ab-testing", "attribution", "cohorts", "crashes", "funnels", "performance-monitoring", "push", "star-rating", "surveys"];
+    var _allFeatures = ["ab-testing", "cohorts", "crashes", "funnels", "performance-monitoring", "push", "star-rating", "surveys"];
     var _featuresToPopulate = [];
     var runCount = 0;
     var completedRequestCount = 0;
@@ -1981,7 +1981,7 @@
      * @param {callback} callback - callback method
      **/
     function generateCampaigns(callback) {
-        if (!CountlyHelpers.isPluginEnabled("attribution") || typeof countlyAttribution === "undefined" || !_featuresToPopulate.includes("attribution")) {
+        if (!CountlyHelpers.isPluginEnabled("attribution") || typeof countlyAttribution === "undefined") {
             callback();
             return;
         }

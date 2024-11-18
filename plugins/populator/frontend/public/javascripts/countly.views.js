@@ -51,13 +51,12 @@
             availableFeatures: function() {
                 var plugins = [
                     {value: "ab-testing", label: CV.i18n("ab-testing.title")},
-                    {value: "attribution", label: CV.i18n("attribution.title")},
                     {value: "cohorts", label: CV.i18n("cohorts.cohorts")},
                     {value: "crashes", label: CV.i18n(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" ? "web.crashes.title" : "crashes.title")},
                     {value: "funnels", label: CV.i18n("funnels.plugin-title")},
                     {value: "performance-monitoring", label: CV.i18n("performance-monitoring.title")},
                     {value: "star-rating", label: CV.i18n("star-rating.plugin-title")},
-                    {value: "surveys", label: CV.i18n("surveys.plugin-title")},
+                    {value: "surveys", label: CV.i18n("surveys.nps.plugin-title")},
                 ];
                 if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
                     plugins.push({value: "push", label: CV.i18n("push-notification.title")});
