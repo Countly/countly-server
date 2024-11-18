@@ -118,8 +118,11 @@ exports.renderView = function(options, cb) {
                 };
 
                 page.setDefaultNavigationTimeout(updatedTimeout);
-
-                await page.goto(host + '/login/token/' + token + '?ssr=true');
+                const resp = await page.goto(host + '/login/token/' + token + '?ssr=true');
+                const status = resp?.status();
+                if (status !== 200) {
+                    throw new Error(`Failed to open login page. Status: ${status}`);
+                }
 
                 await page.waitForSelector('countly', {timeout: updatedTimeout});
 
