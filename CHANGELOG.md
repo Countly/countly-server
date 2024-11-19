@@ -1,6 +1,24 @@
 ## Version 24.05.XX
+Fixes:
+- [script] Fixing bug with "delete_old_members" script that led to malformed requests
+
+## Version 24.05.17
+Fixes:
+- [push] Improved ability to observe push related errors
+
 Enterprise fixes:
+- [cohorts] Fixed issues with nightly cleanup
+- [data-manager] Fixed UI bug where rules were not visible when editing "Merge by regex" transformations
+- [drill] Fixed wrong pie chart label  tooltip in dashboard widget
+- [flows] Fixed bug in case of null data in schema
 - [nps] Fixed bug in the editor where the "internal name" field was not mandatory
+- [ratings] Fixed UI bug where "Internal name" was not a mandatory field
+
+Security:
+- Fixing minor vulnerability that would allow for unauthorized file upload
+
+Enterprise Features:
+- [block] Added a way to filter crashes by their error (stacktrace)
 
 ## Version 24.05.16
 Fixes:
