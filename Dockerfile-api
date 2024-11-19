@@ -18,10 +18,7 @@ ENV COUNTLY_CONTAINER="api" \
 	COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
 	NODE_OPTIONS="--max-old-space-size=2048" \
 	TINI_VERSION="0.18.0"\
-	PUPPETEER_CACHE_DIR=/opt/countly/.cache/puppeteer\
-	#https://github.com/hardkoded/puppeteer-sharp/issues/2633
-	XDG_CONFIG_HOME=/tmp/.chromium\
-	XDG_CACHE_HOME=/tmp/.chromium
+	PUPPETEER_CACHE_DIR=/opt/countly/.cache/puppeteer
 	
 WORKDIR /opt/countly
 COPY . .
