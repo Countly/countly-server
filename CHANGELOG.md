@@ -1,6 +1,8 @@
 ## Version 24.05.XX
 Fixes:
 - [script] Fixing bug with "delete_old_members" script that led to malformed requests
+- [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
+- [crash] Fixed bug in crash ingestion for scenarios where the "app version" is not a string.
 
 ## Version 24.05.17
 Fixes:
@@ -38,6 +40,7 @@ Security:
 
 ## Version 24.05.15
 Enterprise fixes:
+- [ab-testing] Fixed JSON.parse issue preventing creation of AB tests
 - [nps] Fixed UI issues in the widget editor related to the "user consent" section
 - [ratings] Fixed rendering issue for escaped values
 
