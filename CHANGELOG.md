@@ -40,6 +40,7 @@ Security:
 
 ## Version 24.05.15
 Enterprise fixes:
+- [ab-testing] Fixed JSON.parse issue preventing creation of AB tests
 - [nps] Fixed UI issues in the widget editor related to the "user consent" section
 - [ratings] Fixed rendering issue for escaped values
 
@@ -53,7 +54,6 @@ Fixes:
 - [server-stats] Fixed a data point calculation bug
 
 Enterprise fixes:
-- [ab-testing] Fixed JSON.parse issue preventing creation of AB tests
 - [push_approver] Fixed issue with the plugin not handling being "soft disabled"
 - [surveys] fixed a bug with the Survey widget where the "submit" button could become non interactable
 - [surveys] fixed issues with dashboard editor in relation to the "terms and conditions"
