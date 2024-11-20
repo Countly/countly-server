@@ -51,28 +51,12 @@
                 </el-table-column>
                 <el-table-column type="options">
                     <template v-slot="rowScope">
-                        <cly-more-options test-id="compliance-hub-users" v-if="rowScope.row.hover" size="small">
-                            <el-dropdown-item>
-                                <el-link v-if="canUserRead" class="bu-ml-1" plain @click="switchToConsentHistory(rowScope.row.uid)" :data-test-id="'datatable-more-button-go-to-consent-history-select-' + rowScope.$index"> {{i18n("consent.go-history")}} </el-link>
-                            </el-dropdown-item>
-                            <el-dropdown-item v-if="!rowScope.row.appUserExport && canUserRead">
-                                <el-link class="bu-ml-1" plain @click="exportUserData(rowScope.row.uid)" :data-test-id="'datatable-more-button-export-user-data-select-' + rowScope.$index">
-                                    {{i18n("app-users.export-userdata")}}</el-link>
-                            </el-dropdown-item>
-                            <el-dropdown-item v-if="rowScope.row.appUserExport && canUserRead">
-                                <el-link class="bu-ml-1" plain @click="downloadExportedData(rowScope.row.uid)" :data-test-id="'datatable-more-button-download-export-select-' + rowScope.$index">
-                                    {{i18n("app-users.download-export")}}</span>
-                                </el-link>
-                            </el-dropdown-item>
-                            <el-dropdown-item v-if="rowScope.row.appUserExport && canUserDelete">
-                                <el-link class="bu-ml-1" plain @click="deleteExport(rowScope.row.uid)" :data-test-id="'datatable-more-button-delete-export-' + rowScope.$index">
-                                    {{i18n("app-users.delete-export")}}</span>
-                                </el-link>
-                            </el-dropdown-item>
-                            <el-dropdown-item v-if="canUserDelete">
-                                <el-link class="bu-ml-1" @click="deleteUserData(rowScope.row.uid)" :data-test-id="'datatable-more-button-delete-user-data-' + rowScope.$index" plain>
-                                    {{i18n("app-users.delete-userdata")}}</el-link>
-                            </el-dropdown-item>
+                        <cly-more-options test-id="compliance-hub-users" v-if="rowScope.row.hover" size="small" @command="handleCommand($event, rowScope.row.uid)">
+                            <el-dropdown-item v-if="canUserRead" :command="{url: '#/manage/compliance/history/' + rowScope.row.uid}" :data-test-id="'datatable-more-button-go-to-consent-history-select-' + rowScope.$index"> {{i18n("consent.go-history")}} </el-dropdown-item>
+                            <el-dropdown-item v-if="!rowScope.row.appUserExport && canUserRead" command="exportUserData" :data-test-id="'datatable-more-button-export-user-data-select-' + rowScope.$index">{{i18n("app-users.export-userdata")}}</el-dropdown-item>
+                            <el-dropdown-item v-if="rowScope.row.appUserExport && canUserRead" command="downloadExportedData" :data-test-id="'datatable-more-button-download-export-select-' + rowScope.$index">{{i18n("app-users.download-export")}}</el-dropdown-item>
+                            <el-dropdown-item v-if="rowScope.row.appUserExport && canUserDelete" command="deleteExport" :data-test-id="'datatable-more-button-delete-export-' + rowScope.$index">{{i18n("app-users.delete-export")}}</el-dropdown-item>
+                            <el-dropdown-item v-if="canUserDelete" command="deleteUserData" :data-test-id="'datatable-more-button-delete-user-data-' + rowScope.$index">{{i18n("app-users.delete-userdata")}}</el-dropdown-item>
                         </cly-more-options>
                     </template>
 

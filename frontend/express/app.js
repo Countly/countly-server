@@ -603,6 +603,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.use(function(req, res, next) {
         var contentType = req.headers['content-type'];
         if (req.method.toLowerCase() === 'post' && contentType && contentType.indexOf('multipart/form-data') >= 0) {
+            if (!req.session?.uid || Date.now() > req.session?.expires) {
+                res.status(401).send('Unauthorized');
+                return;
+            }
             var form = new formidable.IncomingForm();
             form.uploadDir = __dirname + '/uploads';
             form.parse(req, function(err, fields, files) {

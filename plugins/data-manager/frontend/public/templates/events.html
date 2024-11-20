@@ -33,9 +33,7 @@
                 <el-dropdown-item v-if="canUserUpdate" command="regnerate">{{i18n('data-manager.regenerate')}}</el-dropdown-item>
                 <el-dropdown-item v-if="canUserCreate" command="export-schema">{{i18n('data-manager.export-schema')}}</el-dropdown-item>
                 <el-dropdown-item v-if="canUserUpdate" command="import-schema">{{i18n('data-manager.import-schema')}}</el-dropdown-item>
-                <el-dropdown-item v-if="isUserGlobalAdmin" command="navigate-settings">
-                    <a href="#/manage/configurations/data-manager" > {{i18n('plugins.configs')}} </a>
-                </el-dropdown-item>
+                <el-dropdown-item v-if="isUserGlobalAdmin" :command="{url: '#/manage/configurations/data-manager'}">{{i18n('plugins.configs')}}</el-dropdown-item>
             </cly-more-options>
         </div>
     </template>
