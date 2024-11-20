@@ -2,6 +2,7 @@
 Fixes:
 - [script] Fixing bug with "delete_old_members" script that led to malformed requests
 - [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
+- [crash] Fixed bug in crash ingestion for scenarios where the "app version" is not a string.
 
 ## Version 24.05.17
 Fixes:
