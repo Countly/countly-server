@@ -307,7 +307,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                 //skiping segments that are over limit
                                 var value = res.segmented[k]._id.value || "";
                                 value = value + "";
-                                value = value.replace(/^\$/, "").replace(/\./g, ":").replace(/[\x00-\x1f\x80-\x9f]+/g, "");
+                                value = value.replace(/^\$/, "").replace(/\./g, ":").replace(/[\x00-\x1f\x80-\x9f]+/g, "");// eslint-disable-line
                                 if (forbiddenSegValues.indexOf(value) !== -1) {
                                     value = "[CLY]" + value;
                                 }
