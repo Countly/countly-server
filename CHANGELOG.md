@@ -1,6 +1,7 @@
 ## Version 24.05.XX
 Fixes:
 - [script] Fixing bug with "delete_old_members" script that led to malformed requests
+- [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
 
 ## Version 24.05.17
 Fixes:
