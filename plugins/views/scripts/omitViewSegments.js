@@ -110,7 +110,7 @@ function getAppList(options, callback) {
     if (app_list && app_list.length > 0) {
         var listed = [];
         for (var z = 0; z < app_list.length; z++) {
-            listed.push(options.db.ObjectId(app_list[z]));
+            listed.push(options.db.ObjectID(app_list[z]));
         }
         query = {_id: {$in: listed}};
     }
