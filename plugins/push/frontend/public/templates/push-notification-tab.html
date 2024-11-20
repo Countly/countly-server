@@ -3,18 +3,18 @@
         <cly-main>
             <cly-section>
                 <cly-metric-cards :multiline="false">
-                    <cly-metric-card :number="totalAppUsers" :label="i18n('push-notification.total-app-users')">
+                    <cly-metric-card :number="totalAppUsers" :label="i18n('push-notification.total-app-users')" test-id="messaging-total-app-users">
                     </cly-metric-card>
-                    <cly-metric-card :number="enabledUsers" :label="i18n('push-notification.enabled-users')">
+                    <cly-metric-card :number="enabledUsers" :label="i18n('push-notification.enabled-users')" test-id="messaging-notification-enabled-users">
                     </cly-metric-card>
-                    <cly-metric-card :is-percentage="true" :number="enabledUsersPercentage" :label="i18n('push-notification.enabled-users-percentage')" :tooltip="i18n('push-notification.enabled-users-percentage-description')">
+                    <cly-metric-card :is-percentage="true" :number="enabledUsersPercentage" :label="i18n('push-notification.enabled-users-percentage')" :tooltip="i18n('push-notification.enabled-users-percentage-description')" test-id="messaging-enabled-users-percentage">
                     </cly-metric-card>
                 </cly-metric-cards>
             </cly-section>
             <div>
                 <div class="bu-level-left" style="margin-bottom:32px">
                     <div class="bu-level-item bu-mr-4">
-                        <div class="cly-vue-platform-filter-label"> 
+                        <div class="cly-vue-platform-filter-label" data-test-id="messaging-datatable-filter-label"> 
                             {{platformFilterLabels[selectedPushNotificationType]}} 
                         </div>
                     </div>
@@ -28,7 +28,7 @@
             </div>
             <cly-section>
                 <div v-if="selectedPushNotificationType === 'automatic'">
-                    <cly-chart-time :bucket="selectedPeriodFilter" :notation-selected-bucket="selectedPeriodFilter" :option="pushNotificationOptions" :hideNotation="true" :height="400" v-loading="isDashboardLoading" :force-loading="isDashboardLoading" :legend="legend" class="cly-vue-push-notification-chart" category="push-notification">
+                    <cly-chart-time test-id="messaging-chart" :bucket="selectedPeriodFilter" :notation-selected-bucket="selectedPeriodFilter" :option="pushNotificationOptions" :hideNotation="true" :height="400" v-loading="isDashboardLoading" :force-loading="isDashboardLoading" :legend="legend" class="cly-vue-push-notification-chart" category="push-notification">
                         <template v-slot:chart-left="scope">
                             <span class="cly-vue-push-notification-chart__left-text bu-mr-2">{{i18n('push-notification.time-period')}}</span>
                             <div style="width:100px;">
@@ -49,7 +49,7 @@
                     </cly-chart-time>
                 </div>
                 <div v-else>
-                    <cly-chart-time :bucket="selectedPeriodFilter" :notation-selected-bucket="selectedPeriodFilter" :option="pushNotificationOptions" :force-loading="isDashboardLoading" :legend="legend" class="cly-vue-push-notification-chart" category="push-notification">
+                    <cly-chart-time  test-id="messaging-chart" :bucket="selectedPeriodFilter" :notation-selected-bucket="selectedPeriodFilter" :option="pushNotificationOptions" :force-loading="isDashboardLoading" :legend="legend" class="cly-vue-push-notification-chart" category="push-notification">
                         <template v-slot:chart-left="scope">
                             <span class="cly-vue-push-notification-chart__left-text bu-mr-2">{{i18n('push-notification.time-period')}}</span>
                             <div style="width:100px;">
@@ -71,7 +71,7 @@
                 </div>
             </cly-section>
             <cly-section>
-                <cly-datatable-n :data-source="remoteTableDataSource" v-loading="areRowsLoading || isUserCommandLoading" :force-loading="isLoading" :available-dynamic-cols="optionalTableColumns" :resizable="true" class="is-clickable cly-vue-push-notification-table">
+                <cly-datatable-n test-id="messaging-datatable" :data-source="remoteTableDataSource" v-loading="areRowsLoading || isUserCommandLoading" :force-loading="isLoading" :available-dynamic-cols="optionalTableColumns" :resizable="true" class="is-clickable cly-vue-push-notification-table">
                     <template v-slot:header-left>
                         <el-select v-model="selectedStatusFilter">
                             <el-option
@@ -86,11 +86,11 @@
                         <el-table-column fixed width="400" type="clickable" sortable="custom" prop="name" :label="i18n('push-notification.table-notification-name')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
-                                    <span class="cly-vue-push-notification-table-column__first-line" @click="onRowClick(scope.row)">{{scope.row.name}}</span>
+                                    <span class="cly-vue-push-notification-table-column__first-line" @click="onRowClick(scope.row)" :data-test-id="'datatable-messaging-notification-name-' +  scope.$index">{{scope.row.name}}</span>
                                     <span class="cly-vue-push-notification-table-column__second-line">
-                                        <span> {{getPreviewPlatforms(scope.row.platforms)}} </span>
-                                        <span class="blinker cly-vue-push-notification-table-column__separator-blinker"></span>
-                                        <span> {{i18n('push-notification.created-by')}} {{scope.row.createdBy || '-'}} </span>
+                                        <span :data-test-id="'datatable-messaging-platform-name-' +  scope.$index"> {{getPreviewPlatforms(scope.row.platforms)}} </span>
+                                        <span class="blinker cly-vue-push-notification-table-column__separator-blinker" :data-test-id="'datatable-messaging-blinker-' +  scope.$index"></span>
+                                        <span :data-test-id="'datatable-messaging-created-by-' +  scope.$index"> {{i18n('push-notification.created-by')}} {{scope.row.createdBy || '-'}} </span>
                                     </span>
                                 </div>
                             </template>
@@ -119,21 +119,21 @@
                         </template>
                         <el-table-column width="220" sortable="custom" prop="status" :label="i18n('push-notification.table-status')">
                             <template slot-scope="scope">
-                                <cly-status-tag :text="statusOptions[scope.row.status] && statusOptions[scope.row.status].label || '' " :color="getStatusBackgroundColor(scope.row.status)"> </cly-status-tag>
+                                <cly-status-tag :data-test-id="'datatable-messaging-status-' +  scope.$index" :text="statusOptions[scope.row.status] && statusOptions[scope.row.status].label || '' " :color="getStatusBackgroundColor(scope.row.status)"> </cly-status-tag>
                             </template>
                         </el-table-column>
                         <el-table-column width="220" sortable="custom" prop="sent" :label="i18n('push-notification.table-sent')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
-                                <span class="cly-vue-push-notification-table-column__numbers-only"> {{formatNumber(scope.row.sent)}} </span>
+                                <span class="cly-vue-push-notification-table-column__numbers-only" :data-test-id="'datatable-messaging-sent-' +  scope.$index"> {{formatNumber(scope.row.sent)}} </span>
                             </template>
                         </el-table-column>
                         <el-table-column min-width="200" sortable="custom" prop="actioned" :label="i18n('push-notification.table-actioned')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-level">
                                     <div class="bu-level-left cly-vue-push-notification-table-column__numbers-only">
-                                        <span class="bu-mr-1">{{formatNumber(scope.row.actioned)}}</span>
-                                        <span class="bu-mr-1">|</span>
-                                        <span>{{formatPercentage(scope.row.actioned/scope.row.sent)}} %</span>
+                                        <span class="bu-mr-1" :data-test-id="'datatable-messaging-actioned-value-' +  scope.$index">{{formatNumber(scope.row.actioned)}}</span>
+                                        <span class="bu-mr-1" :data-test-id="'datatable-messaging-actioned-divider-' +  scope.$index">|</span>
+                                        <span :data-test-id="'datatable-messaging-actioned-percentage-' +  scope.$index">{{formatPercentage(scope.row.actioned/scope.row.sent)}} %</span>
                                     </div>
                                 </div>
                             </template>
@@ -142,8 +142,8 @@
                             <template slot-scope="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
                                     <template v-if="scope.row.lastDate && scope.row.lastDate.date"> 
-                                        <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.lastDate.date}}</span>
-                                        <span class="cly-vue-push-notification-table-column__second-line">{{scope.row.lastDate.time}}</span>
+                                        <span class="cly-vue-push-notification-table-column__first-line" :data-test-id="'datatable-messaging-date-sent-' +  scope.$index">{{scope.row.lastDate.date}}</span>
+                                        <span class="cly-vue-push-notification-table-column__second-line" :data-test-id="'datatable-messaging-scheduled-' +  scope.$index">{{scope.row.lastDate.time}}</span>
                                     </template>
                                     <template v-else>
                                         <span>-</span>
@@ -154,15 +154,15 @@
                         <el-table-column min-width="220" sortable="custom" prop="createdDateTime" :label="i18n('push-notification.table-created')"  class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
-                                    <span class="cly-vue-push-notification-table-column__first-line">{{scope.row.createdDateTime.date}}</span>
-                                    <span class="cly-vue-push-notification-table-column__second-line">{{scope.row.createdDateTime.time}}</span>
+                                    <span class="cly-vue-push-notification-table-column__first-line" :data-test-id="'datatable-messaging-created-date-' +  scope.$index">{{scope.row.createdDateTime.date}}</span>
+                                    <span class="cly-vue-push-notification-table-column__second-line" :data-test-id="'datatable-messaging-created-time-' +  scope.$index">{{scope.row.createdDateTime.time}}</span>
                                 </div>
                             </template>
                         </el-table-column>
                         
                         <el-table-column type="options">
                             <template slot-scope="scope">
-                                <cly-more-options v-if="scope.row.hover" size="small" @command="handleUserCommands($event, scope.row._id)">
+                                <cly-more-options :test-id="'datatable-' +  scope.$index" v-if="scope.row.hover" size="small" @command="handleUserCommands($event, scope.row._id)">
                                     <el-dropdown-item v-if="shouldShowStartUserCommand(scope.row.status)" :command="UserCommandEnum.START">{{i18n('push-notification.start')}} </el-dropdown-item>
                                     <el-dropdown-item v-if="shouldShowStopUserCommand(scope.row.status)" :command="UserCommandEnum.STOP">{{i18n('push-notification.stop')}} </el-dropdown-item>
                                     <el-dropdown-item v-if="shouldShowEditUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT">{{i18n('push-notification.edit')}}</el-dropdown-item>
