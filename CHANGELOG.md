@@ -1,5 +1,6 @@
 ## Version 24.10.2
 Fixes:
+- [core] Correct aggregated collection cleanup on event omitting
 - [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
 - [core] Fixed bug where exporting incoming data logs could result in "Incorrect parameter \"data\" error
 - [core] Removed use of commands which needs admin rights from report manager.
