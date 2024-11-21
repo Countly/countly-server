@@ -2,6 +2,7 @@
 Fixes:
 - [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
 - [core] Fixed bug where exporting incoming data logs could result in "Incorrect parameter \"data\" error
+- [core] Removed use of commands which needs admin rights from report manager.
 - [crash] Fixed bug in crash ingestion for scenarios where the "app version" is not a string.
 - [script] Fixing bug with "delete_old_members" script that led to malformed requests
 
