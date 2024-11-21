@@ -3144,6 +3144,35 @@ describe('Testing Crashes', function() {
         });
     });
 
+    describe('Crash app version', async() => {
+        it('should process crash app version as string', async() => {
+            const crashData = {
+                "_error": "error",
+                "_app_version": 123, // app version is number
+                "_os": "android",
+            };
+
+            await request.get('/i')
+                .query({ app_key: APP_KEY, device_id: DEVICE_ID, crash: JSON.stringify(crashData) })
+                .expect(200);
+
+            const crashGroupQuery = JSON.stringify({
+                latest_version: { $in: [`${crashData._app_version}`] },
+            });
+            let crashGroupResponse = await request
+                .get('/o')
+                .query({ method: 'crashes', api_key: API_KEY_ADMIN, app_id: APP_ID, query: crashGroupQuery });
+            const crashGroup = crashGroupResponse.body.aaData[0];
+            crashGroupResponse = await request
+                .get(`/o?`)
+                .query({ method: 'crashes', api_key: API_KEY_ADMIN, app_id: APP_ID, group: crashGroup._id });
+
+            const crash = crashGroupResponse.body.data[0];
+
+            crash.app_version.should.equal(`${crashData._app_version}`);
+        });
+    });
+
     describe('Reset app', function() {
         it('should reset data', function(done) {
             var params = {app_id: APP_ID, period: "reset"};
