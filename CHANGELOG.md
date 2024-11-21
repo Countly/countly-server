@@ -1,8 +1,12 @@
-## Version 24.05.XX
+## Version 24.05.18
 Fixes:
-- [script] Fixing bug with "delete_old_members" script that led to malformed requests
 - [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
+- [core] Fixed bug where exporting incoming data logs could result in "Incorrect parameter \"data\" error
 - [crash] Fixed bug in crash ingestion for scenarios where the "app version" is not a string.
+- [script] Fixing bug with "delete_old_members" script that led to malformed requests
+
+Enterprise fixes:
+- [nps] Fixed bug that showed the wrong nps preview title
 
 ## Version 24.05.17
 Fixes:
