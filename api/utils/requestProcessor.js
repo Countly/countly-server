@@ -1172,7 +1172,7 @@ const processRequest = (params) => {
                                         return new Promise(function(resolve) {
                                             var collectionNameWoPrefix = common.crypto.createHash('sha1').update(obj.key + params.qstring.app_id).digest('hex');
                                             //removes all document for current segment
-                                            common.db.collection("events" + collectionNameWoPrefix).remove({"s": {$in: obj.list}}, {multi: true}, function(err3) {
+                                            common.db.collection("events_data").remove({"_id": {"$regex": ("^" + params.qstring.app_id + "_" + collectionNameWoPrefix + "_.*")}, "s": {$in: obj.list}}, {multi: true}, function(err3) {
                                                 if (err3) {
                                                     console.log(err3);
                                                 }
@@ -1187,7 +1187,7 @@ const processRequest = (params) => {
                                                         unsetUs["meta_v2." + obj.list[p]] = "";
                                                     }
                                                     //clears out meta data for segments
-                                                    common.db.collection("events" + collectionNameWoPrefix).update({$or: my_query}, {$unset: unsetUs}, {multi: true}, function(err4) {
+                                                    common.db.collection("events_data").update({"_id": {"$regex": ("^" + params.qstring.app_id + "_" + collectionNameWoPrefix + "_.*")}, $or: my_query}, {$unset: unsetUs}, {multi: true}, function(err4) {
                                                         if (err4) {
                                                             console.log(err4);
                                                         }
@@ -1231,7 +1231,6 @@ const processRequest = (params) => {
                                                         else {
                                                             resolve();
                                                         }
-
                                                     });
                                                 }
                                                 else {
