@@ -44,7 +44,7 @@ Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) 
                         Url: SERVER_URL + "/i/users/delete",
                         body: {
                             api_key: API_KEY,
-                            args: JSON.stringify({user_ids: [(data._id + "")]})
+                            args: {user_ids: [data._id + ""]}
                         }
                     }, function(data) {
                         if (data.err) {
@@ -99,8 +99,7 @@ function sendRequest(params, callback) {
         const options = {
             uri: url.href,
             method: params.requestType,
-            json: true,
-            body: body,
+            json: body,
             strictSSL: false
         };
 
