@@ -828,17 +828,6 @@ const processRequest = (params) => {
                         });
                     });
                     break;
-                case 'stop':
-                    validateUserForWrite(params, () => {
-                        taskmanager.stopTask({
-                            db: common.db,
-                            id: params.qstring.task_id,
-                            op_id: params.qstring.op_id
-                        }, (err, res) => {
-                            common.returnMessage(params, 200, res);
-                        });
-                    });
-                    break;
                 case 'delete':
                     validateUserForWrite(params, () => {
                         taskmanager.deleteResult({

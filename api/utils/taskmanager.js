@@ -58,7 +58,7 @@ const log = require('./log.js')('core:taskmanager');
 *   }, outputData:function(err, data){
 *       common.returnOutput(params, data);
 *   }
-* })); 
+* }));
 */
 taskmanager.longtask = function(options) {
     options.db = options.db || common.db;
@@ -224,9 +224,6 @@ taskmanager.createTask = function(options, callback) {
     update.subtask_key = options.subtask_key || "";
     update.taskgroup = options.taskgroup || false;
     update.linked_to = options.linked_to;
-    if (options.comment_id) {
-        update.comment_id = options.comment_id;
-    }
     if (options.subtask && options.subtask !== "") {
         update.subtask = options.subtask;
         var updateSub = {$set: {}};
@@ -1041,10 +1038,6 @@ taskmanager.rerunTask = function(options, callback) {
             callback(null, "This task cannot be run again");
         }
     });
-};
-
-taskmanager.stopTask = function(options, callback) {
-    callback(null, "Operation could not be stopped");
 };
 
 /**
