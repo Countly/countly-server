@@ -1,3 +1,7 @@
+## Version 24.05.XX
+Fixes:
+- [dashboards] Fixing issue where dashboard widgets go into single column
+
 ## Version 24.05.18
 Fixes:
 - [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
@@ -79,7 +83,7 @@ Enterprise Features:
 ## Version 24.05.12
 Fixes:
 - [dashboards] Fixes for dashboards grid
-- [dasboards] UI fix for dashboard widget action menu
+- [dashboards] UI fix for dashboard widget action menu
 - [push] Refactored fcm API related code
 - [reports] Use config for encryption key in reports
 
