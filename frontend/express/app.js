@@ -11,7 +11,7 @@ var path = require('path');
 var IS_FLEX = false;
 
 if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
-    const deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
+    var deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
     try {
         if (JSON.parse(deploymentConf).DEPLOYMENT_ID) {
             IS_FLEX = true;
