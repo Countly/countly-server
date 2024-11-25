@@ -16,7 +16,7 @@
         </div>
         <div class="cly-vue-content-builder__layout-header__info">
             <div class="cly-vue-content-builder__layout-header__info-title cursor-pointer" @dblclick="handleDoubleClick">
-                <h4 v-if="!isEditing">{{ localTitle }}</h4>
+                <h4 class="has-ellipsis" v-tooltip="localTitle && localTitle.length > 30 ? localTitle : ''" v-if="!isEditing">{{ localTitle }}</h4>
                 <el-input
                     v-else
                     class="bu-mb-2 cly-vue-content-builder__layout-header__info-title__input"
