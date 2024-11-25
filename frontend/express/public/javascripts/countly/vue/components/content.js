@@ -405,6 +405,7 @@
                     dropdown: 'el-select',
                     input: 'el-input',
                     switch: 'el-switch',
+                    slider: 'el-slider',
                     'color-picker': 'cly-colorpicker',
                     'input-number': 'el-input-number',
                 };
@@ -424,6 +425,8 @@
                             v-bind="inputProps"
                             :value="localValue"
                             @input="updateValue"
+                            :min="inputProps && inputProps.min"
+                            :max="inputProps && inputProps.max"
                             class="cly-vue-content-builder__layout-step__component"
                             :style="[ position !== 'horizontal' ? {\'width\':  \'100%\'} : {\'width\': width + \'px\'}]"
                         >
