@@ -1,3 +1,9 @@
+## Version XX.XX.XX
+Fixes:
+- [remote-config] Moving the remote config enable/disable functionality to the drop-down
+
+Enterprise fixes:
+
 ## Version 24.10.2
 Fixes:
 - [core] Correct aggregated collection cleanup on event omitting
