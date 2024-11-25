@@ -7,11 +7,11 @@
     * node compare_drill_aggregated.js
 */
 var period = "7days"; //Chose any of formats: "Xdays" ("7days","100days") or  ["1-1-2024", "1-10-2024"], 
-var app_list = []; //List with apps
+var app_list = ["670cc37eb89933fa76e0f448"]; //List with apps
 //Example var eventMap = {"6075f94b7e5e0d392902520c":["Logout","Login"],"6075f94b7e5e0d392902520d":["Logout","Login","Buy"]};
 var eventMap = {}; //If left empty will run for all alls/events.
 
-var union_with_old_collection = false; //False if all sessions are stored in drill_events collection
+var union_with_old_collection = true; //False if all sessions are stored in drill_events collection
 
 var verbose = false; //true to show more output
 
@@ -164,11 +164,12 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                                             if (aggCount !== 0) {
                                                                 // If drillCount is 0, and aggCount is not 0, show a large difference
                                                                 percentageDiff = (aggCount > 0 ? 100 : -100); // 100% or -100% depending on the sign of aggCount
-                                                            } else {
+                                                            }
+                                                            else {
                                                                 percentageDiff = 0; // Both counts are 0, no difference
                                                             }
                                                         }
-                                                    
+
                                                         console.log("----------------------------------------------");
                                                         console.log("- Application name:", app.name);
                                                         console.log("- Event name:", event);
@@ -186,7 +187,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                                             "report": report
                                                         };
                                                     }
-                                                    
+
                                                     resolve2();
                                                 });
                                             }
@@ -199,20 +200,19 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                     //Complete CSV after processing the apps
                                     console.log("\nSummary Report (CSV-like):");
                                     console.log("App,Event,Aggregated,Drill,% Difference");
-                                    var csvRows = ["App,Event,Aggregated,Drill,% Difference"]; 
+                                    // var csvRows = ["App,Event,Aggregated,Drill,% Difference"]; 
                                     for (var appId in endReport) {
-                                    var appData = endReport[appId];
-                                    var appName = appData.name;
-                                    if (appData.events) {
-                                    for (var event in appData.events)
-                                    {
-                                        var eventData = appData.events[event];
-                                        var row = `${appName},${event},${eventData.aggregated_count},${eventData.drill_count},${eventData.percentage_difference}`;
-                                        console.log(row);
-                                        csvRows.push(row);
+                                        var appData = endReport[appId];
+                                        var appName = appData.name;
+                                        if (appData.events) {
+                                            for (var event in appData.events) {
+                                                var eventData = appData.events[event];
+                                                var row = `${appName},${event},${eventData.aggregated_count},${eventData.drill_count},${eventData.percentage_difference}`;
+                                                console.log(row);
+                                                //csvRows.push(row);
+                                            }
+                                        }
                                     }
-                                    }
-    }
 
 
                                 }).catch(function(eee) {
@@ -258,12 +258,13 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         }
         endDate = endDate.valueOf() - endDate.utcOffset() * 60000;
 
-        var query = {"ts": {"$gte": startDate, "$lt": endDate}};
-        var pipeline=[];
-        if(union_with_old_collection)
-        {
-        let collection = "drill_events" + crypto.createHash('sha1').update(options.event + options.app_id).digest('hex');
+        var query = {"ts": {"$gte": startDate, "$lt": endDate}, "a": options.app_id, "e": options.event};
+        var pipeline = [];
         pipeline.push({"$match": query});
+        if (union_with_old_collection) {
+            let collection = "drill_events" + crypto.createHash('sha1').update(options.event + options.app_id).digest('hex');
+            var query2 = {"ts": {"$gte": startDate, "$lt": endDate}};
+            pipeline.push({"$unionWith": { "coll": collection, "pipeline": [{"$match": query2}] }});
         }
 
         pipeline.push({"$group": {"_id": "$d", "c": {"$sum": "$c"}, "s": {"$sum": "$s"}, "dur": {"$sum": "$dur"}}});
