@@ -19,13 +19,13 @@ class ClearJob extends JOB.Job {
         let max = this.data.max;
         if (typeof max !== "number") {
             log.e(
-                "Maximum number of log entries required. Falling back to",
+                "Maximum number of log entries required. Falling back to default value:",
                 DEFAULT_MAX_ENTRIES
             );
             max = DEFAULT_MAX_ENTRIES;
         }
 
-        log.d("Started: cleaning logs before the last", this.data.max);
+        log.d("Started: cleaning logs before the last", max);
         const appIds = await db.collection("apps").find().project({ _id: 1 }).toArray();
         const loggerCollections = appIds.map(({_id}) => "logs" + _id.toString());
 
@@ -33,7 +33,7 @@ class ClearJob extends JOB.Job {
             const col = db.collection(colName);
             // find the first entry we want to keep
             const firstEntry = await col.find({}).project({ _id: 1 }).sort({ _id: -1 })
-                .skip(this.data.max - 1).limit(1).toArray();
+                .skip(max - 1).limit(1).toArray();
             if (!firstEntry[0]) {
                 continue;
             }
