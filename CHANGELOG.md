@@ -1,3 +1,12 @@
+## Version 24.05.XX
+Fixes:
+- [dashboards] Fixing issue where dashboard widgets go into single column
+
+Security:
+- Bump puppeteer from 17.1.3 to 23.8.0
+- Bump express from 4.21.0 to 4.21.1 
+- Bump express-session from 1.18.0 to 1.18.1
+
 ## Version 24.05.18
 Fixes:
 - [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
@@ -79,7 +88,7 @@ Enterprise Features:
 ## Version 24.05.12
 Fixes:
 - [dashboards] Fixes for dashboards grid
-- [dasboards] UI fix for dashboard widget action menu
+- [dashboards] UI fix for dashboard widget action menu
 - [push] Refactored fcm API related code
 - [reports] Use config for encryption key in reports
 
