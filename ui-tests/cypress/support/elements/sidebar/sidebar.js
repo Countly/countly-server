@@ -86,6 +86,7 @@ export default {
         USER_MANAGEMENT: 'sidebar-management-users',
         APPLICATIONS: 'sidebar-management-applications',
         SETTINGS: 'sidebar-management-configurations',
+        PRESET_MANAGEMENT: 'sidebar-management-presets',
         DATA_POINTS: 'sidebar-management-data-point',
         LOGS: 'sidebar-management-logs',
         JOBS: 'sidebar-management-jobs',
@@ -94,5 +95,9 @@ export default {
         ALERTS: 'sidebar-management-alerts',
         HOOKS: 'sidebar-management-hooks',
         DB_VIEWER: 'sidebar-management-db'
+    },
+
+    SIDEBAR_MY_PROFILE_OPTIONS: {
+        LOGOUT: 'sidebar-menuoptions-myprofile-logout',
     },
 };

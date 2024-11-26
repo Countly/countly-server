@@ -1106,10 +1106,13 @@
                 if (template && template.events && template.events.length) {
                     events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace(), ignore_cooldown: '1'};
+                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, ignore_cooldown: '1'};
                 req.events = req.events.concat(this.getHeatmapEvents());
                 req.events = req.events.concat(this.getFeedbackEvents());
                 req.events = req.events.concat(this.getScrollmapEvents());
+                if (_featuresToPopulate.includes("performance-monitoring")) {
+                    req.apm = this.getTrace();
+                }
             }
             else {
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
@@ -1120,7 +1123,10 @@
                 if (template && template.events && template.events.length) {
                     events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace(), ignore_cooldown: '1'};
+                req = {timestamp: this.ts, begin_session: 1, events: events, ignore_cooldown: '1'};
+                if (_featuresToPopulate.includes("performance-monitoring")) {
+                    req.apm = this.getTrace();
+                }
             }
 
             if (Math.random() > 0.10) {
@@ -1130,7 +1136,7 @@
                 req[this.platform.toLowerCase() + "_token"] = randomString(8);
             }
 
-            if (Math.random() > 0.50) {
+            if (Math.random() > 0.50 && _featuresToPopulate.includes("crashes")) {
                 req.crash = this.getCrash();
             }
 
@@ -1336,6 +1342,8 @@
     var abExampleCount = 1;
     var abExampleName = "Pricing";
     var _templateType = '';
+    var _allFeatures = ["ab-testing", "cohorts", "crashes", "funnels", "performance-monitoring", "push", "star-rating", "surveys"];
+    var _featuresToPopulate = [];
     var runCount = 0;
     var completedRequestCount = 0;
     var crashSymbolVersions = {
@@ -1700,26 +1708,31 @@
          *  @param {function} callback - callback method
          */
         function generateRatingWidgets(callback) {
-            createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: true}, ["/"], "selected", true, false, function() {
-                createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
-                    createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "bright", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
-                        $.ajax({
-                            type: "GET",
-                            url: countlyCommon.API_URL + "/o/feedback/widgets",
-                            data: {
-                                app_id: countlyCommon.ACTIVE_APP_ID
-                            },
-                            success: function(json) {
-                                ratingWidgetList = json;
-                                callback();
-                            },
-                            error: function() {
-                                callback();
-                            }
+            if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating") && _featuresToPopulate.includes("star-rating")) {
+                createFeedbackWidget("What's your opinion about this page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks for feedback!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: true}, ["/"], "selected", true, false, function() {
+                    createFeedbackWidget("Leave us a feedback", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "mleft", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
+                        createFeedbackWidget("Did you like this web page?", "Add comment", "Contact me by e-mail", "Send feedback", "Thanks!", "bright", "#fff", "#ddd", "Feedback", {phone: true, tablet: false, desktop: false}, ["/"], "selected", true, false, function() {
+                            $.ajax({
+                                type: "GET",
+                                url: countlyCommon.API_URL + "/o/feedback/widgets",
+                                data: {
+                                    app_id: countlyCommon.ACTIVE_APP_ID
+                                },
+                                success: function(json) {
+                                    ratingWidgetList = json;
+                                    callback();
+                                },
+                                error: function() {
+                                    callback();
+                                }
+                            });
                         });
                     });
                 });
-            });
+            }
+            else {
+                callback();
+            }
         }
 
         /**
@@ -1727,9 +1740,14 @@
          *  @param {function} callback - callback method
          */
         function generateNPSWidgets(callback) {
-            createNPSWidget("Separate per response type", "score", "How likely are you to recommend our product to a friend or colleague?", "We're glad you like us. What do you like the most about our product?", "Thank you for your feedback. How can we improve your experience?", "We're sorry to hear it. What would you like us to improve on?", "", "Thank you for your feedback", "full", "uclose", "#ddd", function() {
-                createNPSWidget("One response for all", "one", "How likely are you to recommend our product to a friend or colleague?", "", "", "", "What can/should we do to WOW you?", "Thank you for your feedback", "full", "uclose", "#ddd", callback);
-            });
+            if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys") && _featuresToPopulate.includes("surveys")) {
+                createNPSWidget("Separate per response type", "score", "How likely are you to recommend our product to a friend or colleague?", "We're glad you like us. What do you like the most about our product?", "Thank you for your feedback. How can we improve your experience?", "We're sorry to hear it. What would you like us to improve on?", "", "Thank you for your feedback", "full", "uclose", "#ddd", function() {
+                    createNPSWidget("One response for all", "one", "How likely are you to recommend our product to a friend or colleague?", "", "", "", "What can/should we do to WOW you?", "Thank you for your feedback", "full", "uclose", "#ddd", callback);
+                });
+            }
+            else {
+                callback();
+            }
         }
 
         /**
@@ -1863,27 +1881,32 @@
                 });
             });
         }
-        if (countlyGlobal.plugins.indexOf("star-rating") !== -1 && countlyAuth.validateCreate("star-rating")) {
-            generateRatingWidgets(function() {
-                if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys")) {
-                    generateNPSWidgets(function() {
-                        setTimeout(function() {
-                            generateSurveyWidgets1(function() {
-                                generateSurveyWidgets2(function() {
-                                    generateSurveyWidgets3(done);
-                                });
-                            });
-                        }, 100);
+
+        /**
+         *  Create 3 survey widgets
+         *  @param {function} callback - callback method
+         */
+        function generateSurveryWidgets(callback) {
+            if (countlyGlobal.plugins.indexOf("surveys") !== -1 && countlyAuth.validateCreate("surveys") && _featuresToPopulate.includes("surveys")) {
+                generateSurveyWidgets1(function() {
+                    generateSurveyWidgets2(function() {
+                        generateSurveyWidgets3(callback);
                     });
-                }
-                else {
-                    done();
-                }
+                });
+            }
+            else {
+                callback();
+            }
+        }
+
+        generateRatingWidgets(function() {
+            generateNPSWidgets(function() {
+                setTimeout(function() {
+                    generateSurveryWidgets(done);
+                }, 100);
             });
-        }
-        else {
-            done();
-        }
+        });
+
     }
 
 
@@ -2262,7 +2285,7 @@
                 generateCampaigns(async function() {
                     await createUsers();
 
-                    if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing")) {
+                    if (countlyGlobal.plugins.indexOf("ab-testing") !== -1 && countlyAuth.validateCreate("ab-testing") && _featuresToPopulate.includes("ab-testing")) {
                         abExampleName = "Pricing" + abExampleCount++;
                         generateAbTests(function() {
                             if (users.length) {
@@ -2347,7 +2370,7 @@
 
         var template = this.currentTemplate || {};
 
-        if (CountlyHelpers.isPluginEnabled("cohorts") && typeof countlyCohorts !== "undefined" && countlyAuth.validateCreate('cohorts')) {
+        if (CountlyHelpers.isPluginEnabled("cohorts") && typeof countlyCohorts !== "undefined" && countlyAuth.validateCreate('cohorts') && _featuresToPopulate.includes("cohorts")) {
             if (template.events && template.events.length) {
                 var firstEventKey = template.events[getRandomInt(0, template.events.length - 1)].key;
 
@@ -2470,7 +2493,7 @@
             });
         }
 
-        if (CountlyHelpers.isPluginEnabled("funnels") && typeof countlyFunnel !== "undefined" && countlyAuth.validateCreate('funnels')) {
+        if (CountlyHelpers.isPluginEnabled("funnels") && typeof countlyFunnel !== "undefined" && countlyAuth.validateCreate('funnels') && _featuresToPopulate.includes("funnels")) {
 
             let pages = countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile" ? viewSegments.name : getPageTemplates(countlyPopulator.getSelectedTemplate().substr(7).toLowerCase());
             let page1 = pages[getRandomInt(0, pages.length - 1)];
@@ -2502,7 +2525,7 @@
             }
         }
 
-        if (countlyGlobal.plugins.indexOf('crash_symbolication') !== -1 && countlyAuth.validateCreate('crash_symbolication')) {
+        if (countlyGlobal.plugins.indexOf('crash_symbolication') !== -1 && countlyAuth.validateCreate('crash_symbolication') && _featuresToPopulate.includes("crashes")) {
             const crashPlatforms = Object.keys(crashSymbolVersions).filter(key => crashSymbolVersions[key].length);
 
 
@@ -2556,7 +2579,7 @@
             });
         }
 
-        if (CountlyHelpers.isPluginEnabled("push")) {
+        if (CountlyHelpers.isPluginEnabled("push") && _featuresToPopulate.includes("push")) {
             createMessage(messages[0]);
             createMessage(messages[1]);
             createMessage(messages[2]);
@@ -2573,6 +2596,10 @@
 
     countlyPopulator.setSelectedTemplate = function(value) {
         _templateType = value;
+    };
+
+    countlyPopulator.setSelectedFeatures = function(value) {
+        _featuresToPopulate = (value === "all") ? _allFeatures : value;
     };
 
     countlyPopulator.getTemplate = function(templateId, callback) {

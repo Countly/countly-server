@@ -118,6 +118,12 @@
             },
             showTurnedOff: function() {
                 return this.isTurnedOff;
+            },
+            goTo: function() {
+                return {
+                    title: CV.i18n("common.go-to-settings"),
+                    url: "#/" + this.appId + "/manage/configurations"
+                };
             }
         },
         mixins: [
@@ -130,6 +136,44 @@
             formatExportFunction: function() {
                 var tableData = this.logsData;
                 var table = [];
+                var sanitizeQueryData = function(data) {
+                    try {
+                        // If data is already a string, parse it first
+                        let queryObject = typeof data === 'string' ? JSON.parse(data) : data;
+
+                        // Handle nested JSON strings within the object
+                        Object.keys(queryObject).forEach(key => {
+                            if (typeof queryObject[key] === 'string') {
+                                // Try to parse if it looks like JSON
+                                if (queryObject[key].startsWith('{') || queryObject[key].startsWith('[')) {
+                                    try {
+                                        queryObject[key] = JSON.parse(queryObject[key]);
+                                        if (typeof queryObject[key] === 'object' && queryObject[key] !== null) {
+                                            queryObject[key] = sanitizeQueryData(queryObject[key]);
+                                        }
+                                    }
+                                    catch (e) {
+                                        // If parsing fails, keep decoded string
+                                    }
+                                }
+                                queryObject[key] = countlyCommon.unescapeHtml(queryObject[key]);
+                            }
+                            else if (typeof queryObject[key] === 'object' && queryObject[key] !== null) {
+                                // Recursively handle nested objects
+                                Object.keys(queryObject[key]).forEach(nestedKey => {
+                                    if (typeof queryObject[key][nestedKey] === 'string') {
+                                        queryObject[key][nestedKey] = countlyCommon.unescapeHtml(queryObject[key][nestedKey]);
+                                    }
+                                });
+                            }
+                        });
+                        return JSON.stringify(queryObject);
+                    }
+                    catch (err) {
+                        return data; // Return original data if processing fails
+                    }
+                };
+
                 for (var i = 0; i < tableData.length; i++) {
                     var item = {};
                     item[CV.i18n('logger.requests').toUpperCase()] = countlyCommon.formatTimeAgoText(tableData[i].reqts).text;
@@ -152,7 +196,7 @@
                     }
                     if (tableData[i].q) {
                         try {
-                            item[CV.i18n('logger.request-query').toUpperCase()] = JSON.stringify(tableData[i].q);
+                            item[CV.i18n('logger.request-query').toUpperCase()] = sanitizeQueryData(tableData[i].q);
                         }
                         catch (err) {
                             item[CV.i18n('logger.request-header').toUpperCase()] = "-";
@@ -160,8 +204,7 @@
                     }
                     if (tableData[i].h) {
                         try {
-                            var stringifiedHeader = JSON.stringify(tableData[i].h);
-                            item["REQUEST HEADER"] = stringifiedHeader.replace(/&quot;/g, '"');
+                            item["REQUEST HEADER"] = sanitizeQueryData(tableData[i].h);
                         }
                         catch (err) {
                             item["REQUEST HEADER"] = "-";

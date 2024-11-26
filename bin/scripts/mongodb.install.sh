@@ -341,12 +341,12 @@ if [ $# -eq 0 ]; then
             exit 1
         fi
 
-        echo "[mongodb-org-6.0]
+        echo "[mongodb-org-8.0]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/${CENTOS_MAJOR}/mongodb-org/6.0/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/${CENTOS_MAJOR}/mongodb-org/8.0/x86_64/
 gpgcheck=1
 enabled=1
-gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mongodb-org-6.0.repo
+gpgkey=https://pgp.mongodb.com/server-8.0.asc" > /etc/yum.repos.d/mongodb-org-8.0.repo
 
         yum install -y mongodb-org
     elif [ -f /etc/lsb-release ]; then
@@ -359,12 +359,12 @@ gpgkey=https://www.mongodb.org/static/pgp/server-6.0.asc" > /etc/yum.repos.d/mon
             exit 1
         fi
 
-        wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
-        echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/6.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-6.0.list ;
+        curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
+        echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu ${UBUNTU_RELEASE}/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
         apt-get update
         DEBIAN_FRONTEND="noninteractive" apt-get install -y mongodb-org || (echo "Failed to install mongodb." ; exit)
     else
-        echo "Unsupported OS or version, only CentOS/RHEL 8 or 9 and Ubuntu 20 or 22."
+        echo "Unsupported OS or version, only CentOS/RHEL 8 or 9 and Ubuntu 20 or 22 or 24."
         exit 1
     fi
 

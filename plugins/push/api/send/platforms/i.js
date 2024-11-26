@@ -505,6 +505,9 @@ const map = {
                 template.result.aps.alert = template.result.aps.alert || {};
                 template.result.aps.alert.subtitle = specific.subtitle;
             }
+            if (specific.setContentAvailable) {
+                template.result.aps["content-available"] = 1;
+            }
         }
     },
 };
@@ -549,6 +552,8 @@ class APN extends Base {
             ':method': 'POST',
             ':scheme': 'https',
             ':authority': authority,
+            // this is being added before the actual request depending on weather message have setContentAvailable
+            // "apns-priority": 5,
             [HTTP2.sensitiveHeaders]: ['authorization', ':path', 'apns-id', 'apns-expiration', 'apns-collapse-id']
         };
         this.headersSecondWithToken = token => {
@@ -660,7 +665,21 @@ class APN extends Base {
                 }
 
                 let content = this.template(p.m).compile(p),
-                    stream = this.session.request(this.headersSecondWithToken(p.t)),
+                    reqHeaders = self.headersSecondWithToken(p.t);
+                // find if we need to add the priority header (check if content-available set)
+                delete reqHeaders["apns-priority"];
+                const message = self.messages[p.m];
+                if (message && Array.isArray(message.contents)) {
+                    const contentItem = message.contents.find(cont => Array.isArray(cont.specific));
+                    if (contentItem) {
+                        const obj = contentItem.specific.find(cont => cont.setContentAvailable !== undefined);
+                        if (obj && obj.setContentAvailable) {
+                            reqHeaders["apns-priority"] = 5;
+                        }
+                    }
+                }
+                // =======0========000=================0========000=================0========0
+                let stream = this.session.request(reqHeaders),
                     status,
                     data = '';
                 stream.on('error', err => {
@@ -688,7 +707,8 @@ class APN extends Base {
                     status = headers[':status'];
                     // self.log.d('%d: status %d: %j', i, status, self.session.state);
                     if (status === 200) {
-                        oks.push(p._id);
+                        const apnsUniqueId = headers["apns-unique-id"];
+                        oks.push({ p: p._id, r: apnsUniqueId });
                         stream.destroy();
                         streamDone();
                     }

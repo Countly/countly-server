@@ -31,7 +31,7 @@
                                     backgroundPosition: item.member.image.position + 'px',
                                     backgroundSize: '600px 60px'
                                 }">
-                            <span class="cly-vue-sidebar__user-initials has-ellipsis" data-test-id="sidebar-menuoptions-myprofile">{{item.member.image.initials}}</span>
+                            <span class="cly-vue-sidebar__user-initials has-ellipsis">{{item.member.image.initials}}</span>
                         </div>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
                         <i class="ion-gear-a"></i>
                     </div>
                     <div class="bu-level-item">
-                        <a href="#/account-settings">
+                        <a href="#/account-settings" @click="unselectCountlyGuides">
                             <div>{{i18nM('plugins.user-account')}}</div>
                         </a>
                     </div>
@@ -73,7 +73,7 @@
                         <i class="ion-key"></i>
                     </div>
                     <div class="bu-level-item">
-                        <a href="#/manage/token_manager">
+                        <a href="#/manage/token_manager" @click="unselectCountlyGuides">
                             <div>{{i18nM('token_manager.page-title')}}</div>
                         </a>
                     </div>
@@ -169,7 +169,7 @@
                         <i class="ion-android-exit"></i>
                     </div>
                     <div class="bu-level-item cursor-pointer ">
-                        <div @click="logout()">{{i18nM('sidebar.logout')}}</div>
+                        <div @click="logout()" data-test-id="sidebar-menuoptions-myprofile-logout">{{i18nM('sidebar.logout')}}</div>
                     </div>
                 </div>
             </div>
@@ -196,7 +196,7 @@
                     height: 30 + 'px',
                     width: 30 + 'px'
                 }">
-            <span class="cly-vue-sidebar__user-initials has-ellipsis">{{item.member.image.initials}}</span>
+            <span class="cly-vue-sidebar__user-initials has-ellipsis" data-test-id="sidebar-menuoptions-myprofile">{{item.member.image.initials}}</span>
         </div>
     </template>
 </el-popover>

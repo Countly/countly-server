@@ -3,7 +3,7 @@
             <div class="bu-is-relative">
             <div class="bu-level-left bu-p-5" v-if="typeof name !== 'undefined'">
                 <span class="text-medium">{{name}}</span>
-                <span v-if="description" class="cly-vue-tooltip-icon ion ion-help-circled has-tooltip bu-ml-3" v-tooltip.top-center="description"></span>
+                <cly-tooltip-icon v-if="description" class="bu-ml-3" :tooltip="description" placement="top-center"></cly-tooltip-icon>
             </div>
             <div class="bu-level-left bu-p-2" v-if="typeof name === 'undefined'"></div>
             <div v-if="values.length === 0" class="bu-pl-3 bu-pr-3 cly-vue-metric-breakdown__empty" style="height: 264px;">
@@ -16,23 +16,23 @@
                             <div class="bu-columns cly-vue-metric-breakdown__inner text-medium color-cool-gray-100">
                                 <div class="bu-column">
                                     <img class="cly-vue-metric-breakdown__row-icon" v-if="item.icon" :src="item.icon"/>
-                                    <span>{{item.name}}</span>
+                                    <span :data-test-id="'metric-card-column-' + testId + '-name'">{{item.name}}</span>
                                 </div>
                                 <div class="bu-column cly-vue-metric-breakdown__numbers">
                                     <a v-if="item.link" :href="item.link">
-                                        <span v-if="item.description">{{item.description}}</span>
-                                        <span class="divider"> | </span>
-                                        <span>{{item.percent}}%</span>
+                                        <span v-if="item.description" :data-test-id="'metric-card-column-' + testId + '-description'">{{item.description}}</span>
+                                        <span class="divider" :data-test-id="'metric-card-column-' + testId + '-divider'"> | </span>
+                                        <span :data-test-id="'metric-card-column-' + testId + '-percent'">{{item.percent}}%</span>
                                         <i class="fas fa-arrow-circle-right color-cool-gray-40"></i>
                                     </a>
                                     <div v-else>
-                                        <span v-if="item.description">{{item.description}}</span>
-                                        <span class="divider"> | </span>
-                                        <span>{{item.percent}}%</span>
+                                        <span v-if="item.description" :data-test-id="'metric-card-column-' + testId + '-desc'">{{item.description}}</span>
+                                        <span class="divider" :data-test-id="'metric-card-column-' + testId + '-divider'"> | </span>
+                                        <span :data-test-id="'metric-card-column-' + testId + '-percent'">{{item.percent}}%</span>
                                     </div>
                                 </div>
                             </div>
-                            <cly-progress-bar :entities="getProgressBarEntities(item)" :height=8></cly-progress-bar>
+                            <cly-progress-bar :data-test-id="'metric-card-column-' + testId + '-progress-bar'" :entities="getProgressBarEntities(item)" :height=8></cly-progress-bar>
                         </div>
                     </div>
                 </vue-scroll>

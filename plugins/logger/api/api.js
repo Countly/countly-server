@@ -67,6 +67,7 @@ plugins.setConfigs("logger", {
     };
 
     var processSDKRequest = function(params) {
+        params = params || {};
         log.d("Explicitly set logging_is_allowed => ", params.logging_is_allowed);
         const requestLoggerConfiguration = getRequestLoggerConfiguration(params);
         log.d("Logging config => ", requestLoggerConfiguration);
@@ -355,7 +356,8 @@ plugins.setConfigs("logger", {
             validateRead(params, FEATURE_NAME, function(parameters) {
                 common.db.collection('logs' + parameters.app_id).stats(function(err, stats) {
                     if (err) {
-                        console.log(err);
+                        console.log("Failed fetching logs collection info", err);
+                        return common.returnMessage(parameters, 400, 'Error fetching collection info');
                     }
                     common.returnOutput(parameters, stats && {size: stats.size, count: stats.count, max: MAX_NUMBER_OF_LOG_ENTRIES} || {});
                 });

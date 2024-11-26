@@ -212,7 +212,7 @@
                 "node": true
             },
             "parserOptions": {
-                "ecmaVersion": 2020
+                "ecmaVersion": 2023
             },
             "rules": {
                 "no-console": "off",
@@ -235,9 +235,6 @@
                     }
                 ],
                 "for-direction": [
-                    "off"
-                ],
-                "no-console": [
                     "off"
                 ],
                 "no-control-regex": [

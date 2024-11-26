@@ -232,7 +232,7 @@ class WriteBatcher {
                         updateOne: {
                             filter: {_id: this.data[db][collection][key].id},
                             update: this.data[db][collection][key].value,
-                            upsert: true
+                            upsert: this.data[db][collection][key].upsert
                         }
                     });
                 }
@@ -340,18 +340,25 @@ class WriteBatcher {
      *  @param {string} id - id of the document
      *  @param {object} operation - operation
      *  @param {string} db - name of the database for which to write data
+     *  @param {object=} options - options for operation ((upsert: false) - if you don't want to upsert document)
      */
-    add(collection, id, operation, db = "countly") {
+    add(collection, id, operation, db = "countly", options) {
         if (!this.shared || cluster.isMaster) {
             if (!this.data[db][collection]) {
                 this.data[db][collection] = {};
             }
             if (!this.data[db][collection][id]) {
-                this.data[db][collection][id] = {id: id, value: operation};
+                this.data[db][collection][id] = {id: id, value: operation, upsert: true};
+                if (options && options.upsert === false) {
+                    this.data[db][collection][id].upsert = false;
+                }
                 batcherStats.update_queued++;
             }
             else {
                 this.data[db][collection][id].value = common.mergeQuery(this.data[db][collection][id].value, operation);
+                if (options && options.upsert === false) {
+                    this.data[db][collection][id].upsert = this.data[db][collection][id].upsert || false;
+                }
             }
             if (!this.process) {
                 this.flush(db, collection);

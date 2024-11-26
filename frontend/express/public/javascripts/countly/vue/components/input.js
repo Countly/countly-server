@@ -28,10 +28,13 @@
             },
             localValue: {
                 get: function() {
-                    return this.value.replace("#", "");
+                    var rawValue = this.value || this.resetValue;
+
+                    return rawValue.replace("#", "");
                 },
                 set: function(value) {
                     var colorValue = "#" + value.replace("#", "");
+
                     if (colorValue.match(HEX_COLOR_REGEX)) {
                         this.setColor({hex: colorValue});
                     }
@@ -43,10 +46,13 @@
         },
         methods: {
             setColor: function(color) {
-                this.$emit("input", color.hex);
+                var finalColor = color.hex8 || color.hex;
+
+                this.$emit("input", finalColor);
             },
             reset: function() {
                 this.setColor({hex: this.resetValue});
+                this.close();
             },
             open: function() {
                 this.isOpened = true;
@@ -321,6 +327,7 @@
     }));
 
     Vue.component("cly-checklistbox", AbstractListBox.extend({
+        mixins: [SearchableOptionsMixin],
         props: {
             value: {
                 type: Array,
@@ -466,6 +473,9 @@
                     this.innerValue = this.value; // triggers innerValue.set
                     this.$emit('update:options', this.computeSortedOptions());
                 }
+            },
+            searchedOptions: function() {
+                return this.getMatching(this.sortedOptions);
             }
         },
         template: '<div\
@@ -477,22 +487,34 @@
                     @mouseleave="handleBlur"\
                     @focus="handleHover"\
                     @blur="handleBlur">\
+                    <div class="cly-vue-listbox__header bu-p-3" v-if="searchable">\
+                        <form>\
+                            <el-input\
+                                :disabled="disabled"\
+                                test-id="cly-listbox-search-input"\
+                                autocomplete="off"\
+                                v-model="searchQuery"\
+                                :placeholder="searchPlaceholder">\
+                                <i slot="prefix" class="el-input__icon el-icon-search"></i>\
+                            </el-input>\
+                        </form>\
+                    </div>\
                     <vue-scroll\
                         :style="vueScrollStyle"\
-                        v-if="options.length > 0"\
+                        v-if="searchedOptions.length > 0"\
                         :ops="scrollCfg"\>\
                         <div :style="wrapperStyle" class="cly-vue-listbox__items-wrapper">\
                             <el-checkbox-group\
                                 v-model="innerValue">\
                                 <draggable \
                                     handle=".drag-handler"\
-                                    v-model="sortedOptions"\
+                                    v-model="searchedOptions"\
                                     :disabled="!sortable">\
                                 <div\
                                     class="text-medium cly-vue-listbox__item"\
                                     :style="[option.disabled ? {\'pointer-events\' : \'none\'} : {\'pointer-events\': \'all\'}]"\
                                     :key="option.value"\
-                                    v-for="option in sortedOptions">\
+                                    v-for="option in searchedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
                                     <el-checkbox :test-id="testId + \'-\' + (option.label ? option.label.replaceAll(\' \', \'-\').toLowerCase() : \'el-checkbox\')" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\

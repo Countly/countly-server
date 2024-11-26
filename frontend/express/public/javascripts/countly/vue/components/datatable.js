@@ -109,6 +109,9 @@
                     });
                 }
                 var filteredTotal = currentArray.length;
+                if (this.displayMode === 'list') {
+                    this.controlParams.perPage = currentArray.length;
+                }
                 if (this.controlParams.perPage < currentArray.length) {
                     var startIndex = (this.controlParams.page - 1) * this.controlParams.perPage,
                         endIndex = startIndex + this.controlParams.perPage;
@@ -947,6 +950,13 @@
             sortable: {
                 type: Boolean,
                 default: false
+            },
+            displayMode: {
+                type: String,
+                default: null,
+                validator: function(value) {
+                    return ['list', /** add others if needed */].indexOf(value) !== -1;
+                }
             }
         },
         data: function() {
@@ -1000,7 +1010,9 @@
                 if (!this.forceLoading && this.dataSource && this.externalStatus === 'silent-pending') {
                     classes.push("silent-loading");
                 }
-
+                if (this.displayMode) {
+                    classes.push("display-mode--" + this.displayMode);
+                }
                 return classes;
             },
             sourceRows: function() {

@@ -5,10 +5,7 @@
 	>
 		<template v-slot:header-right>
           <cly-more-options v-if="topDropdown" size="small">
-            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-              <!--<span :class="item.icon"></span>-->
-              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
-            </el-dropdown-item>
+			<el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown" :command="{url: item.value}">{{item.label}}</el-dropdown-item>
           </cly-more-options>
         </template>
     </cly-header>
@@ -25,12 +22,36 @@
 			</div>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :rows="appResolutionRows" :resizable="true" :force-loading="isLoading">
+			<cly-datatable-n  test-id="resolutions" :rows="appResolutionRows" :resizable="true" :force-loading="isLoading">
 				<template v-slot="scope">
-					<el-table-column sortable="custom" prop="resolutions" :label="i18n('resolutions.table.resolution')"></el-table-column>
-					<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
-					<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
-					<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
+					<el-table-column sortable="custom" prop="resolutions" :label="i18n('resolutions.table.resolution')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-resolutions-resolution-' + rowScope.$index">
+								{{ rowScope.row.resolutions }}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-resolutions-total-sessions-' + rowScope.$index">
+								{{ rowScope.row.t }}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-resolutions-total-users-' + rowScope.$index">
+								{{ rowScope.row.u }}
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')">
+						<template v-slot="rowScope">
+							<div :data-test-id="'datatable-resolutions-new-users-' + rowScope.$index">
+								{{ rowScope.row.n }}
+							</div>
+						</template>
+					</el-table-column>
 				</template>
 			</cly-datatable-n>
 		</cly-section>

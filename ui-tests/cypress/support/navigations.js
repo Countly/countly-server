@@ -6,7 +6,8 @@ const goToLoginPage = () => {
 };
 
 const goToLogoutPage = () => {
-    cy.visit('/logout');
+    cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.MY_PROFILE);
+    cy.clickElement(sidebarElements.SIDEBAR_MY_PROFILE_OPTIONS.LOGOUT);
 };
 
 const goToDashboardPage = () => {
@@ -265,6 +266,11 @@ const goToApplicationsPage = () => {
     cy.clickElement(sidebarElements.SIDEBAR_MANAGEMENT_OPTIONS.APPLICATIONS);
 };
 
+const goToPresetManagementPage = () => {
+    cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.MANAGEMENT);
+    cy.clickElement(sidebarElements.SIDEBAR_MANAGEMENT_OPTIONS.PRESET_MANAGEMENT);
+};
+
 const goToSettingsPage = () => {
     cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.MANAGEMENT);
     cy.clickElement(sidebarElements.SIDEBAR_MANAGEMENT_OPTIONS.SETTINGS);
@@ -346,6 +352,7 @@ module.exports = {
     goToComplianceHubMetricsPage,
     goToUserManagementPage,
     goToApplicationsPage,
+    goToPresetManagementPage,
     goToSettingsPage,
     goToDataPointsPage,
     goToLogsPage,

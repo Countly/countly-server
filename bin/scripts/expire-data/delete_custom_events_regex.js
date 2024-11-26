@@ -6,7 +6,6 @@
  */
 
 
-const { ObjectId } = require('mongodb');
 const pluginManager = require('../../../plugins/pluginManager.js');
 const common = require('../../../api/utils/common.js');
 const drillCommon = require('../../../plugins/drill/api/common.js');
@@ -25,7 +24,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
     //GET APP
     try {
-        const app = await countlyDb.collection("apps").findOne({_id: ObjectId(APP_ID)}, {_id: 1, name: 1});
+        const app = await countlyDb.collection("apps").findOne({_id: countlyDb.ObjectID(APP_ID)}, {_id: 1, name: 1});
         console.log("App:", app.name);
         //GET EVENTS
         var events = [];
@@ -51,6 +50,27 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     }
                 ]).toArray();
                 events = events.length ? events[0].list : [];
+                const metaEvents = await drillDb.collection("drill_meta").aggregate([
+                    {
+                        $match: {
+                            'app_id': app._id + "",
+                            "type": "e",
+                            "e": { $regex: regex, $options: CASE_INSENSITIVE ? "i" : "", $nin: events }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$e"
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            e: "$_id"
+                        }
+                    }
+                ]).toArray();
+                events = events.concat(metaEvents.map(e => e.e));
             }
             catch (err) {
                 close("Invalid regex");
@@ -86,12 +106,15 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         close(err);
     }
 
+
     async function deleteDrillEvents(appId, events) {
         for (let i = 0; i < events.length; i++) {
             var collectionName = drillCommon.getCollectionName(events[i], appId);
             await drillDb.collection(collectionName).drop();
             console.log("Dropped collection:", collectionName);
         }
+        await drillDb.collection('drill_events').remove({'a': appId + "", 'e': {$in: events}});
+        console.log("Cleared from drill_events");
         await drillDb.collection('drill_bookmarks').remove({'app_id': appId, 'event_key': {$in: events}});
         console.log("Cleared drill_bookmarks");
         await drillDb.collection("drill_meta").remove({'app_id': (appId + ""), "type": "e", "e": {$in: events}});
@@ -103,6 +126,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             var collectionName = 'events' + drillCommon.getEventHash(events[i], appId);
             await countlyDb.collection(collectionName).drop();
             console.log("Dropped collection:", collectionName);
+            //clear from merged collection
+            await countlyDb.collection("events_data").remove({'_id': {"$regex": "^" + appId + "_" + drillCommon.getEventHash(events[i], appId) + "_.*"}});
+            console.log("Cleared from agregated collection");
         }
     }
 

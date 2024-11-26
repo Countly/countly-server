@@ -21,7 +21,7 @@
 							>
 						</cly-worldmap>
 						<div style="position: absolute; top: 20px; left:20px; z-index: 400;">
-							<a ref="toCityViewLink" :data-test-id="'button-'+ buttonText.replace(' ', '-').toLowerCase()" class="cly-vue-button button-light-skin ToLink" :href="buttonLink">{{buttonText}}</a>
+							<a ref="toCityViewLink" :data-test-id="'button-'+ buttonText.replaceAll(' ', '-').toLowerCase()" class="cly-vue-button button-light-skin ToLink" :href="buttonLink">{{buttonText}}</a>
 						</div>
 					</div>
 				</div>

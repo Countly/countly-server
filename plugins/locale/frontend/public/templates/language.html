@@ -6,10 +6,7 @@
     >
 		<template v-slot:header-right>
           <cly-more-options v-if="topDropdown" size="small">
-            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-              <!--<span :class="item.icon"></span>-->
-              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
-            </el-dropdown-item>
+            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown" :command="{url: item.value}">{{item.label}}</el-dropdown-item>
           </cly-more-options>
         </template>
     </cly-header>
@@ -26,24 +23,32 @@
 			</div>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :rows="appRows" :exportFormat="formatExportFunction" :resizable="true" :force-loading="isLoading" v-loading="isLoading">
+			<cly-datatable-n  test-id="languages" :rows="appRows" :exportFormat="formatExportFunction" :resizable="true" :force-loading="isLoading" v-loading="isLoading">
 				<template v-slot="scope">
-					<el-table-column sortable="custom" prop="langs" :label="i18n('languages.table.language')"></el-table-column>
+					<el-table-column sortable="custom" prop="langs" :label="i18n('languages.table.language')">
+                        <template slot-scope="scope">
+                            <div class="bu-level">
+                                <div class="bu-level bu-is-justify-content-flex-start" :data-test-id="'datatable-languages-language-' + scope.$index">
+                                    <span>{{scope.row.langs}}</span>
+                                </div>
+                            </div>
+                        </template>
+                    </el-table-column>
 					<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')">
 						<template slot-scope="scope">
                             <div class="bu-level">
                                 <div class="bu-is-flex user-activity-table__data-item-container">
-                                    <div class="bu-level bu-is-justify-content-flex-start">
+                                    <div class="bu-level bu-is-justify-content-flex-start" :data-test-id="'datatable-languages-total-session-' + scope.$index">
                                         <span>{{formatNumber(scope.row.t)}}</span>
                                     </div>
-                                    <div class="bu-level user-activity-table__divider">
+                                    <div class="bu-level user-activity-table__divider" :data-test-id="'datatable-languages-total-session-divider-' + scope.$index">
                                         <span>|</span>
                                     </div>
-                                    <div class="bu-level bu-is-justify-content-flex-end">
+                                    <div class="bu-level bu-is-justify-content-flex-end" :data-test-id="'datatable-languages-total-session-percentage-' + scope.$index">
                                         <span>{{scope.row.tPerc}}%</span>
                                     </div>
                                 </div>
-                                <cly-progress-bar  :percentage="parseInt(scope.row.tPerc)" :height=8 > </cly-progress-bar>
+                                <cly-progress-bar :data-test-id="'datatable-languages-total-session-progress-bar-' + scope.$index" :percentage="parseInt(scope.row.tPerc)" :height=8 > </cly-progress-bar>
                             </div>
                         </template>
 					</el-table-column>
@@ -51,17 +56,17 @@
 						<template slot-scope="scope">
                             <div class="bu-level">
                                 <div class="bu-is-flex user-activity-table__data-item-container">
-                                    <div class="bu-level bu-is-justify-content-flex-start">
+                                    <div class="bu-level bu-is-justify-content-flex-start" :data-test-id="'datatable-languages-total-users-' + scope.$index">
                                         <span>{{formatNumber(scope.row.u)}}</span>
                                     </div>
-                                    <div class="bu-level user-activity-table__divider">
+                                    <div class="bu-level user-activity-table__divider" :data-test-id="'datatable-languages-total-users-divider-' + scope.$index">
                                         <span>|</span>
                                     </div>
-                                    <div class="bu-level bu-is-justify-content-flex-end">
+                                    <div class="bu-level bu-is-justify-content-flex-end" :data-test-id="'datatable-languages-total-users-percentage-' + scope.$index">
                                         <span>{{scope.row.uPerc}}%</span>
                                     </div>
                                 </div>
-                                <cly-progress-bar  :percentage="parseInt(scope.row.uPerc)" :height=8 > </cly-progress-bar>
+                                <cly-progress-bar :data-test-id="'datatable-languages-total-users-progress-bar-' + scope.$index" :percentage="parseInt(scope.row.uPerc)" :height=8 > </cly-progress-bar>
                             </div>
                         </template>
 					</el-table-column>
@@ -69,17 +74,17 @@
 						<template slot-scope="scope">
                             <div class="bu-level">
                                 <div class="bu-is-flex user-activity-table__data-item-container">
-                                    <div class="bu-level bu-is-justify-content-flex-start">
+                                    <div class="bu-level bu-is-justify-content-flex-start" :data-test-id="'datatable-languages-new-users-' + scope.$index">
                                         <span>{{formatNumber(scope.row.n)}}</span>
                                     </div>
-                                    <div class="bu-level user-activity-table__divider">
+                                    <div class="bu-level user-activity-table__divider" :data-test-id="'datatable-languages-new-users-divider-' + scope.$index">
                                         <span>|</span>
                                     </div>
-                                    <div class="bu-level bu-is-justify-content-flex-end">
+                                    <div class="bu-level bu-is-justify-content-flex-end" :data-test-id="'datatable-languages-new-users-percentage-' + scope.$index">
                                         <span>{{scope.row.nPerc}}%</span>
                                     </div>
                                 </div>
-                                <cly-progress-bar  :percentage="parseInt(scope.row.nPerc)" :height=8 > </cly-progress-bar>
+                                <cly-progress-bar :data-test-id="'datatable-languages-new-users-progress-bar-' + scope.$index" :percentage="parseInt(scope.row.nPerc)" :height=8 > </cly-progress-bar>
                             </div>
                         </template>
 					</el-table-column>

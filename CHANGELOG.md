@@ -1,5 +1,79 @@
+## Version 24.10.2
+Fixes:
+- [core] Correct aggregated collection cleanup on event omitting
+- [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
+- [core] Fixed bug where exporting incoming data logs could result in "Incorrect parameter \"data\" error
+- [core] Removed use of commands which needs admin rights from report manager.
+- [crash] Fixed bug in crash ingestion for scenarios where the "app version" is not a string.
+- [script] Fixing bug with "delete_old_members" script that led to malformed requests
+
+Enterprise fixes:
+- [nps] Fixed bug that showed the wrong nps preview title
+
+## Version 24.10.1
+Fixes:
+- [core] Replaced "Users" with "Sessions" label on technology home widgets
+- [push] Improved ability to observe push related errors
+- [push] Replaced push plugin with an earlier version of the plugin
+
+Enterprise fixes:
+- [cohorts] Fixed issues with nightly cleanup
+- [data-manager] Fixed UI bug where rules were not visible when editing "Merge by regex" transformations
+- [drill] Fixed wrong pie chart label  tooltip in dashboard widget
+- [flows] Fixed bug in case of null data in schema
+- [license] Fixed bug with MAU type of licenses that would prevent the server from starting
+- [nps] Fixed bug in the editor where the "internal name" field was not mandatory
+- [nps] Fixed bug where it was possible to submit empty nps surveys
+- [ratings] Fixed bug with user consent
+- [ratings] Fixed UI bug where "Internal name" was not a mandatory field
+
+Security:
+- Bumped cookie-parser from 1.4.6 to 1.4.7
+- Bumped express-rate-limit from 7.4.0 to 7.4.1
+- Bumped moment-timezone from 0.5.45 to 0.5.46
+- Bumped sass from 1.79.3 to 1.79.4
+- Fixing minor vulnerability that would allow for unauthorized file upload
+
+Enterprise Features:
+- [block] Added a way to filter crashes by their error (stacktrace)
+
+## Version 24.10
+Fixes:
+- [core] Interpreting carrier value of "--" as an unknown value
+- [crash] Fixed issues with visualisation of Flutter stack traces
+- [dashoards] If a user is given access to a dashboard, they will now be able to see all widgets even if they don't have access to the underlying data
+- [density] UI fixed
+- [events] Fixed issue where slower loading data would replace newest event selection
+
+Enterprise fixes:
+- [crashes-jira] Preventing crashing when jira authentification fails
+- [formulas] Removing HTML from tooltip localization
+
+Features:
+- Making user guide icons stand out more before first use
+- [alerts] UI improvements
+- [alerts] small improvements in email notifications
+- [code] Unifying bottom menu for bulk operations
+- [core] Aggregated events data collections merged together
+- [nps] UI improvements
+- [surveys] UI improvements
+- upgraded mongoDB to version 7
+- upgraded nodejs to version 20
+
+Enterprise Features:
+- [crash_symbolication] Added ability to set custom domain override for the symbolication server
+- [drill] Drill "by query" vizualization improved
+- [drill] Drill data collections merged together
+- [events] Added a quick transition to drill
+- [hooks] Added audit log entries for hook "create", "edit", "delete", "update" actions
+- [users] "Last Session" column in User Profiles is now sortable
+- [users] Crashes in the crashes tab can now be sorted
+- [users] UI improvements
+- [views] Added a quick transition to drill
+
 ## Version 24.05.15
 Enterprise fixes:
+- [ab-testing] Fixed JSON.parse issue preventing creation of AB tests
 - [nps] Fixed UI issues in the widget editor related to the "user consent" section
 - [ratings] Fixed rendering issue for escaped values
 
@@ -34,7 +108,7 @@ Enterprise Features:
 ## Version 24.05.12
 Fixes:
 - [dashboards] Fixes for dashboards grid
-- [dasboards] UI fix for dashboard widget action menu
+- [dashboards] UI fix for dashboard widget action menu
 - [push] Refactored fcm API related code
 - [reports] Use config for encryption key in reports
 

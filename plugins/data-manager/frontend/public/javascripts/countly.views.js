@@ -678,8 +678,9 @@
                         return countlyCommon.unescapeHtml(ev.key);
                     })
                 });
+                this.unpatchSelectedEvents();
             },
-            handleAllChange: function(selection) {
+            handleAllChange: function(selection, force = false) {
                 var self = this;
                 if (selection.length) {
                     selection.forEach(function(row) {
@@ -690,6 +691,9 @@
                     this.events.forEach(function(row) {
                         self.$refs.eventsDefaultTable.patch(row, { isSelected: false });
                     });
+                    if (force) {
+                        this.$refs.eventsDefaultTable.$refs.elTable.clearSelection();
+                    }
                 }
             },
             handleChangeVisibility: function(command, rows) {
@@ -701,6 +705,7 @@
                 this.$store.dispatch('countlyDataManager/changeVisibility', { events: events, isVisible: isVisible }).then(function() {
                     countlyEvent.refreshEvents();
                 });
+                this.unpatchSelectedEvents();
             },
             handleChangeStatus: function(command, rows) {
                 var events = [];
@@ -708,6 +713,7 @@
                     events.push(row.key);
                 });
                 this.$store.dispatch('countlyDataManager/updateEventStatus', { events: events, status: command });
+                this.unpatchSelectedEvents();
             },
             onRowClick: function(params) {
                 app.navigate("#/manage/data-manager/events/events/" + JSON.stringify(params.key), true);
@@ -776,11 +782,15 @@
                     var delKey = row.key || row.e || row.name;
                     events.push(delKey);
                 });
+                this.unpatchSelectedEvents();
                 this.$store.dispatch('countlyDataManager/deleteEvents', events).then(function() {
                     countlyEvent.refreshEvents();
                 });
                 this.deleteQueue = null;
                 this.showDeleteDialog = false;
+            },
+            unpatchSelectedEvents: function() {
+                this.handleAllChange([], true);
             },
             statusClassObject: statusClassObject,
         },
@@ -852,7 +862,7 @@
                     self.$refs.eventGroupsTable.patch(row, { isSelected: !!isSelected });
                 }
             },
-            handleAllChange: function(selection) {
+            handleAllChange: function(selection, force = false) {
                 var self = this;
                 if (selection.length) {
                     selection.forEach(function(row) {
@@ -863,6 +873,9 @@
                     this.eventGroups.forEach(function(row) {
                         self.$refs.eventGroupsTable.patch(row, { isSelected: false });
                     });
+                    if (force) {
+                        this.$refs.eventGroupsTable.$refs.elTable.clearSelection();
+                    }
                 }
             },
             handleCommand: function(ev, eventGroup) {
@@ -892,6 +905,7 @@
                     events.push(row.key);
                 });
                 this.$store.dispatch('countlyDataManager/changeEventGroupsVisibility', { events: events, isVisible: isVisible });
+                this.unpatchSelectedEventGroups();
             },
             handleDelete: function(rows) {
                 this.deleteQueue = rows;
@@ -902,6 +916,9 @@
                 });
                 this.$store.dispatch('countlyDataManager/deleteEventGroups', events);
             },
+            unpatchSelectedEventGroups: function() {
+                this.handleAllChange([], true);
+            }
         }
     });
 
@@ -1035,9 +1052,6 @@
                 else if (event === 'import-schema') {
                     this.importDialogVisible = true;
                 }
-                else if (event === 'navigate-settings') {
-                    app.navigate("#/manage/configurations/data-manager", true);
-                }
             },
             onSaveImport: function() {
                 var self = this;
@@ -1131,11 +1145,12 @@
                 }
                 if (doc.actionType === 'EVENT_MERGE' && doc.isRegexMerge === true) {
                     doc.actionType = 'merge-regex';
+                    doc.eventTransformTargetRegex = doc.transformTarget[0];
                 }
                 else {
                     doc.actionType = doc.actionType.split('_')[1].toLowerCase();
                 }
-                doc.isExistingEvent = 'true';
+                doc.isExistingEvent = doc.isExistingEvent ? 'true' : 'false';
                 // doc.tab;
                 // delete doc.transformType;
                 doc.name = countlyCommon.unescapeHtml(doc.name);
