@@ -1,4 +1,4 @@
-## Version 24.05.XX
+## Version 24.05.19
 Fixes:
 - [dashboards] Fixing issue where dashboard widgets go into single column
 
