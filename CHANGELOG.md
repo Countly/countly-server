@@ -5,6 +5,7 @@ Fixes:
 Security:
 - Bump puppeteer from 17.1.3 to 23.8.0
 - Bump express from 4.21.0 to 4.21.1 
+- Bump express-session from 1.18.0 to 1.18.1
 
 ## Version 24.05.18
 Fixes:
