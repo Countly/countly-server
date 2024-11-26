@@ -112,6 +112,8 @@ export const feedbackRatingWidgetsPageElements = {
     RATINGS_POPUP_ADD_COMMENT_LABEL: 'ratings-drawer-ratingspopup-comment-label',
     RATINGS_POPUP_CONTACT_VIA_CHECKBOX: 'ratings-drawer-ratingspopup-contact-checkbox-el-checkbox-input',
     RATINGS_POPUP_CONTACT_VIA_LABEL: 'ratings-drawer-ratingspopup-contact-label',
+    RATINGS_POPUP_CONSENT_LABEL: 'ratings-drawer-ratingspopup-consent-text',
+    RATINGS_POPUP_CONSENT_CHECKBOX: 'ratings-drawer-ratingspopup-consent-checkbox',
     RATINGS_POPUP_SUBMIT_BUTTON: 'ratings-drawer-ratingspopup-submit-button',
     RATINGS_POPUP_POWEREDBY_LOGO: 'ratings-drawer-ratingspopup-poweredby-label',
 
@@ -127,6 +129,19 @@ export const feedbackRatingWidgetsPageElements = {
     RATINGS_POPUP_TRIGGER_BUTTON_LABEL: 'ratings-drawer-trigger-button-label',
     RATINGS_POPUP_TRIGGER_BUTTON: 'ratings-drawer-trigger-button'
 };
+
+const feedbackRatingWidgetAddUserConsentElements = (index = 0) => ({
+    ADD_USER_CONSENT_LABEL: 'ratings-drawer-settings-add-user-consent-el-checkbox-label',
+    ADD_USER_CONSENT_CHECKBOX: 'ratings-drawer-settings-add-user-consent-el-checkbox-input',
+    ADD_USER_CONSENT_TEXT_LABEL: 'ratings-drawer-settings-add-user-consent-text-label',
+    ADD_USER_CONSENT_TEXT_INPUT: 'ratings-drawer-settings-add-user-consent-text-input',
+    ADD_USER_CONSENT_LINK_LABEL: 'ratings-drawer-settings-add-user-consent-links-label',
+    ADD_USER_CONSENT_LINK_TOOLTIP: 'ratings-drawer-settings-add-user-consent-links-tooltip',
+    ADD_USER_CONSENT_CONSENT_LINKS_TEXT_INPUT: 'ratings-drawer-settings-add-user-consent-links-text-input-' + index,
+    ADD_USER_CONSENT_CONSENT_LINKS_URL_INPUT: 'ratings-drawer-settings-add-user-consent-links-link-input-' + index,
+    ADD_USER_CONSENT_CONSENT_LINKS_DELETE_ICON: 'ratings-drawer-settings-add-user-consent-delete-link-' + index,
+    ADD_USER_CONSENT_CONSENT_ADD_LINK_BUTTON: 'ratings-drawer-settings-add-user-consent-add-link-button',
+});
 
 const widgetsDataTableElements = (index = 0) => ({
     TABLE_ROWS: '.el-table__row',
@@ -269,6 +284,7 @@ const feedbackRatingWidgetDetailsRatingsDataTableElements = (index = 0) => ({
 
 module.exports = {
     feedbackRatingWidgetsPageElements,
+    feedbackRatingWidgetAddUserConsentElements,
     feedbackRatingWidgetDetailsPageElements,
     widgetsDataTableElements,
     feedbackRatingWidgetDetailsCommentsDataTableElements,

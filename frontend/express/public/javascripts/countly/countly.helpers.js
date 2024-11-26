@@ -341,6 +341,7 @@
         payload.autoHide = !msg.sticky;
         payload.id = msg.id;
         payload.width = msg.width;
+        payload.goTo = msg.goTo;
         var colorToUse;
 
         if (countlyGlobal.ssr) {
@@ -393,9 +394,20 @@
      * title is the text that will be dispalyed for the backlink url. 
      */
     CountlyHelpers.goTo = function(options) {
-        app.backlinkUrl = options.from;
-        app.backlinkTitle = options.title;
-        window.location.hash = options.url;
+        if (options.isExternalLink) {
+            window.open(options.url, '_blank', 'noopener,noreferrer');
+        }
+        else if (options.download) {
+            var a = document.createElement('a');
+            a.href = options.url;
+            a.download = options.download;
+            a.click();
+        }
+        else {
+            app.backlinkUrl = options.from;
+            app.backlinkTitle = options.title;
+            window.location.hash = options.url;
+        }
     };
 
     /**

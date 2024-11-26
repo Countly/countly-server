@@ -56,6 +56,10 @@ class MonitorJob extends job.Job {
                 return true;
             }
 
+            if (task.dirty) {
+                return true;
+            }
+
             if ((now + duration - lastStart) / 1000 >= interval) {
                 return true;
             }
@@ -74,7 +78,8 @@ class MonitorJob extends job.Job {
                         taskmanager.rerunTask({
                             db: common.db,
                             id: task._id,
-                            autoUpdate: true
+                            autoUpdate: true,
+                            dirty: task.dirty
                         }, function(e) {
                             if (e) {
                                 log.e(e, e.stack);

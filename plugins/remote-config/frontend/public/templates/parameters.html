@@ -1,10 +1,10 @@
 <div>
-  <cly-header
-    :title="i18n('remote-config.title')"
-  >
+  <cly-header :title="i18n('remote-config.title')">
     <template v-slot:header-right>
       <div class="bu-level-item" v-if="hasCreateRight">
-        <el-button :disabled="isParamterLimitExceeded" @click="create" type="success" size="small" icon="el-icon-circle-plus" data-test-id="add-parameter-button">{{i18n('remote-config.add-parameter-title')}}</el-button>
+        <el-button :disabled="isParamterLimitExceeded" @click="create" type="success" size="small"
+          icon="el-icon-circle-plus"
+          data-test-id="add-parameter-button">{{i18n('remote-config.add-parameter-title')}}</el-button>
       </div>
     </template>
   </cly-header>
@@ -13,20 +13,27 @@
       <cly-notification class="bu-mb-5" :text="i18n('remote-config.maximum_parameters_added')" color="light-warning">
       </cly-notification>
     </div>
-    <cly-datatable-n :rows="tableRows" :exportFormat="formatExportFunction" :force-loading="isTableLoading" class="cly-vue-remote-config-home-table" ref="table" @row-click="handleTableRowClick" :row-class-name="tableRowClassName">
+    <cly-datatable-n test-id="remote-config" :rows="tableRows" :exportFormat="formatExportFunction"
+      :force-loading="isTableLoading" class="cly-vue-remote-config-home-table" ref="table"
+      @row-click="handleTableRowClick" :row-class-name="tableRowClassName">
       <template v-slot:default="scope">
-        <el-table-column type="expand" min-width="50">
+        <el-table-column :test-id="'remote-config-expand-' + scope.$index"
+          type="expand" min-width="50">
           <template v-slot="props">
             <cly-section>
-              <condition-stats :parameter="props.row"></condition-stats>
+              <condition-stats :test-id="'datatable-remote-config-' + scope.$index" :parameter="props.row"></condition-stats>
             </cly-section>
           </template>
         </el-table-column>
-        <el-table-column min-width="160" prop="parameter_key" :label="i18n('remote-config.parameter')" sortable="custom">
+        <el-table-column min-width="160" prop="parameter_key" :label="i18n('remote-config.parameter')"
+          sortable="custom">
           <template v-slot:default="rowScope">
             <div>
-              <div class="cly-vue-remote-config-conditions-drawer__margin-bottom">             {{rowScope.row.parameter_key}}</div>
-              <div v-if="isDrillEnabled" class="color-cool-gray-40 text-small"><span> {{getNumberOfConditionsText(rowScope.row.conditions)}} </span></div>
+              <div class="cly-vue-remote-config-conditions-drawer__margin-bottom"
+                :data-test-id="'datatable-remote-config-parameter-' + rowScope.$index"> {{rowScope.row.parameter_key}}
+              </div>
+              <div v-if="isDrillEnabled" class="color-cool-gray-40 text-small"><span>
+                  {{getNumberOfConditionsText(rowScope.row.conditions)}} </span></div>
             </div>
           </template>
         </el-table-column>
@@ -34,52 +41,69 @@
           <template v-slot:default="rowScope">
             <div>
               <div class="cly-vue-remote-config-conditions-drawer__margin-bottom">
-                <cly-status-tag v-if="rowScope.row.status==='Stopped'" :text="i18n('remote-config.parameter.disabled')" color="red"></cly-status-tag>
-                <cly-status-tag v-else-if="rowScope.row.status==='Expired'" :text="i18n('remote-config.parameter.expired')" color="yellow"></cly-status-tag>
-                <cly-status-tag v-else :text="i18n('remote-config.parameter.enabled')" color="blue"></cly-status-tag>
+                <cly-status-tag v-if="rowScope.row.status==='Stopped'" :text="i18n('remote-config.parameter.disabled')"
+                  color="red" :data-test-id="'datatable-remote-config-status-' + rowScope.$index"></cly-status-tag>
+                <cly-status-tag v-else-if="rowScope.row.status==='Expired'"
+                  :text="i18n('remote-config.parameter.expired')" color="yellow"
+                  :data-test-id="'datatable-remote-config-status-' + rowScope.$index"></cly-status-tag>
+                <cly-status-tag v-else :text="i18n('remote-config.parameter.enabled')" color="blue"
+                  :data-test-id="'datatable-remote-config-status-' + rowScope.$index"></cly-status-tag>
               </div>
-              <div class="color-cool-gray-40 text-small" v-if="rowScope.row.expiry_dttm"> {{i18n('remote-config.expire.date')}} {{getDate(rowScope.row.expiry_dttm)}}</div>
+              <div class="color-cool-gray-40 text-small" v-if="rowScope.row.expiry_dttm"
+                :data-test-id="'datatable-remote-config-expire-date-' + rowScope.$index">
+                {{i18n('remote-config.expire.date')}} {{getDate(rowScope.row.expiry_dttm)}}</div>
             </div>
           </template>
         </el-table-column>
         <el-table-column min-width="160" prop="description" :label="i18n('remote-config.description')">
           <template v-slot:default="rowScope">
-            {{displayDescription(rowScope.row.description)}}
+            <div :data-test-id="'datatable-remote-config-description-' + rowScope.$index">
+              {{displayDescription(rowScope.row.description)}}
+            </div>
           </template>
         </el-table-column>
         <el-table-column min-width="160" prop="ts" :label="i18n('remote-config.parameter.created')" sortable="custom">
           <template v-slot:default="rowScope">
             <div>
-              <div class="cly-vue-remote-config-conditions-drawer__margin-bottom"> {{getDate(rowScope.row.ts)}}</div>
-              <div class="color-cool-gray-40 text-small">  {{getTime(rowScope.row.ts)}}</div>
+              <div class="cly-vue-remote-config-conditions-drawer__margin-bottom"
+                :data-test-id="'datatable-remote-config-created-date-' + rowScope.$index"> {{getDate(rowScope.row.ts)}}
+              </div>
+              <div class="color-cool-gray-40 text-small"
+                :data-test-id="'datatable-remote-config-created-time-' + rowScope.$index"> {{getTime(rowScope.row.ts)}}
+              </div>
             </div>
           </template>
         </el-table-column>
         <el-table-column min-width="160" prop="abStatus" :label="i18n('remote-config.parameter.ab.status')">
           <template v-slot:default="rowScope">
-            {{rowScope.row.abStatus || "-"}}
+            <div :data-test-id="'datatable-remote-config-ab-status-' + rowScope.$index">
+              {{rowScope.row.abStatus || "-"}}
+            </div>
           </template>
         </el-table-column>
         <el-table-column min-width="160" v-if="hasUpdateRight || hasDeleteRight" type="options">
           <template v-slot="rowScope">
-            <cly-more-options
-              v-if="rowScope.row.hover"
-              size="small"
+            <cly-more-options :test-id="'datatable-remote-config-' + rowScope.$index" v-if="rowScope.row.hover" size="small"
               v-tooltip.left="rowScope.row.editable ? '' : i18n('remote-config.parameter.action-tooltip-content')"
               :disabledButton="rowScope.row.editable ? false : true"
               @command="handleCommand($event, scope, rowScope.row)">
-              <el-dropdown-item v-if="hasUpdateRight && rowScope.row.editable" command="edit">{{i18n('common.edit')}}</el-dropdown-item>
-              <el-dropdown-item v-if="hasDeleteRight && rowScope.row.editable" command="remove">{{i18n('common.delete')}}</el-dropdown-item>
+              <el-dropdown-item v-if="hasUpdateRight && rowScope.row.editable"
+                command="edit" :data-test-id="'datatable-remote-config-button-edit-' + rowScope.$index">{{i18n('common.edit')}}</el-dropdown-item>
+              <el-dropdown-item v-if="hasDeleteRight && rowScope.row.editable"
+                command="remove" :data-test-id="'datatable-remote-config-button-delete-' + rowScope.$index">{{i18n('common.delete')}}</el-dropdown-item>
             </cly-more-options>
           </template>
         </el-table-column>
         <el-table-column v-if="hasUpdateRight" min-width="110">
           <template v-slot="rowScope">
             <div v-if="rowScope.row.hover && rowScope.row.editable">
-            <el-button v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'" @click.stop="startParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.enable')}}
-            </el-button>
-            <el-button v-else @click.stop="stopParameter(rowScope.row)" size="small" icon="el-icon-remove">{{i18n('remote-config.disable')}}
-            </el-button>
+              <el-button  v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'"
+                @click.stop="startParameter(rowScope.row)" size="small"
+                icon="el-icon-remove" :data-test-id="'datatable-remote-config-button-enable-' + rowScope.$index">{{i18n('remote-config.enable')}}
+              </el-button>
+              <el-button :data-test-id="'datatable-remote-config-button-disable-' + rowScope.$index" v-else @click.stop="stopParameter(rowScope.row)" size="small"
+                icon="el-icon-remove">{{i18n('remote-config.disable')}}
+              </el-button>
             </div>
           </template>
         </el-table-column>

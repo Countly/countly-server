@@ -219,13 +219,13 @@ const verifyRatingsMetricCard = ({
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: ratingsMetricCardElements.TOTAL_RATINGS_NUMBER_LABEL,
-        elementText: totalRatings,
+        labelText: totalRatings,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: ratingsMetricCardElements.AVERAGE_RATINGS_SCORE_NUMBER_LABEL,
-        elementText: averageRatingsScore,
+        labelText: averageRatingsScore,
     });
 };
 
@@ -267,12 +267,10 @@ const verifyRatingsEChartElements = ({
         element: ratingsEChartElements.RATING_ICON,
     });
 
-    cy.pause();
     cy.verifyElement({
         element: ratingsEChartElements.RATING,
         elementText: "Ratings",
     });
-    cy.pause();
 };
 
 const verifyRatingsDataFromTable = ({
@@ -317,19 +315,19 @@ const verifyRatingsDataFromTable = ({
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: ratingsDataTableElements(index).RATING,
-        elementText: rating,
+        labelText: rating,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: ratingsDataTableElements(index).NUMBER_OF_RATINGS,
-        elementText: numberOfRatings,
+        labelText: numberOfRatings,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: ratingsDataTableElements(index).PERCENTAGE,
-        elementText: percentage,
+        labelText: percentage,
     });
 };
 
@@ -369,25 +367,25 @@ const verifyCommentsDataFromTable = ({
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: commentsDataTableElements(index).COMMENT,
-        elementText: comment,
+        labelText: comment,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: commentsDataTableElements(index).RATING,
-        elementText: rating,
+        labelText: rating,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: commentsDataTableElements(index).TIME,
-        elementText: time,
+        labelText: time,
     });
 
     cy.verifyElement({
         shouldNot: !isEmpty,
         labelElement: commentsDataTableElements(index).E_MAIL,
-        elementText: email,
+        labelText: email,
     });
 };
 

@@ -8,7 +8,7 @@
 						<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between" :data-test-id="`tab-box-label-tooltip-container-${item.label.toLowerCase().replace('.', '').replaceAll(/\s/g, '-')}`">
 							<div class="text-medium" :data-test-id="`tab-box-label-tooltip-${item.label.toLowerCase().replace('.', '').replaceAll(/\s/g, '-')}`">
 								<span :data-test-id="`tab-box-label-${item.label.toLowerCase().replace('.', '').replaceAll(/\s/g, '-')}`">{{item.label}}</span>
-								<span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-ml-1" :data-test-id="`tab-box-tooltip-${item.label.toLowerCase().replace('.', '').replaceAll(/\s/g, '-')}`" v-tooltip.top-center="item.description"></span>
+								<cly-tooltip-icon v-if="item.description" class="bu-ml-1" :tooltip="item.description" placement="top-center" :data-test-id="`tab-box-tooltip-${item.label.toLowerCase().replace('.', '').replaceAll(/\s/g, '-')}`"></cly-tooltip-icon>
 							</div>
 						</div>
 						<div class="bu-is-flex bu-is-align-items-center number" :data-test-id="`tab-box-center-${item.label.toLowerCase().replace('.', '').replaceAll(/\s/g, '-')}`">

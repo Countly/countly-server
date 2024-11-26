@@ -201,9 +201,9 @@
             return lineLegend;
         },
         getAllEventsList: function(eventsList, groupList) {
-            var map = eventsList.map || {};
             var allEvents = [];
             if (eventsList) {
+                var map = eventsList.map || {};
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
                         var label;
@@ -245,9 +245,9 @@
             return obj;
         },
         getTableStateMap: function(eventsList, groupList) {
-            var map = eventsList.map || {};
             var allEvents = {};
             if (eventsList) {
+                var map = eventsList.map || {};
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
                         allEvents[countlyCompareEvents.helpers.decode(item)] = true;

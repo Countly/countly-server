@@ -2,6 +2,11 @@
 (function(countlyVue) {
     Vue.component("cly-content-layout", countlyVue.components.create({
         props: {
+            popperClass: {
+                type: String,
+                required: false,
+                default: null
+            },
             backgroundColor: {
                 type: String,
                 required: false,
@@ -15,6 +20,9 @@
             };
         },
         computed: {
+            containerClass() {
+                return this.popperClass || 'cly-vue-content-builder__layout-main';
+            }
         },
         template: CV.T('/javascripts/countly/vue/templates/content/content.html'),
         methods: {
@@ -148,11 +156,6 @@
 
     Vue.component("cly-content-body", countlyVue.components.create({
         props: {
-            currentTab: {
-                type: String,
-                required: false,
-                default: null
-            },
             hideLeftSidebar: {
                 type: Boolean,
                 required: false,
@@ -192,7 +195,7 @@
         data: function() {
             return {
                 toggleTransition: 'stdt-slide-left',
-                isLeftSidebarHidden: this.hideLeftSidebar,
+                isCollapsed: false,
                 scrollOps: {
                     vuescroll: {},
                     scrollPanel: {
@@ -217,7 +220,7 @@
         methods: {
             collapseBar: function(position) {
                 if (position === 'left') {
-                    this.isLeftSidebarHidden = !this.isLeftSidebarHidden;
+                    this.isCollapsed = !this.isCollapsed;
                 }
             },
             onViewEntered: function() { //?
@@ -402,6 +405,7 @@
                     dropdown: 'el-select',
                     input: 'el-input',
                     switch: 'el-switch',
+                    slider: 'el-slider',
                     'color-picker': 'cly-colorpicker',
                     'input-number': 'el-input-number',
                 };
@@ -421,6 +425,8 @@
                             v-bind="inputProps"
                             :value="localValue"
                             @input="updateValue"
+                            :min="inputProps && inputProps.min"
+                            :max="inputProps && inputProps.max"
                             class="cly-vue-content-builder__layout-step__component"
                             :style="[ position !== 'horizontal' ? {\'width\':  \'100%\'} : {\'width\': width + \'px\'}]"
                         >
