@@ -179,6 +179,9 @@
                 "frontend/express/public/core/*/javascripts/countly.*.js",
                 "plugins/*/frontend/public/javascripts/countly.*.js"
             ],
+            "parserOptions": {
+                "ecmaVersion": 2020
+            },
             "env": {
                 "browser": true,
                 "es2020": true
@@ -335,7 +338,7 @@
                 "node": true
             },
             "parserOptions": {
-                "ecmaVersion": 2020
+                "ecmaVersion": 2023
             },
             "rules": {
                 "no-console": "off"
@@ -353,7 +356,30 @@
                 "mocha": true
             },
             "parserOptions": {
-                "ecmaVersion": 2020
+                "ecmaVersion": 2023
+            },
+            "rules": {
+                "no-console": "off",
+                "no-unused-vars": "off",
+                "no-redeclare": "off"
+            }
+        },
+        {
+            "files": [
+                "ui-tests/**/*.js"
+            ],
+            "env": {
+                "es2023": true,
+                "node": true,
+                "mocha": true
+            },
+            "globals": {
+                "Cypress": "readonly",
+                "cy": "readonly"
+            },
+            "parserOptions": {
+                "ecmaVersion": 2023,
+                "sourceType": "module"
             },
             "rules": {
                 "no-console": "off",
