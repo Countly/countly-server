@@ -2,6 +2,9 @@
 Fixes:
 - [dashboards] Fixing issue where dashboard widgets go into single column
 
+Security:
+- Bumped puppeteer from "17.1.3" to "23.8.0"
+
 ## Version 24.05.18
 Fixes:
 - [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
