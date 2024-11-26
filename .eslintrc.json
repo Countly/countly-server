@@ -170,8 +170,8 @@
             "overrides": [
                 {
                     "files": ["*.vue"],
-                    "stylistic/quotes": ["error", "single"],
-                    "stylistic/quote-props": ["error", "as-needed"]
+                    "@stylistic/quotes": ["error", "single"],
+                    "@stylistic/quote-props": ["error", "as-needed"]
                 }
             ]
         },
