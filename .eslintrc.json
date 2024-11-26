@@ -123,6 +123,55 @@
     "overrides": [
         {
             "files": [
+                "plugins/content/frontend/vite.config.js",
+                "plugins/journey_engine/frontend/vite.config.js",
+                "plugins/journey_engine/frontend/vite-manifest.js"
+            ],
+            "rules": {
+                "no-console": "off"
+            },
+            "parserOptions": {
+                "ecmaVersion": 2023,
+                "sourceType": "module"
+            },
+            "env": {
+                "node": true,
+                "es2023": true
+            }
+        },
+        {
+            "files": [
+                "plugins/content/frontend/content-blocks/**/*.js",
+                "plugins/journey_engine/frontend/builder/**/*.js"
+            ],
+            "extends": [
+                "eslint:recommended",
+                "plugin:vue/vue3-essential",
+                "plugin:vue/vue3-strongly-recommended",
+                "plugin:vue/vue3-recommended"
+            ],
+            "rules": {
+                "no-console": ["error"],
+                "@stylistic/quotes": ["error", "single"],
+                "@stylistic/quote-props": ["error", "as-needed"]
+            },
+            "plugins": [
+                "vue",
+                "@stylistic"
+            ],
+            "parserOptions": {
+                "ecmaVersion": 2023,
+                "sourceType": "module",
+                "extraFileExtensions": [".vue"]
+            },
+            "env": {
+                "node": true,
+                "es2023": true,
+                "es6": true
+            }
+        },
+        {
+            "files": [
                 "frontend/express/public/javascripts/countly/*.js",
                 "frontend/express/public/javascripts/countly/vue/*.js",
                 "frontend/express/public/javascripts/countly/vue/components/*.js",
@@ -208,7 +257,7 @@
             ],
             "excludedFiles": "plugins/*/frontend/public/**/*.js",
             "env": {
-                "es2020": true,
+                "es2023": true,
                 "node": true
             },
             "parserOptions": {
@@ -285,11 +334,11 @@
             ],
             "excludedFiles": "plugins/*/tests.js",
             "env": {
-                "es2020": true,
+                "es2023": true,
                 "node": true
             },
             "parserOptions": {
-                "ecmaVersion": 2020
+                "ecmaVersion": 2023
             },
             "rules": {
                 "no-console": "off"
@@ -302,13 +351,12 @@
                 "plugins/*/tests.js"
             ],
             "env": {
-                "es2020": true,
+                "es2023": true,
                 "node": true,
                 "mocha": true
             },
             "parserOptions": {
-                "ecmaVersion": 2020,
-                "sourceType": "module"
+                "ecmaVersion": 2023
             },
             "rules": {
                 "no-console": "off",
@@ -321,7 +369,7 @@
                 "ui-tests/**/*.js"
             ],
             "env": {
-                "es2020": true,
+                "es2023": true,
                 "node": true,
                 "mocha": true
             },
@@ -330,7 +378,7 @@
                 "cy": "readonly"
             },
             "parserOptions": {
-                "ecmaVersion": 2020,
+                "ecmaVersion": 2023,
                 "sourceType": "module"
             },
             "rules": {
