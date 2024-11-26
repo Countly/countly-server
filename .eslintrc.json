@@ -151,7 +151,9 @@
                 "plugin:vue/vue3-recommended"
             ],
             "rules": {
-                "no-console": ["error"]
+                "no-console": ["error"],
+                "@stylistic/quotes": ["error", "single"],
+                "@stylistic/quote-props": ["error", "as-needed"]
             },
             "plugins": [
                 "vue",
@@ -166,14 +168,7 @@
                 "node": true,
                 "es2023": true,
                 "es6": true
-            },
-            "overrides": [
-                {
-                    "files": ["*.vue"],
-                    "@stylistic/quotes": ["error", "single"],
-                    "@stylistic/quote-props": ["error", "as-needed"]
-                }
-            ]
+            }
         },
         {
             "files": [
