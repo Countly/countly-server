@@ -1106,10 +1106,13 @@
                 if (template && template.events && template.events.length) {
                     events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, apm: this.getTrace(), ignore_cooldown: '1'};
+                req = {timestamp: this.ts, begin_session: 1, metrics: this.metrics, user_details: this.userdetails, events: events, ignore_cooldown: '1'};
                 req.events = req.events.concat(this.getHeatmapEvents());
                 req.events = req.events.concat(this.getFeedbackEvents());
                 req.events = req.events.concat(this.getScrollmapEvents());
+                if (_featuresToPopulate.includes("performance-monitoring")) {
+                    req.apm = this.getTrace();
+                }
             }
             else {
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
@@ -1120,7 +1123,10 @@
                 if (template && template.events && template.events.length) {
                     events = events.concat(this.getEvent(null, template.events[0]));
                 }
-                req = {timestamp: this.ts, begin_session: 1, events: events, apm: this.getTrace(), ignore_cooldown: '1'};
+                req = {timestamp: this.ts, begin_session: 1, events: events, ignore_cooldown: '1'};
+                if (_featuresToPopulate.includes("performance-monitoring")) {
+                    req.apm = this.getTrace();
+                }
             }
 
             if (Math.random() > 0.10) {
@@ -1130,7 +1136,7 @@
                 req[this.platform.toLowerCase() + "_token"] = randomString(8);
             }
 
-            if (Math.random() > 0.50) {
+            if (Math.random() > 0.50 && _featuresToPopulate.includes("crashes")) {
                 req.crash = this.getCrash();
             }
 
@@ -1336,6 +1342,7 @@
     var abExampleCount = 1;
     var abExampleName = "Pricing";
     var _templateType = '';
+    var _allFeatures = ["ab-testing", "cohorts", "crashes", "funnels", "performance-monitoring", "push", "star-rating", "surveys"];
     var _featuresToPopulate = [];
     var runCount = 0;
     var completedRequestCount = 0;
@@ -1974,7 +1981,7 @@
      * @param {callback} callback - callback method
      **/
     function generateCampaigns(callback) {
-        if (!CountlyHelpers.isPluginEnabled("attribution") || typeof countlyAttribution === "undefined" || !_featuresToPopulate.includes("attribution")) {
+        if (!CountlyHelpers.isPluginEnabled("attribution") || typeof countlyAttribution === "undefined") {
             callback();
             return;
         }
@@ -2518,7 +2525,7 @@
             }
         }
 
-        if (countlyGlobal.plugins.indexOf('crash_symbolication') !== -1 && countlyAuth.validateCreate('crash_symbolication') && _featuresToPopulate.includes("crash_symbolication")) {
+        if (countlyGlobal.plugins.indexOf('crash_symbolication') !== -1 && countlyAuth.validateCreate('crash_symbolication') && _featuresToPopulate.includes("crashes")) {
             const crashPlatforms = Object.keys(crashSymbolVersions).filter(key => crashSymbolVersions[key].length);
 
 
@@ -2592,7 +2599,7 @@
     };
 
     countlyPopulator.setSelectedFeatures = function(value) {
-        _featuresToPopulate = value;
+        _featuresToPopulate = (value === "all") ? _allFeatures : value;
     };
 
     countlyPopulator.getTemplate = function(templateId, callback) {

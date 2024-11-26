@@ -7,7 +7,7 @@ module.exports = defineConfig({
         defaultCommandTimeout: 30000,
         viewportWidth: 2000,
         viewportHeight: 1100,
-        numTestsKeptInMemory: 1,
+        numTestsKeptInMemory: 0,
         experimentalMemoryManagement: true,
         projectId: "000000",
         chromeWebSecurity: false,
@@ -28,9 +28,8 @@ module.exports = defineConfig({
                     }
                 }
             });
-            // before:browser:launch event for custom Chrome options
             on("before:browser:launch", (browser, launchOptions) => {
-                if (["chrome", "edge"].includes(browser.name)) {
+                if (["chrome", "edge", "electron"].includes(browser.name)) {
                     if (browser.isHeadless) {
                         launchOptions.args.push("--no-sandbox");
                         launchOptions.args.push("--disable-gl-drawing-for-tests");

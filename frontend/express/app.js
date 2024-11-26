@@ -603,6 +603,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.use(function(req, res, next) {
         var contentType = req.headers['content-type'];
         if (req.method.toLowerCase() === 'post' && contentType && contentType.indexOf('multipart/form-data') >= 0) {
+            if (!req.session?.uid || Date.now() > req.session?.expires) {
+                res.status(401).send('Unauthorized');
+                return;
+            }
             var form = new formidable.IncomingForm();
             form.uploadDir = __dirname + '/uploads';
             form.parse(req, function(err, fields, files) {
@@ -974,6 +978,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     timezones: timezones,
                     countlyTypeName: COUNTLY_NAMED_TYPE,
                     countlyTypeTrack: COUNTLY_TRACK_TYPE,
+                    countlyTypeCE: COUNTLY_TYPE_CE,
                     countly_tracking,
                     countly_domain,
                     frontend_app: versionInfo.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',

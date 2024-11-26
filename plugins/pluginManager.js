@@ -74,7 +74,11 @@ var pluginManager = function pluginManager() {
         countly_out: "../api/configs/config.db_out.js",
         countly_fs: "../api/configs/config.db_fs.js"
     };
-
+    /**
+     * TTL collections to clean up periodically
+     * @type {{collection: string, db: mongodb.Db, property: string, expireAfterSeconds: number}[]}
+     */
+    this.ttlCollections = [];
     /**
      *  Custom configuration files for different databases for docker env
      */
