@@ -1,3 +1,15 @@
+## Version 24.10.3
+Fixes:
+- [dashboards] Fixing issue where dashboard widgets go into single column
+
+Security:
+- Bump puppeteer from 17.1.3 to 23.8.0
+- Bump express from 4.21.0 to 4.21.1 
+- Bump sass from 1.79.4 to 1.81.0
+- Bump express-session from 1.18.0 to 1.18.1
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /ui-tests
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /plugins/hooks
+
 ## Version 24.10.2
 Fixes:
 - [core] Correct aggregated collection cleanup on event omitting

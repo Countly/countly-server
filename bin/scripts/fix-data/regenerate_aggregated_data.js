@@ -40,6 +40,12 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             query._id = {$in: appList.map(app_id=>common.db.ObjectID(app_id))};
         }
         const apps = await countlyDb.collection("apps").find(query, {_id: 1, name: 1, timezone: 1}).toArray();
+
+        await new Promise((resolve)=>{
+            common.plugins.loadConfigs(countlyDb, function() {
+                resolve();
+            });
+        });
         if (!apps || !apps.length) {
             return close();
         }
