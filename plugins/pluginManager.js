@@ -2344,6 +2344,9 @@ var pluginManager = function pluginManager() {
                 }
                 return function(err, res) {
                     if (res) {
+                        if (!res.value && data.name === "findAndModify" && data && data.args && data.args[3] && data.args[3].remove) {
+                            res = {"value": res};
+                        }
                         if (!res.result) {
                             res.result = {};
                         }
