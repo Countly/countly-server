@@ -142,7 +142,9 @@
         {
             "files": [
                 "plugins/content/frontend/content-blocks/**/*.js",
-                "plugins/journey_engine/frontend/builder/**/*.js"
+                "plugins/journey_engine/frontend/builder/**/*.js",
+                "plugins/content/frontend/content-blocks/**/*.vue",
+                "plugins/journey_engine/frontend/builder/**/*.vue"
             ],
             "extends": [
                 "eslint:recommended",
@@ -151,9 +153,11 @@
                 "plugin:vue/vue3-recommended"
             ],
             "rules": {
+                // override these post initial content release, to make them fit with countly convention
                 "no-console": ["error"],
                 "@stylistic/quotes": ["error", "single"],
-                "@stylistic/quote-props": ["error", "as-needed"]
+                "@stylistic/quote-props": ["error", "as-needed"],
+                "require-jsdoc": "off" // temporary addition
             },
             "plugins": [
                 "vue",
