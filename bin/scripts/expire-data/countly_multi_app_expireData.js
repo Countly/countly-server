@@ -1,5 +1,5 @@
 /**
- *  Setup TTL indexes to delete older data for one specific app. This script should be run periodically, to create TTL indexes on new collections too, like new events, etc for specific app
+ *  Sets index on cd field if it does not exists and stores retention period in database. Nightly job will clear data based on set  retention period.
  *  Server: countly
  *  Path: countly dir/bin/scripts/expire-data
  *  Command: node countly_multi_app_expireData.js
@@ -24,44 +24,21 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
         }
         if (!err && indexes) {
             var hasIndex = false;
-            var dropIndex = false;
             for (var i = 0; i < indexes.length; i++) {
                 if (indexes[i].name == INDEX_NAME) {
-                    if (indexes[i].expireAfterSeconds == EXPIRE_AFTER) {
-                        //print("skipping", c)
-                        hasIndex = true;
-                    }
-                    //has index but incorrect expire time, need to be reindexed
-                    else {
-                        dropIndex = true;
-                    }
+                    hasIndex = true;
                     break;
                 }
             }
-            if (dropIndex) {
-                console.log("modifying index", collection);
-                db_drill.command({
-                    "collMod": collection,
-                    "index": {
-                        "keyPattern": {"cd": 1},
-                        expireAfterSeconds: EXPIRE_AFTER
-                    }
-                }, function(err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    done();
-                });
-
-            }
-            else if (!hasIndex) {
+            if (!hasIndex) {
                 console.log("creating index", collection);
-                db_drill.collection(collection).createIndex({"cd": 1}, {expireAfterSeconds: EXPIRE_AFTER, "background": true}, function() {
-                    done();
+                db_drill.collection(collection).createIndex({"cd": 1}, function() {
+                    done(true);
                 });
             }
             else {
-                done();
+                console.log("Appropriate index already set for", collection);
+                done(true);
             }
         }
         else {
@@ -70,9 +47,23 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
     });
 
 
-    function done() {
-        db.close();
-        db_drill.close();
-    }
+    function done(index_set) {
+        if (index_set) {
+            db.collection("plugins").updateOne({"_id": "retention"}, {"$set": {"retention": EXPIRE_AFTER}}, {"upsert": true}, function(err) {
+                if (err) {
+                    console.log("Error setting retention period", err);
+                }
+                else {
+                    console.log("Retention period set: " + EXPIRE_AFTER);
+                }
+                db.close();
+                db_drill.close();
 
+            });
+        }
+        else {
+            db.close();
+            db_drill.close();
+        }
+    }
 });
