@@ -1,5 +1,70 @@
+## Version 24.05.x
+
+Dependencies:
+- Bump puppeteer from 23.8.0 to 23.9.0
+- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump countly-sdk-web from 24.4.1 to 24.11.0
+- Bump tslib from 2.7.0 to 2.8.1
+
+## Version 24.05.19
+Fixes:
+- [dashboards] Fixing issue where dashboard widgets go into single column
+
+Security:
+- Bump puppeteer from 17.1.3 to 23.8.0
+- Bump express from 4.21.0 to 4.21.1 
+- Bump sass from 1.79.4 to 1.81.0
+- Bump express-session from 1.18.0 to 1.18.1
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /ui-tests
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /plugins/hooks
+
+## Version 24.05.18
+Fixes:
+- [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
+- [core] Fixed bug where exporting incoming data logs could result in "Incorrect parameter \"data\" error
+- [crash] Fixed bug in crash ingestion for scenarios where the "app version" is not a string.
+- [script] Fixing bug with "delete_old_members" script that led to malformed requests
+
+Enterprise fixes:
+- [nps] Fixed bug that showed the wrong nps preview title
+
+## Version 24.05.17
+Fixes:
+- [push] Improved ability to observe push related errors
+
+Enterprise fixes:
+- [cohorts] Fixed issues with nightly cleanup
+- [data-manager] Fixed UI bug where rules were not visible when editing "Merge by regex" transformations
+- [drill] Fixed wrong pie chart label  tooltip in dashboard widget
+- [flows] Fixed bug in case of null data in schema
+- [nps] Fixed bug in the editor where the "internal name" field was not mandatory
+- [ratings] Fixed UI bug where "Internal name" was not a mandatory field
+
+Security:
+- Fixing minor vulnerability that would allow for unauthorized file upload
+
+Enterprise Features:
+- [block] Added a way to filter crashes by their error (stacktrace)
+
+## Version 24.05.16
+Fixes:
+- [core] Replaced "Users" with "Sessions" label on technology home widgets
+- [push] Replaced push plugin with an earlier version of the plugin
+
+Enterprise fixes:
+- [license] Fixed bug with MAU type of licenses that would prevent the server from starting
+- [nps] Fixed bug where it was possible to submit empty nps surveys
+- [ratings] Fixed bug with user consent
+
+Security:
+- Bumped cookie-parser from 1.4.6 to 1.4.7
+- Bumped express-rate-limit from 7.4.0 to 7.4.1
+- Bumped moment-timezone from 0.5.45 to 0.5.46
+- Bumped sass from 1.79.3 to 1.79.4
+
 ## Version 24.05.15
 Enterprise fixes:
+- [ab-testing] Fixed JSON.parse issue preventing creation of AB tests
 - [nps] Fixed UI issues in the widget editor related to the "user consent" section
 - [ratings] Fixed rendering issue for escaped values
 
@@ -34,7 +99,7 @@ Enterprise Features:
 ## Version 24.05.12
 Fixes:
 - [dashboards] Fixes for dashboards grid
-- [dasboards] UI fix for dashboard widget action menu
+- [dashboards] UI fix for dashboard widget action menu
 - [push] Refactored fcm API related code
 - [reports] Use config for encryption key in reports
 
