@@ -1,3 +1,9 @@
+## Version 24.05.x
+
+Dependencies:
+- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump countly-sdk-web from 24.4.1 to 24.11.0
+
 ## Version 24.05.19
 Fixes:
 - [dashboards] Fixing issue where dashboard widgets go into single column
@@ -9,7 +15,6 @@ Security:
 - Bump express-session from 1.18.0 to 1.18.1
 - Bump cross-spawn from 7.0.3 to 7.0.6 in /ui-tests
 - Bump cross-spawn from 7.0.3 to 7.0.6 in /plugins/hooks
-- Bump nodemailer from 6.9.15 to 6.9.16
 
 ## Version 24.05.18
 Fixes:
