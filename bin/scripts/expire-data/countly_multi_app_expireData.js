@@ -27,33 +27,11 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
             var dropIndex = false;
             for (var i = 0; i < indexes.length; i++) {
                 if (indexes[i].name == INDEX_NAME) {
-                    if (!indexes[i].expireAfterSeconds || indexes[i].expireAfterSeconds <= EXPIRE_AFTER) {
-                        //print("skipping", c)
-                        hasIndex = true;
-                    }
-                    //has index but incorrect expire time, need to be reindexed
-                    else {
-                        dropIndex = true;
-                    }
+                    hasIndex=true;
                     break;
                 }
             }
-            if (dropIndex) {
-                console.log("modifying index", collection);
-                db_drill.command({
-                    "collMod": collection,
-                    "index": {
-                        "keyPattern": {"cd": 1},
-                    }
-                }, function(err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    done();
-                });
-
-            }
-            else if (!hasIndex) {
+            if (!hasIndex) {
                 console.log("creating index", collection);
                 db_drill.collection(collection).createIndex({"cd": 1}, function() {
                     done(true);
