@@ -24,10 +24,9 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
         }
         if (!err && indexes) {
             var hasIndex = false;
-            var dropIndex = false;
             for (var i = 0; i < indexes.length; i++) {
                 if (indexes[i].name == INDEX_NAME) {
-                    hasIndex=true;
+                    hasIndex = true;
                     break;
                 }
             }
