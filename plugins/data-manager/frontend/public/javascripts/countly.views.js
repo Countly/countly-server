@@ -964,6 +964,14 @@
             },
             canUserCreateTransform: function() {
                 return countlyAuth.validateCreate(SUB_FEATURE_TRANSFORMATIONS);
+            },
+            showMoreOptions: function() {
+                return (
+                    (this.isDrill && this.canUserCreateTransform && (this.currentSecondaryTab === 'events' || this.currentSecondaryTab === 'segmentation')) ||
+                    (this.isDrill && this.canUserCreate && this.currentSecondaryTab === 'events') ||
+                    (this.canUserCreate && this.currentSecondaryTab === 'event-groups') ||
+                    (this.isDrill && this.canUserCreateTransform && this.currentSecondaryTab === 'transformations')
+                );
             }
         },
         components: {
@@ -1123,11 +1131,12 @@
                 }
                 if (doc.actionType === 'EVENT_MERGE' && doc.isRegexMerge === true) {
                     doc.actionType = 'merge-regex';
+                    doc.eventTransformTargetRegex = doc.transformTarget[0];
                 }
                 else {
                     doc.actionType = doc.actionType.split('_')[1].toLowerCase();
                 }
-                doc.isExistingEvent = 'true';
+                doc.isExistingEvent = doc.isExistingEvent ? 'true' : 'false';
                 // doc.tab;
                 // delete doc.transformType;
                 doc.name = countlyCommon.unescapeHtml(doc.name);

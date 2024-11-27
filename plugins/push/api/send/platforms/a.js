@@ -18,7 +18,7 @@ const key = 'a';
  *  - has its own compilation part;
  *  - has its own sending part;
  *  - has no distinct representation in UI, therefore it's virtual.
- * 
+ *
  * Huawei push is only available on select Android devices, therefore it doesn't deserve a separate checkbox in UI from users perspective.
  * Yet notification payload, provider communication and a few other things are different, therefore it's a virtual platform. You can send to huawei directly using
  * API, but whenever you send to Android you'll also send to huawei if Huawei credentials are set.
@@ -27,20 +27,20 @@ const virtuals = ['h'];
 
 /**
  * Extract token & field from token_session request
- * 
+ *
  * @param {object} qstring request params
  * @returns {string[]|undefined} array of [platform, field, token] if qstring has platform-specific token data, undefined otherwise
  */
 function extractor(qstring) {
     if (qstring.android_token !== undefined && (!qstring.token_provider || qstring.token_provider === 'FCM')) {
         const token = qstring.android_token === 'BLACKLISTED' ? '' : qstring.android_token;
-        return [key, FIELDS['0'], token, util.hashInt(token)];
+        return [key, FIELDS['0'], token, util.hash(token)];
     }
 }
 
 /**
  * Make an estimated guess about request platform
- * 
+ *
  * @param {string} userAgent user-agent header
  * @returns {string} platform key if it looks like request made by this platform
  */
@@ -56,7 +56,7 @@ class FCM extends Splitter {
      * Standard constructor
      * @param {string} log logger name
      * @param {string} type type of connection: ap, at, id, ia, ip, ht, hp
-     * @param {Credentials} creds FCM credentials 
+     * @param {Credentials} creds FCM credentials
      * @param {Object[]} messages initial array of messages to send
      * @param {Object} options standard stream options
      * @param {number} options.pool.pushes number of notifications which can be processed concurrently, this parameter is strictly set to 500
@@ -90,8 +90,8 @@ class FCM extends Splitter {
     }
 
     /**
-     * Compile & send messages 
-     * 
+     * Compile & send messages
+     *
      * @param {Object[]} data pushes to send, no more than 500 per function call as enforced by stream writableHighWaterMark
      * @param {integer} length number of bytes in data
      * @returns {Promise} sending promise
@@ -155,7 +155,7 @@ class FCM extends Splitter {
                 return errors[err];
             };
 
-            const messages = pushes.map(p => p.t).map((token) => ({
+            const messages = pushes.map(({ t: token }) => ({
                 token,
                 ...content,
             }));
@@ -178,27 +178,29 @@ class FCM extends Splitter {
                 .sendEach(messages)
                 .then(async result => {
                     const allPushIds = pushes.map(p => p._id);
-
-                    if (!result.failureCount) {
-                        this.send_results(allPushIds, bytes);
-                        return;
-                    }
-
                     // array of successfully sent push._id:
                     const sentSuccessfully = [];
 
                     // check for each message
                     for (let i = 0; i < result.responses.length; i++) {
-                        const { success, error } = result.responses[i];
+                        const { success, error, messageId } = result.responses[i];
                         if (success) {
-                            sentSuccessfully.push(allPushIds[i]);
+                            sentSuccessfully.push({ p: allPushIds[i], r: messageId });
                         }
                         else {
                             const sdkError = FCM_SDK_ERRORS[error.code];
                             // check if the sdk error is mapped to an internal error.
                             // set to default if its not.
                             let internalErrorCode = sdkError?.mapTo ?? ERROR.DATA_PROVIDER;
-                            let internalErrorMessage = sdkError?.message ?? "Invalid error message";
+                            let internalErrorMessage = sdkError?.message;
+                            if (!internalErrorMessage) {
+                                if (error.code && error.message) {
+                                    internalErrorMessage = "[" + error.code + "] " + error.message;
+                                }
+                                else {
+                                    internalErrorMessage = "Invalid error message";
+                                }
+                            }
                             errorObject(internalErrorCode, internalErrorMessage)
                                 .addAffected(pushes[i]._id, one);
                         }
@@ -217,7 +219,7 @@ class FCM extends Splitter {
 
 /**
  * Create new empty payload for the note object given
- * 
+ *
  * @param {Message} msg NMessageote object
  * @returns {object} empty payload object
  */
@@ -227,7 +229,7 @@ function empty(msg) {
 
 /**
  * Finish data object after setting all the properties
- * 
+ *
  * @param {object} data platform-specific data to finalize
  * @return {object} resulting object
  */
@@ -256,7 +258,7 @@ const fields = [
  */
 const map = {
     /**
-     * Sends sound 
+     * Sends sound
      * @param {Template} t template
      * @param {string} sound sound string
      */
@@ -267,7 +269,7 @@ const map = {
     },
 
     /**
-     * Sends badge 
+     * Sends badge
      * @param {Template} t template
      * @param {number} badge badge (0..N)
      */
@@ -278,7 +280,7 @@ const map = {
     /**
      * Sends buttons
      * !NOTE! buttons & messagePerLocale are inter-dependent as buttons urls/titles are locale-specific
-     * 
+     *
      * @param {Template} t template
      * @param {number} buttons buttons (1..2)
      */
@@ -290,7 +292,7 @@ const map = {
 
     /**
      * Set title string
-     * 
+     *
      * @param {Template} t template
      * @param {String} title title string
      */
@@ -300,7 +302,7 @@ const map = {
 
     /**
      * Set message string
-     * 
+     *
      * @param {Template} t template
      * @param {String} message message string
      */
@@ -310,7 +312,7 @@ const map = {
 
     /**
      * Send collapse_key.
-     * 
+     *
      * @param {Template} template template
      * @param {boolean} ck collapseKey of the Content
      */
@@ -322,7 +324,7 @@ const map = {
 
     /**
      * Send timeToLive.
-     * 
+     *
      * @param {Template} template template
      * @param {boolean} ttl timeToLive of the Content
      */
@@ -334,7 +336,7 @@ const map = {
 
     /**
      * Send notification-tap url
-     * 
+     *
      * @param {Template} template template
      * @param {string} url on-tap url
      */
@@ -345,7 +347,7 @@ const map = {
     /**
      * Send media (picture, video, gif, etc) along with the message.
      * Sets mutable-content in order for iOS extension to be run.
-     * 
+     *
      * @param {Template} template template
      * @param {string} media attached media url
      */
@@ -355,7 +357,7 @@ const map = {
 
     /**
      * Sends custom data along with the message
-     * 
+     *
      * @param {Template} template template
      * @param {Object} data data to be sent
      */
@@ -365,7 +367,7 @@ const map = {
 
     /**
      * Sends user props along with the message
-     * 
+     *
      * @param {Template} template template
      * @param {[string]} extras extra user props to be sent
      * @param {Object} data personalization
@@ -381,7 +383,7 @@ const map = {
 
     /**
      * Sends platform specific fields
-     * 
+     *
      * @param {Template} template template
      * @param {object} specific platform specific props to be sent
      */
@@ -407,7 +409,7 @@ const FIELDS = {
  * A number comes from SDK, we need to map it into smth like tkip/tkid/tkia
  */
 const FIELDS_TITLES = {
-    '0': 'Android Firebase Token',
+    '0': 'FCM Token',
 };
 
 /**
@@ -417,7 +419,7 @@ const CREDS = {
     'fcm': class FCMCreds extends Creds {
         /**
          * Validation scheme of this class
-         * 
+         *
          * @returns {object} validateArgs scheme
          */
         static get scheme() {
@@ -429,7 +431,7 @@ const CREDS = {
 
         /**
          * Check credentials for correctness, throw PushError otherwise
-         * 
+         *
          * @throws PushError in case the check fails
          * @returns {undefined}
          */
@@ -469,7 +471,7 @@ const CREDS = {
 
         /**
          * "View" json, that is some truncated/simplified version of credentials that is "ok" to display
-         * 
+         *
          * @returns {object} json without sensitive information
          */
         get view() {
@@ -502,5 +504,4 @@ module.exports = {
     fields,
     map,
     connection: FCM,
-
 };

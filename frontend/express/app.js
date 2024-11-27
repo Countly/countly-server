@@ -603,6 +603,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.use(function(req, res, next) {
         var contentType = req.headers['content-type'];
         if (req.method.toLowerCase() === 'post' && contentType && contentType.indexOf('multipart/form-data') >= 0) {
+            if (!req.session?.uid || Date.now() > req.session?.expires) {
+                res.status(401).send('Unauthorized');
+                return;
+            }
             var form = new formidable.IncomingForm();
             form.uploadDir = __dirname + '/uploads';
             form.parse(req, function(err, fields, files) {
@@ -657,7 +661,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             favicon: "images/favicon.png",
             documentationLink: convertLink(versionInfo.documentationLink, "https://support.count.ly/hc/en-us/categories/360002373332-Knowledge-Base"),
             helpCenterLink: convertLink(versionInfo.helpCenterLink, "https://support.count.ly/hc/en-us"),
-            featureRequestLink: convertLink(versionInfo.featureRequestLink, "https://support.count.ly/hc/en-us/community/topics/360001464272-Feature-Requests"),
+            featureRequestLink: convertLink(versionInfo.featureRequestLink, "https://discord.com/channels/1088398296789299280/1088721958218248243"),
             feedbackLink: convertLink(versionInfo.feedbackLink, "https://count.ly/legal/privacy-policy"),
         };
         plugins.loadConfigs(countlyDb, function() {
