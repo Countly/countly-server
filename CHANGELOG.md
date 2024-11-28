@@ -8,6 +8,7 @@ Dependencies:
 - Bump form-data from 4.0.0 to 4.0.1
 - Bump jimp from 0.22.12 to 1.6.0
 - Bump jsdoc from 4.0.3 to 4.0.4
+- Bump countly-sdk-nodejs from 22.6.0 to 24.10.0
 
 ## Version 24.05.19
 Fixes:
