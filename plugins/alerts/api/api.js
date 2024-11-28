@@ -229,6 +229,9 @@ const PERIOD_TO_TEXT_EXPRESSION_MAPPER = {
                             }
                         });
                 }
+                if (!alertConfig._id) {
+                    alertConfig.createdAt = new Date().getTime();
+                }
                 alertConfig.createdBy = params.member._id;
                 return common.db.collection("alerts").insert(
                     alertConfig,
