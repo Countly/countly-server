@@ -7,6 +7,7 @@ Dependencies:
 - Bump tslib from 2.7.0 to 2.8.1
 - Bump form-data from 4.0.0 to 4.0.1
 - Bump jimp from 0.22.12 to 1.6.0
+- Bump jsdoc from 4.0.3 to 4.0.4
 
 ## Version 24.05.19
 Fixes:
