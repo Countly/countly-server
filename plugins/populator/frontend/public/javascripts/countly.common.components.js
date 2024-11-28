@@ -221,7 +221,8 @@
                         selectedKey: this.selectedProperty,
                         selectedValue: this.selectedValue,
                         conditionType: this.conditionType,
-                        values: [{key: "", probability: 0}]
+                        values: [{key: "", probability: 100}],
+                        "isProbabilitiesEqual": true,
                     });
                     this.$emit('input', conditions);
                 }
@@ -328,7 +329,7 @@
         data: function() {
             return {
                 users: [],
-                conditionPropertyValues: []
+                conditionPropertyValues: [],
             };
         },
         created() {
@@ -373,11 +374,13 @@
             onAddUserProperty: function() {
                 this.users.push({
                     "key": "",
-                    "values": [{key: "", probability: 0}],
+                    "values": [{key: "", probability: 100}],
+                    "isProbabilitiesEqual": true,
                 });
             },
             onAddAnotherValue: function(index) {
                 this.users[index].values.push({key: "", probability: 0});
+                this.calculatePropertyProbabilities(index);
             },
             checkRemoveValue: function(key, value) {
                 let usedProperties = [];
@@ -435,6 +438,7 @@
                 }
                 try {
                     this.users[index].values.splice(valueIndex, 1);
+                    this.calculatePropertyProbabilities(index);
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -451,9 +455,11 @@
                 try {
                     if (this.users[index].conditions[conditionIndex].values.length === 1) {
                         this.users[index].conditions.splice(conditionIndex, 1);
+                        this.calculateConditionProbabilities(index, conditionIndex);
                     }
                     else {
                         this.users[index].conditions[conditionIndex].values.splice(valueIndex, 1);
+                        this.calculateConditionProbabilities(index, conditionIndex);
                     }
                 }
                 catch (error) {
@@ -467,6 +473,7 @@
             onAddAnotherConditionValue: function(index, conditionIndex) {
                 try {
                     this.users[index].conditions[conditionIndex].values.push({key: "", probability: 0});
+                    this.calculateConditionProbabilities(index, conditionIndex);
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -480,6 +487,28 @@
                 const item = this.users.find(user => user.key === selectedConditionProp);
                 if (item) {
                     this.conditionPropertyValues = item.values.map(valueItem => valueItem.key || null);
+                }
+            },
+            calculatePropertyProbabilities: function(index) {
+                if (this.users[index].isProbabilitiesEqual) {
+                    var valueCount = Object.keys(this.users[index].values).length,
+                        equalProbability = 100 / valueCount;
+                    const updatedValues = this.users[index].values.map(item => ({
+                        ...item,
+                        probability: equalProbability // Set the new probability value
+                    }));
+                    this.users[index].values = updatedValues;
+                }
+            },
+            calculateConditionProbabilities: function(index, conditionIndex) {
+                if (this.users[index].conditions[conditionIndex].isProbabilitiesEqual) {
+                    var valueCount = Object.keys(this.users[index].conditions[conditionIndex].values).length,
+                        equalProbability = 100 / valueCount;
+                    const updatedValues = this.users[index].conditions[conditionIndex].values.map(item => ({
+                        ...item,
+                        probability: equalProbability // Set the new probability value
+                    }));
+                    this.users[index].conditions[conditionIndex].values = updatedValues;
                 }
             }
         },
@@ -542,7 +571,8 @@
             onAddEventSegmentation: function(index) {
                 this.events[index].segmentations.push({
                     "key": "",
-                    "values": [{key: "", probability: 0}],
+                    "values": [{key: "", probability: 100}],
+                    "isProbabilitiesEqual": true,
                 });
             },
             checkRemoveValue: function(key, value, index) {
@@ -599,6 +629,7 @@
                         return;
                     }
                     this.events[index].segmentations[segmentIndex].values.splice(valueIndex, 1);
+                    this.calculateSegmentProbabilities(index, segmentIndex);
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -611,6 +642,7 @@
             onAddAnotherValue: function(index, segmentIndex) {
                 try {
                     this.events[index].segmentations[segmentIndex].values.push({key: "", probability: 0});
+                    this.calculateSegmentProbabilities(index, segmentIndex);
                 }
                 catch (error) {
                     CountlyHelpers.notify({
@@ -622,6 +654,7 @@
             },
             onAddAnotherConditionValue: function(index, segmentIndex, conditionIndex) {
                 this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.push({key: "", probability: 0});
+                this.calculateConditionProbabilities(index, segmentIndex, conditionIndex);
             },
             onRemoveConditionValue: function(index, segmentIndex, valueIndex, conditionIndex) {
                 try {
@@ -630,6 +663,7 @@
                     }
                     else {
                         this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.splice(valueIndex, 1);
+                        this.calculateConditionProbabilities(index, segmentIndex, conditionIndex);
                     }
                 }
                 catch (error) {
@@ -647,6 +681,30 @@
                 const item = this.events[index].segmentations.find(segment => segment.key === selectedConditionProp);
                 if (item) {
                     this.conditionPropertyValues = item.values.map(valueItem => valueItem.key || null);
+                }
+            },
+            calculateSegmentProbabilities: function(index, segmentIndex) {
+                if (this.events[index].segmentations[segmentIndex].isProbabilitiesEqual) {
+                    var valueCount = Object.keys(this.events[index].segmentations[segmentIndex].values).length,
+                        equalProbability = 100 / valueCount;
+                    const updatedValues = this.events[index].segmentations[segmentIndex].values.map(item => ({
+                        ...item,
+                        probability: equalProbability // Set the new probability value
+                    }));
+                    this.events[index].segmentations[segmentIndex].values = updatedValues;
+                    this.events[index].segmentations[segmentIndex].probabilitySum = equalProbability * valueCount;
+                }
+            },
+            calculateConditionProbabilities: function(index, segmentIndex, conditionIndex) {
+                if (this.events[index].segmentations[segmentIndex].conditions[conditionIndex].isProbabilitiesEqual) {
+                    var valueCount = Object.keys(this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values).length,
+                        equalProbability = 100 / valueCount;
+                    const updatedValues = this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values.map(item => ({
+                        ...item,
+                        probability: equalProbability // Set the new probability value
+                    }));
+                    this.events[index].segmentations[segmentIndex].conditions[conditionIndex].values = updatedValues;
+                    this.events[index].segmentations[segmentIndex].conditions[conditionIndex].probabilitySum = equalProbability * valueCount;
                 }
             }
         },
