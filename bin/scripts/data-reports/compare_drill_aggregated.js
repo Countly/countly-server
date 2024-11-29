@@ -34,7 +34,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             console.log("No apps found");
             return close();
         }
-        else{
+        else {
             console.log("Apps found:", apps.length);
             Promise.each(apps, function(app) {
                 return new Promise(function(resolve, reject) {
@@ -48,8 +48,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             events = events || {};
                             events.list = events.list || [];
                             events.list = events.list.filter(function(ee) {
-                                if (ee.indexOf("[CLY]_") === 0)
-                                {
+                                if (ee.indexOf("[CLY]_") === 0) {
                                     return false;
                                 }
                                 else {
@@ -57,28 +56,24 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                 }
                             });
 
-                            if (eventMap && eventMap[app._id + ""])
-                            {
+                            if (eventMap && eventMap[app._id + ""]) {
                                 var listBF = events.list.length;
-                                events.list = events.list.filter(function(ee){
-                                    if (eventMap && eventMap[app._id + ""])
-                                    {
+                                events.list = events.list.filter(function(ee) {
+                                    if (eventMap && eventMap[app._id + ""]) {
                                         return eventMap[app._id + ""].indexOf(ee) > -1;
                                     }
                                     else {
                                         return false;
                                     }
                                 });
-                                if (events.list.length != listBF)
-                                {
+                                if (events.list.length != listBF) {
                                     console.log("    Filtered events based on eventMap: ", events.list.length, " from ", listBF);
                                 }
                             }
 
-                            if (events && events.list && events.list.length)
-                            {
+                            if (events && events.list && events.list.length) {
                                 endReport[app._id] = {"name": app.name, "total": events.list.length, "bad": 0};
-                                Promise.each(events.list, function(event){
+                                Promise.each(events.list, function(event) {
                                     return new Promise(function(resolve2, reject2) {
                                         console.log("    Processing event: ", event);
                                         var params = {
@@ -94,7 +89,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                             if (err) {
                                                 console.log("    Error getting drill data: ", err);
                                                 reject2();
-                                            } else {
+                                            }
+                                            else {
                                                 if (verbose) {
                                                     console.log("    Drill data loaded");
                                                     console.log(JSON.stringify(drillData));
@@ -132,24 +128,19 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                                             haveAnything = true;
                                                         }
                                                     }
-                                                    for (var z = 0; z < periodObject.currentPeriodArr.length; z++)
-                                                    {
-                                                        if (drillData.data[periodObject.currentPeriodArr[z]])
-                                                        {
-                                                            if (mergedData[periodObject.currentPeriodArr[z]])
-                                                            {
+                                                    for (var z = 0; z < periodObject.currentPeriodArr.length; z++) {
+                                                        if (drillData.data[periodObject.currentPeriodArr[z]]) {
+                                                            if (mergedData[periodObject.currentPeriodArr[z]]) {
                                                                 var diff = {};
-                                                                for (var key0 in mergedData[periodObject.currentPeriodArr[z]])
-                                                                {
+                                                                for (var key0 in mergedData[periodObject.currentPeriodArr[z]]) {
                                                                     diff[key0] = (mergedData[periodObject.currentPeriodArr[z]][key0] || 0) - (drillData.data[periodObject.currentPeriodArr[z]][key0] || 0);
                                                                 }
-                                                                if (diff.c || diff.s || diff.dur)
-                                                                {
+                                                                if (diff.c || diff.s || diff.dur) {
                                                                     report.data[periodObject.currentPeriodArr[z]] = diff;
                                                                     haveAnything = true;
                                                                 }
                                                             }
-                                                            else{
+                                                            else {
                                                                 report.data[periodObject.currentPeriodArr[z]] = {};
                                                                 report.data[periodObject.currentPeriodArr[z]].c = -1 * drillData.data[periodObject.currentPeriodArr[z]].c;
                                                                 report.data[periodObject.currentPeriodArr[z]].s = -1 * drillData.data[periodObject.currentPeriodArr[z]].s;
@@ -246,12 +237,10 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     close();
                 } catch (err) {
                     console.error("Failed to save partial report:", err);
-                    
                 }
             }).catch(function(eee) {
                 console.log("Error while fetching data");
                 console.log(eee);
-
                 try {
                     // Complete CSV after processing the apps
                     console.log("\nSummary Report (CSV-like):");
@@ -275,16 +264,19 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         }
         function close() {
             try {
-                if (countlyDb?.close) countlyDb.close();
-                if (drillDb?.close) drillDb.close();
-            } catch (err) {
+                if (countlyDb?.close) { countlyDb.close();
+                }
+                if  (drillDb?.close) { drillDb.close();
+                }
+            }
+            catch (err) {
                 console.error("Error occurred while closing database connections:", err);
-            } finally {
+            }
+            finally {
                 console.log("Done.");
                 console.log("EXITING...");
             }
         }
-        
     });
 }).catch(function(eee) {
     console.log("Error while fetching data");
@@ -313,7 +305,7 @@ function getDataFromDrill(options, callback) {
     }
 
     pipeline.push({ "$group": { "_id": "$d", "c": { "$sum": "$c" }, "s": { "$sum": "$s" }, "dur": { "$sum": "$dur" } } });
-    options.drillDb.collection("drill_events").aggregate(pipeline, { "allowDiskUse": true }).toArray(function (err, data) {
+    options.drillDb.collection("drill_events").aggregate(pipeline, { "allowDiskUse": true }).toArray(function(err, data) {
         if (err) {
             console.log(err);
             callback(err, null);
@@ -345,7 +337,7 @@ function getAppList(options, callback) {
         }
         query = { _id: { $in: listed } };
     }
-    options.db.collection("apps").find(query, { "name": 1, "timezone": 1 }).toArray(function (err, apps) {
+    options.db.collection("apps").find(query, { "name": 1, "timezone": 1 }).toArray(function(err, apps) {
         if (err) {
             console.log("Error getting apps: ", err);
         }
