@@ -229,11 +229,10 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     console.log("Summary report saved to '" + path + "'.");
 
                     console.log(JSON.stringify(endReport));
-                    process.exit();
-                    
+                    close();
                 } catch (err) {
                     console.error("Failed to save partial report:", err);
-                    process.exit();
+                    
                 }
 
             }).catch(function(eee) {
@@ -261,6 +260,18 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 return close();
             });
         }
+        function close() {
+            try {
+                if (countlyDb?.close) countlyDb.close();
+                if (drillDb?.close) drillDb.close();
+            } catch (err) {
+                console.error("Error occurred while closing database connections:", err);
+            } finally {
+                console.log("Done.");
+                console.log("EXITING...");
+            }
+        }
+        
     });
 }).catch(function(eee) {
     console.log("Error while fetching data");
@@ -316,17 +327,6 @@ function getDataFromDrill(options, callback) {
     });
 }
 
-function close() {
-    try {
-        if (countlyDb?.close) countlyDb.close();
-        if (drillDb?.close) drillDb.close();
-    } catch (err) {
-        console.error("Error occurred while closing database connections:", err);
-    } finally {
-        console.log("Done.");
-        console.log("EXITING...");
-    }
-}
 
 function getAppList(options, callback) {
     var query = {};
