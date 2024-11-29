@@ -10,9 +10,8 @@ var period = "7days"; // Choose any of formats: "Xdays" ("7days", "100days") or 
 var app_list = []; // List with apps 
 // Example var eventMap = {"6075f94b7e5e0d392902520c":["Logout","Login"],"6075f94b7e5e0d392902520d":["Logout","Login","Buy"]};
 var eventMap = {}; // If left empty will run for all apps/events.
-const path = './summary_report.csv';  // Specify a valid path: 'summary_report.csv' 
+const path = './summary_report.csv'; // Specify a valid path: 'summary_report.csv' 
 var union_with_old_collection = true; // False if all sessions are stored in drill_events collection
-
 var verbose = false; // true to show more output
 
 const Promise = require("bluebird");
@@ -34,7 +33,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         if (!apps || !apps.length) {
             console.log("No apps found");
             return close();
-        } else {
+        }
+        else{
             console.log("Apps found:", apps.length);
             Promise.each(apps, function(app) {
                 return new Promise(function(resolve, reject) {
@@ -43,34 +43,42 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         if (err) {
                             console.log("Error getting events: ", err);
                             reject();
-                        } else {
+                        }
+                        else {
                             events = events || {};
                             events.list = events.list || [];
                             events.list = events.list.filter(function(ee) {
-                                if (ee.indexOf("[CLY]_") === 0) {
+                                if (ee.indexOf("[CLY]_") === 0)
+                                {
                                     return false;
-                                } else {
+                                }
+                                else {
                                     return true;
                                 }
                             });
 
-                            if (eventMap && eventMap[app._id + ""]) {
+                            if (eventMap && eventMap[app._id + ""])
+                            {
                                 var listBF = events.list.length;
-                                events.list = events.list.filter(function(ee) {
-                                    if (eventMap && eventMap[app._id + ""]) {
+                                events.list = events.list.filter(function(ee){
+                                    if (eventMap && eventMap[app._id + ""])
+                                    {
                                         return eventMap[app._id + ""].indexOf(ee) > -1;
-                                    } else {
+                                    }
+                                    else {
                                         return false;
                                     }
                                 });
-                                if (events.list.length != listBF) {
+                                if (events.list.length != listBF)
+                                {
                                     console.log("    Filtered events based on eventMap: ", events.list.length, " from ", listBF);
                                 }
                             }
 
-                            if (events && events.list && events.list.length) {
+                            if (events && events.list && events.list.length)
+                            {
                                 endReport[app._id] = {"name": app.name, "total": events.list.length, "bad": 0};
-                                Promise.each(events.list, function(event) {
+                                Promise.each(events.list, function(event){
                                     return new Promise(function(resolve2, reject2) {
                                         console.log("    Processing event: ", event);
                                         var params = {
@@ -124,26 +132,32 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                                             haveAnything = true;
                                                         }
                                                     }
-
-                                                    for (var z = 0; z < periodObject.currentPeriodArr.length; z++) {
-                                                        if (drillData.data[periodObject.currentPeriodArr[z]]) {
-                                                            if (mergedData[periodObject.currentPeriodArr[z]]) {
+                                                    for (var z = 0; z < periodObject.currentPeriodArr.length; z++)
+                                                    {
+                                                        if (drillData.data[periodObject.currentPeriodArr[z]])
+                                                        {
+                                                            if (mergedData[periodObject.currentPeriodArr[z]])
+                                                            {
                                                                 var diff = {};
-                                                                for (var key0 in mergedData[periodObject.currentPeriodArr[z]]) {
+                                                                for (var key0 in mergedData[periodObject.currentPeriodArr[z]])
+                                                                {
                                                                     diff[key0] = (mergedData[periodObject.currentPeriodArr[z]][key0] || 0) - (drillData.data[periodObject.currentPeriodArr[z]][key0] || 0);
                                                                 }
-                                                                if (diff.c || diff.s || diff.dur) {
+                                                                if (diff.c || diff.s || diff.dur)
+                                                                {
                                                                     report.data[periodObject.currentPeriodArr[z]] = diff;
                                                                     haveAnything = true;
                                                                 }
-                                                            } else {
+                                                            }
+                                                            else{
                                                                 report.data[periodObject.currentPeriodArr[z]] = {};
                                                                 report.data[periodObject.currentPeriodArr[z]].c = -1 * drillData.data[periodObject.currentPeriodArr[z]].c;
                                                                 report.data[periodObject.currentPeriodArr[z]].s = -1 * drillData.data[periodObject.currentPeriodArr[z]].s;
                                                                 report.data[periodObject.currentPeriodArr[z]].dur = -1 * drillData.data[periodObject.currentPeriodArr[z]].dur;
                                                                 haveAnything = true;
                                                             }
-                                                        } else {
+                                                        }
+                                                        else {
                                                             if (mergedData[periodObject.currentPeriodArr[z]]) {
                                                                 report.data[periodObject.currentPeriodArr[z]] = mergedData[periodObject.currentPeriodArr[z]];
                                                                 haveAnything = true;
@@ -276,7 +290,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     console.log("Error while fetching data");
     console.log(eee);
 });
-
 function getDataFromDrill(options, callback) {
     var tmpArr = options.periodObj.currentPeriodArr[0].split(".");
     var startDate = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
@@ -284,14 +297,12 @@ function getDataFromDrill(options, callback) {
         startDate.tz(options.timezone);
     }
     startDate = startDate.valueOf() - startDate.utcOffset() * 60000;
-
     tmpArr = options.periodObj.currentPeriodArr[options.periodObj.currentPeriodArr.length - 1].split(".");
     var endDate = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
     if (options.timezone) {
         endDate.tz(options.timezone);
     }
     endDate = endDate.valueOf() - endDate.utcOffset() * 60000;
-
     var query = { "ts": { "$gte": startDate, "$lt": endDate }, "a": options.app_id, "e": options.event };
     var pipeline = [];
     pipeline.push({ "$match": query });
@@ -325,8 +336,6 @@ function getDataFromDrill(options, callback) {
         callback(err, result);
     });
 }
-
-
 function getAppList(options, callback) {
     var query = {};
     if (app_list && app_list.length > 0) {
