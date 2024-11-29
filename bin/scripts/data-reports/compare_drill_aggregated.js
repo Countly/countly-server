@@ -209,7 +209,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                     console.log(eee);
                                     reject();
                                 });
-                            } 
+                            }
                             else {
                                 console.log("No events in the App");
                                 console.log("---------------------------------");
@@ -238,7 +238,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
                     console.log(JSON.stringify(endReport));
                     close();
-                } 
+                }
                 catch (err) {
                     console.error("Failed to save partial report:", err);
                 }
@@ -260,7 +260,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     }
                     fs.writeFileSync(path, csvRows.join("\n"));
                     console.log("Partial summary report saved to '" + path + "'.");
-} 
+                }
                 catch (err) {
                     console.error("Failed to save partial report:", err);
                 }
@@ -269,10 +269,10 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         }
         function close() {
             try {
-                if (countlyDb?.close) { 
+                if (countlyDb?.close) {
                     countlyDb.close();
                 }
-                if (drillDb?.close) { 
+                if (drillDb?.close) {
                     drillDb.close();
                 }
             }
