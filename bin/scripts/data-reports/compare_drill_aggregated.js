@@ -234,7 +234,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     console.error("Failed to save partial report:", err);
                     
                 }
-
             }).catch(function(eee) {
                 console.log("Error while fetching data");
                 console.log(eee);
