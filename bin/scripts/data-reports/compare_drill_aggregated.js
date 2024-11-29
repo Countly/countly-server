@@ -6,7 +6,7 @@
  * node compare_drill_aggregated.js
  * 
  */
-var period = "30days"; // Choose any of formats: "Xdays" ("7days", "100days") or  ["1-1-2024", "1-10-2024"], 
+var period = "7days"; // Choose any of formats: "Xdays" ("7days", "100days") or  ["1-1-2024", "1-10-2024"], 
 var app_list = []; // List with apps 
 // Example var eventMap = {"6075f94b7e5e0d392902520c":["Logout","Login"],"6075f94b7e5e0d392902520d":["Logout","Login","Buy"]};
 var eventMap = {}; // If left empty will run for all apps/events.
