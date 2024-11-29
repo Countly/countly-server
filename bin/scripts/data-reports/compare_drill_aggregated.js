@@ -161,11 +161,13 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                                     let percentageDiff = 0;
                                                     if (drillCount !== 0) {
                                                         percentageDiff = ((drillCount - aggCount) / drillCount) * 100;
-                                                    } else {
+                                                    }
+                                                    else {
                                                         if (aggCount !== 0) {
                                                             // If drillCount is 0, and aggCount is not 0, show a large difference
                                                             percentageDiff = (aggCount > 0 ? 100 : -100); // 100% or -100% depending on the sign of aggCount
-                                                        } else {
+                                                        }
+                                                        else {
                                                             percentageDiff = 0; // Both counts are 0, no difference
                                                         }
                                                     }
@@ -207,7 +209,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                     console.log(eee);
                                     reject();
                                 });
-                            } else {
+                            } 
+                            else {
                                 console.log("No events in the App");
                                 console.log("---------------------------------");
                                 resolve();
@@ -235,7 +238,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
 
                     console.log(JSON.stringify(endReport));
                     close();
-                } catch (err) {
+                } 
+                catch (err) {
                     console.error("Failed to save partial report:", err);
                 }
             }).catch(function(eee) {
@@ -256,7 +260,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     }
                     fs.writeFileSync(path, csvRows.join("\n"));
                     console.log("Partial summary report saved to '" + path + "'.");
-                } catch (err) {
+                } 
+                catch (err) {
                     console.error("Failed to save partial report:", err);
                 }
                 return close();
@@ -264,9 +269,11 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         }
         function close() {
             try {
-                if (countlyDb?.close) { countlyDb.close();
+                if (countlyDb?.close) { 
+                    countlyDb.close();
                 }
-                if  (drillDb?.close) { drillDb.close();
+                if (drillDb?.close) { 
+                    drillDb.close();
                 }
             }
             catch (err) {
@@ -322,7 +329,8 @@ function getDataFromDrill(options, callback) {
                     result.totals.dur += data[z].dur || 0;
                 }
             }
-        } else {
+        }
+        else {
             console.log("No drill data found for event:", options.event);
         }
         callback(err, result);
