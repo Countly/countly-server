@@ -260,7 +260,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     }
                     fs.writeFileSync(path, csvRows.join("\n"));
                     console.log("Partial summary report saved to '" + path + "'.");
-                } 
+} 
                 catch (err) {
                     console.error("Failed to save partial report:", err);
                 }
