@@ -224,7 +224,9 @@
                 }
             },
             onViewEntered: function() { //?
-                this.$refs.rootEl.focus();
+                if (this.$refs.rootEl) {
+                    this.$refs.rootEl.focus();
+                }
             }
         },
         created: function() {
