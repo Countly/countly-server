@@ -1955,6 +1955,9 @@
                     interval:1000
                 });
 
+                // enable remote config
+                Countly.remote_config = true;
+
                 // if domain has changed since the last time it is saved as device id set the new domain as device id and merge it with the old domain
                 if (Countly.get_device_id() !== domain) {
                     Countly.change_id(domain, true);
