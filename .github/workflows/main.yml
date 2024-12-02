@@ -105,7 +105,7 @@ jobs:
       - name: ESLint
         shell: bash
         run: |
-         npm install eslint@8.57.0
+         npm install eslint@8.57.0 eslint-plugin-vue@9.31.0 @stylistic/eslint-plugin@2.11.0
          npx eslint .
 
       - name: NPM install

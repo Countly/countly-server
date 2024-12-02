@@ -4336,7 +4336,7 @@
           &__left {
             display: flex;
             align-items: center;
-            width: 350px;
+            // width: 350px;
           }
 
           &__icon {
@@ -4366,6 +4366,7 @@
           &__info-title {
             h4 {
               margin: 0;
+              max-width: 400px;
             }
             &__input {
                 width: 200px;

@@ -985,10 +985,10 @@
                 class="cly-vue-notification__alert-box"
                 :class="dynamicClasses"
             >
-                <div class="bu-is-flex bu-is-justify-content-space-between bu-p-3">
+                <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center">
                     <div class="bu-is-flex" style="width:100%">
                         <img
-                            class="alert-image bu-mr-3"
+                            class="alert-image bu-p-2"
                             data-test-id="cly-notification-img"
                             :src="image"
                         >
@@ -1024,7 +1024,7 @@
                             <slot name="close">
                                 <i
                                     :data-test-id="closeIconDataId"
-                                    class="cly-vue-notification__alert-box__close-icon el-icon-close"
+                                    class="cly-vue-notification__alert-box__close-icon el-icon-close bu-mr-2"
                                 />
                             </slot>
                         </div>

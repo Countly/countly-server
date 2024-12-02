@@ -27,40 +27,21 @@ function runTest(options) {
             db.collection("testCommands").findAndModify(options.query, options.sort || {}, options.update, options.options, function(err, res) {
                 should.not.exist(err);
                 console.log(JSON.stringify(res));
-
-
-                if (options.options.remove) {
-                    res = res || {};
-                    if (options.query._id) {
-                        res.should.have.property("_id", options.query._id);
-                    }
-                    else {
-                        res.should.have.property("_id");
-                    }
-
-                    if (options.query.name) {
-                        res.should.have.property("name", options.query.name);
-                    }
-                    else {
-                        res.should.have.property("name");
+                res.should.have.property("value");
+                if (options.options.new) {
+                    if (options.update.$set.name) {
+                        res.value.should.have.property("name", options.update.$set.name);
                     }
                 }
                 else {
-                    res.should.have.property("value");
-                    if (options.options.new) {
-                        if (options.update.$set.name) {
-                            res.value.should.have.property("name", options.update.$set.name);
-                        }
-                    }
-                    else {
-                        if (options.query.name) {
-                            res.value.should.have.property("name", options.query.name);
-                        }
-                    }
-                    if (options.query._id) {
-                        res.value.should.have.property("_id", options.query._id);
+                    if (options.query.name) {
+                        res.value.should.have.property("name", options.query.name);
                     }
                 }
+                if (options.query._id) {
+                    res.value.should.have.property("_id", options.query._id);
+                }
+
                 done();
             });
         }
