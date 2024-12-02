@@ -1,3 +1,7 @@
+## Version XX.XX.XX
+Fixes:
+- [remote-config] Moving the remote config enable/disable functionality to the drop-down
+
 ## Version 24.10.x
 
 Dependencies:
