@@ -22,6 +22,8 @@ then
 
     if [ "$1" != "combined" ]; then
         #upgrade plugins
+        countly plugin enable journey_engine;
+        countly plugin enable content;
         nodejs "$DIR/scripts/install_plugins.js"
     fi
     
@@ -45,5 +47,5 @@ elif [ "$CONTINUE" == "-1" ]
 then
     echo "Database is upgraded to higher version"
 else
-    echo "Unknown ugprade state: $CONTINUE"
+    echo "Unknown upgrade state: $CONTINUE"
 fi
