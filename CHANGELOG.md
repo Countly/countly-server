@@ -1,3 +1,6 @@
+## Version XX.XX.XX
+- [star-rating] Fix a bug where cohort segmentation has to be filled in when previously it does not have to
+
 ## Version 24.12
 Features:
 - [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
