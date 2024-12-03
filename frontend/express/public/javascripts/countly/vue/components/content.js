@@ -315,7 +315,7 @@
         methods: {
         },
         template: `
-            <div class="cly-vue-content-builder__layout-steps">
+            <div class="cly-vue-content-builder-sidebar-inputs">
                 <div v-if="collapse">
                     <el-collapse v-model="activeSection">
                         <el-collapse-item :title="header" name="section">
@@ -324,129 +324,130 @@
                     </el-collapse>  
                 </div>
                 <div v-else>
-                    <div class="cly-vue-content-builder__layout-steps__header text-medium font-weight-bold">{{ header }}</div>
+                    <div class="cly-vue-content-builder-sidebar-inputs__header text-medium font-weight-bold">{{ header }}</div>
                     <slot name="content-builder-layout-steps"></slot>
                 </div>
             </div>
         `,
     }));
 
+
+    // CONSTANTS
+
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER = 'color-picker';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN = 'dropdown';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT = 'input';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT_NUMBER = 'input-number';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER = 'slider';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH = 'switch';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB = 'tab';
+
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE = {
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER]: 'cly-colorpicker',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN]: 'el-select',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT]: 'el-input',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT_NUMBER]: 'el-input-number',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER]: 'el-slider',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH]: 'el-switch',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB]: 'div'
+    };
+
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_HORIZONTAL = 'horizontal';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_VERTICAL = 'vertical';
+
     Vue.component("cly-content-step", countlyVue.components.create({
+        template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html'),
+
         props: {
-            value: {
-                type: [String, Number, Boolean, Object],
-                default: null
+            disabled: {
+                default: false,
+                type: Boolean
             },
-            subHeader: {
-                type: String,
-                required: false,
-                default: null
-            },
+
             label: {
-                type: String,
-                required: false,
-                default: null
+                default: null,
+                type: String
             },
-            inputType: {
-                type: String,
-                required: false,
-                default: 'text'
-            },
+
             options: {
-                type: Array,
-                required: false,
-                default: () => []
+                default: () => [],
+                type: Array
             },
+
+            placement: {
+                default: COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_HORIZONTAL,
+                type: String
+            },
+
             position: {
-                type: String,
-                required: false,
-                default: 'horizontal'
+                default: COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_HORIZONTAL,
+                type: String
             },
-            width: {
-                type: String,
-                required: false,
-                default: null
+
+            subHeader: {
+                default: null,
+                type: String
             },
-            inputProps: {
-                type: Object,
-                required: false,
-                default: () => ({})
-            }
-        },
-        data() {
-            return {
-                localValue: this.initializeLocalValue(),
-            };
-        },
-        watch: {
+
+            suffix: {
+                default: null,
+                type: String
+            },
+
+            type: {
+                default: COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT,
+                type: String
+            },
+
             value: {
-                handler: function(newValue) {
-                    this.localValue = this.initializeLocalValue(newValue);
-                },
-                deep: true
+                default: null,
+                type: [String, Number, Boolean, Object]
             },
-            localValue: {
-                handler: function(newValue) {
+
+            size: {
+                default: null,
+                type: String
+            }
+        },
+
+        emits: [
+            'input'
+        ],
+
+        computed: {
+            componentValue: {
+                get() {
+                    if (this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH) {
+                        return !!this.value;
+                    }
+
+                    return this.value || null;
+                },
+                set(newValue) {
                     this.$emit('input', newValue);
-                },
-                deep: true
-            }
-        },
-        methods: {
-            initializeLocalValue(val = this.value) {
-                if (this.inputType === 'switch') {
-                    return val === true;
                 }
-                return val !== undefined ? val : null;
             },
-            updateValue: function(newValue) {
-                this.localValue = newValue;
+
+            isDropdownInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN;
             },
-            getComponentType: function(type) {
-                const mapping = {
-                    dropdown: 'el-select',
-                    input: 'el-input',
-                    switch: 'el-switch',
-                    slider: 'el-slider',
-                    'color-picker': 'cly-colorpicker',
-                    'input-number': 'el-input-number',
-                };
-                return mapping[type] || 'div';
+
+            isSliderInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER;
+            },
+
+            isSuffixVisible() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT && this.suffix;
+            },
+
+            isVerticalInput() {
+                return this.position === COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_VERTICAL;
+            },
+
+            mainComponent() {
+                return COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE[this.type] || 'div';
             }
-        },
-        created: function() {
-        },
-        template: `
-            <div class="cly-vue-content-builder__layout-step">
-                <div v-if="subHeader" class="cly-vue-content-builder__layout-step__sub-header color-cool-gray-50 bu-mb-2">{{ subHeader }}</div>
-                <div class="cly-vue-content-builder__layout-step__element bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center" :class="{'bu-is-flex-direction-column bu-is-align-items-baseline': position !== 'horizontal' }" :style="[position !== 'horizontal' ? {'gap': '8px'}: {}]">
-                    <div v-if="label" class="cly-vue-content-builder__layout-step__label">{{ label }}</div>
-                    <slot name="content-builder-layout-step">
-                        <component
-                            :is="getComponentType(inputType)"
-                            v-bind="inputProps"
-                            :value="localValue"
-                            @input="updateValue"
-                            :format-tooltip="inputProps && inputProps.formatTooltip"
-                            :min="inputProps && inputProps.min"
-                            :max="inputProps && inputProps.max"
-                            class="cly-vue-content-builder__layout-step__component"
-                            :style="[ position !== 'horizontal' ? {\'width\':  \'100%\'} : {\'width\': width + \'px\'}]"
-                        >
-                        <template v-if="inputProps && inputProps.append" v-slot:append>{{inputProps.append}}</template>
-                        <el-option
-                            v-if="inputType === 'dropdown'"
-                            v-for="option in options"
-                            :key="option.value"
-                            :label="option.label"
-                            :value="option.value"
-                            class="cly-vue-content-builder__layout-step__option"
-                        ></el-option>
-                        </component>
-                    </slot>
-                </div>
-            </div>
-            `,
+        }
     }));
 
     Vue.component("cly-option-swapper", countlyVue.components.BaseComponent.extend({

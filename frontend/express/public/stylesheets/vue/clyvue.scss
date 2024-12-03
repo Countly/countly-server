@@ -4246,65 +4246,16 @@
 .cly-vue-content-builder {
     position: absolute;
     z-index: 2001;
-    // z-index: 2006;
-    // z-index: 9999999;
-    background-color: white;
-    // width: 100vw;
-    width: 100%;
     top: 0;
     left: 0;
+    width: 100%;
+    min-height: 100vh;
+
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    &__layout-step {
-        position: relative;
-        .picker-body--right {
-            position: absolute !important;
-            right: 0 !important;
-            left: auto !important
-        }
-        &__component {
-            .el-input-group__append {
-                padding: 0 8px !important;
-            }
 
-            /* .el-slider__bar {
-                background-color: #0166D6;
-            }
+    background-color: white;
 
-            .el-slider__button {
-                border-color: #0166D6;
-            } */
-
-            .el-slider__runway {
-                background-color: #E2E4E8;
-            }
-        }
-        &__header {
-            font-family: Inter;
-            font-size: 12px;
-            font-weight: 500;
-            line-height: 14px;
-            letter-spacing: 0.5px;
-            text-align: left;
-            color: #424243;
-            margin-bottom: 24px;
-        }
-        &__label {
-            font-family: Inter;
-            font-size: 13px;
-            font-weight: 500;
-            line-height: 16px;
-            text-align: left;
-            color: #333C48;
-        }
-        &__element {
-            margin-bottom: 24px;
-        }
-        &__sub-header {
-            font-weight: 500;
-        }
-    }
     &__layout-steps {
         padding: 0 16px;
         .el-collapse-item__wrap {
@@ -4315,6 +4266,7 @@
         }
         background-color: #FFF
     }
+
     &__layout-header {
         display: flex;
         height: 80px;
@@ -4476,6 +4428,106 @@
     }
     .el-collapse {
         border-top: none !important
+    }
+}
+
+.cly-vue-content-builder-sidebar-input {
+    // .cly-vue-content-builder-sidebar-input__component
+    &__component {
+        max-width: 50%;
+        width: auto;
+        box-shadow: none;
+
+        // .cly-vue-content-builder-sidebar-input__component .el-input__inner
+        & .el-input__inner {
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 20px;
+            color: #383A3F;
+            
+            background-color: #FFFFFF;
+            border: 1px solid #E2E4E8;
+            border-radius: 6px;
+            padding: 6px 10px;
+
+            // .cly-vue-content-builder-sidebar-input__component .el-input__inner:hover
+            &:hover {
+                border-color: #0166D6;
+            }
+        }
+
+        // .cly-vue-content-builder-sidebar-input__component .el-input__suffix
+        & .el-input__suffix {
+            right: 0;
+        }
+
+        // .cly-vue-content-builder-sidebar-input__component .el-input__suffix-inner
+        & .el-input__suffix-inner {
+            padding: 6px 10px;
+            padding-left: 0;
+            color: #81868D;
+            width: 16px;
+        }
+
+        // .cly-vue-content-builder-sidebar-input__component.el-input--suffix
+        &.el-input--suffix {
+
+            // .cly-vue-content-builder-sidebar-input__component.el-input--suffix .el-input__inner
+            & .el-input__inner {
+                padding-right: 34px;
+            }
+        }
+
+        // .cly-vue-content-builder-sidebar-input__component--slider
+        &--slider {
+            width: 100%;
+        }
+    }
+
+    // .cly-vue-content-builder-sidebar-input__input-container
+    &__input-container {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        // .cly-vue-content-builder-sidebar-input__input-container--small .cly-vue-content-builder-sidebar-input__component
+        &--small .cly-vue-content-builder-sidebar-input__component {
+            max-width: 64px;
+        }
+
+        // .cly-vue-content-builder-sidebar-input__input-container--large .cly-vue-content-builder-sidebar-input__component
+        &--large .cly-vue-content-builder-sidebar-input__component {
+            max-width: 100%;
+        }
+
+        // .cly-vue-content-builder-sidebar-input__input-container--vertical
+        &--vertical {
+            flex-direction: column;
+            align-items: flex-start;
+
+            // .cly-vue-content-builder-sidebar-input__input-container--vertical .cly-vue-content-builder-sidebar-input__component
+            & .cly-vue-content-builder-sidebar-input__component {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    }
+
+    // .cly-vue-content-builder-sidebar-input__label
+    &__label {
+        flex-shrink: 0;
+        margin-right: auto;
+    }
+
+    // .cly-vue-content-builder-sidebar-input__sub-header
+    &__sub-header {
+        color: #81868D;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 16px;
+        margin-bottom: 16px;
     }
 }
 

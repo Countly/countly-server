@@ -1,0 +1,48 @@
+<div class="cly-vue-content-builder-sidebar-input">
+  <div
+    v-if="subHeader"
+    class="cly-vue-content-builder-sidebar-input__sub-header"
+  >
+    {{ subHeader }}
+  </div>
+  <div
+    class="cly-vue-content-builder-sidebar-input__input-container"
+    :class="{
+      'cly-vue-content-builder-sidebar-input__input-container--vertical': isVerticalInput,
+      [`cly-vue-content-builder-sidebar-input__input-container--${size}`]: !!size
+    }"
+  >
+    <div
+      v-if="label"
+      class="cly-vue-content-builder-sidebar-input__label"
+    >
+      {{ label }}
+    </div>
+    <slot name="content-builder-layout-step">
+      <component
+        :is="mainComponent"
+        v-bind="$attrs"
+        v-model="componentValue"
+        class="cly-vue-content-builder-sidebar-input__component"
+        :class="{ 'cly-vue-content-builder-sidebar-input__component--slider': isSliderInput }"
+        :disabled="disabled"
+      >
+        <template
+          v-if="isSuffixVisible"
+          #suffix
+        >
+          {{ suffix }}
+        </template>
+        <template v-if="isDropdownInput">
+          <el-option
+            v-for="option in options"
+            :key="option.value"
+            class="cly-vue-content-builder-sidebar-input__option"
+            :label="option.label"
+            :value="option.value"
+          />
+        </template>
+      </component>
+    </slot>
+  </div>
+</div>
