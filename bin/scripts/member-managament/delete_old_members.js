@@ -18,8 +18,7 @@ var days = 30;
 
 var ts = Math.round(Date.now() / 1000) - days * 24 * 60 * 60;
 var query = {"$and": [{"last_login": {"$lt": ts}}, {"last_login": {"$exists": true}}, {"global_admin": {"$ne": true}}]}; 
-// {"global_admin": {"$ne": true}} ensures that global admins are excluded from deletion.
-// If it is set to {"$ne": false}, global admins will not be excluded and will be deleted as well.
+// {"global_admin": {"$ne": true}} ensures that global admins are excluded from deletion. If set to {"$ne": false}, global admins will not be excluded and will be deleted as well.
 
 //although mogodb does not return null on $lt, keep like above for safety
 
