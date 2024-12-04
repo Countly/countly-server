@@ -17,8 +17,8 @@ var days = 30;
 //query states not logged in in last N days , but logged in at least once
 
 var ts = Math.round(Date.now() / 1000) - days * 24 * 60 * 60;
-var query = {"$and": [{"last_login": {"$lt": ts}}, {"last_login": {"$exists": true}}, {"global_admin": {"$ne": true}}]}; 
-// {"global_admin": {"$ne": true}} ensures that global admins are excluded from deletion. If set to {"$ne": false}, global admins will not be excluded and will be deleted as well.
+var query = {"$and": [{"last_login": {"$lt": ts}}, {"last_login": {"$exists": true}}, {"global_admin": {"$ne": true}}]};
+// {"global_admin": {"$ne": true}} ensures that global admins are excluded from deletion. If set to {"$ne": false}, only global admins which matches other rules will be deteled.
 
 //although mogodb does not return null on $lt, keep like above for safety
 
