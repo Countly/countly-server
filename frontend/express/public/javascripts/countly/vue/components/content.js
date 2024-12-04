@@ -357,7 +357,7 @@
     const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_HORIZONTAL = 'horizontal';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_VERTICAL = 'vertical';
 
-    Vue.component("cly-content-step", countlyVue.components.create({
+    Vue.component("cly-content-builder-sidebar-input", countlyVue.components.create({
         template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html'),
 
         props: {
