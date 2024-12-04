@@ -315,7 +315,7 @@
         methods: {
         },
         template: `
-            <div class="cly-vue-content-builder-sidebar-inputs">
+            <div class="cly-vue-content-builder__layout-steps">
                 <div v-if="collapse">
                     <el-collapse v-model="activeSection">
                         <el-collapse-item :title="header" name="section">
@@ -324,7 +324,7 @@
                     </el-collapse>  
                 </div>
                 <div v-else>
-                    <div class="cly-vue-content-builder-sidebar-inputs__header text-medium font-weight-bold">{{ header }}</div>
+                    <div class="cly-vue-content-builder__layout-steps__header text-medium font-weight-bold">{{ header }}</div>
                     <slot name="content-builder-layout-steps"></slot>
                 </div>
             </div>

@@ -4432,11 +4432,23 @@
 }
 
 .cly-vue-content-builder-sidebar-input {
+    position: relative;
+
     // .cly-vue-content-builder-sidebar-input__component
     &__component {
         max-width: 50%;
         width: auto;
         box-shadow: none;
+
+        // .cly-vue-content-builder-sidebar-input__component.cly-vue-colorpicker
+        &.cly-vue-colorpicker {
+            // .cly-vue-content-builder-sidebar-input__component.cly-vue-colorpicker .picker-body
+            & .picker-body {
+                position: absolute;
+                right: 0;
+                left: auto;
+            }
+        }
 
         // .cly-vue-content-builder-sidebar-input__component .el-input__inner
         & .el-input__inner {
