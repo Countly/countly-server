@@ -1,4 +1,4 @@
-## Version 24.05.20
+## Version 24.05.XX
 
 Dependencies:
 - Bump puppeteer from 23.8.0 to 23.9.0
