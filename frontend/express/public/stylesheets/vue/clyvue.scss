@@ -4519,6 +4519,9 @@
     &__label {
         flex-shrink: 0;
         margin-right: auto;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 16px;
     }
 
     // .cly-vue-content-builder-sidebar-input__sub-header
@@ -4533,36 +4536,57 @@
 
 .cly-option-swapper {
     display: flex;
-    justify-content: space-around;
+    align-items: center;
+    justify-content: center;
 
-    &__each-box-wrapper {
-        width: 100%;
-    }
-
-    &__each {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 32px;
-        border: 1px solid #E2E4E8;
-        text-align: center;
+    // .cly-option-swapper__option
+    &__option {
         cursor: pointer;
-    }
+        padding: 8px 10px;
+        border: 1px solid #E2E4E8;
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 16px;
+        color: #333C48;
+        background: #FFFFFF;
+        flex-grow: 1;
+        text-align: center;
 
-    &__active {
-        background-color: #0166D6;
-        border: 1px solid #0166D6;
-        border-right: 1px solid #0166d6 !important;
-    }
+        // .cly-option-swapper__option--active:not(.cly-option-swapper__option--disabled):not(.cly-option-swapper__option--no-highlight)
+        &--active:not(#{&}--disabled):not(#{&}--no-highlight) {
+            background: rgba(#0166D6, 0.1);
+            border-color: #0166D6;
+            color: #0166D6;
+        }
 
-    &__first {
-        border-top-left-radius: 6px;
-        border-bottom-left-radius: 6px;
-    }
+        // .cly-option-swapper__option--disabled
+        &--disabled {
+            cursor: not-allowed;
+            background: #E2E4E8;
+            opacity: 0.5;
 
-    &__last {
-        border-top-right-radius: 6px;
-        border-bottom-right-radius: 6px;
+            // .cly-option-swapper__option--disabled.has-tooltip
+            &.has-tooltip {
+                cursor: not-allowed;
+            }
+        }
+
+        // .cly-option-swapper__option--first
+        &--first {
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+        }
+
+        // .cly-option-swapper__option--last
+        &--last {
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+        
+        // .cly-option-swapper__option--disabled.cly-option-swapper__option--active
+        &--no-highlight#{&}--active {
+            background: #F6F6F6;
+        }
     }
 }
 

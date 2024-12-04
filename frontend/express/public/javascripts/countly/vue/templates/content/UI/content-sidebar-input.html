@@ -12,12 +12,12 @@
       [`cly-vue-content-builder-sidebar-input__input-container--${size}`]: !!size
     }"
   >
-    <div
+    <label
       v-if="label"
       class="cly-vue-content-builder-sidebar-input__label"
     >
       {{ label }}
-    </div>
+    </label>
     <slot name="content-builder-layout-step">
       <component
         :is="mainComponent"
@@ -26,6 +26,7 @@
         class="cly-vue-content-builder-sidebar-input__component"
         :class="{ 'cly-vue-content-builder-sidebar-input__component--slider': isSliderInput }"
         :disabled="disabled"
+        :options="options"
       >
         <template
           v-if="isSuffixVisible"
@@ -33,10 +34,10 @@
         >
           {{ suffix }}
         </template>
-        <template v-if="isDropdownInput">
+        <template v-if="isComponentWithOptions">
           <el-option
-            v-for="option in options"
-            :key="option.value"
+            v-for="(option, index) in options"
+            :key="`content-builder-sidebar-input-option-${index}`"
             class="cly-vue-content-builder-sidebar-input__option"
             :label="option.label"
             :value="option.value"

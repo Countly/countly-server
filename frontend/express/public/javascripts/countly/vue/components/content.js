@@ -339,6 +339,7 @@
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT = 'input';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT_NUMBER = 'input-number';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER = 'slider';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER = 'swapper';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH = 'switch';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB = 'tab';
 
@@ -348,6 +349,7 @@
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT]: 'el-input',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT_NUMBER]: 'el-input-number',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER]: 'el-slider',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER]: 'cly-option-swapper',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH]: 'el-switch',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB]: 'div'
     };
@@ -432,12 +434,20 @@
                 return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN;
             },
 
+            isComponentWithOptions() {
+                return this.isDropdownInput && Array.isArray(this.options) && this.options.length;
+            },
+
             isSliderInput() {
                 return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER;
             },
 
             isSuffixVisible() {
                 return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT && this.suffix;
+            },
+
+            isSwapperInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER;
             },
 
             isVerticalInput() {
@@ -450,89 +460,50 @@
         }
     }));
 
-    Vue.component("cly-option-swapper", countlyVue.components.BaseComponent.extend({
-        mixins: [countlyVue.mixins.i18n],
+    Vue.component("cly-option-swapper", countlyVue.components.create({
+        template: CV.T('/javascripts/countly/vue/templates/UI/option-swapper.html'),
+
         props: {
+            highlightOnSelect: {
+                default: true,
+                type: Boolean
+            },
+
+            options: {
+                default: () => [],
+                type: Array
+            },
+
             value: {
-                type: [String, Number],
-                default: null
-            },
-            items: {
-                type: Array,
-                default: function() {
-                    return [];
+                default: null,
+                type: [String, Number]
+            }
+        },
+
+        emits: [
+            'input'
+        ],
+
+        mixins: [countlyVue.mixins.i18n],
+
+        computed: {
+            selectedOption: {
+                get() {
+                    return this.value || this.options[0].value;
+                },
+                set(value) {
+                    this.$emit('input', value);
                 }
-            },
-            activeColorCode: {
-                type: String,
-                default: '#0166D6'
-            },
-            width: {
-                type: String,
-                default: '100'
             }
         },
-        data: function() {
-            return {
-                selectedValue: this.items[0].value || 0
-            };
-        },
-        watch: {
-            value: function(value) {
-                this.selectedValue = value;
-            }
-        },
+
         methods: {
-            numberChange: function(item) {
-                if (!item.disabled) {
-                    this.selectedValue = item.value;
-                    this.$emit('input', this.selectedValue);
+            onOptionClick: function(option) {
+                if (!option.disabled) {
+                    this.selectedOption = option.value;
                 }
             }
-        },
-        created: function() {
-            this.selectedValue = this.value || this.items[0].value || 0;
-        },
-        template: `
-            <div>
-                <div class="bu-is-flex cly-option-swapper" :style="{'width': width + 'px'}">
-                    <div v-for="(item, index) in items" :key="item.value" class="cly-option-swapper__each-box-wrapper">
-                        <div
-                            :style="[
-                                item.value === selectedValue && !item.disabled ? {'background-color': activeColorCode} : {},
-                                item.disabled ? {'opacity': '0.5', 'cursor': 'not-allowed', 'background-color': '#E2E4E8'} : {}
-                            ]"
-                            :class="{
-                                'cly-option-swapper__active': item.value === selectedValue && !item.disabled,
-                                'cly-option-swapper__first': index === 0,
-                                'cly-option-swapper__last': index === (items.length - 1),
-                                'cly-option-swapper__disabled': item.disabled
-                            }"
-                            v-tooltip="item.tooltip"
-                            class="cly-option-swapper__each"
-                            @click="numberChange(item)"
-                        >
-                            <i v-if="item.icon"
-                               :class="item.icon"
-                               :style="[
-                                   item.value === selectedValue && !item.disabled ? {'color': '#0166d6'} : {'color': '#000'},
-                                   item.disabled ? {'color': '#999'} : {}
-                               ]">
-                            </i>
-                            <span v-else
-                                  :style="[
-                                      item.value === selectedValue && !item.disabled ? {'color': '#0166d6'} : {'color': '#000'},
-                                      item.disabled ? {'color': '#999'} : {}
-                                  ]"
-                                  class="text-medium"
-                            >
-                                {{ item.text }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `
+        }
     }));
 
     Vue.component("cly-device-selector", countlyVue.components.BaseComponent.extend({
