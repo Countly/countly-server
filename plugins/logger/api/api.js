@@ -353,14 +353,15 @@ plugins.setConfigs("logger", {
             return true;
         }
         if (params.qstring.method === 'collection_info') {
-            validateRead(params, FEATURE_NAME, function(parameters) {
-                common.db.collection('logs' + parameters.app_id).stats(function(err, stats) {
-                    if (err) {
-                        console.log("Failed fetching logs collection info", err);
-                        return common.returnMessage(parameters, 400, 'Error fetching collection info');
-                    }
-                    common.returnOutput(parameters, stats && {size: stats.size, count: stats.count, max: MAX_NUMBER_OF_LOG_ENTRIES} || {});
-                });
+            validateRead(params, FEATURE_NAME, async function(parameters) {
+                try {
+                    var stats = await common.db.collection('logs' + parameters.app_id).aggregate([ { $collStats: { storageStats: { } } } ]).toArray();
+                    common.returnOutput(parameters, {capped: MAX_NUMBER_OF_LOG_ENTRIES, count: stats?.[0]?.storageStats?.count, max: MAX_NUMBER_OF_LOG_ENTRIES});
+                }
+                catch (ex) {
+                    console.log("Failed fetching logs collection info: ", ex);
+                    common.returnMessage(parameters, 400, 'Error fetching collection info');
+                }
             });
             return true;
         }

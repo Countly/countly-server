@@ -810,17 +810,20 @@
                     refresh();
                 });
             },
-            startParameter: function(rowObj) {
-                this.toggleParameterState(rowObj, "Running");
-            },
-            stopParameter: function(rowObj) {
-                this.toggleParameterState(rowObj, "Stopped");
-            },
             handleCommand: function(command, scope, row) {
                 var self = this;
                 switch (command) {
+
+                case 'disable':
+                    self.toggleParameterState(row, "Stopped");
+                    break;
+
                 case "edit":
                     self.openDrawer("parameters", row);
+                    break;
+
+                case 'enable':
+                    this.toggleParameterState(row, "Running");
                     break;
 
                 case "remove":

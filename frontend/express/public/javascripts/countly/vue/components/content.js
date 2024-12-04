@@ -224,7 +224,9 @@
                 }
             },
             onViewEntered: function() { //?
-                this.$refs.rootEl.focus();
+                if (this.$refs.rootEl) {
+                    this.$refs.rootEl.focus();
+                }
             }
         },
         created: function() {
@@ -425,6 +427,7 @@
                             v-bind="inputProps"
                             :value="localValue"
                             @input="updateValue"
+                            :format-tooltip="inputProps && inputProps.formatTooltip"
                             :min="inputProps && inputProps.min"
                             :max="inputProps && inputProps.max"
                             class="cly-vue-content-builder__layout-step__component"

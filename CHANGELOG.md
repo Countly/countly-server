@@ -1,57 +1,40 @@
-## Version 24.10.3
-Fixes:
-- [dashboards] Fixing issue where dashboard widgets go into single column
-
-Security:
-- Bump puppeteer from 17.1.3 to 23.8.0
-- Bump express from 4.21.0 to 4.21.1 
-- Bump sass from 1.79.4 to 1.81.0
-- Bump express-session from 1.18.0 to 1.18.1
-- Bump cross-spawn from 7.0.3 to 7.0.6 in /ui-tests
-- Bump cross-spawn from 7.0.3 to 7.0.6 in /plugins/hooks
-
-## Version 24.10.2
-Fixes:
-- [core] Correct aggregated collection cleanup on event omitting
-- [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
-- [core] Fixed bug where exporting incoming data logs could result in "Incorrect parameter \"data\" error
-- [core] Removed use of commands which needs admin rights from report manager.
-- [crash] Fixed bug in crash ingestion for scenarios where the "app version" is not a string.
-- [script] Fixing bug with "delete_old_members" script that led to malformed requests
-
-Enterprise fixes:
-- [nps] Fixed bug that showed the wrong nps preview title
-
-## Version 24.10.1
-Fixes:
-- [core] Replaced "Users" with "Sessions" label on technology home widgets
-- [push] Improved ability to observe push related errors
-- [push] Replaced push plugin with an earlier version of the plugin
-
-Enterprise fixes:
-- [cohorts] Fixed issues with nightly cleanup
-- [data-manager] Fixed UI bug where rules were not visible when editing "Merge by regex" transformations
-- [drill] Fixed wrong pie chart label  tooltip in dashboard widget
-- [flows] Fixed bug in case of null data in schema
-- [license] Fixed bug with MAU type of licenses that would prevent the server from starting
-- [nps] Fixed bug in the editor where the "internal name" field was not mandatory
-- [nps] Fixed bug where it was possible to submit empty nps surveys
-- [ratings] Fixed bug with user consent
-- [ratings] Fixed UI bug where "Internal name" was not a mandatory field
-
-Security:
-- Bumped cookie-parser from 1.4.6 to 1.4.7
-- Bumped express-rate-limit from 7.4.0 to 7.4.1
-- Bumped moment-timezone from 0.5.45 to 0.5.46
-- Bumped sass from 1.79.3 to 1.79.4
-- Fixing minor vulnerability that would allow for unauthorized file upload
+## Version 24.12
+Features:
+- [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
+- [core] Ability to mark reports as 'dirty' to make sure they are regenerated in full
+- [core] Adding a cancel button to "create new app" form
+- [core] Adding a nightly job to delete old data
+- [core] Redirecting user to a newly created app
+- [core] Removing HTML from localization files
+- [core] Showing a flex banner on sidebar if the version is Countly Lite
+- [crashes] Adding confirmation for deleting crash groups
+- [dashoards] Fixed the "Add/ manage notes" button that did not work for the technology widget
+- [dbviewer] Preventing aggregation of using any stages which might open user to harmful actions (like $merge, $out, $lookup, $uninonWith) for all users except global admin
+- [populator] Adding ability to select features to populate and other small improvements
 
 Enterprise Features:
-- [block] Added a way to filter crashes by their error (stacktrace)
+- [cohorts] Adding ability to edit cohorts. This deletes historical calculations
+- [content] Adding "Content Builder" feature
+- [core] Adding support For SingleStore Kai
+- [flows] Adding UX improvements to the editor
+- [journey_engine] Adding "Journey Engine" feature
+- [remote-config] Moving enable/disable functionality to the dropdown
+
+Dependencies:
+- Bump countly-sdk-nodejs from 22.6.0 to 24.10.0
+- Bump countly-sdk-web from 24.4.1 to 24.11.0
+- Bump form-data from 4.0.0 to 4.0.1
+- Bump jimp from 0.22.12 to 1.6.0
+- Bump jsdoc from 4.0.3 to 4.0.4
+- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump puppeteer from 23.8.0 to 23.9.0
+- Bump tslib from 2.7.0 to 2.8.1
 
 ## Version 24.10
 Fixes:
+- [core] Correct aggregated collection cleanup on event omitting
 - [core] Interpreting carrier value of "--" as an unknown value
+- [core] Removed use of commands which needs admin rights from report manager.
 - [crash] Fixed issues with visualisation of Flutter stack traces
 - [dashoards] If a user is given access to a dashboard, they will now be able to see all widgets even if they don't have access to the underlying data
 - [density] UI fixed
@@ -69,7 +52,7 @@ Features:
 - [core] Aggregated events data collections merged together
 - [nps] UI improvements
 - [surveys] UI improvements
-- upgraded mongoDB to version 7
+- upgraded mongoDB to version 8
 - upgraded nodejs to version 20
 
 Enterprise Features:
@@ -82,6 +65,62 @@ Enterprise Features:
 - [users] Crashes in the crashes tab can now be sorted
 - [users] UI improvements
 - [views] Added a quick transition to drill
+
+## Version 24.05.19
+Fixes:
+- [dashboards] Fixing issue where dashboard widgets go into single column
+
+Security:
+- Bump puppeteer from 17.1.3 to 23.8.0
+- Bump express from 4.21.0 to 4.21.1 
+- Bump sass from 1.79.4 to 1.81.0
+- Bump express-session from 1.18.0 to 1.18.1
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /ui-tests
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /plugins/hooks
+
+## Version 24.05.18
+Fixes:
+- [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
+- [core] Fixed bug where exporting incoming data logs could result in "Incorrect parameter \"data\" error
+- [crash] Fixed bug in crash ingestion for scenarios where the "app version" is not a string.
+- [script] Fixing bug with "delete_old_members" script that led to malformed requests
+
+Enterprise fixes:
+- [nps] Fixed bug that showed the wrong nps preview title
+
+## Version 24.05.17
+Fixes:
+- [push] Improved ability to observe push related errors
+
+Enterprise fixes:
+- [cohorts] Fixed issues with nightly cleanup
+- [data-manager] Fixed UI bug where rules were not visible when editing "Merge by regex" transformations
+- [drill] Fixed wrong pie chart label tooltip in dashboard widget
+- [flows] Fixed bug in case of null data in schema
+- [nps] Fixed bug in the editor where the "internal name" field was not mandatory
+- [ratings] Fixed UI bug where "Internal name" was not a mandatory field
+
+Security:
+- Fixing minor vulnerability that would allow for unauthorized file upload
+
+Enterprise Features:
+- [block] Added a way to filter crashes by their error (stacktrace)
+
+## Version 24.05.16
+Fixes:
+- [core] Replaced "Users" with "Sessions" label on technology home widgets
+- [push] Replaced push plugin with an earlier version of the plugin
+
+Enterprise fixes:
+- [license] Fixed bug with MAU type of licenses that would prevent the server from starting
+- [nps] Fixed bug where it was possible to submit empty nps surveys
+- [ratings] Fixed bug with user consent
+
+Security:
+- Bumped cookie-parser from 1.4.6 to 1.4.7
+- Bumped express-rate-limit from 7.4.0 to 7.4.1
+- Bumped moment-timezone from 0.5.45 to 0.5.46
+- Bumped sass from 1.79.3 to 1.79.4
 
 ## Version 24.05.15
 Enterprise fixes:
