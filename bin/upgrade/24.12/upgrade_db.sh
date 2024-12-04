@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="24.10"
+VER="24.12"
 
 CONTINUE="$(countly check before upgrade db "$VER")"
 
@@ -22,8 +22,8 @@ then
 
     if [ "$1" != "combined" ]; then
         #upgrade plugins
-        countly plugin enable journey_engine;
         countly plugin enable content;
+        countly plugin enable journey_engine;        
         nodejs "$DIR/scripts/install_plugins.js"
     fi
     
