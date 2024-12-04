@@ -17,7 +17,9 @@
         },
         data: function() {
             return {
-                isOpened: false
+                isOpened: false,
+
+                previousColor: null
             };
         },
         computed: {
@@ -44,10 +46,21 @@
                 return "picker-body--" + this.placement;
             },
         },
+
+        watch: {
+            isOpened: {
+                handler(value) {
+                    if (value) {
+                        this.previousColor = JSON.parse(JSON.stringify(this.value));
+                    }
+                }
+            }
+        },
+
         methods: {
             setColor: function(color) {
                 var finalColor = color.hex8 || color.hex;
-
+                this.previousColor = JSON.parse(JSON.stringify(this.localValue));
                 this.$emit("input", finalColor);
             },
             reset: function() {
@@ -63,6 +76,11 @@
             confirm: function(color) {
                 this.$emit('change', color);
                 this.isOpened = false;
+            },
+
+            onCancelClick() {
+                this.localValue = this.previousColor;
+                this.close();
             }
         },
         components: {
@@ -82,11 +100,11 @@
                             '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
                             '<div class="button-controls">\n' +
                                 '<cly-button :data-test-id="testId + \'-reset-button\'" :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
-                                '<cly-button :data-test-id="testId + \'-cancel-button\'" :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
+                                '<cly-button :data-test-id="testId + \'-cancel-button\'" :label="i18n(\'common.cancel\')" @click="onCancelClick" skin="light"></cly-button>\n' +
                                 '<cly-button :data-test-id="testId + \'-confirm-button\'" :label="i18n(\'common.confirm\')" @click="confirm(setColor)" skin="green"></cly-button>\n' +
                             '</div>\n' +
                         '</div>\n' +
-                      '</div>'
+                    '</div>'
     }));
 
     Vue.component("cly-dropzone", window.vue2Dropzone);
