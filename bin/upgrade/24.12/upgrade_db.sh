@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="24.10"
+VER="24.12"
 
 CONTINUE="$(countly check before upgrade db "$VER")"
 

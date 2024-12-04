@@ -2,7 +2,7 @@
 
 echo "Running filesystem modifications"
 
-VER="24.10"
+VER="24.12"
 
 CONTINUE="$(countly check before upgrade fs "$VER")"
 
@@ -23,8 +23,8 @@ then
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
     
-    countly plugin enable journey_engine;
     countly plugin enable content;
+    countly plugin enable journey_engine;
 
     #upgrade plugins
     nodejs "$DIR/scripts/install_plugins.js"
