@@ -1,0 +1,9 @@
+ <div class="cly-vue-content-builder">
+    <div class="cly-vue-content-builder__layout-header" :style="{'background-color': backgroundColor}">
+        <slot name="content-layout-header" :background-color="backgroundColor">
+        </slot>
+    </div>
+    <div :class="containerClass" :style="{'background-color': backgroundColor}">
+        <slot name="content-layout-body"></slot>
+    </div>
+</div>

@@ -53,25 +53,25 @@
         template: '	<table class="cly-vue-remote-config-percentages-breakdown">\
 			<thead>\
 				<tr>\
-					<th class="cly-vue-remote-config-percentages-breakdown__sequence__heading bu-pl-2">\
+					<th class="cly-vue-remote-config-percentages-breakdown__sequence__heading bu-pl-2" :data-test-id="testId + \'-hash-label\'">\
 						#\
 					</th>\
-					<th class="cly-vue-remote-config-percentages-breakdown__condition__heading">\
+					<th class="cly-vue-remote-config-percentages-breakdown__condition__heading" :data-test-id="testId + \'-condition-label\'">\
 						{{i18n("remote-config.condition")}}\
 					</th>\
-                    <th class="cly-vue-remote-config-percentages-breakdown__percentage__heading">\
+                    <th class="cly-vue-remote-config-percentages-breakdown__percentage__heading" :data-test-id="testId + \'-percentage-label\'">\
 						{{i18n("remote-config.percentage")}}\
 					</th>\
 				</tr>\
 			</thead>\
 			<tbody>\
-                <tr><td class="cly-vue-remote-config-percentages-breakdown__sequence__heading"><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2">1</div></td><td class="has-ellipsis cly-vue-remote-config-percentages-breakdown__condition__heading bu-pr-1"><div class="has-ellipsis cly-vue-remote-config-percentages-breakdown__data bu-py-2 bu-px-1  cly-vue-remote-config-percentages-breakdown__default-value"><span class="bu-ml-2 bu-mr-3 text-medium">{{i18n("remote-config.default-value")}}</span><span class="cly-vue-remote-config-percentages-breakdown__default-value__value bu-py-1 bu-px-2 text-small" v-tooltip="defaultValue.value">{{defaultValue.value}}</span></div></td><td class="cly-vue-remote-config-percentages-breakdown__percentage__heading"><div class="bu-is-flex"><div class="text-big font-weight-bold">{{defaultValue.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1">{{i18n("remote-config.percent.of.total")}}</div></div></td></tr>\
+                <tr><td class="cly-vue-remote-config-percentages-breakdown__sequence__heading"><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2" :data-test-id="testId + \'-order-label\'">1</div></td><td class="has-ellipsis cly-vue-remote-config-percentages-breakdown__condition__heading bu-pr-1"><div class="has-ellipsis cly-vue-remote-config-percentages-breakdown__data bu-py-2 bu-px-1  cly-vue-remote-config-percentages-breakdown__default-value"><span class="bu-ml-2 bu-mr-3 text-medium" :data-test-id="testId + \'-default-value-label\'">{{i18n("remote-config.default-value")}}</span><span class="cly-vue-remote-config-percentages-breakdown__default-value__value bu-py-1 bu-px-2 text-small" v-tooltip="defaultValue.value" :data-test-id="testId + \'-default-value\'">{{defaultValue.value}}</span></div></td><td class="cly-vue-remote-config-percentages-breakdown__percentage__heading"><div class="bu-is-flex"><div class="text-big font-weight-bold" :data-test-id="testId + \'-percentage\'">{{defaultValue.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1" :data-test-id="testId + \'-percent-of-total\'">{{i18n("remote-config.percent.of.total")}}</div></div></td></tr>\
 				<tr v-if="isDrillEnabled" v-for="(condition, i) in conditions" :key="i">\
-                    <td class="cly-vue-remote-config-percentages-breakdown__sequence__heading"><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2">{{i+2}}</div>\
+                    <td class="cly-vue-remote-config-percentages-breakdown__sequence__heading"><div class="cly-vue-remote-config-percentages-breakdown__sequence bu-py-1 bu-px-2" :data-test-id="testId + \'other-order-label\'">{{i+2}}</div>\
                     </td>\
-					<td class="has-ellipsis cly-vue-remote-config-percentages-breakdown__condition__heading bu-pr-1"><div class="has-ellipsis cly-vue-remote-config-percentages-breakdown__data bu-py-2 bu-px-1 cly-vue-remote-config-percentages-breakdown__condition" :style="{backgroundColor: condition.color}"><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align"><img src="/remote-config/images/call_split.svg"/></span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align bu-ml-2 bu-mr-3 text-medium">{{condition.name}}</span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align cly-vue-remote-config-percentages-breakdown__condition__value bu-py-1 bu-px-2 text-small" v-tooltip="condition.value">{{condition.value}}</span></div></td>\
+					<td class="has-ellipsis cly-vue-remote-config-percentages-breakdown__condition__heading bu-pr-1"><div class="has-ellipsis cly-vue-remote-config-percentages-breakdown__data bu-py-2 bu-px-1 cly-vue-remote-config-percentages-breakdown__condition" :style="{backgroundColor: condition.color}"><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align"><img src="/remote-config/images/call_split.svg"/></span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align bu-ml-2 bu-mr-3 text-medium" :data-test-id="testId + \'condition-name-label\'">{{condition.name}}</span><span class="cly-vue-remote-config-percentages-breakdown__condition__vertical-align cly-vue-remote-config-percentages-breakdown__condition__value bu-py-1 bu-px-2 text-small" v-tooltip="condition.value" :data-test-id="testId + \'condition-value\'">{{condition.value}}</span></div></td>\
 					<td class="cly-vue-remote-config-percentages-breakdown__percentage__heading">\
-                    <div class="bu-is-flex"><div class="text-big font-weight-bold">{{condition.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1">{{i18n("remote-config.percent.of.total")}}</div></div>\
+                    <div class="bu-is-flex"><div class="text-big font-weight-bold" :data-test-id="testId + \'percentage-label\'">{{condition.percentage}}% </div> <div class="font-weight-normal color-cool-gray-100 bu-pt-1 bu-pl-1" :data-test-id="testId + \'percent-of-label\'">{{i18n("remote-config.percent.of.total")}}</div></div>\
 					</td>\
 				</tr>\
 			</tbody>\
@@ -82,7 +82,12 @@
                 default: function() {
                     return {};
                 }
-            }
+            },
+            testId: {
+                type: String,
+                default: 'condition-stats-default-test-id',
+                required: false
+            },
         },
         computed: {
             isDrillEnabled: function() {
@@ -805,17 +810,20 @@
                     refresh();
                 });
             },
-            startParameter: function(rowObj) {
-                this.toggleParameterState(rowObj, "Running");
-            },
-            stopParameter: function(rowObj) {
-                this.toggleParameterState(rowObj, "Stopped");
-            },
             handleCommand: function(command, scope, row) {
                 var self = this;
                 switch (command) {
+
+                case 'disable':
+                    self.toggleParameterState(row, "Stopped");
+                    break;
+
                 case "edit":
                     self.openDrawer("parameters", row);
+                    break;
+
+                case 'enable':
+                    this.toggleParameterState(row, "Running");
                     break;
 
                 case "remove":

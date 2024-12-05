@@ -137,7 +137,7 @@
 
     var PersistentNotifications = {
         template: '<div class="persistent-notifications" :class="additionalClasses">\
-            <cly-notification v-for="notification in persistentNotifications" :key="notification.id" :closable="false" :text="notification.text" :color="notification.color"></cly-notification>\
+            <cly-notification v-for="notification in persistentNotifications" :key="notification.id" :closable="false" :text="notification.text" :goTo="notification.goTo" :color="notification.color"></cly-notification>\
         </div>',
         computed: {
             persistentNotifications: function() {

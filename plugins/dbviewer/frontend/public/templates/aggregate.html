@@ -25,6 +25,7 @@
                 </el-button>
             </div>
         </cly-section>
+            <cly-notification v-if="removed" class="bu-mb-5 cly-vue-events-all__alerts" :text="removed" ></cly-notification>
         <cly-section>
             <cly-datatable-n :force-loading="queryLoading" :rows="aggregationResult" :prevent-default-sort="true">
                 <template v-slot="scope">

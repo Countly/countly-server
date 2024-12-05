@@ -317,6 +317,60 @@ countlyFs.gridfs = {};
     };
 
     /**
+     * Update file fields by ID
+     * @param {string} category - collection where the file is stored
+     * @param {string} id - file id
+     * @param {object} updateFields - fields to update
+     * @param {function} callback - function called when updating was completed or errored, providing error object as first param
+     * @example
+     * countlyFs.gridfs.updateFileById("test", "66d6c2d770434130c03b7dae", { filename: "newname.png", "metadata.tags": "newtag" }, function(err){
+     *   console.log("Update finished", err);
+     * });
+     */
+    ob.updateFileById = function(category, id, updateFields, callback) {
+        if (!db) {
+            if (callback) {
+                callback(new Error("Database connection not available"));
+            }
+            return;
+        }
+
+        const collection = db.collection(category + ".files");
+        const setOps = {};
+
+        for (const [key, value] of Object.entries(updateFields)) {
+            setOps[key] = value;
+        }
+
+        collection.findOneAndUpdate(
+            { _id: new db.ObjectID(id) },
+            { $set: setOps },
+            { returnOriginal: true },
+            function(err, result) {
+                if (err) {
+                    log.e("Error updating file:", err);
+                    if (callback) {
+                        callback(err);
+                    }
+                    return;
+                }
+
+                if (!result.value) {
+                    if (callback) {
+                        callback(new Error("File not found"));
+                    }
+                    return;
+                }
+
+                log.d("File updated successfully");
+                if (callback) {
+                    callback(null, result.value);
+                }
+            }
+        );
+    };
+
+    /**
     * Delete file from shared system
     * @param {string} category - collection where to store data
     * @param {string} dest - file's destination
@@ -647,10 +701,12 @@ countlyFs.gridfs = {};
         bucket.find().toArray()
             .then((records) => callback(
                 null,
-                records.map(({ filename, uploadDate, length }) => ({
+                records.map(({ _id, filename, uploadDate, length, metadata }) => ({
+                    _id,
                     filename,
                     createdOn: uploadDate,
-                    size: length
+                    size: length,
+                    metadata
                 }))
             ))
             .catch((error) => callback(error, null));

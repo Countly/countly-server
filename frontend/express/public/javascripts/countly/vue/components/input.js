@@ -28,10 +28,13 @@
             },
             localValue: {
                 get: function() {
-                    return this.value.replace("#", "");
+                    var rawValue = this.value || this.resetValue;
+
+                    return rawValue.replace("#", "");
                 },
                 set: function(value) {
                     var colorValue = "#" + value.replace("#", "");
+
                     if (colorValue.match(HEX_COLOR_REGEX)) {
                         this.setColor({hex: colorValue});
                     }
@@ -43,10 +46,13 @@
         },
         methods: {
             setColor: function(color) {
-                this.$emit("input", color.hex);
+                var finalColor = color.hex8 || color.hex;
+
+                this.$emit("input", finalColor);
             },
             reset: function() {
                 this.setColor({hex: this.resetValue});
+                this.close();
             },
             open: function() {
                 this.isOpened = true;

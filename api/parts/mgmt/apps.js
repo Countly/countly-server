@@ -170,7 +170,7 @@ appsApi.getAppsDetails = function(params) {
 *  @param {params} params - params object with args to create app
 *  @return {object} return promise object;
 **/
-const iconUpload = function(params) {
+const iconUpload = async function(params) {
     const appId = params.app_id || common.sanitizeFilename(params.qstring.args.app_id);
     if (params.files && params.files.app_image) {
         const tmp_path = params.files.app_image.path,
@@ -183,25 +183,18 @@ const iconUpload = function(params) {
             return Promise.reject();
         }
         try {
-            return jimp.read(tmp_path, function(err, icon) {
-                if (err) {
-                    log.e(err, err.stack);
-                    fs.unlink(tmp_path, function() {});
-                    return true;
+            const icon = await jimp.Jimp.read(tmp_path);
+            const buffer = await icon.cover({h: 72, w: 72}).getBuffer(jimp.JimpMime.png);
+            countlyFs.saveData("appimages", target_path, buffer, {id: appId + ".png", writeMode: "overwrite"}, function(err3) {
+                if (err3) {
+                    log.e(err3, err3.stack);
                 }
-                icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                    countlyFs.saveData("appimages", target_path, buffer, {id: appId + ".png", writeMode: "overwrite"}, function(err3) {
-                        if (err3) {
-                            log.e(err3, err3.stack);
-                        }
-                        fs.unlink(tmp_path, function() {});
-                    });
-                });
             });
         }
         catch (e) {
-            log.e(e.stack);
+            console.log("Problem uploading app icon", e);
         }
+        fs.unlink(tmp_path, function() {});
     }
 };
 

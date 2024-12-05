@@ -1,6 +1,7 @@
 import {
     messagingPageElements,
     messagingMetricCardElements,
+    messagingChartElements,
     messagingDataTableElements
 } from "../../../support/elements/dashboard/messaging/messaging";
 
@@ -17,6 +18,21 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: messagingPageElements.CREATE_NEW_MESSAGE_BUTTON,
         elementText: 'New Message'
+    });
+
+    cy.verifyElement({
+        element: messagingPageElements.TAB_ONE_TIME_NOTIFICATIONS,
+        elementText: "One-time Notifications",
+    });
+
+    cy.verifyElement({
+        element: messagingPageElements.TAB_AUTOMATED_NOTIFICATIONS,
+        elementText: "Automated Notifications",
+    });
+
+    cy.verifyElement({
+        element: messagingPageElements.TAB_API_NOTIFICATIONS,
+        elementText: "API Notifications",
     });
 
     cy.verifyElement({
@@ -40,13 +56,13 @@ const verifyStaticElementsOfPage = () => {
         element: messagingMetricCardElements.ENABLED_USERS_PERCENTAGE_PROGRESS_CIRCLE,
     });
 
-    cy.verifyElement({
-        labelElement: messagingDataTableElements().RESULTS_FOR_LABEL,
-        labelText: "Results for"
-    });
+    cy.clickElement(messagingPageElements.TAB_ONE_TIME_NOTIFICATIONS);
 
     cy.verifyElement({
-        element: messagingDataTableElements().RESULTS_FOR_COMBOBOX,
+        labelElement: messagingChartElements.FILTER_PARAMETERS_SELECT_LABEL,
+        labelText: "One-time notifications for",
+        element: messagingChartElements.FILTER_PARAMETERS_SELECT,
+        elementText: "All Platforms"
     });
 
     cy.verifyElement({
@@ -68,7 +84,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: messagingDataTableElements().COLUMN_NAME_CAMPAIGN_NAME_LABEL,
         isElementVisible: false,
-        elementText: "Campaign Name",
+        elementText: "Notification name",
     });
 
     cy.verifyElement({
@@ -111,6 +127,11 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         element: messagingDataTableElements().COLUMN_NAME_DATE_SENT_SCHEDULED_SORTABLE_ICON,
     });
+
+    cy.verifyElement({
+        element: messagingDataTableElements().COLUMN_NAME_CREATED_LABEL,
+        elementText: "Created",
+    });
 };
 
 const verifyEmptyPageElements = () => {
@@ -118,6 +139,10 @@ const verifyEmptyPageElements = () => {
     verifyStaticElementsOfPage();
 
     verifyMessagingMetricCard({
+        isEmpty: true,
+    });
+
+    verifyGraphElements({
         isEmpty: true,
     });
 
@@ -134,8 +159,39 @@ const verifyFullDataPageElements = () => {
         isEmpty: false,
     });
 
+    // verifyGraphElements({ //TODO: Data is not being generated with the populator. Need to generate the data
+    //     isEmpty: false,
+    // });
+
     verifyMessagingDataFromTable({
         isEmpty: false,
+    });
+};
+
+const verifyGraphElements = ({
+    isEmpty = false,
+}) => {
+
+    if (isEmpty) {
+        cy.verifyElement({
+            element: messagingChartElements.EMPTY_CHART_ICON,
+        });
+
+        cy.verifyElement({
+            labelElement: messagingChartElements.EMPTY_CHART_TITLE,
+            labelText: "...hmm, seems empty here",
+        });
+
+        cy.verifyElement({
+            labelElement: messagingChartElements.EMPTY_CHART_SUBTITLE,
+            labelText: "No data found",
+        });
+
+        return;
+    }
+
+    cy.verifyElement({
+        element: messagingChartElements.ECHART,
     });
 };
 
@@ -195,6 +251,8 @@ const verifyMessagingDataFromTable = ({
     actionedPercentage = null,
     dateSent = null,
     dateScheduled = null,
+    createdDate = null,
+    createdTime = null,
 }) => {
 
     if (isEmpty) {
@@ -276,11 +334,24 @@ const verifyMessagingDataFromTable = ({
         element: messagingDataTableElements(index).SCHEDULED,
         elementText: dateScheduled
     });
+
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: messagingDataTableElements(index).CREATED_DATE,
+        elementText: createdDate
+    });
+
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: messagingDataTableElements(index).CREATED_TIME,
+        elementText: createdTime
+    });
 };
 
 module.exports = {
     verifyEmptyPageElements,
     verifyFullDataPageElements,
     verifyMessagingMetricCard,
+    verifyGraphElements,
     verifyMessagingDataFromTable
 };

@@ -1052,9 +1052,6 @@
                 else if (event === 'import-schema') {
                     this.importDialogVisible = true;
                 }
-                else if (event === 'navigate-settings') {
-                    app.navigate("#/manage/configurations/data-manager", true);
-                }
             },
             onSaveImport: function() {
                 var self = this;
@@ -1148,11 +1145,12 @@
                 }
                 if (doc.actionType === 'EVENT_MERGE' && doc.isRegexMerge === true) {
                     doc.actionType = 'merge-regex';
+                    doc.eventTransformTargetRegex = doc.transformTarget[0];
                 }
                 else {
                     doc.actionType = doc.actionType.split('_')[1].toLowerCase();
                 }
-                doc.isExistingEvent = 'true';
+                doc.isExistingEvent = doc.isExistingEvent ? 'true' : 'false';
                 // doc.tab;
                 // delete doc.transformType;
                 doc.name = countlyCommon.unescapeHtml(doc.name);

@@ -1,0 +1,51 @@
+<div class="cly-vue-content-builder__layout-header__wrapper" :style="{'background-color': backgroundColor}">
+    <div class="cly-vue-content-builder__layout-header__left">
+        <div v-if="closeButton" class="cly-vue-content-builder__layout-header__icon cly-vue-content-builder__layout-header__icon--close" @click="close">
+            <i class="cly-io cly-io-x color-warm-gray-60"></i>
+        </div>
+        <div v-else class="cly-vue-content-builder__layout-header__icon cly-vue-content-builder__layout-header__icon--back" @click="close">
+            <i class="cly-io cly-io-arrow-sm-left color-warm-gray-60"></i>
+        </div>
+        <div v-if="toggle" class="cly-vue-content-builder__layout-header__toggle bu-ml-4">
+            <el-switch
+                v-tooltip.right="toggleTooltip"
+                :value="isToggleActive"
+                :disabled="isToggleDisabled"
+                @change="$emit('switch-toggle', $event)">
+            </el-switch>
+        </div>
+        <div class="cly-vue-content-builder__layout-header__info">
+            <div class="cly-vue-content-builder__layout-header__info-title cursor-pointer" @dblclick="handleDoubleClick">
+                <h4 class="has-ellipsis" v-tooltip="localTitle && localTitle.length > 30 ? localTitle : ''" v-if="!isEditing">{{ localTitle }}</h4>
+                <el-input
+                    v-else
+                    class="bu-mb-2 cly-vue-content-builder__layout-header__info-title__input"
+                    v-model="localTitle"
+                    @blur="finishEditing"
+                    @keydown.enter.native="finishEditing"
+                />
+            </div>    
+            <div class="cly-vue-content-builder__layout-header__info-meta">
+                <div v-if="version" class="cly-vue-content-builder__layout-header__info-version">{{ version }}</div>
+                <div v-if="version" class="cly-vue-content-builder__layout-header__info-separator"><i class="cly-is cly-is-status"></i></div>
+                <div class="cly-vue-content-builder__layout-header__info-creator">{{ createdBy }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="cly-vue-content-builder__layout-header__tabs">
+        <cly-dynamic-tabs v-if="tabs" v-model="currentTab" :tabs="tabs" :custom-style="'background-color: ' + backgroundColor" :no-history=true></cly-dynamic-tabs>
+    </div>
+    <div class="cly-vue-content-builder__layout-header__actions">
+        <cly-status-badge v-if="status.show" :label="status.label" :mode="status.mode" class="cly-vue-content-builder__layout-header__status"></cly-status-badge>
+        <div v-if="!hideSaveButton" class="cly-vue-content-builder__layout-header__save">
+            <el-button type="success" :disabled="disableSaveButton" size="small" @click="save">{{ saveButtonLabel }}</el-button>
+        </div>
+        <div v-if="topDropdownOptions.length" class="cly-vue-content-builder__layout-header__options">
+            <cly-more-options size="small" @command="handleCommand($event)">
+                <el-dropdown-item v-for="(item, idx) in topDropdownOptions" :disabled="item.disabled" :key="idx" :command="item.value">
+                    <span class="cly-vue-content-builder__layout-header__option-label" @click="$emit('selected-command')">{{ item.label }}</span>
+                </el-dropdown-item>
+            </cly-more-options>
+        </div>
+    </div>
+</div>

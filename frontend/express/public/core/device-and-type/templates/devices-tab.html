@@ -15,7 +15,7 @@
 				<div class="bu-p-3">
 					<div class="bu-level-left bu-p-3 bu-pb-4">
 						<span class="text-small text-uppercase bu-has-text-weight-medium" :data-test-id="item.title.replaceAll(' ', '-').toLowerCase() + '-label'">{{item.title}}</span>
-						<span class="cly-vue-tooltip-icon ion ion-help-circled has-tooltip bu-ml-2" v-tooltip.top-center="item.description" :data-test-id="item.title.replaceAll(' ', '-').toLowerCase() + '-tooltip'"></span>
+						<cly-tooltip-icon class="bu-ml-2" :tooltip="item.description" placement="top-center" :data-test-id="item.title.replaceAll(' ', '-').toLowerCase() + '-tooltip'"></cly-tooltip-icon>
 					</div>
 					<div class="topData">
 						<div v-if="!item.data.length">
