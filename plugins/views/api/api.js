@@ -1313,7 +1313,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                     if (res1 && res1.omit) {
                         res.omit = res1.omit;
                     }
-                    if (common.drillDb) {
+                    if (common.drillDb && !params.qstring.skip_domains) {
                         var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
                         common.drillDb.collection(collectionName).findOne({"_id": "meta_v2"}, {_id: 0, "sg.domain": 1}, function(err3, meta1) {
                             if (meta1 && meta1.sg && meta1.sg.domain.values) {
