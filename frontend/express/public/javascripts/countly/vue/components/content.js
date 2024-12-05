@@ -62,6 +62,11 @@
                     return [];
                 }
             },
+            titleMaxLength: {
+                type: Number,
+                required: false,
+                default: 50
+            },
             status: {
                 type: Object,
                 required: false,

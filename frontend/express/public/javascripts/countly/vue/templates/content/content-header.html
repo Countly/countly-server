@@ -21,6 +21,7 @@
                     v-else
                     class="bu-mb-2 cly-vue-content-builder__layout-header__info-title__input"
                     v-model="localTitle"
+                    :maxlength="titleMaxLength"
                     @blur="finishEditing"
                     @keydown.enter.native="finishEditing"
                 />
