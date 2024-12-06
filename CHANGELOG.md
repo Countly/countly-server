@@ -1,4 +1,7 @@
 ## Version 24.05.XX
+Fixes:
+- [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
+- [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
 
 Dependencies:
 - Bump puppeteer from 23.8.0 to 23.9.0
