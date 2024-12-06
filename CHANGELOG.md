@@ -4,14 +4,14 @@ Fixes:
 - [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
 
 Dependencies:
-- Bump puppeteer from 23.8.0 to 23.9.0
-- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump countly-sdk-nodejs from 22.6.0 to 24.10.0
 - Bump countly-sdk-web from 24.4.1 to 24.11.0
-- Bump tslib from 2.7.0 to 2.8.1
 - Bump form-data from 4.0.0 to 4.0.1
 - Bump jimp from 0.22.12 to 1.6.0
 - Bump jsdoc from 4.0.3 to 4.0.4
-- Bump countly-sdk-nodejs from 22.6.0 to 24.10.0
+- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump puppeteer from 23.8.0 to 23.9.0
+- Bump tslib from 2.7.0 to 2.8.1
 
 ## Version 24.05.19
 Fixes:
