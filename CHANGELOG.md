@@ -10,6 +10,7 @@ Features:
 - [crashes] Adding confirmation for deleting crash groups
 - [dashoards] Fixed the "Add/ manage notes" button that did not work for the technology widget
 - [dbviewer] Preventing aggregation of using any stages which might open user to harmful actions (like $merge, $out, $lookup, $uninonWith) for all users except global admin
+- [nps] Fixing issues with default logo selection
 - [populator] Adding ability to select features to populate and other small improvements
 
 Enterprise Features:
