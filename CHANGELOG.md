@@ -1,6 +1,3 @@
-## Version XX.XX.XX
-- [star-rating] Fix a bug where cohort segmentation has to be filled in when previously it does not have to
-
 ## Version 24.12
 Features:
 - [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
@@ -15,7 +12,8 @@ Features:
 - [dbviewer] Preventing aggregation of using any stages which might open user to harmful actions (like $merge, $out, $lookup, $uninonWith) for all users except global admin
 - [nps] Fixing issues with default logo selection
 - [populator] Adding ability to select features to populate and other small improvements
-- [surveys] Removed unnecessary limitation with using cohorts for targeting 
+- [star-rating] Removed unnecessary limitation with using cohorts for targeting
+- [surveys] Removed unnecessary limitation with using cohorts for targeting
 
 Enterprise Features:
 - [cohorts] Adding ability to edit cohorts. This deletes historical calculations
