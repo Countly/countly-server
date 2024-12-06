@@ -89,29 +89,34 @@
                 }))
                 .then(
                     function() {
-                        return $.when($.ajax({
-                            type: "GET",
-                            url: countlyCommon.API_PARTS.data.r,
-                            data: {
-                                "app_id": countlyCommon.ACTIVE_APP_ID,
-                                "method": "events",
-                                "event": _activeEvent,
-                                "segmentation": currentActiveSegmentation,
-                                "period": _period,
-                                "preventRequestAbort": true
-                            },
-                            dataType: "json",
-                            success: function(json) {
-                                if (currentActiveEvent === _activeEvent && currentActiveSegmentation === _activeSegmentation) {
-                                    _activeLoadedEvent = _activeEvent;
-                                    _activeLoadedSegmentation = _activeSegmentation;
-                                    _activeEventDb = json;
-                                    setMeta();
+                        if (_activeEvent) {
+                            return $.when($.ajax({
+                                type: "GET",
+                                url: countlyCommon.API_PARTS.data.r,
+                                data: {
+                                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                                    "method": "events",
+                                    "event": _activeEvent,
+                                    "segmentation": currentActiveSegmentation,
+                                    "period": _period,
+                                    "preventRequestAbort": true
+                                },
+                                dataType: "json",
+                                success: function(json) {
+                                    if (currentActiveEvent === _activeEvent && currentActiveSegmentation === _activeSegmentation) {
+                                        _activeLoadedEvent = _activeEvent;
+                                        _activeLoadedSegmentation = _activeSegmentation;
+                                        _activeEventDb = json;
+                                        setMeta();
+                                    }
                                 }
-                            }
-                        })).then(function() {
+                            })).then(function() {
+                                return true;
+                            });
+                        }
+                        else {
                             return true;
-                        });
+                        }
                     }
                 );
         }
