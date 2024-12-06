@@ -661,7 +661,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             favicon: "images/favicon.png",
             documentationLink: convertLink(versionInfo.documentationLink, "https://support.count.ly/hc/en-us/categories/360002373332-Knowledge-Base"),
             helpCenterLink: convertLink(versionInfo.helpCenterLink, "https://support.count.ly/hc/en-us"),
-            featureRequestLink: convertLink(versionInfo.featureRequestLink, "https://support.count.ly/hc/en-us/community/topics/360001464272-Feature-Requests"),
+            featureRequestLink: convertLink(versionInfo.featureRequestLink, "https://discord.com/channels/1088398296789299280/1088721958218248243"),
             feedbackLink: convertLink(versionInfo.feedbackLink, "https://count.ly/legal/privacy-policy"),
         };
         plugins.loadConfigs(countlyDb, function() {
@@ -1610,7 +1610,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             req.body.app_id = req.body.app_image_id;
         }
         var params = paramsGenerator({req, res});
-        validateCreate(params, 'global_upload', function() {
+        validateCreate(params, 'global_upload', async function() {
             if (!req.session.uid && !req.body.app_image_id) {
                 res.end();
                 return false;
@@ -1634,25 +1634,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             }
             plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
             try {
-                jimp.read(tmp_path, function(err, icon) {
-                    if (err) {
-                        console.log(err, err.stack);
-                        fs.unlink(tmp_path, function() {});
-                        res.status(400).send(false);
-                        return true;
-                    }
-                    icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                        countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
-                            fs.unlink(tmp_path, function() {});
-                            res.send("appimages/" + req.body.app_image_id + ".png");
-                            countlyDb.collection('apps').updateOne({_id: countlyDb.ObjectID(req.body.app_image_id)}, {'$set': {'has_image': true}}, function() {});
-                        });
-                    }); // save
+                const icon = await jimp.Jimp.read(tmp_path);
+                const buffer = await icon.cover({h: 72, w: 72}).getBuffer(jimp.JimpMime.png);
+                countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
+                    res.send("appimages/" + req.body.app_image_id + ".png");
+                    countlyDb.collection('apps').updateOne({_id: countlyDb.ObjectID(req.body.app_image_id)}, {'$set': {'has_image': true}}, function() {});
                 });
             }
             catch (e) {
-                console.log(e.stack);
+                console.log("Problem uploading app icon", e);
+                res.status(400).send(false);
             }
+            fs.unlink(tmp_path, function() {});
         });
     });
 
@@ -1694,23 +1687,19 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             }
             plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
             try {
-                jimp.read(tmp_path, function(err, icon) {
-                    if (err) {
-                        console.log(err, err.stack);
-                    }
-                    icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                        countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
-                            fs.unlink(tmp_path, function() {});
-                            countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.body.member_image_id + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
-                                res.send("memberimages/" + req.body.member_image_id + ".png");
-                            });
-                        });
-                    }); // save
+                const icon = await jimp.Jimp.read(tmp_path);
+                const buffer = await icon.cover({h: 72, w: 72}).getBuffer(jimp.JimpMime.png);
+                countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
+                    countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.body.member_image_id + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
+                        res.send("memberimages/" + req.body.member_image_id + ".png");
+                    });
                 });
             }
             catch (e) {
-                console.log(e.stack);
+                console.log("Problem uploading member icon", e);
+                res.status(400).send(false);
             }
+            fs.unlink(tmp_path, function() {});
         });
     });
 

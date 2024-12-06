@@ -1,3 +1,40 @@
+## Version 24.05.XX
+Fixes:
+- [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
+- [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
+
+Dependencies:
+- Bump countly-sdk-nodejs from 22.6.0 to 24.10.0
+- Bump countly-sdk-web from 24.4.1 to 24.11.0
+- Bump form-data from 4.0.0 to 4.0.1
+- Bump jimp from 0.22.12 to 1.6.0
+- Bump jsdoc from 4.0.3 to 4.0.4
+- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump puppeteer from 23.8.0 to 23.9.0
+- Bump tslib from 2.7.0 to 2.8.1
+
+## Version 24.05.19
+Fixes:
+- [dashboards] Fixing issue where dashboard widgets go into single column
+
+Security:
+- Bump puppeteer from 17.1.3 to 23.8.0
+- Bump express from 4.21.0 to 4.21.1 
+- Bump sass from 1.79.4 to 1.81.0
+- Bump express-session from 1.18.0 to 1.18.1
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /ui-tests
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /plugins/hooks
+
+## Version 24.05.18
+Fixes:
+- [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
+- [core] Fixed bug where exporting incoming data logs could result in "Incorrect parameter \"data\" error
+- [crash] Fixed bug in crash ingestion for scenarios where the "app version" is not a string.
+- [script] Fixing bug with "delete_old_members" script that led to malformed requests
+
+Enterprise fixes:
+- [nps] Fixed bug that showed the wrong nps preview title
+
 ## Version 24.05.17
 Fixes:
 - [push] Improved ability to observe push related errors
@@ -34,6 +71,7 @@ Security:
 
 ## Version 24.05.15
 Enterprise fixes:
+- [ab-testing] Fixed JSON.parse issue preventing creation of AB tests
 - [nps] Fixed UI issues in the widget editor related to the "user consent" section
 - [ratings] Fixed rendering issue for escaped values
 
@@ -68,7 +106,7 @@ Enterprise Features:
 ## Version 24.05.12
 Fixes:
 - [dashboards] Fixes for dashboards grid
-- [dasboards] UI fix for dashboard widget action menu
+- [dashboards] UI fix for dashboard widget action menu
 - [push] Refactored fcm API related code
 - [reports] Use config for encryption key in reports
 
