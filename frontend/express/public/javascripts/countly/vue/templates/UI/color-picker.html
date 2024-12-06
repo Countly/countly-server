@@ -1,0 +1,66 @@
+<div class="cly-vue-color-picker">
+  <div
+    class="cly-vue-color-picker__input-container"
+    :data-test-id="testId"
+    @click.stop="onInputContainerClick"
+  >
+    <div
+      class="cly-vue-color-picker__input-drop-container"
+      :data-test-id="testId + '-cly-color-picker-img-wrapper'"
+      :style="dropStyles"
+    >
+      <img
+        class="cly-vue-color-picker__input-drop"
+        src="images/icons/blob.svg"
+      />
+    </div>
+    <input
+      v-model="localValue"
+      class="cly-vue-color-picker__input"
+      type="text"
+    />
+    <div
+      class="cly-vue-color-picker__input-arrow"
+      :class="{ 'cly-vue-color-picker__input-arrow--open': isOpened }"
+    >
+      <i class="cly-is cly-is-arrow-drop-up cly-vue-color-picker__input-arrow-icon-open" />
+      <i class="cly-is cly-is-arrow-drop-down cly-vue-color-picker__input-arrow-icon-closed" />
+    </div>
+  </div>
+  <div
+    v-if="isOpened"
+    v-click-outside="close"
+    class="cly-vue-color-picker__body"
+    :class="bodyClasses"
+  >
+    <picker
+      class="cly-vue-color-picker__picker"
+      :preset-colors="[]"
+      :value="localValue"
+      @input="onPickerInput"
+    />
+    <div class="cly-vue-color-picker__buttons-container">
+      <cly-button
+        class="cly-vue-color-picker__button"
+        :data-test-id="testId + '-reset-button'"
+        :label="i18n('common.reset')"
+        skin="light"
+        @click="onResetClick"
+      />
+      <cly-button
+        class="cly-vue-color-picker__button"
+        :data-test-id="testId + '-cancel-button'"
+        :label="i18n('common.cancel')"
+        skin="light"
+        @click="onCancelClick"
+      />
+      <cly-button
+        class="cly-vue-color-picker__button"
+        :data-test-id="testId + '-confirm-button'"
+        :label="i18n('common.confirm')"
+        @click="onConfirmClick"
+        skin="green"
+      />
+    </div>
+  </div>
+</div>
