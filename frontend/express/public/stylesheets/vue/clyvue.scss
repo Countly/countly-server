@@ -4439,6 +4439,7 @@
         min-height: calc(100vh - 106px);
 
         &__body {
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
 
