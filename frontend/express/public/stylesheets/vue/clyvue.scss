@@ -1211,10 +1211,10 @@
 
             background-color: #ffffff;
 
-            display: flex;
+            /* display: flex;
             flex-direction: column;
             align-items: flex-start;
-            justify-content: center;
+            justify-content: center; */
 
             // .cly-vue-color-picker__body .vc-sketch
             & .vc-sketch {
@@ -1252,6 +1252,14 @@
                 right: 0;
                 transform: translate(-50%, 100%);
             }
+        }
+
+        // .cly-vue-color-picker__buttons-container
+        &__buttons-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 12px;
         }
 
         // .cly-vue-color-picker__input
@@ -1349,92 +1357,6 @@
             width: 16px;
             height: 16px;
         }
-
-
-
-        /* OLD Code */
-        $cp-preview-height: 32px;
-        $cp-preview-width: 138px;
-        $cp-preview-border-size: 1px;
-        $cp-picker-body-size: 251px;
-        $cp-picker-body-padding: 12px;
-        /* display: flex; */
-        /* height: #{$cp-preview-height}; */
-
-
-        .picker-body {
-            &--left{ 
-                left:0
-            }
-            &--right{
-                left: #{-$cp-preview-width};
-            }
-            /* position: relative; */
-            /* box-shadow: 0 3px 7px rgba(0, 0, 0, 0.08); */
-            /* border: 1px solid #d0d0d0; */
-            /* border-radius: 2px; */
-            /* width: 275px;
-            height: 415px; */
-            /* background-color: #ffffff; */
-            /* top: #{$cp-preview-height}; */
-            /* z-index: 9999; */
-            /* > .vc-sketch {
-                background-color: transparent;
-                padding: #{$cp-picker-body-padding};
-                box-shadow: none;
-                border: none;
-                border-radius: 0;
-                width: #{$cp-picker-body-size};
-                .vc-sketch-saturation-wrap {
-                    height: #{$cp-picker-body-size - 180px};
-                    bottom: #{$cp-picker-body-padding};
-                    .vc-saturation {
-                        height: #{$cp-picker-body-size};
-                    }
-                }
-                .vc-sketch-presets {
-                    display: none;
-                }
-            } */
-            .button-controls {
-                float: right;
-                padding-right: #{$cp-picker-body-padding};
-            }
-        }
-        /* .preview { */
-            /* float: right;
-            outline: none;
-            color: #000;
-            font-size: 12px;
-            padding-left: 8px; 
-            
-            display: flex; */
-            
-            /* box-sizing: border-box;
-            width: 138px;
-            height: 32px;
-            cursor: pointer; */
-            /* div {
-                margin-top: 5px;
-                position: relative;
-                img {
-                    position: absolute;
-                }
-            } */
-            /* .drop {
-                width:16px;
-                height:16px;
-                margin-right:10px;
-                position:absolute;
-            } */
-            /* .color-input {
-                border-style:none;
-                width:57px;
-                margin-left:24px;
-                margin-right:24px;
-                font-size: 14px;
-            } */
-        /* } */
     }
 
     // check
@@ -4602,16 +4524,6 @@
         max-width: 50%;
         width: auto;
         box-shadow: none;
-
-        // .cly-vue-content-builder-sidebar-input__component.cly-vue-color-picker
-        &.cly-vue-color-picker {
-            // .cly-vue-content-builder-sidebar-input__component.cly-vue-color-picker .picker-body
-            & .picker-body {
-                position: absolute;
-                right: 0;
-                left: auto;
-            }
-        }
 
         // .cly-vue-content-builder-sidebar-input__component .el-input__inner
         & .el-input__inner {
