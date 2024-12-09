@@ -4519,6 +4519,24 @@
         width: auto;
         box-shadow: none;
 
+        // .cly-vue-content-builder-sidebar-input__component .el-input__count
+        & .el-input__count {
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform: translateY(-100%);
+            background: transparent;
+            font-size: 13px;
+            font-weight: 400;
+            line-height: 16px;
+
+            // .cly-vue-content-builder-sidebar-input__component .el-input__count .el-input__count-inner
+            & .el-input__count-inner {
+                padding: 0;
+                background: transparent;
+            }
+        }
+
         // .cly-vue-content-builder-sidebar-input__component .el-input__inner
         & .el-input__inner {
             font-size: 14px;
@@ -4552,7 +4570,6 @@
 
         // .cly-vue-content-builder-sidebar-input__component.el-input--suffix
         &.el-input--suffix {
-
             // .cly-vue-content-builder-sidebar-input__component.el-input--suffix .el-input__inner
             & .el-input__inner {
                 padding-right: 34px;
@@ -4563,8 +4580,25 @@
         &--slider {
             width: 100%;
 
-            .el-slider__button-wrapper {
+            // .cly-vue-content-builder-sidebar-input__component--slider .el-slider__bar
+            & .el-slider__bar {
+                background-color: #0166D6;
+            }
+
+            // .cly-vue-content-builder-sidebar-input__component--slider .el-slider__button
+            & .el-slider__button {
+                border: 1px solid #0166D6;
+            }
+
+            // .cly-vue-content-builder-sidebar-input__component--slider .el-slider__button-wrapper
+            & .el-slider__button-wrapper {
                 z-index: 0;
+            }
+
+            // .cly-vue-content-builder-sidebar-input__component--slider .el-slider__runway
+            & .el-slider__runway {
+                margin: 0;
+                background-color: #E2E4E8;
             }
         }
     }
