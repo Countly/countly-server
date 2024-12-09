@@ -4562,6 +4562,10 @@
         // .cly-vue-content-builder-sidebar-input__component--slider
         &--slider {
             width: 100%;
+
+            .el-slider__button-wrapper {
+                z-index: 0;
+            }
         }
     }
 
