@@ -4279,6 +4279,10 @@
             .el-slider__runway {
                 background-color: #E2E4E8;
             }
+
+            .el-slider__button-wrapper {
+                z-index: 0;
+            }
         }
         &__header {
             font-family: Inter;
