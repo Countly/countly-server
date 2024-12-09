@@ -85,7 +85,7 @@
     }
     }
     &__colorpicker{
-      .picker-body {overflow: auto;}
+      .cly-vue-color-picker__picker {overflow: auto;}
     }
     &__button{
       &:active, &:focus, &:hover {background-color: unset !important;border-color: unset !important;}
