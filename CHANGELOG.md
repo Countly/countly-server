@@ -13,6 +13,8 @@ Dependencies:
 - Bump puppeteer from 23.8.0 to 23.9.0
 - Bump tslib from 2.7.0 to 2.8.1
 - Bump express from 4.21.1 to 4.21.2
+- Bump mocha from 10.2.0 to 10.8.2
+- Bump mongodb from 4.9.1 to 4.17.2
 
 ## Version 24.05.19
 Fixes:

@@ -22,7 +22,7 @@
     "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
     "jsdoc": "^4.0.0",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "nyc": "17.1.0",
     "should": "13.2.3",
     "supertest": "7.0.0"
@@ -76,7 +76,7 @@
     "method-override": "3.0.0",
     "moment": "2.30.1",
     "moment-timezone": "0.5.46",
-    "mongodb": "4.9.1",
+    "mongodb": "4.17.2",
     "nginx-conf": "2.1.0",
     "nodemailer": "6.9.16",
     "object-hash": "3.0.0",
@@ -92,6 +92,9 @@
   "overrides": {
     "jimp": {
       "xml2js": "^0.5.0"
+    },
+    "csurf": {
+      "cookie": "^0.7.1"
     }
   },
   "jshintConfig": {
