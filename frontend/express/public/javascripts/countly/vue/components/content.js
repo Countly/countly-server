@@ -62,6 +62,11 @@
                     return [];
                 }
             },
+            titleMaxLength: {
+                type: Number,
+                required: false,
+                default: 50
+            },
             status: {
                 type: Object,
                 required: false,
@@ -331,207 +336,179 @@
         `,
     }));
 
-    Vue.component("cly-content-step", countlyVue.components.create({
+
+    // CONSTANTS
+
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER = 'color-picker';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN = 'dropdown';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT = 'input';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT_NUMBER = 'input-number';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER = 'slider';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER = 'swapper';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH = 'switch';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB = 'tab';
+
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE = {
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER]: 'cly-colorpicker',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN]: 'el-select',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT]: 'el-input',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT_NUMBER]: 'el-input-number',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER]: 'el-slider',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER]: 'cly-option-swapper',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH]: 'el-switch',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB]: 'div'
+    };
+
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_HORIZONTAL = 'horizontal';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_VERTICAL = 'vertical';
+
+    Vue.component("cly-content-builder-sidebar-input", countlyVue.components.create({
+        template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html'),
+
         props: {
-            value: {
-                type: [String, Number, Boolean, Object],
-                default: null
+            disabled: {
+                default: false,
+                type: Boolean
             },
-            subHeader: {
-                type: String,
-                required: false,
-                default: null
-            },
+
             label: {
-                type: String,
-                required: false,
-                default: null
+                default: null,
+                type: String
             },
-            inputType: {
-                type: String,
-                required: false,
-                default: 'text'
-            },
+
             options: {
-                type: Array,
-                required: false,
-                default: () => []
+                default: () => [],
+                type: Array
             },
+
+            placement: {
+                default: COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_HORIZONTAL,
+                type: String
+            },
+
             position: {
-                type: String,
-                required: false,
-                default: 'horizontal'
+                default: COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_HORIZONTAL,
+                type: String
             },
-            width: {
-                type: String,
-                required: false,
-                default: null
+
+            subHeader: {
+                default: null,
+                type: String
             },
-            inputProps: {
-                type: Object,
-                required: false,
-                default: () => ({})
-            }
-        },
-        data() {
-            return {
-                localValue: this.initializeLocalValue(),
-            };
-        },
-        watch: {
+
+            suffix: {
+                default: null,
+                type: String
+            },
+
+            type: {
+                default: COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT,
+                type: String
+            },
+
             value: {
-                handler: function(newValue) {
-                    this.localValue = this.initializeLocalValue(newValue);
-                },
-                deep: true
+                default: null,
+                type: [String, Number, Boolean, Object]
             },
-            localValue: {
-                handler: function(newValue) {
+
+            size: {
+                default: null,
+                type: String
+            }
+        },
+
+        emits: [
+            'input'
+        ],
+
+        computed: {
+            componentValue: {
+                get() {
+                    if (this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH) {
+                        return !!this.value;
+                    }
+
+                    return this.value || null;
+                },
+                set(newValue) {
                     this.$emit('input', newValue);
-                },
-                deep: true
-            }
-        },
-        methods: {
-            initializeLocalValue(val = this.value) {
-                if (this.inputType === 'switch') {
-                    return val === true;
                 }
-                return val !== undefined ? val : null;
             },
-            updateValue: function(newValue) {
-                this.localValue = newValue;
+
+            isDropdownInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN;
             },
-            getComponentType: function(type) {
-                const mapping = {
-                    dropdown: 'el-select',
-                    input: 'el-input',
-                    switch: 'el-switch',
-                    slider: 'el-slider',
-                    'color-picker': 'cly-colorpicker',
-                    'input-number': 'el-input-number',
-                };
-                return mapping[type] || 'div';
+
+            isComponentWithOptions() {
+                return this.isDropdownInput && Array.isArray(this.options) && this.options.length;
+            },
+
+            isSliderInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER;
+            },
+
+            isSuffixVisible() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT && this.suffix;
+            },
+
+            isSwapperInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER;
+            },
+
+            isVerticalInput() {
+                return this.position === COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_VERTICAL;
+            },
+
+            mainComponent() {
+                return COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE[this.type] || 'div';
             }
-        },
-        created: function() {
-        },
-        template: `
-            <div class="cly-vue-content-builder__layout-step">
-                <div v-if="subHeader" class="cly-vue-content-builder__layout-step__sub-header color-cool-gray-50 bu-mb-2">{{ subHeader }}</div>
-                <div class="cly-vue-content-builder__layout-step__element bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center" :class="{'bu-is-flex-direction-column bu-is-align-items-baseline': position !== 'horizontal' }" :style="[position !== 'horizontal' ? {'gap': '8px'}: {}]">
-                    <div v-if="label" class="cly-vue-content-builder__layout-step__label">{{ label }}</div>
-                    <slot name="content-builder-layout-step">
-                        <component
-                            :is="getComponentType(inputType)"
-                            v-bind="inputProps"
-                            :value="localValue"
-                            @input="updateValue"
-                            :format-tooltip="inputProps && inputProps.formatTooltip"
-                            :min="inputProps && inputProps.min"
-                            :max="inputProps && inputProps.max"
-                            class="cly-vue-content-builder__layout-step__component"
-                            :style="[ position !== 'horizontal' ? {\'width\':  \'100%\'} : {\'width\': width + \'px\'}]"
-                        >
-                        <template v-if="inputProps && inputProps.append" v-slot:append>{{inputProps.append}}</template>
-                        <el-option
-                            v-if="inputType === 'dropdown'"
-                            v-for="option in options"
-                            :key="option.value"
-                            :label="option.label"
-                            :value="option.value"
-                            class="cly-vue-content-builder__layout-step__option"
-                        ></el-option>
-                        </component>
-                    </slot>
-                </div>
-            </div>
-            `,
+        }
     }));
 
-    Vue.component("cly-option-swapper", countlyVue.components.BaseComponent.extend({
-        mixins: [countlyVue.mixins.i18n],
+    Vue.component("cly-option-swapper", countlyVue.components.create({
+        template: CV.T('/javascripts/countly/vue/templates/UI/option-swapper.html'),
+
         props: {
+            highlightOnSelect: {
+                default: true,
+                type: Boolean
+            },
+
+            options: {
+                default: () => [],
+                type: Array
+            },
+
             value: {
-                type: [String, Number],
-                default: null
-            },
-            items: {
-                type: Array,
-                default: function() {
-                    return [];
+                default: null,
+                type: [String, Number]
+            }
+        },
+
+        emits: [
+            'input'
+        ],
+
+        mixins: [countlyVue.mixins.i18n],
+
+        computed: {
+            selectedOption: {
+                get() {
+                    return this.value || this.options[0].value;
+                },
+                set(value) {
+                    this.$emit('input', value);
                 }
-            },
-            activeColorCode: {
-                type: String,
-                default: '#0166D6'
-            },
-            width: {
-                type: String,
-                default: '100'
             }
         },
-        data: function() {
-            return {
-                selectedValue: this.items[0].value || 0
-            };
-        },
-        watch: {
-            value: function(value) {
-                this.selectedValue = value;
-            }
-        },
+
         methods: {
-            numberChange: function(item) {
-                if (!item.disabled) {
-                    this.selectedValue = item.value;
-                    this.$emit('input', this.selectedValue);
+            onOptionClick: function(option) {
+                if (!option.disabled) {
+                    this.selectedOption = option.value;
                 }
             }
-        },
-        created: function() {
-            this.selectedValue = this.value || this.items[0].value || 0;
-        },
-        template: `
-            <div>
-                <div class="bu-is-flex cly-option-swapper" :style="{'width': width + 'px'}">
-                    <div v-for="(item, index) in items" :key="item.value" class="cly-option-swapper__each-box-wrapper">
-                        <div
-                            :style="[
-                                item.value === selectedValue && !item.disabled ? {'background-color': activeColorCode} : {},
-                                item.disabled ? {'opacity': '0.5', 'cursor': 'not-allowed', 'background-color': '#E2E4E8'} : {}
-                            ]"
-                            :class="{
-                                'cly-option-swapper__active': item.value === selectedValue && !item.disabled,
-                                'cly-option-swapper__first': index === 0,
-                                'cly-option-swapper__last': index === (items.length - 1),
-                                'cly-option-swapper__disabled': item.disabled
-                            }"
-                            v-tooltip="item.tooltip"
-                            class="cly-option-swapper__each"
-                            @click="numberChange(item)"
-                        >
-                            <i v-if="item.icon"
-                               :class="item.icon"
-                               :style="[
-                                   item.value === selectedValue && !item.disabled ? {'color': '#0166d6'} : {'color': '#000'},
-                                   item.disabled ? {'color': '#999'} : {}
-                               ]">
-                            </i>
-                            <span v-else
-                                  :style="[
-                                      item.value === selectedValue && !item.disabled ? {'color': '#0166d6'} : {'color': '#000'},
-                                      item.disabled ? {'color': '#999'} : {}
-                                  ]"
-                                  class="text-medium"
-                            >
-                                {{ item.text }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `
+        }
     }));
 
     Vue.component("cly-device-selector", countlyVue.components.BaseComponent.extend({
