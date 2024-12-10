@@ -92,6 +92,9 @@
   "overrides": {
     "jimp": {
       "xml2js": "^0.5.0"
+    },
+    "csurf": {
+      "cookie": "^0.7.1"
     }
   },
   "jshintConfig": {
