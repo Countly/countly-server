@@ -22,7 +22,7 @@
     "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
     "jsdoc": "^4.0.0",
-    "mocha": "10.2.0",
+    "mocha": "10.8.2",
     "nyc": "17.1.0",
     "should": "13.2.3",
     "supertest": "7.0.0"
