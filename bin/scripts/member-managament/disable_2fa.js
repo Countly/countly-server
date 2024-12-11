@@ -24,18 +24,11 @@ pluginManager.dbConnection().then(async(countlyDb) => {
         console.log(`The following ${users.length} user(s) 2FA will be disabled: `);
         console.log(JSON.stringify(users));
         if (!dry_run) {
-            await Promise.all(users.map(async(user) => {
-                let userId = user._id;
-                await countlyDb.collection("members").findAndModify(
-                    {_id: userId},
-                    {},
-                    {
-                        $set: {"two_factor_auth.enabled": false},
-                        $unset: {"two_factor_auth.secret_token": ""}
-                    }
-                );
-                console.log("2FA removed: ", JSON.stringify(user));
-            }));
+            await countlyDb.collection('members').updateMany({_id: {$in: users.map(user=>user._id)}},
+                {
+                    $set: {"two_factor_auth.enabled": false},
+                    $unset: {"two_factor_auth.secret_token": ""}
+                });
             console.log("All done");
         }
     }
