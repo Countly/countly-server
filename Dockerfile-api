@@ -1,4 +1,4 @@
-FROM node:hydrogen-bullseye-slim
+FROM node:iron-bookworm-slim
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides
 # Countly Enterprise:
@@ -25,15 +25,14 @@ COPY . .
 
 # install required dependencies which slim image doesn't have
 RUN apt-get update && \
-	apt-get install -y iputils-ping procps net-tools telnet apt-transport-https curl wget git python2 make gcc g++ unzip && \
-	ln -s /usr/bin/python2.7 /usr/bin/python
+	apt-get install -y iputils-ping procps net-tools telnet apt-transport-https curl wget git make gcc g++ unzip xz-utils
 
 RUN apt-get update && \
 	apt-get upgrade -y && \
 	cd /usr/src && \
 	wget https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tar.xz && \
 	tar -xf Python-3.8.12.tar.xz && \
-	apt-get install -y build-essential sudo zlib1g-dev libssl1.1 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev && \
+	apt-get install -y build-essential sudo zlib1g-dev libssl3 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev && \
 	cd Python-3.8.12 && \
 	./configure --enable-optimizations --enable-shared && \
 	make && \
