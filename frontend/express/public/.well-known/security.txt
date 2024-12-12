@@ -1,0 +1,7 @@
+# If you would like to report a security issue with Countly Server, Countly SDKs
+# please get in touch via the below method
+Contact: mailto:security@count.ly
+Expires: 2025-03-14T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://securitytxt.org/.well-known/security.txt
+Policy: https://countly.com/legal/privacy-policy
