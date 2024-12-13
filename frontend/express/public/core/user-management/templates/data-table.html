@@ -75,6 +75,7 @@
             sortable="true" prop="username" :label="i18n('management-users.username')">
             <template v-slot="rowScope">
               <span class="text-medium" :data-test-id="'datatable-users-username-' + rowScope.$index">{{rowScope.row.username}}</span>
+            </template>
           </el-table-column>
           <el-table-column
             v-if="col.value === 'role'"
@@ -90,6 +91,7 @@
             sortable="true" prop="email" :label="i18n('management-users.email')">
             <template v-slot="rowScope">
               <span class="text-medium" :data-test-id="'datatable-users-email-' + rowScope.$index">{{rowScope.row.email}}</span>
+            </template>
           </el-table-column>
           <el-table-column v-if="col.value === 'group'" sortable="true" prop="groupNames" :label="i18n('management-users.group')">
             <template v-slot="rowScope">
