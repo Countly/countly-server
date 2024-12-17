@@ -131,6 +131,7 @@
               <el-dropdown-item v-if="showLogs" command="show-logs" :data-test-id="'datatable-users-more-button-view-logs-select-' + rowScope.$index">{{ i18n('management-users.view-user-logs') }}</el-dropdown-item>
               <el-dropdown-item command="reset-logins" :data-test-id="'datatable-users-more-button-reset-logins-select-' + rowScope.$index">{{ i18n('management-users.reset-failed-logins') }}</el-dropdown-item>
               <el-dropdown-item command="delete-user" :data-test-id="'datatable-users-more-button-delete-user-select-' + rowScope.$index">{{ i18n('management-users.delete-user') }}</el-dropdown-item>
+              <el-dropdown-item v-if="is2faEnabled(rowScope.row)" command="disable-2fa" :data-test-id="'datatable-users-more-button-disable-2fa-select-' + rowScope.$index">{{ i18n('management-users.disable-2fa-user') }}</el-dropdown-item>
             </cly-more-options>
           </template>
         </el-table-column>
