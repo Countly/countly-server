@@ -3,6 +3,9 @@ Fixes:
 - [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
 - [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
 
+Features:
+- [user-management] Global admins can now disable 2FA for individual users
+
 Dependencies:
 - Bump express from 4.21.1 to 4.21.2
 - Bump mocha from 10.2.0 to 10.8.2
