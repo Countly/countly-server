@@ -47,6 +47,7 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	cp -n ./api/config.sample.js ./api/config.js && \
 	cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
 	cp -n ./frontend/express/public/javascripts/countly/countly.config.sample.js ./frontend/express/public/javascripts/countly/countly.config.js && \
+	HOME=/tmp npm install -g npm@latest && \
 	HOME=/tmp npm install --unsafe-perm=true --allow-root && \
 	HOME=/tmp npm install argon2 --build-from-source --unsafe-perm=true --allow-root && \
 	./bin/docker/preinstall.sh && \
@@ -55,7 +56,7 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	\
 	# cleanup & chown
 	npm remove -y --no-save mocha nyc should supertest puppeteer && \
-	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 && \
+	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 wget && \
 	apt-get autoremove -y && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
 	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \
