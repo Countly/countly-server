@@ -14,8 +14,6 @@
     "url": "git://github.com/countly/countly-server.git"
   },
   "devDependencies": {
-    "apidoc": "^1.0.1",
-    "apidoc-template": "^0.0.2",
     "docdash": "^2.0.1",
     "grunt-contrib-watch": "1.1.0",
     "grunt-eslint": "24.3.0",
