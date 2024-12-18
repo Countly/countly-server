@@ -6,8 +6,9 @@
         data: function() {
             return {
                 selectLog: this.query || "api",
-                downloadLink: countlyGlobal.path + "/o/errorlogs?auth_token=" + countlyGlobal.auth_token + "&download=true&log=" + this.query || "api",
+                downloadLink: countlyGlobal.path + "/o/errorlogs?download=true&log=" + this.query || "api",
                 logList: [{name: "Api Log", value: "api"}],
+                authToken: countlyGlobal.auth_token,
                 cachedLog: {}
             };
         },
@@ -35,7 +36,7 @@
                 }
             },
             changeLog: function(value) {
-                this.downloadLink = countlyGlobal.path + "/o/errorlogs?auth_token=" + countlyGlobal.auth_token + "&download=true&log=" + value,
+                this.downloadLink = countlyGlobal.path + "/o/errorlogs?download=true&log=" + value,
                 app.navigate("#/manage/logs/errorlogs/" + value);
                 this.refresh(true);
             },
@@ -58,6 +59,10 @@
                         }
                     });
                 }, [jQuery.i18n.map["common.no-dont-delete"], jQuery.i18n.map["common.yes-clear-it"]], {title: jQuery.i18n.map["errorlogs.confirm-delete-" + self.selectLog + "-title"] || jQuery.i18n.map["errorlogs.confirm-delete-title"], image: "clear-api-logs"});
+            },
+            download: function() {
+                document.forms.errorlogsform.submit();
+                return false;
             }
         }
     });
