@@ -81,7 +81,7 @@
     "offline-geocoder": "git+https://github.com/Countly/offline-geocoder.git",
     "properties-parser": "0.6.0",
     "puppeteer": "^23.8.0",
-    "sass": "1.81.0",
+    "sass": "1.83.0",
     "tslib": "^2.6.3",
     "uglify-js": "3.19.3",
     "underscore": "1.13.7",
