@@ -428,6 +428,10 @@
                         return !!this.value;
                     }
 
+                    if (this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT) {
+                        return countlyCommon.unescapeHtml(this.value) || '';
+                    }
+
                     return this.value || null;
                 },
                 set(newValue) {
