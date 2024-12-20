@@ -80,6 +80,8 @@ const verifyStaticElementsOfPage = () => {
 
 const verifyEmptyPageElements = () => {
 
+    cy.wait(10000) //TODO: will be removed 
+
     verifyStaticElementsOfPage();
 
     verifyHooksDataTable({
