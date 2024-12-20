@@ -298,7 +298,8 @@ const CREDS = {
                 return ['Not a private key in P8 format in base64-encoded string'];
             }
 
-            this._data.hash = FORGE.md.sha256.create().update(this._data.key).digest().toHex();
+            const message = this._data.key + this._data.bundle + this._data.keyid + this._data.team;
+            this._data.hash = FORGE.md.sha256.create().update(message).digest().toHex();
         }
 
         /**

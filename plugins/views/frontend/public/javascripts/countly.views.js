@@ -19,9 +19,24 @@
                 deleteDialogText: "",
                 deleteDialogConfirmText: CV.i18n('views.yes-delete-view'),
                 showDeleteDialog: false,
+                availableSegments: ["platform"],
+                omitList: [],
+                segmentsLoaded: false,
             };
         },
         mounted: function() {
+            var self = this;
+            this.$store.dispatch('countlyViews/fetchMetaData').then(function() {
+                var segments = self.$store.state.countlyViews.segments || {};
+                self.availableSegments = [];
+                for (var key in segments) {
+                    self.availableSegments.push({value: key, label: key});
+                }
+                var omittedSegments = self.$store.getters['countlyViews/getOmittedSegments'];
+                self.omitList = omittedSegments || [];
+                self.segmentsLoaded = true;
+
+            });
         },
         methods: {
             handleSelectionChange: function(selectedRows) {
@@ -42,6 +57,22 @@
                         scope.patch(rowscope.row, {display: value});
                     }
                 }
+            },
+            omitSegments: function() {
+                var self = this;
+                CountlyHelpers.confirm(CV.i18n('views.omit-segments-confirm'), "red", function(result) {
+                    if (!result) {
+                        return true;
+                    }
+                    self.$store.dispatch("countlyViews/omitSegments", JSON.stringify(self.omitList)).then(function() {
+                        if (self.$store.getters["countlyViews/updateError"]) {
+                            CountlyHelpers.notify({type: "error", title: jQuery.i18n.map["common.error"], message: self.$store.getters["countlyViews/updateError"], sticky: false, clearAll: true});
+                        }
+                        else {
+                            CountlyHelpers.notify({type: "ok", title: jQuery.i18n.map["common.success"], message: jQuery.i18n.map["events.general.changes-saved"], sticky: false, clearAll: true});
+                        }
+                    });
+                });
             },
             deleteManyViews: function() {
                 if (this.selectedViews.length > 0) {

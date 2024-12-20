@@ -4,7 +4,8 @@ var exported = {},
     automaticStateManager = require('./helpers/automaticStateManager'),
     log = require('../../../api/utils/log.js')('logger:api'),
     { validateRead } = require('../../../api/utils/rights.js');
-
+const JOB = require('../../../api/parts/jobs');
+const MAX_NUMBER_OF_LOG_ENTRIES = 1000;
 const FEATURE_NAME = 'logger';
 
 var RequestLoggerStateEnum = {
@@ -20,6 +21,13 @@ plugins.setConfigs("logger", {
 });
 
 (function() {
+    plugins.register("/master", function() {
+        setTimeout(() => {
+            JOB.job('logger:clear', { max: MAX_NUMBER_OF_LOG_ENTRIES })
+                .replace()
+                .schedule("every 5 minutes");
+        }, 10000);
+    });
 
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
@@ -348,24 +356,15 @@ plugins.setConfigs("logger", {
             validateRead(params, FEATURE_NAME, async function(parameters) {
                 try {
                     var stats = await common.db.collection('logs' + parameters.app_id).aggregate([ { $collStats: { storageStats: { } } } ]).toArray();
-                    common.returnOutput(parameters, {capped: stats?.[0]?.storageStats?.capped, max: stats?.[0]?.storageStats?.max});
+                    common.returnOutput(parameters, {capped: MAX_NUMBER_OF_LOG_ENTRIES, count: stats?.[0]?.storageStats?.count, max: MAX_NUMBER_OF_LOG_ENTRIES});
                 }
                 catch (ex) {
                     console.log("Failed fetching logs collection info: ", ex);
-                    common.returnMessage(parameters, 400, 'Error fetching collection info');
+                    common.returnOutput(parameters, {capped: MAX_NUMBER_OF_LOG_ENTRIES, count: MAX_NUMBER_OF_LOG_ENTRIES, max: MAX_NUMBER_OF_LOG_ENTRIES, status: "error"});
                 }
             });
             return true;
         }
-    });
-
-    plugins.register("/i/apps/create", function(ob) {
-        var appId = ob.appId;
-        common.db.command({"convertToCapped": 'logs' + appId, size: 10000000, max: 1000}, function(err) {
-            if (err) {
-                common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function() {});
-            }
-        });
     });
 
     plugins.register("/i/apps/delete", function(ob) {
@@ -375,16 +374,12 @@ plugins.setConfigs("logger", {
 
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
-        common.db.collection('logs' + appId).drop(function() {
-            common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function() {});
-        });
+        common.db.collection('logs' + appId).drop(function() {});
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {
         var appId = ob.appId;
-        common.db.collection('logs' + appId).drop(function() {
-            common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function() {});
-        });
+        common.db.collection('logs' + appId).drop(function() {});
     });
 }(exported));
 

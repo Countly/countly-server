@@ -1158,22 +1158,24 @@
                 });
 
                 this.grid.on('change', function(event, items) {
-                    items.forEach(item => {
-                        self.updateWidgetGeography(
-                            item.id,
-                            {
-                                size: [item.w, item.h],
-                                position: [item.x, item.y]
-                            }
-                        );
-                    });
-                    _.debounce(function() {
-                        self.$nextTick(function() {
-                            setTimeout(function() {
-                                self.customCompact(self.grid);
-                            }, 10);
+                    if (self.grid.opts && self.grid.opts.column && self.grid.opts.column === 12) {
+                        items.forEach(item => {
+                            self.updateWidgetGeography(
+                                item.id,
+                                {
+                                    size: [item.w, item.h],
+                                    position: [item.x, item.y]
+                                }
+                            );
                         });
-                    }, 400)();
+                        _.debounce(function() {
+                            self.$nextTick(function() {
+                                setTimeout(function() {
+                                    self.customCompact(self.grid);
+                                }, 10);
+                            });
+                        }, 400)();
+                    }
                 });
 
                 this.grid.on("removed", function() {

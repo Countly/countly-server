@@ -373,7 +373,9 @@
                 :show-in-the-last-hours="true"
                 ref="ratingsSegmentation"
                 :property-segmentation="drawerScope.editedObject.targeting.user_segmentation"
-                :behavior-segmentation="drawerScope.editedObject.targeting.steps">
+                :behavior-segmentation="drawerScope.editedObject.targeting.steps"
+                :ignore-existing-cohort="true"
+                >
               </cly-cohort-segmentation>
             </div>
           </div>

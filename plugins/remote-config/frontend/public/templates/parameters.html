@@ -87,24 +87,17 @@
               v-tooltip.left="rowScope.row.editable ? '' : i18n('remote-config.parameter.action-tooltip-content')"
               :disabledButton="rowScope.row.editable ? false : true"
               @command="handleCommand($event, scope, rowScope.row)">
+              <template v-if="hasUpdateRight && rowScope.row.editable">
+                <el-dropdown-item v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'"
+                  command="enable" :data-test-id="'datatable-remote-config-button-enable-' + rowScope.$index">{{i18n('remote-config.enable')}}</el-dropdown-item>
+                <el-dropdown-item v-else
+                  command="disable" :data-test-id="'datatable-remote-config-button-disable-' + rowScope.$index">{{i18n('remote-config.disable')}}</el-dropdown-item>
+              </template>
               <el-dropdown-item v-if="hasUpdateRight && rowScope.row.editable"
                 command="edit" :data-test-id="'datatable-remote-config-button-edit-' + rowScope.$index">{{i18n('common.edit')}}</el-dropdown-item>
               <el-dropdown-item v-if="hasDeleteRight && rowScope.row.editable"
                 command="remove" :data-test-id="'datatable-remote-config-button-delete-' + rowScope.$index">{{i18n('common.delete')}}</el-dropdown-item>
             </cly-more-options>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="hasUpdateRight" min-width="110">
-          <template v-slot="rowScope">
-            <div v-if="rowScope.row.hover && rowScope.row.editable">
-              <el-button  v-if="rowScope.row.status==='Stopped' || rowScope.row.status==='Expired'"
-                @click.stop="startParameter(rowScope.row)" size="small"
-                icon="el-icon-remove" :data-test-id="'datatable-remote-config-button-enable-' + rowScope.$index">{{i18n('remote-config.enable')}}
-              </el-button>
-              <el-button :data-test-id="'datatable-remote-config-button-disable-' + rowScope.$index" v-else @click.stop="stopParameter(rowScope.row)" size="small"
-                icon="el-icon-remove">{{i18n('remote-config.disable')}}
-              </el-button>
-            </div>
           </template>
         </el-table-column>
       </template>

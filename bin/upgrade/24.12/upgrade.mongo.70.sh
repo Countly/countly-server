@@ -117,6 +117,15 @@ if [ -f /etc/redhat-release ]; then
     systemctl daemon-reload
 fi
 
+# check and comment out journal: enabled: true in mongod.conf
+CONF_FILE="/etc/mongod.conf"
+if grep -qP '^\s*journal\s*:\s*$' "$CONF_FILE" && grep -qP '^\s*enabled\s*:\s*true\s*$' "$CONF_FILE"; then
+    echo "Commenting out journal: enabled: true in $CONF_FILE"
+    sed -i '/^\s*journal\s*:/ { N; s/\(.*\n\s*\)\(enabled\s*:\s*true\s*$\)/# \1# \2/ }' "$CONF_FILE"
+else
+    echo "Could not find 'journal: enabled: true' in $CONF_FILE or it's already commented."
+fi
+
 #mongodb might need to be started
 systemctl restart mongod || echo "mongodb systemctl job does not exist"
 

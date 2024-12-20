@@ -20,7 +20,7 @@ elif [ "$1" = "generate" ]; then
     npx jsdoc "$DIR/../../../frontend/express/app.js" "$DIR/../../../frontend/express/config.sample.js" "$DIR/../../../frontend/express/version.info.js" "$DIR/../../../frontend/express/locale.conf.js" "$DIR/../../../frontend/express/libs/" -R "$DIR/../../../README.md" -c  "$DIR/../../../jsdoc_conf.json" -d  "$DIR/../../../frontend/express/public/docs/app" ;
     
     #apidoc
-    npx apidoc -i "$DIR/../../../" -o "$DIR/../../../frontend/express/public/docs/apidoc" -f ".*\\.js$" -e "node_modules" ;
+    npm install apidoc; npm install apidoc-template; npx apidoc -i "$DIR/../../../" -o "$DIR/../../../frontend/express/public/docs/apidoc" -f ".*\\.js$" -e "node_modules" ;
     
     #add redirect for main folder
     echo "<html><head><meta http-equiv='Refresh' content='0; url=./api/index.html'/><script type='javascript'>window.location = './api/index.html';</script></head></html>" > "$DIR/../../../frontend/express/public/docs/index.html"

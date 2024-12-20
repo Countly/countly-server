@@ -29,12 +29,14 @@
                         <div :data-test-id="'datatable-export-purge-history-user-' + scope.$index">
                             {{scope.row.u}}
                         </div>
+                    </template>
                 </el-table-column>
                 <el-table-column sortable="custom" prop="ip" label="IP ADDRESS">
                     <template slot-scope="scope">
                         <div :data-test-id="'datatable-export-purge-history-ip-address-' + scope.$index">
                             {{scope.row.ip}}
                         </div>
+                    </template>
                 </el-table-column>
                 <el-table-column width="400" sortable="custom" label="ACTION">
                     <template v-slot="rowScope">

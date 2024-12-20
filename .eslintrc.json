@@ -142,7 +142,13 @@
         {
             "files": [
                 "plugins/content/frontend/content-blocks/**/*.js",
-                "plugins/journey_engine/frontend/builder/**/*.js"
+                "plugins/journey_engine/frontend/builder/**/*.js",
+                "plugins/content/frontend/content-blocks/**/*.vue",
+                "plugins/journey_engine/frontend/builder/**/*.vue"
+            ],
+            "plugins": [
+                "vue",
+                "@stylistic"
             ],
             "extends": [
                 "eslint:recommended",
@@ -151,14 +157,15 @@
                 "plugin:vue/vue3-recommended"
             ],
             "rules": {
+                // override these post initial content release, to make them fit with countly convention
                 "no-console": ["error"],
                 "@stylistic/quotes": ["error", "single"],
-                "@stylistic/quote-props": ["error", "as-needed"]
+                "@stylistic/quote-props": ["error", "as-needed"],
+                "no-unused-vars": "off",
+                "vue/no-unused-vars": ["error", {
+                    "ignorePattern": "^_"
+                }]
             },
-            "plugins": [
-                "vue",
-                "@stylistic"
-            ],
             "parserOptions": {
                 "ecmaVersion": 2023,
                 "sourceType": "module",
@@ -255,7 +262,13 @@
                 "plugins/*/frontend/**/*.js",
                 "plugins/*/extend/**/*.js"
             ],
-            "excludedFiles": "plugins/*/frontend/public/**/*.js",
+            "excludedFiles": [
+                "plugins/*/frontend/public/**/*.js",
+                "plugins/content/frontend/content-blocks/**/*.js",
+                "plugins/journey_engine/frontend/builder/**/*.js",
+                "plugins/content/frontend/content-blocks/**/*.vue",
+                "plugins/journey_engine/frontend/builder/**/*.vue"
+            ],
             "env": {
                 "es2023": true,
                 "node": true

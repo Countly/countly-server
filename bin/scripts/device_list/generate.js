@@ -1,5 +1,5 @@
 // run as 
-// node generate.js > countly.device.list.js
+// node generate.js > ../../../frontend/express/public/javascripts/countly/countly.device.list.js
 // resulting file should be copied to "/frontend/express/public/javascripts/countly"
 
 //https://www.theiphonewiki.com/wiki/Models

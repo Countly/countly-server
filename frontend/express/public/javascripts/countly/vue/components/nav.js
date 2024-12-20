@@ -144,7 +144,10 @@
             }
         },
         methods: {
-            setTab: function(name) {
+            setTab: function(name, isDisabled) {
+                if (isDisabled) {
+                    return;
+                }
                 var tab = this.tabs.filter(function(t) {
                     return t.name === name;
                 });
@@ -197,7 +200,7 @@
                                     :style="{cursor: tab.disabled ? \'not-allowed\' : \'pointer\', opacity: tab.disabled ? 0.5 : 1}"\
                                     v-bind:key="tab.name"\
                                     v-bind:class="[tabClasses, activeClasses(tab.name)]"\
-                                    v-on:click="setTab(tab.name)"\
+                                    v-on:click="setTab(tab.name, tab.disabled)"\
                                     v-if="(!tab.type) || (tab.type === \'mobile\' && !apps[app_id].type) || (apps[app_id].type === tab.type)"\
                                     >\
                                         <slot :name="tab.name" :tab="tab">\
