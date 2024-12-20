@@ -132,6 +132,27 @@ Enterprise Features:
 - [users] UI improvements
 - [views] Added a quick transition to drill
 
+## Version 24.05.20
+Fixes:
+- [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
+- [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
+
+Security:
+- [cohorts] Prevent query injection on cohort creation
+
+Dependencies:
+- Bump countly-sdk-nodejs from 22.6.0 to 24.10.0
+- Bump countly-sdk-web from 24.4.1 to 24.11.0
+- Bump express from 4.21.1 to 4.21.2
+- Bump form-data from 4.0.0 to 4.0.1
+- Bump jimp from 0.22.12 to 1.6.0
+- Bump jsdoc from 4.0.3 to 4.0.4
+- Bump mocha from 10.2.0 to 10.8.2
+- Bump mongodb from 4.9.1 to 4.17.2
+- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump puppeteer from 23.8.0 to 23.9.0
+- Bump tslib from 2.7.0 to 2.8.1
+
 ## Version 24.05.19
 Fixes:
 - [dashboards] Fixing issue where dashboard widgets go into single column
