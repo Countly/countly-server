@@ -42,6 +42,7 @@ module.exports = defineConfig({
             });
             on('task', {
                 log(message) {
+                    cy.log('LOOOOOOOOOOOOOOGGGGGG');
                     fs.appendFileSync('cypress-console.log', `${message}\n`);
                     return null;
                 },

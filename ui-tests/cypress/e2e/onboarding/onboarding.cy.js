@@ -439,12 +439,12 @@ describe('Complete Onboarding', () => {
         // reportsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToHooksPage();
         //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
-        cy.intercept('**/api/**', (req) => {
-            req.on('response', (res) => {
-                cy.task('log', `Request URL: ${req.url}`);
-                cy.task('log', `Response Status: ${res.statusCode}`);
-            });
-        });
+        // cy.intercept('**/api/**', (req) => {
+        //     req.on('response', (res) => {
+        //         cy.task('log', `Request URL: ${req.url}`);
+        //         cy.task('log', `Response Status: ${res.statusCode}`);
+        //     });
+        // });
         hooksPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToDbViewerPage();
         dbCountlyPageHelpers.verifyFullDataPageElements();
