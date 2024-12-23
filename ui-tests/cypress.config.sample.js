@@ -40,6 +40,12 @@ module.exports = defineConfig({
                 }
                 return launchOptions;
             });
+            on('task', {
+                log(message) {
+                    fs.appendFileSync('cypress-console.log', `${message}\n`);
+                    return null;
+                },
+            });
         },
     },
 });
