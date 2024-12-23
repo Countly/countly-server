@@ -416,17 +416,18 @@ describe('Complete Onboarding', () => {
         complianceHubExportPurgePageHelpers.verifyEmptyPageElements();
 
 
-        // navigationHelpers.goToUserManagementPage();
-        // userManagementPageHelpers.verifyPageElements();
-        // navigationHelpers.goToApplicationsPage();
-        // applicationsPageHelpers.verifyPageElements();
-        // navigationHelpers.goToPresetManagementPage();
-        // //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
-        // presetManagementPageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToSettingsPage();
-        // settingsPageHelpers.verifyPageElements();
-        // navigationHelpers.goToDataPointsPage();
-        // dataPointsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToUserManagementPage();
+        userManagementPageHelpers.verifyPageElements();
+        navigationHelpers.goToApplicationsPage();
+        applicationsPageHelpers.verifyPageElements();
+        navigationHelpers.goToPresetManagementPage();
+        //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
+        presetManagementPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToSettingsPage();
+        settingsPageHelpers.verifyPageElements();
+        navigationHelpers.goToDataPointsPage();
+        dataPointsPageHelpers.verifyFullDataPageElements();
+
         // navigationHelpers.goToLogsPage();
         // errorLogsPageHelpers.verifyPageElements();
         // errorLogsPageHelpers.clickAuditLogsTab();
