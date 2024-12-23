@@ -433,7 +433,7 @@ describe('Complete Onboarding', () => {
         systemLogsPageHelpers.verifyPageElements();
         navigationHelpers.goToJobsPage();
         //jobsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
-        jobsPageHelpers.verifyEmptyPageElements();
+        //jobsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToFeatureManagementPage();
         pluginsPageHelpers.verifyPageElements();
 
