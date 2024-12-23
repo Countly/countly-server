@@ -414,26 +414,29 @@ describe('Complete Onboarding', () => {
         // complianceHubHistoryPageHelpers.clickExportPurgeHistoryTab();
         // //complianceHubExportPurgePageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
         // complianceHubExportPurgePageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToUserManagementPage();
-        // userManagementPageHelpers.verifyPageElements();
-        // navigationHelpers.goToApplicationsPage();
-        // applicationsPageHelpers.verifyPageElements();
-        // navigationHelpers.goToPresetManagementPage();
-        // //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
-        // presetManagementPageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToSettingsPage();
-        // settingsPageHelpers.verifyPageElements();
-        // navigationHelpers.goToDataPointsPage();
-        // dataPointsPageHelpers.verifyFullDataPageElements();
-        // navigationHelpers.goToLogsPage();
-        // errorLogsPageHelpers.verifyPageElements();
-        // errorLogsPageHelpers.clickAuditLogsTab();
-        // systemLogsPageHelpers.verifyPageElements();
-        // navigationHelpers.goToJobsPage();
-        // //jobsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
-        // jobsPageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToFeatureManagementPage();
-        // pluginsPageHelpers.verifyPageElements();
+
+
+        navigationHelpers.goToUserManagementPage();
+        userManagementPageHelpers.verifyPageElements();
+        navigationHelpers.goToApplicationsPage();
+        applicationsPageHelpers.verifyPageElements();
+        navigationHelpers.goToPresetManagementPage();
+        //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
+        presetManagementPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToSettingsPage();
+        settingsPageHelpers.verifyPageElements();
+        navigationHelpers.goToDataPointsPage();
+        dataPointsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToLogsPage();
+        errorLogsPageHelpers.verifyPageElements();
+        errorLogsPageHelpers.clickAuditLogsTab();
+        systemLogsPageHelpers.verifyPageElements();
+        navigationHelpers.goToJobsPage();
+        //jobsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        jobsPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToFeatureManagementPage();
+        pluginsPageHelpers.verifyPageElements();
+
         navigationHelpers.goToEMailReportsPage();
         //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
         reportsPageHelpers.verifyEmptyPageElements();
