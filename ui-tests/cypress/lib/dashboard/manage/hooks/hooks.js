@@ -73,14 +73,12 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         labelElement: hooksDataTableElements().COLUMN_NAME_CREATE_BY_LABEL,
-        labelText: "Created by",
+        labelText: "Create by",
         element: hooksDataTableElements().COLUMN_NAME_CREATE_BY_SORTABLE_ICON,
     });
 };
 
 const verifyEmptyPageElements = () => {
-
-    cy.wait(10000); //TODO: will be removed 
 
     verifyStaticElementsOfPage();
 
