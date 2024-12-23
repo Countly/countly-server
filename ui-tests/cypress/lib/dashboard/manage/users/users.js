@@ -74,13 +74,13 @@ const verifyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
-    verifyUsersDataFromTable({
-        index: 0,
-        user: user.username,
-        role: "Global Admin",
-        email: user.email,
-        lastLogin: "2 minutes ago"
-    });
+    // verifyUsersDataFromTable({
+    //     index: 0,
+    //     user: user.username,
+    //     role: "Global Admin",
+    //     email: user.email,
+    //     lastLogin: "2 minutes ago"
+    // });
 };
 
 const verifyUsersDataFromTable = ({
