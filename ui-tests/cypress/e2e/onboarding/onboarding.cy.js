@@ -432,12 +432,14 @@ describe('Complete Onboarding', () => {
         errorLogsPageHelpers.verifyPageElements();
         errorLogsPageHelpers.clickAuditLogsTab();
         systemLogsPageHelpers.verifyPageElements();
-        
-        //navigationHelpers.goToJobsPage();
-        // jobsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
-        // jobsPageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToFeatureManagementPage();
-        // pluginsPageHelpers.verifyPageElements();
+
+        //END
+        navigationHelpers.goToJobsPage();
+        jobsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        jobsPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToFeatureManagementPage();
+        pluginsPageHelpers.verifyPageElements();
+        //END
 
         navigationHelpers.goToEMailReportsPage();
         //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
