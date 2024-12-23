@@ -55,7 +55,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         element: configurationsListBoxElements({subFeature: SETTINGS.API.BATCH_PROCESSING.BATCH_PROCESSING}).SELECTED_SUBFEATURE_CHECKBOX,
-        isChecked: true
+        isChecked: false
     });
 
     cy.verifyElement({
