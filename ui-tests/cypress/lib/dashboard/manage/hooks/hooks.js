@@ -73,7 +73,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         labelElement: hooksDataTableElements().COLUMN_NAME_CREATE_BY_LABEL,
-        labelText: "Create by",
+        labelText: "Created by",
         element: hooksDataTableElements().COLUMN_NAME_CREATE_BY_SORTABLE_ICON,
     });
 };
