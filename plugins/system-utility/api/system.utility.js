@@ -471,13 +471,23 @@ async function stopProfiler(processName) {
     const errors = [];
 
     // clear old files
-    await new Promise(
-        (res, rej) => countlyFs.gridfs.deleteAll(
-            PROFILER_DIR,
-            null,
-            err => err ? rej(err) : res()
-        )
-    );
+    try {
+        await new Promise(
+            (res, rej) => countlyFs.gridfs.deleteAll(
+                PROFILER_DIR,
+                null,
+                err => err ? rej(err) : res()
+            )
+        );
+    }
+    catch (err) {
+        if (err.code === 26) { // NamespaceNotFound: thrown when there's no collection initially
+            // do nothing...
+        }
+        else {
+            throw err;
+        }
+    }
 
     // coverage
     try {
