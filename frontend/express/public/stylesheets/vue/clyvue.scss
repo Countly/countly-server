@@ -4345,92 +4345,15 @@
         background-color: #FFF
     }
 
+    // .cly-vue-content-builder__layout-header
     &__layout-header {
-        display: flex;
-        height: 80px;
+        box-sizing: border-box;
+        display: block;
+        width: 100%;
+        padding: 16px 24px;
         background-color: #FFFFFF;
-        align-items: center;
-        justify-content: space-between;
+    }
 
-        &__wrapper {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-left: 24px;
-            margin-right: 24px;
-            height: 80px;
-            background-color: #FFFFFF;
-            width: 100%;
-          }
-
-          &__left {
-            display: flex;
-            align-items: center;
-            // width: 350px;
-          }
-
-          &__icon {
-            border: 1px solid #d1d1d1;
-            width: 32px;
-            height: 32px;
-            border-radius: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0px 1px 2px #D1D1D1;
-            i {
-              font-weight: 600;
-            }
-          }
-
-          &__toggle {
-            margin-left: 5px;
-            margin-right: -8px;
-          }
-
-          &__info {
-            margin-left: 24px;
-          }
-
-          &__info-title {
-            h4 {
-              margin: 0;
-              max-width: 400px;
-            }
-            &__input {
-                width: 200px;
-            }
-          }
-
-          &__info-meta {
-            display: flex;
-            font-size: 13px;
-          }
-
-          &__info-version {
-            text-decoration: underline;
-          }
-
-          &__info-separator {
-            display: flex;
-            align-items: center;
-            margin: 0 5px;
-            i {
-              font-size: 6px;
-            }
-          }
-
-          &__tabs {
-            width: 350px;
-          }
-
-          &__actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-          }
-    }    
     &__layout-main {
         margin: 0px 24px 24px 24px;
         border: 1px solid #ECECEC;
@@ -4507,6 +4430,180 @@
     }
     .el-collapse {
         border-top: none !important
+    }
+}
+
+.cly-vue-content-builder-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    background-color: #FFFFFF;
+
+    // .cly-vue-content-builder-header__actions
+    &__actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    // .cly-vue-content-builder-header__close-button
+    &__close-button {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        border: 1px solid #D1D1D1;
+        border-radius: 40px;
+        box-shadow: 0px 1px 2px #D1D1D1;
+        margin-right: 24px;
+
+        // .cly-vue-content-builder-header__close-button i
+        i {
+            color: #616165;
+            font-weight: 700;
+            line-height: 16px;
+        }
+    }
+
+    // .cly-vue-content-builder-header__info
+    &__info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+    }
+
+    // .cly-vue-content-builder-header__info-meta
+    &__info-meta {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+
+        margin-top: 6px;
+
+        color: #333C48;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+    }
+
+    // .cly-vue-content-builder-header__input
+    &__input {
+        // .cly-vue-content-builder-header__input .el-input__inner
+        & .el-input__inner { 
+            height: initial;
+            padding: 0;
+
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid transparent;
+            outline: none;
+            border-radius: 0;
+
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 24px;
+            color: #333C48;
+
+            // .cly-vue-content-builder-header__input .el-input__inner:focus
+            &:focus {
+                box-shadow: none;
+            }
+        }
+
+        // .cly-vue-content-builder-header__input:hover .el-input__inner
+        // .cly-vue-content-builder-header__input--editing .el-input__inner
+        &:hover .el-input__inner,
+        &--editing .el-input__inner {
+            border-color: #333C48;
+        }
+    }
+
+    // .cly-vue-content-builder-header__input-container
+    &__input-container {
+        display: block;
+        cursor: pointer;
+    }
+
+    // .cly-vue-content-builder-header__left
+    &__left {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    // .cly-vue-content-builder-header__options-button
+    &__options-button {
+        margin-left: 8px;
+
+        // .cly-vue-content-builder-header__options-button.cly-vue-more-options .el-button
+        &.cly-vue-more-options .el-button {
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.05);
+        }
+    }
+
+    // .cly-vue-content-builder-header__save-button
+    &__save-button {
+        border-radius: 8px;
+
+        // .cly-vue-content-builder-header__badge + .cly-vue-content-builder-header__save-button
+        .cly-vue-content-builder-header__badge + & {
+            margin-left: 16px;
+        }
+    }
+
+    // .cly-vue-content-builder-header__tabs
+    &__tabs {
+        // .cly-vue-content-builder-header__tabs .cly-vue-tabs__primary-tab-list
+        & .cly-vue-tabs__primary-tab-list {
+            padding: 0;
+        }
+
+        // .cly-vue-content-builder-header__tabs .cly-vue-tabs__tab
+        & .cly-vue-tabs__tab {
+            padding: 8px 12px;
+            border-radius: 8px;
+
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 20px;
+
+            // .cly-vue-content-builder-header__tabs .cly-vue-tabs__tab:not(:first-child)
+            &:not(:first-child) {
+                margin-left: 8px;
+            }
+        }
+    }
+
+    // .cly-vue-content-builder-header__toggle
+    &__toggle {
+        margin-right: 16px;
+    }
+
+    // .cly-vue-content-builder-header__version
+    &__version {
+        text-decoration: underline;
+
+        // .cly-vue-content-builder-header__version + .cly-vue-content-builder-header__created-by
+        & + .cly-vue-content-builder-header__created-by {
+            position: relative;
+            margin-left: 12px;
+
+            // .cly-vue-content-builder-header__version + .cly-vue-content-builder-header__created-by::before
+            &::before {
+                content: '·';
+                position: absolute;
+                top: 0;
+                left: -4px;
+                transform: translateX(-50%);
+                height: 16px;
+                width: 4px;
+            }
+        }
     }
 }
 
