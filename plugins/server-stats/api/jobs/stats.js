@@ -11,7 +11,7 @@ const job = require('../../../../api/parts/jobs/job.js'),
 
 let drill;
 try {
-    drill = require('../../../drill/api/parts/drill.js');
+    drill = require('../../../drill/api/parts/data/drill.js');
 }
 catch (ex) {
     log.e(ex);
@@ -39,7 +39,7 @@ class StatsJob extends job.Job {
 
     /**
     * @param {Object} allData - All server stats data from the beginning of time
-    * @returns {Object} Sum of all data, average per month, and last three month data
+    * @returns {Object} Sum of all data, average data per month, and last three month data
     */
     static generateDataSummary(allData) {
         const data = {};
@@ -136,8 +136,9 @@ class StatsJob extends job.Job {
                         try {
                             license = await drill.loadLicense(undefined, db);
                         }
-                        catch (_) {
-                            // do nothing, license cannot be loaded
+                        catch (error) {
+                            log.e(error);
+                            // do nothing, most likely there is no license
                         }
                     }
 
