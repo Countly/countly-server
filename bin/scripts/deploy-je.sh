@@ -8,7 +8,7 @@ LOG_FILE="deploy_$TIMESTAMP.log"
 if [ -z "$GITHUB_HEAD_REF" ] && [ "$GITHUB_REPOSITORY" == "Countly/countly-server" ]; then
     GITHUB_BRANCH=${GITHUB_REF#refs/heads/}
     echo "$GITHUB_BRANCH"
-    if [ "$GITHUB_BRANCH" == "pipeline/stable-je-cb" ]; then
+    if [ "$GITHUB_BRANCH" == "next" ]; then
         echo "$SSH_PRIVATE_KEY" > je-deploy-key
         mkdir -p ~/.ssh
         mv je-deploy-key ~/.ssh/id_rsa
