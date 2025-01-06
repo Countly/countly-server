@@ -1,4 +1,4 @@
-/*global countlyCommon, app, jQuery, $*/
+/*global countlyCommon, app, jQuery,_ $*/
 (function(starRatingPlugin) {
     var _pv = {};
     // feedbackd datas
@@ -271,6 +271,15 @@
                 app_id: countlyCommon.ACTIVE_APP_ID
             },
             success: function(json) {
+                // unescape the properties shown in the list
+                json.forEach(row => {
+                    if (typeof row?.internalName === "string") {
+                        row.internalName = _.unescape(row.internalName).replace(/&#39;/g, "'");
+                    }
+                    if (typeof row?.targeting?.user_segmentation === "string") {
+                        row.targeting.user_segmentation = _.unescape(row.targeting.user_segmentation).replace(/&#39;/g, "'");
+                    }
+                });
                 _fwd = json;
             }
         });
