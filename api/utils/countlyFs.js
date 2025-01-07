@@ -68,7 +68,7 @@ countlyFs.gridfs = {};
     **/
     function beforeSave(category, filename, options, callback, done) {
         log.d("checking file", filename);
-        ob.getId(category, filename, function(err, res) {
+        ob.getId(category, filename, async function(err, res) {
             log.d("file state", filename, err, res);
             if (options.forceClean) {
                 ob.clearFile(category, filename, done);
@@ -80,15 +80,20 @@ countlyFs.gridfs = {};
                 else if (options.writeMode === "overwrite") {
                     var bucket = new GridFSBucket(db, { bucketName: category });
                     log.d("deleting file", filename);
-                    bucket.delete(res, function(error) {
-                        log.d("deleted", filename, error);
-                        if (!error) {
-                            setTimeout(done, 1);
-                        }
-                        else if (callback) {
-                            callback(error);
-                        }
-                    });
+                    let errHandle = null;
+                    try {
+                        await bucket.delete(res);
+                    }
+                    catch (error) {
+                        errHandle = error;
+                    }
+                    log.d("deleted", filename, errHandle);
+                    if (!errHandle) {
+                        setTimeout(done, 1);
+                    }
+                    else if (callback) {
+                        callback(errHandle);
+                    }
                 }
                 else {
                     if (callback) {
@@ -271,7 +276,7 @@ countlyFs.gridfs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.rename = function(category, dest, source, options, callback) {
+    ob.rename = async function(category, dest, source, options, callback) {
         var newname = dest.split(path.sep).pop();
         var oldname = source.split(path.sep).pop();
         if (typeof options === "function") {
@@ -284,22 +289,32 @@ countlyFs.gridfs = {};
 
         if (options.id) {
             let bucket = new GridFSBucket(db, { bucketName: category });
-            bucket.rename(options.id, newname, function(error) {
-                if (callback) {
-                    callback(error);
-                }
-            });
+            let errHandle = null;
+            try {
+                await bucket.rename(options.id, newname);
+            }
+            catch (error) {
+                errHandle = error;
+            }
+            if (callback) {
+                callback(errHandle);
+            }
         }
         else {
-            db.collection(category + ".files").findOne({ filename: oldname }, {_id: 1}, function(err, res) {
+            db.collection(category + ".files").findOne({ filename: oldname }, {_id: 1}, async function(err, res) {
                 if (!err) {
                     if (res && res._id) {
                         let bucket = new GridFSBucket(db, { bucketName: category });
-                        bucket.rename(res._id, newname, function(error) {
-                            if (callback) {
-                                callback(error);
-                            }
-                        });
+                        let errHandle = null;
+                        try {
+                            await bucket.rename(res._id, newname);
+                        }
+                        catch (error) {
+                            errHandle = error;
+                        }
+                        if (callback) {
+                            callback(errHandle);
+                        }
                     }
                     else {
                         if (callback) {
@@ -372,13 +387,18 @@ countlyFs.gridfs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.deleteAll = function(category, dest, callback) {
+    ob.deleteAll = async function(category, dest, callback) {
         var bucket = new GridFSBucket(db, { bucketName: category });
-        bucket.drop(function(error) {
-            if (callback) {
-                callback(error);
-            }
-        });
+        let errHandle = null;
+        try {
+            await bucket.drop();
+        }
+        catch (error) {
+            errHandle = error;
+        }
+        if (callback) {
+            callback(errHandle);
+        }
     };
 
     /**
@@ -603,16 +623,15 @@ countlyFs.gridfs = {};
     */
     ob.deleteFileById = async function(category, id, callback) {
         var bucket = new GridFSBucket(db, { bucketName: category });
+        let errHandle = null;
         try {
             await bucket.delete(id);
-            if (callback) {
-                callback(null);
-            }
         }
-        catch (ee) {
-            if (callback) {
-                callback(ee);
-            }
+        catch (error) {
+            errHandle = error;
+        }
+        if (callback) {
+            callback(errHandle);
         }
     };
 
