@@ -2,6 +2,7 @@
 
 Dependencies:
 - Bump sass from 1.81.0 to 1.83.1
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
 
 ## Version 24.05.20
 Fixes:
