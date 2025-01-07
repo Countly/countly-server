@@ -13,6 +13,27 @@
 			</template>
 		</cly-confirm-dialog>
 		<cly-section>
+			<div class="bu-p-4">
+					<div class="text-smallish font-weight-bold bu-mb-2" data-test-id="manage-views-omit-title" >{{i18n('data-manager.omit-segments')}}
+					<cly-tooltip-icon  data-test-id="manage-views-omit-tooltip" class="bu-is-flex-grow-1 bu-ml-2" :tooltip="i18n('data-manager.omit-segments.tooltip')"></cly-tooltip-icon>
+				</div>
+					<cly-select-x 
+						data-test-id="manage-views-omit-select"
+						mode="multi-check" 
+						value=omitList 
+						:collapseTags = "false"
+						:options="availableSegments" 
+						:show-search="true" 
+						:searchable="true" 
+						width="100%"
+						:placeholder="i18n('data-manager.omit-segments')"
+						 v-model="omitList"
+						  style="margin-top:2px; display:block;">
+					</cly-select-x>
+					<el-button class="bu-mt-2" v-if="canUserDelete" ref="omitSegmentsButton" type="success" @click="omitSegments" >{{i18n('common.save')}}</el-button>
+				</div>
+		</cly-section>
+		<cly-section>
 			<cly-datatable-n  :default-sort="{prop: 'view', order: 'ascending'}" :trackedFields="['display']" :data-source="remoteTableDataSource" ref="editViewsTable" @selection-change="handleSelectionChange" >
 				<template v-slot:header-left>
 					<el-button v-if="!isDeleteButtonDisabled && canUserDelete" ref="deleteManyButton" :disabled="isDeleteButtonDisabled"  type="danger" @click="deleteManyViews" >{{i18n('common.delete')}}</el-button>

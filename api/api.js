@@ -109,8 +109,8 @@ plugins.connectToAllDatabases().then(function() {
         password_rotation: 3,
         password_autocomplete: true,
         robotstxt: "User-agent: *\nDisallow: /",
-        dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
-        api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
+        dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
+        api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
         dashboard_rate_limit_window: 60,
         dashboard_rate_limit_requests: 500,
         proxy_hostname: "",
@@ -265,7 +265,7 @@ plugins.connectToAllDatabases().then(function() {
     if (cluster.isMaster) {
         plugins.installMissingPlugins(common.db);
         common.runners = require('./parts/jobs/runner');
-        common.cache = new CacheMaster(common.db);
+        common.cache = new CacheMaster();
         common.cache.start().then(() => {
             setImmediate(() => {
                 plugins.dispatch('/cache/init', {});
@@ -313,6 +313,7 @@ plugins.connectToAllDatabases().then(function() {
             jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
             jobs.job('api:task').replace().schedule('every 5 minutes');
             jobs.job('api:userMerge').replace().schedule('every 10 minutes');
+            jobs.job("api:ttlCleanup").replace().schedule("every 1 minute");
             //jobs.job('api:appExpire').replace().schedule('every 1 day');
         }, 10000);
 
@@ -333,7 +334,7 @@ plugins.connectToAllDatabases().then(function() {
         console.log("Starting worker", process.pid, "parent:", process.ppid);
         const taskManager = require('./utils/taskmanager.js');
 
-        common.cache = new CacheWorker(common.db);
+        common.cache = new CacheWorker();
         common.cache.start();
 
         //since process restarted mark running tasks as errored

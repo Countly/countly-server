@@ -13,9 +13,6 @@
             this.$store.dispatch("countlyConsentManager/fetchUserDataResource");
         },
         methods: {
-            switchToConsentHistory: function(uid) {
-                window.location.hash = "#/manage/compliance/history/" + uid;
-            },
             deleteUserData: function(uid) {
                 var self = this;
                 CountlyHelpers.confirm(this.i18n("app-users.delete-userdata-confirm"), "popStyleGreen", function(result) {
@@ -77,8 +74,21 @@
             downloadExportedData: function(uid) {
                 var win = window.open(countlyCommon.API_PARTS.data.r + "/app_users/download/appUser_" + countlyCommon.ACTIVE_APP_ID + "_" + uid + "?auth_token=" + countlyGlobal.auth_token + "&app_id=" + countlyCommon.ACTIVE_APP_ID, '_blank');
                 win.focus();
+            },
+            handleCommand: function(command, uid) {
+                if (command === "deleteUserData") {
+                    this.deleteUserData(uid);
+                }
+                else if (command === "exportUserData") {
+                    this.exportUserData(uid);
+                }
+                else if (command === "deleteExport") {
+                    this.deleteExport(uid);
+                }
+                else if (command === "downloadExportedData") {
+                    this.downloadExportedData(uid);
+                }
             }
-
         }
     });
     var ConsentView = countlyVue.views.create({

@@ -25,7 +25,7 @@ const analyticsGeoCountriesPageHelpers = require('../../lib/dashboard/analytics/
 const analyticsGeoLanguagesPageHelpers = require('../../lib/dashboard/analytics/geo/languages/languages');
 const analyticsEventsOverviewPageHelpers = require('../../lib/dashboard/analytics/events/overview');
 const analyticsEventsPageHelpers = require('../../lib/dashboard/analytics/events/events');
-//const messagingPageHelpers = require('../../lib/dashboard/messaging/messaging');
+const messagingPageHelpers = require('../../lib/dashboard/messaging/messaging');
 const feedbackRatingsPageHelpers = require('../../lib/dashboard/feedback/ratings/ratings');
 const feedbackRatingWidgetsPageHelpers = require('../../lib/dashboard/feedback/ratings/widgets');
 const crashesPageHelpers = require('../../lib/dashboard/crashes/crashes');
@@ -202,7 +202,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToPushNotifications();
-        //messagingPageHelpers.verifyEmptyPageElements(); //TODO: will be refactored 
+        messagingPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyEmptyPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
@@ -370,7 +370,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToPushNotifications();
-        //messagingPageHelpers.verifyFullDataPageElements(); //TODO: will be refactored 
+        messagingPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToFeedbackRatingsPage();
         feedbackRatingsPageHelpers.verifyFullDataPageElements();
         feedbackRatingsPageHelpers.clickRatingWidgetsTab();
