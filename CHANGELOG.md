@@ -1,3 +1,7 @@
+## Version 25.x.x
+Features:
+- [alerts] alerts table default order should be by creation time newest at the top
+
 ## Version 24.12.x
 
 Fixes:
