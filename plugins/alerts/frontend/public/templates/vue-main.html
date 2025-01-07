@@ -44,7 +44,9 @@
                 class="cly-vue-alerts-table"
                 :tracked-fields="localTableTrackedFields"
                 :rows="tableRows"
-                :resizable="false">
+                :resizable="false"
+                :default-sort="{prop: 'createdAt', order: 'descending'}"
+            >
                 <template v-slot:header-left="scope">
                     <div class="alerts-table-app-selector">
                         <cly-select-x
