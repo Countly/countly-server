@@ -1,3 +1,8 @@
+## Version xx.xx.xx
+
+Dependencies:
+- Bump sass from 1.81.0 to 1.83.1
+
 ## Version 24.05.20
 Fixes:
 - [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
