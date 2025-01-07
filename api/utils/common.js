@@ -693,7 +693,13 @@ common.getDate = function(timestamp, timezone) {
 * @returns {number} current day of the year
 */
 common.getDOY = function(timestamp, timezone) {
-    var endDate = (timestamp) ? moment.unix(timestamp * 1000) : moment();
+    var endDate;
+    if (timestamp && timestamp.toString().length === 13) {
+        endDate = (timestamp) ? moment.unix(timestamp / 1000) : moment();
+    }
+    else {
+        endDate = (timestamp) ? moment.unix(timestamp) : moment();
+    }
 
     if (timezone) {
         endDate.tz(timezone);
