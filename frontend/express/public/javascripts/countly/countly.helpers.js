@@ -397,6 +397,12 @@
         if (options.isExternalLink) {
             window.open(options.url, '_blank', 'noopener,noreferrer');
         }
+        else if (options.download) {
+            var a = document.createElement('a');
+            a.href = options.url;
+            a.download = options.download;
+            a.click();
+        }
         else {
             app.backlinkUrl = options.from;
             app.backlinkTitle = options.title;

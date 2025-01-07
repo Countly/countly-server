@@ -129,13 +129,15 @@
                     @change="handleValueChange"
                     v-model="innerValue">
                 </cly-checklistbox>
-                <div class="cly-vue-events-omitted-segments bu-ml-1" v-if="hasDisabledOptions && searchQuery == ''">
+                <div class="cly-vue-events-omitted-segments bu-ml-1"  style="height:150px;" v-if="hasDisabledOptions && searchQuery == ''">
                     <div class="cly-vue-events-omitted-segments__title">
                         {{disabledOptions.label}}
                     </div>
-                    <div class="cly-vue-events-omitted-segments__item" v-for="item in disabledOptions.options">
-                        {{item.label}}
-                    </div>
+                    <vue-scroll :ops='{bar: {background: "#A7AEB8",size: "6px",specifyBorderRadius: "3px",keepShow: true}}'>
+                        <div class="cly-vue-events-omitted-segments__item" v-for="item in disabledOptions.options">
+                            {{item.label}}
+                        </div>
+                    </vue-scroll>
                 </div>
             </el-tab-pane>
         </el-tabs>
