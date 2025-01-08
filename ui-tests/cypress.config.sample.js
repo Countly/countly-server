@@ -14,6 +14,12 @@ module.exports = defineConfig({
         watchForFileChanges: true,
         video: true,
         setupNodeEvents(on, config) {
+            on('task', {
+                log(message) {
+                    console.log(message);
+                    return null;
+                },
+            });
             on('after:spec', (spec, results) => {
                 if (results && results.video) {
                     const failures = results.tests.some((test) =>

@@ -301,7 +301,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.isNavigatedToDashboard();
     });
 
-    it('should be complete onboarding flow with creating mobile type demo application and verify home page with Finance data', function() {
+    it.only('should be complete onboarding flow with creating mobile type demo application and verify home page with Finance data', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -437,9 +437,15 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToEMailReportsPage();
         //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
         reportsPageHelpers.verifyEmptyPageElements();
+
+        cy.task('log', 'Test has started!');
+
         navigationHelpers.goToHooksPage();
         //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
         hooksPageHelpers.verifyEmptyPageElements();
+
+        cy.task('log', 'Test has stopped!');
+
         navigationHelpers.goToDbViewerPage();
         dbCountlyPageHelpers.verifyFullDataPageElements();
         dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
