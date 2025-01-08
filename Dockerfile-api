@@ -1,4 +1,4 @@
-FROM node:hydrogen-bullseye-slim
+FROM node:iron-bookworm-slim
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides
 # Countly Enterprise:
@@ -25,15 +25,14 @@ COPY . .
 
 # install required dependencies which slim image doesn't have
 RUN apt-get update && \
-	apt-get install -y iputils-ping procps net-tools telnet apt-transport-https curl wget git python2 make gcc g++ unzip && \
-	ln -s /usr/bin/python2.7 /usr/bin/python
+	apt-get install -y iputils-ping procps net-tools telnet apt-transport-https curl wget git make gcc g++ unzip xz-utils
 
 RUN apt-get update && \
 	apt-get upgrade -y && \
 	cd /usr/src && \
 	wget https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tar.xz && \
 	tar -xf Python-3.8.12.tar.xz && \
-	apt-get install -y build-essential sudo zlib1g-dev libssl1.1 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev && \
+	apt-get install -y build-essential sudo zlib1g-dev libssl3 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev && \
 	cd Python-3.8.12 && \
 	./configure --enable-optimizations --enable-shared && \
 	make && \
@@ -51,6 +50,7 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	# preinstall
 	cp -n ./api/config.sample.js ./api/config.js && \
 	cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
+	HOME=/tmp npm install -g npm@latest && \
 	HOME=/tmp npm install --unsafe-perm=true --allow-root && \
 	HOME=/tmp npm install argon2 --build-from-source --unsafe-perm=true --allow-root && \
 	./bin/docker/preinstall.sh && \
@@ -58,7 +58,7 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	\
 	# cleanup & chown
 	npm remove -y --no-save mocha nyc should supertest && \
-	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 && \
+	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 wget && \
 	apt-get install -y libgbm-dev libgbm1 gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
 	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \

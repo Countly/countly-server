@@ -7,6 +7,9 @@ Fixes:
 Features:
 - [user-management] Global admins can now disable 2FA for individual users
 
+Fixes:
+- [gridfs] fixes for moving to Promises
+
 Dependencies:
 - Bump express from 4.21.1 to 4.21.2
 - Bump mocha from 10.2.0 to 10.8.2
