@@ -3220,7 +3220,8 @@ const processBulkRequest = (i, requests, params) => {
         'req': params.req,
         'promises': [],
         'bulk': true,
-        'populator': params.qstring.populator
+        'populator': params.qstring.populator,
+        'blockResponses': true
     };
 
     tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
