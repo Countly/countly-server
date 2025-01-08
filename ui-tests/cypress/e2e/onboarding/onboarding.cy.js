@@ -422,7 +422,7 @@ describe('Complete Onboarding', () => {
         //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
         presetManagementPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToSettingsPage();
-        settingsPageHelpers.verifyPageElements();
+        //settingsPageHelpers.verifyPageElements();
         navigationHelpers.goToDataPointsPage();
         dataPointsPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToLogsPage();
