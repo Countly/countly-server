@@ -29,6 +29,7 @@ tableResponse["30days"] = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaDat
 tableResponse["7days"] = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]};
 tableResponse.month = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "n": 0, "scr-calc": 0, "scr": 0, "uvalue": 0}]}; //this year
 
+var userHistory = {};
 
 graphResponse.hour = {};
 graphResponse.yesterday = {};
@@ -277,11 +278,14 @@ describe('Testing views plugin', function() {
             tableResponse["30days"].iTotalRecords += 1;
             tableResponse["30days"].iTotalDisplayRecords += 1;
             pushValues("30days", 0, {"u": 1, "t": 1, "s": 1, "uvalue": 1, "n": 1, "view": "testview0"});
+            userHistory["user1"] = {};
+            userHistory["user1"]["30days"] = true;
 
             if (days_this_year > 25) {
                 tableResponse.month.iTotalRecords += 1;
                 tableResponse.month.iTotalDisplayRecords += 1;
                 pushValues("month", 0, {"t": 1, "s": 1, "uvalue": 1, "u": 1, "n": 1, "view": "testview0"});
+                userHistory["user1"]["month"] = true;
             }
             /* else {
                 tableResponse.month.iTotalRecords = 0;
@@ -321,7 +325,13 @@ describe('Testing views plugin', function() {
             if (days_this_year > 1) {
                 tableResponse.month.iTotalRecords = 1;
                 tableResponse.month.iTotalDisplayRecords = 1;
-                pushValues("month", 0, {"t": 1, "s": 1});
+                if (userHistory["user1"]["month"]) {
+                    pushValues("month", 0, {"t": 1, "s": 1});
+                }
+                else {
+                    pushValues("month", 0, {"u": 1, "uvalue": 1, "t": 1, "s": 1, "view": "testview0"});
+                    userHistory["user1"]["month"] = true;
+                }
                 //tableResponse["month"]['aaData'][0]['n']=1;
                 tableResponse.month.aaData[0].uvalue = 1;
             }

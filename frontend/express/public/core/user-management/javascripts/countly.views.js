@@ -65,6 +65,7 @@
                 },
                 roleMap: roleMap,
                 showLogs: countlyGlobal.plugins.indexOf('systemlogs') > -1,
+                twoFactorAuth: countlyGlobal.plugins.indexOf('two-factor-auth') > -1,
                 tableDynamicCols: tableDynamicCols,
                 userManagementPersistKey: 'userManagement_table_' + countlyCommon.ACTIVE_APP_ID,
                 isGroupPluginEnabled: isGroupPluginEnabled
@@ -114,6 +115,9 @@
             }
         },
         methods: {
+            is2faEnabled: function(row) {
+                return countlyGlobal.member.global_admin && this.twoFactorAuth && row.two_factor_auth && row.two_factor_auth.enabled;
+            },
             handleCommand: function(command, index) {
                 switch (command) {
                 case "delete-user":
@@ -153,6 +157,21 @@
                         }
                         CountlyHelpers.notify({
                             message: CV.i18n('management-users.reset-failed-logins-success'),
+                            type: 'success'
+                        });
+                    });
+                    break;
+                case 'disable-2fa':
+                    countlyUserManagement.disableTwoFactorAuth(index, function(err) {
+                        if (err) {
+                            CountlyHelpers.notify({
+                                message: CV.i18n('two-factor-auth.faildisable_title'),
+                                type: 'error'
+                            });
+                            return;
+                        }
+                        CountlyHelpers.notify({
+                            message: CV.i18n('two-factor-auth.disable_title'),
                             type: 'success'
                         });
                     });
@@ -949,8 +968,20 @@
         watch: {
             'groups': function() {
                 if (this.groups.length > 0) {
-                    // Remove global admin role if user is assigned to any group
-                    this.$refs.userDrawer.editedObject.global_admin = false;
+                    // Remove global admin role if the assigned groups does not have global admin access
+                    var groupHasGlobalAdmin = false;
+
+                    this.groups.forEach(function(grpId) {
+                        var group = groupsModel.data().find(function(grp) {
+                            return grpId === grp._id;
+                        });
+
+                        if (group && group.global_admin === true) {
+                            groupHasGlobalAdmin = true;
+                        }
+                    });
+
+                    this.$refs.userDrawer.editedObject.global_admin = groupHasGlobalAdmin;
                 }
 
                 if (this.groups.length === 0) {
