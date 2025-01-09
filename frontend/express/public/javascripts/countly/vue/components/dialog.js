@@ -48,8 +48,10 @@
             title: {type: String, required: true},
             saveButtonLabel: {type: String, required: false, default: CV.i18n("common.save")},
             saveButtonVisibility: {type: Boolean, required: false, default: true},
+            saveButtonDisabled: {type: Boolean, required: false, default: false},
             cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
             cancelButtonVisibility: {type: Boolean, required: false, default: true},
+            cancelButtonDisabled: {type: Boolean, required: false, default: false},
             dialogType: {type: String, required: false, default: "success"},
             testId: {type: String, default: 'cly-vue-confirm-dialog-test-id', required: false},
             alignCenter: {type: Boolean, default: true}
@@ -76,6 +78,17 @@
             },
             customClass: function() {
                 return this.alignCenter ? "el-dialog--centered" : "";
+            },
+            isButtonDisabled: function() {
+                return {
+                    save: this.saveButtonDisabled,
+                    cancel: this.cancelButtonDisabled
+                };
+            },
+            buttonStyle: function() {
+                return function(disabled) {
+                    return disabled ? { opacity: 0.5 } : {};
+                };
             }
         },
         methods: {
@@ -92,10 +105,10 @@
                             <slot :name="name"/>\
                         </template>\
 						<template v-slot:footer><div class="cly-vue-formdialog__buttons is-single-step bu-is-justify-content-flex-end bu-is-flex">\
-							<el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-cancel-button\'" @click="cancelClicked"  type="secondary" v-if="cancelButtonVisibility">{{cancelLabel}}</el-button>\
-							<el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-save-button\'" @click="confirmClicked" type="success" v-if="confirmStyle==\'success\' && saveButtonVisibility" >{{saveLabel}}</el-button>\
-                            <el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-warning-button\'" @click="confirmClicked" type="warning" v-else-if="confirmStyle==\'warning\' && saveButtonVisibility" >{{saveLabel}}</el-button>\
-							<el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-danger-button\'" @click="confirmClicked" type="danger" v-else-if="saveButtonVisibility" >{{saveLabel}}</el-button>\
+							<el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-cancel-button\'" @click="cancelClicked"  type="secondary" :disabled="isButtonDisabled.cancel" :style="buttonStyle(isButtonDisabled.cancel)" v-if="cancelButtonVisibility">{{cancelLabel}}</el-button>\
+							<el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-save-button\'" @click="confirmClicked" type="success" :disabled="isButtonDisabled.save" :style="buttonStyle(isButtonDisabled.save)" v-if="confirmStyle==\'success\' && saveButtonVisibility" >{{saveLabel}}</el-button>\
+                            <el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-warning-button\'" @click="confirmClicked" type="warning" :disabled="isButtonDisabled.save" :style="buttonStyle(isButtonDisabled.save)" v-else-if="confirmStyle==\'warning\' && saveButtonVisibility" >{{saveLabel}}</el-button>\
+							<el-button size="small" :data-test-id="testId + \'-cly-confirm-dialog-danger-button\'" @click="confirmClicked" type="danger" :disabled="isButtonDisabled.save" :style="buttonStyle(isButtonDisabled.save)" v-else-if="saveButtonVisibility" >{{saveLabel}}</el-button>\
 						</div></template>\
                     </el-dialog>'
     }));
