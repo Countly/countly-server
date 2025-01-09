@@ -80,7 +80,7 @@ const verifyStaticElementsOfPage = () => {
 };
 
 const verifyEmptyPageElements = () => {
-    
+
     verifyStaticElementsOfPage();
 
     verifyHooksDataTable({
