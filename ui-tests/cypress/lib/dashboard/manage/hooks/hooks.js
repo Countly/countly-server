@@ -51,7 +51,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         isElementVisible: false,
         labelElement: hooksDataTableElements().COLUMN_NAME_HOOK_NAME_LABEL,
-        labelText: "Hook name2",
+        labelText: "Hook name",
         element: hooksDataTableElements().COLUMN_NAME_FEATURE_NAME_SORTABLE_ICON,
     });
 
