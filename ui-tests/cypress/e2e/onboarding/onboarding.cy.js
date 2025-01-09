@@ -70,7 +70,7 @@ describe('Complete Onboarding', () => {
         cy.dropMongoDatabase();
     });
 
-    it('should be complete onboarding flow with creating web type demo application', function() {
+    it.skip('should be complete onboarding flow with creating web type demo application', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -101,7 +101,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.isNavigatedToDashboard();
     });
 
-    it('should be complete onboarding flow with creating mobile type demo application and do not enable tracking and subscribe to newsletter', function() {
+    it.skip('should be complete onboarding flow with creating mobile type demo application and do not enable tracking and subscribe to newsletter', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -132,7 +132,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.isNavigatedToDashboard();
     });
 
-    it('should be complete onboarding flow with creating mobile type own application and verify all pages with empty data', function() {
+    it.skip('should be complete onboarding flow with creating mobile type own application and verify all pages with empty data', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
@@ -301,7 +301,7 @@ describe('Complete Onboarding', () => {
         navigationHelpers.isNavigatedToDashboard();
     });
 
-    it.only('should be complete onboarding flow with creating mobile type demo application and verify home page with Finance data', function() {
+    it('should be complete onboarding flow with creating mobile type demo application and verify home page with Finance data', function() {
         setupHelpers.verifyDefaultPageElements();
         setupHelpers.completeOnboardingSetup({
             fullName: user.username,
