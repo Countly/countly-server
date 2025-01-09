@@ -376,8 +376,6 @@ jobs:
       - name: Run UI tests
         shell: bash
         working-directory: /opt/countly
-        env:
-          DEBUG: cypress:log-to-output
         run: |
           /sbin/my_init &
           cd ui-tests
