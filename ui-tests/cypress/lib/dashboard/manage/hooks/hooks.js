@@ -4,6 +4,10 @@ import {
 } from "../../../../support/elements/dashboard/manage/hooks/hooks";
 
 const verifyStaticElementsOfPage = () => {
+
+    cy.checkPaceRunning();
+    cy.checkPaceActive();
+
     cy.verifyElement({
         labelElement: hooksPageElements.PAGE_TITLE,
         labelText: "Hooks",
