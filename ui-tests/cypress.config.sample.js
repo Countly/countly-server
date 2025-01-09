@@ -1,5 +1,6 @@
 const { defineConfig } = require("cypress");
 const fs = require('fs');
+const installLogsPrinter = require('cypress-log-to-output').install;
 
 module.exports = defineConfig({
     e2e: {
@@ -16,7 +17,7 @@ module.exports = defineConfig({
         setupNodeEvents(on, config) {
 
             installLogsPrinter(on);
-            
+
             on('task', {
                 log(message) {
                     console.log(message);
