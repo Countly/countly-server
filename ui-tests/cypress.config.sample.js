@@ -1,6 +1,5 @@
 const { defineConfig } = require("cypress");
 const fs = require('fs');
-const installLogsPrinter = require('cypress-log-to-output').install;
 
 module.exports = defineConfig({
     e2e: {
@@ -16,14 +15,6 @@ module.exports = defineConfig({
         video: true,
         setupNodeEvents(on, config) {
 
-            installLogsPrinter(on);
-
-            on('task', {
-                log(message) {
-                    console.log(message);
-                    return null;
-                },
-            });
             on('after:spec', (spec, results) => {
                 if (results && results.video) {
                     const failures = results.tests.some((test) =>
@@ -44,12 +35,8 @@ module.exports = defineConfig({
                         launchOptions.args.push("--no-sandbox");
                         launchOptions.args.push("--disable-gl-drawing-for-tests");
                         launchOptions.args.push("--disable-gpu");
-                        launchOptions.args.push("--disable-dev-shm-usage");
-                        launchOptions.args.push("--disable-dev-shm-usage");
                     }
                     launchOptions.args.push('--js-flags="--max_old_space_size=3500 --max_semi_space_size=1024"');
-                    launchOptions.args.push("--enable-logging");
-                    launchOptions.args.push("--v=1");
                 }
                 return launchOptions;
             });

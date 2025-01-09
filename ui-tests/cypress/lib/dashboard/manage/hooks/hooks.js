@@ -5,9 +5,6 @@ import {
 
 const verifyStaticElementsOfPage = () => {
 
-    cy.checkPaceRunning();
-    cy.checkPaceActive();
-    
     cy.verifyElement({
         labelElement: hooksPageElements.PAGE_TITLE,
         labelText: "Hooks",

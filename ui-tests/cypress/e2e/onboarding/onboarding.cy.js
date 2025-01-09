@@ -422,7 +422,7 @@ describe('Complete Onboarding', () => {
         //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
         presetManagementPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToSettingsPage();
-        //settingsPageHelpers.verifyPageElements();
+        settingsPageHelpers.verifyPageElements();
         navigationHelpers.goToDataPointsPage();
         dataPointsPageHelpers.verifyFullDataPageElements();
         navigationHelpers.goToLogsPage();
@@ -437,15 +437,9 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToEMailReportsPage();
         //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
         reportsPageHelpers.verifyEmptyPageElements();
-
-        cy.task('log', 'Test has started!');
-
         navigationHelpers.goToHooksPage();
         //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
         hooksPageHelpers.verifyEmptyPageElements();
-
-        cy.task('log', 'Test has stopped!');
-
         navigationHelpers.goToDbViewerPage();
         dbCountlyPageHelpers.verifyFullDataPageElements();
         dbCountlyPageHelpers.clickCountlyOutDatabaseTab();

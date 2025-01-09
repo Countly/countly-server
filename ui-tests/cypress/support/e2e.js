@@ -24,11 +24,3 @@ Cypress.on('uncaught:exception', (err, runnable) => {
     // returning false here prevents Cypress from failing the test
     return false;
 });
-
-// Cypress.on('window:before:load', (win) => {
-//     const log = win.console.log;
-//     win.console.log = (...args) => {
-//         log(...args);
-//         cy.task('log', args.join(' '));
-//     };
-// });
