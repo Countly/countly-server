@@ -25,10 +25,10 @@ Cypress.on('uncaught:exception', (err, runnable) => {
     return false;
 });
 
-Cypress.on('window:before:load', (win) => {
-    const log = win.console.log;
-    win.console.log = (...args) => {
-        log(...args);
-        cy.task('log', args.join(' '));
-    };
-});
+// Cypress.on('window:before:load', (win) => {
+//     const log = win.console.log;
+//     win.console.log = (...args) => {
+//         log(...args);
+//         cy.task('log', args.join(' '));
+//     };
+// });
