@@ -19,6 +19,7 @@
     "moment": "^2.29.4"
   },
   "devDependencies": {
-    "cypress": "^13.6.4"
+    "cypress": "^13.6.4",
+    "cypress-log-to-output": "^1.1.2"
   }
 }

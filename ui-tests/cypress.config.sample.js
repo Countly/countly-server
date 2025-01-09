@@ -14,6 +14,9 @@ module.exports = defineConfig({
         watchForFileChanges: true,
         video: true,
         setupNodeEvents(on, config) {
+
+            installLogsPrinter(on);
+            
             on('task', {
                 log(message) {
                     console.log(message);
