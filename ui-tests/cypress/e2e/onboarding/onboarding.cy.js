@@ -67,10 +67,10 @@ describe('Complete Onboarding', () => {
 
         cy.intercept('GET', '**/*', (req) => {
             req.continue((res) => {
-              cy.log(`Request URL: ${req.url}`);
-              cy.log(`Response Status: ${res.statusCode}`);
+                cy.log(`Request URL: ${req.url}`);
+                cy.log(`Response Status: ${res.statusCode}`);
             });
-          }).as('networkLog');
+        }).as('networkLog');
     });
 
     afterEach(function() {
