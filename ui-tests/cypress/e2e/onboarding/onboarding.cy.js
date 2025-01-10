@@ -439,7 +439,7 @@ describe('Complete Onboarding', () => {
         reportsPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToHooksPage();
         //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
-        hooksPageHelpers.verifyEmptyPageElements();
+        hooksPageHelpers.verifyEmptyPageElements(); // Hooks page is empty
         navigationHelpers.goToDbViewerPage();
         dbCountlyPageHelpers.verifyFullDataPageElements();
         dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
