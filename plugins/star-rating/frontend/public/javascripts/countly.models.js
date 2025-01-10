@@ -274,10 +274,10 @@
                 // unescape the properties shown in the list
                 json.forEach(row => {
                     if (typeof row?.internalName === "string") {
-                        row.internalName = _.unescape(row.internalName).replace(/&#39;/g, "'");
+                        row.internalName = countlyCommon.unescapeHtml(row.internalName);
                     }
                     if (typeof row?.targeting?.user_segmentation === "string") {
-                        row.targeting.user_segmentation = _.unescape(row.targeting.user_segmentation).replace(/&#39;/g, "'");
+                        row.targeting.user_segmentation = countlyCommon.unescapeHtml(row.targeting.user_segmentation);
                     }
                 });
                 _fwd = json;
