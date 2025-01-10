@@ -47,8 +47,8 @@ class APIEndPointTrigger {
      */
     async process(ob) {
         // log.d(JSON.stringify(ob), "[hook trigger api_endpoint]"); 
-        const {params} = ob;
-        const {paths} = params;
+        const {params} = ob || {};
+        const {paths} = params || {};
         const hookPath = paths.length >= 4 ? paths[3] : null;
         const {qstring} = params || {};
 
