@@ -1,4 +1,4 @@
-## Version 24.12.x
+## Version 24.12.xx
 
 Fixes:
 - [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
