@@ -12,13 +12,14 @@
                 :class="closeButtonIcon"
             />
         </div>
-        <el-switch
-            v-if="toggle"
-            v-tooltip.right="toggleTooltip"
-            v-model="toggleLocalValue"
-            class="cly-vue-content-builder-header__toggle"
-            :disabled="isToggleDisabled"
-        />
+        <div v-if="toggle" class="cly-vue-content-builder__layout-header__toggle bu-mr-4">
+            <el-switch
+                v-tooltip.right="toggleTooltip"
+                :value="isToggleActive"
+                :disabled="isToggleDisabled"
+                @change="$emit('switch-toggle', $event)"
+            />
+        </div>
         <div class="cly-vue-content-builder-header__info">
             <div
                 v-tooltip="inputTooltip"
@@ -80,7 +81,7 @@
             @command="onCommand"
         >
             <el-dropdown-item
-                v-for="(option, idx) in options"
+                v-for="(option, idx) in topDropdownOptions"
                 :key="`cly-vue-content-builder-header-option-${idx}`"
                 class="cly-vue-content-builder-header__option"
                 :command="option.value"

@@ -52,12 +52,18 @@
                 type: Boolean
             },
 
+            isToggleActive: {
+                type: Boolean,
+                required: false,
+                default: false
+            },
+
             isToggleDisabled: {
                 default: false,
                 type: Boolean
             },
 
-            options: {
+            topDropdownOptions: {
                 type: Array,
                 default: () => []
             },
@@ -82,18 +88,14 @@
             },
 
             toggle: {
-                default: false,
-                type: Boolean
+                type: Boolean,
+                required: false,
+                default: false
             },
 
             toggleTooltip: {
-                default: null,
-                type: String
-            },
-
-            toggleValue: {
-                default: false,
-                type: Boolean
+                type: String,
+                required: false
             },
 
             value: {
@@ -151,7 +153,7 @@
             },
 
             isOptionsButtonVisible() {
-                return !!this.options.length;
+                return !!this.topDropdownOptions.length;
             },
 
             localValue: {
@@ -162,15 +164,6 @@
                     this.$emit('input', value);
                 }
             },
-
-            toggleLocalValue: {
-                get() {
-                    return this.toggleValue;
-                },
-                set(value) {
-                    this.$emit('switch-toggle', value);
-                }
-            }
         },
 
         methods: {
@@ -200,7 +193,7 @@
 
             toggleInputReadonlyState() {
                 this.isReadonlyInput = !this.isReadonlyInput;
-            }
+            },
         }
     }));
 
