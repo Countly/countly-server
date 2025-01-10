@@ -19,6 +19,7 @@ Dependencies:
 - Bump mocha from 10.2.0 to 10.8.2
 - Bump sass from 1.81.0 to 1.83.1
 - Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
+- Bump countly-sdk-web from 24.11.2 to 24.11.3
 - Bump express-rate-limit from 7.4.1 to 7.5.0
 - Bump puppeteer from 23.10.4 to 23.11.1
 
