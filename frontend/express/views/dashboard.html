@@ -1974,6 +1974,9 @@
 
                 //track javascript errors
                 Countly.track_errors();
+
+                //display in app messages
+                Countly.content.enterContentZone();
                 
                 if (Countly.report_trace && window.performance && window.performance.timing) {
                     $(window).on( "load", function(){
