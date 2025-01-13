@@ -80,11 +80,6 @@
                 type: Array
             },
 
-            titleMaxLength: {
-                default: 50,
-                type: Number
-            },
-
             toggle: {
                 default: false,
                 type: Boolean
@@ -102,6 +97,11 @@
             value: {
                 required: true,
                 type: String
+            },
+
+            valueMaxLength: {
+                default: 50,
+                type: Number
             },
 
             version: {
