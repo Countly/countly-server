@@ -2,6 +2,7 @@
 
 Fixes:
 - [gridfs] fixes for moving to Promises
+- [surveys] "Select one" text in the widget can be edited now
 
 Dependencies:
 - Bump sass from 1.81.0 to 1.83.1
