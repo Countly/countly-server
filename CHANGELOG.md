@@ -2,6 +2,7 @@
 
 Fixes:
 - [gridfs] fixes for moving to Promises
+- [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
 
 Dependencies:
 - Bump sass from 1.81.0 to 1.83.1
