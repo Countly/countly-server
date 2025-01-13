@@ -1,6 +1,7 @@
 ## Version xx.xx.xx
 
 Fixes:
+- [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
 - [gridfs] fixes for moving to Promises
 - [surveys] "Select one" text in the widget can be edited now
 
