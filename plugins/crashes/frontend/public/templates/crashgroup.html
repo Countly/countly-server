@@ -98,20 +98,14 @@
                                             {{!crashgroupUnsymbolicatedStacktrace ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
                                         </span>
                                     </el-dropdown-item>
-                                    <el-dropdown-item v-if="symbolicationEnabled && !crashgroup._symbol_id">
-                                        <a href="#/crash/symbols/">
-                                            {{i18n("crash_symbolication.should-upload")}}
-                                        </a>
+                                    <el-dropdown-item v-if="symbolicationEnabled && !crashgroup._symbol_id" :command="{url: '#/crash/symbols/'}">
+                                        {{i18n("crash_symbolication.should-upload")}}
                                     </el-dropdown-item>
-                                    <el-dropdown-item v-if="!!crashgroup.binary_images">
-                                        <a :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid">
-                                            {{i18n("crashes.show-binary-images")}}
-                                        </a>
+                                    <el-dropdown-item v-if="!!crashgroup.binary_images" :command="{url: '/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + crashgroup.lrid}">
+                                        {{i18n("crashes.show-binary-images")}}
                                     </el-dropdown-item>
-                                    <el-dropdown-item>
-                                        <a :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid" download>
-                                            {{i18n("crashes.download-stacktrace")}}
-                                        </a>
+                                    <el-dropdown-item :command="{url: '/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + crashgroup.lrid, download: true}">
+                                        {{i18n("crashes.download-stacktrace")}}
                                     </el-dropdown-item>
                                 </cly-more-options>
                             </template>
@@ -332,20 +326,14 @@
                                                         {{!props.row.symbolicated ? i18n("crash_symbolication.symbolicate_error") : i18n("crash_symbolication.resymbolicate")}}
                                                     </span>
                                                 </el-dropdown-item>
-                                                <el-dropdown-item v-if="symbolicationEnabled && !props.row._symbol_id">
-                                                    <a href="#/crash/symbols/">
-                                                        {{i18n("crash_symbolication.should-upload")}}
-                                                    </a>
+                                                <el-dropdown-item v-if="symbolicationEnabled && !props.row._symbol_id" :command="{url: '#/crash/symbols/'}">
+                                                    {{i18n("crash_symbolication.should-upload")}}
                                                 </el-dropdown-item>
-                                                <el-dropdown-item v-if="!!props.row.binary_images">
-                                                    <a :href="'/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id">
-                                                        {{i18n('crashes.show-binary-images')}}
-                                                    </a>
+                                                <el-dropdown-item v-if="!!props.row.binary_images" :command="{url: '/dashboard#/crashes/' + crashgroup._id + '/binary-images/' + props.row._id}">
+                                                    {{i18n('crashes.show-binary-images')}}
                                                 </el-dropdown-item>
-                                                <el-dropdown-item>
-                                                    <a :href="'/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + props.row._id" download>
-                                                        {{i18n('crashes.download-stacktrace')}}
-                                                    </a>
+                                                <el-dropdown-item :command="{url: '/o/crashes/download_stacktrace?auth_token=' + authToken +'&app_id=' + appId + '&crash_id=' + props.row._id, download: true}">
+                                                    {{i18n('crashes.download-stacktrace')}}
                                                 </el-dropdown-item>
                                             </cly-more-options>
                                         </template>

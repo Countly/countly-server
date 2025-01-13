@@ -16,7 +16,7 @@ const {
     EMAIL_NOTIFICATION_TYPE
 } = require('../../../../support/constants');
 
-describe.skip('Create New Alert', () => {
+describe('Create New Alert', () => {
     beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
@@ -95,7 +95,7 @@ describe.skip('Create New Alert', () => {
                 isActive: true,
                 alertName: alertUpdated.alertName,
                 application: application,
-                condition: "non-fatal crashes/errors per session"
+                condition: "fatal crashes/errors per session"
             });
         });
     });

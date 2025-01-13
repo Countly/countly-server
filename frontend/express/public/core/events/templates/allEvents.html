@@ -4,18 +4,16 @@
 		:tooltip="{description: i18n('events.all.title.tooltip')}"
 	>
 		<template v-slot:header-right>
-			<cly-more-options v-if="topDropdown" size="small">
-			  <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-				<!--<span :class="item.icon"></span>-->	
-				<a :href="item.value" class="bu-ml-1">{{item.label}}</a>
-			  </el-dropdown-item>
-			</cly-more-options>
+			<el-button v-if="isDrillEnabled" size="small" icon="cly-is cly-is-drill" type="default" @click="openDrillEventDrawer">
+				<span class="bu-ml-1">{{ i18n('events.all.drill') }}</span>
+			</el-button>
 		</template>
 	</cly-header>
 	<cly-main class="bu-pt-4">
 	  <div class="bu-columns bu-is-gapless">
 		<div class="bu-column white-bg bu-is-3 bu-mr-5" style="max-height:681px">
 		  <cly-listbox
+			test-id="all-events"
 			skin="jumbo"
 			height="624"
 			:searchPlaceholder="searchPlaceholder"
@@ -30,22 +28,23 @@
 		</div>
 		<div class="bu-column bu-is-9">
 			<div class="bu-mr-5 cly-vue-events-alerts" v-for="item in limitAlerts" :key="item" :value="item">
-		    	<cly-notification v-if="item.show" class="bu-mb-5 cly-vue-events-all__alerts" :text="item.message" color="light-warning">
+		    	<cly-notification v-if="item.show" class="bu-mb-5 cly-vue-events-all__alerts" :text="item.message" :goTo="item.goTo" color="light-warning">
 				</cly-notification>
 			</div>
-		  <div class="cly-vue-events-all" v-if="!groupData.isGroup">
+		  <div class="cly-vue-events-all" v-if="!groupData.isGroup" data-test-id="event-title">
 			{{decode(selectedEventName)}}<span v-if="category!=''" class="cly-vue-events-group bu-ml-4">{{decode(category)}}</span>
 		  </div>
-		  <div class="cly-vue-events-all" v-else>
+		  <div class="cly-vue-events-all" v-else data-test-id="event-title">
 			{{decode(groupData.name)}}<span class="cly-vue-events-group bu-ml-4">{{i18n('events.all.group')}}</span>
 		  </div>
           <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="groupData.isGroup && groupData.description" >{{unescapeHtml(groupData.description)}}</div>
           <div  class="cly-vue-events-all__subheading bu-pt-3" v-if="!groupData.isGroup && eventDescription" >{{unescapeHtml(eventDescription)}}</div>
 		  <div class="bu-is-flex cly-vue-events-all--padding">
 			<div class="bu-is-align-items-center bu-is-flex" v-if="hasSegments || hasOmittedSegments">
-			  <span class="bu-is-flex cly-vue-events-all-placeholder-text bu-pr-2">{{i18n('events.all.segmentation')}}</span>
+			  <span class="bu-is-flex cly-vue-events-all-placeholder-text bu-pr-2" data-test-id="segmentation-by-label">{{i18n('events.all.segmentation')}}</span>
 			  	<cly-select-x
-					search-placeholder="Search segments"
+					:search-placeholder="i18n('events.all.segmentation-search.placeholder')"
+          test-id="segmentation-select"
 					:options="availableSegments"
 					:searchable="true"
 					v-model="selectedSegment"
@@ -62,9 +61,9 @@
 		  </div>
           <div  class="color-cool-gray-100 font-weight-normal text-medium bu-pt-4" v-if="segmentDescription!=''" >{{unescapeHtml(segmentDescription)}}</div>
 		  <cly-section class="bu-mt-5 bu-mr-5">
-			<cly-chart-bar v-if="currentActiveSegmentation !== 'segment'" :option="barData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading">	
+			<cly-chart-bar test-id="all-events-chart-bar" v-if="currentActiveSegmentation !== 'segment'" :option="barData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading">	
 			</cly-chart-bar>
-			<cly-chart-time v-else  :option="chartData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading" :category="graphNotesCategory"></cly-chart-time>
+			<cly-chart-time test-id="all-events-chart-time" v-else  :option="chartData" :legend="lineLegend" :force-loading="isChartLoading" v-loading="isChartLoading" :category="graphNotesCategory"></cly-chart-time>
 		  </cly-section>
 		  <cly-section class="bu-mt-5 bu-mr-5">
 			<detail-tables></detail-tables>
@@ -72,4 +71,5 @@
 		</div>
 	  </div>
 	</cly-main>
+	<drill-event-drawer :controls="drawers['drill-event']"></drill-event-drawer>
   </div>

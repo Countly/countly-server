@@ -443,6 +443,20 @@ var GridComponent = countlyVue.views.create({
             }
             return val;
         },
+        onWidgetCommand: function(event) {
+            if (event === 'add' || event === 'manage' || event === 'show') {
+                this.graphNotesHandleCommand(event);
+                return;
+            }
+            else if (event === 'zoom') {
+                this.triggerZoom();
+                return;
+            }
+            else {
+                this.$emit('command', event);
+                return;
+            }
+        },
     }
 });
 

@@ -1083,7 +1083,32 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
         });
     });
 }
-
+/**
+ * Creates filter object  to filter by member allowed collections
+ * @param {object} member - members object from params
+ * @param {string} dbName  - database name as string
+ * @param {string} collectionName  - collection Name
+ * @returns {object} filter object
+ */
+exports.getBaseAppFilter = function(member, dbName, collectionName) {
+    var base_filter = {};
+    var apps = exports.getUserApps(member);
+    if (dbName === "countly_drill" && collectionName === "drill_events") {
+        if (Array.isArray(apps) && apps.length > 0) {
+            base_filter.a = {"$in": apps};
+        }
+    }
+    else if (dbName === "countly" && collectionName === "events_data") {
+        var in_array = [];
+        if (Array.isArray(apps) && apps.length > 0) {
+            for (var i = 0; i < apps.length; i++) {
+                in_array.push(new RegExp("^" + apps[i] + "_.*"));
+            }
+            base_filter = {"_id": {"$in": in_array}};
+        }
+    }
+    return base_filter;
+};
 /**
 * Validate user for create access by api_key for provided app_id (both required parameters for the request).
 * @param {params} params - {@link params} object

@@ -32,75 +32,77 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                 countlyDb.close();
                 console.log("Error occured:", error);
             }
-            var cnt = 0;
-            results = results.filter(collection => collection && collection.collectionName && collection.collectionName.startsWith("drill_events"));
-            async.eachSeries(results, function(collection, done) {
-                cnt++;
-                console.log("Processing", cnt, "of", results.length, collection.collectionName);
-                var col = db.collection(collection.collectionName);
-                col.createIndex({uid: 1}, {background: true}, function() {
-                    console.log("Done", {uid: 1});
-                    if (hashes[collection.collectionName] === "[CLY]_session") {
-                        col.createIndex({ts: 1, "up.cc": 1, uid: 1}, {background: true}, function() {
-                            console.log("Done", "[CLY]_session", {ts: 1, "up.cc": 1, uid: 1});
-                            done();
-                        });
-                    }
-                    else if (hashes[collection.collectionName] === "[CLY]_view") {
-                        col.createIndex({ts: 1, "sg.name": 1}, {background: true}, function() {
-                            console.log("Done", "[CLY]_view", {ts: 1, "sg.name": 1});
-                            done();
-                        });
-                    }
-                    else if (hashes[collection.collectionName] === "[CLY]_crash") {
-                        col.createIndex({ts: 1, "sg.crash": 1}, {background: true}, function() {
-                            console.log("Done", "[CLY]_crash", {ts: 1, "sg.crash": 1});
-                            done();
-                        });
-                    }
-                    else if (hashes[collection.collectionName] === "[CLY]_push_action") {
-                        col.createIndex({ts: 1, "sg.i": 1, uid: 1}, {background: true}, function() {
-                            console.log("Done", "[CLY]_push_action", {ts: 1, "sg.i": 1});
-                            done();
-                        });
-                    }
-                    else if (hashes[collection.collectionName] === "[CLY]_star_rating") {
-                        col.createIndex({ts: 1, "sg.widget_id": 1, "sg.rating": 1, uid: 1}, {background: true}, function() {
-                            console.log("Done", "[CLY]_star_rating", {ts: 1, "sg.widget_id": 1, "sg.rating": 1});
-                            done();
-                        });
-                    }
-                    else if (hashes[collection.collectionName] === "[CLY]_nps") {
-                        col.createIndex({ts: 1, "sg.widget_id": 1, "sg.rating": 1, uid: 1}, {background: true}, function() {
-                            console.log("Done", "[CLY]_nps", {ts: 1, "sg.widget_id": 1, "sg.rating": 1});
-                            done();
-                        });
-                    }
-                    else if (hashes[collection.collectionName] === "[CLY]_survey") {
-                        col.createIndex({ts: 1, "sg.widget_id": 1, uid: 1}, {background: true}, function() {
-                            console.log("Done", "[CLY]_survey", {ts: 1, "sg.widget_id": 1});
-                            done();
-                        });
-                    }
-                    else {
-                        col.createIndex({ts: 1}, {background: true}, function() {
-                            console.log("Done", {ts: 1});
-                            done();
-                        });
-                    }
-                });
-            }, function() {
-                console.log("Fixing indexes on eventTimes collections");
-                async.eachSeries(apps, function(app, done) {
-                    countlyDb.collection('eventTimes' + app._id).ensureIndex({"uid": 1}, function() {
-                        done();
+            else {
+                var cnt = 0;
+                results = results.filter(collection => collection && collection.collectionName && collection.collectionName.startsWith("drill_events"));
+                async.eachSeries(results, function(collection, done) {
+                    cnt++;
+                    console.log("Processing", cnt, "of", results.length, collection.collectionName);
+                    var col = db.collection(collection.collectionName);
+                    col.createIndex({uid: 1}, {background: true}, function() {
+                        console.log("Done", {uid: 1});
+                        if (hashes[collection.collectionName] === "[CLY]_session") {
+                            col.createIndex({ts: 1, "up.cc": 1, uid: 1}, {background: true}, function() {
+                                console.log("Done", "[CLY]_session", {ts: 1, "up.cc": 1, uid: 1});
+                                done();
+                            });
+                        }
+                        else if (hashes[collection.collectionName] === "[CLY]_view") {
+                            col.createIndex({ts: 1, "sg.name": 1}, {background: true}, function() {
+                                console.log("Done", "[CLY]_view", {ts: 1, "sg.name": 1});
+                                done();
+                            });
+                        }
+                        else if (hashes[collection.collectionName] === "[CLY]_crash") {
+                            col.createIndex({ts: 1, "sg.crash": 1}, {background: true}, function() {
+                                console.log("Done", "[CLY]_crash", {ts: 1, "sg.crash": 1});
+                                done();
+                            });
+                        }
+                        else if (hashes[collection.collectionName] === "[CLY]_push_action") {
+                            col.createIndex({ts: 1, "sg.i": 1, uid: 1}, {background: true}, function() {
+                                console.log("Done", "[CLY]_push_action", {ts: 1, "sg.i": 1});
+                                done();
+                            });
+                        }
+                        else if (hashes[collection.collectionName] === "[CLY]_star_rating") {
+                            col.createIndex({ts: 1, "sg.widget_id": 1, "sg.rating": 1, uid: 1}, {background: true}, function() {
+                                console.log("Done", "[CLY]_star_rating", {ts: 1, "sg.widget_id": 1, "sg.rating": 1});
+                                done();
+                            });
+                        }
+                        else if (hashes[collection.collectionName] === "[CLY]_nps") {
+                            col.createIndex({ts: 1, "sg.widget_id": 1, "sg.rating": 1, uid: 1}, {background: true}, function() {
+                                console.log("Done", "[CLY]_nps", {ts: 1, "sg.widget_id": 1, "sg.rating": 1});
+                                done();
+                            });
+                        }
+                        else if (hashes[collection.collectionName] === "[CLY]_survey") {
+                            col.createIndex({ts: 1, "sg.widget_id": 1, uid: 1}, {background: true}, function() {
+                                console.log("Done", "[CLY]_survey", {ts: 1, "sg.widget_id": 1});
+                                done();
+                            });
+                        }
+                        else {
+                            col.createIndex({ts: 1}, {background: true}, function() {
+                                console.log("Done", {ts: 1});
+                                done();
+                            });
+                        }
                     });
                 }, function() {
-                    db.close();
-                    countlyDb.close();
-                    console.log("Drill index finished");
+                    console.log("Fixing indexes on eventTimes collections");
+                    async.eachSeries(apps, function(app, done) {
+                        countlyDb.collection('eventTimes' + app._id).ensureIndex({"uid": 1}, function() {
+                            done();
+                        });
+                    }, function() {
+                        db.close();
+                        countlyDb.close();
+                        console.log("Drill index finished");
+                    });
                 });
-            });
+            }
         });
     });
 });

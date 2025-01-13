@@ -16,7 +16,7 @@ describe('Create New Widget', () => {
         navigationHelpers.goToFeedbackRatingsWidgetsPage();
     });
 
-    it.skip('Verify default values of page and create a widget with that values and then update the widget data', function() {
+    it('Verify default values of page and create a widget with that values and then update the widget data', function() {
         widgetsHelpers.clickAddNewWidgetButton();
         widgetsHelpers.verifySettingsPageDefaultElements();
         widgetsHelpers.typeWidgetName("My New Widget");
@@ -141,6 +141,7 @@ describe('Create New Widget', () => {
         widgetsHelpers.typeAddCommentCheckboxLabelText(widget.addCommentCheckboxLabelText);
         widgetsHelpers.clickContactViaCheckbox();
         widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText);
+        widgetsHelpers.clickAddUserConsentCheckbox();
         widgetsHelpers.typeButtonCallOut(widget.buttonCallOut);
         widgetsHelpers.typeThanksMessage(widget.thanksMessage);
         widgetsHelpers.clickNextStepButton();
@@ -166,6 +167,8 @@ describe('Create New Widget', () => {
             commentCheckboxLabelText: widget.comment,
             isCheckedViaContact: true,
             viaContactCheckboxLabelText: widget.contactVia,
+            isCheckedAddConsent: true,
+            consentText: "I agree to the Terms and Conditions and Privacy Policy.",
             submitButtonText: widget.buttonCallOut,
             submitButtonColor: widget.mainColor,
             submitButtonFontColor: widget.FontColor,
@@ -222,7 +225,7 @@ describe('Create New Widget', () => {
             contactViaCheckboxLabelText: widget.contactViaCheckboxLabelText,
             contactEmail: widgetRate.contactEmail,
             submitButtonText: widget.submitButtonText,
-            hasAggrementCheckbox: true,
+            consentText: 'I agree to the Terms and Conditions and Privacy Policy.',
             selectedMainColor: widget.mainColor,
             selectedFontColor: widget.FontColor,
             hasPoweredByLogo: true,
@@ -285,6 +288,12 @@ describe('Create New Widget', () => {
         widgetsHelpers.typeAddCommentCheckboxLabelText(widget.addCommentCheckboxLabelText);
         widgetsHelpers.clickContactViaCheckbox();
         widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText);
+        widgetsHelpers.clickAddUserConsentCheckbox();
+        widgetsHelpers.typeAddUserConsentText(widget.consentText);
+        widgetsHelpers.typeAddUserConsentLinkText(0, widget.firstConsentLinkText);
+        widgetsHelpers.typeAddUserConsentLinkUrl(0, widget.firstConsentLinkUrl);
+        widgetsHelpers.typeAddUserConsentLinkText(1, widget.secondConsentLinkText);
+        widgetsHelpers.typeAddUserConsentLinkUrl(1, widget.secondConsentLinkUrl);
         widgetsHelpers.typeButtonCallOut(widget.buttonCallOut);
         widgetsHelpers.typeThanksMessage(widget.thanksMessage);
         widgetsHelpers.clickNextStepButton();
@@ -310,6 +319,8 @@ describe('Create New Widget', () => {
             commentCheckboxLabelText: widget.comment,
             isCheckedViaContact: true,
             viaContactCheckboxLabelText: widget.contactVia,
+            isCheckedAddConsent: true,
+            consentText: widget.consentText,
             submitButtonText: widget.buttonCallOut,
             submitButtonColor: widget.mainColor,
             submitButtonFontColor: widget.FontColor,
@@ -363,6 +374,7 @@ describe('Create New Widget', () => {
             contactViaCheckboxLabelText: widget.contactViaCheckboxLabelText,
             contactEmail: widgetRate.contactEmail,
             submitButtonText: widget.submitButtonText,
+            consentText: widget.consentText,
             selectedMainColor: widget.mainColor,
             selectedFontColor: widget.FontColor,
             hasPoweredByLogo: true,
@@ -400,8 +412,7 @@ describe('Create New Widget', () => {
             index: 0,
             question: widget.question,
             internalName: widget.widgetName,
-            //There is still an issue TODO
-            //pages: "/homepage, /shopping, /checkout",
+            pages: "/homepage, /shopping, /checkout",
             isActive: false
         });
     });
@@ -429,6 +440,12 @@ describe('Create New Widget', () => {
         widgetsHelpers.typeAddCommentCheckboxLabelText(widget.addCommentCheckboxLabelText);
         widgetsHelpers.clickContactViaCheckbox();
         widgetsHelpers.typeContactViaCheckboxLabelText(widget.contactViaCheckboxLabelText);
+        widgetsHelpers.clickAddUserConsentCheckbox();
+        widgetsHelpers.typeAddUserConsentText(widget.consentText);
+        widgetsHelpers.typeAddUserConsentLinkText(0, widget.firstConsentLinkText);
+        widgetsHelpers.typeAddUserConsentLinkUrl(0, widget.firstConsentLinkUrl);
+        widgetsHelpers.typeAddUserConsentLinkText(1, widget.secondConsentLinkText);
+        widgetsHelpers.typeAddUserConsentLinkUrl(1, widget.secondConsentLinkUrl);
         widgetsHelpers.typeButtonCallOut(widget.buttonCallOut);
         widgetsHelpers.clickNextStepButton();
 
@@ -458,6 +475,17 @@ describe('Create New Widget', () => {
             addCommentCheckboxLabelText: widget.addCommentCheckboxLabelText,
             isCheckedViaContact: true,
             contactViaCheckboxLabelText: widget.contactViaCheckboxLabelText,
+            consentText: widget.consentText,
+            consentItems: [
+                {
+                    text: widget.firstConsentLinkText,
+                    link: widget.firstConsentLinkUrl
+                },
+                {
+                    text: widget.secondConsentLinkText,
+                    link: widget.secondConsentLinkUrl
+                }
+            ],
             submitButtonText: widget.buttonCallOut,
             thanksMessageText: widget.thanksMessage,
         });

@@ -155,6 +155,13 @@ plugins.setConfigs("systemlogs", {
                                     if (info.name) {
                                         res[i].name = info.name;
                                     }
+                                    if (info.before || info.after) {
+                                        res[i].before = JSON.stringify(info.before);
+                                        res[i].after = JSON.stringify(info.after);
+                                    }
+                                    else {
+                                        res[i].value = JSON.stringify(info);
+                                    }
                                 }
                             }
                             common.returnOutput(paramsNew, {sEcho: paramsNew.qstring.sEcho, iTotalRecords: Math.max(total, 0), iTotalDisplayRecords: count, aaData: res});

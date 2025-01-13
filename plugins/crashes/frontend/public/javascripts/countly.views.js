@@ -451,7 +451,9 @@
                 formatDate: function(row, col, cell) {
                     return moment(cell * 1000).format("lll");
                 },
-                hasDrillPermission: countlyAuth.validateRead('drill')
+                hasDrillPermission: countlyAuth.validateRead('drill'),
+                showDeleteDialog: false,
+                selectedGroups: [],
             };
         },
         computed: {
@@ -552,7 +554,17 @@
             },
             loading: function() {
                 return this.$store.getters["countlyCrashes/overview/loading"];
-            }
+            },
+            confirmDialogTitle: function() {
+                var title = "crashes.confirm-action-title";
+                title = this.selectedGroups.length > 1 ? title + "-plural" : title;
+                return CV.i18n(title);
+            },
+            confirmDialogText: function() {
+                var text = "crashes.groups-confirm-delete";
+                text = this.selectedGroups.length > 1 ? text + "-plural" : text;
+                return CV.i18n(text, this.selectedGroups.length);
+            },
         },
         methods: {
             refresh: function(force) {
@@ -573,10 +585,16 @@
                     ]);
                 }
             },
-            handleSelectionChange: function(selectedRows) {
+            handleSelectionChange: function(selectedRows, force = false) {
+                var self = this;
+                this.selectedGroups = [];
                 this.$data.selectedCrashgroups = selectedRows.map(function(row) {
+                    self.selectedGroups.push(row.name);
                     return row._id;
                 });
+                if (force) {
+                    self.$refs.dataTable.$refs.elTable.clearSelection();
+                }
             },
             badgesFor: function(crash) {
                 return countlyCrashes.generateBadges(crash);
@@ -601,7 +619,30 @@
                     promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsShown", this.$data.selectedCrashgroups);
                 }
                 else if (state === "delete") {
-                    promise = this.$store.dispatch("countlyCrashes/overview/setSelectedAsDeleted", this.$data.selectedCrashgroups);
+                    self.$store.dispatch("countlyCrashes/overview/setSelectedAsDeleted", self.$data.selectedCrashgroups)
+                        .then(function(response) {
+                            if (Array.isArray(response.result)) {
+                                var itemList = response.result.reduce(function(acc, curr) {
+                                    acc += "<li>" + curr + "</li>";
+                                    return acc;
+                                }, "");
+                                CountlyHelpers.alert("<ul>" + itemList + "</ul>", "red", { title: CV.i18n("crashes.alert-fails") });
+                            }
+                            else {
+                                CountlyHelpers.notify({
+                                    title: jQuery.i18n.map["systemlogs.action.crash_deleted"],
+                                    message: jQuery.i18n.map["systemlogs.action.crash_group_deleted"]
+                                });
+                            }
+                        }).finally(function() {
+                            // Reset selection if command is delete or hide
+                            // if (["delete", "hide"].includes(state)) {
+                            self.selectedCrashgroups = [];
+                            self.$refs.dataTable.$refs.elTable.clearSelection();
+                            self.closeDeleteForm();
+                            self.refresh();
+                            // }
+                        });
                 }
 
                 if (typeof promise !== "undefined") {
@@ -621,10 +662,10 @@
                         }
                     }).finally(function() {
                         // Reset selection if command is delete or hide
-                        if (["delete", "hide"].includes(state)) {
-                            self.selectedCrashgroups = [];
-                            self.$refs.dataTable.$refs.elTable.clearSelection();
-                        }
+                        // if (["delete", "hide"].includes(state)) {
+                        self.selectedCrashgroups = [];
+                        self.$refs.dataTable.$refs.elTable.clearSelection();
+                        // }
                     });
                 }
             },
@@ -643,6 +684,15 @@
                 }
 
                 return item1.reports - item2.reports;
+            },
+            unpatchSelectedGroups: function() {
+                this.handleSelectionChange([], true);
+            },
+            showDeleteForm: function() {
+                this.showDeleteDialog = true;
+            },
+            closeDeleteForm: function() {
+                this.showDeleteDialog = false;
             },
         },
         beforeCreate: function() {

@@ -64,6 +64,9 @@
                         }
                         for (var i = 0; i < response.aaData.length; i++) {
                             response.aaData[i]._view = JSON.stringify(response.aaData[i]);
+                            if (self.index) {
+                                response.aaData[i]._id = response.aaData[i].name;
+                            }
                             if (!self.isRefresh) {
                                 self.expandKeysHolder.push(response.aaData[i]._id);
                             }
@@ -103,6 +106,8 @@
                     sortEnabled: false,
                     projection: [],
                     sort: "",
+                    localCollection: this.collection,
+                    localDb: this.db,
                     projectionOptions: {},
                     isDescentSort: false,
                     isIndexRequest: false,
@@ -121,19 +126,29 @@
             watch: {
                 selectedCollection: function(newVal) {
                     if (!this.$route || !this.$route.params || !this.$route.params.query) {
-                        this.collection = newVal;
+                        this.localCollection = newVal;
                         this.queryFilter = null;
                         this.projectionEnabled = false;
                         this.projection = [];
                         this.sortEnabled = false;
                         this.sort = "";
-                        app.navigate("#/manage/db/" + this.db + "/" + newVal, false);
+                        if (this.index) {
+                            app.navigate("#/manage/db/indexes/" + this.localDb + "/" + newVal, false);
+                        }
+                        else {
+                            app.navigate("#/manage/db/" + this.localDb + "/" + newVal, false);
+                        }
                         this.tableStore.dispatch("fetchDbviewerTable", {_silent: false});
                         store.set('dbviewer_app_filter', this.appFilter);
                     }
                     else {
-                        this.collection = newVal;
-                        app.navigate("#/manage/db/" + this.db + "/" + newVal + "/" + this.$route.params.query, false);
+                        this.localCollection = newVal;
+                        if (this.index) {
+                            app.navigate("#/manage/db/indexes/" + this.localDb + "/" + newVal + "/" + this.$route.params.query, false);
+                        }
+                        else {
+                            app.navigate("#/manage/db/" + this.localDb + "/" + newVal + "/" + this.$route.params.query, false);
+                        }
                         this.tableStore.dispatch("fetchDbviewerTable", {_silent: false});
                         store.set('dbviewer_app_filter', this.appFilter);
                     }
@@ -160,13 +175,13 @@
                 dbviewerActions: function(command) {
                     switch (command) {
                     case 'aggregation':
-                        window.location.hash = "#/manage/db/aggregate/" + this.db + "/" + this.collection;
+                        window.location.hash = "#/manage/db/aggregate/" + this.localDb + "/" + this.localCollection;
                         break;
                     case 'indexes':
-                        window.location.hash = "#/manage/db/indexes/" + this.db + "/" + this.collection;
+                        window.location.hash = "#/manage/db/indexes/" + this.localDb + "/" + this.localCollection;
                         break;
                     case 'data':
-                        window.location.hash = "#/manage/db/" + this.db + "/" + this.collection;
+                        window.location.hash = "#/manage/db/" + this.localDb + "/" + this.localCollection;
                         break;
                     }
                 },
@@ -203,7 +218,7 @@
                     this.projection = [];
                     this.sortEnabled = false;
                     this.sort = "";
-                    app.navigate("#/manage/db/" + this.db + "/" + this.selectedCollection);
+                    app.navigate("#/manage/db/" + this.localDb + "/" + this.selectedCollection);
                     this.fetch(true);
                 },
                 clearFilters: function() {
@@ -241,8 +256,8 @@
                         projection: JSON.stringify(this.preparedProjectionFields),
                         query: this.queryFilter,
                         sort: sort,
-                        collection: this.collection,
-                        db: this.db,
+                        collection: this.localCollection,
+                        db: this.localDb,
                         url: "/o/export/db",
                         get_index: this.index
                     };
@@ -251,6 +266,7 @@
                 refresh: function(force) {
                     this.isRefresh = true;
                     this.fetch(force);
+                    this.isExpanded = true;
                 },
                 highlight: function(content) {
                     return hljs.highlightAuto(content).value;
@@ -269,10 +285,10 @@
                     return 'bu-is-clickable';
                 },
                 updatePath: function(query) {
-                    if (this.collection && this.db) {
-                        window.location.hash = "#/manage/db/" + this.db + "/" + this.collection + "/" + JSON.stringify(query);
+                    if (this.localCollection && this.localDb) {
+                        window.location.hash = "#/manage/db/" + this.localDb + "/" + this.localCollection + "/" + JSON.stringify(query);
                         if (this.index) {
-                            window.location.hash = "#/manage/db/indexes/" + this.db + "/" + this.collection + "/" + JSON.stringify(query);
+                            window.location.hash = "#/manage/db/indexes/" + this.localDb + "/" + this.localCollection + "/" + JSON.stringify(query);
                         }
                     }
                 },
@@ -287,7 +303,7 @@
             },
             computed: {
                 dbviewerAPIEndpoint: function() {
-                    var url = '/db?api_key=' + countlyGlobal.member.api_key + '&app_id=' + countlyCommon.ACTIVE_APP_ID + '&dbs=' + this.db + '&collection=' + this.collection;
+                    var url = '/db?api_key=' + countlyGlobal.member.api_key + '&app_id=' + countlyCommon.ACTIVE_APP_ID + '&dbs=' + this.localDb + '&collection=' + this.localCollection;
                     if (this.queryFilter) {
                         url += '&filter=' + encodeURIComponent(this.queryFilter);
                     }
@@ -304,7 +320,7 @@
                 },
                 preparedCollectionList: function() {
                     var self = this;
-                    return this.collections[this.db].list.filter(function(collection) {
+                    return this.collections[this.localDb].list.filter(function(collection) {
                         if (self.appFilter !== "all") {
                             return collection.label.indexOf(self.appFilter) > -1;
                         }
@@ -334,19 +350,19 @@
                 this.isRefresh = false;
                 var routeHashItems = window.location.hash.split("/");
                 if (routeHashItems.length === 6) {
-                    this.collection = routeHashItems[5];
-                    this.selectedCollection = this.collection;
+                    this.localCollection = routeHashItems[5];
+                    this.selectedCollection = this.localCollection;
                     if (store.get('dbviewer_app_filter')) {
                         this.appFilter = store.get('dbviewer_app_filter');
                     }
                     else {
                         this.appFilter = "all";
                     }
-                    this.db = routeHashItems[4];
+                    this.localDb = routeHashItems[4];
                 }
 
-                if (!this.db) {
-                    this.db = 'countly';
+                if (!this.localDb) {
+                    this.localDb = 'countly';
                 }
                 if (this.$route.params && this.$route.params.query && JSON.parse(this.$route.params.query)) {
                     this.queryFilter = JSON.parse(this.$route.params.query).filter;
@@ -357,11 +373,11 @@
                     this.isDescentSort = JSON.parse(this.$route.params.query).isDescentSort;
                 }
 
-                if (!this.collection) {
-                    if (this.collections[this.db].list.length) {
-                        this.collection = this.collections[this.db].list[0].value;
-                        this.selectedCollection = this.collection;
-                        window.location = '#/manage/db/' + this.db + '/' + this.collections[this.db].list[0].value;
+                if (!this.localCollection) {
+                    if (this.collections[this.localDb].list.length) {
+                        this.localCollection = this.collections[this.localDb].list[0].value;
+                        this.selectedCollection = this.localCollection;
+                        window.location = '#/manage/db/' + this.localDb + '/' + this.collections[this.localDb].list[0].value;
                     }
                 }
                 for (var collectionKey in this.collections) {
@@ -518,6 +534,13 @@
                                 if (res.aaData.length) {
                                     self.fields = Object.keys(map);
                                 }
+                                if (res.removed && typeof res.removed === 'object' && Object.keys(res.removed).length > 0) {
+                                    self.removed = CV.i18n('dbviewer.removed-warning') + Object.keys(res.removed).join(", ");
+
+                                }
+                                else {
+                                    self.removed = "";
+                                }
                             }
                             if (err) {
                                 var message = CV.i18n('dbviewer.server-error');
@@ -543,7 +566,7 @@
                     }
                 },
                 updatePath: function(query) {
-                    window.location.hash = "#/manage/db/aggregate/" + this.db + "/" + this.collection + "/" + query;
+                    app.navigate("#/manage/db/aggregate/" + this.db + "/" + this.collection + "/" + query);
                 },
                 getCollectionName: function() {
                     var self = this;

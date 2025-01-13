@@ -14,8 +14,8 @@
 			<div class="bu-column bg-white bu-mr-4" :key="idx" v-for="(item, idx) in topData">
 				<div class="bu-p-3">
 					<div class="bu-level-left bu-p-3 bu-pb-4">
-						<span class="text-small text-uppercase bu-has-text-weight-medium">{{item.title}}</span>
-						<span class="cly-vue-tooltip-icon ion ion-help-circled has-tooltip bu-ml-2" v-tooltip.top-center="item.description"></span>
+						<span class="text-small text-uppercase bu-has-text-weight-medium" :data-test-id="item.title.replaceAll(' ', '-').toLowerCase() + '-label'">{{item.title}}</span>
+						<cly-tooltip-icon class="bu-ml-2" :tooltip="item.description" placement="top-center" :data-test-id="item.title.replaceAll(' ', '-').toLowerCase() + '-tooltip'"></cly-tooltip-icon>
 					</div>
 					<div class="topData">
 						<div v-if="!item.data.length">
@@ -25,10 +25,10 @@
 							<div :key="idx2" v-for="(item2, idx2) in item.data">
 								<div class="version-graph-block bu-p-3">
 									<div class="bu-columns version-graph-title">
-										<div class="bu-column has-ellipsis">{{item2.name}}</div>
-										<div class="bu-column">{{item2.percent}}% </div>
+										<div class="bu-column has-ellipsis" :data-test-id="item.title.replaceAll(' ', '-').toLowerCase() + '-name-column-' + idx + '-item-' + idx2">{{item2.name}}</div>
+										<div class="bu-column" :data-test-id="item.title.replaceAll(' ', '-').toLowerCase() + '-percent-column-' + idx + '-item-' + idx2">{{item2.percent}}% </div>
 									</div>
-									<cly-progress-bar :entities="item2.bar" :height=8></cly-progress-bar>
+									<cly-progress-bar :data-test-id="item.title.replaceAll(' ', '-').toLowerCase() + '-progress-bar-column-' + idx + '-item-' + idx2" :entities="item2.bar" :height=8></cly-progress-bar>
 								</div>
 							</div>
 						</div>
@@ -37,12 +37,36 @@
 			</div>
 		</div>
 	<cly-section>
-		<cly-datatable-n  :rows="appDevicesRows" :resizable="true" :force-loading="isLoading">
+		<cly-datatable-n  test-id="devices" :rows="appDevicesRows" :resizable="true" :force-loading="isLoading">
 			<template v-slot="scope">
-				<el-table-column sortable="custom" prop="devices" :label="i18n('devices.table.device')"></el-table-column>
-				<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')"></el-table-column>
-				<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')"></el-table-column>
-				<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')"></el-table-column>
+				<el-table-column sortable="custom" prop="devices" :label="i18n('devices.table.device')">
+					<template v-slot="rowScope">
+						<div :data-test-id="'datatable-devices-device-' + rowScope.$index">
+							{{ rowScope.row.devices }}
+						</div>
+					</template>
+				</el-table-column>
+				<el-table-column sortable="custom" prop="t" :formatter="numberFormatter" :label="i18n('common.table.total-sessions')">
+					<template v-slot="rowScope">
+						<div :data-test-id="'datatable-devices-total-sessions-' + rowScope.$index">
+							{{ rowScope.row.t }}
+						</div>
+					</template>
+				</el-table-column>
+				<el-table-column sortable="custom" prop="u" :formatter="numberFormatter" :label="i18n('common.table.total-users')">
+					<template v-slot="rowScope">
+						<div :data-test-id="'datatable-devices-total-users-' + rowScope.$index">
+							{{ rowScope.row.u }}
+						</div>
+					</template>
+				</el-table-column>
+				<el-table-column sortable="custom" prop="n" :formatter="numberFormatter" :label="i18n('common.table.new-users')">
+					<template v-slot="rowScope">
+						<div :data-test-id="'datatable-devices-new-users-' + rowScope.$index">
+							{{ rowScope.row.n }}
+						</div>
+					</template>
+				</el-table-column>
 			</template>
 		</cly-datatable-n>
 	</cly-section>
