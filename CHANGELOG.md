@@ -1,8 +1,10 @@
 ## Version xx.xx.xx
 
 Fixes:
+- [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
 - [gridfs] fixes for moving to Promises
 - [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
+- [surveys] "Select one" text in the widget can be edited now
 
 Dependencies:
 - Bump sass from 1.81.0 to 1.83.1
