@@ -8,19 +8,39 @@ process.title = "countly: dashboard node " + process.argv[1];
 
 var fs = require('fs');
 var path = require('path');
-var IS_FLEX = true;
+var IS_FLEX = false;
+var maxRetries = 5;
+var attemptCount = 0;
 
-// if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
-//    const deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
-//    try {
-//        if (JSON.parse(deploymentConf).DEPLOYMENT_ID) {
-//            IS_FLEX = true;
-//        }
-//    }
-//    catch (e) {
-//        IS_FLEX = false;
-//    }
-// }
+function checkDeploymentEnv() {
+  attemptCount++;
+
+  if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
+    var deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
+
+    try {
+      var parsedConfig = JSON.parse(deploymentConf);
+
+      if (parsedConfig.DEPLOYMENT_ID) {
+        IS_FLEX = true;
+        console.log('Deployment configuration found and valid. Stopping further checks.');
+        return;
+      }
+    } catch (e) {
+      console.log(`Attempt ${attemptCount}: Failed to parse JSON. Retrying...`);
+    }
+  } else {
+    console.log(`Attempt ${attemptCount}: File not found. Retrying...`);
+  }
+
+  if (attemptCount < maxRetries) {
+    setTimeout(checkDeploymentEnv, 2000); // Retry after 2 seconds
+  } else {
+    console.log('Max retry limit reached. Stopping checks.');
+  }
+};
+
+checkDeploymentEnv();
 
 var versionInfo = require('./version.info'),
     pack = require('../../package.json'),
