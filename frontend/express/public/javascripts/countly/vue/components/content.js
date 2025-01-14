@@ -516,6 +516,11 @@
         template: CV.T('/javascripts/countly/vue/templates/UI/option-swapper.html'),
 
         props: {
+            disabled: {
+                default: false,
+                type: Boolean
+            },
+
             highlightOnSelect: {
                 default: true,
                 type: Boolean
