@@ -55,6 +55,17 @@ class JobRunnerPulseImpl extends IJobRunner {
     }
 
     /**
+     * Updates job progress in Pulse
+     * @param {Object} job Pulse job instance
+     * @param {Object} progressData Progress data to store
+     * @private
+     */
+    async #updateJobProgress(job, progressData) {
+        job.data = progressData;
+        await job.save();
+    }
+
+    /**
      * Creates and defines a new job
      * @param {string} jobName The name of the job
      * @param {Function} JobClass The job class to create
@@ -70,6 +81,9 @@ class JobRunnerPulseImpl extends IJobRunner {
                 jobName,
                 async(job, done) => {
                     instance._setTouchMethod(job.touch.bind(job));
+                    instance._setProgressMethod(
+                        async(progressData) => this.#updateJobProgress(job, progressData)
+                    );
 
                     return instance._run(
                         this.db,

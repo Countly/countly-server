@@ -65,8 +65,11 @@ class Job {
     /** @type {Object} Logger instance */
     logger;
 
-    /** @type {Function|null} Touch method from Pulse */
+    /** @type {Function|null} Touch method from job runner */
     _touchMethod = null;
+
+    /** @type {Function|null} Progress method from job runner */
+    _progressMethod = null;
 
     /**
      * Creates an instance of Job.
@@ -188,14 +191,18 @@ class Job {
         try {
             const result = await new Promise((resolve, reject) => {
                 try {
-                    const runResult = this.run(db, (error, callbackResult) => {
-                        if (error) {
-                            reject(error);
-                        }
-                        else {
-                            resolve(callbackResult);
-                        }
-                    }, this.reportProgress.bind(this));
+                    const runResult = this.run(
+                        db,
+                        (error, callbackResult) => {
+                            if (error) {
+                                reject(error);
+                            }
+                            else {
+                                resolve(callbackResult);
+                            }
+                        },
+                        this.reportProgress.bind(this)
+                    );
 
                     if (runResult instanceof Promise) {
                         runResult.then(resolve).catch(reject);
@@ -228,39 +235,40 @@ class Job {
     }
 
     /**
-     * Reports progress for long-running jobs to prevent lock expiration
+     * Sets the progress method from the runner
+     * @param {Function} progressMethod Method to update progress
+     * @protected
+     */
+    _setProgressMethod(progressMethod) {
+        this._progressMethod = progressMethod;
+    }
+
+    /**
+     * Reports progress for long-running jobs
      * @param {number} [total] Total number of stages
      * @param {number} [current] Current stage number
      * @param {string} [bookmark] Bookmark string for current stage
      */
     async reportProgress(total, current, bookmark) {
-        if (!this._touchMethod) {
-            throw new Error('Touch method not available');
-        }
-
         // Calculate progress percentage
         const progress = total && current ? Math.min(100, Math.floor((current / total) * 100)) : undefined;
 
-        // Store progress data
+        // Build progress data
         const progressData = {
             total,
             current,
             bookmark,
-            progress,
+            percent: progress,
             timestamp: new Date()
         };
 
-        // Store in job data
-        if (!this.data) {
-            this.data = {};
+        // Update progress using runner's method if available
+        if (this._progressMethod) {
+            await this._progressMethod(progressData);
         }
-        this.data.progress = progressData;
 
-        // Call Pulse's touch method with progress
-        if (progress !== undefined) {
-            await this._touchMethod(progress);
-        }
-        else {
+        // Touch to prevent lock expiration
+        if (this._touchMethod) {
             await this._touchMethod();
         }
 
