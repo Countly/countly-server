@@ -11,7 +11,6 @@
 
             popperClass: {
                 default: null,
-                required: false,
                 type: String
             }
         },
@@ -39,7 +38,7 @@
 
             createdBy: {
                 default: null,
-                type: String
+                type: String,
             },
 
             disableSaveButton: {
@@ -58,8 +57,8 @@
             },
 
             options: {
-                type: Array,
-                default: () => []
+                default: () => ([]),
+                type: Array
             },
 
             saveButtonLabel: {
@@ -87,7 +86,6 @@
             },
 
             toggleTooltip: {
-                default: null,
                 type: String
             },
 
@@ -130,7 +128,7 @@
         computed: {
             activeTab: {
                 get() {
-                    return this.currentTab || this.tabs[0]?.name;
+                    return this.currentTab || this.tabs[0]?.value;
                 },
                 set(value) {
                     this.currentTab = value;

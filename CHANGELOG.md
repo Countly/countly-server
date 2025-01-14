@@ -12,12 +12,17 @@ Features:
 - [user-management] Global admins can now disable 2FA for individual users
 
 Fixes:
+- [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
 - [gridfs] fixes for moving to Promises
+- [reports] Fixes report generation failure due to SSL error
+- [surveys] "Select one" text in the widget can be edited now
+- [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
+
 
 Dependencies:
 - Bump express from 4.21.1 to 4.21.2
+- Bump sass from 1.81.0 to 1.83.3
 - Bump mocha from 10.2.0 to 10.8.2
-- Bump sass from 1.81.0 to 1.83.1
 - Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
 - Bump countly-sdk-web from 24.11.2 to 24.11.3
 - Bump express-rate-limit from 7.4.1 to 7.5.0
