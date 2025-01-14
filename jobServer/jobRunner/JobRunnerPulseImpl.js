@@ -64,25 +64,6 @@ class JobRunnerPulseImpl extends IJobRunner {
                 }
             }
         );
-        //
-        // const job = new PulseJob(
-        //     {
-        //         name: jobName,
-        //         pulse: this.#pulseRunner,
-        //     }
-        // );
-        //
-        // job.unique({'name': jobName});
-        //
-        // job.repeatEvery(
-        //     schedule,
-        //     {
-        //         timezone: 'Asia/Kolkata',
-        //     }
-        // );
-        //
-        // job.setShouldSaveResult(true);
-        // await job.save();
     }
 
 
