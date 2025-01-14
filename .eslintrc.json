@@ -254,6 +254,7 @@
         {
             "files": [
                 "api/**/*.js",
+                "jobServer/**/*.js",
                 "frontend/express/*.js",
                 "frontend/express/libs/*.js",
                 "plugins/pluginManager.js",
