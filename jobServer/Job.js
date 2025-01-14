@@ -1,28 +1,84 @@
+const defaultLogger = {
+    d: console.debug,
+    w: console.warn,
+    e: console.error,
+    i: console.info
+};
 /**
- * Represents a job.
+ * Base class for creating jobs.
+ * 
+ * @example
+ * // Example of a simple job that runs every minute
+ * class SimpleJob extends Job {
+ *     getSchedule() {
+ *         return {
+ *             type: 'schedule',
+ *             value: '* * * * *' // Runs every minute
+ *         };
+ *     }
+ * 
+ *     async run(db, done) {
+ *         try {
+ *             await db.collection('mycollection').updateMany({}, { $set: { updated: new Date() } });
+ *             done(null, 'Successfully updated records');
+ *         } catch (error) {
+ *             done(error);
+ *         }
+ *     }
+ * }
+ * 
+ * @example
+ * // Example of a one-time job scheduled for a specific date
+ * class OneTimeJob extends Job {
+ *     getSchedule() {
+ *         return {
+ *             type: 'once',
+ *             value: new Date('2024-12-31T23:59:59Z')
+ *         };
+ *     }
+ * 
+ *     async run(db, done) {
+ *         // Your job logic here
+ *         done();
+ *     }
+ * }
+ * 
+ * @example
+ * // Example of a job that runs immediately
+ * class ImmediateJob extends Job {
+ *     getSchedule() {
+ *         return {
+ *             type: 'now'
+ *         };
+ *     }
+ * 
+ *     async run(db, done) {
+ *         // Your job logic here
+ *         done();
+ *     }
+ * }
  */
 class Job {
-
+    /** @type {string} Name of the job */
     jobName = Job.name;
 
-    logger = {
-        d: console.debug,
-        w: console.warn,
-        e: console.error,
-        i: console.info
-    };
+    /** @type {Object} Logger instance */
+    logger;
+
+    /** @type {Function|null} Touch method from Pulse */
+    _touchMethod = null;
 
     /**
      * Creates an instance of Job.
      */
     constructor() {
-        this.logger.d(`Job instance"${this.jobName}" created`);
+        this.logger = defaultLogger;
+        this.logger.d(`Job instance "${this.jobName}" created`);
     }
 
     /**
      * Sets the name of the job.
      * @param {String} name The name of the job
-     * @returns {void} The name of the job
      */
     setJobName(name) {
         this.jobName = name;
@@ -30,49 +86,108 @@ class Job {
 
     /**
      * Sets the logger
-     * @param {Logger} logger The logger
+     * @param {Object} [logger=defaultLogger] The logger instance
      */
-    setLogger(logger) {
+    setLogger(logger = defaultLogger) {
         this.logger = logger;
     }
 
     /**
-     * Runs the job.
-     * @param {Object} db The database connection
-     * @param {Function} done The callback function to be called when the job is done
-     * @throws {Error} If the method is not overridden
+     * Runs the job. This method must be implemented by the child class.
+     * 
+     * @param {Db} db The database connection
+     * @param {Function} done Callback function to be called when the job is complete
+     *                       Call with error as first parameter if job fails
+     *                       Call with null and optional result as second parameter if job succeeds
+     * @param {Function} progress Progress reporting function for long-running jobs
+     *                           Call with (total, current, bookmark) to report progress
+     * 
+     * @example
+     * // Example implementation with progress reporting
+     * async run(db, done, progress) {
+     *     try {
+     *         const total = await db.collection('users').countDocuments({ active: false });
+     *         let processed = 0;
+     *         
+     *         const cursor = db.collection('users').find({ active: false });
+     *         while (await cursor.hasNext()) {
+     *             await cursor.next();
+     *             processed++;
+     *             if (processed % 100 === 0) {
+     *                 await progress(total, processed, `Processing inactive users`);
+     *             }
+     *         }
+     *         done(null, { processedCount: processed });
+     *     } catch (error) {
+     *         done(error);
+     *     }
+     * }
+     * 
      * @abstract
+     * @throws {Error} If the method is not overridden
      */
-    async run(/*db, done*/) {
+    async run(/*db, done, progress*/) {
         throw new Error('Job must be overridden');
     }
 
     /**
-     * Get the schedule for the job in cron format.
-     * @returns {string} The cron schedule
-     * @throws {Error} If the method is not overridden
+     * Get the schedule type and timing for the job.
+     * This method must be implemented by the child class.
+     * 
+     * @returns {Object} Schedule configuration object
+     * @property {('once'|'schedule'|'now')} type - Type of schedule
+     * @property {string|Date} [value] - Schedule value:
+     *   - For type='schedule': Cron expression (e.g., '0 * * * *' for hourly)
+     *   - For type='once': Date object for when to run
+     *   - For type='now': Not needed
+     * 
+     * @example
+     * // Run every day at midnight
+     * getSchedule() {
+     *     return {
+     *         type: 'schedule',
+     *         value: '0 0 * * *'
+     *     };
+     * }
+     * 
+     * @example
+     * // Run once at a specific time
+     * getSchedule() {
+     *     return {
+     *         type: 'once',
+     *         value: new Date('2024-01-01T00:00:00Z')
+     *     };
+     * }
+     * 
+     * @example
+     * // Run immediately
+     * getSchedule() {
+     *     return {
+     *         type: 'now'
+     *     };
+     * }
+     * 
      * @abstract
+     * @throws {Error} If the method is not overridden
      */
-    schedule() {
-        throw new Error('schedule must be overridden');
+    getSchedule() {
+        throw new Error('getSchedule must be overridden');
     }
 
     /**
-     * Runs the job and handles both Promise and callback patterns.
-     * @param {Object} db The database
+     * Internal method to run the job and handle both Promise and callback patterns.
+     * @param {Db} db The database connection
      * @param {Object} job The job instance
      * @param {Function} done Callback to be called when job completes
+     * @returns {Promise<void>} A promise that resolves once the job is completed
      * @private
      */
     async _run(db, job, done) {
         this.logger.d(`Job "${this.jobName}" is starting with database:`, db?._cly_debug?.db);
 
         try {
-            // Call run() and handle both Promise and callback patterns
             const result = await new Promise((resolve, reject) => {
                 try {
-                    // Call the run method and capture its return value
-                    // If run() uses callback pattern, resolve/reject the promise when the callback is called
                     const runResult = this.run(db, (error, callbackResult) => {
                         if (error) {
                             reject(error);
@@ -80,13 +195,11 @@ class Job {
                         else {
                             resolve(callbackResult);
                         }
-                    });
+                    }, this.reportProgress.bind(this));
 
-                    // If run() returns a Promise, handle it
                     if (runResult instanceof Promise) {
                         runResult.then(resolve).catch(reject);
                     }
-                    // If run() returns a value directly
                     else if (runResult !== undefined) {
                         resolve(runResult);
                     }
@@ -96,15 +209,62 @@ class Job {
                 }
             });
 
-            // Log success and call the job runner's callback
             this.logger.i(`Job "${this.jobName}" completed successfully:`, result || '');
             done(null, result);
         }
         catch (error) {
-            // Log error and call the job runner's callback with the error
             this.logger.e(`Job "${this.jobName}" encountered an error during execution:`, error);
             done(error);
         }
+    }
+
+    /**
+     * Sets the touch method (called internally by job runner)
+     * @param {Function} touchMethod The touch method from Pulse
+     * @private
+     */
+    _setTouchMethod(touchMethod) {
+        this._touchMethod = touchMethod;
+    }
+
+    /**
+     * Reports progress for long-running jobs to prevent lock expiration
+     * @param {number} [total] Total number of stages
+     * @param {number} [current] Current stage number
+     * @param {string} [bookmark] Bookmark string for current stage
+     */
+    async reportProgress(total, current, bookmark) {
+        if (!this._touchMethod) {
+            throw new Error('Touch method not available');
+        }
+
+        // Calculate progress percentage
+        const progress = total && current ? Math.min(100, Math.floor((current / total) * 100)) : undefined;
+
+        // Store progress data
+        const progressData = {
+            total,
+            current,
+            bookmark,
+            progress,
+            timestamp: new Date()
+        };
+
+        // Store in job data
+        if (!this.data) {
+            this.data = {};
+        }
+        this.data.progress = progressData;
+
+        // Call Pulse's touch method with progress
+        if (progress !== undefined) {
+            await this._touchMethod(progress);
+        }
+        else {
+            await this._touchMethod();
+        }
+
+        this.logger?.d(`Progress reported for job "${this.jobName}":`, progressData);
     }
 }
 
