@@ -13,6 +13,9 @@
     "type": "git",
     "url": "git://github.com/countly/countly-server.git"
   },
+  "engines": {
+    "node": "^20.0.0 || ^22.0.0"
+  },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2.11.0",
     "docdash": "^2.0.1",
