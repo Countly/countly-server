@@ -25,6 +25,21 @@ class JobRunnerPulseImpl extends IJobRunner {
             ...config,
             mongo: this.db,
         });
+
+        // Monitor for progress
+        this.#pulseRunner.on('touch', (job) => {
+            console.debug(`PULSE_EVENT_LISTENER: Lock extended for job ${job?.attrs?.name}`);
+        });
+
+        // Monitor for failures
+        this.#pulseRunner.on('fail', (err, job) => {
+            console.error(`PULSE_EVENT_LISTENER: Job ${job?.attrs?.name} failed:`, err);
+        });
+
+        // Monitor for stalled jobs
+        this.#pulseRunner.on('stalled', (job) => {
+            console.warn(`PULSE_EVENT_LISTENER: Job ${job?.attrs?.name} has stalled`);
+        });
     }
 
     /**
@@ -45,7 +60,8 @@ class JobRunnerPulseImpl extends IJobRunner {
      */
     async createJob(jobName, JobClass) {
         const instance = new JobClass(jobName);
-        instance.setLogger(this.log);
+        // instance.setLogger(this.log);
+        instance.setJobName(jobName);
         // const schedule = instance.schedule();
 
         this.#pulseRunner.define(
