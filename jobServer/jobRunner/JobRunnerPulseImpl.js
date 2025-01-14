@@ -32,9 +32,9 @@ class JobRunnerPulseImpl extends IJobRunner {
         });
 
         // Monitor for failures
-        this.#pulseRunner.on('fail', (err, job) => {
-            console.error(`PULSE_EVENT_LISTENER: Job ${job?.attrs?.name} failed:`, err);
-        });
+        // this.#pulseRunner.on('fail', (err, job) => {
+        //     console.error(`PULSE_EVENT_LISTENER: Job ${job?.attrs?.name} failed:`, err);
+        // });
 
         // Monitor for stalled jobs
         this.#pulseRunner.on('stalled', (job) => {
