@@ -155,7 +155,7 @@ var pluginManager = function pluginManager() {
             }
             db.collection('plugins').updateOne({'_id': 'plugins'}, {'$set': fordb}, function(err1) {
                 if (err1) {
-                    log.e(err1);
+                    console.error(err1);
                 }
                 else {
                     self.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
@@ -824,6 +824,10 @@ var pluginManager = function pluginManager() {
             callback();
         }
         return used;
+    };
+
+    this.returnEventsCopy = function() {
+        return JSON.parse(JSON.stringify(events));
     };
 
     /**
@@ -2272,7 +2276,58 @@ var pluginManager = function pluginManager() {
         overwriteDbPromise(countlyDb, "stats");
 
 
-        var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session", "omitReadPreference"];
+        var findOptions = [
+            "allowDiskUse",
+            "allowPartialResults",
+            "authdb",
+            "awaitData",
+            "batchSize",
+            "bsonRegExp",
+            "checkKeys",
+            "collation",
+            "comment",
+            "dbName",
+            "enableUtf8Validation",
+            "explain",
+            "fieldsAsRaw",
+            "hint",
+            "ignoreUndefined",
+            "let",
+            "limit",
+            "max",
+            "maxAwaitTimeMS",
+            "maxScan",
+            "maxTimeMS",
+            "min",
+            "noCursorTimeout",
+            "noResponse",
+            "omitReadPreference",
+            "oplogReplay",
+            "partial",
+            "projection",
+            "promoteBuffers",
+            "promoteLongs",
+            "promoteValues",
+            "raw",
+            "readConcern",
+            "readPreference",
+            "retryWrites",
+            "returnKey",
+            "serializeFunctions",
+            "session",
+            "showDiskLoc",
+            "showRecordId",
+            "singleBatch",
+            "skip",
+            "snapshot",
+            "sort",
+            "tailable",
+            "timeout",
+            "timeoutMode",
+            "timeoutMS",
+            "useBigInt64",
+            "willRetryWrite"
+        ];
 
         countlyDb._collection_cache = {};
         //overwrite some methods
