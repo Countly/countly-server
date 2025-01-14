@@ -57,8 +57,29 @@ class JobManager {
 
         await this.#loadJobs(jobClasses);
         await this.#jobRunner.start();
-        await this.#scheduleJobs(jobClasses);
         this.#log.d('JobManager started successfully');
+    }
+
+    /**
+     * Enable a job
+     * @param {string} jobName Name of the job to enable
+     */
+    async enableJob(jobName) {
+        if (!this.#jobRunner) {
+            throw new Error('Job runner not initialized');
+        }
+        await this.#jobRunner.enableJob(jobName);
+    }
+
+    /**
+     * Disable a job
+     * @param {string} jobName Name of the job to disable
+     */
+    async disableJob(jobName) {
+        if (!this.#jobRunner) {
+            throw new Error('Job runner not initialized');
+        }
+        await this.#jobRunner.disableJob(jobName);
     }
 
     /**
@@ -71,24 +92,6 @@ class JobManager {
             Object.entries(jobClasses)
                 .map(([name, JobClass]) => {
                     return this.#jobRunner.createJob(name, JobClass);
-                })
-        );
-    }
-
-    /**
-     * Schedules the jobs to run at their respective intervals
-     * @param { Object.<string, Function> } jobClasses Object containing job classes keyed by job name
-     * @returns {Promise<Awaited<void>[]>} A promise that resolves once the jobs are scheduled
-     */
-    #scheduleJobs(jobClasses) {
-        return Promise.all(
-            Object.entries(jobClasses)
-                .map(async([name, JobClass]) => {
-                    let instance = new JobClass(name);
-                    let schedule = await instance.schedule();
-                    if (schedule) {
-                        return this.#jobRunner.schedule(name, schedule);
-                    }
                 })
         );
     }
