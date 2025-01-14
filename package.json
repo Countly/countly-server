@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@breejs/later": "^4.2.0",
-    "@pulsecron/pulse": "^1.6.7",
+    "@pulsecron/pulse": "1.6.7",
     "all-the-cities": "3.1.0",
     "argon2": "0.41.1",
     "async": "3.2.6",
