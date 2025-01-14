@@ -16,7 +16,7 @@ class Job {
      * Creates an instance of Job.
      */
     constructor() {
-        this.doneCallback = this.doneCallback.bind(this);
+        this.logger.d(`Job instance"${this.jobName}" created`);
     }
 
     /**
@@ -58,35 +58,52 @@ class Job {
     }
 
     /**
-     * Callback function to be called when the job is done.
-     * @param {Error} error The error that occurred
-     * @param {Object} result The job that was run
-     * @returns {Error} The error to be returned to the job run by pulseScheduler
-     */
-    doneCallback(error, result) {
-        if (error) {
-            this.logger.e('Job failed with error:', error);
-            throw error;
-        }
-        else {
-            this.logger.i('Job completed successfully:', result ? result : '');
-            return result ? result : null;
-        }
-    }
-
-    /**
-     * Runs the job.
-     * @param { Object } db The database
+     * Runs the job and handles both Promise and callback patterns.
+     * @param {Object} db The database
+     * @param {Object} job The job instance
+     * @param {Function} done Callback to be called when job completes
      * @private
      */
-    _run(db) {
+    async _run(db, job, done) {
         this.logger.d(`Job "${this.jobName}" is starting with database:`, db?._cly_debug?.db);
+
         try {
-            this.run(db, this.doneCallback);
+            // Call run() and handle both Promise and callback patterns
+            const result = await new Promise((resolve, reject) => {
+                try {
+                    // Call the run method and capture its return value
+                    // If run() uses callback pattern, resolve/reject the promise when the callback is called
+                    const runResult = this.run(db, (error, callbackResult) => {
+                        if (error) {
+                            reject(error);
+                        }
+                        else {
+                            resolve(callbackResult);
+                        }
+                    });
+
+                    // If run() returns a Promise, handle it
+                    if (runResult instanceof Promise) {
+                        runResult.then(resolve).catch(reject);
+                    }
+                    // If run() returns a value directly
+                    else if (runResult !== undefined) {
+                        resolve(runResult);
+                    }
+                }
+                catch (error) {
+                    reject(error);
+                }
+            });
+
+            // Log success and call the job runner's callback
+            this.logger.i(`Job "${this.jobName}" completed successfully:`, result || '');
+            done(null, result);
         }
         catch (error) {
+            // Log error and call the job runner's callback with the error
             this.logger.e(`Job "${this.jobName}" encountered an error during execution:`, error);
-            this.doneCallback(error, this);
+            done(error);
         }
     }
 }
