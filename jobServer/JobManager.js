@@ -70,7 +70,7 @@ class JobManager {
         return Promise.all(
             Object.entries(jobClasses)
                 .map(([name, JobClass]) => {
-                    this.#jobRunner.createJob(name, JobClass);
+                    return this.#jobRunner.createJob(name, JobClass);
                 })
         );
     }
@@ -83,11 +83,11 @@ class JobManager {
     #scheduleJobs(jobClasses) {
         return Promise.all(
             Object.entries(jobClasses)
-                .map(([name, JobClass]) => {
+                .map(async([name, JobClass]) => {
                     let instance = new JobClass(name);
-                    let schedule = instance.schedule();
+                    let schedule = await instance.schedule();
                     if (schedule) {
-                        this.#jobRunner.schedule(name, schedule);
+                        return this.#jobRunner.schedule(name, schedule);
                     }
                 })
         );
