@@ -32,13 +32,15 @@ class IJobRunner {
     }
 
     /**
-     * Schedules jobs
+     * Schedules a job based on its configuration
      * @param {String} name The name of the job
-     * @param {String} schedule Cron string for the job schedule
-     * @param {Object} data Data to pass to the job
+     * @param {Object} scheduleConfig Schedule configuration object
+     * @param {('once'|'schedule'|'now')} scheduleConfig.type Type of schedule
+     * @param {string|Date} [scheduleConfig.value] Cron string or Date object
+     * @param {Object} [data] Data to pass to the job
      * @returns {Promise<void>} A promise that resolves once the job is scheduled
      */
-    async schedule(/*name, schedule, data*/) {
+    async schedule(/*name, scheduleConfig, data*/) {
         throw new Error('Method not implemented');
     }
 
@@ -77,6 +79,24 @@ class IJobRunner {
      * @returns {Promise<void>} A promise that resolves once the runner is closed
      */
     async close() {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Enable a job
+     * @param {string} jobName Name of the job to enable
+     * @returns {Promise<void>} A promise that resolves once the job is enabled
+     */
+    async enableJob(/*jobName*/) {
+        throw new Error('Method not implemented');
+    }
+
+    /**
+     * Disable a job
+     * @param {string} jobName Name of the job to disable
+     * @returns {Promise<void>} A promise that resolves once the job is disabled
+     */
+    async disableJob(/*jobName*/) {
         throw new Error('Method not implemented');
     }
 }
