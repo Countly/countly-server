@@ -1,162 +1,205 @@
 /* global Vue, CV, countlyCommon */
 (function(countlyVue) {
     Vue.component("cly-content-layout", countlyVue.components.create({
+        template: CV.T('/javascripts/countly/vue/templates/content/content.html'),
+
         props: {
-            popperClass: {
-                type: String,
-                required: false,
-                default: null
-            },
             backgroundColor: {
-                type: String,
-                required: false,
-                default: null
+                default: null,
+                type: String
+            },
+
+            popperClass: {
+                default: null,
+                type: String
             }
         },
-        data: function() {
-            return {
-                currentTab: this.meta?.tabs[0]?.value || null,
-                isActive: false
-            };
-        },
+
         computed: {
             containerClass() {
                 return this.popperClass || 'cly-vue-content-builder__layout-main';
             }
-        },
-        template: CV.T('/javascripts/countly/vue/templates/content/content.html'),
-        methods: {
         }
     }));
 
     Vue.component("cly-content-header", countlyVue.components.create({
+        template: CV.T('/javascripts/countly/vue/templates/content/content-header.html'),
+
         props: {
-            value: {
-                type: String,
-                required: true
-            },
-            version: {
-                type: String,
-                required: false,
-                default: null
-            },
-            createdBy: {
-                type: String,
-                required: false,
-                default: null
-            },
-            toggle: {
-                type: Boolean,
-                required: false,
-                default: false
-            },
-            closeButton: {
-                type: Boolean,
-                required: false,
-                default: true
-            },
-            tabs: {
-                type: Array,
-                required: false,
-                default: function() {
-                    return [];
-                }
-            },
-            titleMaxLength: {
-                type: Number,
-                required: false,
-                default: 50
-            },
-            status: {
-                type: Object,
-                required: false,
-                default: function() {
-                    return { show: false, label: 'Status', mode: 'primary' };
-                },
-            },
-            saveButtonLabel: {
-                type: String,
-                required: false,
-                default: CV.i18n('common.save')
-            },
-            disableSaveButton: {
-                type: Boolean,
-                required: false,
-                default: false
-            },
-            topDropdownOptions: {
-                type: Array,
-                required: false,
-                default: function() {
-                    return [];
-                }
-            },
-            hideSaveButton: {
-                type: Boolean,
-                required: false,
-                default: false
-            },
             backgroundColor: {
+                default: '#ffffff',
+                type: String
+            },
+
+            closeButton: {
+                default: true,
+                type: Boolean
+            },
+
+            createdBy: {
+                default: null,
                 type: String,
-                required: false,
-                default: '#fff'
             },
-            isToggleActive: {
-                type: Boolean,
-                required: false,
-                default: false
+
+            disableSaveButton: {
+                default: false,
+                type: Boolean
             },
+
+            hideSaveButton: {
+                default: false,
+                type: Boolean
+            },
+
             isToggleDisabled: {
-                type: Boolean,
-                required: false,
-                default: false
+                default: false,
+                type: Boolean
             },
+
+            options: {
+                default: () => ([]),
+                type: Array
+            },
+
+            saveButtonLabel: {
+                default: CV.i18n('common.save'),
+                type: String
+            },
+
+            status: {
+                default: () => ({
+                    label: 'Status',
+                    mode: 'primary',
+                    show: false
+                }),
+                type: Object
+            },
+
+            tabs: {
+                default: () => [],
+                type: Array
+            },
+
+            titleMaxLength: {
+                default: 50,
+                type: Number
+            },
+
+            toggle: {
+                default: false,
+                type: Boolean
+            },
+
             toggleTooltip: {
-                type: String,
-                required: false
-            }
-        },
-        data: function() {
-            return {
-                currentTab: this.tabs[0]?.value || null,
-                localTitle: countlyCommon.unescapeHtml(this.value),
-                isEditing: !this.value
-            };
-        },
-        watch: {
-            value: function(newVal) {
-                this.localTitle = newVal;
+                type: String
             },
-            currentTab: function(newVal) {
-                this.$emit('tab-change', newVal);
+
+            toggleValue: {
+                default: false,
+                type: Boolean
+            },
+
+            value: {
+                required: true,
+                type: String
+            },
+
+            version: {
+                default: null,
+                type: String
             }
         },
+
+        emits: [
+            'close',
+            'handle-command',
+            'input',
+            'save',
+            'switch-toggle',
+            'tab-change'
+        ],
+
+        data: () => ({
+            currentTab: null,
+
+            isReadonlyInput: true
+        }),
+
+        computed: {
+            activeTab: {
+                get() {
+                    return this.currentTab || this.tabs[0]?.value;
+                },
+                set(value) {
+                    this.currentTab = value;
+                    this.$emit('tab-change', value);
+                }
+            },
+
+            closeButtonIcon() {
+                return this.closeButton ? 'cly-io-x' : 'cly-io-arrow-sm-left';
+            },
+
+            dynamicTabsCustomStyle() {
+                return `background-color: ${this.backgroundColor}`;
+            },
+
+            inputTooltip() {
+                return this.localValue && this.localValue.length > 30 ? this.localValue : null;
+            },
+
+            isOptionsButtonVisible() {
+                return !!this.options.length;
+            },
+
+            localValue: {
+                get() {
+                    return countlyCommon.unescapeHtml(this.value);
+                },
+                set(value) {
+                    this.$emit('input', value);
+                }
+            },
+
+            toggleLocalValue: {
+                get() {
+                    return this.toggleValue;
+                },
+                set(value) {
+                    this.$emit('switch-toggle', value);
+                }
+            }
+        },
+
         methods: {
-            toggleChanged(newValue) {
-                this.$emit('toggleChanged', newValue);
-            },
-            close: function() {
+            onCloseIconClick() {
                 this.$emit('close');
             },
-            save: function() {
-                this.$emit('save');
-            },
-            handleCommand: function(event) {
+
+            onCommand(event) {
                 this.$emit('handle-command', event);
             },
-            handleDoubleClick: function() {
-                this.isEditing = true;
+
+            onInputBlur() {
+                this.toggleInputReadonlyState();
             },
-            finishEditing: function() {
-                if (this.localTitle) {
-                    this.isEditing = false;
-                }
-                if (this.localTitle !== this.value) {
-                    this.$emit('input', this.localTitle);
-                }
+
+            onInputContainerClick() {
+                this.toggleInputReadonlyState();
+            },
+
+            onInputKeydown() {
+                this.toggleInputReadonlyState();
+            },
+
+            onSaveButtonClick() {
+                this.$emit('save');
+            },
+
+            toggleInputReadonlyState() {
+                this.isReadonlyInput = !this.isReadonlyInput;
             }
-        },
-        template: CV.T('/javascripts/countly/vue/templates/content/content-header.html')
+        }
     }));
 
     Vue.component("cly-content-body", countlyVue.components.create({
@@ -426,6 +469,10 @@
                 get() {
                     if (this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH) {
                         return !!this.value;
+                    }
+
+                    if (this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT) {
+                        return countlyCommon.unescapeHtml(this.value) || '';
                     }
 
                     return this.value || null;

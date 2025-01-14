@@ -215,5 +215,21 @@
                 callback(err.responseJSON.result);
             });
     };
+    countlyUserManagement.disableTwoFactorAuth = function(id, callback) {
+        return $.ajax({
+            type: "GET",
+            url: countlyGlobal.path + "/i/two-factor-auth",
+            data: {
+                method: "admin_disable",
+                uid: id
+            },
+            success: function() {
+                callback();
+            },
+            error: function(err) {
+                callback(err.responseJSON.result);
+            }
+        });
+    };
 
 })((window.countlyUserManagement = window.countlyUserManagement || {}));
