@@ -9,7 +9,7 @@ Fixes:
 
 
 Dependencies:
-- Bump sass from 1.81.0 to 1.83.3
+- Bump sass from 1.81.0 to 1.83.4
 - Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
 - Bump countly-sdk-web from 24.11.2 to 24.11.4
 - Bump express-rate-limit from 7.4.1 to 7.5.0
