@@ -5,20 +5,24 @@ A flexible, extensible job scheduling and execution system built on MongoDB with
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Dependencies](#dependencies)
-4. [Installation](#installation)
+2. [Dependencies](#dependencies)
+3. [Installation](#installation)
+4. [Collections](#collections)
 5. [Basic Usage](#basic-usage)
-6. [Collections](#collections)
+6. [Architecture](#architecture)
 7. [Server Configuration](#server-configuration)
 8. [Job Implementation Guide](#job-implementation-guide)
-9. [Job Configuration Management](#job-configuration-management)
-10. [Parallel Processing](#parallel-processing)
-11. [Class Reference](#class-reference)
+9. [Lock Extension & Progress Reporting](#lock-extension--progress-reporting)
+10. [Job Configuration Management](#job-configuration-management)
+11. [Parallel Processing](#parallel-processing)
 12. [File Structure](#file-structure)
 13. [Interface Contracts](#interface-contracts)
 14. [Implementing New Runners](#implementing-new-runners)
-15. [BullMQ Implementation Guide](#bullmq-implementation-guide)
+15. [Error Handling & Monitoring](#error-handling--monitoring)
+16. [Best Practices](#best-practices)
+17. [Troubleshooting Guide](#troubleshooting-guide)
+18. [Monitoring & Metrics](#monitoring--metrics)
+19. [BullMQ Implementation Guide](#bullmq-implementation-guide)
 
 ## Overview
 
@@ -40,10 +44,10 @@ The Job Server Module provides a robust framework for scheduling and executing b
 Core dependencies:
 ```json
 {
-  "@pulsecron/pulse": "^1.0.0",
+  "@pulsecron/pulse": "1.6.7",
   "cron-validator": "^1.3.1",
-  "@breejs/later": "^4.1.0", // should be removed soon
-  "mongodb": "^4.0.0"
+  "@breejs/later": "^4.2.0", // should be removed soon
+  "mongodb": "6.11.0"
 }
 ```
 
@@ -306,6 +310,33 @@ class DataProcessingJob extends Job {
 }
 ```
 
+## Lock Extension & Progress Reporting
+
+### Lock Extension
+Long-running jobs need to periodically extend their locks to prevent expiration and avoid duplicate execution. The job system provides two ways to extend locks:
+
+1. **Automatic Extension with Progress Updates**
+   When using the progress reporting function, locks are automatically extended:
+
+```javascript
+class MyLongJob extends Job {
+    async run(db, done, progress) {
+        const total = 1000;
+        for (let i = 0; i < total; i++) {
+            // Process item...
+            
+            // Automatically extends lock when reporting progress
+            await progress(
+                total,
+                i + 1,
+                `Processing item ${i + 1}/${total}`
+            );
+        }
+        done();
+    }
+}
+```
+
 ## Job Configuration Management
 
 ### Dynamic Configuration via MongoDB
@@ -554,41 +585,6 @@ const RUNNER_TYPES = {
     PULSE: 'pulse',
     MY_RUNNER: 'myRunner'
 };
-```
-
-### Example: Custom Runner Implementation
-
-```javascript
-// jobRunner/impl/myRunner/MyJobExecutor.js
-class MyJobExecutor extends IJobExecutor {
-    async createJob(jobName, JobClass) {
-        const instance = new JobClass();
-        // Initialize job in your system
-        await this.runner.define(jobName, {
-            concurrency: instance.getConcurrency(),
-            priority: instance.getPriority(),
-            // ... other settings
-        });
-    }
-
-    async enableJob(jobName) {
-        await this.runner.enable(jobName);
-    }
-
-    async disableJob(jobName) {
-        await this.runner.disable(jobName);
-    }
-
-    async configureRetry(jobName, retryConfig) {
-        await this.runner.updateJobSettings(jobName, {
-            retries: retryConfig.attempts,
-            backoff: {
-                type: 'exponential',
-                delay: retryConfig.delay
-            }
-        });
-    }
-}
 ```
 
 ## Error Handling & Monitoring
@@ -845,33 +841,6 @@ class LoggingJob extends Job {
     i: 'General operational information',
     w: 'Warning messages for potentially harmful situations',
     e: 'Error events that might still allow the application to continue running'
-}
-```
-
-## Lock Extension & Progress Reporting
-
-### Lock Extension
-Long-running jobs need to periodically extend their locks to prevent expiration and avoid duplicate execution. The job system provides two ways to extend locks:
-
-1. **Automatic Extension with Progress Updates**
-When using the progress reporting function, locks are automatically extended:
-
-```javascript
-class MyLongJob extends Job {
-    async run(db, done, progress) {
-        const total = 1000;
-        for (let i = 0; i < total; i++) {
-            // Process item...
-            
-            // Automatically extends lock when reporting progress
-            await progress(
-                total,
-                i + 1,
-                `Processing item ${i + 1}/${total}`
-            );
-        }
-        done();
-    }
 }
 ```
 
