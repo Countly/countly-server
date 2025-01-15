@@ -30,6 +30,8 @@ class JobUtils {
     }
 
     /**
+     * @note
+     * We shouldn't need this and use cron string directly in job schedule to avoid conversion
      * Converts a later.js schedule to a cron string.
      * @param {String} laterString - The later.js schedule string.
      * @constructor
@@ -132,12 +134,12 @@ class JobUtils {
         }
 
         if (isEveryMinute) {
-            const interval = parseInt(isEveryMinute[1]);
+            const interval = parseInt(isEveryMinute[1], 10);
             return `*/${interval} * * * *`;
         }
 
         if (isEveryHour) {
-            const interval = parseInt(isEveryHour[1]);
+            const interval = parseInt(isEveryHour[1], 10);
             return laterString.includes('on the 1st min')
                 ? `1 */${interval} * * *`
                 : `0 */${interval} * * *`;
@@ -145,8 +147,8 @@ class JobUtils {
 
         if (isSpecificTime && isEveryDay) {
             let [, hour, minute, meridiem] = isSpecificTime;
-            hour = parseInt(hour);
-            minute = parseInt(minute);
+            hour = parseInt(hour, 10);
+            minute = parseInt(minute, 10);
             if (meridiem) {
                 hour = meridiem.toLowerCase() === 'pm' && hour < 12 ? hour + 12 : hour;
                 hour = meridiem.toLowerCase() === 'am' && hour === 12 ? 0 : hour;
@@ -157,8 +159,8 @@ class JobUtils {
         if (isWeekday) {
             if (isSpecificTime) {
                 let [, hour, minute, meridiem] = isSpecificTime;
-                hour = parseInt(hour);
-                minute = parseInt(minute);
+                hour = parseInt(hour, 10);
+                minute = parseInt(minute, 10);
                 if (meridiem) {
                     hour = meridiem.toLowerCase() === 'pm' && hour < 12 ? hour + 12 : hour;
                     hour = meridiem.toLowerCase() === 'am' && hour === 12 ? 0 : hour;
@@ -169,11 +171,11 @@ class JobUtils {
         }
 
         if (isEveryNDays) {
-            const interval = parseInt(isEveryNDays[1]);
+            const interval = parseInt(isEveryNDays[1], 10);
             if (isSpecificTime) {
                 let [, hour, minute, meridiem] = isSpecificTime;
-                hour = parseInt(hour);
-                minute = parseInt(minute);
+                hour = parseInt(hour, 10);
+                minute = parseInt(minute, 10);
                 if (meridiem) {
                     hour = meridiem.toLowerCase() === 'pm' && hour < 12 ? hour + 12 : hour;
                     hour = meridiem.toLowerCase() === 'am' && hour === 12 ? 0 : hour;
@@ -186,8 +188,8 @@ class JobUtils {
         if (isLastDayOfMonth) {
             if (isSpecificTime) {
                 let [, hour, minute, meridiem] = isSpecificTime;
-                hour = parseInt(hour);
-                minute = parseInt(minute);
+                hour = parseInt(hour, 10);
+                minute = parseInt(minute, 10);
                 if (meridiem) {
                     hour = meridiem.toLowerCase() === 'pm' && hour < 12 ? hour + 12 : hour;
                     hour = meridiem.toLowerCase() === 'am' && hour === 12 ? 0 : hour;
@@ -198,7 +200,7 @@ class JobUtils {
         }
 
         if (isOnceInHours) {
-            const interval = parseInt(isOnceInHours[1]);
+            const interval = parseInt(isOnceInHours[1], 10);
             return `0 */${interval} * * *`;
         }
 
