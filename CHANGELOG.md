@@ -1,4 +1,4 @@
-## Version 24.05.21
+## Version 24.10.5
 
 Fixes:
 - [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
@@ -6,7 +6,6 @@ Fixes:
 - [reports] Fixes report generation failure due to SSL error
 - [surveys] "Select one" text in the widget can be edited now
 - [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
-
 
 Dependencies:
 - Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
