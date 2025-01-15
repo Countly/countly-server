@@ -26,19 +26,47 @@ class JobUtils {
             throw new Error(`Job class must extend ${BaseClass.name}`);
         }
 
-        // Additional checks can be added here
+        // Check if required methods are overridden
+        const requiredMethods = ['run', 'getSchedule'];
+        for (const method of requiredMethods) {
+            // Get the method from the job class prototype
+            const jobMethod = JobClass.prototype[method];
+            // Get the method from the base class prototype
+            const baseMethod = BaseClass.prototype[method];
+
+            // Check if method exists and is different from base class implementation
+            if (!jobMethod || jobMethod === baseMethod) {
+                throw new Error(`Job class must override the '${method}' method`);
+            }
+        }
+
         return true;
     }
 
     /**
-     * @note
-     * We shouldn't need this and use cron string directly in job schedule to avoid conversion
-     * Converts a later.js schedule to a cron string.
+     * Calculates checksum for a job class
+     * @param {Function} JobClass The job class to calculate checksum for
+     * @returns {string} The calculated checksum
+     */
+    static calculateJobChecksum(JobClass) {
+        const jobString = JobClass.toString();
+        return crypto
+            .createHash('sha256')
+            .update(jobString)
+            .digest('hex');
+    }
+
+    /**
      * @param {String} laterString - The later.js schedule string.
      * @constructor
      * @retuns {String} The cron string.
      *
      * @note
+     * 
+     * We shouldn't need this and use cron string directly in job schedule to avoid conversion
+     * Converts a later.js schedule to a cron string.
+     * 
+     * if we do decide to use this, we need to add tests for all the possible cron strings currently used in countly
      * TESTS NEEDED
      *
      * "every 5 minutes"
@@ -234,19 +262,6 @@ class JobUtils {
         const dayOfWeekPart = formatComponent(daysOfWeek, 7);
 
         return `${minutePart} ${hourPart} ${dayPart} ${monthPart} ${dayOfWeekPart}`;
-    }
-
-    /**
-     * Calculates checksum for a job class
-     * @param {Function} JobClass The job class to calculate checksum for
-     * @returns {string} The calculated checksum
-     */
-    static calculateJobChecksum(JobClass) {
-        const jobString = JobClass.toString();
-        return crypto
-            .createHash('sha256')
-            .update(jobString)
-            .digest('hex');
     }
 
 }

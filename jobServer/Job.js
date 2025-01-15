@@ -1,10 +1,6 @@
-const defaultLogger = {
-    d: console.debug,
-    w: console.warn,
-    e: console.error,
-    i: console.info
-};
+const defaultLogger = { d: console.debug, w: console.warn, e: console.error, i: console.info };
 const { JOB_PRIORITIES } = require('./constants/JobPriorities');
+
 /**
  * Base class for creating jobs.
  * 
@@ -67,10 +63,12 @@ class Job {
     logger;
 
     /** @type {Function|null} Touch method from job runner */
-    _touchMethod = null;
+    #touchMethod = null;
 
     /** @type {Function|null} Progress method from job runner */
-    _progressMethod = null;
+    #progressMethod;
+
+    priorities = JOB_PRIORITIES;
 
     /**
      * Creates an instance of Job.
@@ -229,19 +227,19 @@ class Job {
     /**
      * Sets the touch method (called internally by job runner)
      * @param {Function} touchMethod The touch method from Pulse
-     * @private
+     * @public
      */
-    _setTouchMethod(touchMethod) {
-        this._touchMethod = touchMethod;
+    setTouchMethod(touchMethod) {
+        this.#touchMethod = touchMethod;
     }
 
     /**
      * Sets the progress method from the runner
      * @param {Function} progressMethod Method to update progress
-     * @protected
+     * @public
      */
-    _setProgressMethod(progressMethod) {
-        this._progressMethod = progressMethod;
+    setProgressMethod(progressMethod) {
+        this.#progressMethod = progressMethod;
     }
 
     /**
@@ -264,13 +262,13 @@ class Job {
         };
 
         // Update progress using runner's method if available
-        if (this._progressMethod) {
-            await this._progressMethod(progressData);
+        if (this.#progressMethod) {
+            await this.#progressMethod(progressData);
         }
 
         // Touch to prevent lock expiration
-        if (this._touchMethod) {
-            await this._touchMethod();
+        if (this.#touchMethod) {
+            await this.#touchMethod();
         }
 
         this.logger?.d(`Progress reported for job "${this.jobName}":`, progressData);
@@ -297,7 +295,7 @@ class Job {
      * @returns {string} Priority level from JOB_PRIORITIES
      */
     getPriority() {
-        return JOB_PRIORITIES.NORMAL;
+        return this.priorities.NORMAL;
     }
 
     /**

@@ -1,13 +1,10 @@
-const IJobRunner = require('./IJobRunner');
-// const JobRunnerBullImpl = require('./JobRunnerBullImpl');
-const JobRunnerPulseImpl = require('./JobRunnerPulseImpl');
+const PulseJobRunner = require('./PulseJobRunner.js');
 
 /**
  * JobRunner implementation types
  * @enum {string}
  */
 const RUNNER_TYPES = {
-    // BULL: 'bull',
     PULSE: 'pulse'
 };
 
@@ -15,21 +12,18 @@ const RUNNER_TYPES = {
  * Job Runner factory
  * 
  * @param {Object} db The database connection
- * @param {string} [type='pulse'] The type of runner to create ('bull' or 'pulse')
+ * @param {string} [type='pulse'] The type of runner to create
  * @param {Object} [config={}] Configuration specific to the runner implementation
  * @param {function} Logger - Logger constructor
- * @returns {IJobRunner} An instance of the specified JobRunner implementation
+ * @returns {BaseJobRunner} An instance of BaseJobRunner with specific implementation
  * @throws {Error} If an invalid runner type is specified
  */
 function createJobRunner(db, type = RUNNER_TYPES.PULSE, config = {}, Logger) {
-
     switch (type.toLowerCase()) {
-    // case RUNNER_TYPES.BULL:
-    //     return new JobRunnerBullImpl(db, config, Logger);
     case RUNNER_TYPES.PULSE:
-        return new JobRunnerPulseImpl(db, config, Logger);
+        return new PulseJobRunner(db, config, Logger);
     default:
-        throw new Error(`Invalid runner type: ${type}. Must be one of: ${Object.values(RUNNER_TYPES).join(', ')} and implementation of ` + IJobRunner.name);
+        throw new Error(`Invalid runner type: ${type}. Must be one of: ${Object.values(RUNNER_TYPES).join(', ')}`);
     }
 }
 
