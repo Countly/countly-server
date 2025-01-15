@@ -151,7 +151,10 @@ class PulseJobExecutor extends IJobExecutor {
      */
     async #updateJobProgress(job, progressData) {
         try {
-            job.data = progressData;
+            job.attrs.data = {
+                ...job.attrs.data,
+                progressData
+            };
             await job.save();
         }
         catch (error) {

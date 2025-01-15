@@ -268,7 +268,7 @@ class Job {
 
         // Touch to prevent lock expiration
         if (this.#touchMethod) {
-            await this.#touchMethod();
+            await this.#touchMethod(progress);
         }
 
         this.logger?.d(`Progress reported for job "${this.jobName}":`, progressData);
