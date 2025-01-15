@@ -47,7 +47,7 @@ class PulseJobRunner extends BaseJobRunner {
         const log = Logger('jobs:runner:pulse');
         log.d('Initializing PulseJobRunner');
 
-        if (!db || !config || !Logger) {
+        if (!db || !config) {
             log.e('Missing required dependencies');
             throw new Error('Missing required dependencies for PulseJobRunner');
         }
