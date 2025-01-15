@@ -99,6 +99,47 @@ class IJobRunner {
     async disableJob(/*jobName*/) {
         throw new Error('Method not implemented');
     }
+
+    /**
+     * Run a job immediately
+     * @param {string} jobName Name of the job to run
+     * @returns {Promise<void>} A promise that resolves once the job is triggered
+     */
+    async runJobNow(/* jobName */) {
+        throw new Error('runJobNow must be implemented');
+    }
+
+    /**
+     * Update job schedule
+     * @param {string} jobName Name of the job
+     * @param {string|Date} schedule New schedule (cron string or date)
+     * @returns {Promise<void>} A promise that resolves once schedule is updated
+     */
+    async updateSchedule(/* jobName, schedule */) {
+        throw new Error('updateSchedule must be implemented');
+    }
+
+    /**
+     * Configure job retry settings
+     * @param {string} jobName Name of the job
+     * @param {Object} retryConfig Retry configuration
+     * @param {number} retryConfig.attempts Number of retry attempts
+     * @param {number} retryConfig.delay Delay between retries in ms
+     * @returns {Promise<void>} A promise that resolves once retry is configured
+     */
+    async configureRetry(/* jobName, retryConfig */) {
+        throw new Error('configureRetry must be implemented');
+    }
+
+    /**
+     * Maps generic priority to runner-specific priority
+     * @protected
+     * @param {string} priority Generic priority from JOB_PRIORITIES
+     * returns {any} Runner-specific priority value
+     */
+    _mapPriority(/* priority */) {
+        throw new Error('_mapPriority must be implemented');
+    }
 }
 
 module.exports = IJobRunner;

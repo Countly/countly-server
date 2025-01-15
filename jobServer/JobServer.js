@@ -109,8 +109,6 @@ class JobServer {
             // await this.#jobConfigsCollection.createIndex({ jobName: 1 }, /*{ unique: true }*/);
 
             this.#setupSignalHandlers();
-            // Watch for changes in job configurations
-            this.#watchJobConfigs();
 
             this.#log.i('Job process init successfully');
         }
@@ -173,40 +171,6 @@ class JobServer {
         process.on('uncaughtException', (error) => {
             this.#log.e('Uncaught exception:', error);
             this.#shutdown(1);
-        });
-    }
-
-    /**
-     * Watch for changes in job configurations
-     * @private
-     */
-    async #watchJobConfigs() {
-        const changeStream = this.#jobConfigsCollection.watch();
-
-        changeStream.on('change', async(change) => {
-            try {
-                if (change.operationType === 'update' || change.operationType === 'insert') {
-                    const jobName = change.fullDocument.jobName;
-                    const enabled = change.fullDocument.enabled;
-
-                    if (enabled) {
-                        await this.#jobManager.enableJob(jobName);
-                    }
-                    else {
-                        await this.#jobManager.disableJob(jobName);
-                    }
-
-                    this.#log.i(`Job ${jobName} ${enabled ? 'enabled' : 'disabled'}`);
-                }
-            }
-            catch (error) {
-                this.#log.e('Error processing job config change:', error);
-            }
-        });
-
-        changeStream.on('error', (error) => {
-            this.#log.e('Error in job configs change stream:', error);
-            // Implement reconnection logic here
         });
     }
 

@@ -1,6 +1,7 @@
 const IJobRunner = require('./IJobRunner');
 const { Pulse, JobPriority } = require('@pulsecron/pulse');
 const {isValidCron} = require('cron-validator');
+const { JOB_PRIORITIES } = require('../constants/JobPriorities');
 
 /**
  * Pulse implementation of the job runner
@@ -77,6 +78,12 @@ class JobRunnerPulseImpl extends IJobRunner {
             // instance.setLogger(this.log);
             instance.setJobName(jobName);
 
+            // Get job configurations
+            const retryConfig = instance.getRetryConfig();
+            const priority = this._mapPriority(instance.getPriority());
+            const concurrency = instance.getConcurrency();
+            const lockLifetime = instance.getLockLifetime();
+
             this.#pulseRunner.define(
                 jobName,
                 async(job, done) => {
@@ -84,27 +91,21 @@ class JobRunnerPulseImpl extends IJobRunner {
                     instance._setProgressMethod(
                         async(progressData) => this.#updateJobProgress(job, progressData)
                     );
-
-                    return instance._run(
-                        this.db,
-                        job,
-                        done
-                    );
+                    return instance._run(this.db, job, done);
                 },
                 {
-                    priority: JobPriority.normal,
-                    concurrency: 1,
-                    lockLifetime: 10000,
+                    priority,
+                    concurrency,
+                    lockLifetime,
                     shouldSaveResult: true,
-                    attempts: 3,
-                    backoff: {
+                    attempts: retryConfig?.enabled ? retryConfig.attempts : 1,
+                    backoff: retryConfig?.enabled ? {
                         type: 'exponential',
-                        delay: 2000
-                    }
+                        delay: retryConfig.delay
+                    } : undefined
                 }
             );
 
-            // Store schedule configuration for later
             const scheduleConfig = instance.getSchedule();
             this.#pendingSchedules.set(jobName, scheduleConfig);
             this.log.d(`Job ${jobName} defined successfully`);
@@ -193,6 +194,86 @@ class JobRunnerPulseImpl extends IJobRunner {
             this.log.e(`Failed to disable job ${jobName}:`, error);
             throw error;
         }
+    }
+
+    /**
+     * Triggers immediate execution of a job
+     * @param {string} jobName Name of the job to run
+     * @returns {Promise<void>} A promise that resolves when the job is triggered
+     */
+    async runJobNow(jobName) {
+        try {
+            await this.#pulseRunner.now({ name: jobName });
+            this.log.i(`Job ${jobName} triggered for immediate execution`);
+        }
+        catch (error) {
+            this.log.e(`Failed to run job ${jobName} immediately:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Updates the schedule of an existing job
+     * @param {string} jobName Name of the job to update
+     * @param {Object} schedule New schedule configuration
+     * @returns {Promise<void>} A promise that resolves when the schedule is updated
+     */
+    async updateSchedule(jobName, schedule) {
+        try {
+            await this.#pulseRunner.reschedule({ name: jobName }, schedule);
+            this.log.i(`Schedule updated for job ${jobName}`);
+        }
+        catch (error) {
+            this.log.e(`Failed to update schedule for job ${jobName}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Configures retry settings for a job
+     * @param {string} jobName Name of the job
+     * @param {Object} retryConfig Retry configuration
+     * @param {number} retryConfig.attempts Number of retry attempts
+     * @param {number} retryConfig.delay Delay between retries in milliseconds
+     * @returns {Promise<void>} A promise that resolves when retry config is updated
+     */
+    async configureRetry(jobName, retryConfig) {
+        try {
+            await this.#pulseRunner.updateOne(
+                { name: jobName },
+                {
+                    $set: {
+                        attempts: retryConfig.attempts,
+                        backoff: {
+                            delay: retryConfig.delay,
+                            type: 'fixed'
+                        }
+                    }
+                }
+            );
+            this.log.i(`Retry configuration updated for job ${jobName}`);
+        }
+        catch (error) {
+            this.log.e(`Failed to configure retry for job ${jobName}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Maps generic priority to runner-specific priority
+     * @protected
+     * @param {string} priority Generic priority from JOB_PRIORITIES
+     * @returns {any} Runner-specific priority value
+     */
+    _mapPriority(priority) {
+        const priorityMap = {
+            [JOB_PRIORITIES.LOWEST]: JobPriority.lowest,
+            [JOB_PRIORITIES.LOW]: JobPriority.low,
+            [JOB_PRIORITIES.NORMAL]: JobPriority.normal,
+            [JOB_PRIORITIES.HIGH]: JobPriority.high,
+            [JOB_PRIORITIES.HIGHEST]: JobPriority.highest
+        };
+        return priorityMap[priority] || JobPriority.normal;
     }
 }
 

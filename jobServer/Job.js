@@ -4,6 +4,7 @@ const defaultLogger = {
     e: console.error,
     i: console.info
 };
+const { JOB_PRIORITIES } = require('./constants/JobPriorities');
 /**
  * Base class for creating jobs.
  * 
@@ -273,6 +274,46 @@ class Job {
         }
 
         this.logger?.d(`Progress reported for job "${this.jobName}":`, progressData);
+    }
+
+    /**
+     * Get job retry configuration
+     * @typedef {Object} RetryConfig
+     * @property {boolean} enabled - Whether retries are enabled
+     * @property {number} attempts - Number of retry attempts
+     * @property {number} delay - Delay between retry attempts in milliseconds, delay is by default exponentially increasing after each attempt
+     * @returns {RetryConfig|null} Retry configuration or null for default
+     */
+    getRetryConfig() {
+        return {
+            enabled: true,
+            attempts: 3,
+            delay: 2000 // 2 seconds
+        };
+    }
+
+    /**
+     * Get job priority
+     * @returns {string} Priority level from JOB_PRIORITIES
+     */
+    getPriority() {
+        return JOB_PRIORITIES.NORMAL;
+    }
+
+    /**
+     * Get job concurrency
+     * @returns {number|null} Maximum concurrent instances or null for default
+     */
+    getConcurrency() {
+        return 1;
+    }
+
+    /**
+     * Get job lock lifetime in milliseconds
+     * @returns {number|null} Lock lifetime or null for default
+     */
+    getLockLifetime() {
+        return 55 * 60 * 1000; // 55 minutes
     }
 }
 

@@ -1,6 +1,7 @@
 const Job = require('./Job');
 const {isValidCron} = require('cron-validator');
 const later = require('@breejs/later');
+const crypto = require('crypto');
 
 /**
  * Class responsible for validating job classes.
@@ -233,6 +234,19 @@ class JobUtils {
         const dayOfWeekPart = formatComponent(daysOfWeek, 7);
 
         return `${minutePart} ${hourPart} ${dayPart} ${monthPart} ${dayOfWeekPart}`;
+    }
+
+    /**
+     * Calculates checksum for a job class
+     * @param {Function} JobClass The job class to calculate checksum for
+     * @returns {string} The calculated checksum
+     */
+    static calculateJobChecksum(JobClass) {
+        const jobString = JobClass.toString();
+        return crypto
+            .createHash('sha256')
+            .update(jobString)
+            .digest('hex');
     }
 
 }
