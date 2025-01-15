@@ -11,6 +11,7 @@ const JobUtils = require('./JobUtils');
  * @typedef {Object} JobConfig
  * @property {string} category - Category of the job (e.g., 'api' or plugin name)
  * @property {string} dir - Directory path containing job files
+ * @property {boolean} [required=false] - Whether this job directory must exist
  */
 
 /**
@@ -18,12 +19,16 @@ const JobUtils = require('./JobUtils');
  * @property {string} category - Category of the job
  * @property {string} name - Name of the job file (without extension)
  * @property {string} file - Full path to the job file
+ * @property {Date} lastModified - Last modification timestamp of the job file
  */
 
 /**
  * @typedef {Object} ScanResult
  * @property {Object.<string, string>} files - Object storing job file paths, keyed by job name
  * @property {Object.<string, Function>} classes - Object storing job class implementations, keyed by job name
+ * @property {number} totalScanned - Total number of files scanned
+ * @property {number} successfullyLoaded - Number of successfully loaded jobs
+ * @property {string[]} errors - Array of error messages from failed loads
  */
 
 /**
@@ -97,27 +102,37 @@ class JobScanner {
             const files = await fs.readdir(jobConfig.dir);
             const jobFiles = [];
 
+            this.#log.d(`Scanning directory ${jobConfig.dir} for jobs`);
+
             for (const file of files) {
                 const fullPath = path.join(jobConfig.dir, file);
                 try {
                     const stats = await fs.stat(fullPath);
-                    if (stats.isFile()) {
+                    if (stats.isFile() && file.endsWith('.js')) {
                         jobFiles.push({
                             category: jobConfig.category,
                             name: path.basename(file, '.js'),
-                            file: fullPath
+                            file: fullPath,
+                            lastModified: stats.mtime
                         });
+                        this.#log.d(`Found job file: ${file}`);
                     }
                 }
                 catch (err) {
-                    this.#log.w(`Failed to stat file ${fullPath}: ${err.message}`);
+                    this.#log.w(`Failed to stat file ${fullPath}:`, err);
                 }
             }
 
+            this.#log.i(`Found ${jobFiles.length} job files in ${jobConfig.dir}`);
             return jobFiles;
         }
         catch (err) {
-            this.#log.w(`Failed to read directory ${jobConfig.dir}: ${err.message}`);
+            const message = `Failed to read directory ${jobConfig.dir}: ${err.message}`;
+            if (jobConfig.required) {
+                this.#log.e(message, err);
+                throw new Error(message);
+            }
+            this.#log.w(message);
             return [];
         }
     }
@@ -197,7 +212,8 @@ class JobScanner {
      * @throws {Error} If plugin configuration is invalid or missing
      */
     async scan() {
-        // Initialize plugin manager
+        this.#log.i('Starting job scan...');
+
         await this.#initializeConfig();
 
         const plugins = this.#pluginManager.getPlugins(true);
@@ -205,11 +221,16 @@ class JobScanner {
             throw new Error('No valid plugins.json configuration found');
         }
 
-        this.#log.i('Scanning plugins:', plugins);
+        this.#log.i(`Found ${plugins.length} plugins to scan:`, plugins);
 
         // Reset current collections
         this.#currentFiles = {};
         this.#currentClasses = {};
+        const scanStats = {
+            totalScanned: 0,
+            successfullyLoaded: 0,
+            errors: []
+        };
 
         // Build list of directories to scan
         const jobDirs = this.#getJobDirectories(plugins);
@@ -223,13 +244,26 @@ class JobScanner {
         jobFiles.flat()
             .filter(Boolean)
             .forEach(job => {
+                scanStats.totalScanned++;
                 const loaded = this.#loadJobFile(job);
-                this.#storeLoadedJob(loaded);
+                if (loaded) {
+                    scanStats.successfullyLoaded++;
+                    this.#storeLoadedJob(loaded);
+                }
+                else {
+                    scanStats.errors.push(`Failed to load job: ${job.file}`);
+                }
             });
+
+        this.#log.i(`Job scan complete. Loaded ${scanStats.successfullyLoaded}/${scanStats.totalScanned} jobs`);
+        if (scanStats.errors.length) {
+            this.#log.w(`Failed to load ${scanStats.errors.length} jobs`);
+        }
 
         return {
             files: this.#currentFiles,
-            classes: this.#currentClasses
+            classes: this.#currentClasses,
+            ...scanStats
         };
     }
 

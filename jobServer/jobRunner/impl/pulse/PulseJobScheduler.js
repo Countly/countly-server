@@ -2,13 +2,25 @@ const IJobScheduler = require('../../interfaces/IJobScheduler');
 const {isValidCron} = require('cron-validator');
 
 /**
+ * @typedef {import('../../interfaces/IJobScheduler')} IJobScheduler
+ * @typedef {import('@pulse/runner')} PulseRunner
+ * @typedef {import('@logger/interface')} Logger
+ * 
+ * @typedef {Object} ScheduleConfig
+ * @property {'schedule'|'once'|'now'} type - Type of schedule
+ * @property {string|Date} [value] - Cron expression for 'schedule' type or Date for 'once' type
+ */
+
+/**
  * Pulse implementation of job scheduler
+ * Handles scheduling, updating, and immediate execution of jobs using Pulse runner
+ * @implements {IJobScheduler}
  */
 class PulseJobScheduler extends IJobScheduler {
     /**
      * Creates a new PulseJobScheduler instance
-     * @param {Object} pulseRunner The Pulse runner instance
-     * @param {Object} logger Logger instance
+     * @param {PulseRunner} pulseRunner - The Pulse runner instance for job scheduling
+     * @param {Logger} logger - Logger instance for operational logging
      */
     constructor(pulseRunner, logger) {
         super();
@@ -17,10 +29,10 @@ class PulseJobScheduler extends IJobScheduler {
     }
 
     /**
-     * Validates schedule configuration
+     * Validates schedule configuration structure and values
      * @private
-     * @param {Object} config Schedule configuration
-     * @throws {Error} If configuration is invalid
+     * @param {ScheduleConfig} config - Schedule configuration to validate
+     * @throws {Error} If configuration is invalid or missing required fields
      */
     #validateScheduleConfig(config) {
         if (!config || typeof config !== 'object') {
@@ -42,15 +54,20 @@ class PulseJobScheduler extends IJobScheduler {
     }
 
     /**
-     * Schedules a job to run
-     * @param {string} name Job name
-     * @param {Object} scheduleConfig Schedule configuration
-     * @param {Object} [data] Optional data to pass to the job
-     * @returns {Promise<void>} A promise that resolves once the job is scheduled
+     * Schedules a job to run based on provided configuration
+     * @param {string} name - Unique identifier for the job
+     * @param {ScheduleConfig} scheduleConfig - Configuration defining when the job should run
+     * @param {Object} [data={}] - Optional payload to pass to the job during execution
+     * @returns {Promise<void>} Resolves when job is successfully scheduled
+     * @throws {Error} If scheduling fails or configuration is invalid
      */
     async schedule(name, scheduleConfig, data = {}) {
         try {
             this.#validateScheduleConfig(scheduleConfig);
+            this.log.d(`Attempting to schedule job '${name}' with type: ${scheduleConfig.type}`, {
+                scheduleConfig,
+                data
+            });
 
             switch (scheduleConfig.type) {
             case 'schedule':
@@ -72,22 +89,33 @@ class PulseJobScheduler extends IJobScheduler {
                 break;
             }
 
-            this.log.d(`Job ${name} scheduled successfully with type: ${scheduleConfig.type}`);
+            this.log.i(`Successfully scheduled job '${name}'`, {
+                type: scheduleConfig.type,
+                value: scheduleConfig.value,
+                hasData: Object.keys(data).length > 0
+            });
         }
         catch (error) {
-            this.log.e(`Failed to schedule job ${name}:`, error);
+            this.log.e(`Failed to schedule job '${name}'`, {
+                error: error.message,
+                scheduleConfig,
+                stack: error.stack
+            });
             throw error;
         }
     }
 
     /**
-     * Updates a job's schedule
-     * @param {string} jobName Name of the job
-     * @param {Object} schedule New schedule configuration
-     * @returns {Promise<void>} A promise that resolves once the schedule is updated
+     * Updates an existing job's schedule with new configuration
+     * @param {string} jobName - Name of the job to update
+     * @param {ScheduleConfig} schedule - New schedule configuration
+     * @returns {Promise<void>} Resolves when schedule is successfully updated
+     * @throws {Error} If update fails or new configuration is invalid
      */
     async updateSchedule(jobName, schedule) {
         try {
+            this.log.d(`Attempting to update schedule for job '${jobName}'`, { schedule });
+
             this.#validateScheduleConfig(schedule);
 
             // First remove the existing job
@@ -114,26 +142,38 @@ class PulseJobScheduler extends IJobScheduler {
                 break;
             }
 
-            this.log.i(`Schedule updated for job ${jobName}`);
+            this.log.i(`Successfully updated schedule for job '${jobName}'`, {
+                type: schedule.type,
+                value: schedule.value
+            });
         }
         catch (error) {
-            this.log.e(`Failed to update schedule for job ${jobName}:`, error);
+            this.log.e(`Failed to update schedule for job '${jobName}'`, {
+                error: error.message,
+                schedule,
+                stack: error.stack
+            });
             throw error;
         }
     }
 
     /**
-     * Runs a job immediately
-     * @param {string} jobName Name of the job
-     * @returns {Promise<void>} A promise that resolves when the job is triggered
+     * Triggers immediate execution of a job
+     * @param {string} jobName - Name of the job to execute
+     * @returns {Promise<void>} Resolves when job is successfully triggered
+     * @throws {Error} If immediate execution fails
      */
     async runJobNow(jobName) {
         try {
+            this.log.d(`Attempting to trigger immediate execution of job '${jobName}'`);
             await this.pulseRunner.now({ name: jobName });
-            this.log.i(`Job ${jobName} triggered for immediate execution`);
+            this.log.i(`Successfully triggered immediate execution of job '${jobName}'`);
         }
         catch (error) {
-            this.log.e(`Failed to run job ${jobName} immediately:`, error);
+            this.log.e(`Failed to trigger immediate execution of job '${jobName}'`, {
+                error: error.message,
+                stack: error.stack
+            });
             throw error;
         }
     }

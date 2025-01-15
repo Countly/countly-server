@@ -2,6 +2,29 @@ const defaultLogger = { d: console.debug, w: console.warn, e: console.error, i: 
 const { JOB_PRIORITIES } = require('./constants/JobPriorities');
 
 /**
+ * @typedef {Object} Logger
+ * @property {Function} d - Debug logging function
+ * @property {Function} w - Warning logging function
+ * @property {Function} e - Error logging function
+ * @property {Function} i - Info logging function
+ */
+
+/**
+ * @typedef {Object} ProgressData
+ * @property {number} [total] - Total number of items to process
+ * @property {number} [current] - Current number of items processed
+ * @property {string} [bookmark] - Current processing stage description
+ * @property {number} [percent] - Progress percentage (0-100)
+ * @property {Date} timestamp - When the progress was reported
+ */
+
+/**
+ * @typedef {Object} ScheduleConfig
+ * @property {('once'|'schedule'|'now')} type - Type of schedule
+ * @property {(string|Date)} [value] - Schedule value (cron expression or Date)
+ */
+
+/**
  * Base class for creating jobs.
  * 
  * @example
@@ -59,15 +82,16 @@ class Job {
     /** @type {string} Name of the job */
     jobName = Job.name;
 
-    /** @type {Object} Logger instance */
+    /** @type {Logger} Logger instance */
     logger;
 
     /** @type {Function|null} Touch method from job runner */
     #touchMethod = null;
 
     /** @type {Function|null} Progress method from job runner */
-    #progressMethod;
+    #progressMethod = null;
 
+    /** @type {Object.<string, string>} Available job priorities */
     priorities = JOB_PRIORITIES;
 
     /**
@@ -178,14 +202,18 @@ class Job {
 
     /**
      * Internal method to run the job and handle both Promise and callback patterns.
-     * @param {Db} db The database connection
+     * @param {MongoDb} db The MongoDB database connection
      * @param {Object} job The job instance
      * @param {Function} done Callback to be called when job completes
      * @returns {Promise<void>} A promise that resolves once the job is completed
      * @private
      */
     async _run(db, job, done) {
-        this.logger.d(`Job "${this.jobName}" is starting with database:`, db?._cly_debug?.db);
+        this.logger.d(`[Job:${this.jobName}] Starting execution`, {
+            database: db?._cly_debug?.db,
+            jobId: job?.attrs._id,
+            jobName: this.jobName
+        });
 
         try {
             const result = await new Promise((resolve, reject) => {
@@ -215,11 +243,18 @@ class Job {
                 }
             });
 
-            this.logger.i(`Job "${this.jobName}" completed successfully:`, result || '');
+            this.logger.i(`[Job:${this.jobName}] Completed successfully`, {
+                result: result || null,
+                duration: `${Date.now() - job?.attrs?.lastRunAt?.getTime()}ms`
+            });
             done(null, result);
         }
         catch (error) {
-            this.logger.e(`Job "${this.jobName}" encountered an error during execution:`, error);
+            this.logger.e(`[Job:${this.jobName}] Execution failed`, {
+                error: error.message,
+                stack: error.stack,
+                duration: `${Date.now() - job?.attrs?.lastRunAt?.getTime()}ms`
+            });
             done(error);
         }
     }
@@ -247,12 +282,12 @@ class Job {
      * @param {number} [total] Total number of stages
      * @param {number} [current] Current stage number
      * @param {string} [bookmark] Bookmark string for current stage
+     * @returns {Promise<void>} A promise that resolves once the progress is reported
      */
     async reportProgress(total, current, bookmark) {
-        // Calculate progress percentage
         const progress = total && current ? Math.min(100, Math.floor((current / total) * 100)) : undefined;
 
-        // Build progress data
+        /** @type {ProgressData} */
         const progressData = {
             total,
             current,
@@ -261,17 +296,15 @@ class Job {
             timestamp: new Date()
         };
 
-        // Update progress using runner's method if available
         if (this.#progressMethod) {
             await this.#progressMethod(progressData);
         }
 
-        // Touch to prevent lock expiration
         if (this.#touchMethod) {
             await this.#touchMethod(progress);
         }
 
-        this.logger?.d(`Progress reported for job "${this.jobName}":`, progressData);
+        this.logger?.d(`[Job:${this.jobName}] Progress update`, progressData);
     }
 
     /**

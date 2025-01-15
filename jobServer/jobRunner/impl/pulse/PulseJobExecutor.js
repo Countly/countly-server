@@ -3,14 +3,22 @@ const { JobPriority } = require('@pulsecron/pulse');
 const { JOB_PRIORITIES } = require('../../../constants/JobPriorities');
 
 /**
- * Pulse implementation of job executor
+ * @typedef {import('@pulsecron/pulse').JobPriority} JobPriority
+ * @typedef {import('@pulsecron/pulse').PulseRunner} PulseRunner
+ * @typedef {import('@pulsecron/pulse').Job} PulseJob
+ * @typedef {import('mongodb').Db} MongoDB
+ */
+
+/**
+ * Pulse implementation of job executor that handles job lifecycle management
+ * @implements {IJobExecutor}
  */
 class PulseJobExecutor extends IJobExecutor {
     /**
      * Creates a new PulseJobExecutor instance
-     * @param {Object} pulseRunner The Pulse runner instance
-     * @param {Object} db Database connection
-     * @param {Object} logger Logger instance
+     * @param {PulseRunner} pulseRunner - The Pulse runner instance for job management
+     * @param {MongoDB} db - MongoDB database connection
+     * @param {Logger} logger - Logger instance for operational logging
      */
     constructor(pulseRunner, db, logger) {
         super();
@@ -21,12 +29,14 @@ class PulseJobExecutor extends IJobExecutor {
     }
 
     /**
-     * Creates and registers a new job
-     * @param {string} jobName Name of the job
-     * @param {Function} JobClass Job class implementation
+     * Creates and registers a new job with the Pulse runner
+     * @param {string} jobName - Unique identifier for the job
+     * @param {Constructor} JobClass - Job class constructor
+     * @throws {Error} When job creation or registration fails
      * @returns {Promise<void>} A promise that resolves once the job is created
      */
     async createJob(jobName, JobClass) {
+        this.log.d(`Attempting to create job: ${jobName}`);
         try {
             const instance = new JobClass(jobName);
             instance.setJobName(jobName);
@@ -61,9 +71,14 @@ class PulseJobExecutor extends IJobExecutor {
             const scheduleConfig = instance.getSchedule();
             this.pendingSchedules.set(jobName, scheduleConfig);
             this.log.d(`Job ${jobName} defined successfully`);
+
+            this.log.d(`Configuring job ${jobName} with priority: ${priority}, concurrency: ${concurrency}, lockLifetime: ${lockLifetime}`);
+
+            this.log.i(`Job ${jobName} created and configured successfully with retry attempts: ${retryConfig?.attempts || 1}`);
         }
         catch (error) {
-            this.log.e(`Failed to create job ${jobName}:`, error);
+            this.log.e(`Failed to create job ${jobName}`, { error, stack: error.stack });
+            throw error; // Propagate error for proper handling
         }
     }
 
@@ -143,31 +158,38 @@ class PulseJobExecutor extends IJobExecutor {
     }
 
     /**
-     * Updates job progress data
+     * Updates progress information for a running job
      * @private
-     * @param {Object} job Job instance
-     * @param {Object} progressData Progress data to store
+     * @param {PulseJob} job - Pulse job instance
+     * @param {Object} progressData - Progress information to store
+     * @throws {Error} When progress update fails
      * @returns {Promise<void>} A promise that resolves once progress is updated
      */
     async #updateJobProgress(job, progressData) {
+        this.log.d(`Updating progress for job ${job.attrs.name}`, { progressData });
         try {
             job.attrs.data = {
                 ...job.attrs.data,
                 progressData
             };
             await job.save();
+            this.log.d(`Progress updated successfully for job ${job.attrs.name}`);
         }
         catch (error) {
-            this.log.e(`Failed to update job progress: ${error.message}`);
-            // Consider whether to throw
+            this.log.e(`Failed to update job progress for ${job.attrs.name}`, {
+                error,
+                stack: error.stack,
+                jobId: job.attrs._id
+            });
+            throw error; // Propagate error for proper handling
         }
     }
 
     /**
-     * Maps generic priority to Pulse-specific priority with validation
+     * Maps generic priority levels to Pulse-specific priority values
      * @private
-     * @param {string} priority Generic priority from JOB_PRIORITIES
-     * @returns {JobPriority} Pulse-specific priority value
+     * @param {string} priority - Generic priority from JOB_PRIORITIES
+     * @returns {JobPriority} Mapped Pulse priority
      */
     #mapPriority(priority) {
         const priorityMap = {

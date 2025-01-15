@@ -1,15 +1,35 @@
+/**
+ * @typedef {import('./interfaces/IJobScheduler')} IJobScheduler
+ * @typedef {import('./interfaces/IJobExecutor')} IJobExecutor
+ * @typedef {import('./interfaces/IJobLifecycle')} IJobLifecycle
+ * 
+ * @typedef {Object} ScheduleConfig
+ * @property {string} [cron] - Cron expression for scheduled execution
+ * @property {number} [interval] - Interval in milliseconds between executions
+ * @property {Date} [startDate] - Date when the job should start
+ * @property {Date} [endDate] - Date when the job should end
+ * 
+ * @typedef {Object} RetryConfig
+ * @property {number} attempts - Maximum number of retry attempts
+ * @property {number} backoff - Delay between retries in milliseconds
+ * @property {('exponential'|'linear'|'fixed')} strategy - Retry backoff strategy
+ */
+
 const IJobScheduler = require('./interfaces/IJobScheduler');
 const IJobExecutor = require('./interfaces/IJobExecutor');
 const IJobLifecycle = require('./interfaces/IJobLifecycle');
 
 /**
- * Base class for job runners that implements all interfaces through composition
+ * Base class for job runners that implements scheduling, execution, and lifecycle management
+ * through composition. Provides a unified interface for job management operations.
  */
 class BaseJobRunner {
     /**
-     * @param {IJobScheduler} scheduler - Scheduler implementation
-     * @param {IJobExecutor} executor - Executor implementation
-     * @param {IJobLifecycle} lifecycle - Lifecycle implementation
+     * Creates a new BaseJobRunner instance
+     * @param {IJobScheduler} scheduler - Handles job scheduling and timing
+     * @param {IJobExecutor} executor - Manages job execution and retry logic
+     * @param {IJobLifecycle} lifecycle - Controls runner lifecycle and resource management
+     * @throws {Error} If any of the implementations are invalid
      */
     constructor(scheduler, executor, lifecycle) {
         if (!(scheduler instanceof IJobScheduler)) {
@@ -28,11 +48,12 @@ class BaseJobRunner {
     }
 
     /**
-     * Schedules a job to run
-     * @param {string} name Job name
-     * @param {Object} scheduleConfig Schedule configuration
-     * @param {Object} [data] Optional data to pass to the job
-     * @returns {Promise<void>} A promise that resolves once the job is scheduled
+     * Schedules a job for execution based on the provided configuration
+     * @param {string} name - Unique identifier for the job
+     * @param {ScheduleConfig} scheduleConfig - Configuration for when the job should run
+     * @param {Object} [data] - Optional data passed to the job during execution
+     * @returns {Promise<void>} Resolves when scheduling is complete
+     * @throws {Error} If scheduling fails or job doesn't exist
      */
     async schedule(name, scheduleConfig, data) {
         return this.scheduler.schedule(name, scheduleConfig, data);
@@ -96,9 +117,10 @@ class BaseJobRunner {
     }
 
     /**
-     * Starts the job runner
-     * @param {Object.<string, Function>} jobClasses Job classes to register
-     * @returns {Promise<void>} A promise that resolves once the job runner is started
+     * Initializes and starts the job runner with the provided job implementations
+     * @param {Object.<string, Function>} jobClasses - Map of job names to their implementing classes
+     * @returns {Promise<void>} Resolves when all jobs are registered and the runner is ready
+     * @throws {Error} If initialization fails or invalid job classes are provided
      */
     async start(jobClasses) {
         return this.lifecycle.start(jobClasses);

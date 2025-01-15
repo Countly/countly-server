@@ -3,36 +3,50 @@ const config = require("./config");
 const JobUtils = require('./JobUtils');
 
 /**
- * Manages job configurations and initialization.
+ * @typedef {import('../api/utils/log.js').Logger} Logger
+ * @typedef {import('mongodb').Db} MongoDb
+ * @typedef {import('./JobRunner/types').IJobRunner} IJobRunner
+ * @typedef {import('./JobRunner/PulseImpl').JobRunnerPulseImpl} JobRunnerPulseImpl
+ * 
+ * @typedef {Object} JobConfig
+ * @property {string} jobName - The unique identifier for the job
+ * @property {boolean} [enabled] - Whether the job is enabled
+ * @property {boolean} [runNow] - Whether to run the job immediately
+ * @property {Object} [schedule] - Cron or interval-based schedule configuration
+ * @property {Object} [retry] - Retry strategy configuration
+ * @property {Date} createdAt - When the config was first created
+ * @property {Date} [updatedAt] - When the config was last updated
+ * @property {string} checksum - Hash of the job implementation
+ * @property {Object} defaultConfig - Original job configuration
+ */
+
+/**
+ * Manages job configurations, scheduling, and lifecycle.
+ * Provides functionality to:
+ * - Load and initialize jobs from class definitions
+ * - Track and apply configuration changes
+ * - Enable/disable jobs
+ * - Handle job implementation updates
  */
 class JobManager {
 
-    /**
-     * The logger instance
-     * @private
-     * @type {import('../api/utils/log.js').Logger}
-     * */
+    /** @type {Logger} */
     #log;
 
-    /**
-     * The database connection
-     * @type {import('mongodb').Db | null}
-     */
+    /** @type {MongoDb} */
     #db = null;
 
-    /**
-     * The job runner instance
-     * @type {IJobRunner | JobRunnerPulseImpl |null}
-     */
+    /** @type {IJobRunner | JobRunnerPulseImpl | null} */
     #jobRunner = null;
 
-
+    /** @type {import('mongodb').Collection<JobConfig>} */
     #jobConfigsCollection;
 
     /**
      * Creates a new JobManager instance
-     * @param {Object} db Database connection
-     * @param {function} Logger - Logger constructor
+     * @param {MongoDb} db - MongoDB database connection
+     * @param {function(string): Logger} Logger - Logger factory function
+     * @throws {Error} If database connection is invalid
      */
     constructor(db, Logger) {
         this.Logger = Logger;
@@ -49,14 +63,20 @@ class JobManager {
     }
 
     /**
-     * Watches for changes in job configurations
+     * Watches for changes in job configurations and applies them in real-time
      * @private
      * @returns {Promise<void>} A promise that resolves once the watcher is started
+     * @throws {Error} If watch stream cannot be established
      */
     async #watchConfigs() {
+        this.#log.d('Initializing config change stream watcher');
         const changeStream = this.#jobConfigsCollection.watch();
 
         changeStream.on('change', async(change) => {
+            this.#log.d('Detected config change:', {
+                operationType: change.operationType,
+                jobName: change.fullDocument?.jobName
+            });
             if (change.operationType === 'update' || change.operationType === 'insert') {
                 const jobConfig = change.fullDocument;
                 await this.#applyConfig(jobConfig);
@@ -67,13 +87,8 @@ class JobManager {
     /**
      * Applies job configuration changes
      * @private
-     * @param {Object} jobConfig The job configuration to apply
-     * @param {string} jobConfig.jobName The name of the job
-     * @param {boolean} [jobConfig.runNow] Whether to run the job immediately
-     * @param {Object} [jobConfig.schedule] Schedule configuration
-     * @param {Object} [jobConfig.retry] Retry configuration
-     * @param {boolean} [jobConfig.enabled] Whether the job is enabled
-     * @returns {Promise<void>} A promise that resolves once the configuration is applied
+     * @param {JobConfig} jobConfig The job configuration to apply
+     * @throws {Error} If job runner is not initialized or configuration is invalid
      */
     async #applyConfig(jobConfig) {
         try {
@@ -82,6 +97,15 @@ class JobManager {
             }
 
             const { jobName } = jobConfig;
+            this.#log.d('Applying config changes for job:', {
+                jobName,
+                changes: {
+                    runNow: jobConfig.runNow,
+                    scheduleUpdated: !!jobConfig.schedule,
+                    retryUpdated: !!jobConfig.retry,
+                    enabledStateChanged: typeof jobConfig.enabled === 'boolean'
+                }
+            });
 
             if (jobConfig.runNow === true) {
                 await this.#jobRunner.runJobNow(jobName);
@@ -111,7 +135,12 @@ class JobManager {
             }
         }
         catch (error) {
-            this.#log.e('Error applying job configuration:', error);
+            this.#log.e('Failed to apply job configuration:', {
+                jobName: jobConfig.jobName,
+                error: error.message,
+                stack: error.stack
+            });
+            throw error; // Re-throw to allow caller to handle
         }
     }
 
