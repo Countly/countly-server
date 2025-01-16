@@ -10,19 +10,20 @@ A flexible, extensible job scheduling and execution system built on MongoDB with
 4. [Collections](#collections)
 5. [Basic Usage](#basic-usage)
 6. [Architecture](#architecture)
-7. [Server Configuration](#server-configuration)
-8. [Job Implementation Guide](#job-implementation-guide)
-9. [Lock Extension & Progress Reporting](#lock-extension--progress-reporting)
-10. [Job Configuration Management](#job-configuration-management)
-11. [Parallel Processing](#parallel-processing)
-12. [File Structure](#file-structure)
-13. [Interface Contracts](#interface-contracts)
-14. [Implementing New Runners](#implementing-new-runners)
-15. [Error Handling & Monitoring](#error-handling--monitoring)
-16. [Best Practices](#best-practices)
-17. [Troubleshooting Guide](#troubleshooting-guide)
-18. [Monitoring & Metrics](#monitoring--metrics)
-19. [BullMQ Implementation Guide](#bullmq-implementation-guide)
+7. [Design Patterns](#design-patterns)
+8. [Server Configuration](#server-configuration)
+9. [Job Implementation Guide](#job-implementation-guide)
+10. [Lock Extension & Progress Reporting](#lock-extension--progress-reporting)
+11. [Job Configuration Management](#job-configuration-management)
+12. [Parallel Processing](#parallel-processing)
+13. [File Structure](#file-structure)
+14. [Interface Contracts](#interface-contracts)
+15. [Implementing New Runners](#implementing-new-runners)
+16. [Error Handling & Monitoring](#error-handling--monitoring)
+17. [Best Practices](#best-practices)
+18. [Troubleshooting Guide](#troubleshooting-guide)
+19. [Monitoring & Metrics](#monitoring--metrics)
+20. [BullMQ Implementation Guide](#bullmq-implementation-guide)
 
 ## Overview
 
@@ -171,6 +172,70 @@ JobExecutor JobScheduler JobLifecycle
    - Concrete implementation (e.g., Pulse)
    - Handles actual job execution
    - Manages scheduling and state
+
+## Design Patterns
+
+The Job Server Module employs several design patterns to maintain flexibility, testability, and extensibility:
+
+### Core Patterns
+
+1. **Interface Segregation**
+   - Job operations split into focused interfaces (IJobExecutor, IJobScheduler, IJobLifecycle)
+   - Enables targeted implementation of specific job aspects
+   - Reduces coupling between components
+   ```javascript
+   // Example: Separate interfaces for different concerns
+   interface IJobExecutor { /* job execution methods */ }
+   interface IJobScheduler { /* scheduling methods */ }
+   interface IJobLifecycle { /* lifecycle methods */ }
+   ```
+
+2. **Composition over Inheritance**
+   - BaseJobRunner composes functionality from specialized interfaces
+   - Runner implementations combine executor, scheduler, and lifecycle components
+   - Allows flexible mixing of different implementations
+   ```javascript
+   class BaseJobRunner {
+       constructor(scheduler, executor, lifecycle) {
+           this.scheduler = scheduler;
+           this.executor = executor;
+           this.lifecycle = lifecycle;
+       }
+   }
+   ```
+
+3. **Dependency Injection**
+   - Components receive dependencies through constructors
+   - Facilitates testing and configuration
+   - Enables runtime selection of implementations
+   ```javascript
+   const server = await JobServer.create(common, Logger, pluginManager, {
+       runner: {
+           type: 'pulse',
+           config: { /* ... */ }
+       }
+   });
+   ```
+
+4. **Factory Pattern**
+   - Runner implementations created through factory methods
+   - Centralizes runner instantiation logic
+   - Supports multiple runner types (Pulse, BullMQ)
+   ```javascript
+   // Example: Runner factory
+   const RUNNER_TYPES = {
+       PULSE: 'pulse',
+       BULL: 'bullmq'
+   };
+   ```
+
+
+### Benefits
+
+- **Extensibility**: New runners can be added without modifying existing code
+- **Testability**: Components can be tested in isolation with mock implementations
+- **Flexibility**: Runtime configuration of job processing behavior
+- **Maintainability**: Clear separation of concerns and modular design
 
 ## Server Configuration
 
@@ -860,8 +925,7 @@ const connection = new Redis({
 ```
 
 2. **Basic Structure**
-```
-jobRunner/impl/bullmq/
+```jobRunner/impl/bullmq/
 ├── BullMQJobExecutor.js
 ├── BullMQJobLifecycle.js
 ├── BullMQJobScheduler.js
@@ -930,3 +994,4 @@ class BullMQJobLifecycle extends IJobLifecycle {
     }
 }
 ```
+
