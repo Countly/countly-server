@@ -15,11 +15,11 @@
  * @property {string} db.collection - MongoDB collection name for storing jobs
  */
 const DEFAULT_PULSE_CONFIG = {
-    processEvery: '3 seconds',
+    processEvery: '60 seconds',
     maxConcurrency: 1,
     defaultConcurrency: 1,
     lockLimit: 1,
-    defaultLockLimit: 1,
+    defaultLockLimit: 3,
     defaultLockLifetime: 55 * 60 * 1000, // 55 minutes
     sort: { nextRunAt: 1, priority: -1 },
     disableAutoIndex: false,
