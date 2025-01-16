@@ -4829,6 +4829,12 @@
             background: #F6F6F6;
         }
     }
+
+    // .cly-option-swapper--disabled
+    &--disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
 }
 
 .cly-list-drawer {
