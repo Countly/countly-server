@@ -2682,7 +2682,14 @@ var pluginManager = function pluginManager() {
                     }
                     logDbRead.d(name + " " + collection + " %j %j" + at, query, options);
                     logDbRead.d("From connection %j", countlyDb._cly_debug);
-                    return handlePromiseErrors(this["_" + name](query, options), e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name)));
+                    if (name === "findOneAndDelete") {
+                        return handlePromiseErrors(this["_" + name](query, options).then(result => ({ value: result })),
+                            e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name))
+                        );
+                    }
+                    else {
+                        return handlePromiseErrors(this["_" + name](query, options), e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name)));
+                    }
                 };
             };
 
