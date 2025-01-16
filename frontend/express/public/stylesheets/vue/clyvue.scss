@@ -4616,6 +4616,18 @@
         width: auto;
         box-shadow: none;
 
+        // .cly-vue-content-builder-sidebar-input__component.el-input-number
+        &.el-input-number {
+            position: relative;
+
+            // .cly-vue-content-builder-sidebar-input__component.el-input-number .el-input__inner
+            & .el-input__inner {
+                text-align: left;
+                padding: 6px 10px;
+                padding-right: 34px;
+            }
+        }
+
         // .cly-vue-content-builder-sidebar-input__component .el-input__count
         & .el-input__count {
             position: absolute;
@@ -4710,7 +4722,7 @@
 
         // .cly-vue-content-builder-sidebar-input__input-container--small .cly-vue-content-builder-sidebar-input__component
         &--small .cly-vue-content-builder-sidebar-input__component {
-            max-width: 64px;
+            max-width: 70px;
         }
 
         // .cly-vue-content-builder-sidebar-input__input-container--large .cly-vue-content-builder-sidebar-input__component
@@ -4738,6 +4750,19 @@
         font-size: 13px;
         font-weight: 500;
         line-height: 16px;
+    }
+
+    // .cly-vue-content-builder-sidebar-input__number-input-suffix
+    &__number-input-suffix {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 6px 10px;
+        padding-left: 0;
+        color: #81868D;
+        width: 16px;
+        font-size: 14px;
+        line-height: 20px;
     }
 
     // .cly-vue-content-builder-sidebar-input__sub-header
