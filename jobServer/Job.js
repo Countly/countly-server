@@ -211,7 +211,7 @@ class Job {
     async _run(db, job, done) {
         this.logger.d(`[Job:${this.jobName}] Starting execution`, {
             database: db?._cly_debug?.db,
-            jobId: job?.attrs._id,
+            jobId: job?.attrs?._id,
             jobName: this.jobName
         });
 
@@ -317,9 +317,9 @@ class Job {
      */
     getRetryConfig() {
         return {
-            enabled: true,
+            enabled: false,
             attempts: 3,
-            delay: 2000 // 2 seconds
+            delay: 5 * 60 * 1000 // 5 minutes
         };
     }
 
