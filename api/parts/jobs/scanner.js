@@ -2,7 +2,30 @@
 
 const log = require('../../utils/log.js')('jobs:scanner'),
     manager = require('../../../plugins/pluginManager.js'),
-    fs = require('fs');
+    fs = require('fs'),
+    {Job, IPCJob, IPCFaçadeJob, TransientJob} = require('./job.js');
+
+/**
+ * Validates if a job class has the required methods
+ * @param {Function} JobClass - The job class to validate
+ * @returns {boolean} - True if valid, throws error if invalid
+ */
+const validateJobClass = (JobClass) => {
+    // Check if it's a class/constructor
+    if (typeof JobClass !== 'function') {
+        throw new Error('Job must be a class constructor');
+    }
+
+    // Check if it inherits from one of the valid base classes
+    if (!(JobClass.prototype instanceof Job ||
+          JobClass.prototype instanceof IPCJob ||
+          JobClass.prototype instanceof IPCFaçadeJob ||
+          JobClass.prototype instanceof TransientJob)) {
+        throw new Error('Job class must extend Job, IPCJob, IPCFaçadeJob, or TransientJob');
+    }
+
+    return true;
+};
 
 module.exports = (db, filesObj, classesObj) => {
     return new Promise((resolve, reject) => {
@@ -52,9 +75,12 @@ module.exports = (db, filesObj, classesObj) => {
                 (arr || []).forEach(job => {
                     try {
                         let name = job.category + ':' + job.name;
-                        filesObj[name] = job.file;
-                        classesObj[name] = require(job.file);
-                        log.d('Found job %j at %j', name, job.file);
+                        const JobClass = require(job.file);
+                        if (validateJobClass(JobClass)) {
+                            filesObj[name] = job.file;
+                            classesObj[name] = JobClass;
+                            log.d('Found valid job %j at %j', name, job.file);
+                        }
                     }
                     catch (e) {
                         log.e('Error when loading job %s: %j ', job.file, e, e.stack);
