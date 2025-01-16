@@ -2,6 +2,7 @@
 
 Fixes:
 - [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
+- [core] Fixed a bug that was causing drill to crash when there's a percentage symbol in the event name
 - [gridfs] fixes for moving to Promises
 - [reports] Fixes report generation failure due to SSL error
 - [surveys] "Select one" text in the widget can be edited now
