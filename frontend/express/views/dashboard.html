@@ -1975,7 +1975,7 @@
             Countly.track_errors();
 
             //display in app messages
-            if (Countly.content.enterContentZone) {
+            if (Countly.content && Countly.content.enterContentZone) {
                 Countly.content.enterContentZone();
             }
             
@@ -2049,7 +2049,7 @@
             });
 
             //display in app messages
-            if (Countly2.content.enterContentZone) {
+            if (Countly2.content && Countly2.content.enterContentZone) {
                 Countly2.content.enterContentZone();
             }
 
