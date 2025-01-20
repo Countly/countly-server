@@ -613,6 +613,12 @@
                     }
                 });
             },
+            onFocus: function() {
+                if (this.searchQuery) {
+                    this.back = true;
+                    this.selectedConfigSearchBar = "search";
+                }
+            },
             onEnterSearch: function() {
                 var self = this;
                 self.unpatch();
