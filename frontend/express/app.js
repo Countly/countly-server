@@ -8,39 +8,44 @@ process.title = "countly: dashboard node " + process.argv[1];
 
 var fs = require('fs');
 var path = require('path');
+
 var IS_FLEX = false;
-var maxRetries = 5;
-var attemptCount = 0;
-
-function checkDeploymentEnv() {
-  attemptCount++;
-
-  if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
-    var deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
-
+async function checkCountlyType() {
     try {
-      var parsedConfig = JSON.parse(deploymentConf);
-
-      if (parsedConfig.DEPLOYMENT_ID) {
-        IS_FLEX = true;
-        console.log('Deployment configuration found and valid. Stopping further checks.');
-        return;
-      }
-    } catch (e) {
-      console.log(`Attempt ${attemptCount}: Failed to parse JSON. Retrying...`);
+        var countlyDb = await plugins.dbConnection(countlyConfig);
+        var result = await countlyDb.collection('plugins').findOne({_id: 'plugins'});
+        if (result && result.plugins && result.plugins['my-countly']) {
+            IS_FLEX = true;
+            console.log('Plugin status checked. Flex status:', IS_FLEX);
+        }
     }
-  } else {
-    console.log(`Attempt ${attemptCount}: File not found. Retrying...`);
-  }
+    catch(err) {
+        console.log('Error while checking my-countly plugin status:', err);
+    }
 
-  if (attemptCount < maxRetries) {
-    setTimeout(checkDeploymentEnv, 2000); // Retry after 2 seconds
-  } else {
-    console.log('Max retry limit reached. Stopping checks.');
-  }
-};
+    if (IS_FLEX) {
+        COUNTLY_NAMED_TYPE = "Countly v" + COUNTLY_VERSION;
+        COUNTLY_TYPE_CE = false;
+        COUNTLY_TRACK_TYPE = "Flex";
+    }
+    else if (versionInfo.footer) {
+        COUNTLY_NAMED_TYPE = versionInfo.footer;
+        COUNTLY_TYPE_CE = false;
+        if (COUNTLY_NAMED_TYPE === "Countly Cloud") {
+            COUNTLY_TRACK_TYPE = "Cloud";
+        }
+        else if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
+            COUNTLY_TRACK_TYPE = "Enterprise";
+        }
+    }
+    else if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
+        COUNTLY_NAMED_TYPE = "Countly Enterprise v" + COUNTLY_VERSION;
+        COUNTLY_TYPE_CE = false;
+        COUNTLY_TRACK_TYPE = "Enterprise";
+    }
+}
 
-checkDeploymentEnv();
+checkCountlyType();
 
 var versionInfo = require('./version.info'),
     pack = require('../../package.json'),
