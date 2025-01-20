@@ -136,8 +136,8 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    google_maps_api_key: "",
     offline_mode: false,
+    self_tracking: "",
 });
 
 if (!plugins.isPluginEnabled('tracker')) {
@@ -157,7 +157,6 @@ plugins.setUserConfigs("frontend", {
     session_timeout: false,
     use_google: false,
     code: false,
-    google_maps_api_key: ""
 });
 
 plugins.setConfigs("security", {

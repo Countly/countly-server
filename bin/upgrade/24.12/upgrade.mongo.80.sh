@@ -126,6 +126,7 @@ mongosh --nodb --eval 'var conn; print("Waiting for MongoDB connection on port 2
 
 if [ "$isAuth" -eq "1" ]; then
     echo "run this command with authentication to upgrade to 8.0"
+    # shellcheck disable=SC2028
     echo "mongosh admin --eval \"db.adminCommand( { setFeatureCompatibilityVersion: \\\8.0\\\", confirm: true } )\""
 elif ! mongosh admin --eval "printjson(db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } ))" ; then
     echo "Could not connect to MongodB, run this command when Mongo is up and running"

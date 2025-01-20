@@ -209,12 +209,17 @@ function stopWithTimeout(type, fromTimeout = false) {
             validate(params, async() => {
                 try {
                     const tarStream = await systemUtility.profilerFilesTarStream();
-                    params.res.writeHead(200, {
-                        "Content-Type": "plain/text; charset=utf-8",
-                        "Content-Disposition": "attachment; filename=profiler.tar"
-                    });
-                    tarStream.on("end", () => params.res.end());
-                    tarStream.pipe(params.res);
+                    if (tarStream === null) {
+                        common.returnMessage(params, 404, "Profiler files not found");
+                    }
+                    else {
+                        params.res.writeHead(200, {
+                            "Content-Type": "plain/text; charset=utf-8",
+                            "Content-Disposition": "attachment; filename=profiler.tar"
+                        });
+                        tarStream.on("end", () => params.res.end());
+                        tarStream.pipe(params.res);
+                    }
                 }
                 catch (err) {
                     log.e(err);
