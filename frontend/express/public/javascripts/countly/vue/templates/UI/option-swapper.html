@@ -1,5 +1,9 @@
-<!-- :style="{'width': width + 'px'}" -->
-<div class="cly-option-swapper">
+<div 
+  class="cly-option-swapper"
+  :class="{
+    'cly-option-swapper--disabled': disabled
+  }"
+>
   <div
     v-for="(option, index) in options"
     :key="`cly-option-swapper-option-${index}`"
@@ -7,7 +11,7 @@
     class="cly-option-swapper__option"
     :class="{
       'cly-option-swapper__option--active': option.value === selectedOption,
-      'cly-option-swapper__option--disabled': option.disabled,
+      'cly-option-swapper__option--disabled': option.disabled || disabled,
       'cly-option-swapper__option--first': index === 0,
       'cly-option-swapper__option--last': index === (options.length - 1),
       'cly-option-swapper__option--no-highlight': !highlightOnSelect
