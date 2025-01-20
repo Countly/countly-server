@@ -13,7 +13,6 @@
                 autocomplete="off"
                 v-model="searchQuery"
                 :placeholder="searchPlaceholder"
-                @focus="onFocus"
                 @keyup.enter.native="onEnterSearch"
             >
                 <i slot="prefix" class="el-input__icon el-icon-search"></i>

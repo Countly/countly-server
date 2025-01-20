@@ -613,17 +613,13 @@
                     }
                 });
             },
-            onFocus: function() {
-                if (this.searchQuery === "") {
-                    this.back = true;
-                    this.selectedConfigSearchBar = "search";
-                }
-            },
             onEnterSearch: function() {
                 var self = this;
                 self.unpatch();
                 var res = {};
                 if (self.searchQuery && self.searchQuery !== "") {
+                    self.back = true;
+                    self.selectedConfigSearchBar = "search";
                     self.searchQuery = self.searchQuery.toLowerCase();
                     for (var config in self.predefinedStructure) {
                         if (config.toLowerCase().includes(self.searchQuery) && CountlyHelpers.isPluginEnabled(config.toLowerCase())) {
