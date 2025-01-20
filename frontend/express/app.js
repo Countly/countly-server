@@ -70,8 +70,8 @@ var COUNTLY_TRACK_TYPE = "OSS";
 
 var IS_FLEX = false;
 
-function setCountlyType(IS_FLEX) {
-    if (IS_FLEX) {
+function setCountlyType(isFlexInstance) {
+    if (isFlexInstance) {
         COUNTLY_NAMED_TYPE = "Countly v" + COUNTLY_VERSION;
         COUNTLY_TYPE_CE = false;
         COUNTLY_TRACK_TYPE = "Flex";
