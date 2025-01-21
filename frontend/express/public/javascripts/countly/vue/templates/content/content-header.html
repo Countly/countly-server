@@ -38,7 +38,8 @@
             <div class="cly-vue-content-builder-header__info-meta">
                 <div
                     v-if="version"
-                    class="cly-vue-content-builder-header__version"
+                    @click="$emit('version-click')"
+                    class="cly-vue-content-builder-header__version cursor-pointer"
                 >
                     {{ version }}
                 </div>
@@ -57,39 +58,44 @@
         :tabs="tabs"
     />
     <div class="cly-vue-content-builder-header__actions">
-        <cly-status-badge
-            v-if="status.show"
-            class="cly-vue-content-builder-header__badge"
-            :label="status.label"
-            :mode="status.mode"
-        />
-        <el-button
-            v-if="!hideSaveButton"
-            class="cly-vue-content-builder-header__save-button"
-            :disabled="disableSaveButton"
-            size="small"
-            type="success"
-            @click="onSaveButtonClick"
-        >
-            {{ saveButtonLabel }}
-        </el-button>
-        <cly-more-options
-            v-if="isOptionsButtonVisible"
-            class="cly-vue-content-builder-header__options-button"
-            size="small"
-            @command="onCommand"
-        >
-            <el-dropdown-item
-                v-for="(option, idx) in options"
-                :key="`cly-vue-content-builder-header-option-${idx}`"
-                class="cly-vue-content-builder-header__option"
-                :command="option.value"
-                :disabled="option.disabled"
+        <template v-if="$slots.headerActions">
+            <slot name="headerActions"></slot>
+        </template>
+        <template v-else>
+            <cly-status-badge
+                v-if="status.show"
+                class="cly-vue-content-builder-header__badge"
+                :label="status.label"
+                :mode="status.mode"
+            />
+            <el-button
+                v-if="!hideSaveButton"
+                class="cly-vue-content-builder-header__save-button"
+                :disabled="disableSaveButton"
+                size="small"
+                type="success"
+                @click="onSaveButtonClick"
             >
-                <span class="cly-vue-content-builder-header__option-label">
-                    {{ option.label }}
-                </span>
-            </el-dropdown-item>
-        </cly-more-options>
+                {{ saveButtonLabel }}
+            </el-button>
+            <cly-more-options
+                v-if="isOptionsButtonVisible"
+                class="cly-vue-content-builder-header__options-button"
+                size="small"
+                @command="onCommand"
+            >
+                <el-dropdown-item
+                    v-for="(option, idx) in options"
+                    :key="`cly-vue-content-builder-header-option-${idx}`"
+                    class="cly-vue-content-builder-header__option"
+                    :command="option.value"
+                    :disabled="option.disabled"
+                >
+                    <span class="cly-vue-content-builder-header__option-label">
+                        {{ option.label }}
+                    </span>
+                </el-dropdown-item>
+            </cly-more-options>
+        </template>
     </div>
 </div>
