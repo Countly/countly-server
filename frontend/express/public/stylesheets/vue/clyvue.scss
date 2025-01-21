@@ -1696,11 +1696,23 @@
             position: absolute;
             left: 0;
         }
+        &__right-sidecar {
+            height: 100%;
+            position: absolute;
+            right: 0;
+        }
         &__steps-view {
             box-sizing: border-box;
             position: absolute;
             right: 0;
             background-color: white;
+        }
+
+        &.has-right-sidecar {
+            .cly-vue-drawer__steps-view {
+                left: 0;
+                right: unset;
+            }
         }
 
         &__steps-view,
@@ -1732,7 +1744,7 @@
                           }
                         
                     }
-                    .cly-vue-drawer__sidecars-view {
+                    .cly-vue-drawer__sidecars-view, .cly-vue-drawer__right-sidecar {
                         @if $i == 12 {
                             width: 0%;
                           } 

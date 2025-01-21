@@ -20,6 +20,7 @@
                 saveButtonLabel: {type: String, required: false, default: ""},
                 cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
                 closeFn: {type: Function},
+                hasRightSidecar: { type: Boolean, required: false, default: false },
                 hasCancelButton: {type: Boolean, required: false, default: true},
                 hasBackLink: {
                     type: [Object, Boolean],
@@ -60,7 +61,8 @@
                     var classes = {
                         'is-mounted': this.isMounted,
                         'is-open': this.isOpened,
-                        'has-sidecars': this.hasSidecars
+                        'has-sidecars': this.hasSidecars,
+                        'has-right-sidecar': this.hasRightSidecar,
                     };
                     classes["cly-vue-drawer--" + this.currentScreenMode + "-screen"] = true;
                     if (this.currentScreenMode === 'half') {
