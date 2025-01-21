@@ -25,6 +25,7 @@
         v-model="componentValue"
         class="cly-vue-content-builder-sidebar-input__component"
         :class="{ 'cly-vue-content-builder-sidebar-input__component--slider': isSliderInput }"
+        :controls="controlsProp"
         :disabled="disabled"
         :options="options"
       >
@@ -44,6 +45,12 @@
           />
         </template>
       </component>
+      <div
+        v-if="isSuffixVisible && type === 'number'"
+        class="cly-vue-content-builder-sidebar-input__number-input-suffix"
+      >
+        {{ suffix }}
+      </div>
     </slot>
   </div>
 </div>
