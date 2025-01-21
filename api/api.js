@@ -14,6 +14,7 @@ const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher
 const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
+let server;
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
@@ -151,6 +152,10 @@ plugins.connectToAllDatabases().then(function() {
     */
     async function storeBatchedData(code) {
         try {
+            if (server && typeof server.close === "function") {
+                console.log("Closing server");
+                await server.close();
+            }
             await common.writeBatcher.flushAll();
             await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
@@ -158,7 +163,9 @@ plugins.connectToAllDatabases().then(function() {
         catch (ex) {
             console.log("Could not store batch state", ex);
         }
-        process.exit(typeof code === "number" ? code : 1);
+        setTimeout(() => {
+            process.exit(typeof code === "number" ? code : 1);
+        }, 0);
     }
 
     /**
@@ -357,7 +364,7 @@ plugins.connectToAllDatabases().then(function() {
 
         plugins.dispatch("/worker", {common: common});
 
-        http.Server((req, res) => {
+        server = http.Server((req, res) => {
             const params = {
                 qstring: {},
                 res: res,
@@ -437,7 +444,8 @@ plugins.connectToAllDatabases().then(function() {
             else {
                 common.returnMessage(params, 405, "Method not allowed");
             }
-        }).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
+        });
+        server.listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
 
         plugins.loadConfigs(common.db);
     }
