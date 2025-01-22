@@ -8,19 +8,6 @@ process.title = "countly: dashboard node " + process.argv[1];
 
 var fs = require('fs');
 var path = require('path');
-var IS_FLEX = true;
-
-// if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
-//    const deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
-//    try {
-//        if (JSON.parse(deploymentConf).DEPLOYMENT_ID) {
-//            IS_FLEX = true;
-//        }
-//    }
-//    catch (e) {
-//        IS_FLEX = false;
-//    }
-// }
 
 var versionInfo = require('./version.info'),
     pack = require('../../package.json'),
@@ -81,26 +68,51 @@ var COUNTLY_TYPE_CE = true;
 var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
 var COUNTLY_TRACK_TYPE = "OSS";
 
-if (IS_FLEX) {
-    COUNTLY_NAMED_TYPE = "Countly v" + COUNTLY_VERSION;
-    COUNTLY_TYPE_CE = false;
-    COUNTLY_TRACK_TYPE = "Flex";
-}
-else if (versionInfo.footer) {
-    COUNTLY_NAMED_TYPE = versionInfo.footer;
-    COUNTLY_TYPE_CE = false;
-    if (COUNTLY_NAMED_TYPE === "Countly Cloud") {
-        COUNTLY_TRACK_TYPE = "Cloud";
+var IS_FLEX = false;
+
+function setCountlyType(isFlexInstance) {
+    if (isFlexInstance) {
+        COUNTLY_NAMED_TYPE = "Countly v" + COUNTLY_VERSION;
+        COUNTLY_TYPE_CE = false;
+        COUNTLY_TRACK_TYPE = "Flex";
+    }
+    else if (versionInfo.footer) {
+        COUNTLY_NAMED_TYPE = versionInfo.footer;
+        COUNTLY_TYPE_CE = false;
+        if (COUNTLY_NAMED_TYPE === "Countly Cloud") {
+            COUNTLY_TRACK_TYPE = "Cloud";
+        }
+        else if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
+            COUNTLY_TRACK_TYPE = "Enterprise";
+        }
     }
     else if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
+        COUNTLY_NAMED_TYPE = "Countly Enterprise v" + COUNTLY_VERSION;
+        COUNTLY_TYPE_CE = false;
         COUNTLY_TRACK_TYPE = "Enterprise";
     }
 }
-else if (COUNTLY_TYPE !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
-    COUNTLY_NAMED_TYPE = "Countly Enterprise v" + COUNTLY_VERSION;
-    COUNTLY_TYPE_CE = false;
-    COUNTLY_TRACK_TYPE = "Enterprise";
+
+function checkCountlyType() {
+    try {
+        plugins.dbConnection(countlyConfig).then(function(db) {
+            db.collection('plugins').findOne({_id: 'plugins'}, (err, result) => {
+                if (result && result.plugins && result.plugins['my-countly']) {
+                    console.log('Plugin status checked. Flex status:', IS_FLEX);
+                    IS_FLEX = true;
+                }
+
+                setCountlyType(IS_FLEX);
+            });
+        });
+    }
+    catch(err) {
+        console.log('Error while checking my-countly plugin status:', err);
+        setCountlyType(IS_FLEX);
+    }
 }
+
+checkCountlyType();
 
 /**
 * Create params object for validation
