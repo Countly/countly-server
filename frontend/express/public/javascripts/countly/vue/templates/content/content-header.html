@@ -58,10 +58,7 @@
         :tabs="tabs"
     />
     <div class="cly-vue-content-builder-header__actions">
-        <template v-if="$slots.headerActions">
-            <slot name="headerActions"></slot>
-        </template>
-        <template v-else>
+        <slot name="headerActions">
             <cly-status-badge
                 v-if="status.show"
                 class="cly-vue-content-builder-header__badge"
@@ -96,6 +93,6 @@
                     </span>
                 </el-dropdown-item>
             </cly-more-options>
-        </template>
+        </slot>
     </div>
 </div>
