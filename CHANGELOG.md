@@ -1,40 +1,25 @@
-## Version 24.12.x
-
-Fixes:
-- [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
-- [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
-
-Features:
-- [user-management] Global admins can now disable 2FA for individual users
-
-Fixes:
-- [gridfs] fixes for moving to Promises
-
-Dependencies:
-- Bump express from 4.21.1 to 4.21.2
-- Bump mocha from 10.2.0 to 10.8.2
-- Bump sass from 1.81.0 to 1.83.1
-- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
-- Bump countly-sdk-web from 24.11.2 to 24.11.3
-- Bump express-rate-limit from 7.4.1 to 7.5.0
-- Bump puppeteer from 23.10.4 to 23.11.1
-
 ## Version 24.12
 Features:
 - [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
 - [core] Ability to mark reports as 'dirty' to make sure they are regenerated in full
 - [core] Adding a cancel button to "create new app" form
 - [core] Adding a nightly job to delete old data
+- [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
 - [core] Redirecting user to a newly created app
 - [core] Removing HTML from localization files
 - [core] Showing a flex banner on sidebar if the version is Countly Lite
 - [crashes] Adding confirmation for deleting crash groups
 - [dashoards] Fixed the "Add/manage notes" button that did not work for the technology widget
 - [dbviewer] Preventing aggregation of using any stages which might open user to harmful actions (like $merge, $out, $lookup, $uninonWith) for all users except global admin
+- [gridfs] fixes for moving to Promises
 - [nps] Fixing issues with default logo selection
 - [populator] Adding ability to select features to populate and other small improvements
+- [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
+- [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
+- [reports] Fixes report generation failure due to SSL error
 - [star-rating] Removed unnecessary limitation with using cohorts for targeting
-- [surveys] Removed unnecessary limitation with using cohorts for targeting
+- [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
+- [user-management] Global admins can now disable 2FA for individual users
 
 Enterprise Features:
 - [cohorts] Adding ability to edit cohorts. This deletes historical calculations
@@ -43,15 +28,21 @@ Enterprise Features:
 - [flows] Adding UX improvements to the editor
 - [journey_engine] Adding "Journey Engine" feature
 - [remote-config] Moving enable/disable functionality to the dropdown
+- [surveys] "Select one" text in the widget can be edited now
+- [surveys] Removed unnecessary limitation with using cohorts for targeting
 
 Dependencies:
-- Bump countly-sdk-nodejs from 22.6.0 to 24.10.0
-- Bump countly-sdk-web from 24.4.1 to 24.11.0
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
+- Bump countly-sdk-web from 24.11.2 to 24.11.3
+- Bump express from 4.21.1 to 4.21.2
+- Bump express-rate-limit from 7.4.1 to 7.5.0
 - Bump form-data from 4.0.0 to 4.0.1
 - Bump jimp from 0.22.12 to 1.6.0
 - Bump jsdoc from 4.0.3 to 4.0.4
+- Bump mocha from 10.2.0 to 10.8.2
 - Bump nodemailer from 6.9.15 to 6.9.16
-- Bump puppeteer from 23.8.0 to 23.9.0
+- Bump puppeteer from 23.10.4 to 23.11.1
+- Bump sass from 1.81.0 to 1.83.3
 - Bump tslib from 2.7.0 to 2.8.1
 
 ## Version 24.10.3
@@ -140,6 +131,21 @@ Enterprise Features:
 - [users] Crashes in the crashes tab can now be sorted
 - [users] UI improvements
 - [views] Added a quick transition to drill
+
+## Version 24.05.21
+Fixes:
+- [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
+- [gridfs] fixes for moving to Promises
+- [reports] Fixes report generation failure due to SSL error
+- [surveys] "Select one" text in the widget can be edited now
+- [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
+
+Dependencies:
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
+- Bump countly-sdk-web from 24.11.2 to 24.11.4
+- Bump express-rate-limit from 7.4.1 to 7.5.0
+- Bump puppeteer from 23.10.4 to 23.11.1
+- Bump sass from 1.81.0 to 1.83.4
 
 ## Version 24.05.20
 Fixes:
