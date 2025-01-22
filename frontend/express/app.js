@@ -1,6 +1,6 @@
 /**
  * Main dashboard process app.js
- * @module frontend/express/app 
+ * @module frontend/express/app
  */
 
 // Set process name
