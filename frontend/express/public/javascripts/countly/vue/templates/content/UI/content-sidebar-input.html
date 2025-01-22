@@ -17,6 +17,11 @@
       class="cly-vue-content-builder-sidebar-input__label"
     >
       {{ label }}
+      <i
+        v-if="isLabelTooltipVisible"
+        v-tooltip.left="labelTooltip"
+        :class="labelIcon"
+      />
     </label>
     <slot name="content-builder-layout-step">
       <component

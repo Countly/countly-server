@@ -419,6 +419,16 @@
                 type: String
             },
 
+            labelIcon: {
+                default: 'cly-io cly-io-question-mark-circle',
+                type: String
+            },
+
+            labelTooltip: {
+                default: null,
+                type: String
+            },
+
             options: {
                 default: () => [],
                 type: Array
@@ -457,6 +467,11 @@
             size: {
                 default: null,
                 type: String
+            },
+
+            withLabelTooltip: {
+                default: false,
+                type: Boolean
             }
         },
 
@@ -496,6 +511,10 @@
 
             isComponentWithOptions() {
                 return this.isDropdownInput && Array.isArray(this.options) && this.options.length;
+            },
+
+            isLabelTooltipVisible() {
+                return this.withLabelTooltip && this.labelTooltip;
             },
 
             isSliderInput() {
