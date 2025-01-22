@@ -3,6 +3,9 @@ Features:
 - [alerts] alerts table default order should be by creation time newest at the top
 - [core] allow tracking Countly dashboard usage with Countly
 
+Enterprise Features:
+- [journey_engine] Editing/Deleting/Duplication of blocks and version management
+
 ## Version 24.12
 Features:
 - [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
@@ -4564,4 +4567,3 @@ This version provides several features and bugfixes to both server and SDKs. The
     A user of an application can only view analytics for that application 
     and cannot edit its settings.
   * Added csfr protection to all methods provided through app.js.
-
