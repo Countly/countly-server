@@ -1,3 +1,11 @@
+## Version XX.XX.XX
+
+Fixes:
+- [drill] [license] Update license loader to enable supplying db client
+- [server-stats] Fix data point calculation in job
+- [users] Format data points displayed in user sidebar
+
+
 ## Version 24.05.21
 
 Fixes:
