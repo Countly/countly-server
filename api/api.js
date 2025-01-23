@@ -4,7 +4,7 @@ const formidable = require('formidable');
 const os = require('os');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');
-const jobs = require('./parts/jobs');
+// const jobs = require('./parts/jobs');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
@@ -123,22 +123,26 @@ plugins.connectToAllDatabases().then(function() {
     /**
     * Set Plugins Logs Config
     */
-    plugins.setConfigs('logs', {
-        debug: (countlyConfig.logging && countlyConfig.logging.debug) ? countlyConfig.logging.debug.join(', ') : '',
-        info: (countlyConfig.logging && countlyConfig.logging.info) ? countlyConfig.logging.info.join(', ') : '',
-        warn: (countlyConfig.logging && countlyConfig.logging.warn) ? countlyConfig.logging.warn.join(', ') : '',
-        error: (countlyConfig.logging && countlyConfig.logging.error) ? countlyConfig.logging.error.join(', ') : '',
-        default: (countlyConfig.logging && countlyConfig.logging.default) ? countlyConfig.logging.default : 'warn',
-    }, undefined, () => {
-        const cfg = plugins.getConfig('logs'), msg = {
-            cmd: 'log',
-            config: cfg
-        };
-        if (process.send) {
-            process.send(msg);
+    plugins.setConfigs('logs',
+        {
+            debug: (countlyConfig.logging && countlyConfig.logging.debug) ? countlyConfig.logging.debug.join(', ') : '',
+            info: (countlyConfig.logging && countlyConfig.logging.info) ? countlyConfig.logging.info.join(', ') : '',
+            warn: (countlyConfig.logging && countlyConfig.logging.warn) ? countlyConfig.logging.warn.join(', ') : '',
+            error: (countlyConfig.logging && countlyConfig.logging.error) ? countlyConfig.logging.error.join(', ') : '',
+            default: (countlyConfig.logging && countlyConfig.logging.default) ? countlyConfig.logging.default : 'warn',
+        },
+        undefined,
+        () => {
+            const cfg = plugins.getConfig('logs'), msg = {
+                cmd: 'log',
+                config: cfg
+            };
+            if (process.send) {
+                process.send(msg);
+            }
+            require('./utils/log.js').ipcHandler(msg);
         }
-        require('./utils/log.js').ipcHandler(msg);
-    });
+    );
 
     /**
     * Initialize Plugins
@@ -305,17 +309,17 @@ plugins.connectToAllDatabases().then(function() {
         plugins.dispatch("/master", {});
 
         // Allow configs to load & scanner to find all jobs classes
-        setTimeout(() => {
-            jobs.job('api:topEvents').replace().schedule('at 00:01 am ' + 'every 1 day');
-            jobs.job('api:ping').replace().schedule('every 1 day');
-            jobs.job('api:clear').replace().schedule('every 1 day');
-            jobs.job('api:clearTokens').replace().schedule('every 1 day');
-            jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
-            jobs.job('api:task').replace().schedule('every 5 minutes');
-            jobs.job('api:userMerge').replace().schedule('every 10 minutes');
-            jobs.job("api:ttlCleanup").replace().schedule("every 1 minute");
-            //jobs.job('api:appExpire').replace().schedule('every 1 day');
-        }, 10000);
+        // setTimeout(() => {
+        // jobs.job('api:topEvents').replace().schedule('at 00:01 am ' + 'every 1 day'); // PORTED
+        // jobs.job('api:ping').replace().schedule('every 1 day'); // PORTED
+        // jobs.job('api:clear').replace().schedule('every 1 day'); // REMOVED
+        // jobs.job('api:clearTokens').replace().schedule('every 1 day'); // PORTED
+        // jobs.job('api:clearAutoTasks').replace().schedule('every 1 day'); // PORTED
+        // jobs.job('api:task').replace().schedule('every 5 minutes'); // PORTED
+        // jobs.job('api:userMerge').replace().schedule('every 10 minutes'); // PORTED
+        // jobs.job("api:ttlCleanup").replace().schedule("every 1 minute"); // PORTED
+        //jobs.job('api:appExpire').replace().schedule('every 1 day'); // Deprecated
+        // }, 10000);
 
         //Record as restarted
 
