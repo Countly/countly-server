@@ -83,7 +83,12 @@ module.exports = (db, filesObj, classesObj) => {
                         }
                     }
                     catch (e) {
-                        log.e('Error when loading job %s: %j ', job.file, e, e.stack);
+                        if (e.message === "Job class must extend Job, IPCJob, IPCFaçadeJob, or TransientJob") {
+                            // do nothing
+                        }
+                        else {
+                            log.e('Error when loading job %s: %j ', job.file, e, e.stack);
+                        }
                     }
                 });
             });
