@@ -23,7 +23,14 @@ const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request')(plugins.getConfig("security"));
-const Handle = require('../../api/parts/jobs/index.js');
+
+try {
+    require('../../jobServer/api');
+    log.i('Job api loaded');
+}
+catch (ex) {
+    log.e('Job api not available');
+}
 
 var loaded_configs_time = 0;
 
@@ -2732,7 +2739,8 @@ const processRequest = (params) => {
                      * 
                     */
                     validateUserForGlobalAdmin(params, async() => {
-                        await Handle.suspendJob(params);
+                        // await Handle.suspendJob(params);
+                        // TODO: UPDATE TO NEW JOB PROCESSOR
                     });
                     break;
                 }
