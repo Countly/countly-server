@@ -1,4 +1,5 @@
-const job = require("../parts/jobs/job.js");
+// const job = require("../parts/jobs/job.js");
+const Job = require("../../jobServer/Job");
 const crypto = require("crypto");
 const Promise = require("bluebird");
 const countlyApi = {
@@ -14,7 +15,7 @@ const common = require('../utils/common.js');
 const log = require('../utils/log.js')('job:topEvents');
 
 /** Class for job of top events widget **/
-class TopEventsJob extends job.Job {
+class TopEventsJob extends Job {
 
     /**
      * TopEvents initialize function
@@ -214,6 +215,17 @@ class TopEventsJob extends job.Job {
     run(db, done) {
         this.init();
         done();
+    }
+
+    /**
+     * Get schedule
+     * @returns {GetScheduleConfig} schedule
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "1 0 * * *" // every day at 00:01
+        };
     }
 }
 
