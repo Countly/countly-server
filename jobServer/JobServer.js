@@ -32,13 +32,6 @@ class JobServer {
     #pluginManager;
 
     /**
-     * The Countly common object
-     * @private
-     * @type {import('../api/utils/common.js')}
-     */
-    #common;
-
-    /**
      * The job manager instance
      * @private
      * @type {JobManager}
@@ -79,30 +72,43 @@ class JobServer {
     #isShuttingDown = false;
 
     /**
+     * @typedef {Object} DbConnections
+     * @property {MongoDb} countlyDb - Main Countly database connection
+     * @property {MongoDb} drillDb - Drill database connection
+     * @property {MongoDb} outDb - Output database connection
+     */
+    /**
+     * The database connections object
+     * @private
+     * @type {DbConnections}
+     */
+    #dbConnections;
+
+    /**
      * Factory method to create and initialize a new JobServer instance.
-     * @param {Object} common - Countly common utilities
      * @param {Logger} Logger - Logger constructor
      * @param {PluginManager} pluginManager - Plugin manager instance
+     * @param {DbConnections} dbConnections - Database connections object
      * @returns {Promise<JobServer>} A fully initialized JobServer instance
      * @throws {Error} If initialization fails
      */
-    static async create(common, Logger, pluginManager) {
-        const process = new JobServer(common, Logger, pluginManager);
+    static async create(Logger, pluginManager, dbConnections) {
+        const process = new JobServer(Logger, pluginManager, dbConnections);
         await process.init();
         return process;
     }
 
     /**
      * Creates a new JobServer instance
-     * @param {Object} common Countly common
-     * @param {function} Logger - Logger constructor
-     * @param {pluginManager} pluginManager - Plugin manager instance
+     * @param {Logger} Logger - Logger constructor
+     * @param {PluginManager} pluginManager - Plugin manager instance
+     * @param {Object} dbConnections - Database connections object
      */
-    constructor(common, Logger, pluginManager) {
-        this.#common = common;
+    constructor(Logger, pluginManager, dbConnections) {
         this.Logger = Logger;
-        this.#log = Logger('jobs:server');
         this.#pluginManager = pluginManager;
+        this.#dbConnections = dbConnections;
+        this.#log = Logger('jobs:server');
     }
 
     /**
@@ -114,15 +120,12 @@ class JobServer {
     async init() {
         try {
             this.#log.d('Initializing job server...');
-            await this.#connectToDb();
 
-            this.#jobManager = new JobManager(this.#db, this.Logger);
-            this.#jobScanner = new JobScanner(this.#db, this.Logger, this.#pluginManager);
+            this.#jobManager = new JobManager(this.#dbConnections.countlyDb, this.Logger);
+            this.#jobScanner = new JobScanner(this.#dbConnections.countlyDb, this.Logger, this.#pluginManager);
 
-            this.#jobConfigsCollection = this.#db.collection(JOBS_CONFIG_COLLECTION);
+            this.#jobConfigsCollection = this.#dbConnections.countlyDb.collection(JOBS_CONFIG_COLLECTION);
             // await this.#jobConfigsCollection.createIndex({ jobName: 1 }, /*{ unique: true }*/);
-
-            this.#setupSignalHandlers();
 
             this.#log.i('Job server initialized successfully');
         }
@@ -155,52 +158,16 @@ class JobServer {
         }
         catch (error) {
             this.#log.e('Critical error during server startup: %j', error);
-            await this.#shutdown(1);
+            await this.shutdown(1);
         }
-    }
-
-    /**
-     * Connects to the mongo database.
-     * @returns {Promise<void>} A promise that resolves once the connection is established.
-     */
-    async #connectToDb() {
-        try {
-            this.#db = await this.#pluginManager.dbConnection('countly');
-        }
-        catch (e) {
-            this.#log.e('Failed to connect to database:', e);
-            throw e;
-        }
-    }
-
-    /**
-     * Sets up process signal handlers for graceful shutdown and error handling.
-     * @private
-     */
-    #setupSignalHandlers() {
-        process.on('SIGTERM', () => {
-            this.#log.i('Received SIGTERM signal');
-            this.#shutdown();
-        });
-
-        process.on('SIGINT', () => {
-            this.#log.i('Received SIGINT signal');
-            this.#shutdown();
-        });
-
-        process.on('uncaughtException', (error) => {
-            this.#log.e('Uncaught exception in job server: %j', error);
-            this.#shutdown(1);
-        });
     }
 
     /**
      * Gracefully shuts down the job server, closing connections and stopping jobs.
-     * @private
      * @param {number} [exitCode=0] - Process exit code
      * @returns {Promise<void>} A promise that resolves once the job server is shut down
      */
-    async #shutdown(exitCode = 0) {
+    async shutdown(exitCode = 0) {
         if (this.#isShuttingDown) {
             this.#log.d('Shutdown already in progress, skipping duplicate request');
             return;
@@ -209,9 +176,11 @@ class JobServer {
 
         this.#log.i('Initiating job server shutdown...');
 
-        if (this.#db && typeof this.#db.close === 'function') {
-            this.#log.d('Closing database connection');
-            await this.#db.close();
+        for (const [key, db] of Object.entries(this.#dbConnections)) {
+            if (db && typeof db.close === 'function') {
+                this.#log.d(`Closing ${key} database connection`);
+                await db.close();
+            }
         }
 
         if (!this.#isRunning) {

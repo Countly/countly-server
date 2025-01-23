@@ -18,6 +18,11 @@ const JobUtils = require('./JobUtils');
  * @property {Date} [updatedAt] - When the config was last updated
  * @property {string} checksum - Hash of the job implementation
  * @property {Object} defaultConfig - Original job configuration
+ * @property {Object} defaultConfig.schedule - Default schedule configuration
+ * @property {Object} defaultConfig.retry - Default retry configuration
+ * @property {number} defaultConfig.priority - Default job priority
+ * @property {number} defaultConfig.concurrency - Default concurrency limit
+ * @property {number} defaultConfig.lockLifetime - Default lock lifetime in milliseconds
  */
 
 /**
@@ -75,11 +80,24 @@ class JobManager {
         changeStream.on('change', async(change) => {
             this.#log.d('Detected config change:', {
                 operationType: change.operationType,
-                jobName: change.fullDocument?.jobName
+                documentId: change.documentKey?._id,
+                updatedFields: change.updateDescription?.updatedFields
             });
-            if (change.operationType === 'update' || change.operationType === 'insert') {
-                const jobConfig = change.fullDocument;
-                await this.#applyConfig(jobConfig);
+
+            // Dont really need this, as we are only updating the config
+            // if (change.operationType === 'insert') {
+            //     const jobConfig = change.fullDocument;
+            //     await this.#applyConfig(jobConfig);
+            // }
+            // else 
+            if (change.operationType === 'update') {
+                // Fetch the complete document after update
+                const jobConfig = await this.#jobConfigsCollection.findOne({
+                    _id: change.documentKey._id
+                });
+                if (jobConfig) {
+                    await this.#applyConfig({...change?.updateDescription?.updatedFields, jobName: jobConfig.jobName});
+                }
             }
         });
     }
@@ -123,8 +141,8 @@ class JobManager {
                 await this.#jobRunner.configureRetry(jobName, jobConfig.retry);
             }
 
-            if (typeof jobConfig.enabled === 'boolean') {
-                if (jobConfig.enabled) {
+            if (typeof jobConfig?.enabled === 'boolean') {
+                if (jobConfig?.enabled) {
                     await this.#jobRunner.enableJob(jobName);
                     this.#log.i(`Job ${jobName} enabled via config`);
                 }
@@ -136,7 +154,7 @@ class JobManager {
         }
         catch (error) {
             this.#log.e('Failed to apply job configuration:', {
-                jobName: jobConfig.jobName,
+                jobName: jobConfig?.jobName || "unknown",
                 error: error.message,
                 stack: error.stack
             });

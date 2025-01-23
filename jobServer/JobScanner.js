@@ -129,7 +129,7 @@ class JobScanner {
         catch (err) {
             const message = `Failed to read directory ${jobConfig.dir}: ${err.message}`;
             if (jobConfig.required) {
-                this.#log.e(message, err);
+                this.#log.w(message, err);
                 throw new Error(message);
             }
             this.#log.w(message);
@@ -159,7 +159,7 @@ class JobScanner {
             };
         }
         catch (err) {
-            this.#log.e(`Failed to load job ${job.file}: ${err.message}`, err);
+            this.#log.w(`Failed to load job ${job.file}: ${err.message}`, err);
             return null;
         }
     }

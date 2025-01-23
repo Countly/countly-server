@@ -1,4 +1,4 @@
-const defaultLogger = { d: console.debug, w: console.warn, e: console.error, i: console.info };
+const Logger = require('../api/utils/log.js');
 const { JOB_PRIORITIES } = require('./constants/JobPriorities');
 
 /**
@@ -19,7 +19,7 @@ const { JOB_PRIORITIES } = require('./constants/JobPriorities');
  */
 
 /**
- * @typedef {Object} ScheduleConfig
+ * @typedef {Object} GetScheduleConfig
  * @property {('once'|'schedule'|'now')} type - Type of schedule
  * @property {(string|Date)} [value] - Schedule value (cron expression or Date)
  */
@@ -79,11 +79,9 @@ const { JOB_PRIORITIES } = require('./constants/JobPriorities');
  * }
  */
 class Job {
+
     /** @type {string} Name of the job */
     jobName = Job.name;
-
-    /** @type {Logger} Logger instance */
-    logger;
 
     /** @type {Function|null} Touch method from job runner */
     #touchMethod = null;
@@ -98,8 +96,8 @@ class Job {
      * Creates an instance of Job.
      */
     constructor() {
-        this.logger = defaultLogger;
-        this.logger.d(`Job instance "${this.jobName}" created`);
+        this.log = Logger('jobs:job');
+        this.log.d(`Job instance "${this.jobName}" created`);
     }
 
     /**
@@ -114,8 +112,8 @@ class Job {
      * Sets the logger
      * @param {Object} [logger=defaultLogger] The logger instance
      */
-    setLogger(logger = defaultLogger) {
-        this.logger = logger;
+    setLogger(logger = this.log) {
+        this.log = logger;
     }
 
     /**
@@ -160,7 +158,7 @@ class Job {
      * Get the schedule type and timing for the job.
      * This method must be implemented by the child class.
      * 
-     * @returns {Object} Schedule configuration object
+     * @returns {GetScheduleConfig} Schedule configuration object
      * @property {('once'|'schedule'|'now')} type - Type of schedule
      * @property {string|Date} [value] - Schedule value:
      *   - For type='schedule': Cron expression (e.g., '0 * * * *' for hourly)
@@ -209,7 +207,7 @@ class Job {
      * @private
      */
     async _run(db, job, done) {
-        this.logger.d(`[Job:${this.jobName}] Starting execution`, {
+        this.log.d(`[Job:${this.jobName}] Starting execution`, {
             database: db?._cly_debug?.db,
             jobId: job?.attrs?._id,
             jobName: this.jobName
@@ -243,14 +241,14 @@ class Job {
                 }
             });
 
-            this.logger.i(`[Job:${this.jobName}] Completed successfully`, {
+            this.log.i(`[Job:${this.jobName}] Completed successfully`, {
                 result: result || null,
                 duration: `${Date.now() - job?.attrs?.lastRunAt?.getTime()}ms`
             });
             done(null, result);
         }
         catch (error) {
-            this.logger.e(`[Job:${this.jobName}] Execution failed`, {
+            this.log.e(`[Job:${this.jobName}] Execution failed`, {
                 error: error.message,
                 stack: error.stack,
                 duration: `${Date.now() - job?.attrs?.lastRunAt?.getTime()}ms`
@@ -304,7 +302,7 @@ class Job {
             await this.#touchMethod(progress);
         }
 
-        this.logger?.d(`[Job:${this.jobName}] Progress update`, progressData);
+        this.log?.d(`[Job:${this.jobName}] Progress update`, progressData);
     }
 
     /**
@@ -318,7 +316,7 @@ class Job {
     getRetryConfig() {
         return {
             enabled: false,
-            attempts: 3,
+            attempts: 0,
             delay: 5 * 60 * 1000 // 5 minutes
         };
     }
