@@ -2276,7 +2276,58 @@ var pluginManager = function pluginManager() {
         overwriteDbPromise(countlyDb, "stats");
 
 
-        var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session", "omitReadPreference"];
+        var findOptions = [
+            "allowDiskUse",
+            "allowPartialResults",
+            "authdb",
+            "awaitData",
+            "batchSize",
+            "bsonRegExp",
+            "checkKeys",
+            "collation",
+            "comment",
+            "dbName",
+            "enableUtf8Validation",
+            "explain",
+            "fieldsAsRaw",
+            "hint",
+            "ignoreUndefined",
+            "let",
+            "limit",
+            "max",
+            "maxAwaitTimeMS",
+            "maxScan",
+            "maxTimeMS",
+            "min",
+            "noCursorTimeout",
+            "noResponse",
+            "omitReadPreference",
+            "oplogReplay",
+            "partial",
+            "projection",
+            "promoteBuffers",
+            "promoteLongs",
+            "promoteValues",
+            "raw",
+            "readConcern",
+            "readPreference",
+            "retryWrites",
+            "returnKey",
+            "serializeFunctions",
+            "session",
+            "showDiskLoc",
+            "showRecordId",
+            "singleBatch",
+            "skip",
+            "snapshot",
+            "sort",
+            "tailable",
+            "timeout",
+            "timeoutMode",
+            "timeoutMS",
+            "useBigInt64",
+            "willRetryWrite"
+        ];
 
         countlyDb._collection_cache = {};
         //overwrite some methods
@@ -2631,7 +2682,14 @@ var pluginManager = function pluginManager() {
                     }
                     logDbRead.d(name + " " + collection + " %j %j" + at, query, options);
                     logDbRead.d("From connection %j", countlyDb._cly_debug);
-                    return handlePromiseErrors(this["_" + name](query, options), e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name)));
+                    if (name === "findOneAndDelete" && !options.remove) {
+                        return handlePromiseErrors(this["_" + name](query, options).then(result => ({ value: result })),
+                            e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name))
+                        );
+                    }
+                    else {
+                        return handlePromiseErrors(this["_" + name](query, options), e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name)));
+                    }
                 };
             };
 

@@ -11,7 +11,6 @@
 
             popperClass: {
                 default: null,
-                required: false,
                 type: String
             }
         },
@@ -39,7 +38,7 @@
 
             createdBy: {
                 default: null,
-                type: String
+                type: String,
             },
 
             disableSaveButton: {
@@ -58,8 +57,8 @@
             },
 
             options: {
-                type: Array,
-                default: () => []
+                default: () => ([]),
+                type: Array
             },
 
             saveButtonLabel: {
@@ -87,7 +86,6 @@
             },
 
             toggleTooltip: {
-                default: null,
                 type: String
             },
 
@@ -130,7 +128,7 @@
         computed: {
             activeTab: {
                 get() {
-                    return this.currentTab || this.tabs[0]?.name;
+                    return this.currentTab || this.tabs[0]?.value;
                 },
                 set(value) {
                     this.currentTab = value;
@@ -387,7 +385,7 @@
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER = 'color-picker';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN = 'dropdown';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT = 'input';
-    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT_NUMBER = 'input-number';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER = 'number';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER = 'slider';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER = 'swapper';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH = 'switch';
@@ -397,7 +395,7 @@
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER]: 'cly-colorpicker',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN]: 'el-select',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT]: 'el-input',
-        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT_NUMBER]: 'el-input-number',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER]: 'el-input-number',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER]: 'el-slider',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER]: 'cly-option-swapper',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH]: 'el-switch',
@@ -477,11 +475,19 @@
                         return countlyCommon.unescapeHtml(this.value) || '';
                     }
 
+                    if (this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER) {
+                        return +this.value || 0;
+                    }
+
                     return this.value || null;
                 },
                 set(newValue) {
                     this.$emit('input', newValue);
                 }
+            },
+
+            controlsProp() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER ? false : null;
             },
 
             isDropdownInput() {
@@ -497,7 +503,10 @@
             },
 
             isSuffixVisible() {
-                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT && this.suffix;
+                return (
+                    this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT ||
+                    this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER
+                ) && this.suffix;
             },
 
             isSwapperInput() {
@@ -518,6 +527,11 @@
         template: CV.T('/javascripts/countly/vue/templates/UI/option-swapper.html'),
 
         props: {
+            disabled: {
+                default: false,
+                type: Boolean
+            },
+
             highlightOnSelect: {
                 default: true,
                 type: Boolean
