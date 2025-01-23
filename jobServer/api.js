@@ -1,3 +1,5 @@
+/* api.js */
+
 const Logger = require('../api/utils/log.js');
 const log = new Logger('jobs:api');
 
@@ -7,15 +9,16 @@ const common = require("../api/utils/common");
 const cronstrue = require('cronstrue');
 const moment = require('moment');
 
+// ----------------------------------
+// Helper Functions
+// ----------------------------------
+
 /**
- * Maps job status based on job properties
- * @param {Object} job - The job object
- * @param {Date} [job.lockedAt] - When the job was locked
- * @param {Date} [job.failedAt] - When the job failed
- * @param {Date} [job.lastFinishedAt] - When the job last finished
- * @returns {string} Status - "RUNNING", "FAILED", "COMPLETED", or "SCHEDULED"
+ * Determine job status from the doc's timestamps
+ * @param {Object} job Document from pulseJobs
+ * @returns {String} "RUNNING", "FAILED", "COMPLETED", or "SCHEDULED"
  */
-const getJobStatus = (job) => {
+function getJobStatus(job) {
     if (job.lockedAt) {
         return "RUNNING";
     }
@@ -26,16 +29,14 @@ const getJobStatus = (job) => {
         return "COMPLETED";
     }
     return "SCHEDULED";
-};
+}
 
 /**
- * Maps job run status based on job properties
- * @param {Object} job - The job object
- * @param {Date} [job.failedAt] - When the job failed
- * @param {Date} [job.lastFinishedAt] - When the job last finished
- * @returns {string} Status - "failed", "success", or "pending"
+ * Determine run status for a single job doc
+ * @param {Object} job
+ * @returns {String} "failed", "success", or "pending"
  */
-const getRunStatus = (job) => {
+function getRunStatus(job) {
     if (job.failedAt) {
         return "failed";
     }
@@ -43,18 +44,28 @@ const getRunStatus = (job) => {
         return "success";
     }
     return "pending";
-};
+}
 
-// Format job duration helper
-const formatJobDuration = (startDate, endDate) => {
+/**
+ * Returns job duration in seconds (string), or null if start/end not present
+ * @param {Date} startDate
+ * @param {Date} endDate
+ * @returns {String|null} e.g. "2.34"
+ */
+function formatJobDuration(startDate, endDate) {
     if (!startDate || !endDate) {
         return null;
     }
-    return ((new Date(endDate) - new Date(startDate)) / 1000).toFixed(2);
-};
+    const ms = new Date(endDate) - new Date(startDate);
+    return (ms / 1000).toFixed(2);
+}
 
-// Get schedule label helper
-const getScheduleLabel = (schedule) => {
+/**
+ * Returns a human-friendly label for a cron expression using cronstrue, or the raw expression if invalid
+ * @param {String} schedule
+ * @returns {String}
+ */
+function getScheduleLabel(schedule) {
     if (!schedule) {
         return '';
     }
@@ -64,67 +75,135 @@ const getScheduleLabel = (schedule) => {
     catch (e) {
         return schedule;
     }
-};
+}
 
 /**
- * Job management API endpoint for controlling job configurations
- * @name /i/jobs
- * @example
- * // Enable a job
- * POST /i/jobs
- * {
- *   "jobName": "cleanupJob",
- *   "action": "enable"
- * }
- * Response: { "code": 200, "message": "Success" }
- * 
- * // Disable a job
- * POST /i/jobs
- * {
- *   "jobName": "cleanupJob",
- *   "action": "disable"
- * }
- * Response: { "code": 200, "message": "Success" }
- * 
- * // Trigger immediate job execution
- * POST /i/jobs
- * {
- *   "jobName": "cleanupJob",
- *   "action": "runNow"
- * }
- * Response: { "code": 200, "message": "Success" }
- * 
- * // Update schedule
- * POST /i/jobs
- * {
- *   "jobName": "cleanupJob",
- *   "action": "updateSchedule",
- *   "schedule": "0 0 * * *"  // Runs at midnight every day
- * }
- * Response: { "code": 200, "message": "Success" }
- * 
- * // Update retry configuration
- * POST /i/jobs
- * {
- *   "jobName": "cleanupJob",
- *   "action": "updateRetry",
- *   "retry": {
- *     "attempts": 3,    // Number of retry attempts
- *     "delay": 300      // Delay between retries in seconds
- *   }
- * }
- * Response: { "code": 200, "message": "Success" }
- * 
- * @returns {Object} Response
- * @returns {number} Response.code - Status codes:
- *                                  200: Success
- *                                  400: Invalid parameters or missing required fields
- *                                  500: Internal server error
- * @returns {string} Response.message - Status message describing the result
+ * Build the "jobDetails" object for a scheduled doc
+ * @param {Object} scheduledDoc doc from pulseJobs, type='single'
+ * @param {Object} jobConfig doc from jobConfigs
+ * @returns {Object}
  */
+function buildJobDetails(scheduledDoc, jobConfig) {
+    if (!scheduledDoc && !jobConfig) {
+        return {};
+    }
+
+    const enabled = jobConfig?.enabled ?? true;
+
+    // Combine default config from the scheduled doc + overrides from jobConfigs
+    const details = {
+        config: {
+            ...(jobConfig || {}),
+
+            // We ensure we have defaultConfig if jobConfig is missing it
+            defaultConfig: {
+                schedule: { value: scheduledDoc?.repeatInterval },
+                retry: {
+                    attempts: scheduledDoc?.attempts,
+                    delay: scheduledDoc?.backoff
+                }
+            },
+
+            enabled,
+            // The "override" fields
+            scheduleOverride: jobConfig?.schedule || null,
+            retryOverride: jobConfig?.retry || null,
+            // The human-friendly label from the scheduled doc's cron
+            scheduleLabel: getScheduleLabel(
+                jobConfig?.defaultConfig?.schedule?.value ||
+                scheduledDoc?.repeatInterval
+            )
+        },
+        currentState: {}
+    };
+
+    // If we have a scheduledDoc, fill out currentState
+    if (scheduledDoc) {
+        details.currentState = {
+            status: getJobStatus(scheduledDoc),
+            nextRun: scheduledDoc.nextRunAt,
+            lastRun: scheduledDoc.lastFinishedAt,
+            lastRunStatus: getRunStatus(scheduledDoc),
+            failReason: scheduledDoc.failReason,
+            lastRunDuration: formatJobDuration(scheduledDoc.lastRunAt, scheduledDoc.lastFinishedAt),
+            // Additional fields if needed
+            finishedCount: scheduledDoc.finishedCount,
+            totalRuns: scheduledDoc.runCount
+        };
+    }
+
+    return details;
+}
+
+/**
+ * Process a "normal" (type='normal') doc for job details table
+ * @param {Object} doc
+ * @returns {Object}
+ */
+function processRunDoc(doc) {
+    return {
+        lastRunAt: doc.lastRunAt,
+        status: getJobStatus(doc),
+        duration: formatJobDuration(doc.lastRunAt, doc.lastFinishedAt),
+        result: doc.result,
+        failReason: doc.failReason,
+        dataAsString: JSON.stringify(doc.result || {}, null, 2)
+    };
+}
+
+/**
+ * Build a job row for the listing page
+ * @param {Object} mainDoc doc from pipeline ($first)
+ * @param {Object} jobConfig from jobConfigs
+ * @param {Object} groupItem aggregator object (with lastRunAt, lastFinishedAt, etc.)
+ * @returns {Object} { job: {...}, config: {...} }
+ */
+function buildListViewJob(mainDoc, jobConfig, groupItem) {
+    // If there's no doc, return something minimal
+    if (!mainDoc) {
+        return { job: {}, config: {} };
+    }
+
+    // Merge in config overrides
+    const finalConfig = {
+        enabled: jobConfig?.enabled ?? true,
+
+        // The default config is taken from the doc
+        defaultConfig: {
+            schedule: { value: mainDoc.repeatInterval },
+            retry: { attempts: mainDoc.attempts, delay: mainDoc.backoff }
+        },
+
+        // The user overrides
+        schedule: jobConfig?.schedule,
+        retry: jobConfig?.retry
+    };
+
+    const jobObj = {
+        name: mainDoc.name,
+        status: getJobStatus(mainDoc),
+        schedule: finalConfig.defaultConfig.schedule.value,
+        scheduleLabel: getScheduleLabel(finalConfig.defaultConfig.schedule.value),
+        nextRunAt: mainDoc.nextRunAt,
+        lastFinishedAt: groupItem.lastFinishedAt,
+        lastRunStatus: getRunStatus(mainDoc),
+        failReason: mainDoc.failReason,
+        // "total" can be included if you want. Here it's arbitrary:
+        total: 0
+    };
+
+    return {
+        job: jobObj,
+        config: finalConfig
+    };
+}
+
+// ----------------------------------
+// /i/jobs endpoint
+// ----------------------------------
 plugins.register('/i/jobs', async function(ob) {
     validateGlobalAdmin(ob.params, async function() {
-        const {jobName, schedule, retry} = ob.params.qstring || {};
+        const { jobName, schedule, retry } = ob.params.qstring || {};
         const action = ob.params.qstring?.action;
 
         if (!jobName) {
@@ -165,110 +244,25 @@ plugins.register('/i/jobs', async function(ob) {
                 return;
             }
 
+            // Update or insert if missing
             await jobsCollection.updateOne(
                 { jobName },
-                { $set: updateData }
+                { $set: updateData },
+                { upsert: true }
             );
             common.returnMessage(ob.params, 200, 'Success');
         }
         catch (error) {
-            log.e('Error in jobs API:', { error: error.message, stack: error.stack });
+            log.e('Error in /i/jobs:', { error: error.message, stack: error.stack });
             common.returnMessage(ob.params, 500, 'Internal server error');
         }
     });
     return true;
 });
 
-/**
- * Job query API endpoint for retrieving job information
- * @name /o/jobs
- * @example
- * // Get all jobs with pagination and search
- * GET /o/jobs
- * {
- *   "iDisplayStart": 0,        // Pagination start index
- *   "iDisplayLength": 50,      // Number of records per page
- *   "sSearch": "backup",       // Search term for job names
- *   "iSortCol_0": "nextRunAt", // Column to sort by
- *   "sSortDir_0": "desc"       // Sort direction: "asc" or "desc"
- * }
- * Response: {
- *   "sEcho": "1",
- *   "iTotalRecords": 100,
- *   "iTotalDisplayRecords": 5,
- *   "aaData": [{
- *     "job": {
- *       "name": "backupJob",
- *       "status": "SCHEDULED",
- *       "schedule": "0 0 * * *",
- *       "scheduleLabel": "At 12:00 AM",
- *       "nextRunAt": "2024-03-20T00:00:00.000Z",
- *       "lastFinishedAt": "2024-03-19T00:00:00.000Z",
- *       "lastRunStatus": "success",
- *       "failReason": null
- *     },
- *     "config": {
- *       "enabled": true,
- *       "schedule": "0 0 * * *",
- *       "retry": { "attempts": 3, "delay": 300 }
- *     }
- *   }]
- * }
- * 
- * // Get specific job details with run history
- * GET /o/jobs
- * {
- *   "name": "cleanupJob",
- *   "iDisplayStart": 0,
- *   "iDisplayLength": 50
- * }
- * Response: {
- *   "sEcho": "1",
- *   "iTotalRecords": 10,
- *   "iTotalDisplayRecords": 10,
- *   "aaData": [{
- *     "lastRunAt": "2024-03-19T00:00:00.000Z",
- *     "status": "COMPLETED",
- *     "lastRunStatus": "success",
- *     "duration": "45.32",
- *     "failReason": null,
- *     "result": { "processedRecords": 1000 },
- *     "runCount": 1,
- *     "dataAsString": "{\n  \"processedRecords\": 1000\n}"
- *   }],
- *   "jobDetails": {
- *     "config": {
- *       "enabled": true,
- *       "defaultConfig": {
- *         "schedule": { "value": "0 0 * * *" },
- *         "retry": { "attempts": 3, "delay": 300 }
- *       },
- *       "scheduleLabel": "At 12:00 AM",
- *       "scheduleOverride": null,
- *       "retryOverride": null
- *     },
- *     "currentState": {
- *       "status": "SCHEDULED",
- *       "nextRun": "2024-03-20T00:00:00.000Z",
- *       "lastRun": "2024-03-19T00:00:00.000Z",
- *       "lastRunStatus": "success",
- *       "failReason": null,
- *       "lastRunDuration": "45.32",
- *       "finishedCount": 10,
- *       "totalRuns": 10
- *     }
- *   }
- * }
- * 
- * @returns {Object} Response
- * @returns {string} Response.sEcho - Echo parameter from request for DataTables
- * @returns {number} Response.iTotalRecords - Total number of records before filtering
- * @returns {number} Response.iTotalDisplayRecords - Number of records after filtering
- * @returns {Array<Object>} Response.aaData - Array of job data or job runs
- * @returns {Object} [Response.jobDetails] - Detailed job information when querying specific job
- * @returns {Object} Response.jobDetails.config - Job configuration including schedule and retry settings
- * @returns {Object} Response.jobDetails.currentState - Current job state including next run and statistics
- */
+// ----------------------------------
+// /o/jobs endpoint
+// ----------------------------------
 plugins.register('/o/jobs', async function(ob) {
     validateGlobalAdmin(ob.params, async function() {
         const db = common.db;
@@ -285,72 +279,40 @@ plugins.register('/o/jobs', async function(ob) {
                 sSortDir_0
             } = ob.params.qstring;
 
-            // If jobName is provided, fetch detailed view
+            // Basic pagination & sorting
+            const skip = Number(iDisplayStart) || 0;
+            const limit = Number(iDisplayLength) || 50;
+            const sortColumn = iSortCol_0 || 'nextRunAt';
+            const sortDir = (sSortDir_0 === 'desc') ? -1 : 1;
+
+            // If a specific job name is provided -> detail view
             if (jobName) {
-                // Get job definition and config
-                const [jobConfig, latestJob] = await Promise.all([
-                    jobConfigsCollection.findOne({ jobName }),
-                    jobsCollection.findOne(
-                        { name: jobName, type: { $ne: 'single' } }, // Exclude single runs
-                        { sort: { lastRunAt: -1 } }
-                    )
-                ]);
-
-                // Get individual job runs
-                const jobRuns = await jobsCollection
-                    .find({
-                        name: jobName,
-                        type: 'single' // Only get single run instances
-                    })
-                    .sort({ lastRunAt: -1 })
-                    .skip(Number(iDisplayStart) || 0)
-                    .limit(Number(iDisplayLength) || 50)
-                    .toArray();
-
-                const total = await jobsCollection.countDocuments({
+                // The "scheduled" doc (type: 'single')
+                const scheduledDoc = await jobsCollection.findOne({
                     name: jobName,
                     type: 'single'
                 });
 
-                // Process job runs with more detailed information
-                const processedRuns = jobRuns.map(run => ({
-                    lastRunAt: run.lastRunAt,
-                    status: getJobStatus(run),
-                    lastRunStatus: getRunStatus(run),
-                    duration: formatJobDuration(run.lastRunAt, run.lastFinishedAt),
-                    failReason: run.failReason,
-                    result: run.result,
-                    runCount: run.runCount,
-                    dataAsString: JSON.stringify(run.result || {}, null, 2)
-                }));
+                // The "normal" docs (type: 'normal')
+                const query = { name: jobName, type: 'normal' };
+                const normalDocsCursor = jobsCollection.find(query)
+                    .sort({ lastRunAt: -1 })
+                    .skip(skip)
+                    .limit(limit);
 
-                // Structure job details with clear separation
-                const jobDetails = {
-                    config: {
-                        ...jobConfig,
-                        enabled: jobConfig?.enabled ?? true,
-                        defaultConfig: {
-                            schedule: { value: latestJob?.repeatInterval },
-                            retry: {
-                                attempts: latestJob?.attempts,
-                                delay: latestJob?.backoff
-                            }
-                        },
-                        scheduleLabel: getScheduleLabel(jobConfig?.defaultConfig?.schedule?.value),
-                        scheduleOverride: jobConfig?.schedule,
-                        retryOverride: jobConfig?.retry
-                    },
-                    currentState: latestJob ? {
-                        status: getJobStatus(latestJob),
-                        nextRun: latestJob.nextRunAt,
-                        lastRun: latestJob.lastFinishedAt,
-                        lastRunStatus: getRunStatus(latestJob),
-                        failReason: latestJob.failReason,
-                        lastRunDuration: formatJobDuration(latestJob.lastRunAt, latestJob.lastFinishedAt),
-                        finishedCount: latestJob.finishedCount,
-                        totalRuns: latestJob.runCount
-                    } : null
-                };
+                const [normalDocs, total] = await Promise.all([
+                    normalDocsCursor.toArray(),
+                    jobsCollection.countDocuments(query)
+                ]);
+
+                // Fetch config override
+                const jobConfig = await jobConfigsCollection.findOne({ jobName });
+
+                // Build jobDetails
+                const jobDetails = buildJobDetails(scheduledDoc, jobConfig);
+
+                // Process normal docs
+                const processedRuns = normalDocs.map(doc => processRunDoc(doc));
 
                 common.returnOutput(ob.params, {
                     sEcho: ob.params.qstring.sEcho,
@@ -361,212 +323,85 @@ plugins.register('/o/jobs', async function(ob) {
                 });
                 return;
             }
+            else {
+                // Listing all unique job names
+                const search = sSearch ? { name: new RegExp(sSearch, 'i') } : {};
 
-            // Handle list view if no jobName provided
-            const skip = Number(iDisplayStart) || 0;
-            const limit = Number(iDisplayLength) || 50;
-            const search = sSearch || '';
-            const sort = {
-                [iSortCol_0 || 'nextRunAt']: sSortDir_0 === 'desc' ? -1 : 1
-            };
+                // We'll create a pipeline that groups by name. 
+                // We prefer the doc with type='single' if it exists, because we sort by type ascending first.
+                const pipeline = [
+                    { $match: search },
+                    {
+                        $sort: {
+                            type: -1, // ensures 'single' (0) is sorted before 'normal' (1)
+                            [sortColumn]: sortDir
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$name",
+                            doc: { $first: "$$ROOT" }, // the first doc in each group
+                            lastRunAt: { $max: "$lastRunAt" },
+                            lastFinishedAt: { $max: "$lastFinishedAt" },
+                            failedAt: { $max: "$failedAt" }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            name: "$_id",
+                            doc: 1,
+                            lastRunAt: 1,
+                            lastFinishedAt: 1,
+                            failedAt: 1
+                        }
+                    },
+                    { $skip: skip },
+                    { $limit: limit }
+                ];
 
-            await handleListView(ob, jobsCollection, jobConfigsCollection, search, sort, skip, limit);
+                // total distinct job names
+                const allNames = await jobsCollection.distinct('name', search);
+                const totalCount = allNames.length;
+
+                // Run pipeline
+                const rawJobs = await jobsCollection.aggregate(pipeline).toArray();
+
+                // Fetch jobConfigs in one pass
+                const jobConfigs = await jobConfigsCollection.find({}).toArray();
+                const configMap = {};
+                jobConfigs.forEach(cfg => {
+                    configMap[cfg.jobName] = cfg;
+                });
+
+                // Merge data
+                const processed = rawJobs.map(item => {
+                    const jobName = item.name;
+                    const mainDoc = item.doc; // the doc from $first
+                    const jobConfig = configMap[jobName] || null;
+
+                    return buildListViewJob(mainDoc, jobConfig, item);
+                });
+
+                // Each entry in final array should be { job: {...}, config: {...} }
+                const finalOutput = processed.map(data => ({
+                    job: data.job,
+                    config: data.config
+                }));
+
+                // Return
+                common.returnOutput(ob.params, {
+                    sEcho: ob.params.qstring.sEcho,
+                    iTotalRecords: totalCount,
+                    iTotalDisplayRecords: totalCount,
+                    aaData: finalOutput
+                });
+            }
         }
         catch (error) {
-            log.e('Error in jobs API:', { error: error.message, stack: error.stack });
+            log.e('Error in /o/jobs:', { error: error.message, stack: error.stack });
             common.returnMessage(ob.params, 500, 'Internal server error');
         }
     });
     return true;
 });
-
-/**
- * Handles detailed view for a specific job
- * @param {Object} ob - Request object
- * @param {string} jobName - Name of the job
- * @param {Collection} jobsCollection - MongoDB jobs collection
- * @param {Collection} jobConfigsCollection - MongoDB job configs collection
- * @param {number} skip - Number of records to skip
- * @param {number} limit - Number of records to return
- * @returns {Promise<void>}
- */
-async function handleDetailedView(ob, jobName, jobsCollection, jobConfigsCollection, skip, limit) {
-    const query = { name: jobName };
-
-    const [jobRuns, jobConfig, latestJob] = await Promise.all([
-        jobsCollection.find({ ...query, type: "single" })
-            .sort({ nextRunAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .toArray(),
-        jobConfigsCollection.findOne({ jobName }),
-        jobsCollection.findOne(
-            { name: jobName },
-            { sort: { lastFinishedAt: -1, lastRunAt: -1 } }
-        )
-    ]);
-
-    const total = await jobsCollection.countDocuments({ ...query, type: "single" });
-
-    const processedRuns = jobRuns.map(run => ({
-        name: run.name,
-        status: getJobStatus(run),
-        schedule: run.repeatInterval,
-        scheduleLabel: run.repeatInterval ? getScheduleLabel(run.repeatInterval) : 'Manual Run',
-        next: run.nextRunAt,
-        finished: run.lastFinishedAt,
-        lastRunStatus: getRunStatus(run),
-        failReason: run.failReason,
-        data: run.data,
-        dataAsString: JSON.stringify(run.data, null, 2),
-        duration: formatJobDuration(run.lastRunAt, run.lastFinishedAt),
-        durationInSeconds: formatJobDuration(run.lastRunAt, run.lastFinishedAt) + 's',
-        lastRunAt: run.lastRunAt,
-        nextRunDate: run.nextRunAt ? moment(run.nextRunAt).format('D MMM, YYYY') : '-',
-        nextRunTime: run.nextRunAt ? moment(run.nextRunAt).format('HH:mm:ss') : '-',
-        lastRun: run.lastFinishedAt ? moment(run.lastFinishedAt).fromNow() : '-'
-    }));
-
-    const jobDetails = {
-        config: {
-            ...jobConfig,
-            scheduleLabel: jobConfig?.defaultConfig?.schedule?.value ?
-                getScheduleLabel(jobConfig.defaultConfig.schedule.value) : '-',
-        },
-        currentState: latestJob ? {
-            status: getJobStatus(latestJob),
-            nextRun: latestJob.nextRunAt,
-            lastRun: latestJob.lastFinishedAt,
-            lastRunStatus: getRunStatus(latestJob),
-            failReason: latestJob.failReason,
-            lastRunDuration: formatJobDuration(latestJob.lastRunAt, latestJob.lastFinishedAt)
-        } : null
-    };
-
-    common.returnOutput(ob.params, {
-        sEcho: ob.params.qstring.sEcho,
-        iTotalRecords: total,
-        iTotalDisplayRecords: total,
-        aaData: processedRuns,
-        jobDetails: jobDetails
-    });
-}
-
-/**
- * Handles list view for all jobs
- * @param {Object} ob - Request object
- * @param {Collection} jobsCollection - MongoDB jobs collection
- * @param {Collection} jobConfigsCollection - MongoDB job configs collection
- * @param {string} search - Search string to filter jobs
- * @param {Object} sort - Sort configuration
- * @param {number} skip - Number of records to skip
- * @param {number} limit - Number of records to return
- * @returns {Promise<void>}
- */
-async function handleListView(ob, jobsCollection, jobConfigsCollection, search, sort, skip, limit) {
-    const query = search ? { name: new RegExp(search, 'i') } : {};
-
-    const pipeline = [
-        { $match: query },
-        {
-            $group: {
-                _id: "$name",
-                doc: { $first: "$$ROOT" },
-                lastFinishedAt: { $max: "$lastFinishedAt" },
-                lastRunAt: { $max: "$lastRunAt" },
-                lastFailedAt: { $max: "$failedAt" },
-                lastStatus: {
-                    $first: {
-                        $cond: [
-                            { $eq: ["$type", "single"] },
-                            {
-                                status: {
-                                    $switch: {
-                                        branches: [
-                                            { case: { $ne: ["$lockedAt", null] }, then: "RUNNING" },
-                                            { case: { $ne: ["$failedAt", null] }, then: "FAILED" },
-                                            { case: { $ne: ["$lastFinishedAt", null] }, then: "COMPLETED" }
-                                        ],
-                                        default: "SCHEDULED"
-                                    }
-                                },
-                                failReason: "$failReason",
-                                lastRunStatus: {
-                                    $switch: {
-                                        branches: [
-                                            { case: { $ne: ["$failedAt", null] }, then: "failed" },
-                                            { case: { $ne: ["$lastFinishedAt", null] }, then: "success" }
-                                        ],
-                                        default: "pending"
-                                    }
-                                }
-                            },
-                            "$$ROOT"
-                        ]
-                    }
-                }
-            }
-        },
-        {
-            $addFields: {
-                "doc.lastFinishedAt": "$lastFinishedAt",
-                "doc.lastRunAt": "$lastRunAt",
-                "doc.failedAt": "$lastFailedAt",
-                "doc.status": "$lastStatus.status",
-                "doc.failReason": "$lastStatus.failReason",
-                "doc.lastRunStatus": "$lastStatus.lastRunStatus"
-            }
-        },
-        { $replaceRoot: { newRoot: "$doc" }},
-        { $sort: sort },
-        { $skip: skip },
-        { $limit: limit }
-    ];
-
-    const [jobs, configs, total] = await Promise.all([
-        jobsCollection.aggregate(pipeline).toArray(),
-        jobConfigsCollection.find({}).toArray(),
-        jobsCollection.distinct('name', query).then(names => names.length)
-    ]);
-
-    const configMap = configs.reduce((map, config) => {
-        map[config.jobName] = config;
-        return map;
-    }, {});
-
-    const processedJobs = jobs.map(job => {
-        const config = configMap[job.name] || {
-            enabled: true,
-            defaultConfig: {
-                schedule: { value: job.repeatInterval },
-                retry: { attempts: job.attempts, delay: job.backoff }
-            }
-        };
-
-        return {
-            job: {
-                name: job.name,
-                status: getJobStatus(job),
-                schedule: config.defaultConfig.schedule.value,
-                scheduleLabel: getScheduleLabel(config.defaultConfig.schedule.value),
-                nextRunAt: job.nextRunAt,
-                lastFinishedAt: job.lastFinishedAt,
-                lastRunStatus: getRunStatus(job),
-                failReason: job.failReason,
-                total
-            },
-            config: {
-                enabled: config.enabled,
-                schedule: config.defaultConfig.schedule.value,
-                retry: config.defaultConfig.retry
-            }
-        };
-    });
-
-    common.returnOutput(ob.params, {
-        sEcho: ob.params.qstring.sEcho,
-        iTotalRecords: total,
-        iTotalDisplayRecords: total,
-        aaData: processedJobs
-    });
-}

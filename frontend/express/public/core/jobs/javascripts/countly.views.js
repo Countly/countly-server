@@ -1,7 +1,11 @@
 /*global countlyAuth, countlyCommon, app, countlyVue, CV, countlyGlobal, CountlyHelpers, $, moment */
 
 (function() {
+    /**
+     * Helper function to map the job status to a color tag
+     */
     var getColor = function(row) {
+        // row is the merged job object
         if (row.status === "RUNNING") {
             return "green";
         }
@@ -14,61 +18,84 @@
         else if (row.status === "CANCELLED" || row.lastRunStatus === "failed") {
             return "red";
         }
+        return "gray";
     };
+
+    /**
+     * Helper to update row display fields (like nextRunDate, nextRunTime, lastRun)
+     */
     var updateScheduleRow = function(row) {
-        // Format dates using moment
         row.nextRunDate = row.nextRunAt ? moment(row.nextRunAt).format('YYYY-MM-DD') : '';
         row.nextRunTime = row.nextRunAt ? moment(row.nextRunAt).format('HH:mm:ss') : '';
         row.lastRun = row.lastFinishedAt ? moment(row.lastFinishedAt).fromNow() : '';
 
-        // Handle schedule display
+        // If the row has .config.defaultConfig.schedule.value, use it as its "default schedule"
         if (row.config && row.config.defaultConfig && row.config.defaultConfig.schedule) {
             row.schedule = row.config.defaultConfig.schedule.value;
             row.configuredSchedule = row.config.schedule;
-            row.scheduleOverridden = row.configuredSchedule &&
-                                    row.configuredSchedule !== row.schedule;
+            row.scheduleOverridden = row.configuredSchedule && (row.configuredSchedule !== row.schedule);
         }
-
     };
+
+    /**
+     * Main view for listing jobs
+     */
     var JobsView = countlyVue.views.create({
-        template: CV.T('/core/jobs/templates/jobs.html'),
+        template: CV.T('/core/jobs/templates/jobs.html'), // your HTML template path
         data: function() {
             var self = this;
-            var tableStore = countlyVue.vuex.getLocalStore(countlyVue.vuex.ServerDataTable("jobsTable", {
-                columns: ['name', "schedule", "next", "finished", "status", "total"],
-                onRequest: function() {
-                    self.loaded = false;
-                    return {
-                        type: "GET",
-                        url: countlyCommon.API_URL + "/o/jobs",
-                        data: {
-                            app_id: countlyCommon.ACTIVE_APP_ID,
-                            iDisplayStart: 0,
-                            iDisplayLength: 50
+
+            // Create a local vuex store for the server data table
+            var tableStore = countlyVue.vuex.getLocalStore(
+                countlyVue.vuex.ServerDataTable("jobsTable", {
+                    // columns: ['name', "schedule", "next", "finished", "status", "total"],
+                    columns: [
+                        "name",
+                        "status",
+                        "scheduleLabel",
+                        "nextRunAt",
+                        "lastFinishedAt",
+                        "lastRunStatus",
+                        "total"
+                    ],
+
+                    onRequest: function() {
+                        // Called before making the request
+                        self.loaded = false;
+                        return {
+                            type: "GET",
+                            url: countlyCommon.API_URL + "/o/jobs", // no ?name= param => list mode
+                            data: {
+                                app_id: countlyCommon.ACTIVE_APP_ID,
+                                iDisplayStart: 0,
+                                iDisplayLength: 50
+                            }
+                        };
+                    },
+                    onReady: function(context, rows) {
+                        // Called when request completes successfully
+                        self.loaded = true;
+
+                        // rows.aaData is an array: [ { job: {...}, config: {...} }, ... ]
+                        // We merge job + config into a single row object
+                        var processedRows = [];
+                        for (var i = 0; i < rows.length; i++) {
+                            var mergedJob = rows[i].job; // from "job"
+                            var config = rows[i].config; // from "config"
+
+                            mergedJob.enabled = config.enabled;
+                            mergedJob.config = config;
+
+                            // Do any schedule display updates, etc.
+                            updateScheduleRow(mergedJob);
+
+                            processedRows.push(mergedJob);
                         }
-                    };
-                },
-                onReady: function(context, rows) {
-                    self.loaded = true;
-                    var processedRows = [];
-                    for (var i = 0; i < rows.aaData.length; i++) {
-                        var row = rows.aaData[i].job;
-                        var config = rows.aaData[i].config;
-
-                        // Process job status - now directly from API
-                        row.enabled = config.enabled;
-                        row.config = config;
-
-                        // Schedule handling
-                        row.schedule = config.schedule;
-                        row.scheduleLabel = row.scheduleLabel || '';
-
-                        updateScheduleRow(row);
-                        processedRows.push(row);
+                        return processedRows;
                     }
-                    return processedRows;
-                }
-            }));
+                })
+            );
+
             return {
                 loaded: true,
                 saving: false,
@@ -85,15 +112,19 @@
             };
         },
         computed: {
+            /**
+             * Whether the current user can enable/disable jobs
+             */
             canSuspendJob: function() {
                 return countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID];
             },
         },
         methods: {
-            formatDateTime(date) {
+            formatDateTime: function(date) {
                 return date ? moment(date).format('D MMM, YYYY HH:mm:ss') : '-';
             },
-            getStatusColor(details) {
+            getStatusColor: function(details) {
+                // Not strictly used in the listing, but you can keep it for reference
                 if (!details.config.enabled) {
                     return 'gray';
                 }
@@ -109,6 +140,7 @@
                 return 'yellow';
             },
             getRunStatusColor(status) {
+                // For run status
                 if (status === 'success') {
                     return 'green';
                 }
@@ -123,14 +155,21 @@
                     this.tableStore.dispatch("fetchJobsTable");
                 }
             },
+            /**
+             * Navigates to job details page
+             */
             goTo: function(row) {
                 app.navigate("#/manage/jobs/" + row.name, true);
             },
             getColor: getColor,
+            /**
+             * Called from the row’s more options, e.g. "enable", "disable", "schedule", "runNow"
+             */
             handleCommand: function(command, row) {
                 if (row.name) {
                     var self = this;
                     if (command === 'schedule') {
+                        // Show the schedule dialog
                         this.selectedJobConfig = {
                             name: row.name,
                             schedule: row.configuredSchedule || row.schedule,
@@ -141,16 +180,15 @@
                         return;
                     }
 
+                    // For enable, disable, runNow, etc. => /i/jobs
                     var data = {
                         app_id: countlyCommon.ACTIVE_APP_ID,
                         jobName: row.name,
                         action: command
                     };
 
-                    // You can switch to type: "POST" if desired;
-                    // server code accepts query params so GET also works.
                     $.ajax({
-                        type: "GET",
+                        type: "GET", // or POST if your server expects that
                         url: countlyCommon.API_URL + "/i/jobs",
                         data: data,
                         success: function(res) {
@@ -177,6 +215,9 @@
                     });
                 }
             },
+            /**
+             * Called when user clicks "Save" on the schedule dialog
+             */
             saveSchedule: function() {
                 var self = this;
                 self.saving = true;
@@ -211,6 +252,9 @@
         }
     });
 
+    /**
+     * Detailed view for a single job
+     */
     var JobDetailsView = countlyVue.views.BaseView.extend({
         template: "#jobs-details-template",
         data: function() {
@@ -219,6 +263,7 @@
                 jobDetails: null,
                 jobRuns: [],
                 isLoading: false,
+                // columns for the run history table
                 jobRunColumns: [
                     { prop: "lastRunAt", label: CV.i18n('jobs.run-time'), sortable: true },
                     { prop: "status", label: CV.i18n('jobs.status'), sortable: true },
@@ -228,13 +273,19 @@
             };
         },
         computed: {
+            /**
+             * Check if there are any scheduleOverride or retryOverride in the config
+             */
             hasOverrides: function() {
                 return this.jobDetails &&
-                       (this.jobDetails.config.scheduleOverride ||
-                        this.jobDetails.config.retryOverride);
+                    (this.jobDetails.config?.scheduleOverride ||
+                        this.jobDetails.config?.retryOverride);
             }
         },
         methods: {
+            /**
+             * Fetches jobDetails + normal docs from /o/jobs?name=<jobName>
+             */
             fetchJobDetails: function() {
                 var self = this;
                 self.isLoading = true;
@@ -250,10 +301,10 @@
                     },
                     dataType: "json",
                     success: function(response) {
-                        // API now returns jobDetails directly
+                        // jobDetails => the main scheduled doc + overrides
                         self.jobDetails = response.jobDetails;
 
-                        // Process job runs from aaData
+                        // aaData => the array of normal run docs
                         self.jobRuns = (response.aaData || []).map(function(run) {
                             return {
                                 lastRunAt: run.lastRunAt,
@@ -281,13 +332,17 @@
                 return date ? moment(date).format('D MMM, YYYY HH:mm:ss') : '-';
             },
             calculateDuration: function(run) {
+                // (optional) if you want dynamic calculations
                 if (!run.lastRunAt || !run.lastFinishedAt) {
                     return '-';
                 }
                 return ((new Date(run.lastFinishedAt) - new Date(run.lastRunAt)) / 1000).toFixed(2);
             },
+            /**
+             * Map jobDetails.currentState.status to a color
+             */
             getStatusColor: function(jobDetails) {
-                if (!jobDetails.config.enabled) {
+                if (!jobDetails.config?.enabled) {
                     return "grey";
                 }
                 switch (jobDetails.currentState.status) {
@@ -297,6 +352,9 @@
                 default: return "yellow";
                 }
             },
+            /**
+             * Map each run’s status to a color
+             */
             getRunStatusColor: function(run) {
                 switch (run.status) {
                 case "success": return "green";
@@ -307,24 +365,34 @@
             }
         },
         mounted: function() {
+            // On load, fetch data
             this.fetchJobDetails();
         }
     });
 
+    /**
+     * Wrap the JobsView as a Countly Backbone view
+     */
     var getMainView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: JobsView,
-            vuex: [] //empty array if none
+            vuex: [] // empty array if none
         });
     };
 
+    /**
+     * Wrap the JobDetailsView as a Countly Backbone view
+     */
     var getDetailedView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: JobDetailsView,
-            vuex: [] //empty array if none
+            vuex: [] // empty array if none
         });
     };
 
+    /**
+     * Define routes for #/manage/jobs and #/manage/jobs/:jobName
+     */
     if (countlyAuth.validateGlobalAdmin()) {
         app.route("/manage/jobs", "manageJobs", function() {
             this.renderWhenReady(getMainView());

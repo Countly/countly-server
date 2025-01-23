@@ -1,67 +1,102 @@
+<!-- jobs-details.html -->
 <div v-bind:class="[componentId]">
     <cly-header :title="job_name">
         <template v-slot:header-top>
             <cly-back-link :title="i18n('plugins.back')"></cly-back-link>
         </template>
     </cly-header>
+
     <cly-main>
+        <!-- Wait until jobDetails is loaded -->
         <template v-if="jobDetails">
             <!-- Job Overview Section -->
             <cly-section>
                 <div class="bu-columns">
                     <div class="bu-column">
-                        <h4 class="bu-is-size-4 bu-mb-4">Job Configuration</h4>
+                        <h4 class="bu-is-size-4 bu-mb-4">
+                            {{ i18n('jobs.job-configuration') }}
+                        </h4>
+
                         <div class="bu-box">
                             <!-- Base Configuration -->
                             <div class="bu-mb-4">
-                                <h5 class="bu-is-size-5 bu-mb-2">Base Configuration</h5>
+                                <h5 class="bu-is-size-5 bu-mb-2">
+                                    {{ i18n('jobs.base-configuration') }}
+                                </h5>
                                 <p class="bu-mb-2">
-                                    <strong>Status:</strong>
+                                    <strong>{{ i18n('jobs.status') }}:</strong>
                                     <cly-status-tag
-                                        :text="jobDetails.config.enabled ? jobDetails.currentState.status : 'DISABLED'"
+                                        :text="jobDetails.config?.enabled
+                                               ? jobDetails.currentState?.status
+                                               : 'DISABLED'"
                                         :color="getStatusColor(jobDetails)"
                                     >
                                     </cly-status-tag>
                                 </p>
                                 <p class="bu-mb-2">
-                                    <strong>Default Schedule:</strong>
-                                    {{jobDetails.config.defaultConfig.schedule.value}}
+                                    <strong>{{ i18n('jobs.default-schedule') }}:</strong>
+                                    {{ jobDetails.config?.defaultConfig?.schedule?.value }}
                                 </p>
                                 <p class="bu-mb-2 bu-has-text-grey">
-                                    {{jobDetails.config.scheduleLabel}}
+                                    {{ jobDetails.config?.scheduleLabel }}
                                 </p>
                             </div>
 
                             <!-- Configuration Overrides -->
-                            <div class="bu-mb-4" v-if="hasOverrides">
-                                <h5 class="bu-is-size-5 bu-mb-2">Active Overrides</h5>
-                                <p class="bu-mb-2" v-if="jobDetails.config.scheduleOverride">
-                                    <strong>Schedule Override:</strong>
-                                    <el-tag size="small" type="warning">{{jobDetails.config.scheduleOverride}}</el-tag>
+                            <div
+                                class="bu-mb-4"
+                                v-if="hasOverrides"
+                            >
+                                <h5 class="bu-is-size-5 bu-mb-2">
+                                    {{ i18n('jobs.active-overrides') }}
+                                </h5>
+                                <p
+                                    class="bu-mb-2"
+                                    v-if="jobDetails.config?.scheduleOverride"
+                                >
+                                    <strong>{{ i18n('jobs.schedule-override') }}:</strong>
+                                    <el-tag
+                                        size="small"
+                                        type="warning"
+                                    >
+                                        {{ jobDetails.config.scheduleOverride }}
+                                    </el-tag>
                                 </p>
-                                <p class="bu-mb-2" v-if="jobDetails.config.retryOverride">
-                                    <strong>Retry Override:</strong>
+                                <p
+                                    class="bu-mb-2"
+                                    v-if="jobDetails.config?.retryOverride"
+                                >
+                                    <strong>{{ i18n('jobs.retry-override') }}:</strong>
                                     <br>
-                                    Attempts: {{jobDetails.config.retryOverride.attempts}}
+                                    {{ i18n('jobs.attempts') }}:
+                                    {{ jobDetails.config.retryOverride.attempts }}
                                     <br>
-                                    Delay: {{jobDetails.config.retryOverride.delay}}ms
+                                    {{ i18n('jobs.delay') }}:
+                                    {{ jobDetails.config.retryOverride.delay }}ms
                                 </p>
                             </div>
 
                             <!-- Current State -->
                             <div class="bu-mb-4">
-                                <h5 class="bu-is-size-5 bu-mb-2">Current State</h5>
+                                <h5 class="bu-is-size-5 bu-mb-2">
+                                    {{ i18n('jobs.current-state') }}
+                                </h5>
                                 <p class="bu-mb-2">
-                                    <strong>Last Run:</strong>
-                                    {{jobDetails.currentState.lastRun}}
+                                    <strong>{{ i18n('jobs.last-run') }}:</strong>
+                                    {{ jobDetails.currentState?.lastRun }}
                                 </p>
                                 <p class="bu-mb-2">
-                                    <strong>Next Run:</strong>
-                                    {{jobDetails.currentState.nextRun}}
+                                    <strong>{{ i18n('jobs.next-run') }}:</strong>
+                                    {{ jobDetails.currentState?.nextRun }}
                                 </p>
-                                <p class="bu-mb-2" v-if="jobDetails.currentState.failReason">
-                                    <strong>Last Failure:</strong>
-                                    <span class="bu-has-text-danger">{{jobDetails.currentState.failReason}}</span>
+                                <p
+                                    class="bu-mb-2"
+                                    v-if="jobDetails.currentState?.failReason"
+                                >
+                                    <strong>{{ i18n('jobs.last-failure') }}:</strong>
+                                    <span class="bu-has-text-danger">
+                                        {{ jobDetails.currentState.failReason }}
+                                    </span>
                                 </p>
                             </div>
                         </div>
@@ -69,22 +104,35 @@
                 </div>
             </cly-section>
 
-            <!-- Job History Section -->
+            <!-- Job History Section (table of type='normal' runs) -->
             <cly-section>
-                <h4 class="bu-is-size-4 bu-mb-4">Job History</h4>
+                <h4 class="bu-is-size-4 bu-mb-4">
+                    {{ i18n('jobs.job-history') }}
+                </h4>
+
                 <cly-datatable-n
                     :rows="jobRuns"
                     :columns="jobRunColumns"
                     :force-loading="isLoading"
                 >
                     <template v-slot="scope">
-                        <el-table-column prop="lastRunAt" :label="i18n('jobs.run-time')" sortable="custom">
+                        <!-- Column: lastRunAt -->
+                        <el-table-column
+                            prop="lastRunAt"
+                            :label="i18n('jobs.run-time')"
+                            sortable="custom"
+                        >
                             <template v-slot="scope">
-                                {{formatDateTime(scope.row.lastRunAt)}}
+                                {{ formatDateTime(scope.row.lastRunAt) }}
                             </template>
                         </el-table-column>
-                        
-                        <el-table-column prop="status" :label="i18n('jobs.status')" sortable="custom">
+
+                        <!-- Column: status -->
+                        <el-table-column
+                            prop="status"
+                            :label="i18n('jobs.status')"
+                            sortable="custom"
+                        >
                             <template v-slot="scope">
                                 <cly-status-tag
                                     :text="scope.row.status"
@@ -96,20 +144,37 @@
                                     :content="scope.row.failReason"
                                     placement="top"
                                 >
-                                    <i class="ion-alert-circled bu-ml-2" style="color: #d23f00"></i>
+                                    <i
+                                        class="ion-alert-circled bu-ml-2"
+                                        style="color: #d23f00"
+                                    ></i>
                                 </el-tooltip>
                             </template>
                         </el-table-column>
 
-                        <el-table-column prop="duration" :label="i18n('jobs.duration')" sortable="custom">
+                        <!-- Column: duration -->
+                        <el-table-column
+                            prop="duration"
+                            :label="i18n('jobs.duration')"
+                            sortable="custom"
+                        >
                             <template v-slot="scope">
-                                {{scope.row.duration}}s
+                                {{ scope.row.duration }}s
                             </template>
                         </el-table-column>
 
-                        <el-table-column prop="result" :label="i18n('jobs.result')">
+                        <!-- Column: result -->
+                        <el-table-column
+                            prop="result"
+                            :label="i18n('jobs.result')"
+                        >
                             <template v-slot="scope">
-                                <pre v-if="scope.row.dataAsString" class="bu-p-2 bu-has-background-grey-lighter bu-is-family-code">{{scope.row.dataAsString}}</pre>
+                                <pre
+                                    v-if="scope.row.dataAsString"
+                                    class="bu-p-2 bu-has-background-grey-lighter bu-is-family-code"
+                                >
+{{ scope.row.dataAsString }}
+                                </pre>
                                 <span v-else>-</span>
                             </template>
                         </el-table-column>
