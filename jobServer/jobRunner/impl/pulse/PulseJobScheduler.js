@@ -162,11 +162,12 @@ class PulseJobScheduler extends IJobScheduler {
      * @param {string} jobName - Name of the job to execute
      * @returns {Promise<void>} Resolves when job is successfully triggered
      * @throws {Error} If immediate execution fails
+     * @note Implement data passing if needed
      */
     async runJobNow(jobName) {
         try {
             this.log.d(`Attempting to trigger immediate execution of job '${jobName}'`);
-            await this.pulseRunner.now({ name: jobName });
+            await this.pulseRunner.now(jobName, {});
             this.log.i(`Successfully triggered immediate execution of job '${jobName}'`);
         }
         catch (error) {

@@ -60,7 +60,7 @@ class PulseJobExecutor extends IJobExecutor {
                     concurrency,
                     lockLifetime,
                     shouldSaveResult: true,
-                    attempts: retryConfig?.enabled ? retryConfig.attempts : 1,
+                    attempts: retryConfig?.enabled ? retryConfig.attempts : 0,
                     backoff: retryConfig?.enabled ? {
                         type: 'exponential',
                         delay: retryConfig.delay
@@ -200,7 +200,7 @@ class PulseJobExecutor extends IJobExecutor {
             [JOB_PRIORITIES.HIGHEST]: JobPriority.highest
         };
 
-        if (!priority || !priorityMap[priority]) {
+        if (!priority || priorityMap[priority] === undefined) {
             this.log.w(`Invalid priority "${priority}", defaulting to normal`);
             return JobPriority.normal;
         }
