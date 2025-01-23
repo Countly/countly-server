@@ -59,9 +59,9 @@ plugins.setConfigs("crashes", {
             }
         });
 
-        setTimeout(() => {
-            require('../../../api/parts/jobs').job('crashes:cleanup_custom_field').replace().schedule('at 01:01 am ' + 'every 1 day');
-        }, 10000);
+        // setTimeout(() => {
+        // require('../../../api/parts/jobs').job('crashes:cleanup_custom_field').replace().schedule('at 01:01 am ' + 'every 1 day');
+        // }, 10000);
     });
     var ranges = ["ram", "bat", "disk", "run", "session"];
     var segments = ["os_version", "os_name", "manufacture", "device", "resolution", "app_version", "cpu", "opengl", "orientation", "view", "browser"];
