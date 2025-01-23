@@ -15,7 +15,7 @@
  * @property {string} db.collection - MongoDB collection name for storing jobs
  */
 const DEFAULT_PULSE_CONFIG = {
-    processEvery: '60 seconds',
+    processEvery: '30 seconds',
     maxConcurrency: 1,
     defaultConcurrency: 1,
     lockLimit: 1,
