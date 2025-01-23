@@ -18,12 +18,12 @@ const internalEventsSkipped = ["[CLY]_orientation"];
         ob.features.push(FEATURE_NAME);
     });
 
-    plugins.register("/master", function() {
-        // Allow configs to load & scanner to find all jobs classes
-        setTimeout(() => {
-            require('../../../api/parts/jobs').job('server-stats:stats').replace().schedule('every 1 day');
-        }, 10000);
-    });
+    // plugins.register("/master", function() {
+    //     // Allow configs to load & scanner to find all jobs classes
+    //     setTimeout(() => {
+    //         require('../../../api/parts/jobs').job('server-stats:stats').replace().schedule('every 1 day');
+    //     }, 10000);
+    // });
 
     /**
      * @param {string} events - events to be mapped

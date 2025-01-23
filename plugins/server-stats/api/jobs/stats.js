@@ -1,12 +1,12 @@
 'use strict';
 
-const job = require('../../../../api/parts/jobs/job.js'),
-    tracker = require('../../../../api/parts/mgmt/tracker.js'),
-    log = require('../../../../api/utils/log.js')('job:stats'),
-    config = require("../../../../frontend/express/config.js"),
-    pluginManager = require('../../../pluginManager.js'),
-    moment = require('moment-timezone'),
-    request = require('countly-request')(pluginManager.getConfig("security"));
+// const job = require('../../../../api/parts/jobs/job.js');
+const Job = require('../../../../jobServer/Job');
+const tracker = require('../../../../api/parts/mgmt/tracker.js');
+const log = require('../../../../api/utils/log.js')('job:stats');
+const config = require("../../../../frontend/express/config.js");
+const pluginManager = require('../../../pluginManager.js');
+const moment = require('moment-timezone');
 
 const promisedLoadConfigs = function(db) {
     return new Promise((resolve) => {
@@ -17,7 +17,19 @@ const promisedLoadConfigs = function(db) {
 };
 
 /** Representing a StatsJob. Inherits api/parts/jobs/job.js (job.Job) */
-class StatsJob extends job.Job {
+class StatsJob extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "0 3 * * *" // Every day at 2:00 AM
+        };
+    }
+
     /**
     * Inherits api/parts/jobs/job.js, please review for detailed description
     * @param {string|Object} name - Name for job
@@ -67,6 +79,8 @@ class StatsJob extends job.Job {
                             var usersData = [];
 
                             await promisedLoadConfigs(db);
+                            // getConfig for security after loadConfigs
+                            const request = require('countly-request')(pluginManager.getConfig("security"));
 
                             let domain = '';
 
