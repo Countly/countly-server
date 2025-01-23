@@ -5,7 +5,13 @@
     </cly-header>
     <cly-main>
 		<cly-section data-test-id="table-jobs">
-			<cly-datatable-n test-id="datatable-jobs" :data-source="remoteTableDataSource" v-on:row-click="goTo" :isClickable="true" :default-sort="{prop: 'name', order: 'ascending'}">
+			<cly-datatable-n 
+                test-id="datatable-jobs" 
+                :data-source="remoteTableDataSource" 
+                v-on:row-click="goTo" 
+                :isClickable="true" 
+                :default-sort="{prop: 'name', order: 'ascending'}"
+            >
                 <template v-slot="scope">
                     <el-table-column sortable="custom" prop="name" :label="i18n('jobs.job-name')" type="clickable">
                         <template slot-scope="scope">
@@ -17,23 +23,43 @@
                     <el-table-column sortable="custom" prop="status" :label="i18n('jobs.job-status')">
                         <template slot-scope="scope">   
                             <span :data-test-id="'datatable-jobs-status-' + scope.$index">
-                                 <cly-status-tag :text="scope.row.status" :color="getColor(scope.row)"></cly-status-tag>
+                                <cly-status-tag 
+                                    :text="scope.row.config.enabled ? scope.row.status : 'DISABLED'" 
+                                    :color="getColor(scope.row)">
+                                </cly-status-tag>
+                                <el-tooltip v-if="scope.row.failReason" :content="scope.row.failReason" placement="top">
+                                    <i class="ion-alert-circled bu-ml-2" style="color: #D23F00;"></i>
+                                </el-tooltip>
                             </span>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="schedule" :label="i18n('jobs.job-schedule')">
+                    <el-table-column sortable="custom" prop="scheduleLabel" :label="i18n('jobs.job-schedule')">
                         <template slot-scope="scope">
-                            <p :data-test-id="'datatable-jobs-schedule-' + scope.$index">{{scope.row.scheduleLabel}}</p>
-                            <p :data-test-id="'datatable-jobs-schedule-detail-' + scope.$index" style="color:#A7AEB8; font-size: 12px;">{{scope.row.scheduleDetail}}</p>
+                            <p :data-test-id="'datatable-jobs-schedule-' + scope.$index">
+                                {{scope.row.scheduleLabel}}
+                                <el-tag 
+                                    v-if="scope.row.scheduleOverridden" 
+                                    size="mini" 
+                                    type="warning"
+                                >
+                                    Overridden
+                                </el-tag>
+                            </p>
+                            <p 
+                                :data-test-id="'datatable-jobs-schedule-detail-' + scope.$index" 
+                                style="color:#A7AEB8; font-size: 12px;"
+                            >
+                               {{scope.row.configuredSchedule || scope.row.schedule}}
+                            </p>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="next" :label="i18n('jobs.job-next-run')">
+                    <el-table-column sortable="custom" prop="nextRunAt" :label="i18n('jobs.job-next-run')">
                         <template slot-scope="scope">
                             <p :data-test-id="'datatable-jobs-next-run-date-' + scope.$index">{{scope.row.nextRunDate}}</p>
                             <p :data-test-id="'datatable-jobs-next-run-time-' + scope.$index" style="color:#A7AEB8; font-size: 12px;">{{scope.row.nextRunTime}}</p>
                         </template>
                     </el-table-column>
-                    <el-table-column sortable="custom" prop="finished" :label="i18n('jobs.job-last-run')">
+                    <el-table-column sortable="custom" prop="lastFinishedAt" :label="i18n('jobs.job-last-run')">
                         <template slot-scope="scope">
                             <p v-html="scope.row.lastRun" :data-test-id="'datatable-jobs-last-run-' + scope.$index"></p>
                         </template>
@@ -43,10 +69,58 @@
                             <p :data-test-id="'datatable-jobs-total-' + scope.$index">{{scope.row.total}}</p>
                         </template>
                     </el-table-column>
+                    <el-table-column sortable="custom" prop="lastRunStatus" :label="i18n('jobs.last-run-status')">
+                        <template slot-scope="scope">
+                            <span :data-test-id="'datatable-jobs-last-run-status-' + scope.$index">
+                                <cly-status-tag 
+                                    :text="scope.row.lastRunStatus" 
+                                    :color="scope.row.lastRunStatus === 'success' ? 'green' : (scope.row.lastRunStatus === 'failed' ? 'red' : 'gray')"
+                                >
+                                </cly-status-tag>
+                            </span>
+                        </template>
+                    </el-table-column>
                     <el-table-column align="center" type="options">
                         <template v-slot="scope">
-                            <cly-more-options v-if="scope.row.status !== 'RUNNING' && canSuspendJob && scope.row.hover" @command="handleCommand($event, scope.row)" placement="bottom-end" :test-id="'datatable-jobs-' + scope.$index">
-                                <el-dropdown-item command="change-job-status">{{scope.row.status === 'SUSPENDED' ? i18n('jobs.schedule') : i18n('jobs.suspend')}}</el-dropdown-item>
+                            <!-- Dialog can be placed outside if desired, but this works. -->
+                            <el-dialog
+                                :title="i18n('jobs.schedule-configuration')"
+                                :visible.sync="scheduleDialogVisible"
+                                width="30%">
+                                <div class="bu-columns">
+                                    <div class="bu-column">
+                                        <div class="config-item">
+                                            <label>Schedule:</label>
+                                            <el-input 
+                                                v-model="selectedJobConfig.schedule"
+                                                :placeholder="selectedJobConfig.defaultSchedule">
+                                            </el-input>
+                                            <div class="bu-mt-2 bu-is-size-7 bu-has-text-grey">
+                                                {{i18n('jobs.schedule-hint')}}
+                                            </div>
+                                            <div v-if="selectedJobConfig.scheduleLabel" class="bu-mt-2 bu-is-size-7">
+                                                {{selectedJobConfig.scheduleLabel}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span slot="footer" class="dialog-footer">
+                                    <el-button @click="scheduleDialogVisible = false">{{i18n('common.cancel')}}</el-button>
+                                    <el-button type="primary" @click="saveSchedule" :loading="saving">{{i18n('common.save')}}</el-button>
+                                </span>
+                            </el-dialog>
+                            
+                            <!-- Removed 'scope.row.hover' and changed .job to row itself -->
+                            <cly-more-options 
+                                v-if="canSuspendJob" 
+                                @command="handleCommand($event, scope.row)" 
+                                placement="bottom-end" 
+                                :test-id="'datatable-jobs-' + scope.$index"
+                            >
+                                <el-dropdown-item command="enable" v-if="!scope.row.config.enabled">{{i18n('jobs.enable')}}</el-dropdown-item>
+                                <el-dropdown-item command="disable" v-if="scope.row.config.enabled">{{i18n('jobs.disable')}}</el-dropdown-item>
+                                <el-dropdown-item command="schedule">{{i18n('jobs.change-schedule')}}</el-dropdown-item>
+                                <el-dropdown-item command="runNow">{{i18n('jobs.run-now')}}</el-dropdown-item>
                             </cly-more-options>
                         </template>
                     </el-table-column>

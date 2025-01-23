@@ -1,49 +1,121 @@
 <div v-bind:class="[componentId]">
-    <cly-header
-        :title="job_name"
-    >
+    <cly-header :title="job_name">
         <template v-slot:header-top>
             <cly-back-link :title="i18n('plugins.back')"></cly-back-link>
         </template>
     </cly-header>
     <cly-main>
-		<cly-section>
-			<cly-datatable-n :data-source="remoteTableDataSource" :default-sort="{prop: 'next', order: 'descending'}">
-                <template v-slot="scope">
-                    <el-table-column sortable="custom" prop="status" :label="i18n('jobs.job-status')">
-                        <template slot-scope="scope">   
-                            <cly-status-tag :text="scope.row.status" :color="getColor(scope.row)"></cly-status-tag>
-                        </template>
-                    </el-table-column>
-                    <el-table-column sortable="custom" prop="schedule" :label="i18n('jobs.job-schedule')">
-                        <template slot-scope="scope">
-                            <p>{{scope.row.scheduleLabel}}</p>
-                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.scheduleDetail}}</p>
-                        </template>
-                    </el-table-column>
-                    <el-table-column sortable="custom" prop="next" :label="i18n('jobs.job-next-run')">
-                        <template slot-scope="scope">
-                            <p>{{scope.row.nextRunDate}}</p>
-                            <p style="color:#A7AEB8; font-size: 12px;">{{scope.row.nextRunTime}}</p>
-                        </template>
-                    </el-table-column>
-                    <el-table-column sortable="custom" prop="finished" :label="i18n('jobs.job-last-run')">
-                        <template slot-scope="scope">
-                            <p v-html="scope.row.lastRun"></p>
-                        </template>
-                    </el-table-column>    
-                    <el-table-column prop="dataAsString" :label="i18n('jobs.job-data')">
-                        <template slot-scope="scope">
-                            <pre class="has-ellipsis" v-tooltip="scope.row.dataAsString">{{scope.row.dataAsString}}</pre>
-                        </template>
-                    </el-table-column>
-                    <el-table-column sortable="custom" prop="duration" :label="i18n('jobs.run-duration')">
-                        <template slot-scope="scope">
-                            <p v-html="scope.row.durationInSeconds"></p>
-                        </template>
-                    </el-table-column>
-                </template>
-            </cly-datatable-n>
-		</cly-section>
+        <template v-if="jobDetails">
+            <!-- Job Overview Section -->
+            <cly-section>
+                <div class="bu-columns">
+                    <div class="bu-column">
+                        <h4 class="bu-is-size-4 bu-mb-4">Job Configuration</h4>
+                        <div class="bu-box">
+                            <!-- Base Configuration -->
+                            <div class="bu-mb-4">
+                                <h5 class="bu-is-size-5 bu-mb-2">Base Configuration</h5>
+                                <p class="bu-mb-2">
+                                    <strong>Status:</strong>
+                                    <cly-status-tag
+                                        :text="jobDetails.config.enabled ? jobDetails.currentState.status : 'DISABLED'"
+                                        :color="getStatusColor(jobDetails)"
+                                    >
+                                    </cly-status-tag>
+                                </p>
+                                <p class="bu-mb-2">
+                                    <strong>Default Schedule:</strong>
+                                    {{jobDetails.config.defaultConfig.schedule.value}}
+                                </p>
+                                <p class="bu-mb-2 bu-has-text-grey">
+                                    {{jobDetails.config.scheduleLabel}}
+                                </p>
+                            </div>
+
+                            <!-- Configuration Overrides -->
+                            <div class="bu-mb-4" v-if="hasOverrides">
+                                <h5 class="bu-is-size-5 bu-mb-2">Active Overrides</h5>
+                                <p class="bu-mb-2" v-if="jobDetails.config.scheduleOverride">
+                                    <strong>Schedule Override:</strong>
+                                    <el-tag size="small" type="warning">{{jobDetails.config.scheduleOverride}}</el-tag>
+                                </p>
+                                <p class="bu-mb-2" v-if="jobDetails.config.retryOverride">
+                                    <strong>Retry Override:</strong>
+                                    <br>
+                                    Attempts: {{jobDetails.config.retryOverride.attempts}}
+                                    <br>
+                                    Delay: {{jobDetails.config.retryOverride.delay}}ms
+                                </p>
+                            </div>
+
+                            <!-- Current State -->
+                            <div class="bu-mb-4">
+                                <h5 class="bu-is-size-5 bu-mb-2">Current State</h5>
+                                <p class="bu-mb-2">
+                                    <strong>Last Run:</strong>
+                                    {{jobDetails.currentState.lastRun}}
+                                </p>
+                                <p class="bu-mb-2">
+                                    <strong>Next Run:</strong>
+                                    {{jobDetails.currentState.nextRun}}
+                                </p>
+                                <p class="bu-mb-2" v-if="jobDetails.currentState.failReason">
+                                    <strong>Last Failure:</strong>
+                                    <span class="bu-has-text-danger">{{jobDetails.currentState.failReason}}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </cly-section>
+
+            <!-- Job History Section -->
+            <cly-section>
+                <h4 class="bu-is-size-4 bu-mb-4">Job History</h4>
+                <cly-datatable-n
+                    :rows="jobRuns"
+                    :columns="jobRunColumns"
+                    :force-loading="isLoading"
+                >
+                    <template v-slot="scope">
+                        <el-table-column prop="lastRunAt" :label="i18n('jobs.run-time')" sortable="custom">
+                            <template v-slot="scope">
+                                {{formatDateTime(scope.row.lastRunAt)}}
+                            </template>
+                        </el-table-column>
+                        
+                        <el-table-column prop="status" :label="i18n('jobs.status')" sortable="custom">
+                            <template v-slot="scope">
+                                <cly-status-tag
+                                    :text="scope.row.status"
+                                    :color="getRunStatusColor(scope.row)"
+                                >
+                                </cly-status-tag>
+                                <el-tooltip
+                                    v-if="scope.row.failReason"
+                                    :content="scope.row.failReason"
+                                    placement="top"
+                                >
+                                    <i class="ion-alert-circled bu-ml-2" style="color: #d23f00"></i>
+                                </el-tooltip>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column prop="duration" :label="i18n('jobs.duration')" sortable="custom">
+                            <template v-slot="scope">
+                                {{scope.row.duration}}s
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column prop="result" :label="i18n('jobs.result')">
+                            <template v-slot="scope">
+                                <pre v-if="scope.row.dataAsString" class="bu-p-2 bu-has-background-grey-lighter bu-is-family-code">{{scope.row.dataAsString}}</pre>
+                                <span v-else>-</span>
+                            </template>
+                        </el-table-column>
+                    </template>
+                </cly-datatable-n>
+            </cly-section>
+        </template>
     </cly-main>
 </div>
