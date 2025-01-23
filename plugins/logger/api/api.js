@@ -4,7 +4,7 @@ var exported = {},
     automaticStateManager = require('./helpers/automaticStateManager'),
     log = require('../../../api/utils/log.js')('logger:api'),
     { validateRead } = require('../../../api/utils/rights.js');
-const JOB = require('../../../api/parts/jobs');
+// const JOB = require('../../../api/parts/jobs');
 const MAX_NUMBER_OF_LOG_ENTRIES = 1000;
 const FEATURE_NAME = 'logger';
 
@@ -21,13 +21,13 @@ plugins.setConfigs("logger", {
 });
 
 (function() {
-    plugins.register("/master", function() {
-        setTimeout(() => {
-            JOB.job('logger:clear', { max: MAX_NUMBER_OF_LOG_ENTRIES })
-                .replace()
-                .schedule("every 5 minutes");
-        }, 10000);
-    });
+    // plugins.register("/master", function() {
+    //     setTimeout(() => {
+    //         JOB.job('logger:clear', { max: MAX_NUMBER_OF_LOG_ENTRIES })
+    //             .replace()
+    //             .schedule("every 5 minutes");
+    //     }, 10000);
+    // });
 
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);

@@ -2,7 +2,8 @@
  * @typedef {import("mongodb").Db} Database
  * @typedef {import("mongodb").ObjectId} ObjectId
  */
-const JOB = require("../../../../api/parts/jobs/job.js");
+// const JOB = require("../../../../api/parts/jobs/job.js");
+const Job = require("../../../../jobServer/Job");
 const log = require("../../../../api/utils/log.js")("job:logger:clear");
 
 const DEFAULT_MAX_ENTRIES = 1000;
@@ -10,7 +11,19 @@ const DEFAULT_MAX_ENTRIES = 1000;
 /**
  * clears logs
  */
-class ClearJob extends JOB.Job {
+class ClearJob extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "*/5 * * * *" // every 5 minutes
+        };
+    }
+
     /**
      * Cleans up the logs{APPID} collection
      * @param {Database} db mongodb database instance
