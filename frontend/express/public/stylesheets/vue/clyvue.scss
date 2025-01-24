@@ -1788,7 +1788,6 @@
         }
         &__right-sidecar {
             height: 100%;
-            position: absolute;
             right: 0;
         }
         &__steps-view {
@@ -1799,9 +1798,26 @@
         }
 
         &.has-right-sidecar {
+            display: flex;
+            flex-direction: row;
+
             .cly-vue-drawer__steps-view {
-                left: 0;
-                right: unset;
+                position: relative;
+                flex-grow: 1;
+                display: flex;
+                justify-content: center;
+            }
+
+            .cly-vue-drawer__steps-container {
+                position: relative;
+            }
+
+            .cly-vue-drawer__steps-wrapper {
+                max-width: 840px;
+            }
+
+            .cly-vue-drawer__right-sidecar {
+                max-width: 480px;
             }
         }
 
@@ -1834,7 +1850,7 @@
                           }
                         
                     }
-                    .cly-vue-drawer__sidecars-view, .cly-vue-drawer__right-sidecar {
+                    .cly-vue-drawer__sidecars-view {
                         @if $i == 12 {
                             width: 0%;
                           } 
@@ -4330,7 +4346,6 @@
           margin-left: 10px;
         }
     }		
-<<<<<<< HEAD
 }
 
 
