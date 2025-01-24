@@ -1170,6 +1170,17 @@
         }
     });
 
+    var appList = [{value: "", label: jQuery.i18n.map["configs.frontend-self_tracking.none"]}];
+    for (var a in countlyGlobal.apps) {
+        appList.push({value: countlyGlobal.apps[a].key, label: countlyGlobal.apps[a].name});
+    }
+
+    app.configurationsView.registerInput("frontend.self_tracking", {
+        input: "el-select",
+        attrs: {},
+        list: appList
+    });
+
     app.configurationsView.registerStructure("api", {
         description: "configs.api.description",
         groups: [
