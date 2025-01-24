@@ -26,18 +26,6 @@ const FEATURE_NAME = 'locale';
     });
     plugins.register("/session/metrics", function(ob) {
         var predefinedMetrics = ob.predefinedMetrics;
-        var userProps = ob.userProps;
-        var params = ob.params;
-        var user = ob.user;
-        var isNewUser = ob.isNewUser;
-        if (params.qstring.metrics && params.qstring.metrics._locale) {
-            var locale = params.qstring.metrics._locale, lang = langs.languageFromLocale(locale);
-            params.qstring.metrics._lang = lang;
-
-            if (isNewUser || user[common.dbUserMap.locale] !== locale) {
-                userProps[common.dbUserMap.locale] = locale;
-            }
-        }
         predefinedMetrics.push({
             db: "langs",
             metrics: [
