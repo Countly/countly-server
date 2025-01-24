@@ -2623,7 +2623,7 @@ common.clearClashingQueryOperations = function(query) {
 * @param {boolean} no_meta - if true, won't update some auto meta data, like first api call, last api call, etc.
 * @param {function} callback - function to run when update is done or failes, passing error and result as arguments
 */
-common.updateAppUser = function(params, update, no_meta, callback) {
+common.updateAppUser = async function(params, update, no_meta, callback) {
     //backwards compatability
     if (typeof no_meta === "function") {
         callback = no_meta;
@@ -2634,7 +2634,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             if (i.indexOf("$") !== 0) {
                 let err = "Unkown modifier " + i + " in " + update + " for " + params.href;
                 console.log(err);
-                if (callback) {
+                if (callback && typeof callback === "function") {
                     callback(err);
                 }
                 return;
@@ -2766,24 +2766,36 @@ common.updateAppUser = function(params, update, no_meta, callback) {
         }
 
         if (callback) {
-            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id}, {}, common.clearClashingQueryOperations(update), {
-                new: true,
-                upsert: true,
-                skipDataMasking: true
-            }, function(err, res) {
-                if (!err && res && res.value) {
-                    params.app_user = res.value;
+            try {
+                var res = await common.db.collection('app_users' + params.app_id).findOneAndUpdate({'_id': params.app_user_id}, common.clearClashingQueryOperations(update), {
+                    returnDocument: 'after',
+                    upsert: true,
+                });
+                if (res) {
+                    params.app_user = res;
                 }
-                callback(err, res);
-            });
+                if (callback && typeof callback === "function") {
+                    callback(null, res);
+                }
+            }
+            catch (err) {
+                if (callback && typeof callback === "function") {
+                    callback(err);
+                }
+            }
         }
         else {
             // using updateOne costs less than findAndModify, so we should use this 
             // when acknowledging writes and updated information is not relevant (aka callback is not passed)
-            common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, common.clearClashingQueryOperations(update), {upsert: true}, function() {});
+            try {
+                await common.db.collection('app_users' + params.app_id).findOneAndUpdate({'_id': params.app_user_id}, common.clearClashingQueryOperations(update), {upsert: true, skipDataMasking: true, returnDocument: 'after'});
+            }
+            catch (err) {
+                console.log(err);
+            }
         }
     }
-    else if (callback) {
+    else if (callback && typeof callback === "function") {
         callback();
     }
 };

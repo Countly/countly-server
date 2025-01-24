@@ -108,6 +108,72 @@ usersApi.create = function(app_id, doc, params, callback) {
     });
 };
 
+usersApi.createUserDocument = function(params, done) {
+    usersApi.getUid(params.app_id, async function(err, uid) {
+        if (uid) {
+            params.app_user.uid = uid;
+            if (!params.app_user._id) {
+                var doc = {
+                    uid: uid,
+                    did: params.qstring.device_id
+                };
+                if (params && params.href) {
+                    doc.first_req_get = (params.href + "") || "";
+                }
+                else {
+                    doc.first_req_get = "";
+                }
+                if (params && params.req && params.req.body) {
+                    doc.first_req_post = (params.req.body + "") || "";
+                }
+                else {
+                    doc.first_req_post = "";
+                }
+                doc._id = params.app_user_id;
+                console.log(JSON.stringify(doc));
+                try {
+                    var appUserDoc = await common.db.collection('app_users' + params.app_id).findOneAndUpdate({"_id": params.app_user_id}, {"$setOnInsert": doc}, {upsert: true, returnDocument: "after"});
+                    if (appUserDoc) {
+                        done(null, appUserDoc);
+                    }
+                    else {
+                        done("Failed user processing.");
+                    }
+                }
+                catch (error) {
+                    done(error);
+                }
+            }
+            else {
+                //document was created, but has no uid
+                //here we add uid only if it does not exist in db
+                //so if paralel request inserted it, we will not overwrite it
+                //and retrieve that uid on retry
+                try {
+                    var userdoc = await common.db.collection('app_users' + params.app_id).findOneAndUpdate({
+                        _id: params.app_user_id,
+                        uid: {$exists: false}
+                    }, {$set: {uid: uid}}, {upsert: true, ignore_errors: [11000]});
+                    if (userdoc) {
+                        done(null, userdoc);
+                    }
+                    else {
+                        done('User merged. Failed to record data.');
+                    }
+                }
+                catch (ee) {
+                    done(ee);
+                }
+            }
+        }
+        else {
+            //cannot create uid, so cannot process request now
+            console.log("Cannot create uid", err, uid);
+            done("User creation failed");
+        }
+    });
+};
+
 /**
 * Update existing app_users document. Cannot replace document, must have modifiers like $set, $unset, etc
 * @param {string} app_id - _id of the app
@@ -364,22 +430,27 @@ usersApi.count = function(app_id, query, callback) {
 * @param {string} app_id - _id of the app
 * @param {function} callback - called when finished providing error (if any) as first param and new uid as second
 */
-usersApi.getUid = function(app_id, callback) {
-    common.db.collection('apps').findAndModify({_id: common.db.ObjectID(app_id)}, {}, {$inc: {seq: 1}}, {
-        new: true,
-        upsert: true
-    }, function(err, result) {
-        result = result && result.ok ? result.value : null;
+usersApi.getUid = async function(app_id, callback) {
+    try {
+        var result = await common.db.collection('apps').findOneAndUpdate({_id: common.db.ObjectID(app_id)}, {$inc: {seq: 1}}, {
+            returnDocument: 'after',
+            upsert: true
+        });
         if (result && result.seq) {
             if (callback) {
-                callback(err, common.parseSequence(result.seq));
+                callback(null, common.parseSequence(result.seq));
             }
         }
         else if (callback) {
-            callback(err);
+            callback("Document not returned");
         }
-    });
+    }
+    catch (ee) {
+        callback(ee);
+    }
 };
+
+
 
 
 usersApi.mergeOtherPlugins = function(options, callback) {
@@ -618,7 +689,7 @@ async function updateStatesInTransaction(common, app_id, newAppUserP, oldAppUser
 * @param {string} old_device_id - old user's device_id
 * @param {function} callback - called when finished providing error (if any) as first param and resulting merged document as second
 */
-usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old_device_id, callback) {
+usersApi.merge = async function(app_id, newAppUser, new_id, old_id, new_device_id, old_device_id, callback) {
     /**
     * Inner function to merge user data
     * @param {object} newAppUserP  - new user data
@@ -630,100 +701,50 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
             app_id: app_id,
             newAppUser: newAppUserP,
             oldAppUser: oldAppUser
-        }, function() {
+        }, async function() {
             //merge user data
-            usersApi.mergeUserProperties(newAppUserP, oldAppUser);
-            //update states in transaction to ensure integrity
-
-            //we could use transactions, which makes it more stable, but we can't for now on all servers.
-            //keeping for future reference
-            /*  
-                updateStatesInTransaction(common, app_id, newAppUserP, oldAppUser, function(err) {
-                    if (err) {
-                        log.e("Failed to update states in transaction", err);
-                    }
-                    if (callback && typeof callback === 'function') {
-                        callback(err, newAppUserP);
-                    }
-                    if (!err) {
-                        common.db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}}, {multi: true}, function(err7) {
-                            if (err7) {
-                                log.e("Failed metric changes update in app_users merge", err7);
-                            }
-                            else {
-                                usersApi.mergeOtherPlugins(common.db, app_id, newAppUserP, oldAppUser, {"cc": true, "mc": true}, function() {
+            try {
+                await common.db.collection('app_users' + app_id).updateOne({_id: newAppUserP._id}, {'$set': newAppUserP});
+                usersApi.mergeUserProperties(newAppUserP, oldAppUser);
+                await common.db.collection('app_users' + app_id).deleteOne({_id: oldAppUser._id});
 
 
-                                });
-                            }
-                        });
-                    }
-                });
-            */
-            common.db.collection('app_users' + app_id).update({_id: newAppUserP._id}, {'$set': newAppUserP}, function(err) {
-                if (err) {
-                    if (callback && typeof callback === 'function') {
-                        callback(err, newAppUserP); //Filed. Old and new exists. SDK will re
-                    }
+            }
+            catch (err) {
+                if (callback && typeof callback === 'function') {
+                    callback(err, newAppUserP);
                 }
-                else {
-                    common.db.collection('app_users' + app_id).remove({_id: oldAppUser._id}, function(errRemoving) {
-                        if (errRemoving) {
-                            log.e("Failed to remove merged user from database", errRemoving); //Failed. Old and new exists. SDK will retry
-                        }
-                        if (callback && typeof callback === 'function') {
-                            callback(errRemoving, newAppUserP);
-                        }
-                        //Dispatch to other plugins only after callback.
-                        if (!errRemoving) {
-                            //If it fails now - job will retry.
-                            //update metric changes document
-                            var iid = app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid;
-                            common.db.collection('app_user_merges').update({"_id": iid, "cc": {"$ne": true}}, {'$set': {"u": true}}, {upsert: false}, function(err1) {
-                                if (err1) {
-                                    log.e(err1);
-                                }
-                                else {
-                                    common.db.collection("metric_changes" + app_id).update({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}}, {multi: true}, function(err7) {
-                                        if (err7) {
-                                            log.e("Failed metric changes update in app_users merge", err7);
-                                        }
-                                        usersApi.mergeOtherPlugins({db: common.db, app_id: app_id, newAppUser: newAppUserP, oldAppUser: oldAppUser, updateFields: {"cc": true, "u": true, "mc": true}}, function() {});
-                                    });
-                                }
-                            });
-                        }
-                    });
-                }
-            });
+                return;
+            }
+            callback(null, newAppUserP);
+            var iid = app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid;
+            try {
+                await common.db.collection('app_user_merges').updateOne({"_id": iid, "cc": {"$ne": true}}, {'$set': {"u": true}}, {upsert: false});
+                await common.db.collection("metric_changes" + app_id).updateMany({uid: oldAppUser.uid}, {'$set': {uid: newAppUserP.uid}});
+            }
+            catch (e) {
+                log.e("Failed metric changes update in app_users merge", e);
+            }
         });
     }
 
-    common.db.collection('app_users' + app_id).findOne({'_id': old_id }, function(err, oldAppUser) {
-        if (err) {
-            //problem getting old user data
-            return callback(err, oldAppUser);
-        }
+    try {
+        var oldAppUser = await common.db.collection('app_users' + app_id).findOne({'_id': old_id });
         if (!oldAppUser) {
-            //there is no old user, process request
             return callback(null, newAppUser);
         }
         if (!newAppUser || !Object.keys(newAppUser).length) {
-            //new user does not exist yet
-            //simply copy user document with old uid
-            //no harm is done
             oldAppUser.did = new_device_id + "";
             oldAppUser._id = new_id;
-            common.db.collection('app_users' + app_id).insert(oldAppUser, function(err2) {
-                if (err) {
-                    callback(err2, oldAppUser);
-                }
-                else {
-                    common.db.collection('app_users' + app_id).remove({_id: old_id}, function(err3) {
-                        callback(err3, oldAppUser);
-                    });
-                }
-            });
+            try {
+                await common.db.collection('app_users' + app_id).insertOne(oldAppUser);
+                await common.db.collection('app_users' + app_id).deleteOne({_id: old_id});
+            }
+            catch (e) {
+                log.e("Failed to update in database. This does not prevent processing.");
+                log.e(e);
+            }
+            callback(null, oldAppUser);
         }
         else {
             //we have to merge user data
@@ -746,19 +767,21 @@ usersApi.merge = function(app_id, newAppUser, new_id, old_id, new_device_id, old
                 oldAppUser = newAppUser;
                 newAppUser = tempDoc;
             }
-            common.db.collection('app_user_merges').insert({
+            await common.db.collection("app_user_merges").insertOne({
                 //If we want to ensure order later then for each A->B we should check if there is B->C in progress and wait  for it to finish first. So we could recheck using $regex
                 _id: app_id + "_" + newAppUser.uid + "_" + oldAppUser.uid,
                 merged_to: newAppUser.uid,
                 ts: Math.round(new Date().getTime() / 1000),
                 lu: Math.round(new Date().getTime() / 1000),
                 t: 0 //tries
-            }, {ignore_errors: [11000]}, function() {
-                //If there is any merge inserted New->somethingElse, do not merge data yet. skip till that finishes.
-                mergeUserData(newAppUser, oldAppUser);
-            });
+            }, {ignore_errors: [11000]});
+            mergeUserData(newAppUser, oldAppUser);
         }
-    });
+
+    }
+    catch (e) {
+        callback(e, null);
+    }
 };
 
 var deleteMyExport = function(exportID) { //tries to delete packed file, exported folder and saved export in gridfs
