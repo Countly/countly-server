@@ -1,3 +1,8 @@
+## Version 24.05.xx
+
+Dependencies:
+- Bump fs-extra from 11.2.0 to 11.3.0
+
 ## Version 24.05.21
 
 Fixes:
