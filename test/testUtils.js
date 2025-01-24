@@ -1,5 +1,6 @@
 var should = require('should');
 var countlyConfig = require("../frontend/express/config.js");
+var common = require('../api/utils/common.js');
 should.Assertion.add('haveSameItems', function(other) {
     this.params = { operator: 'to be have same items' };
 
@@ -167,6 +168,118 @@ var testUtils = function testUtils() {
 
     this.set = function(key, val) {
         props[key] = val;
+    };
+
+    this.validateBreakdownTotalsInDrillData = function(db, options, callback) {
+        var match = options.query || {};
+        if (options.app_id) {
+            match["a"] = options.app_id;
+        }
+        if (options.event) {
+            match["e"] = options.event;
+        }
+
+        if (options.period) {
+            var periodObj = common.getPeriodObj(options.period);
+            match["ts"] = {"$gte": periodObj.start, "$lt": periodObj.end};
+        }
+
+        var pipeline = [{"$match": match}];
+        var iid = {"uid": "$uid"};
+        var iid2 = "$_id.k0";
+        for (var k = 0;k < options.breakdownKeys.length; k++) {
+            pipeline.push({"$unwind": "$" + options.breakdownKeys[k]});
+            iid["k" + k] = "$" + options.breakdownKeys[k];
+        }
+        pipeline.push({"$addFields": {"n": {"$cond": [{"$eq": ["$up.ls", "$up.fs"]}, 1, 0]}}});
+        pipeline.push({"$group": {"_id": iid, "t": {"$sum": 1}, "ls": {"$min": "$up.ls"}, n: {"$max": "$n"}, "fs": {"$min": "$up.fs"}}});
+
+        pipeline.push({"$group": {"_id": iid2, "n": {"$sum": 1}, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        db.collection("drill_events").aggregate(pipeline, function(err, res) {
+            console.log(res);
+            if (err) {
+                callback(err);
+            }
+            else {
+                res = res || [];
+
+                var resMapped = {};
+                for (var i = 0; i < res.length; i++) {
+                    resMapped[res[i]._id] = res[i];
+                }
+                var errors = [];
+                if (Object.keys(resMapped).length != Object.keys(options.values).length) {
+                    errors.push("Expected " + Object.keys(options.values).length + " breakdowns but found " + Object.keys(resMapped).length);
+                }
+                for (var key in options.values) {
+                    if (!resMapped[key]) {
+                        errors.push("Expected breakdown " + key + " not found");
+                    }
+                    else {
+                        for (var mm in options.values[key]) {
+                            if (resMapped[key][mm] !== options.values[key][mm]) {
+                                errors.push("Expected " + mm + " to be " + options.values[key][mm] + " but found " + resMapped[key][mm]);
+                            }
+                        }
+                    }
+                }
+
+                if (errors.length > 0) {
+                    callback(errors.join(","));
+                }
+                else {
+                    callback();
+                }
+
+            }
+        });
+    };
+
+
+    this.validateTotalsInDrillData = function(db, options, callback) {
+        var match = options.query || {};
+        if (options.app_id) {
+            match["a"] = options.app_id;
+        }
+        if (options.event) {
+            match["e"] = options.event;
+        }
+
+        if (options.period) {
+            var periodObj = common.getPeriodObj(options.period);
+            match["ts"] = {"$gte": periodObj.start, "$lt": periodObj.end};
+        }
+
+        var pipeline = [{"$match": match}];
+        options.values = options.values || {};
+        pipeline.push({"$group": {"_id": "$uid", "t": {"$sum": 1}, "ls": {"$min": "$up.ls"}, "fs": {"$min": "$up.fs"}}});
+        pipeline.push({"$group": {"_id": null, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        console.log(JSON.stringify(pipeline));
+        db.collection("drill_events").aggregate(pipeline, function(err, res) {
+            console.log(res);
+            if (err) {
+                callback(err);
+            }
+            else {
+                res = res || [];
+                res = res[0] || {};
+                var errors = [];
+                if (res.fs && res.fs === res.ls) {
+                    res.n = 1;
+                }
+                for (var mm in options.values) {
+                    if (options.values[mm] && res[mm] !== options.values[mm]) {
+                        errors.push("Expected " + mm + " to be " + options.values[mm] + " but found " + res[mm]);
+                    }
+                }
+                if (errors.length > 0) {
+                    callback(errors.join(","));
+                }
+                else {
+                    callback();
+                }
+            }
+        });
     };
 
     this.validateSessionData = function(err, res, done, correct) {
