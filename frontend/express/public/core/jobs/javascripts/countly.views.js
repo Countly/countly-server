@@ -3,6 +3,8 @@
 (function() {
     /**
      * Helper function to map the job status to a color tag
+     * @param {Object} row The job row object
+     * @returns {string} Color code for the status
      */
     var getColor = function(row) {
         // row is the merged job object
@@ -23,6 +25,8 @@
 
     /**
      * Helper to update row display fields (like nextRunDate, nextRunTime, lastRun)
+     * @param {Object} row The job row object to update
+     * @returns {void}
      */
     var updateScheduleRow = function(row) {
         row.nextRunDate = row.nextRunAt ? moment(row.nextRunAt).format('YYYY-MM-DD') : '';
@@ -114,6 +118,7 @@
         computed: {
             /**
              * Whether the current user can enable/disable jobs
+             * @returns {boolean} True if user has admin rights
              */
             canSuspendJob: function() {
                 return countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID];
@@ -157,13 +162,18 @@
             },
             /**
              * Navigates to job details page
+             * @param {Object} row The job row to navigate to
+             * @returns {void}
              */
             goTo: function(row) {
                 app.navigate("#/manage/jobs/" + row.name, true);
             },
             getColor: getColor,
             /**
-             * Called from the row’s more options, e.g. "enable", "disable", "schedule", "runNow"
+             * Called from the row's more options, e.g. "enable", "disable", "schedule", "runNow"
+             * @param {string} command The command to execute
+             * @param {Object} row The job row
+             * @returns {void}
              */
             handleCommand: function(command, row) {
                 if (row.name) {
@@ -275,6 +285,7 @@
         computed: {
             /**
              * Check if there are any scheduleOverride or retryOverride in the config
+             * @returns {boolean} True if overrides exist
              */
             hasOverrides: function() {
                 return this.jobDetails &&
@@ -340,6 +351,8 @@
             },
             /**
              * Map jobDetails.currentState.status to a color
+             * @param {Object} jobDetails The job details object
+             * @returns {string} Color code for the status
              */
             getStatusColor: function(jobDetails) {
                 if (!jobDetails.config?.enabled) {
@@ -353,7 +366,9 @@
                 }
             },
             /**
-             * Map each run’s status to a color
+             * Map each run's status to a color
+             * @param {Object} run The job run object
+             * @returns {string} Color code for the status
              */
             getRunStatusColor: function(run) {
                 switch (run.status) {
@@ -372,20 +387,11 @@
 
     /**
      * Wrap the JobsView as a Countly Backbone view
+     * @returns {Object} Backbone wrapper view
      */
     var getMainView = function() {
         return new countlyVue.views.BackboneWrapper({
             component: JobsView,
-            vuex: [] // empty array if none
-        });
-    };
-
-    /**
-     * Wrap the JobDetailsView as a Countly Backbone view
-     */
-    var getDetailedView = function() {
-        return new countlyVue.views.BackboneWrapper({
-            component: JobDetailsView,
             vuex: [] // empty array if none
         });
     };
