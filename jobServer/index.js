@@ -55,26 +55,6 @@ if (require.main === module) {
 
     log.i('Initializing job server process...');
 
-
-    /**
-     * Initialize configuration
-     * @returns {Promise<Object>} A promise that resolves to an object containing configuration
-     */
-    const initializeConfig = async() => {
-        try {
-            const config = await pluginManager.getConfig();
-            log.d('Configuration initialized successfully');
-            return config;
-        }
-        catch (error) {
-            log.e('Failed to initialize configuration:', {
-                error: error.message,
-                stack: error.stack
-            });
-            throw new Error('Configuration initialization failed: ' + error.message);
-        }
-    };
-
     /**
      * Initialize countly request
      * @param {Object} config - Configuration object
@@ -97,31 +77,6 @@ if (require.main === module) {
     };
 
     /**
-     * Override common db objects with the provided connections
-     * @param {Object} dbConnections - Object containing database connections
-     */
-    const overrideCommonDb = async(dbConnections) => {
-        try {
-            if (!dbConnections || !dbConnections.countlyDb || !dbConnections.drillDb || !dbConnections.outDb) {
-                throw new Error('Invalid database connections provided');
-            }
-            const { countlyDb, drillDb, outDb } = dbConnections;
-            common.db = countlyDb;
-            common.drillDb = drillDb;
-            common.outDb = outDb;
-            log.d('Common db objects overridden successfully');
-        }
-        catch (error) {
-            log.e('Failed to override common db objects:', {
-                error: error.message,
-                stack: error.stack,
-                connections: Object.keys(dbConnections || {})
-            });
-            throw new Error('Common db override failed: ' + error.message);
-        }
-    };
-
-    /**
      * Override common batcher with the provided connections
      * @param {Db} commonDb - Object containing database connections
      */
@@ -135,37 +90,6 @@ if (require.main === module) {
                 error: error.message,
                 stack: error.stack
             });
-        }
-    };
-
-    /**
-     * Initialize database connections
-     * @returns {Promise<DbConnections>} A promise that resolves to an object containing database connections
-     */
-    const initializeDbConnections = async() => {
-        try {
-            log.d('Initializing database connections...');
-            const countlyDb = await pluginManager.dbConnection('countly');
-            log.d('Countly DB connection established');
-
-            const drillDb = await pluginManager.dbConnection('countly_drill');
-            log.d('Drill DB connection established');
-
-            const outDb = await pluginManager.dbConnection('countly_out');
-            log.d('Out DB connection established');
-
-            return {
-                countlyDb,
-                drillDb,
-                outDb,
-            };
-        }
-        catch (error) {
-            log.e('Failed to initialize database connections:', {
-                error: error.message,
-                stack: error.stack
-            });
-            throw new Error('Database connections initialization failed: ' + error.message);
         }
     };
 
@@ -229,17 +153,46 @@ if (require.main === module) {
         }
     };
 
-
-    initializeConfig()
-        .then(async config => {
-            log.i('Starting job server initialization sequence...');
+    /**
+     * Initialize configuration and database connections
+     * @returns {Promise<{config: Object, dbConnections: Array}>} e.g. { config: {...}, dbConnections: { countlyDb, outDb, fsDb, drillDb } }
+     */
+    const initializeSystem = async() => {
+        try {
+            const config = await pluginManager.getConfig();
+            log.d('Configuration initialized successfully');
 
             const countlyRequest = await initializeCountlyRequest(config);
             await overrideCommonDispatch(countlyRequest, config);
 
-            const dbConnections = await initializeDbConnections();
-            await overrideCommonDb(dbConnections);
-            await overrideCommonBatcher(dbConnections.countlyDb);
+            // Use connectToAllDatabases which handles config loading and db connections
+            const [countlyDb, outDb, fsDb, drillDb] = await pluginManager.connectToAllDatabases();
+
+            // Only need to override batcher since connectToAllDatabases handles other overrides
+            await overrideCommonBatcher(countlyDb);
+
+            return {
+                config,
+                dbConnections: {
+                    countlyDb,
+                    drillDb,
+                    outDb,
+                    fsDb
+                }
+            };
+        }
+        catch (error) {
+            log.e('Failed to initialize system:', {
+                error: error.message,
+                stack: error.stack
+            });
+            throw new Error('System initialization failed: ' + error.message);
+        }
+    };
+
+    initializeSystem()
+        .then(async({dbConnections}) => {
+            log.i('Starting job server initialization sequence...');
 
             jobServer = await JobServer.create(Logger, pluginManager, dbConnections);
 
