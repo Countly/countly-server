@@ -103,8 +103,11 @@ var pluginManager = function pluginManager() {
 
     /**
     * Initialize api side plugins
+    * @param {object} options - load opetions
+    * options.filename - filename to include (default api)
     **/
-    this.init = function() {
+    this.init = function(options) {
+        options = options || {};
         var pluginNames = [];
         var pluginsList = fs.readdirSync(path.resolve(__dirname, './')); //all plugins in folder
         //filter out just folders
@@ -114,14 +117,18 @@ var pluginManager = function pluginManager() {
                 pluginNames.push(pluginsList[z]);
             }
         }
-        dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
-
+        if (!options.skipDependencies) {
+            dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
+        }
 
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             fullPluginsMap[pluginNames[i]] = true;
             try {
-                pluginsApis[pluginNames[i]] = require("./" + pluginNames[i] + "/api/api");
-
+                //If file exists try including
+                var filepath = path.resolve(__dirname, pluginNames[i] + "/api/" + (options.filename || "api") + ".js");
+                if (fs.existsSync(filepath)) {
+                    pluginsApis[pluginNames[i]] = require(filepath);
+                }
             }
             catch (ex) {
                 console.log('Skipping plugin ' + pluginNames[i] + ' as we could not load it because of errors.');
@@ -170,9 +177,10 @@ var pluginManager = function pluginManager() {
     };
 
 
-    this.initPlugin = function(pluginName) {
+    this.initPlugin = function(pluginName, filename) {
         try {
-            pluginsApis[pluginName] = require("./" + pluginName + "/api/api");
+            filename = filename || "api";
+            pluginsApis[pluginName] = require("./" + pluginName + "/api/" + filename);
             fullPluginsMap[pluginName] = true;
         }
         catch (ex) {
@@ -332,6 +340,22 @@ var pluginManager = function pluginManager() {
             }
         });
 
+    };
+
+    this.loadConfigsIngestor = async function(db, callback/*, api*/) {
+        console.log("loading configs for ingestor");
+        try {
+            var res = await db.collection("plugins").findOne({_id: "plugins"}, {"api": true, "plugins": true, "drill": true});
+            if (res) {
+                delete res._id;
+                configs = res || {};
+                pluginConfig = res.plugins || {}; //currently enabled plugins
+            }
+        }
+        catch (err) {
+            console.log(err);
+        }
+        callback();
     };
 
     /**
@@ -1792,20 +1816,17 @@ var pluginManager = function pluginManager() {
         return str;
     };
 
-    this.connectToAllDatabases = async() => {
-        let dbs = ['countly', 'countly_out', 'countly_fs'];
-        if (fs.existsSync(path.resolve(__dirname, 'drill'))) {
-            dbs.push('countly_drill');
-        }
+    this.connectToAllDatabases = async(return_original) => {
+        let dbs = ['countly', 'countly_out', 'countly_fs', 'countly_drill'];
 
         let databases = [];
         if (apiCountlyConfig && apiCountlyConfig.shared_connection) {
             console.log("using shared connection pool");
-            databases = await this.dbConnection(dbs);
+            databases = await this.dbConnection(dbs, return_original);
         }
         else {
             console.log("using separate connection pool");
-            databases = await Promise.all(dbs.map(this.dbConnection.bind(this)));
+            databases = await Promise.all(dbs.map(this.dbConnection.bind(this, return_original)));
         }
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
@@ -1826,9 +1847,10 @@ var pluginManager = function pluginManager() {
     /**
     * Get database connection with configured pool size
     * @param {object} config - connection configs
+    * @param {boolean} return_original - return original driver connection object(database is not wrapped)
     * @returns {object} db connection params
     **/
-    this.dbConnection = async function(config) {
+    this.dbConnection = async function(config, return_original) {
         var db, maxPoolSize = 10;
         var mngr = this;
         var dbList = [];
@@ -2021,16 +2043,35 @@ var pluginManager = function pluginManager() {
         logDriver("commandFailed", logDriverDb, "e");
 
 
-        client._db = client.db;
 
-        client.db = function(database, options) {
-            return mngr.wrapDatabase(client._db(database, options), client, db_name, dbName, dbOptions);
-        };
+
+        if (!return_original) {
+            client._db = client.db;
+            client.db = function(database, options) {
+                return mngr.wrapDatabase(client._db(database, options), client, db_name, dbName, dbOptions);
+            };
+        }
+        else {
+            if (!client.db.ObjectID) {
+                client.db.ObjectID = function(id) {
+                    try {
+                        return new mongodb.ObjectId(id);
+                    }
+                    catch (ex) {
+                        logDbRead.i("Incorrect Object ID %j", ex);
+                        return id;
+                    }
+                };
+            }
+        }
 
         if (dbList.length) {
             var ret = [];
             for (let i = 0; i < dbList.length; i++) {
                 ret.push(client.db(dbList[i]));
+                if (return_original) {
+                    ret[i].ObjectID = client.db.ObjectID;
+                }
             }
             return ret;
         }
@@ -2345,6 +2386,9 @@ var pluginManager = function pluginManager() {
                 return function(err, res) {
                     if (res) {
                         if (!res.value && data && data.name === "findAndModify" && data.args && data.args[3] && data.args[3].remove) {
+                            res = {"value": res};
+                        }
+                        if (!res.value && data && data.name === "findAOneAndDelete") {
                             res = {"value": res};
                         }
                         if (!res.result) {
