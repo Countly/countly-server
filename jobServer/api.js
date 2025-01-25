@@ -7,7 +7,6 @@ const plugins = require("../plugins/pluginManager");
 const {validateGlobalAdmin} = require("../api/utils/rights");
 const common = require("../api/utils/common");
 const cronstrue = require('cronstrue');
-const moment = require('moment');
 
 // ----------------------------------
 // Helper Functions
@@ -33,7 +32,7 @@ function getJobStatus(job) {
 
 /**
  * Determine run status for a single job doc
- * @param {Object} job
+ * @param {Object} job doc from pulseJobs
  * @returns {String} "failed", "success", or "pending"
  */
 function getRunStatus(job) {
@@ -48,8 +47,8 @@ function getRunStatus(job) {
 
 /**
  * Returns job duration in seconds (string), or null if start/end not present
- * @param {Date} startDate
- * @param {Date} endDate
+ * @param {Date} startDate doc.lastRunAt
+ * @param {Date} endDate doc.lastFinishedAt
  * @returns {String|null} e.g. "2.34"
  */
 function formatJobDuration(startDate, endDate) {
@@ -62,8 +61,8 @@ function formatJobDuration(startDate, endDate) {
 
 /**
  * Returns a human-friendly label for a cron expression using cronstrue, or the raw expression if invalid
- * @param {String} schedule
- * @returns {String}
+ * @param {String} schedule doc.repeatInterval
+ * @returns {String} e.g. "Every 10 minutes"
  */
 function getScheduleLabel(schedule) {
     if (!schedule) {
@@ -81,7 +80,7 @@ function getScheduleLabel(schedule) {
  * Build the "jobDetails" object for a scheduled doc
  * @param {Object} scheduledDoc doc from pulseJobs, type='single'
  * @param {Object} jobConfig doc from jobConfigs
- * @returns {Object}
+ * @returns {Object} e.g. { config: {...}, currentState: {...} }
  */
 function buildJobDetails(scheduledDoc, jobConfig) {
     if (!scheduledDoc && !jobConfig) {
@@ -137,8 +136,8 @@ function buildJobDetails(scheduledDoc, jobConfig) {
 
 /**
  * Process a "normal" (type='normal') doc for job details table
- * @param {Object} doc
- * @returns {Object}
+ * @param {Object} doc doc from pulseJobs, type='normal'
+ * @returns {Object} e.g. { lastRunAt: Date, status: String, duration: String, result: Object, failReason: String, dataAsString: String }
  */
 function processRunDoc(doc) {
     return {
@@ -333,6 +332,7 @@ plugins.register('/o/jobs', async function(ob) {
                     { $match: search },
                     {
                         $sort: {
+
                             type: -1, // ensures 'single' (0) is sorted before 'normal' (1)
                             [sortColumn]: sortDir
                         }
@@ -376,9 +376,9 @@ plugins.register('/o/jobs', async function(ob) {
 
                 // Merge data
                 const processed = rawJobs.map(item => {
-                    const jobName = item.name;
+                    const name = item.name; // Changed from jobName to name
                     const mainDoc = item.doc; // the doc from $first
-                    const jobConfig = configMap[jobName] || null;
+                    const jobConfig = configMap[name] || null; // Use name here
 
                     return buildListViewJob(mainDoc, jobConfig, item);
                 });
