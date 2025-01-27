@@ -1,6 +1,6 @@
 const { defineConfig } = require("cypress");
 const fs = require('fs');
-
+const path = require('path');
 module.exports = defineConfig({
     e2e: {
         baseUrl: "http://localhost",
@@ -40,6 +40,57 @@ module.exports = defineConfig({
                 }
                 return launchOptions;
             });
+
+      on('task', {
+        saveLogsBySpecName({ specName, logData }) {
+          const logsDir = path.join(__dirname, 'logs', specName);
+          const logFilePath = path.join(logsDir, 'network-logs.json');
+      
+          if (!fs.existsSync(logsDir)) {
+            fs.mkdirSync(logsDir, { recursive: true });
+          }
+      
+          let existingLogs = [];
+          if (fs.existsSync(logFilePath)) {
+            const fileContent = fs.readFileSync(logFilePath, 'utf-8');
+            try {
+              existingLogs = JSON.parse(fileContent);
+            } catch {
+              existingLogs = [];
+            }
+          }
+      
+          existingLogs.push(logData);
+          fs.writeFileSync(logFilePath, JSON.stringify(existingLogs, null, 2));
+      
+          return null;
+        },
+      
+        saveConsoleLogs({ specName, logData }) {
+          const logsDir = path.join(__dirname, 'logs', specName);
+          const logFilePath = path.join(logsDir, 'console-logs.json');
+      
+          if (!fs.existsSync(logsDir)) {
+            fs.mkdirSync(logsDir, { recursive: true });
+          }
+      
+          let existingLogs = [];
+          if (fs.existsSync(logFilePath)) {
+            const fileContent = fs.readFileSync(logFilePath, 'utf-8');
+            try {
+              existingLogs = JSON.parse(fileContent);
+            } catch {
+              existingLogs = [];
+            }
+          }
+
+          existingLogs.push(logData);
+          fs.writeFileSync(logFilePath, JSON.stringify(existingLogs, null, 2));
+      
+          return null;
+        },
+      });
+
         },
     },
 });

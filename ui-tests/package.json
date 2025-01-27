@@ -19,6 +19,7 @@
     "moment": "^2.29.4"
   },
   "devDependencies": {
-    "cypress": "^13.6.4"
+    "cypress": "^13.6.4",
+    "cypress-cdp": "^1.6.35"
   }
 }
