@@ -172,8 +172,13 @@ const FEATURE_NAME = 'views';
                 }
             }
             if (vc > 0) {
-                update.$inc = update.$inc || {};
-                update.$inc.vc = vc;
+                if (update.$set && update.$set.vc) {
+                    update.$set.vc += vc;
+                }
+                else {
+                    update.$inc = update.$inc || {};
+                    update.$inc.vc = vc;
+                }
             }
         }
         if (update.$set || update.$inc) {
