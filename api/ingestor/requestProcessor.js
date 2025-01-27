@@ -1,4 +1,4 @@
-const usage = require('../parts/data/usage.js');
+const usage = require('./usage.js'); //special usage file for ingestor
 const common = require('../utils/common.js');
 const url = require('url');
 const plugins = require("../../plugins/pluginManager.js");
@@ -7,9 +7,6 @@ const crypto = require('crypto');
 const moment = require('moment');
 const { ignorePossibleDevices, checksumSaltVerification, validateRedirect} = require('../utils/requestProcessorCommon.js');
 const countlyApi = {
-    data: {
-        usage: require('../parts/data/usage.js')
-    },
     mgmt: {
         appUsers: require('../parts/mgmt/app_users.js'),
     }
@@ -727,9 +724,10 @@ const processRequestData = (ob, done) => {
     });
 };
 
-plugins.register("/sdk/process_request", function(ob) {
+plugins.register("/sdk/process_request", async function(ob) {
     //Deals with duration. Determines if we keep session start if there is one passed.
     //Adds some app_user updates if needed.
+    await usage.setLocation(ob.params);
     usage.processSession(ob);
 });
 

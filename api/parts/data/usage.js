@@ -212,37 +212,35 @@ usage.processSessionDuration = function(params, callback) {
     }
 };
 
-usage.processCoreMetrics = function(params) {
-    if (params && params.qstring && params.qstring.metrics) {
+/**
+* Gets metrics to collect from plugins
+* @param {params} params - params object
+* @param {object} userProps - object where to populate with user properties to set to user document
+* @returns {array} collected metrics
+**/
+usage.getPredefinedMetrics = function(params, userProps) {
+
+    if (params.qstring.metrics) {
         common.processCarrier(params.qstring.metrics);
-
-        if (params.qstring.metrics._carrier) {
-            params.collectedMetrics[common.dbUserMap.carrier] = params.qstring.metrics._carrier;
-        }
-        if (params.qstring.metrics._os) {
+        if (params.qstring.metrics._os && params.qstring.metrics._os_version && !params.is_os_processed) {
             params.qstring.metrics._os += "";
-            if (params.qstring.metrics._os_version && !params.is_os_processed) {
-                params.qstring.metrics._os_version += "";
+            params.qstring.metrics._os_version += "";
 
-                if (common.os_mapping[params.qstring.metrics._os.toLowerCase()] && !params.qstring.metrics._os_version.startsWith(common.os_mapping[params.qstring.metrics._os.toLowerCase()])) {
-                    params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
-                    params.is_os_processed = true;
-                }
-                else {
-                    params.qstring.metrics._os = params.qstring.metrics._os.replace(/\[|\]/g, '');
-                    params.qstring.metrics._os_version = "[" + params.qstring.metrics._os + "]" + params.qstring.metrics._os_version;
-                    params.is_os_processed = true;
-                }
-                params.collectedMetrics[common.dbUserMap.platform_version] = params.qstring.metrics._os_version;
+            if (common.os_mapping[params.qstring.metrics._os.toLowerCase()] && !params.qstring.metrics._os_version.startsWith(common.os_mapping[params.qstring.metrics._os.toLowerCase()])) {
+                params.qstring.metrics._os_version = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._os_version;
+                params.is_os_processed = true;
             }
-            params.collectedMetrics[common.dbUserMap.platform] = params.qstring.metrics._os;
+            else {
+                params.qstring.metrics._os = params.qstring.metrics._os.replace(/\[|\]/g, '');
+                params.qstring.metrics._os_version = "[" + params.qstring.metrics._os + "]" + params.qstring.metrics._os_version;
+                params.is_os_processed = true;
+            }
         }
         if (params.qstring.metrics._app_version) {
             params.qstring.metrics._app_version += "";
             if (params.qstring.metrics._app_version.indexOf('.') === -1 && common.isNumber(params.qstring.metrics._app_version)) {
                 params.qstring.metrics._app_version += ".0";
             }
-            params.collectedMetrics[common.dbUserMap.app_version] = params.qstring.metrics._app_version;
         }
         if (!params.qstring.metrics._device_type && params.qstring.metrics._device) {
             var device = (params.qstring.metrics._device + "");
@@ -262,12 +260,6 @@ usage.processCoreMetrics = function(params) {
                 params.qstring.metrics._device_type = "desktop";
             }
         }
-        if (params.qstring.metrics._device_type) {
-            params.collectedMetrics[common.dbUserMap.device_type] = params.qstring.metrics._device_type;
-        }
-        if (params.qstring.metrics._device) {
-            params.collectedMetrics[common.dbUserMap.device] = params.qstring.metrics._device;
-        }
         if (!params.qstring.metrics._manufacturer && params.qstring.metrics._os) {
             if (params.qstring.metrics._os === "iOS") {
                 params.qstring.metrics._manufacturer = "Apple";
@@ -282,9 +274,6 @@ usage.processCoreMetrics = function(params) {
                 params.qstring.metrics._manufacturer = "Apple";
             }
         }
-        if (params.qstring.metrics._manufacturer) {
-            params.collectedMetrics[common.dbUserMap.manufacturer] = params.qstring.metrics._manufacturer;
-        }
         if (params.qstring.metrics._has_hinge) {
             var hasHingeValue = params.qstring.metrics._has_hinge;
             if (hasHingeValue === "true" || hasHingeValue === true || hasHingeValue === "hinged") {
@@ -293,25 +282,8 @@ usage.processCoreMetrics = function(params) {
             else {
                 params.qstring.metrics._has_hinge = "not_hinged";
             }
-            params.collectedMetrics[common.dbUserMap.has_hinge] = params.qstring.metrics._has_hinge;
-        }
-        if (params.qstring.metrics._resolution) {
-            params.collectedMetrics[common.dbUserMap.resolution] = params.qstring.metrics._resolution;
         }
     }
-};
-
-usage;
-
-/**
-* Gets metrics to collect from plugins
-* @param {params} params - params object
-* @param {object} userProps - object where to populate with user properties to set to user document
-* @returns {array} collected metrics
-**/
-usage.getPredefinedMetrics = function(params, userProps) {
-
-    usage.processCoreMetrics(params);
 
     var predefinedMetrics = [
         {
@@ -435,38 +407,6 @@ usage.returnAllProcessedMetrics = function(params) {
 
     params.processed_metrics = processedMetrics;
     return processedMetrics;
-};
-
-
-/**
- * Process all metrics and return
- * @param  {params} params - params object
- * @returns {object} params
- */
-usage.returnRequestMetrics = function(params) {
-    usage.processCoreMetrics(params);
-
-    for (var key in params.collectedMetrics) {
-        // We check if country data logging is on and user's country is the configured country of the app
-        if (key === "cc" && (plugins.getConfig("api", params.app && params.app.plugins, true).country_data === false || params.app_cc !== params.user.country)) {
-            continue;
-        }
-        // We check if city data logging is on and user's country is the configured country of the app
-        if (key === "cty" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false || params.app_cc !== params.user.country)) {
-            continue;
-        }
-
-        if (params.collectedMetrics[key]) {
-            var escapedMetricVal = (params.collectedMetrics[key] + "").replace(/^\$/, "").replace(/\./g, ":");
-            params.collectedMetrics[key] = escapedMetricVal;
-        }
-        else {
-            delete params.collectedMetrics[key];
-        }
-
-    }
-
-    return params.collectedMetrics;
 };
 
 /**
@@ -948,134 +888,48 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
     return true;
 }
 
-usage.processSession = function(ob) {
+plugins.register("/i", function(ob) {
     var params = ob.params;
-    var userProps = {};
-    var session_duration = 0;
-    var update = {};
-
-    if (params.qstring.session_duration) {
-        session_duration = parseInt(params.qstring.session_duration);
-        var session_duration_limit = parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
-        if (session_duration) {
-            if (session_duration_limit && session_duration > session_duration_limit) {
-                session_duration = session_duration_limit;
-            }
-            if (session_duration < 0) {
-                session_duration = 30;
-            }
-        }
-    }
-
-    if (params.qstring.begin_session) {
-        var lastEndSession = params.app_user[common.dbUserMap.last_end_session_timestamp];
-        if (!params.app_user[common.dbUserMap.has_ongoing_session]) {
-            userProps[common.dbUserMap.has_ongoing_session] = true;
-        }
-
-        if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
-            delete params.qstring.begin_session;//do not start a new session.
-        }
-        else {
-
-            if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-                params.qstring.end_session = {"lsid": ob.params.app_user.lsid, "ls": ob.params.app_user.ls, "sd": ob.params.app_user.sd};
-            }
-            userProps[common.dbUserMap.last_begin_session_timestamp] = params.time.timestamp;
-            userProps.lsid = params.request_id;
-
-            if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-                var drill_updates = {};
-                if (params.app_user.lsid) {
-                    if (params.app_user.sd > 0) {
-                        drill_updates.dur = params.app_user.sd;
-                    }
-                    if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
-                        drill_updates.custom = JSON.parse(JSON.stringify(params.app_user.custom));
-                    }
-                    if (drill_updates.dur || drill_updates.custom) {
-                        ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates}}});
-                    }
+    var config = plugins.getConfig("api", params.app && params.app.plugins, true);
+    if (params.qstring.end_session) {
+        setTimeout(function() {
+            //need to query app user again to get data modified by another request
+            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function(err, dbAppUser) {
+                if (!dbAppUser || err) {
+                    return;
                 }
-                userProps.sd = 0 + session_duration;
-                userProps.data = {};
-            }
-            //new session
-            var isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
-            if (isNewUser) {
-                userProps[common.dbUserMap.first_seen] = params.time.timestamp;
-                userProps[common.dbUserMap.last_seen] = params.time.timestamp;
-            }
-            else {
-                if (parseInt(params.app_user[common.dbUserMap.last_seen], 10) < params.time.timestamp) {
-                    userProps[common.dbUserMap.last_seen] = params.time.timestamp;
+                //if new session did not start during cooldown, then we can post process this session
+                if (!dbAppUser[common.dbUserMap.has_ongoing_session]) {
+                    usage.processSessionDurationRange(params.session_duration || 0, params);
+                    let updates = [];
+                    plugins.dispatch("/session/end", {
+                        params: params,
+                        dbAppUser: dbAppUser,
+                        updates: updates
+                    });
+                    plugins.dispatch("/session/post", {
+                        params: params,
+                        dbAppUser: dbAppUser,
+                        updates: updates,
+                        session_duration: params.session_duration,
+                        end_session: true
+                    }, function() {
+                        updates.push({$set: {sd: 0, data: {}}});
+                        let updateUser = {};
+                        for (let i = 0; i < updates.length; i++) {
+                            updateUser = common.mergeQuery(updateUser, updates[i]);
+                        }
+                        common.updateAppUser(params, updateUser);
+                    });
+
+
                 }
-            }
-
-            if (!update.$inc) {
-                update.$inc = {};
-            }
-            update.$inc.sc = 1;
-        }
+            });
+        }, params.qstring.ignore_cooldown ? 0 : config.session_cooldown);
     }
-    else if (params.qstring.end_session) {
-        // check if request is too old, ignore it
-        if (!params.qstring.ignore_cooldown) {
-            userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
-        }
-        else {
-            var drill_updates2 = {};
-            if (params.app_user.lsid) {
-                if (params.app_user.sd > 0) {
-                    drill_updates2.dur = params.app_user.sd;
-                }
-                if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
-                    drill_updates2.custom = JSON.parse(JSON.stringify(params.app_user.custom));
-                }
-                if (drill_updates2.dur || drill_updates2.custom) {
-                    ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
-                }
-            }
-            userProps.sd = 0 + session_duration;
-            userProps.data = {};
-        }
-        if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-            if (!update.$unset) {
-                update.$unset = {};
-            }
-            update.$unset[common.dbUserMap.has_ongoing_session] = "";
-        }
-    }
+});
 
-    if (!params.qstring.begin_session) {
-        if (session_duration) {
-            if (!update.$inc) {
-                update.$inc = {};
-            }
-            update.$inc.sd = session_duration;
-            update.$inc.tsd = session_duration;
-            params.session_duration = (params.app_user.sd || 0) + session_duration;
-        }
-    }
-
-    for (var key in userProps) {
-        if (userProps[key] === params.app_user[key]) {
-            delete userProps[key];
-        }
-    }
-
-    if (Object.keys(userProps).length) {
-        update.$set = userProps;
-    }
-
-    if (Object.keys(update).length) {
-        ob.updates.push(update);
-    }
-    usage.processCoreMetrics(params); //Collexts core metrics
-
-};
-
-usage.processUserProperties = async function(ob) {
+plugins.register("/sdk/user_properties", async function(ob) {
     var params = ob.params;
     var userProps = {};
     var update = {};
@@ -1138,6 +992,7 @@ usage.processUserProperties = async function(ob) {
             }
         }
     }
+
     if (params.qstring.begin_session && params.qstring.location === "") {
         //user opted out of location tracking
         userProps.cc = userProps.rgn = userProps.cty = 'Unknown';
@@ -1248,8 +1103,8 @@ usage.processUserProperties = async function(ob) {
 
     //if we have metrics, let's process metrics
     if (params.qstring.metrics) {
-        //Collect all metrics
-        var up = usage.returnRequestMetrics(params);
+        var up = usage.returnAllProcessedMetrics(params);
+
         if (Object.keys(up).length) {
             for (let key in up) {
                 userProps[key] = up[key];
@@ -1257,6 +1112,124 @@ usage.processUserProperties = async function(ob) {
         }
     }
 
+    if (params.qstring.session_duration) {
+        var session_duration = parseInt(params.qstring.session_duration),
+            session_duration_limit = parseInt(plugins.getConfig("api", params.app && params.app.plugins, true).session_duration_limit);
+
+        if (session_duration) {
+            if (session_duration_limit && session_duration > session_duration_limit) {
+                session_duration = session_duration_limit;
+            }
+
+            if (session_duration < 0) {
+                session_duration = 30;
+            }
+
+            if (!update.$inc) {
+                update.$inc = {};
+            }
+
+            update.$inc.sd = session_duration;
+            update.$inc.tsd = session_duration;
+            params.session_duration = (params.app_user.sd || 0) + session_duration;
+
+            usage.processSessionDuration(params);
+        }
+    }
+
+    if (!params.session_duration) {
+        params.session_duration = params.app_user.sd || 0;
+    }
+
+    //if session began
+    if (params.qstring.begin_session) {
+        var lastEndSession = params.app_user[common.dbUserMap.last_end_session_timestamp];
+
+        if (!params.app_user[common.dbUserMap.has_ongoing_session]) {
+            userProps[common.dbUserMap.has_ongoing_session] = true;
+        }
+
+        userProps[common.dbUserMap.last_begin_session_timestamp] = params.time.timestamp;
+
+        //check when last session ended and if it was less than cooldown
+        if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < config.session_cooldown) {
+            plugins.dispatch("/session/extend", {
+                params: params,
+                dbAppUser: params.app_user,
+                updates: ob.updates
+            });
+            if (params.qstring.session_duration) {
+                plugins.dispatch("/session/duration", {
+                    params: params,
+                    session_duration: params.qstring.session_duration
+                });
+            }
+        }
+        else {
+            userProps.lsid = params.request_id;
+
+            if (params.app_user[common.dbUserMap.has_ongoing_session]) {
+                usage.processSessionDurationRange(params.session_duration || 0, params);
+
+                //process duration from unproperly ended previous session
+                plugins.dispatch("/session/post", {
+                    params: params,
+                    dbAppUser: params.app_user,
+                    updates: ob.updates,
+                    session_duration: params.session_duration,
+                    end_session: false
+                });
+                userProps.sd = 0;
+                userProps.data = {};
+            }
+            processUserSession(params.app_user, params);
+
+            //new session
+            var isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
+
+            plugins.dispatch("/session/begin", {
+                params: params,
+                dbAppUser: params.app_user,
+                updates: ob.updates,
+                isNewUser: isNewUser
+            });
+
+            if (isNewUser) {
+                userProps[common.dbUserMap.first_seen] = params.time.timestamp;
+                userProps[common.dbUserMap.last_seen] = params.time.timestamp;
+            }
+            else {
+                if (parseInt(params.app_user[common.dbUserMap.last_seen], 10) < params.time.timestamp) {
+                    userProps[common.dbUserMap.last_seen] = params.time.timestamp;
+                }
+            }
+
+            if (!update.$inc) {
+                update.$inc = {};
+            }
+
+            update.$inc.sc = 1;
+        }
+    }
+    else if (params.qstring.end_session) {
+        // check if request is too old, ignore it
+        userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
+        if (params.app_user[common.dbUserMap.has_ongoing_session]) {
+            if (!update.$unset) {
+                update.$unset = {};
+            }
+            update.$unset[common.dbUserMap.has_ongoing_session] = "";
+        }
+    }
+
+    if (!params.qstring.begin_session && !params.qstring.session_duration) {
+        const dbDateIds = common.getDateIds(params),
+            updateUsers = {};
+
+        common.fillTimeObjectMonth(params, updateUsers, common.dbMap.events);
+        const postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+        common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+    }
 
     if (params.qstring.events) {
         var eventCount = 0;
@@ -1294,6 +1267,6 @@ usage.processUserProperties = async function(ob) {
     if (Object.keys(update).length) {
         ob.updates.push(update);
     }
-};
+});
 
 module.exports = usage;
