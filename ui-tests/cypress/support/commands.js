@@ -224,49 +224,49 @@ Cypress.Commands.add("scrollDataTableToLeft", (element = '.el-table__body-wrappe
 
 Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
     const specName = Cypress.spec.name.replace('.cy.js', '');
-  
+
     cy.intercept('**').as('allRequests');
     cy.window().then((win) => {
-      const originalConsoleLog = win.console.log;
-      const originalConsoleWarn = win.console.warn;
-      const originalConsoleError = win.console.error;
-      const originalConsoleInfo = win.console.info;
-  
-      const interceptConsole = (type, originalMethod) => {
-        return (...args) => {
-          const logData = {
-            timestamp: new Date().toISOString(),
-            type: type,
-            message: args.map((arg) => arg.toString()).join(' '),
-          };
-  
-          cy.task('saveConsoleLogs', { specName, logData });
-  
-          originalMethod.apply(win.console, args);
+        const originalConsoleLog = win.console.log;
+        const originalConsoleWarn = win.console.warn;
+        const originalConsoleError = win.console.error;
+        const originalConsoleInfo = win.console.info;
+
+        const interceptConsole = (type, originalMethod) => {
+            return (...args) => {
+                const logData = {
+                    timestamp: new Date().toISOString(),
+                    type: type,
+                    message: args.map((arg) => arg.toString()).join(' '),
+                };
+
+                cy.task('saveConsoleLogs', { specName, logData });
+
+                originalMethod.apply(win.console, args);
+            };
         };
-      };
-  
-      win.console.log = interceptConsole('log', originalConsoleLog);
-      win.console.warn = interceptConsole('warn', originalConsoleWarn);
-      win.console.error = interceptConsole('error', originalConsoleError);
-      win.console.info = interceptConsole('info', originalConsoleInfo);
+
+        win.console.log = interceptConsole('log', originalConsoleLog);
+        win.console.warn = interceptConsole('warn', originalConsoleWarn);
+        win.console.error = interceptConsole('error', originalConsoleError);
+        win.console.info = interceptConsole('info', originalConsoleInfo);
     });
-  
+
     cy.wait('@allRequests').then((interception) => {
-      const logData = {
-        timestamp: new Date().toISOString(),
-        message: 'Intercepted network request',
-        request: interception.request,
-        response: interception.response,
-      };
-  
-      cy.task('saveLogsBySpecName', { specName, logData });
+        const logData = {
+            timestamp: new Date().toISOString(),
+            message: 'Intercepted network request',
+            request: interception.request,
+            response: interception.response,
+        };
+
+        cy.task('saveLogsBySpecName', { specName, logData });
     });
-  
+
     const additionalLogData = {
-      timestamp: new Date().toISOString(),
-      message: specName + ' Test executed successfully',
-      status: 'passed',
+        timestamp: new Date().toISOString(),
+        message: specName + ' Test executed successfully',
+        status: 'passed',
     };
     cy.task('saveLogsBySpecName', { specName, logData: additionalLogData });
 });
