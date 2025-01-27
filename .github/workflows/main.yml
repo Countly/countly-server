@@ -310,8 +310,8 @@ jobs:
         working-directory: /opt/countly/ui-tests/cypress
         run: |
           ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}.tar.gz"
-          mkdir -p screenshots videos
-          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
+          mkdir -p screenshots videos logs
+          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos logs
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
 
   ui-test-onboarding:
@@ -389,6 +389,6 @@ jobs:
         working-directory: /opt/countly/ui-tests/cypress
         run: |
           ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}.tar.gz"
-          mkdir -p screenshots videos
-          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
+          mkdir -p screenshots videos logs
+          tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos logs
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
