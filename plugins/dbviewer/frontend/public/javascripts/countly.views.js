@@ -1,4 +1,4 @@
-/*global countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, _, countlyAuth, countlyPlugins*/
+/*global countlyGlobal, store, hljs, countlyDBviewer, app, countlyCommon, CV, countlyVue, CountlyHelpers, _, countlyAuth*/
 
 (function() {
 
@@ -394,13 +394,7 @@
 
         var DBViewerMain = countlyVue.views.create({
             template: CV.T("/dbviewer/templates/main.html"),
-            mixins: [
-                countlyVue.container.dataMixin({assistantPromptDrawer: 'ai-assistants/prompt-drawer'}),
-                countlyVue.mixins.hasDrawers("ai-assistant-prompt"),
-            ],
             data: function() {
-                var aiAssistantConfig = countlyPlugins.getConfigsData()['ai-assistants'];
-
                 return {
                     dynamicTab: (this.$route.params && this.$route.params.db) || "countly",
                     db: (this.$route.params && this.$route.params.db) || null,
@@ -409,17 +403,9 @@
                     apps: [],
                     collections: {},
                     index: (this.$route.params && this.$route.params.index) || null,
-                    assistantPromptDrawerSettings: {
-                        assistant_id: aiAssistantConfig ? aiAssistantConfig.assistantId_queryBuilder : '',
-                        buildEndpoint: '/ai-assistants/build-query',
-                        title: CV.i18n('cohorts.assistant.title'),
-                    },
                 };
             },
             methods: {
-                onAssistantClick: function() {
-                    this.openDrawer('ai-assistant-prompt', {});
-                },
                 prepareTabs: function(dbs) {
                     for (var i = 0; i < dbs.length; i++) {
                         this.tabs.push({
