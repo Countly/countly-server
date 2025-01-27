@@ -1,3 +1,8 @@
+## Version XX.XX.XX
+
+Fixes:
+- [push] Using apns-id header as message result in debug mode
+
 ## Version 24.05.21
 
 Fixes:
