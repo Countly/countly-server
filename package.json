@@ -80,7 +80,7 @@
     "object-hash": "3.0.0",
     "offline-geocoder": "git+https://github.com/Countly/offline-geocoder.git",
     "properties-parser": "0.6.0",
-    "puppeteer": "^23.8.0",
+    "puppeteer": "^24.1.1",
     "sass": "1.83.4",
     "tslib": "^2.6.3",
     "uglify-js": "3.19.3",
