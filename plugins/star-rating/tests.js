@@ -8,12 +8,14 @@ var APP_ID = "";
 var APP_KEY = "";
 var DEVICE_ID = "123456789";
 var WIDGET_ID = "";
+var drill_db = "";
 describe('Testing Rating plugin', function() {
 
     describe('Get empty widget list', function() {
         it('should return 200 and empty widget list', function(done) {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
+            drill_db = testUtils.client.db("countly_drill");
             request.get('/o/feedback/widgets?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN)
                 .expect(200)
                 .end(function(err, res) {
@@ -319,13 +321,28 @@ describe('Testing Rating plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.result.should.match(/^Successfully created [0-9a-f]{24}$/);
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                    done();
                 });
         });
     });
 
     describe('Verify rating', function() {
-        it('should return 200 for request platform info', function(done) {
+        it('verify in drill database', function(done) {
+            drill_db.collection("drill_events").findOne({"a":APP_ID,"e":"[CLY]_star_rating"}, function(err, res) {
+                if(err){
+                    done(err);
+                }
+                else {
+                    res.should.have.property("sg");
+                    res.sg.should.have.property("comment","It's a test comment.");
+                    res.sg.should.have.property("rating",5);
+                    res.sg.should.have.property("app_version","1.23");
+                    res.sg.should.have.property("platform","iOS");
+                    done();
+                }
+            });
+        });
+        /*it('should return 200 for request platform info', function(done) {
             APP_ID = testUtils.get("APP_ID") || APP_ID;
             var data;
             request.get('/o?method=star&period=60days&api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID).end(function(err, res) {
@@ -334,7 +351,7 @@ describe('Testing Rating plugin', function() {
                 should(data.iOS && data.iOS.indexOf('1:23') >= 0).equal(true);
                 done();
             });
-        });
+        });*/
     });
 
     var check_if_merges_finished = function(tries, done) {
