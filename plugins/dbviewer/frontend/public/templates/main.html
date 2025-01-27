@@ -2,11 +2,6 @@
     <cly-header
         :title="i18n('dbviewer.title')"
     >
-        <template v-slot:header-right>
-            <div class="bu-level-item">
-                <el-button @click="onAssistantClick" v-if="assistantPromptDrawer && assistantPromptDrawer.length > 0" type="success" size="small">AI Assistant</el-button>
-            </div>
-        </template>
         <template v-slot:header-tabs>
             <cly-dynamic-tabs
                 v-model="dynamicTab"
@@ -24,6 +19,4 @@
             </cly-dynamic-tabs>
         </template>
     </cly-header>
-		<component v-if="assistantPromptDrawer && assistantPromptDrawer.length > 0" :is="assistantPromptDrawer[0].component" :settings="assistantPromptDrawerSettings" :controls="drawers['ai-assistant-prompt']">
-		</component>
 </div> 
