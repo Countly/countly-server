@@ -2,6 +2,7 @@
 
 Dependencies:
 - Bump fs-extra from 11.2.0 to 11.3.0
+- Bump nodemailer from 6.9.16 to 6.10.0
 
 ## Version 24.05.21
 
