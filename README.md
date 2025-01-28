@@ -8,10 +8,10 @@
 ## 🔗 Quick links
 
 * [Countly Website](https://countly.com)
-* [Countly Server installation guide](https://support.count.ly/hc/en-us/articles/360036862332-Installing-the-Countly-Server)
-* [Countly SDKs, download and documentation links](https://support.count.ly/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs)
+* [Countly Server installation guide](https://support.countly.com/hc/en-us/articles/360036862332-Installing-the-Countly-Server)
+* [Countly SDKs, download and documentation links](https://support.countly.com/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs)
 * [Countly Community on Discord](https://discord.gg/countly)
-* [User Guides for Countly features](https://support.count.ly/hc/en-us/sections/7039354168729-User-Guides-Countly-22-x)
+* [User Guides for Countly features](https://support.countly.com/hc/en-us/sections/360007405211-User-Guides)
 
 ## 🌟 What is Countly?
 
@@ -53,8 +53,8 @@ This repository includes server-side part of Countly, with the following feature
 
 Countly can collect and visualize data from mobile, web and desktop applications. Using the write-API you can send data into Countly from any source. For more information please check the below resources: 
 
-* [List of Countly SDKs, documentation and download information](https://support.count.ly/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs)
-* [SDK development guide to build your own SDK](https://support.count.ly/hc/en-us/articles/360037753291-SDK-development-guide)
+* [List of Countly SDKs, documentation and download information](https://support.countly.com/hc/en-us/articles/360037236571-Downloading-and-Installing-SDKs)
+* [SDK development guide to build your own SDK](https://support.countly.com/hc/en-us/articles/360037753291-SDK-development-guide)
 * [Countly Server Write API to send data into Countly from any source](https://api.count.ly/reference/i)
 
 ## 🛠️ Installing and upgrading Countly server
@@ -69,15 +69,15 @@ There are several ways to install Countly:
 
 2. For bash lovers, we provide a beautiful installation script (`bin/countly.install.sh`) in countly-server package which installs everything required to run Countly Server. For this, you need a stable release of this repository [available here](https://github.com/Countly/countly-server/releases).
 
-3. Countly Lite also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/r/countly/countly-server/) and [installation instructions for Docker](https://support.count.ly/hc/en-us/articles/360036862332-Installing-the-Countly-Server).
+3. Countly Lite also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/r/countly/countly-server/) and [installation instructions for Docker](https://support.countly.com/hc/en-us/articles/360036862332-Installing-the-Countly-Server).
 
-If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](https://support.count.ly/hc/en-us/articles/360037443652-Upgrading-the-Countly-Server).
+If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](https://support.countly.com/hc/en-us/articles/360037443652-Upgrading-the-Countly-Server).
 
 ## 🧩 API, extensibility and plugins
 
 Countly has a [well-defined API](https://api.count.ly), that reads and writes data from/to the Countly backend. Countly dashboard is built using the read API, so it's possible to fetch any information you see on the dashboard using the API.
 
-Countly is extensible using the plugin architecture. If you would like to modify any exiting feature by extending it or changing it, or if you would like to add completely new capabilities to Countly you can modify existing plugins or create new ones. We suggest [you read this document](https://support.count.ly/hc/en-us/articles/360036862392-Introduction) if you would like to start with plugin development.
+Countly is extensible using the plugin architecture. If you would like to modify any exiting feature by extending it or changing it, or if you would like to add completely new capabilities to Countly you can modify existing plugins or create new ones. We suggest [you read this document](https://support.countly.com/hc/en-us/articles/360036862392-Introduction) if you would like to start with plugin development.
 
 ## 💚 Community
 
@@ -93,7 +93,7 @@ Security is very important to us. If you discover any issue regarding security, 
 * **NodeJS** — An open-source, cross-platform JavaScript runtime environment
 * **Linux** — What we all love using ;-)
 
-Plus lots of [open source libraries](https://support.count.ly/hc/en-us/articles/360037092232-Open-source-components)!         
+Plus lots of [open source libraries](https://support.countly.com/hc/en-us/articles/360037092232-Open-source-components)!         
 
 ## 🤝 How can I help you with your efforts?
 

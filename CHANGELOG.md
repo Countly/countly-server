@@ -1,12 +1,15 @@
-## Version XX.XX.XX
-
+## Version 24.05.xx
 Fixes:
 - [push] Using apns-id header as message result in debug mode
 
-## Version 24.05.21
+Dependencies:
+- Bump fs-extra from 11.2.0 to 11.3.0
+- Bump nodemailer from 6.9.16 to 6.10.0
 
+## Version 24.05.21
 Fixes:
 - [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
+- [core] Fixed a bug that was causing drill to crash when there's a percentage symbol in the event name
 - [gridfs] fixes for moving to Promises
 - [reports] Fixes report generation failure due to SSL error
 - [surveys] "Select one" text in the widget can be edited now
