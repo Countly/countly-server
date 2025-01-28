@@ -1,10 +1,19 @@
-## Version 24.05.XX
+## Version 24.05.22
+Features:
+- [core] Add self tracking capability
+  
 Fixes:
 - [push] Using apns-id header as message result in debug mode
-- [drill] [license] Update license loader to enable supplying db client
 - [server-stats] Fix data point calculation in job
-- [users] Format data points displayed in user sidebar
+- [TopEventsJob] preserver previous state if overwriting fails
+- [ui] scroll top on step changes in drawers
 
+Enterprise fixes:
+- [drill] Encoding url component before changing history state
+- [drill] [license] Update license loader to enable supplying db client
+- [users] Format data points displayed in user sidebar
+- [cohorts] Unescape drill texts in cohort component
+   
 Dependencies:
 - Bump fs-extra from 11.2.0 to 11.3.0
 - Bump nodemailer from 6.9.16 to 6.10.0
