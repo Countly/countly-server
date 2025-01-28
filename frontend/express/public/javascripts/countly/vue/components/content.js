@@ -409,6 +409,11 @@
         template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html'),
 
         props: {
+            componentTooltip: {
+                default: null,
+                type: String
+            },
+
             disabled: {
                 default: false,
                 type: Boolean
@@ -466,6 +471,11 @@
             size: {
                 default: null,
                 type: String
+            },
+
+            withComponentTooltip: {
+                default: false,
+                type: Boolean
             },
 
             withLabelTooltip: {
@@ -537,6 +547,13 @@
 
             mainComponent() {
                 return COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE[this.type] || 'div';
+            },
+
+            tooltip() {
+                if (this.withComponentTooltip) {
+                    return this.componentTooltip || null;
+                }
+                return null;
             }
         }
     }));
