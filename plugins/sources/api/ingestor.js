@@ -44,7 +44,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
         if (isFromSearchEngine) {
             querryArray.forEach(function(item) {
                 var queryData = item.split("=");
-                if (queryData.length >= 2 && queryData[1].length > 0) {
+                if (queryData.length >= 2 && queryData[1].length > 0 && searchEngineKeyWord) {
                     var key = item.split("=")[0];
                     var keepIt = false;
                     for (var sKey in searchEngineKeyWord) {
