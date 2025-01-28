@@ -29,16 +29,9 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     plugins.internalDrillEvents.push("[CLY]_view");
     plugins.internalDrillEvents.push("[CLY]_action");
 
-    plugins.register("/worker", function() {
+    plugins.register("/master", function() {
         common.dbUniqueMap.users.push("vc");
     });
-
-    // plugins.register("/master", function() {
-    //     // Allow configs to load & scanner to find all jobs classes
-    //     setTimeout(() => {
-    //         require('../../../api/parts/jobs').job('views:cleanupMeta')?.replace()?.schedule("every 1 day");
-    //     }, 3000);
-    // });
 
     plugins.register("/i/user_merge", function(ob) {
         var newAppUser = ob.newAppUser;

@@ -21,13 +21,6 @@ plugins.setConfigs("logger", {
 });
 
 (function() {
-    // plugins.register("/master", function() {
-    //     setTimeout(() => {
-    //         JOB.job('logger:clear', { max: MAX_NUMBER_OF_LOG_ENTRIES })
-    //             .replace()
-    //             .schedule("every 5 minutes");
-    //     }, 10000);
-    // });
 
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
