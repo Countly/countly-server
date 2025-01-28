@@ -20,8 +20,8 @@ class TopEventsJob extends Job {
     /**
      * TopEvents initialize function
      */
-    init() {
-        this.getAllApps();
+    async init() {
+        return this.getAllApps();
     }
 
     /**
@@ -145,6 +145,7 @@ class TopEventsJob extends Job {
         }
         catch (error) {
             log.e("TopEvents Job has a error: ", error);
+            throw error;
         }
     }
 
@@ -158,7 +159,18 @@ class TopEventsJob extends Job {
         const encodedData = this.encodeEvents(data);
         const timeSecond = this.timeSecond();
         const currentPeriood = this.mutatePeriod(period);
-        await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).insert({ app_id: _id, ts: timeSecond, period: currentPeriood, data: encodedData, totalCount: totalCount, prevTotalCount: prevTotalCount, totalSum: totalSum, prevTotalSum: prevTotalSum, totalDuration: totalDuration, prevTotalDuration: prevTotalDuration, prevSessionCount: sessionData.prevSessionCount, totalSessionCount: sessionData.totalSessionCount, prevUsersCount: usersData.prevUsersCount, totalUsersCount: usersData.totalUsersCount }, (error, records) => !error && records ? res(records) : rej(error)));
+        await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).findOneAndReplace(
+            {
+                app_id: _id, period: currentPeriood,
+            },
+            {
+                app_id: _id, ts: timeSecond, period: currentPeriood, data: encodedData, totalCount: totalCount, prevTotalCount: prevTotalCount, totalSum: totalSum, prevTotalSum: prevTotalSum, totalDuration: totalDuration, prevTotalDuration: prevTotalDuration, prevSessionCount: sessionData.prevSessionCount, totalSessionCount: sessionData.totalSessionCount, prevUsersCount: usersData.prevUsersCount, totalUsersCount: usersData.totalUsersCount
+            },
+            {
+                upsert: true
+            },
+            (error, records) => !error && records ? res(records) : rej(error))
+        );
     }
 
     /**
@@ -170,7 +182,6 @@ class TopEventsJob extends Job {
         const getEvents = await new Promise((res, rej) => common.db.collection("events").findOne({ _id: app._id }, (errorEvents, result) => errorEvents ? rej(errorEvents) : res(result)));
         if (getEvents && 'list' in getEvents) {
             const eventMap = this.eventsFilter(getEvents.list);
-            await new Promise((res, rej) => common.db.collection(TopEventsJob.COLLECTION_NAME).remove({ app_id: app._id }, (error, result) => error ? rej(error) : res(result)));
             if (eventMap && eventMap instanceof Array) {
                 for (const period of TopEventsJob.PERIODS) {
                     const data = {};
@@ -212,9 +223,14 @@ class TopEventsJob extends Job {
      * @param {Db} db connection
      * @param {done} done callback
      */
-    run(db, done) {
-        this.init();
-        done();
+    async run(db, done) {
+        try {
+            await this.init();
+            done();
+        }
+        catch (error) {
+            done(error);
+        }
     }
 
     /**
