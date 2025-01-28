@@ -42,12 +42,11 @@ const Logger = require('../api/utils/log.js');
 const log = new Logger('jobServer:index');
 const CountlyRequest = require("countly-request");
 const {ReadBatcher, WriteBatcher} = require('../api/parts/data/batcher');
+const common = require('../api/utils/common.js');
+const pluginManager = require('../plugins/pluginManager.js');
 
 // Start the process if this file is run directly
 if (require.main === module) {
-    const common = require('../api/utils/common.js');
-    const pluginManager = require('../plugins/pluginManager.js');
-
     /**
      * @type {JobServer|null}
      */
