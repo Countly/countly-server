@@ -222,10 +222,13 @@ Cypress.Commands.add("scrollDataTableToLeft", (element = '.el-table__body-wrappe
     cy.get(element).eq(index).scrollTo('left', { ensureScrollable: false });
 });
 
+
 Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
     const specName = Cypress.spec.name.replace('.cy.js', '');
+    const testName = Cypress.currentTest.title;
 
     cy.intercept('**').as('allRequests');
+
     cy.window().then((win) => {
         const originalConsoleLog = win.console.log;
         const originalConsoleWarn = win.console.warn;
@@ -235,9 +238,9 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         const interceptConsole = (type, originalMethod) => {
             return (...args) => {
                 const logData = {
+                    testName: testName,
                     timestamp: new Date().toISOString(),
-                    type: type,
-                    message: args.map((arg) => arg.toString()).join(' '),
+                    logData: args.map((arg) => arg.toString()).join(' '),
                 };
 
                 cy.task('saveConsoleLogs', { specName, logData });
@@ -254,22 +257,26 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
 
     cy.wait('@allRequests').then((interception) => {
         const logData = {
+            testName: testName,
             timestamp: new Date().toISOString(),
-            message: 'Intercepted network request',
-            request: interception.request,
-            response: interception.response,
+            logData: {
+                request: interception.request,
+                response: interception.response,
+            },
         };
 
         cy.task('saveLogsBySpecName', { specName, logData });
     });
 
     const additionalLogData = {
+        testName: testName,
         timestamp: new Date().toISOString(),
-        message: specName + ' Test executed successfully',
+        logData: `${testName} Test executed successfully`,
         status: 'passed',
     };
     cy.task('saveLogsBySpecName', { specName, logData: additionalLogData });
 });
+
 
 Cypress.Commands.add('verifyElement', ({
     labelElement,
