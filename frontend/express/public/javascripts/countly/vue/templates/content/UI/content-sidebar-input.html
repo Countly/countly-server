@@ -17,12 +17,18 @@
       class="cly-vue-content-builder-sidebar-input__label"
     >
       {{ label }}
+      <i
+        v-if="isLabelTooltipVisible"
+        v-tooltip.left="labelTooltip"
+        :class="labelIcon"
+      />
     </label>
     <slot name="content-builder-layout-step">
       <component
         :is="mainComponent"
         v-bind="$attrs"
         v-model="componentValue"
+        v-tooltip.left="tooltip"
         class="cly-vue-content-builder-sidebar-input__component"
         :class="{ 'cly-vue-content-builder-sidebar-input__component--slider': isSliderInput }"
         :controls="controlsProp"
