@@ -328,16 +328,16 @@ describe('Testing Rating plugin', function() {
 
     describe('Verify rating', function() {
         it('verify in drill database', function(done) {
-            drill_db.collection("drill_events").findOne({"a":APP_ID,"e":"[CLY]_star_rating"}, function(err, res) {
-                if(err){
+            drill_db.collection("drill_events").findOne({"a": APP_ID, "e": "[CLY]_star_rating"}, function(err, res) {
+                if (err) {
                     done(err);
                 }
                 else {
                     res.should.have.property("sg");
-                    res.sg.should.have.property("comment","It's a test comment.");
-                    res.sg.should.have.property("rating",5);
-                    res.sg.should.have.property("app_version","1.23");
-                    res.sg.should.have.property("platform","iOS");
+                    res.sg.should.have.property("comment", "It's a test comment.");
+                    res.sg.should.have.property("rating", 5);
+                    res.sg.should.have.property("app_version", "1.23");
+                    res.sg.should.have.property("platform", "iOS");
                     done();
                 }
             });
