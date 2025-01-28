@@ -60,7 +60,6 @@ function processUser(params, done) {
         });
     }
     else if (params && params.app_user && !params.app_user.uid) {
-        console.log("creating user doc");
         countlyApi.mgmt.appUsers.createUserDocument(params, function(err, userDoc2) {
             if (err) {
                 done(err);
@@ -395,15 +394,20 @@ var processToDrill = async function(params, drill_updates, callback) {
                 continue;
             }
 
+
             var dbEventObject = {
                 "a": params.app_id + "",
                 "e": events[i].key,
                 "cd": new Date(),
                 "ts": events[i].timestamp || Date.now().valueOf(),
                 "uid": params.app_user.uid,
-                "did": params.app_user.did
+                "did": params.app_user.did,
+                "ce": true,
                 //d, w,m,h
             };
+            if (currEvent.key.indexOf('[CLY]_') === 0) {
+                dbEventObject.ce = false;
+            }
 
             if (dbAppUser && dbAppUser[common.dbUserMap.user_id]) {
                 dbEventObject[common.dbUserMap.user_id] = dbAppUser[common.dbUserMap.user_id];
@@ -713,7 +717,7 @@ const processRequestData = (ob, done) => {
             }
             else {
                 common.returnMessage(ob.params, 200, 'Success');
-                done();
+                done(true);
             }
         });
 
@@ -925,6 +929,7 @@ const processBulkRequest = async function(requests, params) {
             continue;
         }
         else {
+            requests[i].app_key = requests[i].app_key || appKey;
             if (params.qstring.safe_api_response) {
                 requests[i].safe_api_response = true;
             }
