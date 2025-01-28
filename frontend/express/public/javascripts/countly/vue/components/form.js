@@ -172,10 +172,12 @@
             },
             prevStep: function() {
                 this.setStep(this.currentStepIndex - 1, 'prev');
+                this.scrollToTop();
             },
             nextStep: function() {
                 this.beforeLeavingStep("onlyCurrent");
                 this.setStep(this.currentStepIndex + 1, 'next', !this.isCurrentStepValid);
+                this.scrollToTop();
             },
             reset: function() {
                 var self = this;
@@ -232,6 +234,12 @@
                             current[command]();
                         }
                     });
+                }
+            },
+            scrollToTop: function() {
+                var container = this.$el.getElementsByClassName("cly-vue-drawer__steps-container")[0];
+                if (container && container.scrollTop) {
+                    container.scrollTop = 0;
                 }
             }
         }
