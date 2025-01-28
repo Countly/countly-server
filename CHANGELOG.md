@@ -1,4 +1,6 @@
 ## Version 24.10.xx
+Enterprise fixes:
+- [drill] Fixed drill meta regeneration
 
 Dependencies:
 - Bump fs-extra from 11.2.0 to 11.3.0
