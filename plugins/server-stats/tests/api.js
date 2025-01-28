@@ -1,8 +1,8 @@
 var request = require('supertest');
 var should = require('should');
-var testUtils = require("../../test/testUtils");
-const pluginManager = require('../pluginManager.js');
-var statInternalEvents = require('../server-stats/api/parts/stats.js').internalEventsEnum;
+var testUtils = require('../../../test/testUtils');
+const pluginManager = require('../../pluginManager.js');
+var statInternalEvents = require('../../server-stats/api/parts/stats.js').internalEventsEnum;
 request = request.agent(testUtils.url);
 const dataPointTimeout = 1000;
 

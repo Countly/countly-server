@@ -1,6 +1,9 @@
-## Version 24.05.xx
+## Version 24.05.XX
 Fixes:
 - [push] Using apns-id header as message result in debug mode
+- [drill] [license] Update license loader to enable supplying db client
+- [server-stats] Fix data point calculation in job
+- [users] Format data points displayed in user sidebar
 
 Dependencies:
 - Bump fs-extra from 11.2.0 to 11.3.0
