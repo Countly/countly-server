@@ -717,7 +717,7 @@ const processRequestData = (ob, done) => {
             }
             else {
                 common.returnMessage(ob.params, 200, 'Success');
-                done(true);
+                done();
             }
         });
 
@@ -751,7 +751,8 @@ plugins.register("/sdk/process_request", async function(ob) {
 const validateAppForWriteAPI = (params, done) => {
     if (ignorePossibleDevices(params)) {
         common.returnMessage(params, 400, "Device ignored");
-        return done ? done(false) : false;
+        done();
+        return;
     }
 
     common.readBatcher.getOne("apps", {'key': params.qstring.app_key + ""}, {}, (err, app) => {
@@ -761,27 +762,31 @@ const validateAppForWriteAPI = (params, done) => {
         if (!app) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
-            return done ? done(false) : false;
+            done();
+            return;
         }
 
         if (app.paused) {
             common.returnMessage(params, 400, 'App is currently not accepting data');
             params.cancelRequest = "App is currently not accepting data";
             plugins.dispatch("/sdk/cancel", {params: params});
-            return done ? done(false) : false;
+            done();
+            return;
         }
 
         if ((params.populator || params.qstring.populator) && app.locked) {
             common.returnMessage(params, 403, "App is locked");
             params.cancelRequest = "App is locked";
             plugins.dispatch("/sdk/cancel", {params: params});
-            return done ? done(false) : false;
+            done();
+            return;
         }
         if (!validateRedirect({params: params, app: app})) {
             if (!params.res.finished && !params.waitForResponse) {
                 common.returnOutput(params, {result: 'Success', info: 'Request regirected: ' + params.cancelRequest});
             }
-            return done ? done(false) : false;
+            done();
+            return;
         }
 
         params.app_id = app._id + "";
@@ -807,8 +812,8 @@ const validateAppForWriteAPI = (params, done) => {
         }
 
         if (!checksumSaltVerification(params)) {
-            plugins.dispatch("/sdk/cancel", {params: params});
-            return done ? done(false) : false;
+            done();
+            return;
         }
 
         plugins.dispatch("/sdk/validate_request", {params: params}, async function() { //validates request if there is no reason to block/cancel it
@@ -818,7 +823,8 @@ const validateAppForWriteAPI = (params, done) => {
                     //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                 }
                 common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
-                return done ? done(false) : false;
+                done();
+                return;
             }
             try {
                 var user = await common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id});
@@ -826,7 +832,8 @@ const validateAppForWriteAPI = (params, done) => {
             catch (err2) {
                 common.returnMessage(params, 400, 'Cannot get app user');
                 params.cancelRequest = "Cannot get app user or no Database connection";
-                return done ? done(false) : false;
+                done();
+                return;
             }
 
             params.app_user = user || {};
@@ -874,7 +881,8 @@ const validateAppForWriteAPI = (params, done) => {
                                         common.returnOutput(params, {result: 'Success', info: 'Request ignored: ' + params.cancelRequest});
                                     }
                                     common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
-                                    return done ? done(false) : false;
+                                    done();
+                                    return;
                                 }
                                 else {
                                     ob.params.previous_session = ob.params.app_user.lsid;
@@ -911,7 +919,8 @@ const validateAppForWriteAPI = (params, done) => {
                     //common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                 }
                 common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
-                return done ? done(false) : false;
+                done();
+                return;
             }
         });
     });
@@ -930,9 +939,6 @@ const processBulkRequest = async function(requests, params) {
         }
         else {
             requests[i].app_key = requests[i].app_key || appKey;
-            if (params.qstring.safe_api_response) {
-                requests[i].safe_api_response = true;
-            }
             const tmpParams = {
                 'app_id': '',
                 'app_cc': '',
@@ -957,14 +963,12 @@ const processBulkRequest = async function(requests, params) {
                 .digest('hex');
 
             await new Promise((resolve) => {
-                validateAppForWriteAPI(tmpParams, (log_me) => {
+                validateAppForWriteAPI(tmpParams, () => {
                     //log request
                     if (tmpParams.cancelRequest) {
                         skippedRequests.push(tmpParams.qstring);
                     }
-                    if (log_me) {
-                        plugins.dispatch("/sdk/log", {params: params});
-                    }
+                    plugins.dispatch("/sdk/log", {params: tmpParams});
                     resolve();
                 });
             });
@@ -972,9 +976,7 @@ const processBulkRequest = async function(requests, params) {
         }
     }
     common.unblockResponses(params);
-    if (params.qstring.safe_api_response || plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-        common.returnMessage(params, 200, 'Success');
-    }
+    common.returnMessage(params, 200, 'Success');
 };
 
 
@@ -1082,9 +1084,7 @@ const processRequest = (params) => {
         }
         validateAppForWriteAPI(params, (log_me) => {
             //log request
-            if (log_me) {
-                plugins.dispatch("/sdk/log", {params: params});
-            }
+            plugins.dispatch("/sdk/log", {params: params});
         });
         break;
     }
@@ -1108,10 +1108,7 @@ const processRequest = (params) => {
             common.returnMessage(params, 400, 'Invalid parameter "requests"');
             return false;
         }
-        if (!params.qstring.safe_api_response && !plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
-            common.returnMessage(params, 200, 'Success');
-        }
-        common.blockResponses(params);
+        common.blockResponses(params);//no response till finished processing
 
         processBulkRequest(requests, params);
         break;

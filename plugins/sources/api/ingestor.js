@@ -3,7 +3,13 @@ const plugins = require('../../pluginManager.js');
 const common = require('../../../api/utils/common.js');
 const parseDomain = require('parse-domain');
 
-var searchEngineKeyWord = require("../keywords.json");
+var searchEngineKeyWord = {};
+try {
+    searchEngineKeyWord = require("../keywords.json");
+}
+catch (e) {
+    console.log("There is no keywords file defined for source plugin.");
+}
 var filterList = ["google", "baidu.com", "bing", "yahoo", "yandex", "aol", "facebook.com/l.php"];
 var stripPath = ["r.search.yahoo.com", "m.baidu.com"];
 var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];

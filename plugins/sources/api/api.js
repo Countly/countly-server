@@ -2,11 +2,18 @@ var pluginInstance = {},
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     stores = require("../stores.json"),
-    searchEngineKeyWord = require("../keywords.json"),
     fetch = require('../../../api/parts/data/fetch.js'),
 
     { validateRead } = require('../../../api/utils/rights.js'),
     urlParse = require('url');
+
+var searchEngineKeyWord = {};
+try {
+    searchEngineKeyWord = require("../keywords.json");
+}
+catch (e) {
+    console.log("There is no keywords file defined for source plugin.");
+}
 
 const FEATURE_NAME = 'sources';
 

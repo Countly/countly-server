@@ -360,8 +360,8 @@ usage.processSession = function(ob) {
         else {
             var drill_updates2 = {};
             if (params.app_user.lsid) {
-                if (params.app_user.sd > 0) {
-                    drill_updates2.dur = params.app_user.sd;
+                if (params.app_user.sd > 0 || session_duration > 0) {
+                    drill_updates2.dur = params.app_user.sd + (session_duration || 0);
                 }
                 if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
                     drill_updates2.custom = JSON.parse(JSON.stringify(params.app_user.custom));
@@ -370,7 +370,6 @@ usage.processSession = function(ob) {
                     ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
                 }
             }
-            userProps.sd = 0 + session_duration;
             userProps.data = {};
         }
         if (params.app_user[common.dbUserMap.has_ongoing_session]) {
@@ -603,6 +602,10 @@ usage.processUserProperties = async function(ob) {
             }
             if (!(currEvent.key + "").startsWith("[CLY]_")) {
                 eventCount++;
+                currEvent.ce = false;
+            }
+            else {
+                currEvent.ce = true;
             }
         }
         if (eventCount > 0) {

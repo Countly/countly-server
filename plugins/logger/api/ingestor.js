@@ -3,7 +3,6 @@ var exported = {},
     plugins = require('../../pluginManager.js'),
     automaticStateManager = require('./helpers/automaticStateManager'),
     log = require('../../../api/utils/log.js')('logger:ingestor');
-const MAX_NUMBER_OF_LOG_ENTRIES = 1000;
 const FEATURE_NAME = 'logger';
 
 var RequestLoggerStateEnum = {
@@ -56,7 +55,7 @@ plugins.setConfigs("logger", {
         }
     };
 
-    var processSDKRequest = function(params) {
+    var processSDKRequest = async function(params) {
         params = params || {};
         log.d("Explicitly set logging_is_allowed => ", params.logging_is_allowed);
         const requestLoggerConfiguration = getRequestLoggerConfiguration(params);
@@ -72,6 +71,10 @@ plugins.setConfigs("logger", {
             var sdk = {};
             sdk.version = params.qstring.sdk_version;
             sdk.name = params.qstring.sdk_name;
+            params.qstring = params.qstring || {};
+            if (params.qstring.events && Array.isArray(params.qstring.events) && params.qstring.events.length === 0) {
+                delete params.qstring.events;
+            }
             var q = JSON.stringify(params.qstring);
             var version = (params.qstring.metrics) ? (params.qstring.metrics._app_version || "") : "";
             var result = params.app_user;
@@ -268,20 +271,17 @@ plugins.setConfigs("logger", {
             };
 
             log.d("problems found", problems);
+            //plugins.dispatch("/log", { params: params, insertData: insertData, problems: problems }, function() {
+            //Set problems after log event dispatched
+            //insertData.p = (problems.length) ? problems : false;
+            try {
+                common.db.collection('logs' + params.app_id).insertOne(insertData);
+            }
+            catch (e) {
+                log.e(e);
+            }
 
-            plugins.dispatch("/log", { params: params, insertData: insertData, problems: problems }, function() {
-                //Set problems after log event dispatched
-                insertData.p = (problems.length) ? problems : false;
-
-                setTimeout(function() {
-                    try {
-                        common.db.collection('logs' + params.app_id).insertOne(insertData);
-                    }
-                    catch (e) {
-                        log.e(e);
-                    }
-                }, 1000);
-            });
+            // });
         }
         else {
             turnRequestLoggerOffIfNecessary(params, requestLoggerConfiguration);
@@ -290,12 +290,6 @@ plugins.setConfigs("logger", {
 
     //write api call
     plugins.register("/sdk/log", function(ob) {
-        ob.params.logging_is_allowed = !ob.params.retry_request && !ob.params.log_processed;
-        processSDKRequest(ob.params);
-    });
-
-    //write api call
-    plugins.register("/sdk/cancel", function(ob) {
         ob.params.logging_is_allowed = !ob.params.retry_request && !ob.params.log_processed;
         var params = ob.params;
         if (params.app) {
