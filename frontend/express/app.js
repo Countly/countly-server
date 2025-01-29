@@ -70,6 +70,10 @@ var COUNTLY_TRACK_TYPE = "OSS";
 
 var IS_FLEX = false;
 
+/**
+* Set Countly type based on version and plugins
+* @param {boolean} isFlexInstance - is Flex instance
+**/
 function setCountlyType(isFlexInstance) {
     if (isFlexInstance) {
         COUNTLY_NAMED_TYPE = "Countly v" + COUNTLY_VERSION;
@@ -93,6 +97,9 @@ function setCountlyType(isFlexInstance) {
     }
 }
 
+/**
+* Check if my-countly plugin is enabled and set Countly type
+**/
 function checkCountlyType() {
     try {
         plugins.dbConnection(countlyConfig).then(function(db) {
@@ -106,7 +113,7 @@ function checkCountlyType() {
             });
         });
     }
-    catch(err) {
+    catch (err) {
         console.log('Error while checking my-countly plugin status:', err);
         setCountlyType(IS_FLEX);
     }
