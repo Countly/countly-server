@@ -409,12 +409,26 @@
         template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html'),
 
         props: {
+            componentTooltip: {
+                default: null,
+                type: String
+            },
+
             disabled: {
                 default: false,
                 type: Boolean
             },
 
             label: {
+                default: null,
+                type: String
+            },
+
+            labelIcon: {
+                default: 'cly-io cly-io-question-mark-circle',
+                type: String
+            },
+            labelTooltip: {
                 default: null,
                 type: String
             },
@@ -457,6 +471,16 @@
             size: {
                 default: null,
                 type: String
+            },
+
+            withComponentTooltip: {
+                default: false,
+                type: Boolean
+            },
+
+            withLabelTooltip: {
+                default: false,
+                type: Boolean
             }
         },
 
@@ -498,6 +522,10 @@
                 return this.isDropdownInput && Array.isArray(this.options) && this.options.length;
             },
 
+            isLabelTooltipVisible() {
+                return this.withLabelTooltip && this.labelTooltip;
+            },
+
             isSliderInput() {
                 return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER;
             },
@@ -519,6 +547,13 @@
 
             mainComponent() {
                 return COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE[this.type] || 'div';
+            },
+
+            tooltip() {
+                if (this.withComponentTooltip) {
+                    return this.componentTooltip || null;
+                }
+                return null;
             }
         }
     }));
