@@ -4745,11 +4745,23 @@
 
     // .cly-vue-content-builder-sidebar-input__label
     &__label {
+        display: flex;
+        align-items: baseline;
+        justify-content: flex-start;
+
         flex-shrink: 0;
         margin-right: auto;
         font-size: 13px;
         font-weight: 500;
         line-height: 16px;
+
+        // .cly-vue-content-builder-sidebar-input__label i
+        i {
+            margin-left: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 16px;
+        }
     }
 
     // .cly-vue-content-builder-sidebar-input__number-input-suffix
