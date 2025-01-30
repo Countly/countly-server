@@ -97,12 +97,4 @@ class ScheduledTrigger {
     }
 }
 
-
-// plugins.register("/master", function() {
-//     setTimeout(() => {
-//         JOB.job('hooks:schedule', {type: 'ScheduledTrigger'}).replace().schedule("every 1 hour on the 1st min");
-//     }, 10000);
-// });
-
-
 module.exports = ScheduledTrigger;
