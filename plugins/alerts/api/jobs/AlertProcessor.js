@@ -27,7 +27,7 @@ class AlertProcessor extends Job {
     getSchedule() {
         return {
             type: 'schedule',
-            period: "0 * * * *" // Every hour
+            value: "0 * * * *" // Every hour
         };
     }
 
