@@ -465,7 +465,7 @@ async function startProfiler() {
  *  - process-name.cpuprofile
  *  - process-name.heapprofile
  *  - process-name.coverage
- * @param {string} processName process or worker and process id
+ * @param {string} processName process id
  */
 async function stopProfiler(processName) {
     const errors = [];
@@ -590,9 +590,7 @@ async function profilerFilesTarStream() {
 }
 
 /**
- * Opens inspector. Running inspector.open on master process triggers workers to
- * open their inspector also. But this is not the case for closing the inspectors.
- * Each worker needs to be closed manually.
+ * Opens inspector. Running inspector.open on master process only.
  * @returns {void}
  */
 function startInspector() {
@@ -607,8 +605,7 @@ function startInspector() {
 }
 
 /**
- * Closes inspector. Running inspector.close on master doesn't trigger workers to
- * close their inspector. Each worker needs to be closed manually.
+ * Closes inspector for the main process.
  * @returns {void}
  */
 function stopInspector() {
