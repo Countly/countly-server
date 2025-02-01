@@ -7,7 +7,7 @@ const {isValidCron} = require('cron-validator');
  * @typedef {import('@logger/interface')} Logger
  * 
  * @typedef {Object} ScheduleConfig
- * @property {'schedule'|'once'|'now'} type - Type of schedule
+ * @property {'schedule'|'once'|'now'|'manual'} type - Type of schedule
  * @property {string|Date} [value] - Cron expression for 'schedule' type or Date for 'once' type
  */
 
@@ -43,12 +43,12 @@ class PulseJobScheduler extends IJobScheduler {
             throw new Error('Schedule type is required');
         }
 
-        const validTypes = ['schedule', 'once', 'now'];
+        const validTypes = ['schedule', 'once', 'now', 'manual'];
         if (!validTypes.includes(config.type)) {
             throw new Error(`Invalid schedule type: ${config.type}`);
         }
 
-        if (config.type !== 'now' && !config.value) {
+        if (config.type !== 'now' && config.type !== 'manual' && !config.value) {
             throw new Error('Schedule value is required');
         }
     }
@@ -86,6 +86,11 @@ class PulseJobScheduler extends IJobScheduler {
 
             case 'now':
                 await this.pulseRunner.now(name, data);
+                break;
+            case 'manual':
+                // For manual jobs, do not automatically schedule them.
+                // They should only run when explicitly triggered.
+                this.log.d(`Job '${name}' is set to manual; not scheduling automatically.`);
                 break;
             }
 
@@ -139,6 +144,10 @@ class PulseJobScheduler extends IJobScheduler {
 
             case 'now':
                 await this.pulseRunner.now(jobName);
+                break;
+            case 'manual':
+                // For manual jobs, we remove any existing schedule. They should be triggered manually.
+                this.log.d(`Job '${jobName}' updated to manual schedule; not rescheduling automatically.`);
                 break;
             }
 

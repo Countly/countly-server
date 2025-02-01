@@ -45,6 +45,7 @@ class PulseJobExecutor extends IJobExecutor {
             const priority = this.#mapPriority(instance.getPriority());
             const concurrency = instance.getConcurrency();
             const lockLifetime = instance.getLockLifetime();
+            const isEnabled = instance.getEnabled();
 
             this.pulseRunner.define(
                 jobName,
@@ -68,9 +69,15 @@ class PulseJobExecutor extends IJobExecutor {
                 }
             );
 
+            // If job should be disabled by default, use disableJob method
+            if (!isEnabled) {
+                await this.disableJob(jobName);
+                this.log.d(`Job ${jobName} disabled after creation`);
+            }
+
             const scheduleConfig = instance.getSchedule();
             this.pendingSchedules.set(jobName, scheduleConfig);
-            this.log.d(`Job ${jobName} defined successfully`);
+            this.log.d(`Job ${jobName} defined successfully with enabled state: ${isEnabled}`);
 
             this.log.d(`Configuring job ${jobName} with priority: ${priority}, concurrency: ${concurrency}, lockLifetime: ${lockLifetime}`);
 

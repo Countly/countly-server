@@ -191,7 +191,7 @@ class JobManager {
      */
     async #initializeJobConfigs(jobClasses, jobDefinitionChecksums) {
         await Promise.all(
-            Object.entries(jobClasses).map(async([jobName, JobClass ]) => {
+            Object.entries(jobClasses).map(async([jobName, JobClass]) => {
                 this.#log.d(`Initializing job config for ${jobName}`);
                 const currentChecksum = jobDefinitionChecksums[jobName];
                 const existingConfigOverride = await this.#jobConfigsCollection.findOne({ jobName });
@@ -201,8 +201,8 @@ class JobManager {
                     await this.#createDefaultJobConfig(jobName, currentChecksum, JobClass);
                 }
                 else if (existingConfigOverride.checksum !== currentChecksum) {
-                    // Reset configuration if job implementation has changed
-                    await this.#resetJobConfig(jobName, currentChecksum);
+                    const instance = new JobClass(jobName);
+                    await this.#resetJobConfig(jobName, currentChecksum, instance.getEnabled());
                 }
             })
         );
@@ -220,7 +220,7 @@ class JobManager {
 
         await this.#jobConfigsCollection.insertOne({
             jobName,
-            enabled: true,
+            enabled: instance.getEnabled(),
             checksum,
             createdAt: new Date(),
             defaultConfig: {
@@ -239,14 +239,15 @@ class JobManager {
      * @private
      * @param {string} jobName - Name of the job
      * @param {string} newChecksum - New checksum of the job definition
+     * @param {boolean} defaultEnabled - Default enabled state of the job
      */
-    async #resetJobConfig(jobName, newChecksum) {
+    async #resetJobConfig(jobName, newChecksum, defaultEnabled) {
         this.#log.w(`Job ${jobName} implementation changed, resetting configuration`);
         await this.#jobConfigsCollection.updateOne(
             { jobName },
             {
                 $set: {
-                    enabled: true,
+                    enabled: defaultEnabled,
                     checksum: newChecksum,
                     updatedAt: new Date()
                 },

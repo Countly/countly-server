@@ -20,7 +20,7 @@ const { JOB_PRIORITIES } = require('./constants/JobPriorities');
 
 /**
  * @typedef {Object} GetScheduleConfig
- * @property {('once'|'schedule'|'now')} type - Type of schedule
+ * @property {('once'|'schedule'|'now'|'manual')} type - Type of schedule
  * @property {(string|Date)} [value] - Schedule value (cron expression or Date)
  */
 
@@ -89,7 +89,7 @@ class Job {
     /** @type {Function|null} Progress method from job runner */
     #progressMethod = null;
 
-    /** @type {Object.<string, string>} Available job priorities */
+    /** @type {Object.<string, PriorityLevel>} Available job priorities */
     priorities = JOB_PRIORITIES;
 
     /**
@@ -157,6 +157,7 @@ class Job {
     /**
      * Get the schedule type and timing for the job.
      * This method must be implemented by the child class.
+     * @public
      * 
      * @returns {GetScheduleConfig} Schedule configuration object
      * @property {('once'|'schedule'|'now')} type - Type of schedule
@@ -199,7 +200,61 @@ class Job {
     }
 
     /**
+     * Get job retry configuration
+     * @public
+     * @typedef {Object} RetryConfig
+     * @property {boolean} enabled - Whether retries are enabled
+     * @property {number} attempts - Number of retry attempts
+     * @property {number} delay - Delay between retry attempts in milliseconds, delay is by default exponentially increasing after each attempt
+     * @returns {RetryConfig|null} Retry configuration or null for default
+     */
+    getRetryConfig() {
+        return {
+            enabled: false,
+            attempts: 0,
+            delay: 5 * 60 * 1000 // 5 minutes
+        };
+    }
+
+    /**
+     * Get job priority
+     * @public
+     * @returns {PriorityLevel} Priority level from JOB_PRIORITIES
+     */
+    getPriority() {
+        return this.priorities.NORMAL;
+    }
+
+    /**
+     * Get job concurrency
+     * @public
+     * @returns {number|null} Maximum concurrent instances or null for default
+     */
+    getConcurrency() {
+        return 1;
+    }
+
+    /**
+     * Get job lock lifetime in milliseconds
+     * @public
+     * @returns {number|null} Lock lifetime or null for default
+     */
+    getLockLifetime() {
+        return 55 * 60 * 1000; // 55 minutes
+    }
+
+    /**
+     * Determines if the job should be enabled when created
+     * @public
+     * @returns {boolean} True if job should be enabled by default, false otherwise
+     */
+    getEnabled() {
+        return true;
+    }
+
+    /**
      * Internal method to run the job and handle both Promise and callback patterns.
+     * @private
      * @param {MongoDb} db The MongoDB database connection
      * @param {Object} job The job instance
      * @param {Function} done Callback to be called when job completes
@@ -303,46 +358,6 @@ class Job {
         }
 
         this.log?.d(`[Job:${this.jobName}] Progress update`, progressData);
-    }
-
-    /**
-     * Get job retry configuration
-     * @typedef {Object} RetryConfig
-     * @property {boolean} enabled - Whether retries are enabled
-     * @property {number} attempts - Number of retry attempts
-     * @property {number} delay - Delay between retry attempts in milliseconds, delay is by default exponentially increasing after each attempt
-     * @returns {RetryConfig|null} Retry configuration or null for default
-     */
-    getRetryConfig() {
-        return {
-            enabled: false,
-            attempts: 0,
-            delay: 5 * 60 * 1000 // 5 minutes
-        };
-    }
-
-    /**
-     * Get job priority
-     * @returns {string} Priority level from JOB_PRIORITIES
-     */
-    getPriority() {
-        return this.priorities.NORMAL;
-    }
-
-    /**
-     * Get job concurrency
-     * @returns {number|null} Maximum concurrent instances or null for default
-     */
-    getConcurrency() {
-        return 1;
-    }
-
-    /**
-     * Get job lock lifetime in milliseconds
-     * @returns {number|null} Lock lifetime or null for default
-     */
-    getLockLifetime() {
-        return 55 * 60 * 1000; // 55 minutes
     }
 }
 
