@@ -247,6 +247,7 @@ class Job {
      * Determines if the job should be enabled when created
      * @public
      * @returns {boolean} True if job should be enabled by default, false otherwise
+     * @default true
      */
     getEnabled() {
         return true;
