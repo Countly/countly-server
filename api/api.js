@@ -182,17 +182,6 @@ plugins.connectToAllDatabases().then(function() {
         console.trace();
     });
 
-    // jobs.job('api:topEvents').replace().schedule('at 00:01 am ' + 'every 1 day'); // PORTED
-    // jobs.job('api:ping').replace().schedule('every 1 day'); // PORTED
-    // jobs.job('api:clear').replace().schedule('every 1 day'); // REMOVED
-    // jobs.job('api:clearTokens').replace().schedule('every 1 day'); // PORTED
-    // jobs.job('api:clearAutoTasks').replace().schedule('every 1 day'); // PORTED
-    // jobs.job('api:task').replace().schedule('every 5 minutes'); // PORTED
-    // jobs.job('api:userMerge').replace().schedule('every 10 minutes'); // PORTED
-    // jobs.job("api:ttlCleanup").replace().schedule("every 1 minute"); // PORTED
-    //jobs.job('api:appExpire').replace().schedule('every 1 day'); // Deprecated
-
-
     var utcMoment = moment.utc();
     var incObj = {};
     incObj.r = 1;
