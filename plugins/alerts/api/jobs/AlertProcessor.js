@@ -42,50 +42,53 @@ class AlertProcessor extends Job {
             const currentTime = new Date();
             this.log.d('Starting alerts processing at:', currentTime);
 
-            // Determine which type of alerts to process based on current time
-            const minute = currentTime.getMinutes();
-            const hour = currentTime.getHours();
-            const isLastDayOfMonth = currentTime.getDate() === new Date(currentTime.getFullYear(), currentTime.getMonth() + 1, 0).getDate();
+            // Calculate thresholds in JavaScript just before issuing the query
+            const hourThreshold = new Date(currentTime.getTime() - 60 * 60 * 1000);
+            const dayThreshold = new Date(currentTime.getTime() - 24 * 60 * 60 * 1000);
+            const monthThreshold = new Date(currentTime);
+            monthThreshold.setMonth(monthThreshold.getMonth() - 1);
 
-            // Build query conditions
-            const timeConditions = [];
-
-            // Check for hourly alerts (run at minute 59)
-            if (minute === 59) {
-                timeConditions.push({ period: 'hourly' });
-            }
-
-            // Check for daily alerts (run at 23:59)
-            if (hour === 23 && minute === 59) {
-                timeConditions.push({ period: 'daily' });
-            }
-
-            // Check for monthly alerts (run at 23:59 on last day of month)
-            if (isLastDayOfMonth && hour === 23 && minute === 59) {
-                timeConditions.push({ period: 'monthly' });
-            }
-
-            // If no alerts should run at this time, exit early
-            if (timeConditions.length === 0) {
-                this.log.d('No alerts scheduled for current time');
-                return done(null, 'No alerts scheduled for current time');
-            }
-
-            // Get all enabled alerts that match the time conditions
-            const alerts = await common.db.collection("alerts").find({
-                $and: [
-                    { enabled: true },
-                    { alertDataSubType: { $nin: Object.values(TRIGGERED_BY_EVENT) } },
-                    { $or: timeConditions }
+            // Build query conditions with pre-calculated date thresholds
+            const query = {
+                enabled: true,
+                alertDataSubType: { $nin: Object.values(TRIGGERED_BY_EVENT) },
+                $or: [
+                    {
+                        period: 'hourly',
+                        $or: [
+                            { lastRunTime: { $exists: false } },
+                            { lastRunTime: { $lte: hourThreshold } }
+                        ]
+                    },
+                    {
+                        period: 'daily',
+                        $or: [
+                            { lastRunTime: { $exists: false } },
+                            { lastRunTime: { $lte: dayThreshold } }
+                        ]
+                    },
+                    {
+                        period: 'monthly',
+                        $or: [
+                            { lastRunTime: { $exists: false } },
+                            { lastRunTime: { $lte: monthThreshold } }
+                        ]
+                    }
                 ]
-            }).toArray();
+            };
 
-            this.log.d('Found alerts to process:', alerts.length);
+            // Use a cursor to iterate through alerts one by one.
+            const cursor = common.db.collection("alerts").find(query);
+            let totalAlerts = 0;
+            let successfulCount = 0;
+            let failedCount = 0;
+            let failures = [];
 
-            // Process each alert
-            const results = await Promise.allSettled(alerts.map(async(alert) => {
+            while (await cursor.hasNext()) {
+                totalAlerts++;
+                const alert = await cursor.next();
                 try {
-                    // Handle profile_groups to cohorts mapping
+                    // Handle profile_groups mapping to cohorts
                     if (alert.alertDataType === 'profile_groups') {
                         alert.alertDataType = 'cohorts';
                     }
@@ -101,30 +104,31 @@ class AlertProcessor extends Job {
                         scheduledTo: currentTime,
                     });
 
+                    // Update lastRunTime in the alert document after successful processing
+                    await common.db.collection("alerts").updateOne(
+                        { _id: alert._id },
+                        { $set: { lastRunTime: currentTime } }
+                    );
+
                     this.log.d('Successfully processed alert:', alert._id);
-                    return { alertId: alert._id, success: true };
+                    successfulCount++;
                 }
                 catch (err) {
                     this.log.e('Error processing alert:', alert._id, err);
-                    return { alertId: alert._id, success: false, error: err.message };
+                    failedCount++;
+                    failures.push({ alertId: alert._id, error: err.message });
                 }
-            }));
-
-            // Log summary of processing results
-            const successful = results.filter(r => r.status === 'fulfilled');
-            const failed = results.filter(r => r.status === 'rejected');
+            }
 
             this.log.d('Alerts processing completed:', {
-                total: alerts.length,
-                successful: successful.length,
-                failed: failed.length
+                total: totalAlerts,
+                successful: successfulCount,
+                failed: failedCount
             });
 
-            // If any alerts failed, log details
-            if (failed.length > 0) {
-                this.log.e('Failed alerts:', failed.map(f => f.reason));
-                const errors = failed.map(f => f.reason).join('\n');
-                return done(new Error(`Failed to process alerts:\n${errors}`));
+            if (failedCount > 0) {
+                const errors = failures.map(f => `Alert ${f.alertId}: ${f.error}`).join('\n');
+                return done(new Error(`Failed to process some alerts:\n${errors}`));
             }
             return done();
         }
@@ -132,7 +136,6 @@ class AlertProcessor extends Job {
             this.log.e('Fatal error in alerts processing:', err);
             done(err);
         }
-
     }
 }
 
