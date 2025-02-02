@@ -129,6 +129,19 @@ plugins.connectToAllDatabases().then(function() {
     */
     async function storeBatchedData(code) {
         try {
+
+            await new Promise((resolve) => {
+                server.close((err) => {
+                    if (err) {
+                        console.log("Error closing server:", err);
+                    }
+                    else {
+                        console.log("Server closed successfully");
+                        resolve();
+                    }
+                });
+            });
+
             await common.writeBatcher.flushAll();
             await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
@@ -198,15 +211,17 @@ plugins.connectToAllDatabases().then(function() {
     //since process restarted mark running tasks as errored
     taskManager.errorResults({db: common.db});
 
-    // plugins.dispatch("/worker", {common: common});
     plugins.dispatch("/master", {}); // init hook
 
-    http.Server((req, res) => {
+    const server = http.Server((req, res) => {
         const params = {
             qstring: {},
             res: res,
             req: req
         };
+
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('Keep-Alive', 'timeout=5, max=1000');
 
         if (req.method.toLowerCase() === 'post') {
             const formidableOptions = {};
@@ -281,7 +296,12 @@ plugins.connectToAllDatabases().then(function() {
         else {
             common.returnMessage(params, 405, "Method not allowed");
         }
-    }).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
+    });
+    server.listen(common.config.api.port, common.config.api.host || '');
+    server.timeout = common.config.api.timeout || 120000;
+    server.keepAliveTimeout = common.config.api.timeout || 120000;
+    server.headersTimeout = (common.config.api.timeout || 120000) + 1000; // Slightly higher
+
 
     plugins.loadConfigs(common.db);
 });
