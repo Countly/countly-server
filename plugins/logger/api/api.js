@@ -5,7 +5,7 @@ var exported = {},
     log = require('../../../api/utils/log.js')('logger:api'),
     { validateRead } = require('../../../api/utils/rights.js');
 // const JOB = require('../../../api/parts/jobs');
-const MAX_NUMBER_OF_LOG_ENTRIES = 1000;
+const {MAX_NUMBER_OF_LOG_ENTRIES} = require('./constants');
 const FEATURE_NAME = 'logger';
 
 var RequestLoggerStateEnum = {

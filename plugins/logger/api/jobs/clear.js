@@ -6,7 +6,7 @@
 const Job = require("../../../../jobServer/Job");
 const log = require("../../../../api/utils/log.js")("job:logger:clear");
 
-const DEFAULT_MAX_ENTRIES = 1000;
+const {MAX_NUMBER_OF_LOG_ENTRIES} = require('../constants');
 
 /**
  * clears logs
@@ -29,14 +29,7 @@ class ClearJob extends Job {
      * @param {Database} db mongodb database instance
      */
     async run(db) {
-        let max = this.data.max;
-        if (typeof max !== "number") {
-            log.e(
-                "Maximum number of log entries required. Falling back to default value:",
-                DEFAULT_MAX_ENTRIES
-            );
-            max = DEFAULT_MAX_ENTRIES;
-        }
+        let max = MAX_NUMBER_OF_LOG_ENTRIES;
 
         log.d("Started: cleaning logs before the last", max);
         const appIds = await db.collection("apps").find().project({ _id: 1 }).toArray();
