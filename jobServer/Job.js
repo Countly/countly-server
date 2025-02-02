@@ -94,9 +94,13 @@ class Job {
 
     /**
      * Creates an instance of Job.
+     * @param {string} jobName The name of the job
      */
-    constructor() {
-        this.log = Logger('jobs:job');
+    constructor(jobName) {
+        if (jobName) {
+            this.jobName = jobName;
+        }
+        this.log = Logger('jobs:' + this.jobName);
         this.log.d(`Job instance "${this.jobName}" created`);
     }
 

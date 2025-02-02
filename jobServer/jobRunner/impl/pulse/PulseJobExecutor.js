@@ -39,7 +39,6 @@ class PulseJobExecutor extends IJobExecutor {
         this.log.d(`Attempting to create job: ${jobName}`);
         try {
             const instance = new JobClass(jobName);
-            instance.setJobName(jobName);
 
             const retryConfig = instance.getRetryConfig();
             const priority = this.#mapPriority(instance.getPriority());
