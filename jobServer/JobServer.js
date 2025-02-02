@@ -52,12 +52,6 @@ class JobServer {
     #isRunning = false;
 
     /**
-     * The database connection
-     * @type {MongoDb | null}
-     */
-    #db = null;
-
-    /**
      * Collection for job configurations
      * @private
      * @type {MongoCollection}

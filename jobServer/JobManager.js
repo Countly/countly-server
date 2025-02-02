@@ -96,7 +96,7 @@ class JobManager {
                     _id: change.documentKey._id
                 });
                 if (jobConfig) {
-                    await this.#applyConfig({...change?.updateDescription?.updatedFields, jobName: jobConfig.jobName});
+                    await this.#applyConfig({...change.updateDescription?.updatedFields, jobName: jobConfig.jobName});
                 }
             }
         });
@@ -141,8 +141,8 @@ class JobManager {
                 await this.#jobRunner.configureRetry(jobName, jobConfig.retry);
             }
 
-            if (typeof jobConfig?.enabled === 'boolean') {
-                if (jobConfig?.enabled) {
+            if (typeof jobConfig.enabled === 'boolean') {
+                if (jobConfig.enabled) {
                     await this.#jobRunner.enableJob(jobName);
                     this.#log.i(`Job ${jobName} enabled via config`);
                 }
@@ -154,7 +154,7 @@ class JobManager {
         }
         catch (error) {
             this.#log.e('Failed to apply job configuration:', {
-                jobName: jobConfig?.jobName || "unknown",
+                jobName: jobConfig.jobName || "unknown",
                 error: error.message,
                 stack: error.stack
             });
