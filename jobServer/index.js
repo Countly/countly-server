@@ -116,26 +116,39 @@ if (require.main === module) {
              * @param {string} event - The event name
              * @param {Object} params - The event parameters
              * @param {Function} callback - Callback function
+             * @returns {void} Void
              */
-            common.dispatch = function(event, params, callback) {
-                // Construct the request to your Countly server
-                countlyRequest.post({
-                    url: baseUrl + "/i/plugins/dispatch",
-                    json: { event: event, params: params }
+            pluginManager.dispatch = function(event, params, callback) {
+                // Ignore dispatch if event starts with /db
+                if (event.startsWith('/db')) {
+                    if (typeof callback === 'function') {
+                        return callback(null, null, null);
+                    }
+                    return;
+                }
+                const requestBody = {
+                    ...(params || {}),
+                    source: 'job_server',
+                    api_key: countlyConfig.api_key || "b2cc5212e091193e13299e2ece6222a6"
+                };
+
+                countlyRequest({
+                    url: baseUrl + event,
+                    method: 'POST',
+                    form: requestBody
                 }, function(err, res, body) {
                     if (err) {
                         log.e("Error dispatching event to Countly server:", {
                             error: err,
                             event: event,
-                            params: params,
                             baseUrl: baseUrl,
                         });
                     }
                     if (typeof callback === 'function') {
-                        return callback(err, res, body);
+                        callback(err, res, body);
                     }
                     else {
-                        log.e("Callback is not a function");
+                        log.w("No callback provided for dispatch");
                     }
                 });
             };
@@ -161,14 +174,18 @@ if (require.main === module) {
             const config = await pluginManager.getConfig();
             log.d('Configuration initialized successfully');
 
-            const countlyRequest = await initializeCountlyRequest(config);
-            await overrideCommonDispatch(countlyRequest, config);
-
             // Use connectToAllDatabases which handles config loading and db connections
             const [countlyDb, outDb, fsDb, drillDb] = await pluginManager.connectToAllDatabases();
 
             // Only need to override batcher since connectToAllDatabases handles other overrides
-            await overrideCommonBatcher(countlyDb);
+            await new Promise(resolve => {
+                setTimeout(async() => {
+                    const countlyRequest = await initializeCountlyRequest(config);
+                    await overrideCommonDispatch(countlyRequest, config);
+                    await overrideCommonBatcher(countlyDb);
+                    resolve();
+                }, 3000);
+            });
 
             return {
                 config,
