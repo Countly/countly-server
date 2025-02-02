@@ -84,9 +84,11 @@ class PulseJobScheduler extends IJobScheduler {
                 await this.pulseRunner.schedule(scheduleConfig.value, name, data);
                 break;
 
-            case 'now':
-                await this.pulseRunner.now(name, data);
+            case 'now': {
+                const now = new Date();
+                await this.pulseRunner.schedule(now, name, data);
                 break;
+            }
             case 'manual':
                 // For manual jobs, do not automatically schedule them.
                 // They should only run when explicitly triggered.
@@ -142,9 +144,11 @@ class PulseJobScheduler extends IJobScheduler {
                 await this.pulseRunner.schedule(schedule.value, jobName);
                 break;
 
-            case 'now':
-                await this.pulseRunner.now(jobName);
+            case 'now': {
+                const now = new Date();
+                await this.pulseRunner.schedule(now, jobName);
                 break;
+            }
             case 'manual':
                 // For manual jobs, we remove any existing schedule. They should be triggered manually.
                 this.log.d(`Job '${jobName}' updated to manual schedule; not rescheduling automatically.`);

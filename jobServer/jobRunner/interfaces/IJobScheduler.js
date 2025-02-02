@@ -1,6 +1,6 @@
 /**
  * @typedef {Object} ScheduleConfig
- * @property {'once'|'schedule'|'now'} type - Type of schedule execution
+ * @property {'once'|'schedule'|'now'|'manual'} type - Type of schedule execution
  * @property {string|Date} [value] - Cron expression (for 'schedule') or Date object (for 'once')
  */
 
