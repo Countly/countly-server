@@ -21,7 +21,7 @@ const DEFAULT_PULSE_CONFIG = {
     lockLimit: 1,
     defaultLockLimit: 3,
     defaultLockLifetime: 55 * 60 * 1000, // 55 minutes
-    sort: { nextRunAt: 1, priority: -1 },
+    // sort: { nextRunAt: 1, priority: -1 },
     disableAutoIndex: false,
     resumeOnRestart: true,
     db: {

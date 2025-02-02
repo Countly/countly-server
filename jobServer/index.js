@@ -41,7 +41,7 @@ const JobServer = require('./JobServer');
 const Logger = require('../api/utils/log.js');
 const log = new Logger('jobServer:index');
 const CountlyRequest = require("countly-request");
-const {ReadBatcher, WriteBatcher} = require('../api/parts/data/batcher');
+const {ReadBatcher, WriteBatcher, InsertBatcher} = require('../api/parts/data/batcher');
 const common = require('../api/utils/common.js');
 const pluginManager = require('../plugins/pluginManager.js');
 
@@ -83,6 +83,7 @@ if (require.main === module) {
         try {
             common.writeBatcher = new WriteBatcher(commonDb);
             common.readBatcher = new ReadBatcher(commonDb);
+            common.insertBatcher = new InsertBatcher(commonDb);
         }
         catch (error) {
             log.e('Failed to override common batcher:', {
@@ -97,7 +98,7 @@ if (require.main === module) {
      * @param {Function} countlyRequest - Countly request function
      * @param {Object} countlyConfig - Countly config object
      */
-    const overrideCommonDispatch = async(countlyRequest, countlyConfig) => {
+    const overrideCommonDispatch = (countlyRequest, countlyConfig) => {
         try {
             if (!countlyRequest || !countlyConfig) {
                 throw new Error('Invalid parameters for dispatch override');
@@ -108,8 +109,9 @@ if (require.main === module) {
             const pathPrefix = countlyConfig.path || "";
 
             // The base URL of the running Countly server
-            const baseUrl = protocol + "://" + hostname + pathPrefix;
+            let baseUrl = protocol + "://" + hostname + pathPrefix;
             log.d('Configuring dispatch override with base URL:', baseUrl);
+            baseUrl = "http://localhost:3001";
 
             /**
              * Keep the same signature, but perform a request to the running Countly server
@@ -118,7 +120,8 @@ if (require.main === module) {
              * @param {Function} callback - Callback function
              * @returns {void} Void
              */
-            pluginManager.dispatch = function(event, params, callback) {
+            const originalDispatch = pluginManager.dispatch;
+            pluginManager.dispatch = async function(event, params, callback) {
                 // Ignore dispatch if event starts with /db
                 if (event.startsWith('/db')) {
                     if (typeof callback === 'function') {
@@ -126,6 +129,15 @@ if (require.main === module) {
                     }
                     return;
                 }
+                else if (event.startsWith('/drill/preprocess_query')) {
+                    // we should not load entire api.js for this
+                    // Need to figure out a better way to call preprocess_query
+                    require('./../plugins/drill/api/api.js');
+                    require('./../plugins/geo/api/api.js');
+
+                    return originalDispatch.call(pluginManager, event, params, callback);
+                }
+
                 const requestBody = {
                     ...(params || {}),
                     source: 'job_server',
@@ -181,7 +193,7 @@ if (require.main === module) {
             await new Promise(resolve => {
                 setTimeout(async() => {
                     const countlyRequest = await initializeCountlyRequest(config);
-                    await overrideCommonDispatch(countlyRequest, config);
+                    overrideCommonDispatch(countlyRequest, config);
                     await overrideCommonBatcher(countlyDb);
                     resolve();
                 }, 3000);
