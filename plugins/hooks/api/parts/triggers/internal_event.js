@@ -217,7 +217,7 @@ class InternalEventTrigger {
             case "/i/remote-config/remove-parameter":
             case "/i/remote-config/add-condition":
             case "/i/remote-config/update-condition":
-            case "/i/remote-config/remove-condition": {
+            case "/i/remote-config/remove-condition":
                 utils.updateRuleTriggerTime(rule._id);
                 this.pipeline({
                     params: ob,
@@ -225,7 +225,6 @@ class InternalEventTrigger {
                     eventType,
                 });
                 break;
-            }
             case "/alerts/trigger": {
                 this.pipeline({
                     params: ob,
