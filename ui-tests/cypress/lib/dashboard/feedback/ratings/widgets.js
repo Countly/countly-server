@@ -50,7 +50,7 @@ const verifySettingsPageElements = ({
 
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.WIDGET_NAME_LABEL,
-        labelText: "surveys.drawer.internal.name",
+        labelText: "Internal Name",
         element: feedbackRatingWidgetsPageElements.WIDGET_NAME_INPUT,
         value: widgetName,
         elementPlaceHolder: "Widget Name"
