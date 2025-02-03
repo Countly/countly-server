@@ -54,6 +54,22 @@
         }
     }
 
+    &__step {
+        &__consent-wrapper {
+            .el-checkbox__input.is-checked + .el-checkbox__label {
+                color: #333c48;
+            }
+
+            .el-checkbox__label {
+                padding-left: 8px;
+
+                &:hover {
+                    color: #333c48;
+                }
+            }
+        }
+    }
+
     &__target-page-selector {
         width: 100%;
     }
