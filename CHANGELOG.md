@@ -4,6 +4,7 @@ Fixes:
 - [alerts] Fix for special character problem in value part for all data types
 - [scripts] Fix for old views script
 - [server-stats] Add monthly data points endpoint
+- [hooks] Added remote config changes to internal actions
 
 Enterprise fixes:
 - [config-transfer] Correct check when adding config transfer menu item
