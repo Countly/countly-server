@@ -31,11 +31,7 @@ function handleMessage(msg) {
         if (msg.cmd === "stopProfiler" || msg.cmd === "startProfiler") {
             args = [processName];
         }
-
-        systemUtility[msg.cmd](...args).catch(err => {
-            log.e(err);
-            console.error(err);
-        });
+        systemUtility[msg.cmd](...args).catch(err => log.e(err));
     }
     else if (typeof msg === "object" && msg.cmd === "setNumberOfWorkers") {
         numberOfWorkers = msg.params.numberOfWorkers;
@@ -178,29 +174,29 @@ function stopWithTimeout(type, fromTimeout = false) {
             });
             return true;
 
+        case "take-heap-snapshot":
+            validate(params, async () => {
+                try {
+                    params.res.writeHead(200, {
+                        "Content-Type": "plain/text; charset=utf-8",
+                        "Content-Disposition": "attachment; filename=heap.heapsnapshot"
+                    });
+                    systemUtility.takeHeapSnapshot(params.res);
+                }
+                catch (err) {
+                    log.e(err);
+                    common.returnMessage(params, 500, err.toString());
+                }
+            });
+            return true;
+
         case 'list-files':
             validate(params, () => {
                 systemUtility.listProfilerFiles()
                     .then(res => common.returnMessage(params, 200, res))
                     .catch(err => {
                         log.e(err);
-                        common.returnMessage(params, 404, "Profiler files not found");
-                    });
-            });
-            return true;
-
-        case 'download':
-            validate(params, () => {
-                systemUtility.downloadProfilerFile(params.qstring.filename)
-                    .then(({ data, filename }) => {
-                        common.returnRaw(params, 200, data, {
-                            'Content-Type': 'plain/text; charset=utf-8',
-                            'Content-disposition': 'attachment; filename=' + filename
-                        });
-                    })
-                    .catch(err => {
-                        log.e(err);
-                        common.returnMessage(params, 404, "File not found");
+                        common.returnMessage(params, 404, "Profiler files couldn't be found");
                     });
             });
             return true;
@@ -210,7 +206,7 @@ function stopWithTimeout(type, fromTimeout = false) {
                 try {
                     const tarStream = await systemUtility.profilerFilesTarStream();
                     if (tarStream === null) {
-                        common.returnMessage(params, 404, "Profiler files not found");
+                        common.returnMessage(params, 404, "Profiler files couldn't be found");
                     }
                     else {
                         params.res.writeHead(200, {
@@ -223,8 +219,7 @@ function stopWithTimeout(type, fromTimeout = false) {
                 }
                 catch (err) {
                     log.e(err);
-                    console.error(err);
-                    common.returnMessage(params, 500, "Server error");
+                    common.returnMessage(params, 500, err.toString());
                 }
             });
             return true;
