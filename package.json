@@ -22,7 +22,7 @@
   },
   "lint-staged": {
     "*.{js,vue}": [
-      "eslint --fix"
+      "eslint --fix --no-quiet"
     ]
   },
   "devDependencies": {
