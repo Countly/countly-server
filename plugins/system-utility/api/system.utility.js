@@ -1,3 +1,6 @@
+/**
+ * @typedef {import('stream').Writable} Writable
+ */
 var common = require('../../../api/utils/common.js');
 const inspector = require('inspector');
 var exec = require('child_process').exec;
@@ -427,8 +430,7 @@ function sessionPost(cmd) {
 /**
  * Takes a snapshot and writes its content to the passed stream.
  * IMPORTANT: it will call the "end" for the passed stream object when it's done
- * @param {import('stream').Writable} stream Writable stream to write snapshot content to
- * @returns {void}
+ * @param {Writable} stream Writable stream to write snapshot content to
  */
 function takeHeapSnapshot(stream) {
     session.connect();
