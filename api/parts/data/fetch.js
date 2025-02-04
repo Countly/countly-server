@@ -1645,8 +1645,45 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     if (typeof options.levels.monthly === "undefined") {
         options.levels.monthly = [];
     }
+    if (collection === "events_data") {
+        console.trace();
+        //Fetch from drill data
+        async function getData() {
+            var data = await common.drillQueryRunner.getAggregatedData({
+                "appID": params.app_id,
+                "event": params.qstring.event,
+                "timezone": params.appTimezone,
+                "period": params.qstring.period,
+                "segmentation": params.qstring.segmentation
+            });
+            console.log(JSON.stringify(data));
+            var modelData = common.convertArrayToModel(data, params.qstring.segmentation);
+            console.log(JSON.stringify(modelData));
 
-    if (params.qstring.fullRange) {
+            //Load meta data
+            var pp = options.id_prefix.split("_");
+            try {
+                var meta = await common.drillReadBatcher.getOne("drill_meta", {"_id": pp[0] + "_meta_" + pp[1]});
+                console.log(pp[0] + "_meta_" + pp[1]);
+                console.log(JSON.stringify(meta));
+                if (meta && meta.sg) {
+                    modelData.segmentation = {};
+                    modelData.meta = {"segments": []};
+                    for (var val in meta.sg) {
+                        modelData.meta.segments.push(val);
+                    }
+                }
+            }
+            catch (e) {
+                console.log(e);
+            }
+            console.log(JSON.stringify(modelData,));
+            callback(modelData);
+        }
+        getData();
+
+    }
+    else if (params.qstring.fullRange) {
         options.db.collection(collection).find({ '_id': { $regex: "^" + (options.id_prefix || "") + options.id + ".*" } }).toArray(function(err1, data) {
             callback(getMergedObj(data, true, options.levels, params.truncateEventValuesList));
         });

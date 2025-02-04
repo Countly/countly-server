@@ -401,6 +401,7 @@ var processToDrill = async function(params, drill_updates, callback) {
                 "cd": new Date(),
                 "ts": events[i].timestamp || Date.now().valueOf(),
                 "uid": params.app_user.uid,
+                "_uid": params.app_user._id,
                 "did": params.app_user.did,
                 "ce": true,
                 //d, w,m,h
@@ -699,15 +700,6 @@ const processRequestData = (ob, done) => {
     if (ob.params.app_user.last_req !== ob.params.request_hash && ob.updates.length) {
         for (let i = 0; i < ob.updates.length; i++) {
             update = common.mergeQuery(update, ob.updates[i]);
-        }
-    }
-    if (ob.params && ob.params.qstring && ob.params.qstring.events) {
-        var currDateWithoutTimestamp = moment();
-        for (var z = 0; z < ob.params.qstring.events.length; z++) {
-            if (!ob.params.qstring.events[z].timestamp || parseInt(ob.params.qstring.events[z].timestamp, 10) > currDateWithoutTimestamp.unix()) {
-                ob.params.qstring.events[z].timestamp = ob.params.time.mstimestamp;
-            }
-
         }
     }
     Promise.all([ common.updateAppUser(ob.params, update, false, true)]).then(function() {
@@ -1082,7 +1074,7 @@ const processRequest = (params) => {
         else {
             params.qstring.events = [];
         }
-        validateAppForWriteAPI(params, (log_me) => {
+        validateAppForWriteAPI(params, () => {
             //log request
             plugins.dispatch("/sdk/log", {params: params});
         });

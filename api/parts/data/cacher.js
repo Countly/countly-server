@@ -9,13 +9,15 @@ class Cacher {
      *  Create batcher instance
      *  @param {Db} db - database object
      */
-    constructor(db) {
+    constructor(db, options) {
         this.db = db;
         this.data = {};
         this.promises = {};
+        this.options = options || {};
+
         this.transformationFunctions = {};
         plugins.loadConfigs(db, () => {
-            this.loadConfig();
+            this.loadConfig(options);
             this.schedule();
         });
     }
@@ -27,7 +29,14 @@ class Cacher {
         let config = plugins.getConfig("api");
         this.period = config.batch_read_period * 1000;
         this.ttl = config.batch_read_ttl * 1000;
-        this.process = config.batch_read_processing;
+        this.process = true;
+
+        if (this.options && this.options.ttl) {
+            this.ttl = this.options.ttl * 1000;
+        }
+        if (this.options && this.options.period) {
+            this.period = this.options.period * 1000;
+        }
     }
 
     /**
@@ -87,6 +96,7 @@ class Cacher {
         else {
             try {
                 res = await this.db.collection(collection).findOne(query, projection);
+                res = res || {};
                 if (transformation && this.transformationFunctions[transformation]) {
                     res = this.transformationFunctions[transformation](res);
                 }

@@ -190,10 +190,15 @@ class WriteBatcher {
     constructor(db) {
         this.dbs = {countly: db};
         this.data = {countly: {}};
+        this.flushCallbacks = {};
         plugins.loadConfigs(db, () => {
             this.loadConfig();
             this.schedule();
         });
+    }
+
+    addFlushCallback(name, callback) {
+        this.flushCallbacks[name] = callback;
     }
 
     /**
@@ -224,33 +229,36 @@ class WriteBatcher {
     async flush(db, collection) {
         var no_fallback_errors = [10334, 17419, 14, 56];
         var notify_errors = [10334, 17419];
-        if (Object.keys(this.data[db][collection]).length) {
+        if (this.data[db] && this.data[db][collection] && this.data[db][collection].data && Object.keys(this.data[db][collection].data).length) {
+            var token0;
             var queries = [];
-            for (let key in this.data[db][collection]) {
-                if (Object.keys(this.data[db][collection][key]).length) {
+            for (let key in this.data[db][collection].data) {
+                if (Object.keys(this.data[db][collection].data[key]).length) {
+                    var upsert = true;
+                    if (typeof this.data[db][collection].data[key].upsert !== "undefined") {
+                        upsert = this.data[db][collection].data[key].upsert;
+                    }
                     queries.push({
                         updateOne: {
-                            filter: {_id: this.data[db][collection][key].id},
-                            update: this.data[db][collection][key].value,
-                            upsert: this.data[db][collection][key].upsert
+                            filter: {_id: this.data[db][collection].data[key].id},
+                            update: this.data[db][collection].data[key].value,
+                            upsert: upsert
                         }
                     });
                 }
             }
-            this.data[db][collection] = {};
+            var token0 = this.data[db][collection].t;
+            this.data[db][collection] = {"data": {}};
             batcherStats.update_queued -= queries.length;
             batcherStats.update_processing += queries.length;
+
+            var self = this;
             try {
-                await new Promise((resolve, reject) => {
-                    this.dbs[db].collection(collection).bulkWrite(queries, {ordered: false, ignore_errors: [11000]}, function(err, res) {
-                        if (err) {
-                            reject(err);
-                            return;
-                        }
-                        batcherStats.update_processing -= queries.length;
-                        resolve(res);
-                    });
-                });
+                await this.dbs[db].collection(collection).bulkWrite(queries, {ordered: false, ignore_errors: [11000]});
+                if (self.flushCallbacks[collection] && token0) {
+                    self.flushCallbacks[collection](token0);
+                }
+                batcherStats.update_processing -= queries.length;
             }
             catch (ex) {
                 if (ex.code !== 11000) {
@@ -340,25 +348,27 @@ class WriteBatcher {
      *  @param {string} id - id of the document
      *  @param {object} operation - operation
      *  @param {string} db - name of the database for which to write data
-     *  @param {object=} options - options for operation ((upsert: false) - if you don't want to upsert document)
      */
     add(collection, id, operation, db = "countly", options) {
+        options = options || {};
         if (!this.shared || cluster.isMaster) {
             if (!this.data[db][collection]) {
-                this.data[db][collection] = {};
+                this.data[db][collection] = {data: {}, "t": options.token, "upsert": options.upsert};
             }
-            if (!this.data[db][collection][id]) {
-                this.data[db][collection][id] = {id: id, value: operation, upsert: true};
-                if (options && options.upsert === false) {
-                    this.data[db][collection][id].upsert = false;
+            else {
+                if (options.token) {
+                    this.data[db][collection].t = options.token;
                 }
+                if (typeof options.upsert !== "undefined") {
+                    this.data[db][collection].upsert = options.upsert;
+                }
+            }
+            if (!this.data[db][collection].data[id]) {
+                this.data[db][collection].data[id] = {id: id, value: operation};
                 batcherStats.update_queued++;
             }
             else {
-                this.data[db][collection][id].value = common.mergeQuery(this.data[db][collection][id].value, operation);
-                if (options && options.upsert === false) {
-                    this.data[db][collection][id].upsert = this.data[db][collection][id].upsert || false;
-                }
+                this.data[db][collection].data[id].value = common.mergeQuery(this.data[db][collection].data[id].value, operation);
             }
             if (!this.process) {
                 this.flush(db, collection);
@@ -425,38 +435,34 @@ class ReadBatcher {
      *  @param {bool} multi - true if multiple documents
      *  @returns {Promise} promise
      */
-    getData(collection, id, query, projection, multi) {
-        return new Promise((resolve, reject) => {
-            if (multi) {
-                this.db.collection(collection).find(query, projection).toArray((err, res) => {
-                    if (!err) {
-                        this.cache(collection, id, query, projection, res, true);
-                        resolve(res);
-                    }
-                    else {
-                        if (this.data && this.data[collection] && this.data[collection][id] && this.data[collection][id].promise) {
-                            this.data[collection][id].promise = null;
-                        }
-                        reject(err);
-                    }
-                });
+    getData = async function(collection, id, query, projection, multi) {
+        if (multi) {
+            try {
+                var res = await this.db.collection(collection).find(query, projection).toArray();
+                this.cache(collection, id, query, projection, res, true);
+                return res;
             }
-            else {
-                this.db.collection(collection).findOne(query, projection, (err, res) => {
-                    if (!err) {
-                        this.cache(collection, id, query, projection, res, false);
-                        resolve(res);
-                    }
-                    else {
-                        if (this.data && this.data[collection] && this.data[collection][id] && this.data[collection][id].promise) {
-                            this.data[collection][id].promise = null;
-                        }
-                        reject(err);
-                    }
-                });
+            catch (err) {
+                if (this.data && this.data[collection] && this.data[collection][id] && this.data[collection][id].promise) {
+                    this.data[collection][id].promise = null;
+                }
+                throw err;
             }
-        });
-    }
+        }
+        else {
+            try {
+                var res = await this.db.collection(collection).findOne(query, projection);
+                this.cache(collection, id, query, projection, res, false);
+                return res;
+            }
+            catch (err) {
+                if (this.data && this.data[collection] && this.data[collection][id] && this.data[collection][id].promise) {
+                    this.data[collection][id].promise = null;
+                }
+                throw err;
+            }
+        }
+    };
 
     /**
      *  Check all cache

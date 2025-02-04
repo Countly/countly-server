@@ -11,9 +11,11 @@ const { changeStreamReader } = require('../../../api/parts/data/changeStreamRead
                 {"$project": {"a": "$fullDocument.a", "e": "$fullDocument.e"}}
             ],
             "name": "server-stats",
-            "collection": "drill_events"
+            "collection": "drill_events",
+            "onClose":function(){
+                common.writeBatcher.flush("countly","server_stats_data_points");
+            }
         }, (token, next) => {
-            console.log(next.e);
             if (next.e === "[CLY]_session") {
                 stats.updateDataPoints(common.writeBatcher, next.a, 1, 0, false, token);
             }

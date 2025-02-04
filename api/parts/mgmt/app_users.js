@@ -130,7 +130,6 @@ usersApi.createUserDocument = function(params, done) {
                     doc.first_req_post = "";
                 }
                 doc._id = params.app_user_id;
-                console.log(JSON.stringify(doc));
                 try {
                     var appUserDoc = await common.db.collection('app_users' + params.app_id).findOneAndUpdate({"_id": params.app_user_id}, {"$setOnInsert": doc}, {upsert: true, returnDocument: "after"});
                     if (appUserDoc) {

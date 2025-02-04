@@ -3743,6 +3743,139 @@ class DataTable {
 common.DataTable = DataTable;
 
 /**
+ * Shifts hourly data (To be in different timezone)
+ * @param {*} data  array of data
+ * @param {*} offset (integer)
+ * @returns {Array} shifted data
+ */
+common.shiftHourlyData = function(data, offset) {
+    if (typeof offset === "number") {
+        for (var z = 0; z < data.length; z++) {
+            var iid = data[z]._id.replace("h", "").split(":");
+            var dd = Date.UTC(parseInt(iid[0], 10), parseInt(iid[1]), parseInt(iid[2]), parseInt(iid[3]), 0, 0);
+            dd = new Date(dd.valueOf() + offset * 60 * 60 * 1000);
+            iid = dd.getFullYear() + ":" + dd.getMonth() + ":" + dd.getDate() + ":" + dd.getHours();
+            data[z]._id = iid;
+        }
+    }
+    return data;
+};
+
+//Gets array with drill data, converts to model.
+common.convertArrayToModel = function(arr, segmented) {
+    var model = {"c": 0, "sum": 0, "dur": 0};
+    var props = {"c": true, "sum": true, "dur": true};
+    if (segmented) {
+        for (var z = 0;z < arr.length;z++) {
+            var iid = arr[z]._id.split(":");
+            for (var p in props) {
+                if (arr[z][p]) {
+                    model[arr[z].sg] = model[arr[z].sg] || {"c": 0, "sum": 0, "dur": 0};
+                    model[arr[z].sg][p] += arr[z][p];
+                }
+            }
+            if (iid.length > 0) {
+                if (!model[iid[0]]) {
+                    model[iid[0]] = {};
+                }
+                if (!model[iid[0]][arr[z].sg]) {
+                    model[iid[0]][arr[z].sg] = {"c": 0, "sum": 0, "dur": 0};
+                }
+                for (var p0 in props) {
+                    if (arr[z][p0]) {
+                        model[iid[0]][arr[z].sg][p0] += arr[z][p0];
+                    }
+                }
+
+                if (iid.length > 1) {
+
+                    if (!model[iid[0]][iid[1]]) {
+                        model[iid[0]][iid[1]] = {};
+                    }
+
+                    if (!model[iid[0]][iid[1]][arr[z].sg]) {
+                        model[iid[0]][iid[1]][arr[z].sg] = {"c": 0, "sum": 0, "dur": 0};
+                    }
+                    for (var p1 in props) {
+                        if (arr[z][p1]) {
+                            model[iid[0]][iid[1]][arr[z].sg][p1] += arr[z][p1];
+                        }
+                    }
+                    if (iid.length > 2) {
+
+                        if (!model[iid[0]][iid[1]][iid[2]]) {
+                            model[iid[0]][iid[1]][iid[2]] = {};
+                        }
+
+                        if (!model[iid[0]][iid[1]][iid[2]][arr[z].sg]) {
+                            model[iid[0]][iid[1]][iid[2]][arr[z].sg] = {"c": 0, "sum": 0, "dur": 0};
+                        }
+                        for (var p2 in props) {
+                            if (arr[z][p2]) {
+                                model[iid[0]][iid[1]][iid[2]][arr[z].sg][p2] += arr[z][p2];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else {
+
+        for (var z = 0;z < arr.length;z++) {
+            var iid = arr[z]._id.split(":");
+            for (var p in props) {
+                if (arr[z][p]) {
+                    model[p] += arr[z][p];
+                }
+            }
+            if (iid.length > 0) {
+                if (!model[iid[0]]) {
+                    model[iid[0]] = {"c": 0, "sum": 0, "dur": 0};
+                }
+                for (var p0 in props) {
+                    if (arr[z][p0]) {
+                        model[iid[0]][p0] += arr[z][p0];
+                    }
+                }
+
+                if (iid.length > 1) {
+                    if (!model[iid[0]][iid[1]]) {
+                        model[iid[0]][iid[1]] = {"c": 0, "sum": 0, "dur": 0};
+                    }
+                    for (var p1 in props) {
+                        if (arr[z][p1]) {
+                            model[iid[0]][iid[1]][p1] += arr[z][p1];
+                        }
+                    }
+                    if (iid.length > 2) {
+                        if (!model[iid[0]][iid[1]][iid[2]]) {
+                            model[iid[0]][iid[1]][iid[2]] = {"c": 0, "sum": 0, "dur": 0};
+                        }
+                        for (var p2 in props) {
+                            if (arr[z][p2]) {
+                                model[iid[0]][iid[1]][iid[2]][p2] += arr[z][p2];
+                            }
+                        }
+                        if (iid.length > 3) {
+                            if (!model[iid[0]][iid[1]][iid[2]][iid[3]]) {
+                                model[iid[0]][iid[1]][iid[2]][iid[3]] = {"c": 0, "sum": 0, "dur": 0};
+                            }
+                            for (var p3 in props) {
+                                if (arr[z][p3]) {
+                                    model[iid[0]][iid[1]][iid[2]][iid[3]][p3] += arr[z][p3];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return model;
+};
+
+/**
  * Sync license check results to request (and session if present)
  * 
  * @param {object} req request
