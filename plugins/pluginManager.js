@@ -1544,6 +1544,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Procedure to uninstall plugin
+    * Should be used only to hard disabled plugins mainly in dev mode
     * @param {string} plugin - plugin name
     * @param {function} callback - when finished uninstalling plugin
     * @returns {void} void
@@ -1551,28 +1552,45 @@ var pluginManager = function pluginManager() {
     this.uninstallPlugin = function(plugin, callback) {
         console.log('Uninstalling plugin %j...', plugin);
         callback = callback || function() {};
-        var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
-        var errors = false;
-        var args = [scriptPath];
-        if (apiCountlyConfig.symlinked === true) {
-            args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
-        }
-        var m = cp.spawn("nodejs", args);
+        var self = this;
 
-        m.stdout.on('data', (data) => {
-            console.log(data.toString());
-        });
+        // First update database to disable plugin
+        self.singleDefaultConnection().then((db) => {
+            db.collection("plugins").updateOne(
+                {_id: "plugins"},
+                {$set: {[`plugins.${plugin}`]: false}},
+                function(err) {
+                    if (err) {
+                        console.log("Error updating plugin state:", err);
+                    }
 
-        m.stderr.on('data', (data) => {
-            console.log(data.toString());
-        });
+                    // Then run uninstall script
+                    var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
+                    var errors = false;
+                    var args = [scriptPath];
+                    if (apiCountlyConfig.symlinked === true) {
+                        args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                    }
+                    var m = cp.spawn("nodejs", args);
 
-        m.on('close', (code) => {
-            console.log('Done running uninstall.js with %j', code);
-            if (parseInt(code, 10) !== 0) {
-                errors = true;
-            }
-            callback(errors);
+                    m.stdout.on('data', (data) => {
+                        console.log(data.toString());
+                    });
+
+                    m.stderr.on('data', (data) => {
+                        console.log(data.toString());
+                    });
+
+                    m.on('close', (code) => {
+                        console.log('Done running uninstall.js with %j', code);
+                        if (parseInt(code, 10) !== 0) {
+                            errors = true;
+                        }
+                        db.close();
+                        callback(errors);
+                    });
+                }
+            );
         });
     };
 
