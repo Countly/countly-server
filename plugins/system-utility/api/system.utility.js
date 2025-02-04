@@ -5,7 +5,6 @@ const tar = require("tar-stream");
 const session = new inspector.Session();
 const path = require("path");
 const fs = require("fs/promises");
-const { Writable } = require('stream');
 
 const PROFILER_DIR = path.join(__dirname, "../../../log/nodeprofile");
 
@@ -428,7 +427,7 @@ function sessionPost(cmd) {
 /**
  * Takes a snapshot and writes its content to the passed stream.
  * IMPORTANT: it will call the "end" for the passed stream object when it's done
- * @param {Writable} stream Writable stream to write snapshot content to
+ * @param {import('stream').Writable} stream Writable stream to write snapshot content to
  * @returns {void}
  */
 function takeHeapSnapshot(stream) {
@@ -530,10 +529,10 @@ async function stopProfiler(processName) {
 async function listProfilerFiles() {
     const files = await fs.readdir(PROFILER_DIR);
     return Promise.all(
-        files.map(async (filename) => {
+        files.map(async(filename) => {
             const fullPath = path.join(PROFILER_DIR, filename);
             const { birthtime, size } = await fs.stat(fullPath);
-            return { createdOn: birthtime, size, filename, path: fullPath }
+            return { createdOn: birthtime, size, filename, path: fullPath };
         })
     );
 }

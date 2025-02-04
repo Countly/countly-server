@@ -175,7 +175,7 @@ function stopWithTimeout(type, fromTimeout = false) {
             return true;
 
         case "take-heap-snapshot":
-            validate(params, async () => {
+            validate(params, async() => {
                 try {
                     params.res.writeHead(200, {
                         "Content-Type": "plain/text; charset=utf-8",
