@@ -19,8 +19,8 @@ const db = common.db;
 const allTZOffsets = require("./constants/all-tz-offsets.json");
 const schedulableTriggerKinds = ["plain", "rec", "multi"];
 /**
- * 
- * @param {Message} message 
+ *
+ * @param {Message} message
  */
 async function scheduleMessage(message) {
     const triggers = message.triggers
@@ -79,7 +79,7 @@ async function scheduleMessage(message) {
     }
 }
 /**
- * 
+ *
  * @param {Date} date
  * @param {number} offset
  * @param {number} time
@@ -94,7 +94,7 @@ function tzOffsetAdjustedTime(date, offset, time) {
         .toDate();
 }
 /**
- * 
+ *
  * @param {RecurringTrigger} trigger
  * @param {Date=} after
  * @return {Date=}
@@ -107,7 +107,7 @@ function findNextMatchForRecurring(trigger, after = new Date) {
 
     /**
      * checks if the given date is exceeding trigger.end
-     * @param {Date} date 
+     * @param {Date} date
      * @returns {Boolean}
      */
     const exceeds = date => trigger.end
@@ -177,8 +177,8 @@ function findNextMatchForRecurring(trigger, after = new Date) {
     }
 }
 /**
- * 
- * @param {MultiTrigger} trigger 
+ *
+ * @param {MultiTrigger} trigger
  * @param {Date=} after
  * @return {Date=}
  */
@@ -222,7 +222,7 @@ async function createSchedule(appId, messageId, scheduledTo, timezoneAware = fal
 }
 
 /**
- * 
+ *
  * @param {MessageSchedule} messageSchedule
  * @returns {Promise<JobTicket[]>}
  */

@@ -33,7 +33,7 @@ const PLATFORM_CONFIGS = {
 };
 
 /**
- * 
+ *
  * @param {JobTicket} messageScheduleJob
  */
 async function sendMessagesToQueue(messageScheduleJob) {
@@ -49,7 +49,7 @@ async function sendMessagesToQueue(messageScheduleJob) {
         // do not continue
         return;
     }
-    
+
     const message = /** @type {Message} */(
         await db.collection("messages").findOne({
             _id: messageScheduleJob.messageId
@@ -136,8 +136,8 @@ async function sendMessagesToQueue(messageScheduleJob) {
 }
 
 /**
- * 
- * @param {PushTicket} push 
+ *
+ * @param {PushTicket} push
  */
 async function sendPushMessage(push) {
     if (push.platform === "a") {
@@ -159,8 +159,8 @@ module.exports = {
 }
 
 /**
- * 
- * @param {Message} message 
+ *
+ * @param {Message} message
  */
 function createTemplate(message) {
     const messageObj = new OldMessage(message);
@@ -200,14 +200,14 @@ function createTemplate(message) {
 }
 
 /**
- * 
- * @param {ObjectId} appId 
+ *
+ * @param {ObjectId} appId
  * @returns {Promise<{[key: string]: SomeCredential}>}
  */
 async function loadCreds(appId) {
     const app = await db.collection("apps").findOne({ _id: appId });
     const configuredCreds = app?.plugins?.push || {};
-    
+
     const creds = /** @type {{[key: string]: SomeCredential}} */({});
     for (let pKey in configuredCreds) {
         const credId = configuredCreds?.[pKey]?._id;

@@ -1,10 +1,12 @@
 /**
- * @typedef {import('../types/queue.ts').JobTicket} JobTicket
+ * @typedef {import('../types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('kafkajs').Producer} Producer
  * @typedef {import('kafkajs').Admin} Admin
- * @typedef {import('../types/queue.ts').PushTicket} PushTicket
- * @typedef {import('../types/queue.ts').PushTicketHandler} PushTicketHandler
- * @typedef {import('../types/queue.ts').JobTicketHandler} JobTicketHandler
+ * @typedef {import('../types/queue.ts').PushQueue} PushQueue
+ * @typedef {import('../types/queue.ts').PushEvent} PushTicket
+ * @typedef {import('../types/queue.ts').PushEventHandler} PushEventHandler
+ * @typedef {import('../types/queue.ts').ScheduleEventHandler} ScheduleEventHandler
+ * @typedef {import('../types/queue.ts').ResultEventHandler} ResultEventHandler
  */
 
 const { Kafka, KafkaJSProtocolError, Partitioners, logLevel } = require("kafkajs");
@@ -13,11 +15,13 @@ const { ObjectId } = require('mongodb');
 const PUSH_MESSAGES_TOPIC = "CLY_PUSH_MESSAGES";
 const JOB_SCHEDULES_TOPIC = "CLY_JOB_SCHEDULES";
 const JOB_EXECUTION_TOPIC = "CLY_JOB_EXECUTION";
+const MESSAGE_RESULTS_TOPIC = "CLY_MESSAGE_RESULTS";
 
 const ALL_TOPICS = [
     { name: PUSH_MESSAGES_TOPIC, partitions: 6 },
     { name: JOB_SCHEDULES_TOPIC, partitions: 2 },
     { name: JOB_EXECUTION_TOPIC, partitions: 3 },
+    { name: MESSAGE_RESULTS_TOPIC, partitions: 4 },
 ];
 
 const CONSUMER_GROUP_ID = "countly-consumer";
@@ -33,16 +37,13 @@ let _producer;
 
 /**
  * Connects to the kafka broker and creates the required topics
- * @param {PushTicketHandler} onPushMessage
- * @param {JobTicketHandler} onMessageSchedule
+ * @param {PushEventHandler} onPushMessage function to call when there's a PushTicket in the PUSH_MESSAGES_TOPIC topic
+ * @param {ScheduleEventHandler} onMessageSchedule function to call when there's a
+ * @param {ResultEventHandler} onMessageResults
  * @param {Boolean} isMaster
  * @returns {Promise<void>}
  */
-async function init(onPushMessage, onMessageSchedule, isMaster = false) {
-    if (!onPushMessage || !onMessageSchedule) {
-        throw new Error("PushMessage and MessageSchedule handlers are required");
-    }
-
+async function init(onPushMessage, onMessageSchedule, onMessageResults, isMaster = false) {
     const kafka = new Kafka({
         clientId: "test-producer",
         brokers: ["localhost:19092"],
@@ -69,7 +70,7 @@ async function init(onPushMessage, onMessageSchedule, isMaster = false) {
     await consumer.run({
         eachMessage: async({
             topic,
-            partition: _partition,
+            // partition: _partition,
             message: { value }
         }) => {
             try {
@@ -80,30 +81,24 @@ async function init(onPushMessage, onMessageSchedule, isMaster = false) {
 
                 switch (topic) {
                 case PUSH_MESSAGES_TOPIC:
-                    /** @type {PushTicket} */
-                    const push = payload;
-
                     // convert strings to ObjectId's
-                    push.appId = new ObjectId(push.appId);
-                    push.messageId = new ObjectId(push.messageId);
-                    push.messageScheduleId = new ObjectId(push.messageScheduleId);
-
-                    await onPushMessage(push);
+                    payload.appId = new ObjectId(payload.appId);
+                    payload.messageId = new ObjectId(payload.messageId);
+                    payload.messageScheduleId = new ObjectId(payload.messageScheduleId);
+                    await onPushMessage(payload);
                     break;
                 case JOB_EXECUTION_TOPIC:
-                    /** @type {JobTicket} */
-                    const job = payload;
-
                     // convert strings to ObjectId's
-                    job.appId = new ObjectId(job.appId);
-                    job.messageId = new ObjectId(job.messageId);
-                    job.messageScheduleId = new ObjectId(job.messageScheduleId);
-
-                    await onMessageSchedule(job);
+                    payload.appId = new ObjectId(payload.appId);
+                    payload.messageId = new ObjectId(payload.messageId);
+                    payload.messageScheduleId = new ObjectId(payload.messageScheduleId);
+                    await onMessageSchedule(payload);
+                    break;
+                case MESSAGE_RESULTS_TOPIC:
                     break;
                 }
             }
-            catch(err) {
+            catch (err) {
                 console.error(err);
                 // TODO: log the error
             }
@@ -112,21 +107,21 @@ async function init(onPushMessage, onMessageSchedule, isMaster = false) {
 }
 
 /**
- * 
- * @param {JobTicket} messageScheduleJob message schedule to create job for
+ *
+ * @param {ScheduleEvent} scheduleEvent message schedule to create job for
  */
-async function sendJobTicket(messageScheduleJob) {
+async function sendScheduleEvent(scheduleEvent) {
     if (!_producer) {
         throw new Error("Producer is not initialized");
     }
-    const scheduleTime = messageScheduleJob.scheduledTo.getTime();
+    const scheduleTime = scheduleEvent.scheduledTo.getTime();
 
     await _producer.send({
         topic: JOB_SCHEDULES_TOPIC,
         messages: [
             {
                 timestamp: String(Math.round(Date.now() / 1000)),
-                value: JSON.stringify(messageScheduleJob),
+                value: JSON.stringify(scheduleEvent),
                 headers: {
                     "scheduler-epoch": String(Math.round(scheduleTime / 1000)),
                     "scheduler-target-topic": JOB_EXECUTION_TOPIC,
@@ -137,17 +132,17 @@ async function sendJobTicket(messageScheduleJob) {
                 // to scheduler partitions in a round robin fashion when there's no key.
                 // But here, if we don't pass the "key", scheduler consumer never
                 // receives the ticket.
-                key: String(Math.random()), 
+                key: String(Math.random()),
             }
         ]
     });
 }
 
 /**
- * 
+ *
  * @param {PushTicket} push
  */
-async function sendPushTicket(push) {
+async function sendPushEvent(push) {
     if (!_producer) {
         throw new Error("Producer is not initialized");
     }
@@ -159,11 +154,11 @@ async function sendPushTicket(push) {
     });
 }
 
-module.exports = {
-    sendPushTicket,
-    sendJobTicket,
+module.exports = /** @type {PushQueue} */({
+    sendPushEvent,
+    sendScheduleEvent,
     init
-};
+});
 
 async function createTopics() {
     if (!_admin) {

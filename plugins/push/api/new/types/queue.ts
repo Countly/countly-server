@@ -2,20 +2,20 @@ import { ObjectId } from "mongodb";
 import { SomeCredential } from "./credentials";
 import { ProxyConfiguration } from "./proxy";
 
-export interface JobTicket {
+export interface ScheduleEvent {
     appId: ObjectId;
     messageId: ObjectId;
-    messageScheduleId: ObjectId;
+    scheduleId: ObjectId;
     scheduledTo: Date;
     startedAt?: Date;
     finishedAt?: Date;
     timezone?: string;
 }
 
-export interface PushTicket {
+export interface PushEvent {
     appId: ObjectId;
     messageId: ObjectId;
-    messageScheduleId: ObjectId;
+    scheduleId: ObjectId;
     token: string;
     message: any;
     platform: string;
@@ -23,5 +23,23 @@ export interface PushTicket {
     proxy?: ProxyConfiguration;
 }
 
-export type PushTicketHandler = (push: PushTicket) => Promise<void>;
-export type JobTicketHandler = (job: JobTicket) => Promise<void>;
+export interface ResultEvent {
+    appId: ObjectId;
+    messageId: ObjectId;
+    scheduleId: ObjectId;
+}
+
+export type PushEventHandler = (push: PushEvent) => Promise<void>;
+export type ScheduleEventHandler = (schedule: ScheduleEvent) => Promise<void>;
+export type ResultEventHandler = (results: ResultEvent[]) => Promise<void>;
+
+export interface PushQueue {
+    init(
+        onPushMessage: PushEventHandler,
+        onMessageSchedule: ScheduleEventHandler,
+        onMessageResults: ResultEventHandler,
+        isMaster: Boolean,
+    ): Promise<void>;
+    sendScheduleEvent(scheduleEvent: ScheduleEvent): Promise<void>;
+    sendPushEvent(pushEvent: PushEvent): Promise<void>;
+}

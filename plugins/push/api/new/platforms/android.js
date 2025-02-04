@@ -10,8 +10,7 @@ const { buildProxyUrl } = require("../lib/utils.js");
 module.exports = { send }
 
 /**
- * 
- * @param {import("../sending").PushTicket} push 
+ * @param {import("../sending").PushTicket} push
  * @returns {Promise<FCMResponse>}
  */
 async function send(push) {
@@ -49,7 +48,7 @@ async function send(push) {
         token: push.token,
         ...push.message
     });
-    
+
     console.log("FCM messageId", messageId);
     return { messageId }
 }

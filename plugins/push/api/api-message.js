@@ -9,11 +9,11 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
 
 const countlyFetch = require("../../../api/parts/data/fetch.js");
 
-const { scheduleMessage } = require("./new/scheduling.js");
+const { scheduleMessage } = require("./new/scheduler.js");
 
 /**
  * Validate data & construct message out of it, throw in case of error
- * 
+ *
  * @param {object} args plain object to construct Message from
  * @param {boolean} draft true if we need to skip checking data for validity
  * @returns {PostMessageOptions} Message instance in case validation passed, array of error messages otherwise
@@ -149,9 +149,9 @@ async function validate(args, draft = false) {
 
 /**
  * Send push notification to test users specified in application plugin configuration
- * 
+ *
  * @param {object} params params object
- * 
+ *
  * @api {POST} i/push/message/test Message / test
  * @apiName message test
  * @apiDescription Send push notification to test users specified in application plugin configuration
@@ -256,9 +256,9 @@ module.exports.test = async params => {
 
 /**
  * Create push notification
- * 
+ *
  * @param {object} params params object
- * 
+ *
  * @api {POST} i/push/message/create Message / create
  * @apiName message create
  * @apiDescription Create push notification.
@@ -294,7 +294,7 @@ module.exports.create = async params => {
         msg.status = Status.Created;
         await msg.save();
         if (!demo) {
-            scheduleMessage(msg);
+            scheduleMessage(common.db, msg);
             // await msg.schedule(log, params);
         }
         log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
@@ -309,9 +309,9 @@ module.exports.create = async params => {
 
 /**
  * Update push notification
- * 
+ *
  * @param {object} params params object
- * 
+ *
  * @api {POST} i/push/message/update Message / update
  * @apiName message update
  * @apiDescription Update push notification
@@ -384,9 +384,9 @@ module.exports.update = async params => {
 
 /**
  * Remove push notification
- * 
+ *
  * @param {object} params params object
- * 
+ *
  * @api {POST} i/push/message/remove Message / remove
  * @apiName message remove
  * @apiDescription Remove message by marking it as deleted (it stays in the database for consistency)
@@ -442,9 +442,9 @@ module.exports.remove = async params => {
 
 /**
  * Toggle automated message
- * 
+ *
  * @param {object} params params object
- * 
+ *
  * @api {POST} i/push/message/toggle Message / API or Automated / toggle
  * @apiName message toggle
  * @apiDescription Stop active or start inactive API or automated message
@@ -526,9 +526,9 @@ module.exports.toggle = async params => {
 
 /**
  * Estimate message audience
- * 
+ *
  * @param {object} params params object
- * 
+ *
  * @api {POST} o/push/message/estimate Message / estimate audience
  * @apiName message estimate
  * @apiDescription Estimate message audience
@@ -541,10 +541,10 @@ module.exports.toggle = async params => {
  * @apiBody {String} [filter.drill] Drill plugin filter in JSON format
  * @apiBody {ObjectID[]} [filter.geos] Array of geo IDs
  * @apiBody {String[]} [filter.cohorts] Array of cohort IDs
- * 
+ *
  * @apiSuccess {Number} count Estimated number of push notifications sent with the app / platform / filter specified
  * @apiSuccess {Object} locales Locale distribution of push notifications, a map of ISO language code to number of recipients
- * 
+ *
  * @apiUse PushValidationError
  * @apiError NoApp The app is not found
  * @apiErrorExample {json} NoApp
@@ -625,20 +625,20 @@ module.exports.estimate = async params => {
 
 /**
  * Get mime information of media URL
- * 
+ *
  * @param {object} params params object
- * 
+ *
  * @api {GET} o/push/message/mime Message / attachment MIME
  * @apiName message mime
  * @apiDescription Get MIME information of the URL specified by sending HEAD request and then GET if HEAD doesn't work. Respects proxy setting, follows redirects and returns end URL along with content type & length.
  * @apiGroup Push Notifications
  *
  * @apiQuery {String} url URL to check
- * 
+ *
  * @apiSuccess {String} media End URL of the resource
  * @apiSuccess {String} mediaMime MIME type of the resource
  * @apiSuccess {Number} mediaSize Size of the resource in bytes
- * 
+ *
  * @apiUse PushValidationError
  */
 module.exports.mime = async params => {
@@ -692,18 +692,18 @@ module.exports.mime = async params => {
 
 /**
  * Get one message
- * 
+ *
  * @param {object} params params object
- * 
+ *
  * @api {GET} o/push/message/GET Message / GET
  * @apiName message
  * @apiDescription Get message by ID
  * @apiGroup Push Notifications
  *
  * @apiQuery {ObjectID} _id Message ID
- * 
+ *
  * @apiUse PushMessage
- * 
+ *
  * @apiUse PushValidationError
  * @apiError NotFound Message Not Found
  * @apiErrorExample {json} NotFound
@@ -737,15 +737,15 @@ module.exports.one = async params => {
 /**
  * Get periodic message stats
  * @param {object} params params object
- * 
+ *
  * @api {GET} o/push/message/stats Get periodic message stats
  * @apiName message-stats
  * @apiDescription Get sent and actioned event counts for a single message
  * @apiGroup Push Notifications
- * 
+ *
  * @apiQuery {ObjectID} _id Message ID
  * @apiQuery {String} period Period of the stats. Possible values are: 30days, 24weeks, 12months
- * 
+ *
  * @apiSuccess {Object} Event type indexed periodical event counts
  * @apiSuccessExample {json} Success-Response
  *      HTTP/1.1 200 Success
@@ -844,10 +844,10 @@ module.exports.periodicStats = async params => {
 
 /**
  * Get notifications sent to a particular user
- * 
+ *
  * @param {object} params params
  * @returns {Promise} resolves to true
- * 
+ *
  * @api {GET} o/push/user User notifications
  * @apiName user
  * @apiDescription Get notifications sent to a particular user.
@@ -858,10 +858,10 @@ module.exports.periodicStats = async params => {
  * @apiQuery {Boolean} messages Whether to return Message objects as well
  * @apiQuery {String} [id] User ID (uid)
  * @apiQuery {String} [did] User device ID (did)
- * 
+ *
  * @apiSuccess {Object} [notifications] Map of notification ID to array of epochs this message was sent to the user
  * @apiSuccess {Object[]} [messages] Array of messages, returned if "messages" param is set to "true"
- * 
+ *
  * @apiDeprecated use now (#Push_Notifications:notifications)
  * @apiUse PushValidationError
  * @apiError NotFound Message Not Found
@@ -929,10 +929,10 @@ module.exports.user = async params => {
 
 /**
  * Get notifications sent to a particular user
- * 
+ *
  * @param {object} params params
  * @returns {Promise} resolves to true
- * 
+ *
  * @api {GET} o/push/notifications Sent notifications
  * @apiName notifications
  * @apiDescription Get notifications sent to a particular user.
@@ -946,15 +946,15 @@ module.exports.user = async params => {
  * @apiQuery {String} platform Platform for notifications to return
  * @apiQuery {Integer} skip Pagination skip
  * @apiQuery {Integer} limit Pagination limit, must be in 1..50 range
- * 
- * @apiSuccess {Object[]} notifications Array of simplified notifications objects with _id, title, message and date properties representing a notification sent to a user at a particular date. 
+ *
+ * @apiSuccess {Object[]} notifications Array of simplified notifications objects with _id, title, message and date properties representing a notification sent to a user at a particular date.
  * Please note that returned title & message might not be accurate for cases when notification content was overridden in a message/push call as Countly doesn't keep this data after sending notifications. Default title & message will be returned in such cases.
  * Also note that current user profile properties are used for message content personalization when it's set.
  * @apiSuccess {String} notifications._id Noficiation message id
  * @apiSuccess {String} notifications.date ISO date when notification was sent to this user, +- few seconds
  * @apiSuccess {String} [notifications.title] Noficiation title string, if any
  * @apiSuccess {String} [notifications.message] Noficiation message string, if any
- * 
+ *
  * @apiUse PushValidationError
  * @apiError NotFound Message Not Found
  * @apiErrorExample {json} NotFound
@@ -980,7 +980,7 @@ module.exports.user = async params => {
  *		        }
  *          ]
  *      }
- * 
+ *
  * @apiSuccessExample {json} Success-Response-full=true
  *      HTTP/1.1 200 Success
  *      {
@@ -1136,10 +1136,10 @@ module.exports.notificationsForUser = async params => {
 };
 /**
  * Get messages
- * 
+ *
  * @param {object} params params
  * @returns {Promise} resolves to true
- * 
+ *
  * @api {GET} o/push/message/all Message / find
  * @apiName message all
  * @apiDescription Get messages
@@ -1156,13 +1156,13 @@ module.exports.notificationsForUser = async params => {
  * @apiQuery {Number} [iDisplayLength] Return this much messages at most
  * @apiQuery {String} [iSortCol_0] Sort by this column
  * @apiQuery {String} [sSortDir_0] Direction of sorting
- * @apiQuery {String} [sEcho] Echo paramater - value supplied is returned 
- * 
+ * @apiQuery {String} [sEcho] Echo paramater - value supplied is returned
+ *
  * @apiSuccess {String} sEcho Echo value
  * @apiSuccess {Number} iTotalRecords Total number of messages
  * @apiSuccess {Number} iTotalDisplayRecords Number of messages returned
  * @apiSuccess {Object[]} aaData Array of message objects
- * 
+ *
  * @apiUse PushValidationError
  */
 module.exports.all = async params => {
@@ -1353,7 +1353,7 @@ function periodicDateRange(start, end, timezone, period = "day") {
 
 /**
  * Generate demo data for populator
- * 
+ *
  * @param {Message} msg message instance
  * @param {int} demo demo type
  */
@@ -1542,9 +1542,9 @@ async function generateDemoData(msg, demo) {
     });
 }
 
-/** 
+/**
  * Get MIME of the file behind url by sending a HEAD request
- * 
+ *
  * @param {string} url - url to get info from
  * @param {string} method - http method to use
  * @returns {Promise} - {status, headers} in case of success, PushError otherwise
