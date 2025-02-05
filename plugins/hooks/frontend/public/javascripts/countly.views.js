@@ -402,6 +402,12 @@
                     {value: "/systemlogs", label: "/systemlogs"},
                     {value: "/crashes/new", label: "/crashes/new"},
                     {value: "/hooks/trigger", label: "/hooks/trigger"},
+                    {value: "/i/remote-config/add-parameter", label: "/i/remote-config/add-parameter"},
+                    {value: "/i/remote-config/update-parameter", label: "/i/remote-config/update-parameter"},
+                    {value: "/i/remote-config/remove-parameter", label: "/i/remote-config/remove-parameter"},
+                    {value: "/i/remote-config/add-condition", label: "/i/remote-config/add-condition"},
+                    {value: "/i/remote-config/update-condition", label: "/i/remote-config/update-condition"},
+                    {value: "/i/remote-config/remove-condition", label: "/i/remote-config/remove-condition"},
                     {value: "/alerts/trigger", label: "/alerts/trigger"}
                 ],
                 cohortOptions: [],

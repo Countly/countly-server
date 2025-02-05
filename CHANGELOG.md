@@ -1,7 +1,8 @@
 ## Version 24.05.22
 Features:
 - [core] Add self tracking capability
-  
+- [hooks] Added remote config changes to internal actions
+
 Fixes:
 - [push] Using apns-id header as message result in debug mode
 - [server-stats] Fix data point calculation in job
