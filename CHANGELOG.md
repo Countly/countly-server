@@ -6,6 +6,7 @@ Features:
 
 Enterprise Features:
 - [journey_engine] Editing/Deleting/Duplication of blocks and version management
+- [cohorts] [funnels] [ai-assistants] Add cohorts and funnels assistant
 
 ## Version 25.03.3
 Fixes:
