@@ -1,7 +1,12 @@
+## Version xx.xx.xx
+Features:
+- [system-utility] New endpoint: /take-heap-snapshot.
+- [system-utility] Using nodejs fs to write profiler files instead of gridfs.
+
 ## Version 24.05.22
 Features:
 - [core] Add self tracking capability
-  
+
 Fixes:
 - [push] Using apns-id header as message result in debug mode
 - [server-stats] Fix data point calculation in job
