@@ -30,6 +30,7 @@ Enterprise Features:
 - [remote-config] Moving enable/disable functionality to the dropdown
 - [surveys] "Select one" text in the widget can be edited now
 - [surveys] Removed unnecessary limitation with using cohorts for targeting
+- [cohorts] [ai-assistants] Add cohort assistant
 
 Dependencies:
 - Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
