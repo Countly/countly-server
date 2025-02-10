@@ -77,15 +77,15 @@
                     },
                     features: {
                         label: "SDK features",
-                        list: ["crt", "vt","st","cet","ecz","cr","log"]
+                        list: ["crt", "vt", "st", "cet", "ecz", "cr", "log"]
                     },
                     settings: {
                         label: "SDK settings",
-                        list: ["sui","eqs","rqs","ebs","czi","dort"]
+                        list: ["sui", "eqs", "rqs", "ebs", "czi", "dort"]
                     },
                     limits: {
                         label: "SDK Limits",
-                        list: ["lkl","lvs","lsv","lbc"]
+                        list: ["lkl", "lvs", "lsv", "lbc"]
                     },
                 },
                 configs: {
