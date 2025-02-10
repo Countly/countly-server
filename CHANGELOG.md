@@ -9,7 +9,6 @@ Fixes:
 - [server-stats] Fix data point calculation in job
 - [TopEventsJob] preserver previous state if overwriting fails
 - [ui] scroll top on step changes in drawers
-- [data-manager] Modifying existing values when segment values want to be updated in the Data Manager
 
 Enterprise fixes:
 - [drill] Encoding url component before changing history state
