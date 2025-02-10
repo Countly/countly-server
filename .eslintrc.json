@@ -252,6 +252,28 @@
             }
         },
         {
+            "files": [ "plugins/content/api/positioning/**/*.js" ],
+            "parserOptions": {
+                "ecmaVersion": 2023,
+                "sourceType": "module"
+            },
+            "env": {
+                "node": true,
+                "es2023": true
+            }
+        },
+        {
+            "files": [ "plugins/content/api/positioning/**/*.cjs" ],
+            "parserOptions": {
+                "ecmaVersion": 2023,
+                "sourceType": "commonjs"
+            },
+            "env": {
+                "node": true,
+                "es2023": true
+            }
+        },
+        {
             "files": [
                 "api/**/*.js",
                 "frontend/express/*.js",
