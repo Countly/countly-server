@@ -6,6 +6,9 @@ Features:
 Fixes:
 - [drill] Fix for UI error when push plugin is not enabled
 
+Enterprise fixes:
+- [drill] Fixed empty events list in drill section
+ 
 ## Version 24.05.22
 Features:
 - [core] Add self tracking capability
