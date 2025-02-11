@@ -1,5 +1,6 @@
-## Version xx.xx.xx
+## Version 24.05.XX
 Features:
+- [hooks] Added remote config changes to internal actions
 - [system-utility] New endpoint: /take-heap-snapshot.
 - [system-utility] Using nodejs fs to write profiler files instead of gridfs.
 
