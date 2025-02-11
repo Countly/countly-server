@@ -1,3 +1,7 @@
+## Version 24.10.X
+Fixes:
+- [data-manager] Modifying existing values when segment values want to be updated in the Data Manager
+
 ## Version 24.10.6
   
 Fixes:
