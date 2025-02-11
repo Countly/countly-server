@@ -3,6 +3,9 @@ Features:
 - [system-utility] New endpoint: /take-heap-snapshot.
 - [system-utility] Using nodejs fs to write profiler files instead of gridfs.
 
+Enterprise fixes:
+- [drill] Fixed empty events list in drill section
+ 
 ## Version 24.05.22
 Features:
 - [core] Add self tracking capability
