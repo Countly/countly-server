@@ -1,4 +1,4 @@
-/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon CountlyHelpers*/
+/* global Vue, CV, $, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon CountlyHelpers*/
 
 (function(countlyVue) {
 
