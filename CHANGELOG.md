@@ -1,11 +1,68 @@
-## Version 24.10.x
+## Version 24.10.X
+Fixes:
+- [data-manager] Modifying existing values when segment values want to be updated in the Data Manager
+
+## Version 24.10.6
+  
+Fixes:
+- [push] Using apns-id header as message result in debug mode
+- [server-stats] Fix data point calculation in job
+- [TopEventsJob] preserver previous state if overwriting fails
+- [ui] scroll top on step changes in drawers
+
+Enterprise fixes:
+- [drill] Encoding url component before changing history state
+- [drill] Fixed drill meta regeneration
+- [drill] [license] Update license loader to enable supplying db client
+- [users] Format data points displayed in user sidebar
+- [cohorts] Unescape drill texts in cohort component
+   
+Dependencies:
+- Bump fs-extra from 11.2.0 to 11.3.0
+- Bump nodemailer from 6.9.16 to 6.10.0
+
+Enterprise Dependencies:
+- Bump nanoid in /plugins/cognito from 2.1.11 to 3.3.8
+- Bump shortid in /plugins/cognito from 2.2.16 to 2.2.17
+
+## Version 24.10.5
+Fixes:
+- [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
+- [core] Fixed a bug that was causing drill to crash when there's a percentage symbol in the event name
+- [gridfs] fixes for moving to Promises
+- [reports] Fixes report generation failure due to SSL error
+- [surveys] "Select one" text in the widget can be edited now
+- [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
 
 Dependencies:
-- Bump puppeteer from 23.8.0 to 23.9.0
-- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
+- Bump countly-sdk-web from 24.11.2 to 24.11.4
+- Bump express-rate-limit from 7.4.1 to 7.5.0
+- Bump puppeteer from 23.10.4 to 23.11.1
+- Bump sass from 1.81.0 to 1.83.4
+
+## Version 24.10.4
+Fixes:
+- [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
+- [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
+
+Security:
+- [cohorts] Prevent query injection on cohort creation
+
+Dependencies:
+- Bump countly-sdk-nodejs from 22.6.0 to 24.10.0
 - Bump countly-sdk-web from 24.4.1 to 24.11.0
-- Bump tslib from 2.7.0 to 2.8.1
+- Bump express from 4.21.1 to 4.21.2
 - Bump form-data from 4.0.0 to 4.0.1
+- Bump jimp from 0.22.12 to 1.6.0
+- Bump jsdoc from 4.0.3 to 4.0.4
+- Bump mocha from 10.2.0 to 10.8.2
+- Bump mongodb from 4.9.1 to 4.17.2
+- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump puppeteer from 23.8.0 to 23.9.0
+- Bump tslib from 2.7.0 to 2.8.1
+- Bump express from 4.21.1 to 4.21.2
+- Bump mocha from 10.2.0 to 10.8.2
 
 ## Version 24.10.3
 Fixes:

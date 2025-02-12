@@ -3217,7 +3217,7 @@ const processBulkRequest = (i, requests, params) => {
     const appKey = params.qstring.app_key;
     if (i === requests.length) {
         common.unblockResponses(params);
-        if (params.qstring.safe_api_response || plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+        if ((params.qstring.safe_api_response || plugins.getConfig("api", params.app && params.app.plugins, true).safe) && !params.res.finished) {
             common.returnMessage(params, 200, 'Success');
         }
         return;
@@ -3244,7 +3244,8 @@ const processBulkRequest = (i, requests, params) => {
         'req': params.req,
         'promises': [],
         'bulk': true,
-        'populator': params.qstring.populator
+        'populator': params.qstring.populator,
+        'blockResponses': true
     };
 
     tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";

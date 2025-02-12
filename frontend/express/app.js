@@ -116,8 +116,8 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    google_maps_api_key: "",
     offline_mode: false,
+    self_tracking: "",
 });
 
 if (!plugins.isPluginEnabled('tracker')) {
@@ -137,7 +137,6 @@ plugins.setUserConfigs("frontend", {
     session_timeout: false,
     use_google: false,
     code: false,
-    google_maps_api_key: ""
 });
 
 plugins.setConfigs("security", {
@@ -151,8 +150,8 @@ plugins.setConfigs("security", {
     password_rotation: 3,
     password_autocomplete: true,
     robotstxt: "User-agent: *\nDisallow: /",
-    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
+    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
     dashboard_rate_limit_window: 60,
     dashboard_rate_limit_requests: 500
 });
@@ -1610,7 +1609,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             req.body.app_id = req.body.app_image_id;
         }
         var params = paramsGenerator({req, res});
-        validateCreate(params, 'global_upload', function() {
+        validateCreate(params, 'global_upload', async function() {
             if (!req.session.uid && !req.body.app_image_id) {
                 res.end();
                 return false;
@@ -1634,25 +1633,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             }
             plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
             try {
-                jimp.read(tmp_path, function(err, icon) {
-                    if (err) {
-                        console.log(err, err.stack);
-                        fs.unlink(tmp_path, function() {});
-                        res.status(400).send(false);
-                        return true;
-                    }
-                    icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                        countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
-                            fs.unlink(tmp_path, function() {});
-                            res.send("appimages/" + req.body.app_image_id + ".png");
-                            countlyDb.collection('apps').updateOne({_id: countlyDb.ObjectID(req.body.app_image_id)}, {'$set': {'has_image': true}}, function() {});
-                        });
-                    }); // save
+                const icon = await jimp.Jimp.read(tmp_path);
+                const buffer = await icon.cover({h: 72, w: 72}).getBuffer(jimp.JimpMime.png);
+                countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
+                    res.send("appimages/" + req.body.app_image_id + ".png");
+                    countlyDb.collection('apps').updateOne({_id: countlyDb.ObjectID(req.body.app_image_id)}, {'$set': {'has_image': true}}, function() {});
                 });
             }
             catch (e) {
-                console.log(e.stack);
+                console.log("Problem uploading app icon", e);
+                res.status(400).send(false);
             }
+            fs.unlink(tmp_path, function() {});
         });
     });
 
@@ -1694,23 +1686,19 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             }
             plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
             try {
-                jimp.read(tmp_path, function(err, icon) {
-                    if (err) {
-                        console.log(err, err.stack);
-                    }
-                    icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                        countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
-                            fs.unlink(tmp_path, function() {});
-                            countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.body.member_image_id + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
-                                res.send("memberimages/" + req.body.member_image_id + ".png");
-                            });
-                        });
-                    }); // save
+                const icon = await jimp.Jimp.read(tmp_path);
+                const buffer = await icon.cover({h: 72, w: 72}).getBuffer(jimp.JimpMime.png);
+                countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
+                    countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.body.member_image_id + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
+                        res.send("memberimages/" + req.body.member_image_id + ".png");
+                    });
                 });
             }
             catch (e) {
-                console.log(e.stack);
+                console.log("Problem uploading member icon", e);
+                res.status(400).send(false);
             }
+            fs.unlink(tmp_path, function() {});
         });
     });
 

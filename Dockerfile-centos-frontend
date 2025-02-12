@@ -32,7 +32,7 @@ RUN yum update -y
 RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.rpm" && \
         rpm -i /tmp/tini.rpm && \
         \
-        curl -sL https://rpm.nodesource.com/setup_18.x | bash - && \
+        curl -sL https://rpm.nodesource.com/setup_20.x | bash - && \
         yum install -y nodejs python3.8 python2 python38-libs python38-devel python38-pip nss libdrm libgbm cyrus-sasl* && \
         ln -s /usr/bin/node /usr/bin/nodejs && \
         unlink /usr/bin/python3 && \
@@ -52,6 +52,7 @@ RUN curl -s -L -o /tmp/tini.rpm "https://github.com/krallin/tini/releases/downlo
 	cp -n ./frontend/express/public/javascripts/countly/countly.config.sample.js ./frontend/express/public/javascripts/countly/countly.config.js && \
 	cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
 	cp -n ./api/config.sample.js ./api/config.js && \
+	HOME=/tmp npm install -g npm@latest && \
 	HOME=/tmp npm install --unsafe-perm=true --allow-root && \
 	HOME=/tmp npm install argon2 --build-from-source --unsafe-perm=true --allow-root && \
 	./bin/docker/preinstall.sh && \
