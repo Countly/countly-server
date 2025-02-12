@@ -534,6 +534,13 @@
                                 if (res.aaData.length) {
                                     self.fields = Object.keys(map);
                                 }
+                                if (res.removed && typeof res.removed === 'object' && Object.keys(res.removed).length > 0) {
+                                    self.removed = CV.i18n('dbviewer.removed-warning') + Object.keys(res.removed).join(", ");
+
+                                }
+                                else {
+                                    self.removed = "";
+                                }
                             }
                             if (err) {
                                 var message = CV.i18n('dbviewer.server-error');
@@ -559,7 +566,7 @@
                     }
                 },
                 updatePath: function(query) {
-                    window.location.hash = "#/manage/db/aggregate/" + this.db + "/" + this.collection + "/" + query;
+                    app.navigate("#/manage/db/aggregate/" + this.db + "/" + this.collection + "/" + query);
                 },
                 getCollectionName: function() {
                     var self = this;
