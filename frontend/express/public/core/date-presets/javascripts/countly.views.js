@@ -1,4 +1,4 @@
-/*global Vue app, countlyVue, CV, countlyGlobal, groupsModel, _, CountlyHelpers, countlyPresets*/
+/*global Vue app, countlyVue, CV, countlyGlobal, groupsModel, _, CountlyHelpers, countlyPresets, countlyAuth*/
 
 (function() {
 
@@ -459,11 +459,13 @@
         });
     };
 
-    app.route("/manage/date-presets", "date-presets", function() {
-        const PresetManagementView = getManagementView();
-        this.renderWhenReady(PresetManagementView);
-    });
+    if (countlyAuth.validateCreate('core')) {
+        app.route("/manage/date-presets", "date-presets", function() {
+            const PresetManagementView = getManagementView();
+            this.renderWhenReady(PresetManagementView);
+        });
 
-    app.addMenu("management", {code: "presets", permission: "core", url: "#/manage/date-presets", text: "sidebar.management.presets", priority: 30});
+        app.addMenu("management", {code: "presets", permission: "core", url: "#/manage/date-presets", text: "sidebar.management.presets", priority: 30});
+    }
 
 })();

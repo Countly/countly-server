@@ -4320,7 +4320,6 @@
     }		
 }
 
-
 .cly-vue-content-builder {
     position: absolute;
     z-index: 2001;
@@ -4896,5 +4895,14 @@
     &__device {
         cursor: pointer;
         border-radius: 8px;
+    }
+}
+
+.cly-event-select {
+    &__loading {
+        display: flex;
+        margin-top:0;
+        position: unset;
+        top:0;
     }
 }
