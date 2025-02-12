@@ -53,8 +53,21 @@ Dependencies:
 - Bump sass from 1.81.0 to 1.83.3
 - Bump tslib from 2.7.0 to 2.8.1
 
+## Version 24.10.7
+Fixes:
+- [data-manager] Modifying existing values when segment values want to be updated in the Data Manager
+- [drill] Fix for UI error when push plugin is not enabled
+
+Enterprise fixes:
+- [drill] Fixed empty events list in drill section
+
+Features:
+- [core] Add self tracking capability
+- [hooks] Added remote config changes to internal actions
+- [system-utility] New endpoint: /take-heap-snapshot.
+- [system-utility] Using nodejs fs to write profiler files instead of gridfs.
+
 ## Version 24.10.6
-  
 Fixes:
 - [push] Using apns-id header as message result in debug mode
 - [server-stats] Fix data point calculation in job
