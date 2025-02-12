@@ -1,11 +1,39 @@
-## Version 24.05.xx
+## Version 24.05.XX
+Features:
+- [hooks] Added remote config changes to internal actions
+- [system-utility] New endpoint: /take-heap-snapshot.
+- [system-utility] Using nodejs fs to write profiler files instead of gridfs.
+Fixes:
+- [drill] Fix for UI error when push plugin is not enabled
 
+Enterprise fixes:
+- [drill] Fixed empty events list in drill section
+ 
+## Version 24.05.22
+Features:
+- [core] Add self tracking capability
+
+Fixes:
+- [push] Using apns-id header as message result in debug mode
+- [server-stats] Fix data point calculation in job
+- [TopEventsJob] preserver previous state if overwriting fails
+- [ui] scroll top on step changes in drawers
+
+Enterprise fixes:
+- [drill] Encoding url component before changing history state
+- [drill] [license] Update license loader to enable supplying db client
+- [users] Format data points displayed in user sidebar
+- [cohorts] Unescape drill texts in cohort component
+   
 Dependencies:
 - Bump fs-extra from 11.2.0 to 11.3.0
 - Bump nodemailer from 6.9.16 to 6.10.0
 
-## Version 24.05.21
+Enterprise Dependencies:
+- Bump nanoid in /plugins/cognito from 2.1.11 to 3.3.8
+- Bump shortid in /plugins/cognito from 2.2.16 to 2.2.17
 
+## Version 24.05.21
 Fixes:
 - [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
 - [core] Fixed a bug that was causing drill to crash when there's a percentage symbol in the event name
