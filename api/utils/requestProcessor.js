@@ -2140,7 +2140,7 @@ const processRequest = (params) => {
                                 if (!params.member.global_admin && params.qstring.collection === "drill_events" || params.qstring.collection === "events_data") {
                                     var base_filter = getBaseAppFilter(params.member, params.qstring.db, params.qstring.collection);
                                     if (base_filter && Object.keys(base_filter).length > 0) {
-                                        params.qstring.query =  params.qstring.query || {};
+                                        params.qstring.query = params.qstring.query || {};
                                         for (var key in base_filter) {
                                             if (params.qstring.query[key]) {
                                                 params.qstring.query.$and = params.qstring.query.$and || [];
