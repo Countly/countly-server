@@ -1,8 +1,9 @@
-## Version 24.05.XX
+## Version 24.05.23
 Features:
 - [hooks] Added remote config changes to internal actions
 - [system-utility] New endpoint: /take-heap-snapshot.
 - [system-utility] Using nodejs fs to write profiler files instead of gridfs.
+
 Fixes:
 - [drill] Fix for UI error when push plugin is not enabled
 
