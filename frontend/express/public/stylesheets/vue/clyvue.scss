@@ -4241,3 +4241,12 @@
         }
     }		
 }
+
+.cly-event-select {
+    &__loading {
+        display: flex;
+        margin-top:0;
+        position: unset;
+        top:0;
+    }
+}

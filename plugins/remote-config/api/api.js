@@ -440,6 +440,11 @@ plugins.setConfigs("remote-config", {
                 }
                 return common.returnMessage(params, 500, message);
             }
+
+            plugins.dispatch("/i/remote-config/add-parameter", {
+                params: parameter
+            });
+
             if (params.internal) {
                 return true;
             }
@@ -967,6 +972,10 @@ plugins.setConfigs("remote-config", {
                 return common.returnMessage(params, 500, message);
             }
 
+            plugins.dispatch("/i/remote-config/update-parameter", {
+                params: parameter
+            });
+
             return common.returnMessage(params, 200);
         });
     }
@@ -1089,6 +1098,9 @@ plugins.setConfigs("remote-config", {
                 common.outDb.collection(collectionName).remove({_id: common.outDb.ObjectID(parameterId)}, function(removeErr) {
                     if (!removeErr) {
                         plugins.dispatch("/systemlogs", {params: params, action: "rc_parameter_removed", data: parameter});
+                        plugins.dispatch("/i/remote-config/remove-parameter", {
+                            params: parameter
+                        });
                         return common.returnMessage(params, 200, 'Success');
                     }
 
@@ -1175,6 +1187,9 @@ plugins.setConfigs("remote-config", {
             }
 
             var conditionId = result && result[1] || null;
+            plugins.dispatch("/i/remote-config/add-condition", {
+                params: condition
+            });
             if (params.internal) {
                 return conditionId;
             }
@@ -1353,6 +1368,10 @@ plugins.setConfigs("remote-config", {
                 return common.returnMessage(params, 500, message);
             }
 
+            plugins.dispatch("/i/remote-config/update-condition", {
+                params: condition
+            });
+
             return common.returnMessage(params, 200);
         });
 
@@ -1396,6 +1415,13 @@ plugins.setConfigs("remote-config", {
 
         async.parallel(asyncTasks, function(err) {
             if (!err) {
+                plugins.dispatch("/i/remote-config/remove-condition", {
+                    params: {
+                        conditionId: conditionId,
+                        appId: appId,
+                        ts: Date.now()
+                    }
+                });
                 return common.returnMessage(params, 200, 'Success');
             }
 
