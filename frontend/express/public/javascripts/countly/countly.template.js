@@ -1159,7 +1159,7 @@ var AppRouter = Backbone.Router.extend({
             }
         });
 
-        if (countlyAuth.validateRead('core')) {
+        if (countlyAuth.validateCreate('core')) {
             self.addSubMenu("management", {code: "longtasks", permission: "core", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
         }
 
