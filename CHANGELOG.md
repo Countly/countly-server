@@ -1,3 +1,7 @@
+## Version 24.05.XX
+Fixes:
+- [app-management] Unescaping HTML for created/updated application names
+
 ## Version 24.05.23
 Features:
 - [hooks] Added remote config changes to internal actions
