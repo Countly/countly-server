@@ -1,3 +1,7 @@
+## Version 24.10.X
+Enterprise fixes:
+- [ldap] Fixed issues that would lead to configuration options not being picked up
+
 ## Version 24.10.7
 Fixes:
 - [data-manager] Modifying existing values when segment values want to be updated in the Data Manager
