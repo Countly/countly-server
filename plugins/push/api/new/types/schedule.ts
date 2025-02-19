@@ -9,5 +9,5 @@ export interface Schedule {
     finishedAt?: Date;
     timezoneAware: boolean;
     schedulerTimezone: number;
-    status: "scheduled" | "started" | "finished";
+    status: "scheduled"|"started"|"finished";
 }

@@ -1,89 +1,154 @@
 /**
  * @typedef {import('./types/message.ts').Message} Message
- * @typedef {import('./types/message.ts').PlainTrigger} PlainTrigger
  * @typedef {import('./types/message.ts').RecurringTrigger} RecurringTrigger
  * @typedef {import('./types/message.ts').MultiTrigger} MultiTrigger
- * @typedef {import('./types/schedule.ts').MessageSchedule} MessageSchedule
- * @typedef {import('./types/queue.ts').JobTicket} JobTicket
- * @typedef {import("mongodb").Db} MongoDb
+ * @typedef {import('./types/schedule.ts').Schedule} Schedule
+ * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
+ * @typedef {import("mongodb").Db} Db
  */
 
-const common = require('../../../../api/utils/common');
 const { ObjectId } = require('mongodb');
-const { sendJobTicket } = require("./queue/kafka.js");
+const queue = require("./lib/kafka.js"); // do not import by destructuring; it's being mocked in the tests
 const moment = require("moment");
-
-/** @type {MongoDb} */
-const db = common.db;
-
 const allTZOffsets = require("./constants/all-tz-offsets.json");
-const schedulableTriggerKinds = ["plain", "rec", "multi"];
+const schedulableTriggers = ["plain", "rec", "multi"];
+
+/**
+ * Schedules the provided message to be sent on the next calculated date,
+ * determined by the message's triggering properties
+ * @param   {Db}                 db      - mongodb database object
+ * @param   {Message}            message - message document from messages collection
+ * @returns {Promise<Schedule?>} the created Schedule document from message_schedules collection
+ */
+async function scheduleMessage(db, message) {
+    const trigger = message.triggers
+        .find(trigger => schedulableTriggers.includes(trigger.kind));
+    if (!trigger) {
+        throw new Error(
+            "Cannot find a schedulable trigger for the message " + message._id
+        );
+    }
+
+    /** @type {Date|undefined} */
+    let scheduleTo;
+    let startFrom = await findStartDateForSearch(db, message._id, trigger.kind);
+
+    switch(trigger.kind) {
+    case "plain":
+        if (trigger.start.getTime() > startFrom.getTime()) {
+            scheduleTo = trigger.start;
+        }
+        break;
+    case "rec":
+        scheduleTo = findNextMatchForRecurring(
+            /** @type {RecurringTrigger} */(trigger),
+            startFrom
+        );
+        break;
+    case "multi":
+        scheduleTo = findNextMatchForMulti(
+            /** @type {MultiTrigger} */(trigger),
+            startFrom
+        );
+        break;
+    }
+
+    // couldn't find a matching date
+    if (!scheduleTo) {
+        return;
+    }
+
+    return await createSchedule(
+        db,
+        message.app,
+        message._id,
+        scheduleTo,
+        "tz" in trigger ? trigger.tz : false,
+        "sctz" in trigger ? trigger.sctz : null
+    );
+}
 /**
  *
- * @param {Message} message
+ * @param {Db}       db                - mongodb database object
+ * @param {ObjectId} appId             - ObjectId of the app
+ * @param {ObjectId} messageId         - ObjectId of the message
+ * @param {Date}     scheduledTo       - Date to schedule this message to. UTC user's schedule date when timezone aware
+ * @param {Boolean}  timezoneAware     - set true if this is going to be scheduled for each timezone
+ * @param {Number=}  schedulerTimezone - timezone of the scheduler
+ * @returns {Promise<Schedule>} created Schedule document from message_schedules collection
  */
-async function scheduleMessage(message) {
-    const triggers = message.triggers
-        .filter(trigger => schedulableTriggerKinds.includes(trigger.kind));
-    const now = new Date();
-
-    for (let i = 0; i < triggers.length; i++) {
-        const trigger = triggers[i];
-
-        /** @type {Date|undefined} */
-        let scheduleTo;
-        /** @type {Date|undefined} */
-        let lastScheduleDate;
-
-        // find the last schedule date if this trigger is recurring or multi
-        if (["rec", "multi"].includes(trigger.kind)) {
-            const lastSchedule = await db.collection("message_schedules").find({
-                messageId: message._id,
-            }).limit(1).sort({ scheduledTo: -1 }).toArray();
-            lastScheduleDate = lastSchedule?.[0].scheduledTo;
-        }
-
-        switch(trigger.kind) {
-        case "plain":
-            scheduleTo = trigger.start;
-            break;
-
-        case "rec":
-            scheduleTo = findNextMatchForRecurring(
-                /** @type {RecurringTrigger} */(trigger),
-                new Date(Math.max(lastScheduleDate?.getTime() || 0, now.getTime()))
-            );
-            break;
-
-        case "multi":
-            scheduleTo = findNextMatchForMulti(
-                /** @type {MultiTrigger} */(trigger),
-                new Date(Math.max(lastScheduleDate?.getTime() || 0, now.getTime())))
-            break;
-        }
-
-        if (!scheduleTo) {
-            continue;
-        }
-        if ("tz" in trigger && trigger.tz) {
-            if (typeof trigger.sctz !== "number") {
-                throw new Error("Scheduler timezone is required when a "
-                    + "message schedule is timezone aware");
-            }
-            scheduleTo = new Date(scheduleTo.getTime() - trigger.sctz * 60 * 1000);
-            await createSchedule(message.app, message._id, scheduleTo, true);
-            continue;
-        }
-
-        await createSchedule(message.app, message._id, scheduleTo);
+async function createSchedule(
+    db,
+    appId,
+    messageId,
+    scheduledTo,
+    timezoneAware,
+    schedulerTimezone
+) {
+    if (timezoneAware && typeof schedulerTimezone !== "number") {
+        throw new Error("Scheduler timezone is required when a "
+            + "message schedule is timezone aware");
     }
+    /** @type {Schedule} */
+    const messageSchedule = {
+        _id: new ObjectId,
+        appId,
+        messageId,
+        scheduledTo,
+        status: "scheduled",
+        timezoneAware,
+        schedulerTimezone
+    };
+    await db.collection("message_schedules").insertOne(messageSchedule);
+    await createScheduleEvents(messageSchedule);
+    return messageSchedule;
+}
+/**
+ *
+ * @param {Schedule} messageSchedule
+ * @returns {Promise<ScheduleEvent[]>}
+ */
+async function createScheduleEvents(messageSchedule) {
+    /** @type {ScheduleEvent[]} */
+    const events = [];
+    if (messageSchedule.timezoneAware) {
+        const minute = 60 * 1000;
+        const { scheduledTo, schedulerTimezone } = messageSchedule;
+        const utcTime = new Date(
+            scheduledTo.getTime() - schedulerTimezone * minute
+        );
+        for (let i = 0; i < allTZOffsets.length; i++) {
+            const offset = allTZOffsets[i].offset;
+            const tzAdjustedScheduleDate = new Date(
+                utcTime.getTime() + offset * minute
+            );
+            events.push({
+                appId: messageSchedule.appId,
+                messageId: messageSchedule.messageId,
+                scheduleId: messageSchedule._id,
+                scheduledTo: tzAdjustedScheduleDate,
+                timezone: String(offset),
+            });
+        }
+    }
+    else {
+        events.push({
+            appId: messageSchedule.appId,
+            messageId: messageSchedule.messageId,
+            scheduleId: messageSchedule._id,
+            scheduledTo: messageSchedule.scheduledTo,
+        });
+    }
+    // schedule all events
+    await Promise.all(events.map(queue.sendScheduleEvent));
+    return events;
 }
 /**
  *
  * @param {Date} date
  * @param {number} offset
  * @param {number} time
- * @return {Date}
+ * @returns {Date}
  */
 function tzOffsetAdjustedTime(date, offset, time) {
     return moment.utc(date.getTime())
@@ -94,12 +159,39 @@ function tzOffsetAdjustedTime(date, offset, time) {
         .toDate();
 }
 /**
+ * @param {Db} db
+ * @param {ObjectId} messageId
+ * @param {string} triggerKind
+ * @returns {Promise<Date>}
+ */
+async function findStartDateForSearch(db, messageId, triggerKind) {
+    let startFrom = new Date;
+
+    // find the last schedule date if this trigger is recurring or multi
+    if (["rec", "multi"].includes(triggerKind)) {
+        const lastSchedule = /** @type {Schedule[]} */(
+            await db.collection("message_schedules")
+                .find({ messageId })
+                .limit(1)
+                .sort({ scheduledTo: -1 })
+                .toArray()
+        );
+        if (lastSchedule.length) {
+            if (lastSchedule[0].scheduledTo.getTime() > startFrom.getTime()) {
+                startFrom = lastSchedule[0].scheduledTo;
+            }
+        }
+    }
+
+    return startFrom;
+}
+/**
  *
  * @param {RecurringTrigger} trigger
- * @param {Date=} after
- * @return {Date=}
+ * @param {Date=} startFrom
+ * @returns {Date=}
  */
-function findNextMatchForRecurring(trigger, after = new Date) {
+function findNextMatchForRecurring(trigger, startFrom = new Date) {
     // to prevent mutation:
     const onDates = trigger.on ? [...trigger.on] : [];
     // to put negative values to the end
@@ -114,14 +206,18 @@ function findNextMatchForRecurring(trigger, after = new Date) {
         ? date.getTime() >= trigger.end.getTime()
         : false;
 
-    // check if after is already exceeding the end date
-    if (exceeds(after)) {
+    // check if startFrom is already exceeding the end date
+    if (exceeds(startFrom)) {
         return;
     }
 
     // check if we can schedule to the same date as trigger.start
     // considering scheduler's timezone might not be the same with server's
-    let current = tzOffsetAdjustedTime(trigger.start, trigger.sctz, trigger.time);
+    let current = tzOffsetAdjustedTime(
+        trigger.start,
+        trigger.sctz,
+        trigger.time
+    );
     if (current.getTime() < trigger.start.getTime()) {
         current = moment(current).add(1, "day").toDate();
     }
@@ -129,7 +225,7 @@ function findNextMatchForRecurring(trigger, after = new Date) {
     let i = 0;
     while (true) {
         if (trigger.bucket === "daily") {
-            if (current.getTime() >= after.getTime()) {
+            if (current.getTime() >= startFrom.getTime()) {
                 if (exceeds(current)) {
                     return;
                 }
@@ -145,7 +241,7 @@ function findNextMatchForRecurring(trigger, after = new Date) {
                 const found = onDates
                     .map(dateIndex => curMoment.isoWeekday(dateIndex).toDate())
                     .filter(date => date.getTime() >= current.getTime())
-                    .find(date => date.getTime() >= after.getTime());
+                    .find(date => date.getTime() >= startFrom.getTime());
                 if (found) {
                     if (exceeds(found)) {
                         return;
@@ -153,13 +249,20 @@ function findNextMatchForRecurring(trigger, after = new Date) {
                     return found;
                 }
                 // skip the weeks
-                current = curMoment.isoWeekday(1).add(trigger.every, "week").toDate();
+                current = curMoment
+                    .isoWeekday(1)
+                    .add(trigger.every, "week")
+                    .toDate();
             }
             else if (trigger.bucket === "monthly") {
                 const found = onDates
-                    .map(i => curMoment.add(i < 1 ? 1 : 0, "month").date(i).toDate())
+                    .map(
+                        i => curMoment.add(i < 1 ? 1 : 0, "month")
+                            .date(i)
+                            .toDate()
+                    )
                     .filter(date => date.getTime() >= current.getTime())
-                    .find(date => date.getTime() >= after.getTime());
+                    .find(date => date.getTime() >= startFrom.getTime());
                 if (found) {
                     if (exceeds(found)) {
                         return;
@@ -167,7 +270,10 @@ function findNextMatchForRecurring(trigger, after = new Date) {
                     return found;
                 }
                 // skip the months
-                current = curMoment.date(1).add(trigger.every, "month").toDate();
+                current = curMoment
+                    .date(1)
+                    .add(trigger.every, "month")
+                    .toDate();
             }
         }
         // just in case:
@@ -180,13 +286,15 @@ function findNextMatchForRecurring(trigger, after = new Date) {
  *
  * @param {MultiTrigger} trigger
  * @param {Date=} after
- * @return {Date=}
+ * @returns {Date=}
  */
 function findNextMatchForMulti(trigger, after = new Date) {
     // avoid mutation. sort the dates
     const dates = trigger.dates.map(d => new Date(d.getTime()));
     dates.sort((i, j) => i.getTime() - j.getTime());
-    const startIncludedAfter = new Date(Math.max(trigger.start.getTime(), after.getTime()));
+    const startIncludedAfter = new Date(
+        Math.max(trigger.start.getTime(), after.getTime())
+    );
 
     for (let date of dates) {
         if (date.getTime() >= startIncludedAfter.getTime()) {
@@ -195,75 +303,12 @@ function findNextMatchForMulti(trigger, after = new Date) {
     }
 }
 
-/**
- * schedules the message
- * @param {ObjectId} appId ObjectId of the app
- * @param {ObjectId} messageId ObjectId of the message
- * @param {Date} scheduledTo date to schedule this message to. UTC user's schedule date when timezone aware
- * @param {Boolean} timezoneAware set true if this is going to be scheduled for each timezone
- * @returns {Promise<MessageSchedule>}
- */
-async function createSchedule(appId, messageId, scheduledTo, timezoneAware = false) {
-    if (!messageId) {
-        throw new Error("Invalid messageId");
-    }
-    /** @type {MessageSchedule} */
-    const messageSchedule = {
-        _id: new ObjectId,
-        appId,
-        messageId,
-        scheduledTo,
-        status: "started",
-        timezoneAware,
-    };
-    await common.db.collection("message_schedules").insert(messageSchedule);
-    await createJobs(messageSchedule);
-    return messageSchedule;
-}
-
-/**
- *
- * @param {MessageSchedule} messageSchedule
- * @returns {Promise<JobTicket[]>}
- */
-async function createJobs(messageSchedule) {
-    /** @type {JobTicket[]} */
-    const jobs = [];
-    if (messageSchedule.timezoneAware) {
-        for (let i = 0; i < allTZOffsets.length; i++) {
-            const offset = allTZOffsets[i].offset;
-            const tzAdjustedScheduleDate = new Date(
-                messageSchedule.scheduledTo.getTime() + offset * 60 * 1000
-            );
-            jobs.push({
-                appId: messageSchedule.appId,
-                messageId: messageSchedule.messageId,
-                messageScheduleId: messageSchedule._id,
-                scheduledTo: tzAdjustedScheduleDate,
-                timezone: String(offset),
-            });
-        }
-    }
-    else {
-        jobs.push({
-            appId: messageSchedule.appId,
-            messageId: messageSchedule.messageId,
-            messageScheduleId: messageSchedule._id,
-            scheduledTo: messageSchedule.scheduledTo,
-        });
-    }
-    // schedule all jobs
-    await Promise.all(jobs.map(sendJobTicket));
-    return jobs;
-}
-
 module.exports = {
     scheduleMessage,
-
-    // exported for unit tests
-    createJobs,
+    createScheduleEvents,
     createSchedule,
     tzOffsetAdjustedTime,
     findNextMatchForRecurring,
     findNextMatchForMulti,
+    findStartDateForSearch,
 };

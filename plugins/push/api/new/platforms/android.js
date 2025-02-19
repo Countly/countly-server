@@ -10,11 +10,11 @@ const { buildProxyUrl } = require("../lib/utils.js");
 module.exports = { send }
 
 /**
- * @param {import("../sending").PushTicket} push
+ * @param {import("../types/queue.js").PushEvent} push
  * @returns {Promise<FCMResponse>}
  */
 async function send(push) {
-    const creds = /** @type {import('../types/credentials').FCMCredentials} */ (push.credentials);
+    const creds = /** @type {import('../types/credentials').FCMCredentials} */(push.credentials);
     const serviceAccountJSON = FORGE.util.decode64(
         creds.serviceAccountFile.substring(
             creds.serviceAccountFile.indexOf(',') + 1
