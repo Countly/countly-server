@@ -62,6 +62,9 @@ const loginHelpers = require('../../lib/login/login');
 const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
 describe('Complete Onboarding', () => {
+    let specName = 'onboarding';
+    let testName = '';
+    
     beforeEach(function() {
         navigationHelpers.goToLoginPage();
 
