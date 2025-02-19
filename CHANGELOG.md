@@ -1,3 +1,7 @@
+## Version 24.05.24
+Enterprise fixes:
+- [ldap] Fixed issues that would lead to configuration options not being picked up
+
 ## Version 24.05.23
 Features:
 - [hooks] Added remote config changes to internal actions
