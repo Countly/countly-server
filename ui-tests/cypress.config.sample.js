@@ -41,58 +41,57 @@ module.exports = defineConfig({
                 return launchOptions;
             });
 
-            on('task', {
-                saveLogsBySpecName({ specName, logData }) {
-                    const logsDir = path.join(__dirname, 'logs', specName);
-                    const logFilePath = path.join(logsDir, 'network-logs.json');
+            try {
+                const logsDir = path.resolve(__dirname, 'logs');
 
-                    if (!fs.existsSync(logsDir)) {
-                        fs.mkdirSync(logsDir, { recursive: true });
-                    }
-
-                    let existingLogs = [];
-                    if (fs.existsSync(logFilePath)) {
-                        const fileContent = fs.readFileSync(logFilePath, 'utf-8');
+                on('task', {
+                    saveNetworkLog({ specName, testName, data }) {
                         try {
-                            existingLogs = JSON.parse(fileContent);
+                            const logDir = path.join(logsDir, specName);
+                            if (!fs.existsSync(logDir)) {
+                                fs.mkdirSync(logDir, { recursive: true });
+                            }
+                            const logFile = path.join(logDir, 'network-logs.json');
+
+                            fs.writeFileSync(logFile, JSON.stringify({ testName, logs: data }, null, 2));
+                        } catch (error) {
+                            console.error("❌ [ERROR]: ", error);
                         }
-                        catch {
-                            existingLogs = [];
-                        }
-                    }
+                        return null;
+                    },
 
-                    existingLogs.push(logData);
-                    fs.writeFileSync(logFilePath, JSON.stringify(existingLogs, null, 2));
-
-                    return null;
-                },
-
-                saveConsoleLogs({ specName, logData }) {
-                    const logsDir = path.join(__dirname, 'logs', specName);
-                    const logFilePath = path.join(logsDir, 'console-logs.json');
-
-                    if (!fs.existsSync(logsDir)) {
-                        fs.mkdirSync(logsDir, { recursive: true });
-                    }
-
-                    let existingLogs = [];
-                    if (fs.existsSync(logFilePath)) {
-                        const fileContent = fs.readFileSync(logFilePath, 'utf-8');
+                    saveConsoleLog({ specName, testName, data }) {
                         try {
-                            existingLogs = JSON.parse(fileContent);
+                            const logDir = path.join(logsDir, specName);
+                            if (!fs.existsSync(logDir)) {
+                                fs.mkdirSync(logDir, { recursive: true });
+                            }
+                            const logFile = path.join(logDir, 'console-logs.json');
+
+                            fs.writeFileSync(logFile, JSON.stringify({ testName, logs: data }, null, 2));
+                        } catch (error) {
+                            console.error("❌ [ERROR]: ", error);
                         }
-                        catch {
-                            existingLogs = [];
+                        return null;
+                    },
+
+                    deleteLogs({ specName }) {
+                        try {
+                            const logDir = path.join(logsDir, specName);
+                            if (fs.existsSync(logDir)) {
+                                fs.rmSync(logDir, { recursive: true, force: true });
+                            }
+                        } catch (error) {
+                            console.error("❌ [ERROR] : ", error);
                         }
+                        return null;
                     }
+                });
+                return config;
 
-                    existingLogs.push(logData);
-                    fs.writeFileSync(logFilePath, JSON.stringify(existingLogs, null, 2));
-
-                    return null;
-                },
-            });
-
+            } catch (error) {
+                throw error; 
+            }
         },
     },
 });
