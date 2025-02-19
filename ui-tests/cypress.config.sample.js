@@ -1,6 +1,6 @@
 const { defineConfig } = require("cypress");
 const fs = require('fs');
-
+const path = require('path');
 module.exports = defineConfig({
     e2e: {
         baseUrl: "http://localhost",
@@ -40,6 +40,58 @@ module.exports = defineConfig({
                 }
                 return launchOptions;
             });
+
+            try {
+                const logsDir = path.resolve(__dirname, 'logs');
+
+                on('task', {
+                    saveNetworkLog({ specName, testName, data }) {
+                        try {
+                            const logDir = path.join(logsDir, specName);
+                            if (!fs.existsSync(logDir)) {
+                                fs.mkdirSync(logDir, { recursive: true });
+                            }
+                            const logFile = path.join(logDir, 'network-logs.json');
+
+                            fs.writeFileSync(logFile, JSON.stringify({ testName, logs: data }, null, 2));
+                        } catch (error) {
+                            console.error("❌ [ERROR]: ", error);
+                        }
+                        return null;
+                    },
+
+                    saveConsoleLog({ specName, testName, data }) {
+                        try {
+                            const logDir = path.join(logsDir, specName);
+                            if (!fs.existsSync(logDir)) {
+                                fs.mkdirSync(logDir, { recursive: true });
+                            }
+                            const logFile = path.join(logDir, 'console-logs.json');
+
+                            fs.writeFileSync(logFile, JSON.stringify({ testName, logs: data }, null, 2));
+                        } catch (error) {
+                            console.error("❌ [ERROR]: ", error);
+                        }
+                        return null;
+                    },
+
+                    deleteLogs({ specName }) {
+                        try {
+                            const logDir = path.join(logsDir, specName);
+                            if (fs.existsSync(logDir)) {
+                                fs.rmSync(logDir, { recursive: true, force: true });
+                            }
+                        } catch (error) {
+                            console.error("❌ [ERROR] : ", error);
+                        }
+                        return null;
+                    }
+                });
+                return config;
+
+            } catch (error) {
+                throw error; 
+            }
         },
     },
 });

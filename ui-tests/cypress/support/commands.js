@@ -1,7 +1,5 @@
 import 'cypress-file-upload';
 const helper = require('./helper');
-const chai = require('chai');
-const expect = chai.expect;
 
 Cypress.Commands.add("typeInput", (element, tag) => {
     cy.getElement(element).clear().type(tag);
@@ -344,5 +342,55 @@ Cypress.Commands.add('getElement', (selector, parent = null) => {
     }
     else {
         return cy.get(selector);
+    }
+});
+
+Cypress.Commands.add('captureLogs', (specName, testName) => {
+    let networkLogs = [];
+    let consoleLogs = [];
+  
+    cy.window().then((win) => {
+      const originalConsoleLog = win.console.log;
+      win.console.log = function (...args) {
+        originalConsoleLog.apply(this, args);
+        consoleLogs.push({ type: "log", message: args.join(" ") });
+      };
+  
+      const originalConsoleError = win.console.error;
+      win.console.error = function (...args) {
+        originalConsoleError.apply(this, args);
+        consoleLogs.push({ type: "error", message: args.join(" ") });
+      };
+  
+      const originalConsoleWarn = win.console.warn;
+      win.console.warn = function (...args) {
+        originalConsoleWarn.apply(this, args);
+        consoleLogs.push({ type: "warn", message: args.join(" ") });
+      };
+    });
+  
+    ['GET', 'POST', 'PUT', 'DELETE'].forEach((method) => {
+      cy.intercept(method, '**', (req) => {
+        req.on('response', (res) => {
+          const logEntry = {
+            method: req.method,
+            url: req.url,
+            status: res.statusCode,
+            responseTime: res.duration || 0,
+          };
+          networkLogs.push(logEntry);
+        });
+      }).as(`${method.toLowerCase()}Requests`);
+    });
+  
+    return cy.wrap({ networkLogs, consoleLogs });
+  });
+        
+afterEach(function () {
+    const specName = Cypress.spec.name.replace('.cy.js', '').replace('.spec.js', '');
+    const testName = this.currentTest.title;
+
+    if (this.currentTest.state === 'passed') {
+        cy.task('deleteLogs', { specName });
     }
 });
