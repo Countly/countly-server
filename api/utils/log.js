@@ -193,86 +193,6 @@ var getEnabledWithLevel = function(acceptable, module) {
         return acceptable.indexOf(levels[module] || deflt) !== -1;
     };
 };
-/**
-* Handle messages from ipc
-* @static
-* @param {string} msg - message received from other processes
-**/
-var ipcHandler = function(msg) {
-    var m, l, modules, i;
-
-    if (!msg || msg.cmd !== 'log' || !msg.config) {
-        return;
-    }
-
-    // console.log('%d: Setting logging config to %j (was %j)', process.pid, msg.config, levels);
-
-    if (msg.config.default) {
-        deflt = msg.config.default;
-    }
-
-    for (m in levels) {
-        var found = null;
-        for (l in msg.config) {
-            modules = msg.config[l].split(',').map(function(v) {
-                return v.trim();
-            });
-
-            for (i = 0; i < modules.length; i++) {
-                if (modules[i] === m) {
-                    found = l;
-                }
-            }
-        }
-
-        if (found === null) {
-            for (l in msg.config) {
-                modules = msg.config[l].split(',').map(function(v) {
-                    return v.trim();
-                });
-
-                for (i = 0; i < modules.length; i++) {
-                    if (modules[i].indexOf('*') === -1 && modules[i] === m.split(':')[0]) {
-                        found = l;
-                    }
-                    else if (modules[i].indexOf('*') !== -1 && modules[i].split(':')[1] === '*' && modules[i].split(':')[0] === m.split(':')[0]) {
-                        found = l;
-                    }
-                }
-            }
-        }
-
-        if (found !== null) {
-            levels[m] = found;
-        }
-        else {
-            levels[m] = deflt;
-        }
-    }
-
-    for (l in msg.config) {
-        if (msg.config[l] && l !== 'default') {
-            modules = msg.config[l].split(',').map(function(v) {
-                return v.trim();
-            });
-            prefs[l] = modules;
-
-            for (i in modules) {
-                m = modules[i];
-                if (!(m in levels)) {
-                    levels[m] = l;
-                }
-            }
-        }
-        else {
-            prefs[l] = [];
-        }
-    }
-
-    prefs.default = msg.config.default;
-
-    // console.log('%d: Set logging config to %j (now %j)', process.pid, msg.config, levels);
-};
 
 /**
  * @typedef {Object} Logger
@@ -551,4 +471,3 @@ module.exports = function(name) {
 module.exports.setLevel = setLevel;
 module.exports.setDefault = setDefault;
 module.exports.getLevel = getLevel;
-module.exports.ipcHandler = ipcHandler;

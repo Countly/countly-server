@@ -1,9 +1,10 @@
 'use strict';
 
-const job = require('../parts/jobs/job.js'),
-    log = require('../utils/log.js')('api:task'),
-    asyncjs = require("async"),
-    plugins = require('../../plugins/pluginManager.js');
+// const job = require('../parts/jobs/job.js');
+const Job = require("../../jobServer/Job");
+const log = require('../utils/log.js')('api:task');
+const asyncjs = require("async");
+const plugins = require('../../plugins/pluginManager.js');
 const common = require('../utils/common.js');
 const taskmanager = require('../utils/taskmanager.js');
 
@@ -14,7 +15,19 @@ common.processRequest = processRequest;
 /**
  *  Task Monitor Job extend from Countly Job
  */
-class MonitorJob extends job.Job {
+class MonitorJob extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "*/5 * * * *" // Every 5 minutes
+        };
+    }
+
     /**
      * Run the job
      * @param {Db} db connection

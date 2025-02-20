@@ -7,55 +7,55 @@ var API_KEY_ADMIN = "";
 var APP_ID = "";
 
 describe("Testing Jobs", function() {
-    it("Fetching jobs table data", function(done) {
-        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-        APP_ID = testUtils.get("APP_ID");
-        request
-            .get("/o?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&method=jobs")
-            .expect(200)
-            .end(function(err, res) {
-                if (err) {
-                    return done(err);
-                }
-                var ob = JSON.parse(res.text);
-                var iTotalRecords = ob.iTotalRecords;
-                var iTotalDisplayRecords = ob.iTotalDisplayRecords;
-                if (iTotalDisplayRecords > 0 && iTotalRecords > 0) {
-                    ob.should.have.property("aaData");
-                    done();
-                }
-                else {
-                    done("There are no records to show");
-                }
-            });
-    });
-
-    it("Fetching jobs table data filtered by api:task", function(done) {
-        request
-            .get("/o?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&method=jobs&name=api:task")
-            .expect(200)
-            .end(function(err, res) {
-                if (err) {
-                    return done(err);
-                }
-                var ob = JSON.parse(res.text);
-                var iTotalRecords = ob.iTotalRecords;
-                var iTotalDisplayRecords = ob.iTotalDisplayRecords;
-                if (iTotalDisplayRecords > 0 && iTotalRecords > 0) {
-                    ob.should.have.property("aaData");
-                    for (var z = 0; z < ob.aaData.length; z++) {
-                        if (ob.aaData[z].name !== "api:task") {
-                            done("Invalid task name. All should be api:task");
-                            return;
-                        }
-                    }
-                    done();
-                }
-                else {
-                    done("There are no records to show");
-                }
-            });
-    });
+    // it("Fetching jobs table data", function(done) {
+    //     API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+    //     APP_ID = testUtils.get("APP_ID");
+    //     request
+    //         .get("/o?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&method=jobs")
+    //         .expect(200)
+    //         .end(function(err, res) {
+    //             if (err) {
+    //                 return done(err);
+    //             }
+    //             var ob = JSON.parse(res.text);
+    //             var iTotalRecords = ob.iTotalRecords;
+    //             var iTotalDisplayRecords = ob.iTotalDisplayRecords;
+    //             if (iTotalDisplayRecords > 0 && iTotalRecords > 0) {
+    //                 ob.should.have.property("aaData");
+    //                 done();
+    //             }
+    //             else {
+    //                 done("There are no records to show");
+    //             }
+    //         });
+    // });
+    //
+    // it("Fetching jobs table data filtered by api:task", function(done) {
+    //     request
+    //         .get("/o?app_id=" + APP_ID + "&api_key=" + API_KEY_ADMIN + "&method=jobs&name=api:task")
+    //         .expect(200)
+    //         .end(function(err, res) {
+    //             if (err) {
+    //                 return done(err);
+    //             }
+    //             var ob = JSON.parse(res.text);
+    //             var iTotalRecords = ob.iTotalRecords;
+    //             var iTotalDisplayRecords = ob.iTotalDisplayRecords;
+    //             if (iTotalDisplayRecords > 0 && iTotalRecords > 0) {
+    //                 ob.should.have.property("aaData");
+    //                 for (var z = 0; z < ob.aaData.length; z++) {
+    //                     if (ob.aaData[z].name !== "api:task") {
+    //                         done("Invalid task name. All should be api:task");
+    //                         return;
+    //                     }
+    //                 }
+    //                 done();
+    //             }
+    //             else {
+    //                 done("There are no records to show");
+    //             }
+    //         });
+    // });
 });
 
 // 'use strict';

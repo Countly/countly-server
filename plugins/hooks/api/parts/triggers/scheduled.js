@@ -2,7 +2,7 @@ const plugins = require('../../../../pluginManager.js');
 const common = require('../../../../../api/utils/common.js');
 const utils = require('../../utils.js');
 const log = common.log("hooks:api:schedule");
-const JOB = require('../../../../../api/parts/jobs');
+// const JOB = require('../../../../../api/parts/jobs');
 const later = require('later');
 const moment = require('moment-timezone');
 
@@ -96,13 +96,5 @@ class ScheduledTrigger {
         });
     }
 }
-
-
-plugins.register("/master", function() {
-    setTimeout(() => {
-        JOB.job('hooks:schedule', {type: 'ScheduledTrigger'}).replace().schedule("every 1 hour on the 1st min");
-    }, 10000);
-});
-
 
 module.exports = ScheduledTrigger;

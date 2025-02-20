@@ -101,7 +101,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign", "utm_t
         return processedURL;
     };
 
-    plugins.register("/worker", function() {
+    plugins.register("/master", function() {
         common.dbUserMap.source = 'src';
     });
     plugins.register("/o/method/total_users", function(ob) {
