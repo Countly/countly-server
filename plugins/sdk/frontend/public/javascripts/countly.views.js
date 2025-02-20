@@ -75,14 +75,18 @@
                         label: "SDK control",
                         list: ["tracking", "networking"]
                     },
-                    /*features: {
+                    features: {
                         label: "SDK features",
-                        list: ["crashes", "views"]
+                        list: ["crt", "vt", "st", "cet", "ecz", "cr", "log"]
                     },
                     settings: {
                         label: "SDK settings",
-                        list: ["heartbeat", "event_queue","request_queue"]
-                    }*/
+                        list: ["sui", "eqs", "rqs", "ebs", "czi", "dort"]
+                    },
+                    limits: {
+                        label: "SDK Limits",
+                        list: ["lkl", "lvs", "lsv", "lbc"]
+                    },
                 },
                 configs: {
                     tracking: {
@@ -99,41 +103,125 @@
                         default: true,
                         value: null
                     },
-                    /*crashes: {
+                    crt: {
                         type: "switch",
                         name: "Crashes",
                         description: "Enable or disable automatic tracking of unhandled crashes",
                         default: true,
                         value: null
                     },
-                    views: {
+                    vt: {
                         type: "switch",
                         name: "Views",
                         description: "Enable or disable automatic tracking of views",
                         default: true,
                         value: null
                     },
-                    heartbeat: {
+                    st: {
+                        type: "switch",
+                        name: "Session Tracking",
+                        description: "Enable or disable automatic session tracking",
+                        default: true,
+                        value: null
+                    },
+                    sui: {
                         type: "number",
-                        name: "Heartbeat",
+                        name: "Session Update Interval",
                         description: "How often to send heartbeat to server in seconds",
                         default: 60,
                         value: null
                     },
-                    request_queue: {
+                    cet: {
+                        type: "switch",
+                        name: "Custom Event Tracking",
+                        description: "Track custom events",
+                        default: true,
+                        value: null
+                    },
+                    ecz: {
+                        type: "switch",
+                        name: "Content Zone",
+                        description: "Display content from Countly",
+                        default: true,
+                        value: null
+                    },
+                    cr: {
+                        type: "switch",
+                        name: "Consent Requests",
+                        description: "Ask for consents",
+                        default: true,
+                        value: null
+                    },
+                    rqs: {
                         type: "number",
                         name: "Request Queue Size",
                         description: "How many requests to store in queue, if SDK cannot connect to server",
                         default: 1000,
                         value: null
                     },
-                    event_queue: {
+                    eqs: {
                         type: "number",
                         name: "Event Queue Size",
                         description: "How many events to store in queue before they would be batched and sent to server",
                         default: 10,
                         value: null
-                    }*/
+                    },
+                    ebs: {
+                        type: "number",
+                        name: "Event Batch Size",
+                        description: "How many events to store in queue before they would be batched and sent to server",
+                        default: 10,
+                        value: null
+                    },
+                    czi: {
+                        type: "number",
+                        name: "Content Zone Interval",
+                        description: "How often to check for new content",
+                        default: 30,
+                        value: null
+                    },
+                    dort: {
+                        type: "number",
+                        name: "Drop old requests",
+                        description: "Provide time in seconds after which requests should be dropped if they are not sent to server",
+                        default: 0,
+                        value: null
+                    },
+                    lkl: {
+                        type: "number",
+                        name: "Limit Key Length",
+                        description: "Maximum length of event key",
+                        default: 256,
+                        value: null
+                    },
+                    lvs: {
+                        type: "number",
+                        name: "Limit Value Size",
+                        description: "Maximum value size of event segment",
+                        default: 256,
+                        value: null
+                    },
+                    lsv: {
+                        type: "number",
+                        name: "Limit Number of Segments",
+                        description: "Maximum segments of event",
+                        default: 100,
+                        value: null
+                    },
+                    lbc: {
+                        type: "number",
+                        name: "Limit Breadcrump",
+                        description: "Maximum breadcrump size",
+                        default: 100,
+                        value: null
+                    },
+                    log: {
+                        type: "switch",
+                        name: "Logging",
+                        description: "Enable SDK logging",
+                        default: true,
+                        value: null
+                    }
                 },
                 diff: [],
                 description: "This is experimental feature and not all SDKs and SDK versions yet support it. Refer to the SDK documentation for more information"
