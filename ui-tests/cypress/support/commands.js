@@ -352,9 +352,14 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
 
     console.log(`[DEBUG] 🚀 Starting log capture for test: ${testName}`);
 
-    // ✅ Intercept both GET and POST requests for /i and /o endpoints
-    cy.intercept('POST', /\/(i|o)(\/.*)?$/).as('postRequests');
-    cy.intercept('GET', /\/(i|o)(\/.*)?$/).as('getRequests');
+    // ✅ Intercept all POST and GET requests
+    cy.intercept('POST', '**', (req) => {
+        console.log(`[DEBUG] 🕵️ POST Request detected: ${req.url}`);
+    }).as('allPostRequests');
+
+    cy.intercept('GET', '**', (req) => {
+        console.log(`[DEBUG] 🕵️ GET Request detected: ${req.url}`);
+    }).as('allGetRequests');
 
     // ✅ Capture console logs and print them to CI terminal
     cy.window().then((win) => {
@@ -370,38 +375,23 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         });
     });
 
-    // ✅ Print the number of captured requests
-    cy.get('@postRequests.all').then((requests) => {
-        console.log(`[DEBUG] 🚨 Total POST requests captured: ${requests.length}`);
-    });
-
-    cy.get('@getRequests.all').then((requests) => {
-        console.log(`[DEBUG] 🚨 Total GET requests captured: ${requests.length}`);
-    });
-
-    // ✅ Capture POST requests and print them to CI terminal
-    cy.wait('@postRequests', { timeout: 15000 }).then((interception) => {
-        if (!interception) {
-            console.warn("[DEBUG] ❌ No POST request detected.");
-            return;
+    // ✅ Check if there are any requests before waiting
+    cy.get('@allPostRequests.all').then((requests) => {
+        console.log(`[DEBUG] 🚨 Total POST requests detected: ${requests.length}`);
+        if (requests.length > 0) {
+            cy.wait('@allPostRequests', { timeout: 15000 });
+        } else {
+            console.warn("[DEBUG] ❌ No POST requests found. Skipping wait.");
         }
-
-        console.log(`[DEBUG] 🌐 POST request captured:`);
-        console.log(`🔗 URL: ${interception.request.url}`);
-        console.log(`📨 Request Body: ${JSON.stringify(interception.request.body, null, 2)}`);
-        console.log(`📥 Response Body: ${JSON.stringify(interception.response.body, null, 2)}`);
     });
 
-    // ✅ Capture GET requests and print them to CI terminal
-    cy.wait('@getRequests', { timeout: 15000 }).then((interception) => {
-        if (!interception) {
-            console.warn("[DEBUG] ❌ No GET request detected.");
-            return;
+    cy.get('@allGetRequests.all').then((requests) => {
+        console.log(`[DEBUG] 🚨 Total GET requests detected: ${requests.length}`);
+        if (requests.length > 0) {
+            cy.wait('@allGetRequests', { timeout: 15000 });
+        } else {
+            console.warn("[DEBUG] ❌ No GET requests found. Skipping wait.");
         }
-
-        console.log(`[DEBUG] 🌐 GET request captured:`);
-        console.log(`🔗 URL: ${interception.request.url}`);
-        console.log(`📥 Response Body: ${JSON.stringify(interception.response.body, null, 2)}`);
     });
 
     // ✅ Print all collected console logs after test execution
