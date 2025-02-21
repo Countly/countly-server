@@ -3742,6 +3742,40 @@ class DataTable {
 
 common.DataTable = DataTable;
 
+
+common.applyUniqueOnModel = function(model, uniqueData, prop) {
+    for (var z = 0; z < uniqueData.length; z++) {
+        var value = uniqueData[z][prop];
+        var iid = uniqueData[z]._id.split(":");
+        if (iid.length > 1) {
+            if (!model[iid[0]]) {
+                model[iid[0]] = {};
+            }
+            if (!model[iid[0]][iid[1]]) {
+                model[iid[0]][iid[1]] = {};
+            }
+            if (iid.length > 2) {
+                if (!model[iid[0]][iid[1]][iid[2]]) {
+                    model[iid[0]][iid[1]][iid[2]] = {};
+                }
+                if (iid.length > 3) {
+                    if (!model[iid[0]][iid[1]][iid[2]][iid[3]]) {
+                        model[iid[0]][iid[1]][iid[2]][iid[3]] = {};
+                    }
+                    model[iid[0]][iid[1]][iid[2]][iid[3]][prop] = value;
+                }
+                else {
+                    model[iid[0]][iid[1]][iid[2]][prop] = value;
+                }
+
+            }
+            else {
+                model[iid[0]][iid[1]][prop] = value;
+
+            }
+        }
+    }
+};
 /**
  * Shifts hourly data (To be in different timezone)
  * @param {*} data  array of data
@@ -3761,16 +3795,83 @@ common.shiftHourlyData = function(data, offset) {
     return data;
 };
 
-//Gets array with drill data, converts to model.
-common.convertArrayToModel = function(arr, segmented) {
-    var model = {"c": 0, "sum": 0, "dur": 0};
-    var props = {"c": true, "sum": true, "dur": true};
+/**
+ * Function converts usual Countly model data to array. (Not useful for unique values). Normally used to shift data and turn back to model.
+ * @param {object} model  - countly model data
+ * @param {boolean} segmented  - true if segmented
+ * @returns {Array} model data as array
+ */
+common.convertModelToArray = function(model, segmented) {
+    var data = [];
+    for (var year in model) {
+        if (common.isNumber(year)) {
+            for (var month in model[year]) {
+                if (common.isNumber(month)) {
+                    for (var day in model[year][month]) {
+                        if (common.isNumber(day)) {
+                            for (var hour = 0; hour < 24; hour++) {
+                                if (model[year][month][day][hour + ""]) {
+                                    var id = year + ":" + month + ":" + day + ":" + hour;
+                                    if (segmented) {
+                                        for (var segment in model[year][month][day][hour]) {
+                                            var obj = {_id: id, "sg": segment};
+                                            for (var prop in model[year][month][day][hour][segment]) {
+                                                obj[prop] = model[year][month][day][hour][segment][prop];
+                                            }
+                                            data.push(obj);
+                                        }
+                                    }
+                                    else {
+                                        var obj3 = {_id: id};
+                                        for (var prop3 in model[year][month][day][hour]) {
+                                            obj3[prop3] = model[year][month][day][hour][prop3];
+                                        }
+                                        data.push(obj3);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return data;
+
+};
+
+/**
+ * Converts array of data to typical Countly model format. (Querying from granural data will give array. Use this to transform to model expected in frontend)
+ * @param {Array} arr data in format {"_id":"2014:1:1:1","u":1,"t":1,"n":1,"d":1,"m":1,"c":1,"b":1,"e":1,"s":1,"dur":1, "sg": "segment"}
+ * @param {boolean} segmented  - if it is segmented. If not true - will ignore sg field
+ * @param {object} props  - all expected props
+ * @returns {object} model data
+ */
+common.convertArrayToModel = function(arr, segmented, props) {
+    props = props || {"c": true, "sum": true, "dur": true};
+    /**
+     * Creates empty object with all property values set to 0
+     * @param {object} my_props  - all properies
+     * @returns {object} - object with 0 values for each from
+     */
+    function createEmptyObj(my_props) {
+        var obj = {};
+        for (var pp2 in my_props) {
+            obj[pp2] = 0;
+        }
+        return obj;
+    }
+    var model = createEmptyObj(props);
+    var iid;
     if (segmented) {
+        model.meta = {};
+        var values = {};
         for (var z = 0;z < arr.length;z++) {
-            var iid = arr[z]._id.split(":");
+            iid = arr[z]._id.split(":");
+            values[arr[z].sg] = true;
             for (var p in props) {
                 if (arr[z][p]) {
-                    model[arr[z].sg] = model[arr[z].sg] || {"c": 0, "sum": 0, "dur": 0};
+                    model[arr[z].sg] = model[arr[z].sg] || createEmptyObj(props);
                     model[arr[z].sg][p] += arr[z][p];
                 }
             }
@@ -3779,7 +3880,7 @@ common.convertArrayToModel = function(arr, segmented) {
                     model[iid[0]] = {};
                 }
                 if (!model[iid[0]][arr[z].sg]) {
-                    model[iid[0]][arr[z].sg] = {"c": 0, "sum": 0, "dur": 0};
+                    model[iid[0]][arr[z].sg] = createEmptyObj(props);
                 }
                 for (var p0 in props) {
                     if (arr[z][p0]) {
@@ -3794,7 +3895,7 @@ common.convertArrayToModel = function(arr, segmented) {
                     }
 
                     if (!model[iid[0]][iid[1]][arr[z].sg]) {
-                        model[iid[0]][iid[1]][arr[z].sg] = {"c": 0, "sum": 0, "dur": 0};
+                        model[iid[0]][iid[1]][arr[z].sg] = createEmptyObj(props);
                     }
                     for (var p1 in props) {
                         if (arr[z][p1]) {
@@ -3808,7 +3909,7 @@ common.convertArrayToModel = function(arr, segmented) {
                         }
 
                         if (!model[iid[0]][iid[1]][iid[2]][arr[z].sg]) {
-                            model[iid[0]][iid[1]][iid[2]][arr[z].sg] = {"c": 0, "sum": 0, "dur": 0};
+                            model[iid[0]][iid[1]][iid[2]][arr[z].sg] = createEmptyObj(props);
                         }
                         for (var p2 in props) {
                             if (arr[z][p2]) {
@@ -3819,19 +3920,19 @@ common.convertArrayToModel = function(arr, segmented) {
                 }
             }
         }
+        model.meta[segmented] = Object.keys(values);
     }
     else {
-
         for (var z = 0;z < arr.length;z++) {
-            var iid = arr[z]._id.split(":");
-            for (var p in props) {
-                if (arr[z][p]) {
-                    model[p] += arr[z][p];
+            iid = arr[z]._id.split(":");
+            for (var pp6 in props) {
+                if (arr[z][pp6]) {
+                    model[pp6] += arr[z][pp6];
                 }
             }
             if (iid.length > 0) {
                 if (!model[iid[0]]) {
-                    model[iid[0]] = {"c": 0, "sum": 0, "dur": 0};
+                    model[iid[0]] = createEmptyObj(props);
                 }
                 for (var p0 in props) {
                     if (arr[z][p0]) {
@@ -3841,7 +3942,7 @@ common.convertArrayToModel = function(arr, segmented) {
 
                 if (iid.length > 1) {
                     if (!model[iid[0]][iid[1]]) {
-                        model[iid[0]][iid[1]] = {"c": 0, "sum": 0, "dur": 0};
+                        model[iid[0]][iid[1]] = createEmptyObj(props);
                     }
                     for (var p1 in props) {
                         if (arr[z][p1]) {
@@ -3850,7 +3951,7 @@ common.convertArrayToModel = function(arr, segmented) {
                     }
                     if (iid.length > 2) {
                         if (!model[iid[0]][iid[1]][iid[2]]) {
-                            model[iid[0]][iid[1]][iid[2]] = {"c": 0, "sum": 0, "dur": 0};
+                            model[iid[0]][iid[1]][iid[2]] = createEmptyObj(props);
                         }
                         for (var p2 in props) {
                             if (arr[z][p2]) {
@@ -3859,7 +3960,7 @@ common.convertArrayToModel = function(arr, segmented) {
                         }
                         if (iid.length > 3) {
                             if (!model[iid[0]][iid[1]][iid[2]][iid[3]]) {
-                                model[iid[0]][iid[1]][iid[2]][iid[3]] = {"c": 0, "sum": 0, "dur": 0};
+                                model[iid[0]][iid[1]][iid[2]][iid[3]] = createEmptyObj(props);
                             }
                             for (var p3 in props) {
                                 if (arr[z][p3]) {

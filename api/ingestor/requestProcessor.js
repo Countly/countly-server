@@ -4,7 +4,6 @@ const url = require('url');
 const plugins = require("../../plugins/pluginManager.js");
 const log = require('../utils/log.js')('core:ingestor');
 const crypto = require('crypto');
-const moment = require('moment');
 const { ignorePossibleDevices, checksumSaltVerification, validateRedirect} = require('../utils/requestProcessorCommon.js');
 const countlyApi = {
     mgmt: {

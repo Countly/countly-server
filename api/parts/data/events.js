@@ -11,6 +11,28 @@ var countlyEvents = {},
     Promise = require("bluebird"),
     plugins = require('../../../plugins/pluginManager.js');
 
+
+
+countlyEvents.processEventFromStream = function(event) {
+    var forbiddenSegValues = [];
+    for (let i = 1; i < 32; i++) {
+        forbiddenSegValues.push(i + "");
+    }
+
+    //Write event totals for aggregated Data
+
+    common.readBatcher.getOne("apps", {'_id': event.a}, function(err, app) {
+        /* common.readBatcher.getOne("events", {'_id': event.a}, {
+            list: 1,
+            segments: 1,
+            omitted_segments: 1,
+            whitelisted_segments: 1
+        }, (err, eventColl) => {
+
+        });*/
+
+    });
+};
 /**
 * Process JSON decoded events data from request
 * @param {params} params - params object

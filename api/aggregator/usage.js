@@ -1,0 +1,385 @@
+var usage = {};
+var common = require('./../utils/common.js');
+var plugins = require('./../../plugins/pluginManager.js');
+var async = require('async');
+
+usage.processSessionFromStream = function(token, currEvent, params) {
+    currEvent.up = currEvent.up || {};
+    var updateUsersZero = {},
+        updateUsersMonth = {},
+        usersMeta = {},
+        sessionFrequency = [
+            [0, 24],
+            [24, 48],
+            [48, 72],
+            [72, 96],
+            [96, 120],
+            [120, 144],
+            [144, 168],
+            [168, 192],
+            [192, 360],
+            [360, 744]
+        ],
+        sessionFrequencyMax = 744,
+        calculatedFrequency,
+        uniqueLevels = [],
+        uniqueLevelsZero = [],
+        uniqueLevelsMonth = [],
+        zeroObjUpdate = [],
+        monthObjUpdate = [],
+        dbDateIds = common.getDateIds(params);
+
+    monthObjUpdate.push(common.dbMap.total);
+    if (currEvent.up.cc) {
+        monthObjUpdate.push(currEvent.up.cc + '.' + common.dbMap.total);
+    }
+    if (currEvent.sg && currEvent.sg.prev_session) {
+        //user had session before
+        if (currEvent.sg.prev_start) {
+            var userLastSeenTimestamp = currEvent.sg.prev_start,
+                currDate = common.getDate(currEvent.ts, params.appTimezone),
+                userLastSeenDate = common.getDate(userLastSeenTimestamp, params.appTimezone),
+                secInMin = (60 * (currDate.minutes())) + currDate.seconds(),
+                secInHour = (60 * 60 * (currDate.hours())) + secInMin,
+                secInMonth = (60 * 60 * 24 * (currDate.date() - 1)) + secInHour,
+                secInYear = (60 * 60 * 24 * (common.getDOY(currEvent.ts, params.appTimezone) - 1)) + secInHour;
+
+            /* if (dbAppUser.cc !== params.user.country) {
+            monthObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
+            zeroObjUpdate.push(params.user.country + '.' + common.dbMap.unique);
+        }*/
+
+            // Calculate the frequency range of the user
+
+            if ((currEvent.ts - userLastSeenTimestamp) >= (sessionFrequencyMax * 60 * 60)) {
+                calculatedFrequency = sessionFrequency.length + '';
+            }
+            else {
+                for (let i = 0; i < sessionFrequency.length; i++) {
+                    if ((currEvent.ts - userLastSeenTimestamp) < (sessionFrequency[i][1] * 60 * 60) &&
+                        (currEvent.ts - userLastSeenTimestamp) >= (sessionFrequency[i][0] * 60 * 60)) {
+                        calculatedFrequency = (i + 1) + '';
+                        break;
+                    }
+                }
+            }
+
+            //if for some reason we received past data lesser than last session timestamp
+            //we can't calculate frequency for that part
+            if (typeof calculatedFrequency !== "undefined") {
+                zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+                monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+                usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
+            }
+
+            if (userLastSeenTimestamp < (currEvent.ts - secInMin)) {
+            // We don't need to put hourly fragment to the unique levels array since
+            // we will store hourly data only in sessions collection
+                updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + common.dbMap.unique] = 1;
+            }
+
+            if (userLastSeenTimestamp < (currEvent.ts - secInHour)) {
+                uniqueLevels[uniqueLevels.length] = params.time.daily;
+                uniqueLevelsMonth.push(params.time.day);
+            }
+
+            if ((userLastSeenDate.year() + "") === (params.time.yearly + "") &&
+                Math.ceil(userLastSeenDate.format("DDD") / 7) < params.time.weekly) {
+                uniqueLevels[uniqueLevels.length] = params.time.yearly + ".w" + params.time.weekly;
+                uniqueLevelsZero.push("w" + params.time.weekly);
+            }
+
+            if (userLastSeenTimestamp < (currEvent.ts - secInMonth)) {
+                uniqueLevels[uniqueLevels.length] = params.time.monthly;
+                uniqueLevelsZero.push(params.time.month);
+            }
+
+            if (userLastSeenTimestamp < (currEvent.ts - secInYear)) {
+                uniqueLevels[uniqueLevels.length] = params.time.yearly;
+                uniqueLevelsZero.push("Y");
+            }
+        }
+    }
+    else {
+        zeroObjUpdate.push(common.dbMap.unique);
+        monthObjUpdate.push(common.dbMap.new);
+        monthObjUpdate.push(common.dbMap.unique);
+        if (currEvent.up.cc) {
+            zeroObjUpdate.push(currEvent.up.cc + '.' + common.dbMap.unique);
+            monthObjUpdate.push(currEvent.up.cc + '.' + common.dbMap.new);
+            monthObjUpdate.push(currEvent.up.cc + '.' + common.dbMap.unique);
+        }
+
+        // First time user.
+        calculatedFrequency = '0';
+
+        zeroObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+        monthObjUpdate.push(common.dbMap.frequency + '.' + calculatedFrequency);
+
+        usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
+        //this was first session for this user
+    }
+    usersMeta['meta_v2.countries.' + (currEvent.up.cc || "Unknown")] = true;
+    common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate);
+    common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate);
+
+    var postfix = common.crypto.createHash("md5").update(currEvent.did).digest('base64')[0];
+    if (Object.keys(updateUsersZero).length || Object.keys(usersMeta).length) {
+        usersMeta.m = dbDateIds.zero;
+        usersMeta.a = params.app_id + "";
+        var updateObjZero = {$set: usersMeta};
+
+        if (Object.keys(updateUsersZero).length) {
+            updateObjZero.$inc = updateUsersZero;
+        }
+        common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, updateObjZero, "countly", {token: token});
+    }
+    if (Object.keys(updateUsersMonth).length) {
+        common.writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {
+            $set: {
+                m: dbDateIds.month,
+                a: params.app_id + ""
+            },
+            '$inc': updateUsersMonth
+        }, "countly", {token: token});
+    }
+    usage.processSessionMetricsFromStream(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params);
+};
+
+usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params) {
+    var isNewUser = true;
+    var userProps = {};
+    if (currEvent.sg && currEvent.sg.prev_session) {
+        isNewUser = false;
+        //Not a new user
+
+    }
+    //We can't do metric changes unless we fetch previous session doc.
+    var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
+
+    var dateIds = common.getDateIds(params);
+    var metaToFetch = {};
+    if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit > 0) {
+        for (let i = 0; i < predefinedMetrics.length; i++) {
+            for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {
+                let tmpMetric = predefinedMetrics[i].metrics[j],
+                    recvMetricValue = currEvent.up[tmpMetric.short_code];
+                postfix = null;
+
+                // We check if country data logging is on and user's country is the configured country of the app
+                if (tmpMetric.name === "country" && (plugins.getConfig("api", params.app && params.app.plugins, true).country_data === false)) {
+                    continue;
+                }
+                // We check if city data logging is on and user's country is the configured country of the app
+                if (tmpMetric.name === "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false)) {
+                    continue;
+                }
+
+                if (recvMetricValue) {
+                    recvMetricValue = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
+                    postfix = common.crypto.createHash("md5").update(recvMetricValue).digest('base64')[0];
+                    metaToFetch[predefinedMetrics[i].db + params.app_id + "_" + dateIds.zero + "_" + postfix] = {
+                        coll: predefinedMetrics[i].db,
+                        id: params.app_id + "_" + dateIds.zero + "_" + postfix
+                    };
+                }
+            }
+        }
+        function fetchMeta(id, callback) {
+            common.readBatcher.getOne(metaToFetch[id].coll, {'_id': metaToFetch[id].id}, {meta_v2: 1}, (err, metaDoc) => {
+                var retObj = metaDoc || {};
+                retObj.coll = metaToFetch[id].coll;
+                callback(null, retObj);
+            });
+        }
+        var metas = {};
+        async.map(Object.keys(metaToFetch), fetchMeta, function(err, metaDocs) {
+            for (let i = 0; i < metaDocs.length; i++) {
+                if (metaDocs[i].coll && metaDocs[i].meta_v2) {
+                    metas[metaDocs[i]._id] = metaDocs[i].meta_v2;
+                }
+            }
+
+            for (let i = 0; i < predefinedMetrics.length; i++) {
+                for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {
+                    let tmpTimeObjZero = {},
+                        tmpTimeObjMonth = {},
+                        tmpSet = {},
+                        needsUpdate = false,
+                        zeroObjUpdate = [],
+                        monthObjUpdate = [],
+                        tmpMetric = predefinedMetrics[i].metrics[j],
+                        recvMetricValue = "",
+                        escapedMetricVal = "",
+                        postfix = "";
+
+                    recvMetricValue = currEvent.up[tmpMetric.short_code];
+
+                    // We check if country data logging is on and user's country is the configured country of the app
+                    if (tmpMetric.name === "country" && (plugins.getConfig("api", params.app && params.app.plugins, true).country_data === false)) {
+                        continue;
+                    }
+                    // We check if city data logging is on and user's country is the configured country of the app
+                    if (tmpMetric.name === "city" && (plugins.getConfig("api", params.app && params.app.plugins, true).city_data === false)) {
+                        continue;
+                    }
+
+                    if (recvMetricValue) {
+                        escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
+                        postfix = common.crypto.createHash("md5").update(escapedMetricVal).digest('base64')[0];
+
+                        var tmpZeroId = params.app_id + "_" + dateIds.zero + "_" + postfix;
+                        var ignore = false;
+                        if (metas[tmpZeroId] &&
+                                        metas[tmpZeroId][tmpMetric.set] &&
+                                        Object.keys(metas[tmpZeroId][tmpMetric.set]).length &&
+                                        Object.keys(metas[tmpZeroId][tmpMetric.set]).length >= plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit &&
+                                        typeof metas[tmpZeroId][tmpMetric.set][escapedMetricVal] === "undefined") {
+                            ignore = true;
+                        }
+
+                        //should metric be ignored for reaching the limit
+                        if (!ignore) {
+                            //making sure metrics are strings
+                            needsUpdate = true;
+                            tmpSet["meta_v2." + tmpMetric.set + "." + escapedMetricVal] = true;
+
+                            monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.total);
+
+                            if (isNewUser) {
+                                zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
+                                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.new);
+                                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap.unique);
+                            }
+                            else {
+                                for (let k = 0; k < uniqueLevelsZero.length; k++) {
+                                    if (uniqueLevelsZero[k] === "Y") {
+                                        tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
+                                    }
+                                    else {
+                                        tmpTimeObjZero['d.' + uniqueLevelsZero[k] + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
+                                    }
+                                }
+
+                                for (let l = 0; l < uniqueLevelsMonth.length; l++) {
+                                    tmpTimeObjMonth['d.' + uniqueLevelsMonth[l] + '.' + escapedMetricVal + '.' + common.dbMap.unique] = 1;
+                                }
+                            }
+                        }
+
+                        common.fillTimeObjectZero(params, tmpTimeObjZero, zeroObjUpdate);
+                        common.fillTimeObjectMonth(params, tmpTimeObjMonth, monthObjUpdate);
+
+                        if (needsUpdate) {
+                            tmpSet.m = dateIds.zero;
+                            tmpSet.a = params.app_id + "";
+                            var tmpMonthId = params.app_id + "_" + dateIds.month + "_" + postfix,
+                                updateObjZero = {$set: tmpSet};
+
+                            if (Object.keys(tmpTimeObjZero).length) {
+                                updateObjZero.$inc = tmpTimeObjZero;
+                            }
+
+                            if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
+                                common.writeBatcher.add(predefinedMetrics[i].db, tmpZeroId, updateObjZero);
+                            }
+
+                            common.writeBatcher.add(predefinedMetrics[i].db, tmpMonthId, {
+                                $set: {
+                                    m: dateIds.month,
+                                    a: params.app_id + ""
+                                },
+                                '$inc': tmpTimeObjMonth
+                            });
+                        }
+                    }
+                }
+            }
+        });
+    }
+};
+
+
+usage.getPredefinedMetrics = function(params, userProps) {
+    var predefinedMetrics = [
+        {
+            db: "carriers",
+            metrics: [{
+                name: "_carrier",
+                set: "carriers",
+                short_code: common.dbUserMap.carrier
+            }]
+        },
+        {
+            db: "devices",
+            metrics: [
+                {
+                    name: "_device",
+                    set: "devices",
+                    short_code: common.dbUserMap.device
+                },
+                {
+                    name: "_manufacturer",
+                    set: "manufacturers",
+                    short_code: common.dbUserMap.manufacturer
+                }
+            ]
+        },
+        {
+            db: "device_details",
+            metrics: [
+                {
+                    name: "_app_version",
+                    set: "app_versions",
+                    short_code: common.dbUserMap.app_version
+                },
+                {
+                    name: "_os",
+                    set: "os",
+                    short_code: common.dbUserMap.platform
+                },
+                {
+                    name: "_device_type",
+                    set: "device_type",
+                    short_code: common.dbUserMap.device_type
+                },
+                {
+                    name: "_os_version",
+                    set: "os_versions",
+                    short_code: common.dbUserMap.platform_version
+                },
+                {
+                    name: "_resolution",
+                    set: "resolutions",
+                    short_code: common.dbUserMap.resolution
+                },
+                {
+                    name: "_has_hinge",
+                    set: "has_hinge",
+                    short_code: common.dbUserMap.has_hinge
+                }
+            ]
+        },
+        {
+            db: "cities",
+            metrics: [{
+                is_user_prop: true,
+                name: "city",
+                set: "cities",
+                short_code: common.dbUserMap.city
+            }]
+        }
+    ];
+    var isNewUser = (params.app_user && params.app_user[common.dbUserMap.first_seen]) ? false : true;
+    plugins.dispatch("/session/metrics", {
+        params: params,
+        predefinedMetrics: predefinedMetrics,
+        userProps: userProps,
+        user: params.app_user,
+        isNewUser: isNewUser
+    });
+
+    return predefinedMetrics;
+};
+
+module.exports = usage;

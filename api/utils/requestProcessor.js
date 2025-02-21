@@ -10,6 +10,7 @@ const countlyCommon = require('../lib/countly.common.js');
 const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
+const calculatedDataManager = require('./calculatedDataManager.js');
 const plugins = require('../../plugins/pluginManager.js');
 const versionInfo = require('../../frontend/express/version.info');
 const packageJson = require('./../../package.json');
@@ -2004,6 +2005,39 @@ const processRequest = (params) => {
                         common.returnOutput(params, plugins.getPlugins());
                     }, params);
                     break;
+                case 'aggregator':
+                    validateUserForMgmtReadAPI(() => {
+                        //fetch current aggregator status
+                        common.db.collection("plugins").findOne({_id: "_changeStreams"}, function(err, pluginsData) {
+                            if (err) {
+                                common.returnMessage(params, 400, 'Error fetching aggregator status');
+                            }
+                            else {
+                                //find biggest cd value in drill database
+                                common.drillDb.collection("drill_events").find({}, {cd: 1}).sort({cd: -1}).limit(1).toArray(function(err2, drillData) {
+                                    var data = [];
+                                    var now = Date.now().valueOf();
+                                    var nowDrill = new Date(drillData[0].cd).valueOf();
+                                    for (var key in pluginsData) {
+                                        if (key !== "_id") {
+                                            var lastAccepted = new Date(pluginsData[key].cd).valueOf();
+                                            data.push({
+                                                name: key,
+                                                last_cd: pluginsData[key].cd,
+                                                drill: drillData[0].cd,
+                                                last_id: pluginsData[key]._id,
+                                                diff: (now - lastAccepted) / 1000,
+                                                diffDrill: (nowDrill - lastAccepted) / 1000
+                                            });
+                                        }
+                                    }
+                                    common.returnOutput(params, data);
+                                });
+                            }
+
+                        });
+                    }, params);
+                    break;
                 default:
                     if (!plugins.dispatch(apiPath, {
                         params: params,
@@ -2860,6 +2894,69 @@ const processRequest = (params) => {
                     break;
                 }
 
+                break;
+            }
+            case '/o/aggregate': {
+                validateUser(params, () => {
+                    //Long task to run specific drill query. Give back task_id if running, result if done.
+                    if (params.qstring.query) {
+
+                        try {
+                            params.qstring.query = JSON.parse(params.qstring.query);
+                        }
+                        catch (ee) {
+                            log.e(ee);
+                            common.returnMessage(params, 400, 'Invalid query parameter');
+                            return;
+                        }
+
+                        if (params.qstring.query.app_id) {
+                            if (Array.isArray(params.qstring.query.app_id)) {
+                                //make sure member has access to all apps in this list
+                                for (var i = 0; i < params.qstring.query.app_id.length; i++) {
+                                    if (!params.member.global_admin && params.member.user_of && params.member.user_of.indexOf(params.qstring.query.app_id[i]) === -1) {
+                                        common.returnMessage(params, 401, 'User does not have access right for this app');
+                                        return;
+                                    }
+                                }
+                            }
+                            else {
+                                if (!params.member.global_admin && params.member.user_of && params.member.user_of.indexOf(params.qstring.query.app_id) === -1) {
+                                    common.returnMessage(params, 401, 'User does not have access right for this app');
+                                    return;
+                                }
+                            }
+                        }
+                        else {
+                            params.qstring.query.app_id = params.qstring.app_id;
+                        }
+                        if (params.qstring.period) {
+                            params.qstring.query.period = params.qstrig.query.period || params.qstring.period || "30days";
+                        }
+                        if (params.qstring.periodOffset) {
+                            params.qstring.query.periodOffset = params.qstrig.query.periodOffset || params.qstring.periodOffset || 0;
+                        }
+
+                        calculatedDataManager.longtask({
+                            db: common.db,
+                            threshold: plugins.getConfig("api").request_threshold,
+                            app_id: params.qstring.query.app_id,
+                            query_data: params.qstring.query,
+                            outputData: function(err, data) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
+                                }
+                                else {
+                                    common.returnMessage(params, 200, data);
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing parameter "query"');
+                    }
+
+                });
                 break;
             }
             case '/o/countly_version': {

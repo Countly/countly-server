@@ -1,7 +1,6 @@
 const http = require('http');
 const cluster = require('cluster');
 const formidable = require('formidable');
-const os = require('os');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');
 const jobs = require('./parts/jobs');
@@ -14,6 +13,8 @@ const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher
 const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
+
+var {MongoDbQueryRunner} = require('../plugins/drill/api/parts/data/MongoDbQueryRunner.js');
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
@@ -39,8 +40,11 @@ plugins.connectToAllDatabases().then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
+
+
     if (common.drillDb) {
         common.drillReadBatcher = new ReadBatcher(common.drillDb);
+        common.drillQueryRunner = new MongoDbQueryRunner(common.drillDb);
     }
 
     let workers = [];
@@ -275,9 +279,11 @@ plugins.connectToAllDatabases().then(function() {
             process.exit(1);
         });
 
-        const workerCount = (countlyConfig.api.workers)
+        /*const workerCount = (countlyConfig.api.workers)
             ? countlyConfig.api.workers
-            : os.cpus().length;
+            : os.cpus().length;*/
+
+        const workerCount = 1;
 
         for (let i = 0; i < workerCount; i++) {
             // there's no way to define inspector port of a worker in the code. So if we don't

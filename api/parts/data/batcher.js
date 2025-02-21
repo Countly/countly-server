@@ -226,7 +226,7 @@ class WriteBatcher {
      *  @param {string} db - name of the database for which to write data
      *  @param {string} collection - name of the collection for which to write data
      */
-    async flush(db, collection) {
+    async flush(db, collection, callback) {
         var no_fallback_errors = [10334, 17419, 14, 56];
         var notify_errors = [10334, 17419];
         if (this.data[db] && this.data[db][collection] && this.data[db][collection].data && Object.keys(this.data[db][collection].data).length) {

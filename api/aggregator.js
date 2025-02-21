@@ -5,6 +5,7 @@ const common = require('./utils/common.js');
 const {WriteBatcher} = require('./parts/data/batcher.js');
 const {Cacher} = require('./parts/data/cacher.js');
 const {changeStreamReader} = require('./parts/data/changeStreamReader.js');
+const usage = require('./aggregator/usage.js');
 var t = ["countly:", "aggregator"];
 t.push("node");
 
@@ -21,6 +22,7 @@ plugins.connectToAllDatabases(true).then(function() {
     // common.writeBatcher = new WriteBatcher(common.db);
 
     common.writeBatcher = new WriteBatcher(common.db);
+    common.secondaryWriteBatcher = new WriteBatcher(common.db);
     common.readBatcher = new Cacher(common.db); //Used for Apps info
 
 
@@ -29,27 +31,47 @@ plugins.connectToAllDatabases(true).then(function() {
         var changeStream = new changeStreamReader(common.drillDb, {
             pipeline: [
                 {"$match": {"operationType": "insert", "fullDocument.ce": true}},
-                {"$project": {"a": "$fullDocument.a", "key": "$fullDocument.e", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "count": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
+                {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "key": "$fullDocument.e", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "count": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
             ],
             "name": "event-ingestion"
         }, (token, currEvent) => {
             if (currEvent && currEvent.a && currEvent.e) {
-                common.readBatcher.getOne("apps", currEvent.a, function(err, app) {
-                    //record event totals in aggregated data
-                    if (currEvent.count && common.isNumber(currEvent.count)) {
-                        currEvent.count = parseInt(currEvent.count, 10);
-                    }
-                    else {
-                        currEvent.count = 1;
-                    }
-
-                });
+                // usage.processEventFromStream(currEvent));
             }
             // process next document
         });
 
         common.writeBatcher.addFlushCallback("events_data", function(token) {
             console.log("flush callback");
+            changeStream.acknowledgeToken(token);
+        });
+    });
+
+    plugins.register("/aggregator", function() {
+        var changeStream = new changeStreamReader(common.drillDb, {
+            pipeline: [
+                {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
+                {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}},
+            ],
+            "name": "session-ingestion"
+        }, (token, next) => {
+            var currEvent = next.fullDocument;
+            if (currEvent && currEvent.a) {
+                //Record in session data
+                common.readBatcher.getOne("apps", common.db.ObjectID(currEvent.a), function(err, app) {
+                    //record event totals in aggregated data
+                    if (err) {
+                        log.e("Error getting app data for session", err);
+                        return;
+                    }
+                    if (app) {
+                        usage.processSessionFromStream(token, currEvent, {"app_id": currEvent.a, "app": app, "time": common.initTimeObj(app.timezone, currEvent.ts), "appTimezone": (app.timezone || "UTC")});
+                    }
+                });
+            }
+        });
+
+        common.writeBatcher.addFlushCallback("users", function(token) {
             changeStream.acknowledgeToken(token);
         });
 
@@ -157,8 +179,9 @@ plugins.connectToAllDatabases(true).then(function() {
     */
     async function storeBatchedData(code) {
         try {
-            //await common.writeBatcher.flushAll();
-            //await common.insertBatcher.flushAll();
+            await common.writeBatcher.flushAll();
+            await common.secondaryWriteBatcher.flushAll();
+            await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
         }
         catch (ex) {

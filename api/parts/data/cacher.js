@@ -29,13 +29,15 @@ class Cacher {
         let config = plugins.getConfig("api");
         this.period = config.batch_read_period * 1000;
         this.ttl = config.batch_read_ttl * 1000;
-        this.process = true;
+        this.process = config.batch_processing;
 
         if (this.options && this.options.ttl) {
             this.ttl = this.options.ttl * 1000;
+            this.process = true;
         }
         if (this.options && this.options.period) {
             this.period = this.options.period * 1000;
+            this.process = true;
         }
     }
 
@@ -151,7 +153,7 @@ class Cacher {
             }
         }
 
-        if (refetch || !this.process || !good_projection || !this.data[collection][id] || (this.period && this.data[collection][id].last_updated < Date.now() - this.period)) {
+        if (refetch || !this.process || !good_projection || !this.data[collection][id] || (this.data[collection][id].last_updated < Date.now() - this.period)) {
             if (this.process) {
                 this.data[collection][id] = {
                     query: query,
