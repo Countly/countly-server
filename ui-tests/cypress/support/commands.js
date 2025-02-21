@@ -352,9 +352,10 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
 
     console.log(`[DEBUG] Starting log capture for test: ${testName}`);
 
-    cy.intercept('**').as('allRequests');
+    // ✅ Intercept both /i and /o requests with a single regex
+    cy.intercept('POST', /\/(i|o)$/).as('importantRequests');
 
-    // ✅ Override window.console methods and store logs in an array
+    // ✅ Override console methods to capture logs
     cy.window().then((win) => {
         const originalConsoleMethods = {
             log: win.console.log,
@@ -383,11 +384,17 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         win.console.info = interceptConsole('info', originalConsoleMethods.info);
     });
 
-    // ✅ Capture network logs
-    cy.wait('@allRequests').then((interception) => {
+    // ✅ Capture network logs for /i and /o requests
+    cy.wait('@importantRequests', { timeout: 15000 }).then((interception) => {
+        if (!interception) {
+            console.warn("[DEBUG] No request detected for /i or /o. Skipping log save.");
+            return;
+        }
+
         const logData = {
             testName: testName,
             timestamp: new Date().toISOString(),
+            endpoint: interception.request.url,
             logData: {
                 request: interception.request,
                 response: interception.response,
@@ -396,7 +403,7 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
 
         cy.task('saveLogsBySpecName', { specName, logData });
 
-        console.log(`[DEBUG] Network log captured for test: ${testName}`);
+        console.log(`[DEBUG] Network log captured for ${interception.request.url} in test: ${testName}`);
     });
 
     // ✅ Save console logs in `afterEach`
@@ -406,7 +413,7 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
             console.log(`[DEBUG] Console logs saved for test: ${testName}`);
         }
 
-        // ✅ If test passed, delete logs
+        // ✅ If the test passes, delete logs
         if (test.state === 'passed') {
             cy.task('deleteLogs', { specName });
             console.log(`[DEBUG] Test passed -> Logs deleted for: ${specName}`);
