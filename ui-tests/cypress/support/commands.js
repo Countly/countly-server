@@ -380,4 +380,62 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
     });
 });
 
+Cypress.Commands.add('logToCITerminal', () => {
+    const testName = Cypress.mocha.getRunner().suite.ctx.currentTest.title;
+    let consoleLogs = [];
+
+    console.log(`[DEBUG] 🚀 Cypress starting log capture for test: ${testName}`);
+
+    // ✅ Hem GET hem de POST isteklerini yakala
+    cy.intercept('POST', /\/(i|o)(\/.*)?$/).as('postRequests');
+    cy.intercept('GET', /\/(i|o)(\/.*)?$/).as('getRequests');
+
+    // ✅ Konsol loglarını CI terminaline yazdır
+    cy.window().then((win) => {
+        const originalConsoleMethods = { ...win.console };
+
+        ['log', 'warn', 'error', 'info'].forEach((method) => {
+            win.console[method] = (...args) => {
+                const logMessage = `[DEBUG] 🖥️ ${method.toUpperCase()}: ${args.join(' ')}`;
+                console.log(logMessage);
+                consoleLogs.push(logMessage);
+                originalConsoleMethods[method](...args);
+            };
+        });
+    });
+
+    // ✅ POST isteklerini CI terminaline yazdır
+    cy.wait('@postRequests', { timeout: 15000 }).then((interception) => {
+        if (!interception) {
+            console.warn("[DEBUG] ❌ No POST request detected.");
+            return;
+        }
+
+        console.log(`[DEBUG] 🌐 POST request captured:`);
+        console.log(`🔗 URL: ${interception.request.url}`);
+        console.log(`📨 Request Body: ${JSON.stringify(interception.request.body, null, 2)}`);
+        console.log(`📥 Response Body: ${JSON.stringify(interception.response.body, null, 2)}`);
+    });
+
+    // ✅ GET isteklerini CI terminaline yazdır
+    cy.wait('@getRequests', { timeout: 15000 }).then((interception) => {
+        if (!interception) {
+            console.warn("[DEBUG] ❌ No GET request detected.");
+            return;
+        }
+
+        console.log(`[DEBUG] 🌐 GET request captured:`);
+        console.log(`🔗 URL: ${interception.request.url}`);
+        console.log(`📥 Response Body: ${JSON.stringify(interception.response.body, null, 2)}`);
+    });
+
+    // ✅ Test bittikten sonra tüm logları CI terminaline yazdır
+    cy.once('test:after:run', (test) => {
+        if (consoleLogs.length > 0) {
+            console.log(`[DEBUG] 📜 Console logs for test: ${testName}`);
+            consoleLogs.forEach(log => console.log(log));
+        }
+    });
+});
+
 
