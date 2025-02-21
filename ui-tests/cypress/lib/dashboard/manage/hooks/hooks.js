@@ -6,7 +6,7 @@ import {
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         labelElement: hooksPageElements.PAGE_TITLE,
-        labelText: "Hooks",
+        labelText: "Hooks2",
         element: hooksPageElements.PAGE_TITLE_VIEW_GUIDE_BUTTON,
     });
 
