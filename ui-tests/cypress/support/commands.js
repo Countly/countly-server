@@ -385,7 +385,7 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         win.console.info = interceptConsole('info', originalConsoleMethods.info);
     });
 
-    // ✅ Capture POST requests
+    // ✅ Capture POST requests but don't break test if none exist
     cy.wait('@postRequests', { timeout: 15000 }).then((interception) => {
         if (!interception) {
             console.warn("[DEBUG] No POST request detected for /i, /o, or subpaths. Skipping log save.");
@@ -406,9 +406,11 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         cy.task('saveLogsBySpecName', { specName, logData });
 
         console.log(`[DEBUG] POST request captured for ${interception.request.url} in test: ${testName}`);
+    }).catch(() => {
+        console.warn("[DEBUG] No POST request detected in CI, skipping.");
     });
 
-    // ✅ Capture GET requests
+    // ✅ Capture GET requests but don't break test if none exist
     cy.wait('@getRequests', { timeout: 15000 }).then((interception) => {
         if (!interception) {
             console.warn("[DEBUG] No GET request detected for /i, /o, or subpaths. Skipping log save.");
@@ -429,6 +431,8 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         cy.task('saveLogsBySpecName', { specName, logData });
 
         console.log(`[DEBUG] GET request captured for ${interception.request.url} in test: ${testName}`);
+    }).catch(() => {
+        console.warn("[DEBUG] No GET request detected in CI, skipping.");
     });
 
     // ✅ Save console logs in `afterEach`
@@ -445,3 +449,4 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         }
     });
 });
+
