@@ -132,6 +132,7 @@ Cypress.Commands.add("shouldBeEqual", (element, text) => {
     cy.getElement(element).should("equal", text);
 });
 
+// eslint-disable-next-line no-undef
 Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
     cy.getElement(element).invoke('text').then((actualText) => {
         expect(actualText).not.to.equal(text);
