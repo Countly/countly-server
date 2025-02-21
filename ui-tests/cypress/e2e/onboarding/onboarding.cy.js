@@ -61,7 +61,7 @@ const dbCountlyFsPageHelpers = require('../../lib/dashboard/manage/db/countlyFs/
 const loginHelpers = require('../../lib/login/login');
 const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
-describe('Complete Onboarding', () => {    
+describe('Complete Onboarding', () => {
     beforeEach(function() {
         cy.saveConsoleAndNetworkLogs(); // ✅ Start capturing logs
         //cy.logToCITerminal(); // ✅ Log to CI terminal

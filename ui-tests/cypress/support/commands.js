@@ -380,7 +380,8 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         console.log(`[DEBUG] 🚨 Total POST requests detected: ${requests.length}`);
         if (requests.length > 0) {
             cy.wait('@allPostRequests', { timeout: 15000 });
-        } else {
+        }
+        else {
             console.warn("[DEBUG] ❌ No POST requests found. Skipping wait.");
         }
     });
@@ -389,7 +390,8 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         console.log(`[DEBUG] 🚨 Total GET requests detected: ${requests.length}`);
         if (requests.length > 0) {
             cy.wait('@allGetRequests', { timeout: 15000 });
-        } else {
+        }
+        else {
             console.warn("[DEBUG] ❌ No GET requests found. Skipping wait.");
         }
     });

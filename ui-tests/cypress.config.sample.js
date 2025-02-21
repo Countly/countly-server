@@ -57,7 +57,8 @@ module.exports = defineConfig({
                     if (fs.existsSync(logFilePath)) {
                         try {
                             existingLogs = JSON.parse(fs.readFileSync(logFilePath, 'utf-8')) || [];
-                        } catch (error) {
+                        }
+                        catch (error) {
                             console.log("[DEBUG] Corrupted network log file detected. Resetting file.");
                             existingLogs = [];
                         }
