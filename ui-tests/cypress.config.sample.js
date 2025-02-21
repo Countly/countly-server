@@ -43,8 +43,8 @@ module.exports = defineConfig({
 
             on('task', {
                 saveLogsBySpecName({ specName, logData }) {
-                    console.log(`[DEBUG] Writing network log for spec: ${specName}`);
-                    
+                    console.log(`[DEBUG] Cypress is writing network log for spec: ${specName}`);
+
                     const logsDir = path.join(__dirname, 'logs', specName);
                     const logFilePath = path.join(logsDir, 'network-logs.json');
 
@@ -71,7 +71,7 @@ module.exports = defineConfig({
                 },
 
                 saveConsoleLogs({ specName, logData }) {
-                    console.log(`[DEBUG] Writing console log for spec: ${specName}`);
+                    console.log(`[DEBUG] Cypress is writing console log for spec: ${specName}`);
 
                     const logsDir = path.join(__dirname, 'logs', specName);
                     const logFilePath = path.join(logsDir, 'console-logs.json');
@@ -90,6 +90,6 @@ module.exports = defineConfig({
 
             console.log("[DEBUG] Cypress setupNodeEvents initialized.");
             return config;
-		}
-	}
+        }
+    }
 });

@@ -350,119 +350,32 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
     const testName = Cypress.mocha.getRunner().suite.ctx.currentTest.title;
     let consoleLogs = [];
 
-    console.log(`[DEBUG] Starting log capture for test: ${testName}`);
+    console.log(`[DEBUG] Cypress starting log capture for test: ${testName}`);
 
-    // ✅ Intercept both GET and POST requests to /i, /o, and subpaths
-    cy.intercept({ method: 'POST', url: /\/(i|o)(\/.*)?$/ }).as('postRequests');
-    cy.intercept({ method: 'GET', url: /\/(i|o)(\/.*)?$/ }).as('getRequests');
+    cy.intercept('POST', /\/(i|o)(\/.*)?$/).as('postRequests');
+    cy.intercept('GET', /\/(i|o)(\/.*)?$/).as('getRequests');
 
-    // ✅ Override console methods to capture logs
     cy.window().then((win) => {
-        const originalConsoleMethods = {
-            log: win.console.log,
-            warn: win.console.warn,
-            error: win.console.error,
-            info: win.console.info
-        };
+        const originalConsoleMethods = { ...win.console };
 
-        const interceptConsole = (type, originalMethod) => {
-            return (...args) => {
-                const logMessage = {
-                    testName: testName,
-                    timestamp: new Date().toISOString(),
-                    type: type,
-                    message: args.map((arg) => arg.toString()).join(' '),
-                };
-
-                consoleLogs.push(logMessage);
-                originalMethod.apply(win.console, args);
+        ['log', 'warn', 'error', 'info'].forEach((method) => {
+            win.console[method] = (...args) => {
+                consoleLogs.push({ testName, method, message: args.join(' ') });
+                originalConsoleMethods[method](...args);
             };
-        };
-
-        win.console.log = interceptConsole('log', originalConsoleMethods.log);
-        win.console.warn = interceptConsole('warn', originalConsoleMethods.warn);
-        win.console.error = interceptConsole('error', originalConsoleMethods.error);
-        win.console.info = interceptConsole('info', originalConsoleMethods.info);
-    });
-
-    // ✅ Before waiting, check if any requests have been made
-    cy.get('@postRequests.all').then((requests) => {
-        if (!requests || requests.length === 0) {
-            console.warn("[DEBUG] No POST requests detected before cy.wait(). Skipping.");
-            return;
-        }
-
-        cy.wait('@postRequests', { timeout: 15000 }).then((interception) => {
-            if (!interception) {
-                console.warn("[DEBUG] No POST request detected for /i, /o, or subpaths. Skipping log save.");
-                return;
-            }
-
-            const logData = {
-                testName: testName,
-                timestamp: new Date().toISOString(),
-                method: 'POST',
-                endpoint: interception.request.url,
-                logData: {
-                    request: interception.request,
-                    response: interception.response,
-                },
-            };
-
-            console.log("[DEBUG] Calling saveLogsBySpecName task...");
-            cy.task('saveLogsBySpecName', { specName, logData });
-
-            console.log("[DEBUG] Calling saveConsoleLogs task...");
-            
-            cy.task('saveConsoleLogs', { specName, logData: consoleLogs });
-
-
-            cy.task('saveLogsBySpecName', { specName, logData });
-
-            console.log(`[DEBUG] POST request captured for ${interception.request.url} in test: ${testName}`);
         });
     });
 
-    cy.get('@getRequests.all').then((requests) => {
-        if (!requests || requests.length === 0) {
-            console.warn("[DEBUG] No GET requests detected before cy.wait(). Skipping.");
-            return;
-        }
+    console.log("[DEBUG] Calling cy.task('saveLogsBySpecName')");
+    cy.task('saveLogsBySpecName', { specName, logData: "Test executed successfully" });
 
-        cy.wait('@getRequests', { timeout: 15000 }).then((interception) => {
-            if (!interception) {
-                console.warn("[DEBUG] No GET request detected for /i, /o, or subpaths. Skipping log save.");
-                return;
-            }
+    console.log("[DEBUG] Calling cy.task('saveConsoleLogs')");
+    cy.task('saveConsoleLogs', { specName, logData: consoleLogs });
 
-            const logData = {
-                testName: testName,
-                timestamp: new Date().toISOString(),
-                method: 'GET',
-                endpoint: interception.request.url,
-                logData: {
-                    request: interception.request,
-                    response: interception.response,
-                },
-            };
-
-            cy.task('saveLogsBySpecName', { specName, logData });
-
-            console.log(`[DEBUG] GET request captured for ${interception.request.url} in test: ${testName}`);
-        });
-    });
-
-    // ✅ Save console logs in `afterEach`
-    cy.once('test:after:run', function (test) {
-        if (consoleLogs.length > 0) {
-            cy.task('saveConsoleLogs', { specName, logData: consoleLogs });
-            console.log(`[DEBUG] Console logs saved for test: ${testName}`);
-        }
-
-        // ✅ If the test passes, delete logs
+    cy.once('test:after:run', (test) => {
         if (test.state === 'passed') {
+            console.log("[DEBUG] Test passed, calling cy.task('deleteLogs')");
             cy.task('deleteLogs', { specName });
-            console.log(`[DEBUG] Test passed -> Logs deleted for: ${specName}`);
         }
     });
 });

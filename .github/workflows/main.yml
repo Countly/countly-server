@@ -383,27 +383,23 @@ jobs:
           xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
           npm run cy:run:onboarding
 
-      - name: Check logs directory
+      - name: Check logs directory (debug)
         if: ${{ failure() }}
         shell: bash
-        working-directory: /opt/countly/ui-tests/cypress
         run: |
-          echo "[DEBUG] Listing logs directory:"
-          ls -la logs/
-          echo "[DEBUG] Checking if log files exist:"
-          find logs/ -type f
+          echo "[DEBUG] Checking logs directory..."
+          find / -type d -name "logs" 2>/dev/null
 
-      - name: Move logs to correct location before uploading
+      - name: Move logs to correct directory before uploading
         if: ${{ failure() }}
         shell: bash
-        working-directory: /opt/countly/ui-tests/cypress
         run: |
           echo "[DEBUG] Moving logs to correct directory..."
-          mkdir -p logs
-          find . -name "network-logs.json" -exec mv {} logs/ \;
-          find . -name "console-logs.json" -exec mv {} logs/ \;
+          mkdir -p /opt/countly/ui-tests/cypress/logs
+          find / -type f -name "network-logs.json" -exec mv {} /opt/countly/ui-tests/cypress/logs/ \;
+          find / -type f -name "console-logs.json" -exec mv {} /opt/countly/ui-tests/cypress/logs/ \;
           echo "[DEBUG] Final logs directory contents:"
-          ls -la logs/
+          ls -la /opt/countly/ui-tests/cypress/logs/  
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
