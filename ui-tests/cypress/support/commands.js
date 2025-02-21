@@ -409,6 +409,14 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
                 },
             };
 
+            console.log("[DEBUG] Calling saveLogsBySpecName task...");
+            cy.task('saveLogsBySpecName', { specName, logData });
+
+            console.log("[DEBUG] Calling saveConsoleLogs task...");
+            
+            cy.task('saveConsoleLogs', { specName, logData: consoleLogs });
+
+
             cy.task('saveLogsBySpecName', { specName, logData });
 
             console.log(`[DEBUG] POST request captured for ${interception.request.url} in test: ${testName}`);

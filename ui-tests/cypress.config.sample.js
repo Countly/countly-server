@@ -43,10 +43,13 @@ module.exports = defineConfig({
 
             on('task', {
                 saveLogsBySpecName({ specName, logData }) {
+                    console.log(`[DEBUG] Writing network log for spec: ${specName}`);
+                    
                     const logsDir = path.join(__dirname, 'logs', specName);
                     const logFilePath = path.join(logsDir, 'network-logs.json');
 
                     if (!fs.existsSync(logsDir)) {
+                        console.log(`[DEBUG] Creating logs directory: ${logsDir}`);
                         fs.mkdirSync(logsDir, { recursive: true });
                     }
 
@@ -55,37 +58,37 @@ module.exports = defineConfig({
                         try {
                             existingLogs = JSON.parse(fs.readFileSync(logFilePath, 'utf-8')) || [];
                         } catch (error) {
-                            existingLogs = []; 
+                            console.log("[DEBUG] Corrupted network log file detected. Resetting file.");
+                            existingLogs = [];
                         }
                     }
 
                     existingLogs.push(logData);
                     fs.writeFileSync(logFilePath, JSON.stringify(existingLogs, null, 2));
+
+                    console.log("[DEBUG] Network log saved successfully.");
                     return null;
                 },
 
                 saveConsoleLogs({ specName, logData }) {
+                    console.log(`[DEBUG] Writing console log for spec: ${specName}`);
+
                     const logsDir = path.join(__dirname, 'logs', specName);
                     const logFilePath = path.join(logsDir, 'console-logs.json');
 
                     if (!fs.existsSync(logsDir)) {
+                        console.log(`[DEBUG] Creating logs directory: ${logsDir}`);
                         fs.mkdirSync(logsDir, { recursive: true });
                     }
 
                     fs.writeFileSync(logFilePath, JSON.stringify(logData, null, 2));
-                    return null;
-                },
 
-                deleteLogs({ specName }) {
-                    const logsDir = path.join(__dirname, 'logs', specName);
-
-                    if (fs.existsSync(logsDir)) {
-                        fs.rmSync(logsDir, { recursive: true, force: true });
-                    }
+                    console.log("[DEBUG] Console log saved successfully.");
                     return null;
                 }
             });
 
+            console.log("[DEBUG] Cypress setupNodeEvents initialized.");
             return config;
 		}
 	}
