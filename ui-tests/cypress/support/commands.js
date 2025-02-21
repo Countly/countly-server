@@ -385,54 +385,63 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         win.console.info = interceptConsole('info', originalConsoleMethods.info);
     });
 
-    // ✅ Capture POST requests but don't break test if none exist
-    cy.wait('@postRequests', { timeout: 15000 }).then((interception) => {
-        if (!interception) {
-            console.warn("[DEBUG] No POST request detected for /i, /o, or subpaths. Skipping log save.");
+    // ✅ Before waiting, check if any requests have been made
+    cy.get('@postRequests.all').then((requests) => {
+        if (!requests || requests.length === 0) {
+            console.warn("[DEBUG] No POST requests detected before cy.wait(). Skipping.");
             return;
         }
 
-        const logData = {
-            testName: testName,
-            timestamp: new Date().toISOString(),
-            method: 'POST',
-            endpoint: interception.request.url,
-            logData: {
-                request: interception.request,
-                response: interception.response,
-            },
-        };
+        cy.wait('@postRequests', { timeout: 15000 }).then((interception) => {
+            if (!interception) {
+                console.warn("[DEBUG] No POST request detected for /i, /o, or subpaths. Skipping log save.");
+                return;
+            }
 
-        cy.task('saveLogsBySpecName', { specName, logData });
+            const logData = {
+                testName: testName,
+                timestamp: new Date().toISOString(),
+                method: 'POST',
+                endpoint: interception.request.url,
+                logData: {
+                    request: interception.request,
+                    response: interception.response,
+                },
+            };
 
-        console.log(`[DEBUG] POST request captured for ${interception.request.url} in test: ${testName}`);
-    }).catch(() => {
-        console.warn("[DEBUG] No POST request detected in CI, skipping.");
+            cy.task('saveLogsBySpecName', { specName, logData });
+
+            console.log(`[DEBUG] POST request captured for ${interception.request.url} in test: ${testName}`);
+        });
     });
 
-    // ✅ Capture GET requests but don't break test if none exist
-    cy.wait('@getRequests', { timeout: 15000 }).then((interception) => {
-        if (!interception) {
-            console.warn("[DEBUG] No GET request detected for /i, /o, or subpaths. Skipping log save.");
+    cy.get('@getRequests.all').then((requests) => {
+        if (!requests || requests.length === 0) {
+            console.warn("[DEBUG] No GET requests detected before cy.wait(). Skipping.");
             return;
         }
 
-        const logData = {
-            testName: testName,
-            timestamp: new Date().toISOString(),
-            method: 'GET',
-            endpoint: interception.request.url,
-            logData: {
-                request: interception.request,
-                response: interception.response,
-            },
-        };
+        cy.wait('@getRequests', { timeout: 15000 }).then((interception) => {
+            if (!interception) {
+                console.warn("[DEBUG] No GET request detected for /i, /o, or subpaths. Skipping log save.");
+                return;
+            }
 
-        cy.task('saveLogsBySpecName', { specName, logData });
+            const logData = {
+                testName: testName,
+                timestamp: new Date().toISOString(),
+                method: 'GET',
+                endpoint: interception.request.url,
+                logData: {
+                    request: interception.request,
+                    response: interception.response,
+                },
+            };
 
-        console.log(`[DEBUG] GET request captured for ${interception.request.url} in test: ${testName}`);
-    }).catch(() => {
-        console.warn("[DEBUG] No GET request detected in CI, skipping.");
+            cy.task('saveLogsBySpecName', { specName, logData });
+
+            console.log(`[DEBUG] GET request captured for ${interception.request.url} in test: ${testName}`);
+        });
     });
 
     // ✅ Save console logs in `afterEach`
@@ -449,4 +458,5 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         }
     });
 });
+
 
