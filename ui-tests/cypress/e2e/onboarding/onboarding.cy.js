@@ -61,23 +61,13 @@ const dbCountlyFsPageHelpers = require('../../lib/dashboard/manage/db/countlyFs/
 const loginHelpers = require('../../lib/login/login');
 const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
-describe('Complete Onboarding', () => {
-    let specName = 'onboarding';
-    let testName = '';
-    
+describe('Complete Onboarding', () => {    
     beforeEach(function() {
+        cy.saveConsoleAndNetworkLogs(); // ✅ Start capturing logs
         navigationHelpers.goToLoginPage();
-
-        testName = this.currentTest.title; 
-        cy.captureLogs(specName, testName).then(({ networkLogs, consoleLogs }) => {
-          this.networkLogs = networkLogs;
-          this.consoleLogs = consoleLogs;
-        });
     });
 
     afterEach(function() {
-        cy.task('saveNetworkLog', { specName, testName, data: this.networkLogs });
-        cy.task('saveConsoleLog', { specName, testName, data: this.consoleLogs });
         cy.dropMongoDatabase();
     });
 

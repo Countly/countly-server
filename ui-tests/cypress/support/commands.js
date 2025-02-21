@@ -345,52 +345,71 @@ Cypress.Commands.add('getElement', (selector, parent = null) => {
     }
 });
 
-Cypress.Commands.add('captureLogs', (specName, testName) => {
-    let networkLogs = [];
+Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
+    const specName = Cypress.spec.name.replace('.cy.js', '');
+    const testName = Cypress.mocha.getRunner().suite.ctx.currentTest.title;
     let consoleLogs = [];
-  
-    cy.window().then((win) => {
-      const originalConsoleLog = win.console.log;
-      win.console.log = function (...args) {
-        originalConsoleLog.apply(this, args);
-        consoleLogs.push({ type: "log", message: args.join(" ") });
-      };
-  
-      const originalConsoleError = win.console.error;
-      win.console.error = function (...args) {
-        originalConsoleError.apply(this, args);
-        consoleLogs.push({ type: "error", message: args.join(" ") });
-      };
-  
-      const originalConsoleWarn = win.console.warn;
-      win.console.warn = function (...args) {
-        originalConsoleWarn.apply(this, args);
-        consoleLogs.push({ type: "warn", message: args.join(" ") });
-      };
-    });
-  
-    ['GET', 'POST', 'PUT', 'DELETE'].forEach((method) => {
-      cy.intercept(method, '**', (req) => {
-        req.on('response', (res) => {
-          const logEntry = {
-            method: req.method,
-            url: req.url,
-            status: res.statusCode,
-            responseTime: res.duration || 0,
-          };
-          networkLogs.push(logEntry);
-        });
-      }).as(`${method.toLowerCase()}Requests`);
-    });
-  
-    return cy.wrap({ networkLogs, consoleLogs });
-  });
-        
-afterEach(function () {
-    const specName = Cypress.spec.name.replace('.cy.js', '').replace('.spec.js', '');
-    const testName = this.currentTest.title;
 
-    if (this.currentTest.state === 'passed') {
-        cy.task('deleteLogs', { specName });
-    }
+    console.log(`[DEBUG] Starting log capture for test: ${testName}`);
+
+    cy.intercept('**').as('allRequests');
+
+    // ✅ Override window.console methods and store logs in an array
+    cy.window().then((win) => {
+        const originalConsoleMethods = {
+            log: win.console.log,
+            warn: win.console.warn,
+            error: win.console.error,
+            info: win.console.info
+        };
+
+        const interceptConsole = (type, originalMethod) => {
+            return (...args) => {
+                const logMessage = {
+                    testName: testName,
+                    timestamp: new Date().toISOString(),
+                    type: type,
+                    message: args.map((arg) => arg.toString()).join(' '),
+                };
+
+                consoleLogs.push(logMessage);
+                originalMethod.apply(win.console, args);
+            };
+        };
+
+        win.console.log = interceptConsole('log', originalConsoleMethods.log);
+        win.console.warn = interceptConsole('warn', originalConsoleMethods.warn);
+        win.console.error = interceptConsole('error', originalConsoleMethods.error);
+        win.console.info = interceptConsole('info', originalConsoleMethods.info);
+    });
+
+    // ✅ Capture network logs
+    cy.wait('@allRequests').then((interception) => {
+        const logData = {
+            testName: testName,
+            timestamp: new Date().toISOString(),
+            logData: {
+                request: interception.request,
+                response: interception.response,
+            },
+        };
+
+        cy.task('saveLogsBySpecName', { specName, logData });
+
+        console.log(`[DEBUG] Network log captured for test: ${testName}`);
+    });
+
+    // ✅ Save console logs in `afterEach`
+    cy.once('test:after:run', function (test) {
+        if (consoleLogs.length > 0) {
+            cy.task('saveConsoleLogs', { specName, logData: consoleLogs });
+            console.log(`[DEBUG] Console logs saved for test: ${testName}`);
+        }
+
+        // ✅ If test passed, delete logs
+        if (test.state === 'passed') {
+            cy.task('deleteLogs', { specName });
+            console.log(`[DEBUG] Test passed -> Logs deleted for: ${specName}`);
+        }
+    });
 });
