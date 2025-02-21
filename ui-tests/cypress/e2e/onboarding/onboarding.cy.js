@@ -63,7 +63,7 @@ const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
 describe('Complete Onboarding', () => {
     beforeEach(function() {
-        
+
         //cy.logToCITerminal(); // ✅ Log to CI terminal
         navigationHelpers.goToLoginPage();
     });
