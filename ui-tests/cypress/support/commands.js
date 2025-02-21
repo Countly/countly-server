@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-undef
 import 'cypress-file-upload';
 const helper = require('./helper');
 
@@ -134,9 +133,9 @@ Cypress.Commands.add("shouldBeEqual", (element, text) => {
 });
 
 Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
-    cy.getElement(element).invoke('text').then((actualText) => {
-        expect(actualText).not.to.equal(text);
-    });
+    cy.getElement(element)
+      .invoke('text')
+      .should('not.equal', text);
 });
 
 Cypress.Commands.add("shouldPlaceholderContainText", (element, text) => {
@@ -354,7 +353,7 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
 
     console.log(`[DEBUG] 🚀 Starting log capture for test: ${testName}`);
 
-    // ✅ POST ve GET isteklerini yakala ve yanıtları kaydet
+    // ✅ Capture POST and GET requests and log responses
     cy.intercept('POST', '**', (req) => {
         req.continue((res) => {
             const logEntry = {
@@ -384,7 +383,7 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         });
     }).as('allGetRequests');
 
-    // ✅ Konsol loglarını yakala ve CI'ya yazdır
+    // ✅ Capture console logs and print to CI
     cy.window().then((win) => {
         const originalConsoleMethods = { ...win.console };
 
@@ -398,7 +397,7 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         });
     });
 
-    // ✅ Test bitince logları kaydet
+    // ✅ Save the logs when the test is finished
     cy.once('test:after:run', (test) => {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const logData = {
@@ -409,10 +408,10 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
             timestamp,
         };
 
-        // 📂 Logları kaydet
+        // 📂 Save the logs
         cy.writeFile(`cypress/logs/${specName}_${timestamp}.json`, JSON.stringify(logData, null, 2));
 
-        // 📜 Logları konsola yazdır
+        // 📜 Print the logs 
         if (consoleLogs.length > 0) {
             console.log(`[DEBUG] 📜 Console logs for test: ${testName}`);
             consoleLogs.forEach(log => console.log(log));
