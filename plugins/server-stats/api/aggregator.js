@@ -8,12 +8,15 @@ const { changeStreamReader } = require('../../../api/parts/data/changeStreamRead
         var changeStream = new changeStreamReader(common.drillDb, {
             pipeline: [
                 {"$match": {"operationType": "insert"}},
-                {"$project": {"a": "$fullDocument.a", "e": "$fullDocument.e"}}
+                {"$project": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e"}}
             ],
             "name": "server-stats",
             "collection": "drill_events",
-            "onClose":function(){
-                common.writeBatcher.flush("countly","server_stats_data_points");
+            "onClose": async function(callback) {
+                await common.writeBatcher.flush("countly", "server_stats_data_points");
+                if (callback) {
+                    callback();
+                }
             }
         }, (token, next) => {
             if (next.e === "[CLY]_session") {

@@ -182,7 +182,8 @@ const FEATURE_NAME = 'times_of_day';
             var todType = params.qstring.tod_type;
 
             var criteria = {
-                "s": todType
+                "s": todType,
+                "a": common.db.ObjectID(params.qstring.app_id)
             };
 
             if (params.qstring.date_range) {

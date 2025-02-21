@@ -2,7 +2,7 @@ var pluginOb = {},
     crypto = require('crypto'),
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
-    log = common.log('views:api');
+    log = common.log('views:ingestor');
 
 const FEATURE_NAME = 'views';
 
@@ -89,6 +89,7 @@ const FEATURE_NAME = 'views';
                 var currE = params.qstring.events[p];
                 if (currE.key === "[CLY]_view") {
                     if (currE.segmentation && currE.segmentation.name) {
+                        currE.name = currE.segmentation.name;
                         var view_id = crypto.createHash('md5').update(currE.segmentation.name).digest('hex');
                         currE.dur = Math.round(currE.dur || currE.segmentation.dur || 0);
                         delete currE.segmentation.dur;
@@ -130,6 +131,7 @@ const FEATURE_NAME = 'views';
                                     }
                                 }
                                 params.qstring.events[p].dur = 0; //not use duration from this one anymore;
+
                             }
                             else {
                                 have_drill = true;
@@ -162,17 +164,22 @@ const FEATURE_NAME = 'views';
                 else if (currE.key === "[CLY]_action") {
                     if (currE.segmentation && (currE.segmentation.name || currE.segmentation.view) && currE.segmentation.type && currE.segmentation.type === 'scroll') {
                         currE.scroll = 0;
+                        currE.name = currE.segmentation.name || currE.segmentation.view;
+
                         if (currE.segmentation.y && currE.segmentation.height) {
-                            var height = parseInt(currE.segmentation.height, 10);
-                            if (height !== 0) {
-                                currE.scroll = parseInt(currE.segmentation.y, 10) * 100 / height;
+                            try {
+                                currE.segmentation.height = parseInt(currE.segmentation.height, 10);
+                                currE.segmentation.y = parseInt(currE.segmentation.y, 10);
+                            }
+                            catch (e) {
+                                log.e(e);
                             }
                         }
                     }
                 }
             }
             if (vc > 0) {
-                if (update.$set && update.$set.vc) {
+                if (update.$set && update.$set.vc > -1) {
                     update.$set.vc += vc;
                 }
                 else {

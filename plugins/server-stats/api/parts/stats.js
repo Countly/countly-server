@@ -80,7 +80,7 @@ function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consoli
             m: utcMoment.format("YYYY:M")
         },
         $inc: incObject
-    }, "countly", token);
+    }, "countly", {"token": token});
 }
 
 /**
