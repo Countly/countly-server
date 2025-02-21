@@ -350,32 +350,65 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
     const testName = Cypress.mocha.getRunner().suite.ctx.currentTest.title;
     let consoleLogs = [];
 
-    console.log(`[DEBUG] Cypress starting log capture for test: ${testName}`);
+    console.log(`[DEBUG] 🚀 Starting log capture for test: ${testName}`);
 
+    // ✅ Intercept both GET and POST requests for /i and /o endpoints
     cy.intercept('POST', /\/(i|o)(\/.*)?$/).as('postRequests');
     cy.intercept('GET', /\/(i|o)(\/.*)?$/).as('getRequests');
 
+    // ✅ Capture console logs and print them to CI terminal
     cy.window().then((win) => {
         const originalConsoleMethods = { ...win.console };
 
         ['log', 'warn', 'error', 'info'].forEach((method) => {
             win.console[method] = (...args) => {
-                consoleLogs.push({ testName, method, message: args.join(' ') });
+                const logMessage = `[DEBUG] 🖥️ ${method.toUpperCase()}: ${args.join(' ')}`;
+                console.log(logMessage);
+                consoleLogs.push(logMessage);
                 originalConsoleMethods[method](...args);
             };
         });
     });
 
-    console.log("[DEBUG] Calling cy.task('saveLogsBySpecName')");
-    cy.task('saveLogsBySpecName', { specName, logData: "Test executed successfully" });
+    // ✅ Print the number of captured requests
+    cy.get('@postRequests.all').then((requests) => {
+        console.log(`[DEBUG] 🚨 Total POST requests captured: ${requests.length}`);
+    });
 
-    console.log("[DEBUG] Calling cy.task('saveConsoleLogs')");
-    cy.task('saveConsoleLogs', { specName, logData: consoleLogs });
+    cy.get('@getRequests.all').then((requests) => {
+        console.log(`[DEBUG] 🚨 Total GET requests captured: ${requests.length}`);
+    });
 
+    // ✅ Capture POST requests and print them to CI terminal
+    cy.wait('@postRequests', { timeout: 15000 }).then((interception) => {
+        if (!interception) {
+            console.warn("[DEBUG] ❌ No POST request detected.");
+            return;
+        }
+
+        console.log(`[DEBUG] 🌐 POST request captured:`);
+        console.log(`🔗 URL: ${interception.request.url}`);
+        console.log(`📨 Request Body: ${JSON.stringify(interception.request.body, null, 2)}`);
+        console.log(`📥 Response Body: ${JSON.stringify(interception.response.body, null, 2)}`);
+    });
+
+    // ✅ Capture GET requests and print them to CI terminal
+    cy.wait('@getRequests', { timeout: 15000 }).then((interception) => {
+        if (!interception) {
+            console.warn("[DEBUG] ❌ No GET request detected.");
+            return;
+        }
+
+        console.log(`[DEBUG] 🌐 GET request captured:`);
+        console.log(`🔗 URL: ${interception.request.url}`);
+        console.log(`📥 Response Body: ${JSON.stringify(interception.response.body, null, 2)}`);
+    });
+
+    // ✅ Print all collected console logs after test execution
     cy.once('test:after:run', (test) => {
-        if (test.state === 'passed') {
-            console.log("[DEBUG] Test passed, calling cy.task('deleteLogs')");
-            cy.task('deleteLogs', { specName });
+        if (consoleLogs.length > 0) {
+            console.log(`[DEBUG] 📜 Console logs for test: ${testName}`);
+            consoleLogs.forEach(log => console.log(log));
         }
     });
 });
