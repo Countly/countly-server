@@ -170,6 +170,10 @@ const FEATURE_NAME = 'views';
                             try {
                                 currE.segmentation.height = parseInt(currE.segmentation.height, 10);
                                 currE.segmentation.y = parseInt(currE.segmentation.y, 10);
+                                currE.segmentation.scr = Math.round((currE.segmentation.y * 100) / currE.segmentation.height);
+                                if (currE.segmentation.scr > 100) {
+                                    currE.segmentation.scr = 100;
+                                }
                             }
                             catch (e) {
                                 log.e(e);

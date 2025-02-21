@@ -150,6 +150,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             deleteDocs.push(common.drillDb.collection(
                                                 "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
                                             ).remove({"sg.view": viewUrl}));
+                                            //Before new ingestion
+                                            deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_view", "sg.name": viewName}));
+                                            deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_action", "sg.view": viewUrl}));
+
+                                            //After new ingestion
+                                            deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_view", "n": viewName}));
+                                            deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_action", "n": viewUrl}));
                                         }
                                         plugins.dispatch("/view/delete", {appId: appId, view: viewid + ""});
                                         /** */
