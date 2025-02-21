@@ -352,8 +352,9 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
 
     console.log(`[DEBUG] Starting log capture for test: ${testName}`);
 
-    // ✅ Intercept both /i and /o requests with a single regex
-    cy.intercept('POST', /\/(i|o)$/).as('importantRequests');
+    // ✅ Intercept both GET and POST requests to /i, /o, and subpaths
+    cy.intercept({ method: 'POST', url: /\/(i|o)(\/.*)?$/ }).as('postRequests');
+    cy.intercept({ method: 'GET', url: /\/(i|o)(\/.*)?$/ }).as('getRequests');
 
     // ✅ Override console methods to capture logs
     cy.window().then((win) => {
@@ -384,16 +385,17 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         win.console.info = interceptConsole('info', originalConsoleMethods.info);
     });
 
-    // ✅ Capture network logs for /i and /o requests
-    cy.wait('@importantRequests', { timeout: 15000 }).then((interception) => {
+    // ✅ Capture POST requests
+    cy.wait('@postRequests', { timeout: 15000 }).then((interception) => {
         if (!interception) {
-            console.warn("[DEBUG] No request detected for /i or /o. Skipping log save.");
+            console.warn("[DEBUG] No POST request detected for /i, /o, or subpaths. Skipping log save.");
             return;
         }
 
         const logData = {
             testName: testName,
             timestamp: new Date().toISOString(),
+            method: 'POST',
             endpoint: interception.request.url,
             logData: {
                 request: interception.request,
@@ -403,7 +405,30 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
 
         cy.task('saveLogsBySpecName', { specName, logData });
 
-        console.log(`[DEBUG] Network log captured for ${interception.request.url} in test: ${testName}`);
+        console.log(`[DEBUG] POST request captured for ${interception.request.url} in test: ${testName}`);
+    });
+
+    // ✅ Capture GET requests
+    cy.wait('@getRequests', { timeout: 15000 }).then((interception) => {
+        if (!interception) {
+            console.warn("[DEBUG] No GET request detected for /i, /o, or subpaths. Skipping log save.");
+            return;
+        }
+
+        const logData = {
+            testName: testName,
+            timestamp: new Date().toISOString(),
+            method: 'GET',
+            endpoint: interception.request.url,
+            logData: {
+                request: interception.request,
+                response: interception.response,
+            },
+        };
+
+        cy.task('saveLogsBySpecName', { specName, logData });
+
+        console.log(`[DEBUG] GET request captured for ${interception.request.url} in test: ${testName}`);
     });
 
     // ✅ Save console logs in `afterEach`
