@@ -63,12 +63,13 @@ const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
 describe('Complete Onboarding', () => {
     beforeEach(function() {
-        cy.saveConsoleAndNetworkLogs(); // ✅ Start capturing logs
+        
         //cy.logToCITerminal(); // ✅ Log to CI terminal
         navigationHelpers.goToLoginPage();
     });
 
     afterEach(function() {
+        cy.saveConsoleAndNetworkLogs(); // ✅ Start capturing logs
         cy.dropMongoDatabase();
     });
 

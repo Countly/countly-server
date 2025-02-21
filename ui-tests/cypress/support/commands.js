@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-undef
 import 'cypress-file-upload';
 const helper = require('./helper');
 
@@ -132,7 +133,6 @@ Cypress.Commands.add("shouldBeEqual", (element, text) => {
     cy.getElement(element).should("equal", text);
 });
 
-// eslint-disable-next-line no-undef
 Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
     cy.getElement(element).invoke('text').then((actualText) => {
         expect(actualText).not.to.equal(text);
@@ -350,19 +350,41 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
     const specName = Cypress.spec.name.replace('.cy.js', '');
     const testName = Cypress.mocha.getRunner().suite.ctx.currentTest.title;
     let consoleLogs = [];
+    let networkLogs = { POST: [], GET: [] };
 
     console.log(`[DEBUG] 🚀 Starting log capture for test: ${testName}`);
 
-    // ✅ Intercept all POST and GET requests
+    // ✅ POST ve GET isteklerini yakala ve yanıtları kaydet
     cy.intercept('POST', '**', (req) => {
-        console.log(`[DEBUG] 🕵️ POST Request detected: ${req.url}`);
+        req.continue((res) => {
+            const logEntry = {
+                method: 'POST',
+                url: req.url,
+                status: res.statusCode,
+                requestBody: req.body,
+                responseBody: res.body,
+                timestamp: new Date().toISOString()
+            };
+            networkLogs.POST.push(logEntry);
+            console.log(`[DEBUG] 🕵️ Captured POST Request:`, logEntry);
+        });
     }).as('allPostRequests');
 
     cy.intercept('GET', '**', (req) => {
-        console.log(`[DEBUG] 🕵️ GET Request detected: ${req.url}`);
+        req.continue((res) => {
+            const logEntry = {
+                method: 'GET',
+                url: req.url,
+                status: res.statusCode,
+                responseBody: res.body,
+                timestamp: new Date().toISOString()
+            };
+            networkLogs.GET.push(logEntry);
+            console.log(`[DEBUG] 🕵️ Captured GET Request:`, logEntry);
+        });
     }).as('allGetRequests');
 
-    // ✅ Capture console logs and print them to CI terminal
+    // ✅ Konsol loglarını yakala ve CI'ya yazdır
     cy.window().then((win) => {
         const originalConsoleMethods = { ...win.console };
 
@@ -376,32 +398,29 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         });
     });
 
-    // ✅ Check if there are any requests before waiting
-    cy.get('@allPostRequests.all').then((requests) => {
-        console.log(`[DEBUG] 🚨 Total POST requests detected: ${requests.length}`);
-        if (requests.length > 0) {
-            cy.wait('@allPostRequests', { timeout: 15000 });
-        }
-        else {
-            console.warn("[DEBUG] ❌ No POST requests found. Skipping wait.");
-        }
-    });
-
-    cy.get('@allGetRequests.all').then((requests) => {
-        console.log(`[DEBUG] 🚨 Total GET requests detected: ${requests.length}`);
-        if (requests.length > 0) {
-            cy.wait('@allGetRequests', { timeout: 15000 });
-        }
-        else {
-            console.warn("[DEBUG] ❌ No GET requests found. Skipping wait.");
-        }
-    });
-
-    // ✅ Print all collected console logs after test execution
+    // ✅ Test bitince logları kaydet
     cy.once('test:after:run', (test) => {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const logData = {
+            testName: test.title,
+            state: test.state,
+            consoleLogs,
+            networkLogs,
+            timestamp,
+        };
+
+        // 📂 Logları kaydet
+        cy.writeFile(`cypress/logs/${specName}_${timestamp}.json`, JSON.stringify(logData, null, 2));
+
+        // 📜 Logları konsola yazdır
         if (consoleLogs.length > 0) {
             console.log(`[DEBUG] 📜 Console logs for test: ${testName}`);
             consoleLogs.forEach(log => console.log(log));
+        }
+
+        if (networkLogs.POST.length > 0 || networkLogs.GET.length > 0) {
+            console.log(`[DEBUG] 🌐 Network logs for test: ${testName}`);
+            console.log(JSON.stringify(networkLogs, null, 2));
         }
     });
 });
