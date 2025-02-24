@@ -35,6 +35,7 @@ Enterprise Features:
 - [core] Adding support For SingleStore Kai
 - [flows] Adding UX improvements to the editor
 - [journey_engine] Adding "Journey Engine" feature
+- [ldap] Fixed issues that would lead to configuration options not being picked up
 - [remote-config] Moving enable/disable functionality to the dropdown
 - [surveys] "Select one" text in the widget can be edited now
 - [surveys] Removed unnecessary limitation with using cohorts for targeting
