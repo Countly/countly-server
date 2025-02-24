@@ -385,7 +385,7 @@
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER = 'color-picker';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN = 'dropdown';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT = 'input';
-    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT_NUMBER = 'input-number';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER = 'number';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER = 'slider';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER = 'swapper';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH = 'switch';
@@ -395,7 +395,7 @@
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER]: 'cly-colorpicker',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN]: 'el-select',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT]: 'el-input',
-        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT_NUMBER]: 'el-input-number',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER]: 'el-input-number',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER]: 'el-slider',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER]: 'cly-option-swapper',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH]: 'el-switch',
@@ -409,12 +409,26 @@
         template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html'),
 
         props: {
+            componentTooltip: {
+                default: null,
+                type: String
+            },
+
             disabled: {
                 default: false,
                 type: Boolean
             },
 
             label: {
+                default: null,
+                type: String
+            },
+
+            labelIcon: {
+                default: 'cly-io cly-io-question-mark-circle',
+                type: String
+            },
+            labelTooltip: {
                 default: null,
                 type: String
             },
@@ -457,6 +471,16 @@
             size: {
                 default: null,
                 type: String
+            },
+
+            withComponentTooltip: {
+                default: false,
+                type: Boolean
+            },
+
+            withLabelTooltip: {
+                default: false,
+                type: Boolean
             }
         },
 
@@ -475,11 +499,19 @@
                         return countlyCommon.unescapeHtml(this.value) || '';
                     }
 
+                    if (this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER) {
+                        return +this.value || 0;
+                    }
+
                     return this.value || null;
                 },
                 set(newValue) {
                     this.$emit('input', newValue);
                 }
+            },
+
+            controlsProp() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER ? false : null;
             },
 
             isDropdownInput() {
@@ -490,12 +522,19 @@
                 return this.isDropdownInput && Array.isArray(this.options) && this.options.length;
             },
 
+            isLabelTooltipVisible() {
+                return this.withLabelTooltip && this.labelTooltip;
+            },
+
             isSliderInput() {
                 return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER;
             },
 
             isSuffixVisible() {
-                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT && this.suffix;
+                return (
+                    this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_INPUT ||
+                    this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_NUMBER
+                ) && this.suffix;
             },
 
             isSwapperInput() {
@@ -508,6 +547,13 @@
 
             mainComponent() {
                 return COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE[this.type] || 'div';
+            },
+
+            tooltip() {
+                if (this.withComponentTooltip) {
+                    return this.componentTooltip || null;
+                }
+                return null;
             }
         }
     }));
@@ -516,6 +562,11 @@
         template: CV.T('/javascripts/countly/vue/templates/UI/option-swapper.html'),
 
         props: {
+            disabled: {
+                default: false,
+                type: Boolean
+            },
+
             highlightOnSelect: {
                 default: true,
                 type: Boolean

@@ -212,6 +212,19 @@ class InternalEventTrigger {
                 }
                 break;
             }
+            case "/i/remote-config/add-parameter":
+            case "/i/remote-config/update-parameter":
+            case "/i/remote-config/remove-parameter":
+            case "/i/remote-config/add-condition":
+            case "/i/remote-config/update-condition":
+            case "/i/remote-config/remove-condition":
+                utils.updateRuleTriggerTime(rule._id);
+                this.pipeline({
+                    params: ob,
+                    rule: rule,
+                    eventType,
+                });
+                break;
             case "/alerts/trigger": {
                 this.pipeline({
                     params: ob,
@@ -255,4 +268,10 @@ const InternalEvents = [
     "/i/app_users/delete",
     "/hooks/trigger",
     "/alerts/trigger",
+    "/i/remote-config/add-parameter",
+    "/i/remote-config/update-parameter",
+    "/i/remote-config/remove-parameter",
+    "/i/remote-config/add-condition",
+    "/i/remote-config/update-condition",
+    "/i/remote-config/remove-condition",
 ];
