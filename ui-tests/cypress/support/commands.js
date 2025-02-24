@@ -235,7 +235,7 @@ Cypress.Commands.add('saveConsoleAndNetworkLogs', () => {
         const originalConsoleError = win.console.error;
         const originalConsoleInfo = win.console.info;
 
-        const interceptConsole = (type, originalMethod) => {
+        const interceptConsole = (originalMethod) => {
             return (...args) => {
                 const logData = {
                     testName: testName,
