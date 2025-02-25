@@ -22,6 +22,14 @@ jobs:
         run: |
           sudo sed -i 's/azure/us/g' /etc/apt/sources.list
 
+      - name: Start mongo
+        run: docker run --rm -d -p 27017:27017 --name mongo mongo:6.0 --replSet test --bind_ip_all
+
+      - name: Initialize MongoDB Replica Set
+        run: |
+          sleep 5 # Give mongo a chance to start up
+          docker run --rm mongo:6.0 mongosh --host 172.17.0.1 --eval 'rs.initiate({_id: "test", members: [{_id: 0, host: "172.17.0.1:27017"}]})'
+
       - name: Installing Countly
         shell: bash
         run: sudo bash ./bin/countly.install.sh
@@ -37,14 +45,6 @@ jobs:
       - name: Mongo version
         shell: bash
         run: mongosh --version
-
-      - name: Start mongo
-        run: docker run --rm -d -p 27017:27017 --name mongo mongo:6.0 --replSet test --bind_ip_all
-
-      - name: Initialize MongoDB Replica Set
-        run: |
-          sleep 5 # Give mongo a chance to start up
-          docker run --rm mongo:6.0 mongosh --host 172.17.0.1 --eval 'rs.initiate({_id: "test", members: [{_id: 0, host: "172.17.0.1:27017"}]})'
 
       - name: Output API Logs
         if: ${{ always() }}
