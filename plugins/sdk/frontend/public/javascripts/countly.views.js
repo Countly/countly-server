@@ -271,6 +271,27 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             },
+            resetSDKConfiguration: function() {
+                var helper_msg = "You are about to reset your SDK configuration to default state. Do you want to continue?";
+                var helper_title = "Reset configuration?";
+                var self = this;
+
+                CountlyHelpers.confirm(helper_msg, "red", function(result) {
+                    if (!result) {
+                        return true;
+                    }
+
+                    var params = self.$store.getters["countlySDK/sdk/all"];
+                    var data = params || {};
+                    for (var key in self.configs) {
+                        self.configs[key].value = self.configs[key].default;
+                        data[key] = self.configs[key].value;
+                    }
+                    self.$store.dispatch("countlySDK/sdk/update", data).then(function() {
+                        self.$store.dispatch("countlySDK/initialize");
+                    });
+                }, ["No, don't reset", "Yes, reset"], {title: helper_title});
+            },
             save: function() {
                 var params = this.$store.getters["countlySDK/sdk/all"];
                 var data = params || {};
