@@ -255,6 +255,34 @@ describe('Testing Simple database operations', function() {
         });
     });
 
+    describe("test insert Many(+behaviour on duplicate)", function() {
+        it("Insert once and check result(promise)", async function(done) {
+            var rr = await db.collection("testCommands3").insertMany([{"_id": 1, "_id": 2, "_id": 3}]);
+
+            var cursor = db.collection("testCommands3").find();
+            var res = await cursor.toArray();
+            res.should.have.property.length(3);
+        });
+
+        it("Insert again and check result(callback)", async function(done) {
+            var rr = await db.collection("testCommands3").insertMany([{"_id": 4, "_id": 5, "_id": 6}]);
+
+            db.collection("testCommands3").insertMany([{"_id": 4, "_id": 5, "_id": 6}], function(err, res) {
+                db.collection("testCommands3").find().toArray(function(err, res) {
+                    res.should.have.property.length(6);
+                });
+            });
+        });
+
+        it("Insert and should get duplicate error", async function(done) {
+            var rr = await db.collection("testCommands3").insertMany([{"_id": 7, "_id": 1, "_id": 8}]);
+
+            var cursor = db.collection("testCommands3").find();
+            var res = await cursor.toArray();
+            res.should.have.property.length(8);
+        });
+
+    });
 
 
     describe('Cleanup', function() {
@@ -270,6 +298,9 @@ describe('Testing Simple database operations', function() {
         });
         it('should remove collection with promise', async function() {
             var res = await db.collection("testCommands2").drop();
+            res.should.be.true;
+
+            res = await db.collection("testCommands3").drop();
             res.should.be.true;
         });
         after('Close db connection', async function() {

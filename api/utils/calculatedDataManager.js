@@ -8,6 +8,7 @@ var calculatedDataManager = {};
 var common = require("./common.js");
 var crypto = require("crypto");
 var fetch = require("../parts/data/fetch.js");
+var plugins = require("../../plugins/pluginManager.js");
 
 var collection = "drill_data_cache";
 const log = require('./log.js')('core:calculatedDataManager');
@@ -29,6 +30,8 @@ calculatedDataManager.longtask = async function(options) {
     options.id = calculatedDataManager.getId(options.query_data);
     options.db = options.db || common.db;
     var timeout;
+    var keep = parseInt(plugins.getConfig("drill").drill_snapshots_cache_time, 10) || 60 * 60 * 24;
+    keep = keep * 1000;
 
     /**
      * Return message in case it takes too long
@@ -41,39 +44,40 @@ calculatedDataManager.longtask = async function(options) {
         }
     }
     /** switching to long task
-     * @param {object} options - options
-     * @param {object} options.query_data - query data
-     * @param {object} options.db - db connection
-     * @param {function} options.outputData - function to output data
-     * @param {number} options.threshold - threshold in seconds
+     * @param {object} my_options - options
+     * @param {object} my_options.query_data - query data
+     * @param {object} my_options.db - db connection
+     * @param {function} my_options.outputData - function to output data
+     * @param {number} my_options.threshold - threshold in seconds
      */
-    async function switchToLongTask(options) {
-        timeout = setTimeout(notifyClient, options.threshold * 1000);
+    async function switchToLongTask(my_options) {
+        timeout = setTimeout(notifyClient, my_options.threshold * 1000);
         try {
-            await common.db.collection(collection).insertOne({_id: options.id, status: "calculating", "lu": new Date()});
+            await common.db.collection(collection).insertOne({_id: my_options.id, status: "calculating", "lu": new Date()});
         }
         catch (e) {
-            options.outputData(e, {"_id": options.id, "running": false, "error": true});
+            my_options.outputData(e, {"_id": my_options.id, "running": false, "error": true});
             clearTimeout(timeout);
             return;
         }
-        fetch.fetchFromGranuralData(options.query_data, function(err, res) {
+        fetch.fetchFromGranuralData(my_options.query_data, function(err, res) {
             if (err) {
-                options.errored = true;
-                options.errormsg = err;
+                my_options.errored = true;
+                my_options.errormsg = err;
             }
-            calculatedDataManager.saveResult(options, res);
+            calculatedDataManager.saveResult(my_options, res);
             clearTimeout(timeout);
-            if (!options.returned) {
-                options.outputData(err, {"_id": options.id, "data": res, "lu": new Date()});
+            if (!my_options.returned) {
+                my_options.outputData(err, {"_id": my_options.id, "data": res, "lu": new Date()});
             }
         });
     }
     var data = await common.db.collection(collection).findOne({_id: options.id});
+
     if (data) {
         if (data.status === "done") {
             //check if it is not too old
-            if (data.lu && (new Date().getTime() - data.lu.getTime()) < options.threshold * 1000) {
+            if (data.lu && (new Date().getTime() - data.lu.getTime()) < keep) {
                 options.outputData(null, {"data": data.data, "lu": data.lu, "_id": options.id});
                 return;
             }
@@ -88,7 +92,7 @@ calculatedDataManager.longtask = async function(options) {
         }
         else if (data.status === "calculating") {
             if (data.start && (new Date().getTime() - data.start) > 1000 * 60 * 60) {
-                options.outputData(err, {"_id": options.id, "running": true});
+                options.outputData(null, {"_id": options.id, "running": true});
                 return;
             }
             else {

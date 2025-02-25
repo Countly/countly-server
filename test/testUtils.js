@@ -176,18 +176,18 @@ var testUtils = function testUtils() {
             match["a"] = options.app_id;
         }
         if (options.event) {
-            if(options.event.indexOf("[CLY]_")!==0){
-                match["e"] =  "[CLY]_custom";
-                match["n"] = options.event
+            if (options.event.indexOf("[CLY]_") !== 0) {
+                match["e"] = "[CLY]_custom";
+                match["n"] = options.event;
             }
             else {
-            match["e"] = options.event;
+                match["e"] = options.event;
             }
         }
-        if(options.name){
-            match["n"]  = options.name;
+        if (options.name) {
+            match["n"] = options.name;
         }
-        
+
 
         if (options.period) {
             var periodObj = common.getPeriodObj(options.period);
@@ -252,18 +252,18 @@ var testUtils = function testUtils() {
             match["a"] = options.app_id;
         }
         if (options.event) {
-            if(options.event.indexOf("[CLY]_")!==0){
-                match["e"] =  "[CLY]_custom";
-                match["n"] = options.event
+            if (options.event.indexOf("[CLY]_") !== 0) {
+                match["e"] = "[CLY]_custom";
+                match["n"] = options.event;
             }
             else {
-            match["e"] = options.event;
+                match["e"] = options.event;
             }
         }
-        if(options.name){
-            match["n"]  = options.name;
+        if (options.name) {
+            match["n"] = options.name;
         }
-        
+
 
         if (options.period) {
             var periodObj = common.getPeriodObj(options.period);

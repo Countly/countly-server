@@ -176,7 +176,7 @@ function verifyTotals(period, order, orderString) {
 
     it("Checking against calculating same table from granural data", function(done) {
         request
-            .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&query={"query_name":"viewsTableData"}&period=' + period)
+            .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&query={"queryName":"viewsTableData"}&period=' + period)
             .expect(200)
             .end(function(err, res) {
                 console.log(res.text);
