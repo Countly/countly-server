@@ -2,9 +2,13 @@
 
 name: CI
 
+# Controls when the workflow will run
 on:
+  # Triggers the workflow on push or pull request events but only for the master branch
   pull_request:
-    branches: [ master, next ]
+    branches: [ master, next, release.*, flex ]
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
       custom_tag:
@@ -12,30 +16,22 @@ on:
         required: false
         default: ''
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # This workflow contains a single job called "build"
   install:
+    # The type of runner that the job will run on
     runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
 
-      - name: Install Docker
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
-          sudo systemctl start docker
-          sudo systemctl enable docker
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
 
       - name: Github Actions Azure connection fix
         run: |
+          # Workaround for https://github.com/actions/runner-images/issues/675#issuecomment-1381389712
           sudo sed -i 's/azure/us/g' /etc/apt/sources.list
-
-      - name: Start mongo
-        run: docker run --rm -d -p 27017:27017 --name mongo mongo:6.0 --replSet test --bind_ip_all
-
-      - name: Initialize MongoDB Replica Set
-        run: |
-          sleep 5 # Give mongo a chance to start up
-          docker run --rm mongo:6.0 mongosh --host 172.17.0.1 --eval 'rs.initiate({_id: "test", members: [{_id: 0, host: "172.17.0.1:27017"}]})'
 
       - name: Installing Countly
         shell: bash
@@ -68,7 +64,6 @@ jobs:
       - name: Output Nginx Logs
         if: ${{ always() }}
         run: sudo cat /var/log/nginx/error.log
-
   lint:
     runs-on: ubuntu-latest
     container:
@@ -80,20 +75,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Docker
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
-          sudo systemctl start docker
-          sudo systemctl enable docker
-
-      - name: Start mongo
-        run: docker run --rm -d -p 27017:27017 --name mongo mongo:6.0 --replSet test --bind_ip_all
-
-      - name: Initialize MongoDB Replica Set
-        run: |
-          sleep 5 # Give mongo a chance to start up
-          docker run --rm mongo:6.0 mongosh --host 172.17.0.1 --eval 'rs.initiate({_id: "test", members: [{_id: 0, host: "172.17.0.1:27017"}]})'
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.12.0
+        with:
+          mongodb-replica-set: test-rs
 
       - name: Copy code
         shell: bash
@@ -129,7 +114,6 @@ jobs:
         shell: bash
         working-directory: /opt/countly
         run: sudo countly task dist-all
-
   test-api-core:
     runs-on: ubuntu-latest
     container:
@@ -141,20 +125,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Docker
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
-          sudo systemctl start docker
-          sudo systemctl enable docker
-
-      - name: Start mongo
-        run: docker run --rm -d -p 27017:27017 --name mongo mongo:6.0 --replSet test --bind_ip_all
-
-      - name: Initialize MongoDB Replica Set
-        run: |
-          sleep 5 # Give mongo a chance to start up
-          docker run --rm mongo:6.0 mongosh --host 172.17.0.1 --eval 'rs.initiate({_id: "test", members: [{_id: 0, host: "172.17.0.1:27017"}]})'
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.12.0
+        with:
+          mongodb-replica-set: test-rs
 
       - name: Prepare tests
         shell: bash
@@ -180,7 +154,52 @@ jobs:
           /sbin/my_init &
           node bin/scripts/test.connection.js
           npx grunt mochaTest
+  test-api-plugins:
+    runs-on: ubuntu-latest
+    container:
+      image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
+      env:
+        COUNTLY_CONFIG__MONGODB_HOST: mongodb
+        COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.12.0
+        with:
+          mongodb-replica-set: test-rs
+
+      - name: Copy code
+        shell: bash
+        run: cp -rf ./* /opt/countly
+
+      - name: Prepare files to use correct MongoDB host
+        shell: bash
+        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/run.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/run.sh"
+
+      - name: Prepare tests
+        shell: bash
+        run: bash bin/scripts/countly.prepare.ce.plugins.tests.sh
+
+      - name: Configure API
+        shell: bash
+        run: "sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js"
+
+      - name: Install plugins
+        shell: bash
+        run: |
+         cp plugins/plugins.default.json /opt/countly/plugins/plugins.json
+         node /opt/countly/bin/scripts/install_plugins.js --force
+
+      - name: Run tests
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          npm install
+          /sbin/my_init &
+          node bin/scripts/test.connection.js
+          npx grunt mochaTest       
   ui-test-dashboard:
     runs-on: ubuntu-latest
     container:
@@ -192,8 +211,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set XDG_RUNTIME_DIR
-        run: echo "XDG_RUNTIME_DIR=/tmp" >> $GITHUB_ENV
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.12.0
+        with:
+          mongodb-replica-set: test-rs
 
       - name: Install Chrome
         shell: bash
@@ -202,21 +223,6 @@ jobs:
           apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
           apt install -y /tmp/chrome.deb
-
-      - name: Install Docker
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
-          sudo systemctl start docker
-          sudo systemctl enable docker
-
-      - name: Start mongo
-        run: docker run --rm -d -p 27017:27017 --name mongo mongo:6.0 --replSet test --bind_ip_all
-
-      - name: Initialize MongoDB Replica Set
-        run: |
-          sleep 5 # Give mongo a chance to start up
-          docker run --rm mongo:6.0 mongosh --host 172.17.0.1 --eval 'rs.initiate({_id: "test", members: [{_id: 0, host: "172.17.0.1:27017"}]})'
 
       - name: Copy code
         shell: bash
@@ -266,7 +272,6 @@ jobs:
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
 
   ui-test-onboarding:
-    needs: ui-test-dashboard
     runs-on: ubuntu-latest
     container:
       image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
@@ -277,8 +282,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set XDG_RUNTIME_DIR
-        run: echo "XDG_RUNTIME_DIR=/tmp" >> $GITHUB_ENV
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.12.0
+        with:
+          mongodb-replica-set: test-rs
 
       - name: Install Chrome
         shell: bash
@@ -287,25 +294,14 @@ jobs:
           apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
           apt install -y /tmp/chrome.deb
-          
-      - name: Install Docker
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
-          sudo systemctl start docker
-          sudo systemctl enable docker
-      
-      - name: Start mongo
-        run: docker run --rm -d -p 27017:27017 --name mongo mongo:6.0 --replSet test --bind_ip_all
-
-      - name: Initialize MongoDB Replica Set
-        run: |
-          sleep 5 # Give mongo a chance to start up
-          docker run --rm mongo:6.0 mongosh --host 172.17.0.1 --eval 'rs.initiate({_id: "test", members: [{_id: 0, host: "172.17.0.1:27017"}]})'
 
       - name: Copy code
         shell: bash
         run: cp -rf ./* /opt/countly
+
+      - name: Prepare files to use correct MongoDB host
+        shell: bash
+        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
 
       - name: Prepare environment
         shell: bash
