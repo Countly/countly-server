@@ -3,6 +3,7 @@ var plugin = {},
     plugins = require('../../pluginManager.js'),
     moment = require('moment'),
     { validateRead } = require('../../../api/utils/rights.js');
+var log = common.log('times-of-day:api');
 
 const FEATURE_NAME = 'times_of_day';
 
@@ -261,6 +262,14 @@ const FEATURE_NAME = 'times_of_day';
             if (data.widget_type === "times-of-day") {
                 var collectionName = "";
                 var criteria = {};
+                if (data && data.apps && data.apps[0]) {
+                    try {
+                        criteria.a = common.db.ObjectID(data.apps[0]);
+                    }
+                    catch (e) {
+                        log.e(e);
+                    }
+                }
 
                 // var appId = data.apps[0];  can be deleted 
                 var dataType = data.data_type;

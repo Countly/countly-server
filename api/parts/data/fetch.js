@@ -35,6 +35,10 @@ fetch.fetchFromGranuralData = async function(queryData, callback) {
         data = await common.drillQueryRunner.getUniqueGraph(queryData);
         callback(null, data);
     }
+    else if (queryData.queryName = "viewsTableData") {
+        data = await common.drillQueryRunner.getViewsTableData(queryData);
+        callback(null, data);
+    }
     else {
         try {
             data = await common.drillQueryRunner.getAggregatedData(queryData);

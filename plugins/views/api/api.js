@@ -37,6 +37,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     });
 
     plugins.register("/master", function() {
+
+        //Ensure nesesarry indexes
+        common.db.collection("app_userviews").createIndex({a: 1});
+        common.db.collection("app_viewsmeta").createIndex({a: 1});
+        common.db.collection("app_viewsmeta").createIndex({url: 1});
+        common.db.collection("app_viewdata").createIndex({vw: 1});
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             require('../../../api/parts/jobs').job('views:cleanupMeta')?.replace()?.schedule("every 1 day");
@@ -141,6 +147,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         common.db.collection("app_viewdata").remove({"vw": viewid});
                                         //remove from userviews
                                         common.db.collection("app_userviews" + appId).update({}, {$unset: {viewid: 1}}, {multi: true});
+                                        common.db.collection("app_userviews").update({"_id": {"$regex": "^" + appId + "_.*"}}, {$unset: {viewid: 1}}, {multi: true});
                                         //remove from meta
                                         common.db.collection("app_viewsmeta").remove({'_id': viewid});
                                         if (common.drillDb) {
@@ -306,6 +313,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             // By using await and no callback, error in db operation will be thrown
             // This error will then be caught by app users api dispatch so that it can cancel app user deletion
             await common.db.collection("app_userviews" + appId).remove({_id: {$in: uids}});
+            var fixed_uids = [];
+            for (var i = 0; i < uids.length; i++) {
+                fixed_uids.push(appId + "_" + uids[i]);
+            }
+            await common.db.collection("app_userviews").remove({_id: {$in: fixed_uids}});
         }
     });
 

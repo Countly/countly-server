@@ -206,7 +206,7 @@ const FEATURE_NAME = 'views';
             try {
                 var res = {};
                 if (fetch_appuserviews) {
-                    res = await common.db.collection("app_userviews" + params.app_id).findOne({'_id': params.app_user.uid});
+                    res = await common.db.collection("app_userviews").findOne({'_id': params.app_id + "_" + params.app_user.uid});
                 }
                 if (update_uvc) {
                     var lvid = params.app_user.lvid;
