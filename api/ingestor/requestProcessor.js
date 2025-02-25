@@ -401,12 +401,18 @@ var processToDrill = async function(params, drill_updates, callback) {
                 "ts": events[i].timestamp || Date.now().valueOf(),
                 "uid": params.app_user.uid,
                 "_uid": params.app_user._id,
-                "did": params.app_user.did,
-                "ce": true,
+                "did": params.app_user.did
                 //d, w,m,h
             };
             if (currEvent.key.indexOf('[CLY]_') === 0) {
-                dbEventObject.ce = false;
+                dbEventObject.n = events[i].key;
+            }
+            else {
+                dbEventObject.n = events[i].key;
+                dbEventObject.e = "[CLY]_custom";
+            }
+            if (currEvent.name) {
+                dbEventObject.n = currEvent.name;
             }
 
             if (dbAppUser && dbAppUser[common.dbUserMap.user_id]) {
@@ -557,7 +563,7 @@ var processToDrill = async function(params, drill_updates, callback) {
             eventsToInsert.push({"insertOne": {"document": dbEventObject}});
             if (eventKey === "[CLY]_view") {
                 var view_id = crypto.createHash('md5').update(currEvent.segmentation.name).digest('hex');
-                viewUpdate[view_id] = {"lvid": dbEventObject._id, "ts": dbEventObject.ts};
+                viewUpdate[view_id] = {"lvid": dbEventObject._id, "ts": dbEventObject.ts, "a": params.app_id + ""};
                 if (currEvent.segmentation) {
                     var sgm = {};
                     var have_sgm = false;
@@ -580,25 +586,26 @@ var processToDrill = async function(params, drill_updates, callback) {
         for (var z4 = 0; z4 < drill_updates.length;z4++) {
             eventsToInsert.push(drill_updates[z4]);
         }
-
     }
     if (eventsToInsert.length > 0) {
         try {
             await common.drillDb.collection("drill_events").bulkWrite(eventsToInsert, {ordered: false});
+            callback(null);
             if (Object.keys(viewUpdate).length) {
                 //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
                 try {
-                    await common.db.collection("app_userviews" + params.app_id).updateOne({_id: params.app_user.uid}, {$set: viewUpdate}, {upsert: true});
+                    await common.db.collection("app_userviews").updateOne({_id: params.app_id + "_" + params.app_user.uid}, {$set: viewUpdate}, {upsert: true});
                 }
                 catch (err) {
                     log.e(err);
                 }
             }
-            callback(null);
+
         }
         catch (errors) {
             var realError;
             if (errors && Array.isArray(errors)) {
+                log.e(JSON.stringify(errors));
                 for (let i = 0; i < errors.length; i++) {
                     if ([11000, 10334, 17419].indexOf(errors[i].code) === -1) {
                         realError = true;
@@ -609,16 +616,17 @@ var processToDrill = async function(params, drill_updates, callback) {
                     callback(realError);
                 }
                 else {
+                    callback(null);
                     if (Object.keys(viewUpdate).length) {
                         //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
                         try {
-                            await common.db.collection("app_userviews" + params.app_id).updateOne({_id: params.app_user.uid}, {$set: viewUpdate}, {upsert: true});
+                            await common.db.collection("app_userviews").updateOne({_id: params.app_id + "_" + params.app_user.uid}, {$set: viewUpdate}, {upsert: true});
                         }
                         catch (err) {
                             log.e(err);
                         }
                     }
-                    callback(null);
+
                 }
             }
             else {
@@ -701,7 +709,14 @@ const processRequestData = (ob, done) => {
             update = common.mergeQuery(update, ob.updates[i]);
         }
     }
-    Promise.all([ common.updateAppUser(ob.params, update, false, true)]).then(function() {
+    var SaveAppUser = Date.now().valueOf();
+
+    common.updateAppUser(ob.params, update, false, function(err, userdoc) {
+
+        /*var AfterSaveAppUser = Date.now().valueOf();
+        if (AfterSaveAppUser - SaveAppUser > treshold) {
+            console.log("SaveAppUser time: " + (AfterSaveAppUser - SaveAppUser));
+        }*/
         processToDrill(ob.params, ob.drill_updates, function(error) {
             if (error) {
                 common.returnMessage(ob.params, 400, 'Could not record events:' + error);
@@ -730,7 +745,6 @@ plugins.register("/sdk/process_request", async function(ob) {
  * 
  * @param {*} params  - request parameters
  * @param {*} done  - callback function
- * @returns {boolean} - returns false if request is cancelled
  * 
  * 
  * 1)Get App collection settings

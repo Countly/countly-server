@@ -257,7 +257,7 @@ describe('Testing Simple database operations', function() {
 
     describe("test insert Many(+behaviour on duplicate)", function() {
         it("Insert once and check result(promise)", async function(done) {
-            var rr = await db.collection("testCommands3").insertMany([{"_id": 1, "_id": 2, "_id": 3}]);
+            var rr = await db.collection("testCommands3").insertMany([{"_id": 1},{ "_id": 2},{"_id": 3}]);
 
             var cursor = db.collection("testCommands3").find();
             var res = await cursor.toArray();
@@ -265,9 +265,9 @@ describe('Testing Simple database operations', function() {
         });
 
         it("Insert again and check result(callback)", async function(done) {
-            var rr = await db.collection("testCommands3").insertMany([{"_id": 4, "_id": 5, "_id": 6}]);
+            var rr = await db.collection("testCommands3").insertMany([{"_id": 4},{ "_id": 5},{ "_id": 6}]);
 
-            db.collection("testCommands3").insertMany([{"_id": 4, "_id": 5, "_id": 6}], function(err, res) {
+            db.collection("testCommands3").insertMany([{"_id": 4},{ "_id": 5},{ "_id": 6}], function(err, res) {
                 db.collection("testCommands3").find().toArray(function(err, res) {
                     res.should.have.property.length(6);
                 });

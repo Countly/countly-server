@@ -8,6 +8,7 @@ class Cacher {
 /**
      *  Create batcher instance
      *  @param {Db} db - database object
+     *  @param {object} options - options object
      */
     constructor(db, options) {
         this.db = db;
