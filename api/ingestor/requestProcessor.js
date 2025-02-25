@@ -709,9 +709,9 @@ const processRequestData = (ob, done) => {
             update = common.mergeQuery(update, ob.updates[i]);
         }
     }
-    var SaveAppUser = Date.now().valueOf();
+    //var SaveAppUser = Date.now().valueOf();
 
-    common.updateAppUser(ob.params, update, false, function(err, userdoc) {
+    common.updateAppUser(ob.params, update, false, function() {
 
         /*var AfterSaveAppUser = Date.now().valueOf();
         if (AfterSaveAppUser - SaveAppUser > treshold) {
@@ -727,10 +727,6 @@ const processRequestData = (ob, done) => {
             }
         });
 
-    }).catch(function(err) {
-        log.e(err);
-        common.returnMessage(ob.params, 400, 'Cannot process request');
-        done();
     });
 };
 

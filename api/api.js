@@ -14,7 +14,7 @@ const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
 
-var {MongoDbQueryRunner} = require('../plugins/drill/api/parts/data/MongoDbQueryRunner.js');
+var {MongoDbQueryRunner} = require('./utils/mongoDbQueryRunner.js');
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
