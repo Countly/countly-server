@@ -124,17 +124,6 @@ jobs:
   test-api-core:
     runs-on: ubuntu-latest
 
-    services:
-      mongodb:
-        image: mongo:8.0
-        options: >-
-          --health-cmd mongosh
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 27017:27017
-
     container:
       image: countly/countly-core:pipelines-${{ inputs.custom_tag || github.base_ref || github.ref_name }}
       env:
@@ -143,6 +132,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.12.0
+        with:
+          mongodb-version: 8.0
+          mongodb-replica-set: rs0
 
       - name: Prepare tests
         shell: bash
