@@ -18,6 +18,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
+
       - name: Github Actions Azure connection fix
         run: |
           sudo sed -i 's/azure/us/g' /etc/apt/sources.list
@@ -73,6 +80,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
+
       - name: Start mongo
         run: docker run --rm -d -p 27017:27017 --name mongo mongo:6.0 --replSet test --bind_ip_all
 
@@ -126,6 +140,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
 
       - name: Start mongo
         run: docker run --rm -d -p 27017:27017 --name mongo mongo:6.0 --replSet test --bind_ip_all
@@ -181,6 +202,13 @@ jobs:
           apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
           apt install -y /tmp/chrome.deb
+
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
 
       - name: Start mongo
         run: docker run --rm -d -p 27017:27017 --name mongo mongo:6.0 --replSet test --bind_ip_all
@@ -259,7 +287,14 @@ jobs:
           apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb wget
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb
           apt install -y /tmp/chrome.deb
-
+          
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
+      
       - name: Start mongo
         run: docker run --rm -d -p 27017:27017 --name mongo mongo:6.0 --replSet test --bind_ip_all
 
