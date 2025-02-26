@@ -193,7 +193,12 @@ class changeStreamReader {
                 this.failedToken = token;
             }
             //Failed because of db does not support change streams. Run in "query mode";
-            else if (err.code === "look_for_right_code") {
+            else if (err.code === 40573) { //change stream is not supported
+                this.keep_closed = true;
+                if (token && token.cd) {
+                    var newCD = Date.now();
+                    await this.processBadRange({name: this.name, cd1: token.cd, cd2: newCD}, token);
+                }
                 //Call process bad range if there is any info about last token.
                 //Switch to query mode
             }

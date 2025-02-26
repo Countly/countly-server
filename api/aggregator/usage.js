@@ -2,6 +2,7 @@ var usage = {};
 var common = require('./../utils/common.js');
 var plugins = require('./../../plugins/pluginManager.js');
 var async = require('async');
+var crypto = require('crypto');
 
 usage.processSessionFromStream = function(token, currEvent, params) {
     currEvent.up = currEvent.up || {};
@@ -145,6 +146,126 @@ usage.processSessionFromStream = function(token, currEvent, params) {
     }
     usage.processSessionMetricsFromStream(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params);
 };
+
+
+usage.processEventFromStream = function(token, currEvent) {
+    var forbiddenSegValues = [];
+    for (let i = 1; i < 32; i++) {
+        forbiddenSegValues.push(i + "");
+    }
+
+    //Write event totals for aggregated Data
+
+    common.readBatcher.getOne("apps", common.db.ObjectID(currEvent.a), function(err, app) {
+        if (err || !app) {
+            return;
+        }
+        else {
+            common.readBatcher.getOne("events", common.db.ObjectID(currEvent.a), {"transformation": "event_object"}, function(err2, eventColl) {
+                var tmpEventObj = {};
+                var tmpEventColl = {};
+                var tmpTotalObj = {};
+                var shortEventName = currEvent.n;
+                if (currEvent.e !== "[CLY]_custom") {
+                    shortEventName = currEvent.e;
+                }
+                var rootUpdate = {};
+                eventColl = eventColl || {};
+                if (!eventColl._list || eventColl._list[shortEventName] !== true) {
+                    eventColl._list = eventColl._list || {};
+                    eventColl._list_length = eventColl._list_length || 0;
+                    if (eventColl._list_length <= 500) {
+                        eventColl._list[shortEventName] = true;
+                        eventColl._list_length++;
+                        rootUpdate.$addToSet = {list: shortEventName};
+                    }
+                    else {
+                        return; //do not record this event in aggregated data
+                    }
+                }
+                eventColl._segments = eventColl._segments || {};
+
+                for (var seg in currEvent.sg) {
+                    if (!eventColl._segments[shortEventName] || !eventColl._segments[shortEventName]._list[seg]) {
+                        eventColl._segments[shortEventName] = eventColl._segments[shortEventName] || {_list: {}, _list_length: 0};
+                        eventColl._segments[shortEventName]._list[seg] = true;
+                        rootUpdate.$addToSet = rootUpdate.$addToSet || {};
+                        if (rootUpdate.$addToSet["segments." + shortEventName]) {
+                            if (rootUpdate.$addToSet["segments." + shortEventName].$each) {
+                                rootUpdate.$addToSet["segments." + shortEventName].$each.push(seg);
+                            }
+                            else {
+                                rootUpdate.$addToSet["segments." + shortEventName] = {$each: [rootUpdate.$addToSet["segments." + shortEventName], seg]};
+                            }
+                        }
+                        else {
+                            rootUpdate.$addToSet["segments." + shortEventName] = seg;
+                        }
+                    }
+                }
+
+                var time = common.initTimeObj(app.timezone, currEvent.ts);
+                var params = {time: time, app_id: currEvent.a, app: app, appTimezone: app.timezone || "UTC"};
+
+                if (currEvent.s && common.isNumber(currEvent.s)) {
+                    common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.sum, currEvent.s);
+                    common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.sum, currEvent.s);
+                }
+
+                if (currEvent.dur && common.isNumber(currEvent.dur)) {
+                    common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.dur, currEvent.dur);
+                    common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.dur, currEvent.dur);
+                }
+                currEvent.c = currEvent.c || 1;
+                if (currEvent.c && common.isNumber(currEvent.count)) {
+                    currEvent.count = parseInt(currEvent.count, 10);
+                }
+
+                common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.count, currEvent.count);
+                common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.count, currEvent.count);
+
+                var dateIds = common.getDateIds(params);
+                var postfix2 = common.crypto.createHash("md5").update(shortEventName).digest('base64')[0];
+
+                tmpEventColl["no-segment" + "." + dateIds.month] = tmpEventObj;
+
+                //ID is - appID_hash_no-segment_month
+                var eventCollectionName = crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
+                var _id = currEvent.a + "_" + eventCollectionName + "_no-segment_" + dateIds.month;
+                //Current event
+                common.writeBatcher.add("events_data", _id, {
+                    "$set": {
+                        "m": dateIds.month,
+                        "s": "no-segment",
+                        "a": params.app_id + "",
+                        "e": shortEventName
+                    },
+                    "$inc": tmpEventObj
+                }, "countly",
+                {token: token});
+
+                //Total event
+                common.writeBatcher.add("events_data", currEvent.a + "_all_key_" + dateIds.month + "_" + postfix2, {
+                    "$set": {
+                        "m": dateIds.month,
+                        "s": "key",
+                        "a": params.app_id + "",
+                        "e": "all"
+                    },
+                    "$inc": tmpEventObj
+                });
+
+                //Total event meta data
+
+                if (Object.keys(rootUpdate).length) {
+                    common.db.collection("events").updateOne({_id: common.db.ObjectID(currEvent.a)}, rootUpdate, {upsert: true});
+                }
+
+            });
+        }
+    });
+};
+
 
 usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params) {
 

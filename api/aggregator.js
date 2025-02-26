@@ -25,24 +25,50 @@ plugins.connectToAllDatabases(true).then(function() {
     common.secondaryWriteBatcher = new WriteBatcher(common.db);
     common.readBatcher = new Cacher(common.db); //Used for Apps info
 
+    common.readBatcher.transformationFunctions = {
+        "event_object": function(data) {
+            if (data && data.list) {
+                data._list = {};
+                data._list_length = 0;
+                for (let i = 0; i < data.list.length; i++) {
+                    data._list[data.list[i]] = true;
+                    data._list_length++;
+                }
+            }
+            if (data && data.segments) {
+                data._segments = {};
+                for (var key in data.segments) {
+                    data._segments[key] = {};
+                    data._segments[key]._list = {};
+                    data._segments[key]._list_length = 0;
+                    for (let i = 0; i < data.segments[key].length; i++) {
+                        data._segments[key]._list[data.segments[key][i]] = true;
+                        data._segments[key]._list_length++;
+                    }
+                }
+
+            }
+            return data;
+        }
+    };
+
 
     //Events processing
     plugins.register("/aggregator", function() {
         var changeStream = new changeStreamReader(common.drillDb, {
             pipeline: [
-                {"$match": {"operationType": "insert", "fullDocument.ce": true}},
-                {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "key": "$fullDocument.e", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "count": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
+                {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_custom"}},
+                {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "c": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
             ],
             "name": "event-ingestion"
         }, (token, currEvent) => {
             if (currEvent && currEvent.a && currEvent.e) {
-                // usage.processEventFromStream(currEvent));
+                usage.processEventFromStream(token, currEvent);
             }
             // process next document
         });
 
         common.writeBatcher.addFlushCallback("events_data", function(token) {
-            console.log("flush callback");
             changeStream.acknowledgeToken(token);
         });
     });
@@ -181,7 +207,7 @@ plugins.connectToAllDatabases(true).then(function() {
         try {
             await common.writeBatcher.flushAll();
             await common.secondaryWriteBatcher.flushAll();
-            await common.insertBatcher.flushAll();
+            // await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
         }
         catch (ex) {
