@@ -279,6 +279,35 @@ const processRequest = (params) => {
 
         if (!params.cancelRequest) {
             switch (apiPath) {
+            case '/i/bulk': {
+                let requests = params.qstring.requests;
+
+                if (requests && typeof requests === "string") {
+                    try {
+                        requests = JSON.parse(requests);
+                    }
+                    catch (SyntaxError) {
+                        console.log('Parse bulk JSON failed', requests, params.req.url, params.req.body);
+                        requests = null;
+                    }
+                }
+                if (!requests) {
+                    common.returnMessage(params, 400, 'Missing parameter "requests"');
+                    return false;
+                }
+                if (!Array.isArray(requests)) {
+                    console.log("Passed invalid param for request. Expected Array, got " + typeof requests);
+                    common.returnMessage(params, 400, 'Invalid parameter "requests"');
+                    return false;
+                }
+                if (!params.qstring.safe_api_response && !plugins.getConfig("api", params.app && params.app.plugins, true).safe && !params.res.finished) {
+                    common.returnMessage(params, 200, 'Success');
+                }
+                common.blockResponses(params);
+
+                processBulkRequest(0, requests, params);
+                break;
+            }
             case '/i/users': {
                 if (params.qstring.args) {
                     try {
