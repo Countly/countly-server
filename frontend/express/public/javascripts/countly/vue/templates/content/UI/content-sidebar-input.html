@@ -1,0 +1,62 @@
+<div class="cly-vue-content-builder-sidebar-input">
+  <div
+    v-if="subHeader"
+    class="cly-vue-content-builder-sidebar-input__sub-header"
+  >
+    {{ subHeader }}
+  </div>
+  <div
+    class="cly-vue-content-builder-sidebar-input__input-container"
+    :class="{
+      'cly-vue-content-builder-sidebar-input__input-container--vertical': isVerticalInput,
+      [`cly-vue-content-builder-sidebar-input__input-container--${size}`]: !!size
+    }"
+  >
+    <label
+      v-if="label"
+      class="cly-vue-content-builder-sidebar-input__label"
+    >
+      {{ label }}
+      <i
+        v-if="isLabelTooltipVisible"
+        v-tooltip.left="labelTooltip"
+        :class="labelIcon"
+      />
+    </label>
+    <slot name="content-builder-layout-step">
+      <component
+        :is="mainComponent"
+        v-bind="$attrs"
+        v-model="componentValue"
+        v-tooltip.left="tooltip"
+        class="cly-vue-content-builder-sidebar-input__component"
+        :class="{ 'cly-vue-content-builder-sidebar-input__component--slider': isSliderInput }"
+        :controls="controlsProp"
+        :disabled="disabled"
+        :options="options"
+      >
+        <template
+          v-if="isSuffixVisible"
+          #suffix
+        >
+          {{ suffix }}
+        </template>
+        <template v-if="isComponentWithOptions">
+          <el-option
+            v-for="(option, index) in options"
+            :key="`content-builder-sidebar-input-option-${index}`"
+            class="cly-vue-content-builder-sidebar-input__option"
+            :label="option.label"
+            :value="option.value"
+          />
+        </template>
+      </component>
+      <div
+        v-if="isSuffixVisible && type === 'number'"
+        class="cly-vue-content-builder-sidebar-input__number-input-suffix"
+      >
+        {{ suffix }}
+      </div>
+    </slot>
+  </div>
+</div>

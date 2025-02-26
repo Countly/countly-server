@@ -3266,6 +3266,80 @@ const processFetchRequest = (params, app, done) => {
 };
 
 /**
+ * Process Bulk Request
+ * @param {number} i - request number in bulk
+ * @param {array} requests - array of requests to process
+ * @param {params} params - params object
+ * @returns {void} void
+ */
+const processBulkRequest = (i, requests, params) => {
+    const appKey = params.qstring.app_key;
+    if (i === requests.length) {
+        common.unblockResponses(params);
+        if ((params.qstring.safe_api_response || plugins.getConfig("api", params.app && params.app.plugins, true).safe) && !params.res.finished) {
+            common.returnMessage(params, 200, 'Success');
+        }
+        return;
+    }
+
+    if (!requests[i] || (!requests[i].app_key && !appKey)) {
+        return processBulkRequest(i + 1, requests, params);
+    }
+    if (params.qstring.safe_api_response) {
+        requests[i].safe_api_response = true;
+    }
+    params.req.body = JSON.stringify(requests[i]);
+    const tmpParams = {
+        'app_id': '',
+        'app_cc': '',
+        'ip_address': requests[i].ip_address || common.getIpAddress(params.req),
+        'user': {
+            'country': requests[i].country_code || 'Unknown',
+            'city': requests[i].city || 'Unknown'
+        },
+        'qstring': requests[i],
+        'href': "/i",
+        'res': params.res,
+        'req': params.req,
+        'promises': [],
+        'bulk': true,
+        'populator': params.qstring.populator,
+        'blockResponses': true
+    };
+
+    tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
+
+    if (!tmpParams.qstring.device_id) {
+        return processBulkRequest(i + 1, requests, params);
+    }
+    else {
+        //make sure device_id is string
+        tmpParams.qstring.device_id += "";
+        tmpParams.app_user_id = common.crypto.createHash('sha1')
+            .update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "")
+            .digest('hex');
+    }
+
+    return validateAppForWriteAPI(tmpParams, () => {
+        /**
+        * Dispatches /sdk/end event upon finishing processing request
+        **/
+        function resolver() {
+            plugins.dispatch("/sdk/end", {params: tmpParams}, () => {
+                processBulkRequest(i + 1, requests, params);
+            });
+        }
+
+        Promise.all(tmpParams.promises)
+            .then(resolver)
+            .catch((error) => {
+                console.log(error);
+                resolver();
+            });
+    });
+};
+
+/**
  * @param  {object} params - params object
  * @param  {String} type - source type
  * @param  {Function} done - done callback

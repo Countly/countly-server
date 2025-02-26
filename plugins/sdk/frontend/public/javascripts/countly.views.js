@@ -72,71 +72,167 @@
             return {
                 groups: {
                     global: {
-                        label: "SDK control",
+                        label: "Global Controls",
                         list: ["tracking", "networking"]
                     },
-                    /*features: {
-                        label: "SDK features",
-                        list: ["crashes", "views"]
+                    features: {
+                        label: "SDK Features",
+                        list: ["crt", "vt", "st", "cet", "ecz", "cr"]
                     },
                     settings: {
-                        label: "SDK settings",
-                        list: ["heartbeat", "event_queue","request_queue"]
-                    }*/
+                        label: "SDK Settings",
+                        list: ["sui", "eqs", "rqs", "czi", "dort", "scui"]
+                    },
+                    limits: {
+                        label: "SDK Limits",
+                        list: ["lkl", "lvs", "lsv", "lbc", "ltlpt", "ltl"]
+                    },
                 },
                 configs: {
                     tracking: {
                         type: "switch",
-                        name: "SDK Tracking",
-                        description: "Enable or disable tracking any data in the SDK. If disabled, tracking new data will stop, but already collected data will be sent as long as networking is enabled",
+                        name: "Allow Tracking",
+                        description: "Enable or disable any tracking (gathering) of data in the SDK (default: enabled)",
                         default: true,
                         value: null
                     },
                     networking: {
                         type: "switch",
-                        name: "SDK Networking",
-                        description: "Enable or disable networking calls within SDK. If disabled no network requests will come from SDK (except SDK config call), but data would still be recorded and preserved on device up to the SDK limits",
+                        name: "Allow Networking",
+                        description: "Enable or disable all networking calls from SDK except SDK config call. Does not effect tracking of data (default: enabled)",
                         default: true,
                         value: null
                     },
-                    /*crashes: {
+                    crt: {
                         type: "switch",
-                        name: "Crashes",
-                        description: "Enable or disable automatic tracking of unhandled crashes",
+                        name: "Allow Crash Tracking",
+                        description: "Enable or disable tracking of crashes (default: enabled)",
                         default: true,
                         value: null
                     },
-                    views: {
+                    vt: {
                         type: "switch",
-                        name: "Views",
-                        description: "Enable or disable automatic tracking of views",
+                        name: "Allow View Tracking",
+                        description: "Enable or disable tracking of views (default: enabled)",
                         default: true,
                         value: null
                     },
-                    heartbeat: {
+                    st: {
+                        type: "switch",
+                        name: "Allow Session Tracking",
+                        description: "Enable or disable tracking of sessions (default: enabled)",
+                        default: true,
+                        value: null
+                    },
+                    sui: {
                         type: "number",
-                        name: "Heartbeat",
-                        description: "How often to send heartbeat to server in seconds",
+                        name: "Session Update Interval",
+                        description: "How often to send session update information to server in seconds (default: 60)",
                         default: 60,
                         value: null
                     },
-                    request_queue: {
+                    cet: {
+                        type: "switch",
+                        name: "Allow Custom Event Tracking",
+                        description: "Enable or disable tracking of custom events (default: enabled)",
+                        default: true,
+                        value: null
+                    },
+                    ecz: {
+                        type: "switch",
+                        name: "Enable Content Zone",
+                        description: "Enable or disable listening to Journey related contents (default: false)",
+                        default: false,
+                        value: null
+                    },
+                    cr: {
+                        type: "switch",
+                        name: "Require Consent",
+                        description: "Enable or disable requiring consent for tracking (default: false)",
+                        default: false,
+                        value: null
+                    },
+                    rqs: {
                         type: "number",
                         name: "Request Queue Size",
-                        description: "How many requests to store in queue, if SDK cannot connect to server",
+                        description: "How many requests to store in queue, if SDK cannot connect to server (default: 1000)",
                         default: 1000,
                         value: null
                     },
-                    event_queue: {
+                    eqs: {
                         type: "number",
                         name: "Event Queue Size",
-                        description: "How many events to store in queue before they would be batched and sent to server",
-                        default: 10,
+                        description: "How many events to store in queue before they would be batched and sent to server (default: 100)",
+                        default: 100,
                         value: null
-                    }*/
+                    },
+                    czi: {
+                        type: "number",
+                        name: "Content Zone Interval",
+                        description: "How often to check for new Journey content in seconds (default: 30, min: 15)",
+                        default: 30,
+                        value: null
+                    },
+                    dort: {
+                        type: "number",
+                        name: "Request Drop Age",
+                        description: "Provide time in hours after which an old request should be dropped if they are not sent to server (default: 0 = not enabled)",
+                        default: 0,
+                        value: null
+                    },
+                    lkl: {
+                        type: "number",
+                        name: "Max Key Length",
+                        description: "Maximum length of an Event's key (including name) (default: 128)",
+                        default: 128,
+                        value: null
+                    },
+                    lvs: {
+                        type: "number",
+                        name: "Max Value Size",
+                        description: "Maximum length of an Event's segment value (default: 256)",
+                        default: 256,
+                        value: null
+                    },
+                    lsv: {
+                        type: "number",
+                        name: "Max Number of Segments",
+                        description: "Maximum amount of segmentation key/value pairs per Event (default: 100)",
+                        default: 100,
+                        value: null
+                    },
+                    lbc: {
+                        type: "number",
+                        name: "Max Breadcrumb Count",
+                        description: "Maximum breadcrumb count that can be provided by the developer (default: 100)",
+                        default: 100,
+                        value: null
+                    },
+                    ltlpt: {
+                        type: "number",
+                        name: "Max Trace Line Per Thread",
+                        description: "Maximum stack trace lines that would be recorded per thread (default: 30)",
+                        default: 30,
+                        value: null
+                    },
+                    ltl: {
+                        type: "number",
+                        name: "Max Trace Length Per Line",
+                        description: "Maximum length of a stack trace line to be recorded (default: 200)",
+                        default: 200,
+                        value: null
+                    },
+                    scui: {
+                        type: "number",
+                        name: "Server Config Update Interval",
+                        description: "How often to check for new server config in hours (default: 4)",
+                        default: 4,
+                        value: null
+                    }
                 },
                 diff: [],
-                description: "This is experimental feature and not all SDKs and SDK versions yet support it. Refer to the SDK documentation for more information"
+                description: "This is experimental feature and not all SDKs and SDK versions yet support it. Refer to the SDK documentation for more information",
+                downloadDescription: "Download the current SDK configuration as a JSON file to provide to the SDK",
             };
         },
         methods: {
@@ -157,6 +253,23 @@
                         this.diff.splice(this.diff.indexOf(key), 1);
                     }
                 }
+            },
+            downloadConfig: function() {
+                var params = this.$store.getters["countlySDK/sdk/all"];
+                var data = {};
+                data.v = 1; // check sdk/api/api.js for version
+                data.t = Date.now();
+                data.c = params || {};
+                var configData = JSON.stringify(data, null, 2);
+                var blob = new Blob([configData], { type: 'application/json' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'sdk-config.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             },
             save: function() {
                 var params = this.$store.getters["countlySDK/sdk/all"];

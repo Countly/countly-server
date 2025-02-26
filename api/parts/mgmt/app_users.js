@@ -509,6 +509,7 @@ usersApi.mergeOtherPlugins = function(options, callback) {
                         if (result && result.length) {
                             for (let index = 0; index < result.length; index++) {
                                 if (result[index].status === "rejected") {
+                                    log.e(result[index]);
                                     retry = true;
                                     break;
                                 }
