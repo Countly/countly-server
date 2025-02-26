@@ -173,6 +173,10 @@ class changeStreamReader {
                         log.e("Set Failed token", token);
                         this.failedToken = token;
                     }
+                    else if (err.code === 40573) { //change stream is not supported
+                        console.log("Change stream is not supported. Keeping streams closed");
+                        this.keep_closed = true;
+                    }
                     else {
                         log.e("Error on change stream", err);
                     }
@@ -194,6 +198,7 @@ class changeStreamReader {
             }
             //Failed because of db does not support change streams. Run in "query mode";
             else if (err.code === 40573) { //change stream is not supported
+                console.log("Change stream is not supported. Keeping streams closed");
                 this.keep_closed = true;
                 if (token && token.cd) {
                     var newCD = Date.now();
