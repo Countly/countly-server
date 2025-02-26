@@ -45,8 +45,9 @@ const plugins = require('../../pluginManager'),
         }
     };
 
-const { init: initQueue } = require("./new/queue/kafka.js");
-const { processScheduleEvent, processPushEvent } = require('./new/sender.js');
+const { init: initQueue } = require("./new/lib/kafka.js");
+const { composeScheduledPushes } = require('./new/composer.js');
+const { sendPush } = require('./new/sender.js');
 
 plugins.setConfigs(FEATURE_NAME, {
     proxyhost: '',
@@ -85,6 +86,7 @@ plugins.internalDrillEvents.push('[CLY]_push_sent');
  * @param {boolean} isMaster
  */
 async function queueInitializer(isMaster = false) {
+    return;
     try {
         await initQueue(
             async function(push) {

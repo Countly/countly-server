@@ -8,6 +8,6 @@ export interface Schedule {
     startedAt?: Date;
     finishedAt?: Date;
     timezoneAware: boolean;
-    schedulerTimezone: number;
-    status: "scheduled"|"started"|"finished";
+    schedulerTimezone?: number;
+    status: "scheduled"|"started"|"finished"|"canceled";
 }

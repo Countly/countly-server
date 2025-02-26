@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { SomeCredential } from "./credentials";
 import { ProxyConfiguration } from "./proxy";
+import { PlatformKeys } from "./message";
 
 export interface ScheduleEvent {
     appId: ObjectId;
@@ -16,9 +17,10 @@ export interface PushEvent {
     appId: ObjectId;
     messageId: ObjectId;
     scheduleId: ObjectId;
+    uid: string;
     token: string;
     message: any;
-    platform: string;
+    platform: PlatformKeys;
     credentials: SomeCredential;
     proxy?: ProxyConfiguration;
 }

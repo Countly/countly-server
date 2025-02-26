@@ -18,7 +18,7 @@ const schedulableTriggers = ["plain", "rec", "multi"];
  * determined by the message's triggering properties
  * @param   {Db}                 db      - mongodb database object
  * @param   {Message}            message - message document from messages collection
- * @returns {Promise<Schedule?>} the created Schedule document from message_schedules collection
+ * @returns {Promise<Schedule|undefined>} the created Schedule document from message_schedules collection
  */
 async function scheduleMessage(db, message) {
     const trigger = message.triggers
@@ -63,8 +63,8 @@ async function scheduleMessage(db, message) {
         message.app,
         message._id,
         scheduleTo,
-        "tz" in trigger ? trigger.tz : false,
-        "sctz" in trigger ? trigger.sctz : null
+        "tz" in trigger && trigger.tz ? trigger.tz : false,
+        "sctz" in trigger ? trigger.sctz : undefined
     );
 }
 /**
@@ -112,6 +112,10 @@ async function createScheduleEvents(messageSchedule) {
     /** @type {ScheduleEvent[]} */
     const events = [];
     if (messageSchedule.timezoneAware) {
+        if (typeof messageSchedule.schedulerTimezone !== "number") {
+            throw new Error("Scheduler timezone is required when a "
+                + "message schedule is timezone aware");
+        }
         const minute = 60 * 1000;
         const { scheduledTo, schedulerTimezone } = messageSchedule;
         const utcTime = new Date(

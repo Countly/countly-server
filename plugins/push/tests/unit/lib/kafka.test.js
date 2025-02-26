@@ -13,6 +13,7 @@ const { sendPushEvent, sendScheduleEvent, init } = require("../../../api/new/lib
 const { mockKafkaJs } = require("../mock/kafka.js");
 
 describe("Kafka queue", () => {
+    /** @type {ReturnType<typeof mockKafkaJs>} */
     let kafkaMock;
 
     before(() => kafkaMock = mockKafkaJs());
@@ -53,10 +54,12 @@ describe("Kafka queue", () => {
                     appId,
                     messageId,
                     scheduleId,
+                    uid: "1",
                     token: "token",
                     message: "message",
                     platform: "i",
                     credentials: {
+                        _id: new ObjectId,
                         serviceAccountFile: "service account",
                         type: "fcm",
                         hash: "credentialshash"
@@ -80,7 +83,7 @@ describe("Kafka queue", () => {
                             JSON.parse(JSON.stringify(pushEvent)),
                             JSON.parse(JSON.stringify(event))
                         );
-                        --noResolves || res();
+                        --noResolves || res(undefined);
                     }
                     catch (err) {
                         --noResolves || rej(err);
@@ -98,7 +101,7 @@ describe("Kafka queue", () => {
                             JSON.parse(JSON.stringify(scheduleEvent)),
                             JSON.parse(JSON.stringify(event))
                         );
-                        --noResolves || res();
+                        --noResolves || res(undefined);
                     }
                     catch (err) {
                         --noResolves || rej(err);
@@ -128,10 +131,12 @@ describe("Kafka queue", () => {
                 appId,
                 messageId,
                 scheduleId,
+                uid: "1",
                 token: "token",
                 message: "message",
                 platform: "i",
                 credentials: {
+                    _id: new ObjectId,
                     serviceAccountFile: "service account",
                     type: "fcm",
                     hash: "credentialshash"

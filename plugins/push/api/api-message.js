@@ -294,8 +294,8 @@ module.exports.create = async params => {
         msg.status = Status.Created;
         await msg.save();
         if (!demo) {
-            scheduleMessage(common.db, msg);
-            // await msg.schedule(log, params);
+            // scheduleMessage(common.db, msg);
+            await msg.schedule(log, params);
         }
         log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});

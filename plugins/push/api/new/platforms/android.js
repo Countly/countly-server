@@ -49,6 +49,5 @@ async function send(push) {
         ...push.message
     });
 
-    console.log("FCM messageId", messageId);
     return { messageId }
 }

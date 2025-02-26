@@ -291,6 +291,9 @@ describe("Scheduler", () => {
         const schedule = mockData.schedule();
 
         it("should send a schedule event for each timezone with correct date", async () => {
+            if (schedule.schedulerTimezone === undefined) {
+                throw new Error("Scheduler timezone is required");
+            }
             const minute = 60 * 1000;
             const utcTime = schedule.scheduledTo.getTime() - schedule.schedulerTimezone * minute;
             const timezoneAdjusted = timezones.map(({ offset }) => utcTime + offset * minute);

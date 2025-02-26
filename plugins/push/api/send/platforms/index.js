@@ -1,8 +1,11 @@
 const fs = require('fs'),
     path = require('path');
 
-let PLATFORM = {}, // i: {...}, a: {...}, h: {...}
-    extractors = [], // {i: qstring => [field, token]}
+/**
+ * @type {{i: any, a: any, h: any}}
+ */
+let PLATFORM = {}; // i: {...}, a: {...}, h: {...}
+let extractors = [], // {i: qstring => [field, token]}
     guesses = [],
     FIELDS = {}, // {i0: 'ip', i1: 'id', i2: 'ia', 'a0': 'ap', 'a2': 'at', ...}
     FIELDS_TITLES = {}, // {'tkip': 'iOS Production Token', ...}

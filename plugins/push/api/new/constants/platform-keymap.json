@@ -1,0 +1,17 @@
+{
+    "a": {
+        "platforms": ["a", "h"],
+        "fields": ["p"],
+        "pf": ["ap", "hp"]
+    },
+    "i": {
+        "platforms": ["i"],
+        "fields": ["p", "d", "a"],
+        "pf": ["ip", "id", "ia"]
+    },
+    "h": {
+        "platforms": ["h"],
+        "fields": ["p"],
+        "pf": ["hp"]
+    }
+}

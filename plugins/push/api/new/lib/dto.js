@@ -32,8 +32,10 @@ function pushEventDTOToObject(pushEventDTO) {
         messageId: new ObjectId(/** @type {string} */(pushEventDTO.messageId)),
         scheduleId: new ObjectId(/** @type {string} */(pushEventDTO.scheduleId)),
     }
-    if (pushEventDTO.credentials.notAfter) {
+    if (pushEventDTO.credentials?.notAfter) {
         pushEvent.credentials.notAfter = new Date(pushEvent.credentials.notAfter);
+    }
+    if (pushEventDTO.credentials?.notBefore) {
         pushEvent.credentials.notBefore = new Date(pushEvent.credentials.notBefore);
     }
     return pushEvent;

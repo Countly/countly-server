@@ -1,10 +1,14 @@
+import { ObjectId } from "mongodb";
+
 export interface FCMCredentials {
+    _id: ObjectId;
     serviceAccountFile: string;
     type: "fcm";
     hash: string;
 }
 
 export interface APNP12Credentials {
+    _id: ObjectId;
     bundle: string;
     cert: string;
     notAfter: Date;
@@ -16,6 +20,7 @@ export interface APNP12Credentials {
 }
 
 export interface APNP8Credentials {
+    _id: ObjectId;
     bundle: string;
     key: string;
     keyid: string;
@@ -27,6 +32,7 @@ export interface APNP8Credentials {
 export type APNCredentials = APNP12Credentials | APNP8Credentials;
 
 export interface HMSCredentials {
+    _id: ObjectId;
     app: string;
     secret: string;
     type: "hms";

@@ -17,6 +17,7 @@ function mockKafkaJs() {
     });
     const KafkaConstructor = sinon.stub(kafka, "Kafka")
         .callsFake((args) => KafkaInstance);
+
     return {
         reset() {
             ProducerInstance.connect.resetHistory();
