@@ -35,6 +35,10 @@ fetch.fetchFromGranuralData = async function(queryData, callback) {
         data = await common.drillQueryRunner.getUniqueGraph(queryData);
         callback(null, data);
     }
+    else if (queryData.queryName === "viewsTableData") {
+        data = await common.drillQueryRunner.getViewsTableData(queryData);
+        callback(null, data);
+    }
     else {
         try {
             data = await common.drillQueryRunner.getAggregatedData(queryData);
@@ -1678,6 +1682,45 @@ fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
 * @param {function} callback - to call when fetch done
 **/
 function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
+
+
+    //Fetch from drill data
+    /**
+         * Fetch data from drill
+         */
+    async function getData() {
+        if (params.qstring.segmentation) {
+            params.qstring.segmentation = "sg." + params.qstring.segmentation;
+        }
+        var data = await common.drillQueryRunner.getAggregatedData({
+            "appID": params.app_id,
+            "event": "[CLY]_custom",
+            "name": params.qstring.event,
+            "timezone": params.appTimezone,
+            "period": params.qstring.period,
+            "segmentation": params.qstring.segmentation,
+            "graphData": true
+        });
+        var modelData = common.convertArrayToModel(data, params.qstring.segmentation);
+
+        //Load meta data
+        var pp = options.id_prefix.split("_");
+        try {
+            var meta = await common.drillReadBatcher.getOne("drill_meta", {"_id": pp[0] + "_meta_" + pp[1]});
+            if (meta && meta.sg) {
+                modelData.meta = modelData.meta || {};
+                modelData.meta.segments = [];
+                for (var val in meta.sg) {
+                    modelData.meta.segments.push(val);
+                }
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
+        callback(modelData);
+    }
+
     if (typeof options === "function") {
         callback = options;
         options = {};
@@ -1715,39 +1758,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         options.levels.monthly = [];
     }
     if (collection === "events_data") {
-        //Fetch from drill data
-        async function getData() {
-            if (params.qstring.segmentation) {
-                params.qstring.segmentation = "sg." + params.qstring.segmentation;
-            }
-            var data = await common.drillQueryRunner.getAggregatedData({
-                "appID": params.app_id,
-                "event": "[CLY]_custom",
-                "name": params.qstring.event,
-                "timezone": params.appTimezone,
-                "period": params.qstring.period,
-                "segmentation": params.qstring.segmentation,
-                "graphData": true
-            });
-            var modelData = common.convertArrayToModel(data, params.qstring.segmentation);
 
-            //Load meta data
-            var pp = options.id_prefix.split("_");
-            try {
-                var meta = await common.drillReadBatcher.getOne("drill_meta", {"_id": pp[0] + "_meta_" + pp[1]});
-                if (meta && meta.sg) {
-                    modelData.meta = modelData.meta || {};
-                    modelData.meta.segments = [];
-                    for (var val in meta.sg) {
-                        modelData.meta.segments.push(val);
-                    }
-                }
-            }
-            catch (e) {
-                console.log(e);
-            }
-            callback(modelData);
-        }
         getData();
 
     }

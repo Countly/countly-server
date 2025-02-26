@@ -2,9 +2,11 @@ const common = require("../../utils/common");
 const log = require('../../utils/log.js')("changeStreamReader");
 var Timestamp = require('mongodb').Timestamp;
 
-
+/**
+ * Class to ruse change streams to read from mongodb.
+ */
 class changeStreamReader {
-    /*
+    /** 
     * @param {Object} db - Database object
     * @param {Object} options - Options object
     * @param {function} onData - Finction to call when getting new data from stream
@@ -37,7 +39,7 @@ class changeStreamReader {
 
     }
 
-    /*
+    /** 
     * Check if stream is closed and restart if needed
     */
     checkState() {
@@ -52,16 +54,19 @@ class changeStreamReader {
         }
     }
 
-    /*
+    /** 
     * Process bad range((when token can't continue))
+    * @param {Object} options - Options object
+    * @param {Object} tokenInfo - Token info object
     */
     async processBadRange(options, tokenInfo) {
         console.log("Processing bad range");
         console.log(JSON.stringify({cd: {$gte: options.cd1, $lt: options.cd2}}));
         var gotTokenDoc = false;
+        var doc;
         var cursor = this.db.collection(this.collection).find({cd: {$gte: new Date(options.cd1), $lt: new Date(options.cd2)}}).sort({cd: 1});
         while (await cursor.hasNext() && !gotTokenDoc) {
-            var doc = await cursor.next();
+            doc = await cursor.next();
             if (JSON.stringify(doc._id) === JSON.stringify(tokenInfo._id) || doc.cd > tokenInfo.cd) {
                 gotTokenDoc = true;
             }
@@ -75,7 +80,7 @@ class changeStreamReader {
         }
 
         while (await cursor.hasNext()) {
-            var doc = await cursor.next();
+            doc = await cursor.next();
             console.log("Process:" + JSON.stringify(doc));
             tokenInfo.cd = doc.cd;
             tokenInfo._id = doc._id;
@@ -84,7 +89,10 @@ class changeStreamReader {
         console.log("done");
     }
 
-    /*Opening stream*/
+    /**
+     *  Sets up stream to read data from mongodb
+     *  @param {function} onData  - function to call on new data
+     */
     async setUp(onData) {
         var token;
         try {
@@ -149,14 +157,14 @@ class changeStreamReader {
             }
             else {
                 this.stream.on('change', (change) => {
-                    var token = {token: self.stream.resumeToken};
-                    token._id = change.__id;
+                    var my_token = {token: self.stream.resumeToken};
+                    my_token._id = change.__id;
                     if (change.cd) {
-                        token.cd = change.cd;
-                        onData(token, change);
+                        my_token.cd = change.cd;
+                        onData(my_token, change);
                     }
                     else {
-                        onData(token, change);
+                        onData(my_token, change);
                     }
                 });
 
@@ -184,12 +192,21 @@ class changeStreamReader {
                 console.log("Set Failed token", token);
                 this.failedToken = token;
             }
+            //Failed because of db does not support change streams. Run in "query mode";
+            else if (err.code === "look_for_right_code") {
+                //Call process bad range if there is any info about last token.
+                //Switch to query mode
+            }
             else {
                 log.e("Error on change stream", err);
             }
         }
     }
 
+    /**
+     * Acknowledges token as recorded
+     * @param {object} token  - token info
+     */
     async acknowledgeToken(token) {
         this.lastToken = token;
         //Update last processed token to database
@@ -207,7 +224,9 @@ class changeStreamReader {
         }
     }
 
-    //Close stream by command
+    /**
+     * Closes stream permanently
+     */
     close() {
         console.log("Closing permanently");
         if (this.intervalRunner) {

@@ -1,13 +1,13 @@
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js');
 const { changeStreamReader } = require('../../../api/parts/data/changeStreamReader');
-const { log } = require('async');
+var log = common.log('times-of-day:aggregator');
 
 (function() {
     plugins.register("/aggregator", function() {
         var changeStream = new changeStreamReader(common.drillDb, {
             pipeline: [
-                {"$match": {"operationType": "insert"}},
+                {"$match": {"fullDocument.e": {"$in": ["[CLY]_custom", "[CLY]_session"]}, "operationType": "insert"}},
                 {"$project": {"__id": "$fullDocument._id", "ts": "$fullDocument.ts", "cd": "$fullDocument.cd", "n": "$fullDocument.n", "a": "$fullDocument.a", "e": "$fullDocument.e", "dow": "$fullDocument.up.dow", "hour": "$fullDocument.up.hour"}}
             ],
             "name": "times-of-day",
