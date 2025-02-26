@@ -895,6 +895,9 @@
                 return countlyAllEvents.service.fetchAllEventsData(context, period)
                     .then(function(res) {
                         if (res) {
+                            if (Array.isArray(res.list)) {
+                                res.list = res.list.map(eventName => countlyCommon.unescapeHtml(eventName));
+                            }
                             context.commit("setAllEventsData", res);
                             if ((!context.state.selectedEventName) || (res.map && res.map[context.state.selectedEventName] && !res.map[context.state.selectedEventName].is_visible) || (res.list && res.list.indexOf(context.state.selectedEventName) === -1)) {
                                 var appId = countlyCommon.ACTIVE_APP_ID;

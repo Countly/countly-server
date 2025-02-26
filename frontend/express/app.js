@@ -6,6 +6,22 @@
 // Set process name
 process.title = "countly: dashboard node " + process.argv[1];
 
+var fs = require('fs');
+var path = require('path');
+var IS_FLEX = false;
+
+if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
+    var deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
+    try {
+        if (JSON.parse(deploymentConf).DEPLOYMENT_ID) {
+            IS_FLEX = true;
+        }
+    }
+    catch (e) {
+        IS_FLEX = false;
+    }
+}
+
 var versionInfo = require('./version.info'),
     pack = require('../../package.json'),
     COUNTLY_VERSION = versionInfo.version,
@@ -27,8 +43,6 @@ var versionInfo = require('./version.info'),
         }
     }),
     crypto = require('crypto'),
-    fs = require('fs'),
-    path = require('path'),
     jimp = require('jimp'),
     flash = require('connect-flash'),
     cookieParser = require('cookie-parser'),
@@ -66,7 +80,13 @@ var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;
 var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
 var COUNTLY_TRACK_TYPE = "OSS";
-if (versionInfo.footer) {
+
+if (IS_FLEX) {
+    COUNTLY_NAMED_TYPE = "Countly v" + COUNTLY_VERSION;
+    COUNTLY_TYPE_CE = false;
+    COUNTLY_TRACK_TYPE = "Flex";
+}
+else if (versionInfo.footer) {
     COUNTLY_NAMED_TYPE = versionInfo.footer;
     COUNTLY_TYPE_CE = false;
     if (COUNTLY_NAMED_TYPE === "Countly Cloud") {
@@ -116,8 +136,8 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    google_maps_api_key: "",
     offline_mode: false,
+    self_tracking: "",
 });
 
 if (!plugins.isPluginEnabled('tracker')) {
@@ -137,7 +157,6 @@ plugins.setUserConfigs("frontend", {
     session_timeout: false,
     use_google: false,
     code: false,
-    google_maps_api_key: ""
 });
 
 plugins.setConfigs("security", {
@@ -151,8 +170,8 @@ plugins.setConfigs("security", {
     password_rotation: 3,
     password_autocomplete: true,
     robotstxt: "User-agent: *\nDisallow: /",
-    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
+    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
     dashboard_rate_limit_window: 60,
     dashboard_rate_limit_requests: 500
 });
@@ -907,8 +926,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             countly_tracking = plugins.isPluginEnabled('tracker') ? true : plugins.getConfig('frontend').countly_tracking,
             countly_domain = plugins.getConfig('api').domain,
             licenseNotification, licenseError;
+        var isLocked = false;
         configs.export_limit = plugins.getConfig("api").export_limit;
-        app.loadThemeFiles(configs.theme, function(theme) {
+        app.loadThemeFiles(configs.theme, async function(theme) {
             if (configs._user.theme) {
                 res.cookie("theme", configs.theme);
             }
@@ -921,6 +941,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Pragma', 'no-cache');
             if (member.upgrade) {
                 countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
+            }
+            if (IS_FLEX) {
+                let locked = await countlyDb.collection('mycountly').findOne({_id: 'lockServer'});
+                if (locked?.isLocked === true) {
+                    isLocked = true;
+                }
+
             }
 
             if (req.session.licenseError) {
@@ -989,6 +1016,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         helpCenterLink: COUNTLY_HELPCENTER_LINK,
                         featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
                     },
+                    mycountly: IS_FLEX,
+                    isLocked: isLocked,
                 };
 
 

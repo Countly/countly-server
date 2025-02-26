@@ -360,7 +360,7 @@ plugins.setConfigs("logger", {
                 }
                 catch (ex) {
                     console.log("Failed fetching logs collection info: ", ex);
-                    common.returnMessage(parameters, 400, 'Error fetching collection info');
+                    common.returnOutput(parameters, {capped: MAX_NUMBER_OF_LOG_ENTRIES, count: MAX_NUMBER_OF_LOG_ENTRIES, max: MAX_NUMBER_OF_LOG_ENTRIES, status: "error"});
                 }
             });
             return true;
