@@ -4,6 +4,52 @@ var plugins = require('./../../plugins/pluginManager.js');
 var async = require('async');
 var crypto = require('crypto');
 
+
+usage.processSessionDurationRange = function(writeBatcher, token, totalSessionDuration, did, params) {
+    var durationRanges = [
+            [0, 10],
+            [11, 30],
+            [31, 60],
+            [61, 180],
+            [181, 600],
+            [601, 1800],
+            [1801, 3600]
+        ],
+        durationMax = 3601,
+        calculatedDurationRange,
+        updateUsers = {},
+        updateUsersZero = {},
+        dbDateIds = common.getDateIds(params),
+        monthObjUpdate = [];
+
+    if (totalSessionDuration >= durationMax) {
+        calculatedDurationRange = (durationRanges.length) + '';
+    }
+    else {
+        for (var i = 0; i < durationRanges.length; i++) {
+            if (totalSessionDuration <= durationRanges[i][1] && totalSessionDuration >= durationRanges[i][0]) {
+                calculatedDurationRange = i + '';
+                break;
+            }
+        }
+    }
+    if (totalSessionDuration > 0) {
+        common.fillTimeObjectMonth(params, updateUsers, common.dbMap.duration, totalSessionDuration);
+    }
+    monthObjUpdate.push(common.dbMap.durations + '.' + calculatedDurationRange);
+    common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
+    common.fillTimeObjectZero(params, updateUsersZero, common.dbMap.durations + '.' + calculatedDurationRange);
+    var postfix = common.crypto.createHash("md5").update(did).digest('base64')[0];
+    writeBatcher.add("users", params.app_id + "_" + dbDateIds.month + "_" + postfix, {'$inc': updateUsers});
+    var update = {
+        '$inc': updateUsersZero,
+        '$set': {}
+    };
+    update.$set['meta_v2.d-ranges.' + calculatedDurationRange] = true;
+    writeBatcher.add("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, update, "countly", {token: token});
+
+};
+
 usage.processSessionFromStream = function(token, currEvent, params) {
     currEvent.up = currEvent.up || {};
     var updateUsersZero = {},
@@ -51,14 +97,14 @@ usage.processSessionFromStream = function(token, currEvent, params) {
         }*/
 
             // Calculate the frequency range of the user
-
-            if ((currEvent.ts - userLastSeenTimestamp) >= (sessionFrequencyMax * 60 * 60)) {
+            var ts_sec = currEvent.ts / 1000;
+            if ((ts_sec - userLastSeenTimestamp) >= (sessionFrequencyMax * 60 * 60)) {
                 calculatedFrequency = sessionFrequency.length + '';
             }
             else {
                 for (let i = 0; i < sessionFrequency.length; i++) {
-                    if ((currEvent.ts - userLastSeenTimestamp) < (sessionFrequency[i][1] * 60 * 60) &&
-                        (currEvent.ts - userLastSeenTimestamp) >= (sessionFrequency[i][0] * 60 * 60)) {
+                    if ((ts_sec - userLastSeenTimestamp) < (sessionFrequency[i][1] * 60 * 60) &&
+                        (ts_sec - userLastSeenTimestamp) >= (sessionFrequency[i][0] * 60 * 60)) {
                         calculatedFrequency = (i + 1) + '';
                         break;
                     }
@@ -73,13 +119,13 @@ usage.processSessionFromStream = function(token, currEvent, params) {
                 usersMeta['meta_v2.f-ranges.' + calculatedFrequency] = true;
             }
 
-            if (userLastSeenTimestamp < (currEvent.ts - secInMin)) {
+            if (userLastSeenTimestamp < (ts_sec - secInMin)) {
             // We don't need to put hourly fragment to the unique levels array since
             // we will store hourly data only in sessions collection
                 updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + common.dbMap.unique] = 1;
             }
 
-            if (userLastSeenTimestamp < (currEvent.ts - secInHour)) {
+            if (userLastSeenTimestamp < (ts_sec - secInHour)) {
                 uniqueLevels[uniqueLevels.length] = params.time.daily;
                 uniqueLevelsMonth.push(params.time.day);
             }
@@ -90,12 +136,12 @@ usage.processSessionFromStream = function(token, currEvent, params) {
                 uniqueLevelsZero.push("w" + params.time.weekly);
             }
 
-            if (userLastSeenTimestamp < (currEvent.ts - secInMonth)) {
+            if (userLastSeenTimestamp < (ts_sec - secInMonth)) {
                 uniqueLevels[uniqueLevels.length] = params.time.monthly;
                 uniqueLevelsZero.push(params.time.month);
             }
 
-            if (userLastSeenTimestamp < (currEvent.ts - secInYear)) {
+            if (userLastSeenTimestamp < (ts_sec - secInYear)) {
                 uniqueLevels[uniqueLevels.length] = params.time.yearly;
                 uniqueLevelsZero.push("Y");
             }
@@ -186,6 +232,23 @@ usage.processEventFromStream = function(token, currEvent) {
                 eventColl._segments = eventColl._segments || {};
 
                 for (var seg in currEvent.sg) {
+                    if (forbiddenSegValues.indexOf(currEvent.sg[seg] + "") !== -1) {
+                        continue;
+                    }
+                    if (eventColl._omitted_segments && eventColl._omitted_segments[shortEventName]) {
+                        if (eventColl._omitted_segments[shortEventName][seg]) {
+                            continue;
+                        }
+
+                    }
+                    if (eventColl._whitelisted_segments && eventColl._whitelisted_segments[shortEventName]) {
+                        if (!eventColl._whitelisted_segments[shortEventName][seg]) {
+                            continue;
+                        }
+                    }
+
+
+
                     if (!eventColl._segments[shortEventName] || !eventColl._segments[shortEventName]._list[seg]) {
                         eventColl._segments[shortEventName] = eventColl._segments[shortEventName] || {_list: {}, _list_length: 0};
                         eventColl._segments[shortEventName]._list[seg] = true;

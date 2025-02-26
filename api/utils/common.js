@@ -98,6 +98,10 @@ common.encodeCharacters = function(str) {
     }
 };
 
+common.dbEncode = function(str) {
+    return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
+};
+
 /**
 * Decode escaped html 
 * @param  {string} string - The string to decode

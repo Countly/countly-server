@@ -267,11 +267,11 @@ class MongoDbQueryRunner {
     }
 
     /**
-     * Gets session model data
+     * Gets session table data
      * @param {options} options  - options
      * @returns {object} - aggregated data
      */
-    async getAggregatedSessionData(options) {
+    async aggregatedSessionData(options) {
         var pipeline = options.pipeline || [];
         var match = {"e": "[CLY]_session"};
 
@@ -284,17 +284,17 @@ class MongoDbQueryRunner {
         }
 
         pipeline.push({"$match": match});
-        pipeline.push({"$addFields": {"n": {"$cond": [{"$eq": ["$up.fs", "$up.ls"]}, 1, 0]}}});
+        pipeline.push({"$addFields": {"n": {"$cond": [{"$eq": ["$up.sc", 1]}, 1, 0]}}});
         if (options.segmentation) {
-            pipeline.push({"$group": {"_id": {"u": "$uid", "sg": "$" + options.segmentation}, "t": {"$sum": "$t"}, "n": {"$sum": "$n"}}});
-            pipeline.push({"$group": {"_id": "$_id.sg", "t": {"$sum": "$t"}, "n": {"$sum": "$n"}, "u": {"$sum": 1}}});
+            pipeline.push({"$group": {"_id": {"u": "$uid", "sg": "$" + options.segmentation}, "d": {"$sum": "$dur"}, "t": {"$sum": 1}, "n": {"$sum": "$n"}}});
+            pipeline.push({"$group": {"_id": "$_id.sg", "t": {"$sum": "$t"}, "d": {"$sum": "$d"}, "n": {"$sum": "$n"}, "u": {"$sum": 1}}});
         }
         else {
-            pipeline.push({"$group": {"_id": "$uid", "t": {"$sum": "$t"}, "n": {"$sum": "$n"}}});
-            pipeline.push({"$group": {"_id": null, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "n": {"$sum": "$n"}}});
+            pipeline.push({"$group": {"_id": "$uid", "t": {"$sum": 1}, "d": {"$sum": "$dur"}, "n": {"$sum": "$n"}}});
+            pipeline.push({"$group": {"_id": null, "u": {"$sum": 1}, "d": {"$sum": "$d"}, "t": {"$sum": "$t"}, "n": {"$sum": "$n"}}});
 
         }
-
+        console.log(JSON.stringify(pipeline));
         var data = await this.db.collection("drill_events").aggregate(pipeline).toArray();
         for (var z = 0; z < data.length; z++) {
             // data[z]._id = data[z]._id.replaceAll(/\:0/gi, ":");
@@ -302,6 +302,7 @@ class MongoDbQueryRunner {
                 data[z].sg = data[z].sg.replaceAll(/\./gi, ":");
             }
         }
+        return data;
     }
 
     /*
@@ -388,7 +389,7 @@ class MongoDbQueryRunner {
             match.a = options.appID + "";
         }
         if (options.event) {
-            match.e = options.event;'';
+            match.e = options.event;
         }
         if (options.name) {
             match.n = options.name;
@@ -446,7 +447,6 @@ class MongoDbQueryRunner {
                 "view": "$_id"
             }
         });
-
         console.log(JSON.stringify(pipeline));
         var data = await this.db.collection("drill_events").aggregate(pipeline).toArray();
         for (var z = 0; z < data.length; z++) {

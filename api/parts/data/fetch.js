@@ -39,7 +39,14 @@ fetch.fetchFromGranuralData = async function(queryData, callback) {
         data = await common.drillQueryRunner.getViewsTableData(queryData);
         callback(null, data);
     }
+    else if (queryData.queryName === "aggregatedSessionData") {
+        data = await common.drillQueryRunner.aggregatedSessionData(queryData);
+        callback(null, data);
+    }
     else {
+        callback("Invalid query name", null);
+    }
+    /*else {
         try {
             data = await common.drillQueryRunner.getAggregatedData(queryData);
             callback(null, data);
@@ -49,9 +56,7 @@ fetch.fetchFromGranuralData = async function(queryData, callback) {
             console.log(e);
             return callback(e);
         }
-    }
-
-
+    }*/
 };
 /**
 * Prefetch event data, either by provided key or first event in the list and output result to browser

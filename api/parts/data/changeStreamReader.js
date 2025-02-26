@@ -26,6 +26,8 @@ class changeStreamReader {
         this.intervalRunner = null;
         this.keep_closed = false;
         this.waitingForAcknowledgement = false;
+        this.fallback = options.fallback;
+
         //I give data
         //Processor function processes. Sends last processed tken from time to time.
         //Update last processed token to database
@@ -51,6 +53,33 @@ class changeStreamReader {
             console.log("Waiting for acknowledgement for more than 60 seconds. Closing stream and restarting");
             this.keep_closed = false;
             this.stream.close();
+        }
+    }
+
+    /**
+     * Processes range of dates
+     * @param {date} cd  - start time
+     */
+    async processNextDateRange(cd) {
+        if (this.fallback) {
+            var cd2 = cd.valueOf() + 60000;
+            var now = Date.now().valueOf();
+            cd2 = cd2 > now ? now : cd2;
+
+            cd2 = new Date(cd2);
+            var pipeline = JSON.parse(JSON.stringify(this.fallback.pipeline)) || [];
+            var match = this.fallback.match || {};
+            match.cd = {$gte: new Date(cd), $lt: cd2};
+            pipeline.unshift({"$match": match});
+            var cursor = this.db.collection(this.collection).aggregate(pipeline);
+
+            while (await cursor.hasNext()) {
+                var doc = await cursor.next();
+                this.onData({"token": "timed", "cd": doc.cd, "_id": doc._id}, doc);
+            }
+            setTimeout(() => {
+                this.processNextDateRange(cd2);
+            }, 10000);
         }
     }
 
@@ -169,7 +198,7 @@ class changeStreamReader {
                 });
 
                 this.stream.on('error', async(err) => {
-                    if (err.code === 286 || err.code === 50811 || err.code === 9) { //Token is not valid
+                    if (err.code === 286 || err.code === 50811 || err.code === 9 || err.code === 14 || err.code === 280) { //Token is not valid
                         log.e("Set Failed token", token);
                         this.failedToken = token;
                     }
@@ -200,10 +229,12 @@ class changeStreamReader {
             else if (err.code === 40573) { //change stream is not supported
                 console.log("Change stream is not supported. Keeping streams closed");
                 this.keep_closed = true;
+                var newCD = Date.now();
                 if (token && token.cd) {
-                    var newCD = Date.now();
                     await this.processBadRange({name: this.name, cd1: token.cd, cd2: newCD}, token);
                 }
+
+                this.processNextDateRange(newCD);
                 //Call process bad range if there is any info about last token.
                 //Switch to query mode
             }

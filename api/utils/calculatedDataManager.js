@@ -121,7 +121,7 @@ calculatedDataManager.saveResult = function(options, data) {
 };
 calculatedDataManager.getId = function(data) {
     //Period should be given as 2 date
-    var keys = ["appID", "event", "name", "queryName", "query", "period", "periodOffset", "bucket"];
+    var keys = ["appID", "event", "name", "queryName", "query", "period", "periodOffset", "bucket", "segmentation"];
     var dataString = "";
     for (var i = 0; i < keys.length; i++) {
         if (data[keys[i]]) {

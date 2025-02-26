@@ -120,7 +120,7 @@ var pluginManager = function pluginManager() {
         if (!options.skipDependencies) {
             dependencyMap = pluginDependencies.getDependencies(pluginNames, {});
         }
-
+       console.log("Loading plugins", pluginNames);
         for (let i = 0, l = pluginNames.length; i < l; i++) {
             fullPluginsMap[pluginNames[i]] = true;
             try {

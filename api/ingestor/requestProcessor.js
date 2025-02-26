@@ -760,7 +760,7 @@ const validateAppForWriteAPI = (params, done) => {
         if (err) {
             log.e(err);
         }
-        if (!app) {
+        if (!app || !app._id) {
             common.returnMessage(params, 400, 'App does not exist');
             params.cancelRequest = "App not found or no Database connection";
             done();
@@ -1080,7 +1080,8 @@ const processRequest = (params) => {
 
             }
         }
-        else {
+
+        if (!params.qstring.events && !Array.isArray(params.qstring.events)) {
             params.qstring.events = [];
         }
         validateAppForWriteAPI(params, () => {
