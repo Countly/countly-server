@@ -3863,10 +3863,11 @@ common.convertArrayToModel = function(arr, segmented, props) {
     }
     var model = createEmptyObj(props);
     var iid;
+    var z;
     if (segmented) {
         model.meta = {};
         var values = {};
-        for (var z = 0;z < arr.length;z++) {
+        for (z = 0;z < arr.length;z++) {
             iid = arr[z]._id.split(":");
             values[arr[z].sg] = true;
             for (var p in props) {
@@ -3923,7 +3924,7 @@ common.convertArrayToModel = function(arr, segmented, props) {
         model.meta[segmented] = Object.keys(values);
     }
     else {
-        for (var z = 0;z < arr.length;z++) {
+        for (z = 0;z < arr.length;z++) {
             iid = arr[z]._id.split(":");
             for (var pp6 in props) {
                 if (arr[z][pp6]) {
@@ -3934,9 +3935,9 @@ common.convertArrayToModel = function(arr, segmented, props) {
                 if (!model[iid[0]]) {
                     model[iid[0]] = createEmptyObj(props);
                 }
-                for (var p0 in props) {
-                    if (arr[z][p0]) {
-                        model[iid[0]][p0] += arr[z][p0];
+                for (var p00 in props) {
+                    if (arr[z][p00]) {
+                        model[iid[0]][p00] += arr[z][p00];
                     }
                 }
 
@@ -3944,18 +3945,18 @@ common.convertArrayToModel = function(arr, segmented, props) {
                     if (!model[iid[0]][iid[1]]) {
                         model[iid[0]][iid[1]] = createEmptyObj(props);
                     }
-                    for (var p1 in props) {
-                        if (arr[z][p1]) {
-                            model[iid[0]][iid[1]][p1] += arr[z][p1];
+                    for (var p10 in props) {
+                        if (arr[z][p10]) {
+                            model[iid[0]][iid[1]][p10] += arr[z][p10];
                         }
                     }
                     if (iid.length > 2) {
                         if (!model[iid[0]][iid[1]][iid[2]]) {
                             model[iid[0]][iid[1]][iid[2]] = createEmptyObj(props);
                         }
-                        for (var p2 in props) {
-                            if (arr[z][p2]) {
-                                model[iid[0]][iid[1]][iid[2]][p2] += arr[z][p2];
+                        for (var p20 in props) {
+                            if (arr[z][p20]) {
+                                model[iid[0]][iid[1]][iid[2]][p20] += arr[z][p20];
                             }
                         }
                         if (iid.length > 3) {

@@ -197,6 +197,11 @@ class WriteBatcher {
         });
     }
 
+    /**
+     *  Function to call once flushed
+     * @param {string} name - name of collection 
+     * @param {function} callback  - callback function
+     */
     addFlushCallback(name, callback) {
         this.flushCallbacks[name] = callback;
     }
@@ -226,7 +231,7 @@ class WriteBatcher {
      *  @param {string} db - name of the database for which to write data
      *  @param {string} collection - name of the collection for which to write data
      */
-    async flush(db, collection, callback) {
+    async flush(db, collection) {
         var no_fallback_errors = [10334, 17419, 14, 56];
         var notify_errors = [10334, 17419];
         if (this.data[db] && this.data[db][collection] && this.data[db][collection].data && Object.keys(this.data[db][collection].data).length) {
@@ -247,7 +252,6 @@ class WriteBatcher {
                     });
                 }
             }
-            var token0 = this.data[db][collection].t;
             this.data[db][collection] = {"data": {}};
             batcherStats.update_queued -= queries.length;
             batcherStats.update_processing += queries.length;
@@ -348,6 +352,7 @@ class WriteBatcher {
      *  @param {string} id - id of the document
      *  @param {object} operation - operation
      *  @param {string} db - name of the database for which to write data
+     * @param {object} options - options for the operation
      */
     add(collection, id, operation, db = "countly", options) {
         options = options || {};
@@ -451,9 +456,9 @@ class ReadBatcher {
         }
         else {
             try {
-                var res = await this.db.collection(collection).findOne(query, projection);
-                this.cache(collection, id, query, projection, res, false);
-                return res;
+                var res2 = await this.db.collection(collection).findOne(query, projection);
+                this.cache(collection, id, query, projection, res2, false);
+                return res2;
             }
             catch (err) {
                 if (this.data && this.data[collection] && this.data[collection][id] && this.data[collection][id].promise) {

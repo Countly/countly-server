@@ -147,6 +147,20 @@ usage.processSessionFromStream = function(token, currEvent, params) {
 };
 
 usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params) {
+
+    /**
+         * 
+         * @param {string} id - document id 
+         * @param {function} callback  - calback function
+         */
+    function fetchMeta(id, callback) {
+        common.readBatcher.getOne(metaToFetch[id].coll, {'_id': metaToFetch[id].id}, {meta_v2: 1}, (err, metaDoc) => {
+            var retObj = metaDoc || {};
+            retObj.coll = metaToFetch[id].coll;
+            callback(null, retObj);
+        });
+    }
+
     var isNewUser = true;
     var userProps = {};
     if (currEvent.sg && currEvent.sg.prev_session) {
@@ -160,6 +174,7 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
     var dateIds = common.getDateIds(params);
     var metaToFetch = {};
     if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit > 0) {
+        var postfix;
         for (let i = 0; i < predefinedMetrics.length; i++) {
             for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {
                 let tmpMetric = predefinedMetrics[i].metrics[j],
@@ -185,13 +200,7 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
                 }
             }
         }
-        function fetchMeta(id, callback) {
-            common.readBatcher.getOne(metaToFetch[id].coll, {'_id': metaToFetch[id].id}, {meta_v2: 1}, (err, metaDoc) => {
-                var retObj = metaDoc || {};
-                retObj.coll = metaToFetch[id].coll;
-                callback(null, retObj);
-            });
-        }
+
         var metas = {};
         async.map(Object.keys(metaToFetch), fetchMeta, function(err, metaDocs) {
             for (let i = 0; i < metaDocs.length; i++) {
@@ -210,8 +219,9 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
                         monthObjUpdate = [],
                         tmpMetric = predefinedMetrics[i].metrics[j],
                         recvMetricValue = "",
-                        escapedMetricVal = "",
-                        postfix = "";
+                        escapedMetricVal = "";
+
+                    postfix = "";
 
                     recvMetricValue = currEvent.up[tmpMetric.short_code];
 

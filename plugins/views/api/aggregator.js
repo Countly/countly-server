@@ -71,7 +71,6 @@ const crypto = require('crypto');
                             if (err2) {
                                 log.e(err2);
                             }
-
                             viewMeta = viewMeta || {};
                             viewMeta.segments = viewMeta.segments || {};
                             viewMeta.omit = viewMeta.omit || [];

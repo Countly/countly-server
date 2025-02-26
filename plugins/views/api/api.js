@@ -37,6 +37,12 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     });
 
     plugins.register("/master", function() {
+
+        //Ensure nesesarry indexes
+        common.db.collection("app_userviews").createIndex({a: 1});
+        common.db.collection("app_viewsmeta").createIndex({a: 1});
+        common.db.collection("app_viewsmeta").createIndex({url: 1});
+        common.db.collection("app_viewdata").createIndex({vw: 1});
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             require('../../../api/parts/jobs').job('views:cleanupMeta')?.replace()?.schedule("every 1 day");
@@ -141,6 +147,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         common.db.collection("app_viewdata").remove({"vw": viewid});
                                         //remove from userviews
                                         common.db.collection("app_userviews" + appId).update({}, {$unset: {viewid: 1}}, {multi: true});
+                                        common.db.collection("app_userviews").update({"_id": {"$regex": "^" + appId + "_.*"}}, {$unset: {viewid: 1}}, {multi: true});
                                         //remove from meta
                                         common.db.collection("app_viewsmeta").remove({'_id': viewid});
                                         if (common.drillDb) {
@@ -150,6 +157,13 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             deleteDocs.push(common.drillDb.collection(
                                                 "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
                                             ).remove({"sg.view": viewUrl}));
+                                            //Before new ingestion
+                                            deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_view", "sg.name": viewName}));
+                                            deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_action", "sg.view": viewUrl}));
+
+                                            //After new ingestion
+                                            deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_view", "n": viewName}));
+                                            deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_action", "n": viewUrl}));
                                         }
                                         plugins.dispatch("/view/delete", {appId: appId, view: viewid + ""});
                                         /** */
@@ -299,6 +313,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             // By using await and no callback, error in db operation will be thrown
             // This error will then be caught by app users api dispatch so that it can cancel app user deletion
             await common.db.collection("app_userviews" + appId).remove({_id: {$in: uids}});
+            var fixed_uids = [];
+            for (var i = 0; i < uids.length; i++) {
+                fixed_uids.push(appId + "_" + uids[i]);
+            }
+            await common.db.collection("app_userviews").remove({_id: {$in: fixed_uids}});
         }
     });
 
@@ -1945,36 +1964,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
         });
     });
-
-    /**
-     *  Check if view count is alread updated somewhere else and fix it
-     *  @param {Array} updates - array with updates
-     *  @param {number} inc - amount to increment
-     *  @param {number} set - amount to set
-     */
-    function checkViewQuery(updates, inc, set) {
-        var needUpdate = true;
-        for (let i = 0; i < updates.length; i++) {
-            if (inc && updates[i] && updates[i].$set && typeof updates[i].$set.vc === "number") {
-                updates[i].$set.vc = updates[i].$set.vc + inc;
-                needUpdate = false;
-                break;
-            }
-            else if (typeof set !== "undefined" && updates[i] && updates[i].$inc && updates[i].$inc.vc) {
-                set += updates[i].$inc.vc;
-                delete updates[i].$inc.vc;
-            }
-        }
-
-        if (needUpdate) {
-            if (typeof set !== "undefined") {
-                updates.push({$set: {vc: set}});
-            }
-            else if (inc) {
-                updates.push({$inc: {vc: inc}});
-            }
-        }
-    }
 
     /**
      * Function to process view
