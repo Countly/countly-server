@@ -1,3 +1,7 @@
+## Version 24.05.XX
+Fixes:
+- [languages] Calculated  total users percentage correctly
+
 ## Version 24.05.24
 Enterprise fixes:
 - [ldap] Fixed issues that would lead to configuration options not being picked up
