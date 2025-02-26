@@ -284,3 +284,19 @@
     font-size: 12px;
     font-weight: 500;
 }
+
+
+.hooks-http-headers {
+    &__validation {
+        display: contents;
+    }
+    &__remove-button {
+        color: #D23F00;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    &__remove-button:hover {
+        background-color: transparent;
+    }
+}
