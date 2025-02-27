@@ -1,6 +1,7 @@
 ## Version 24.05.XX
 Fixes:
 - [languages] Calculated  total users percentage correctly
+- [countly-edge] Add import from Countly Edge Server
 
 Features:
 - [hooks] Support sending header information for HTTP actions
