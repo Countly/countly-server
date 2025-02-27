@@ -3,6 +3,12 @@ Fixes:
 - [languages] Calculated  total users percentage correctly
 - [countly-edge] Add import from Countly Edge Server
 
+Features:
+- [hooks] Support sending header information for HTTP actions
+
+Enterprise fixes:
+- [ab-testing] Mismatching user counts between ab-testing and user profiles
+
 ## Version 24.05.24
 Enterprise fixes:
 - [ldap] Fixed issues that would lead to configuration options not being picked up
