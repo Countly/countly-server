@@ -3,7 +3,10 @@ Fixes:
 - [languages] Calculated  total users percentage correctly
 
 Features:
--[hooks] Support sending header information for HTTP actions
+- [hooks] Support sending header information for HTTP actions
+
+Enterprise fixes:
+- [ab-testing] Mismatching user counts between ab-testing and user profiles
 
 ## Version 24.05.24
 Enterprise fixes:
