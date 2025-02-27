@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Countly Edge - Import Data</title>
+    <link rel="icon" type="image/x-icon" href="./images/favicon.png">
+    <style>
+        :root {
+            --primary-color: #0166D6;
+            --background-color: #F7F7F7;
+            --border-color: #ECECEC;
+            --text-color: #333333;
+            --success-color: #2FA732;
+            --error-color: #D63E40;
+        }
+
+        body {
+            font-family: -apple-system, Inter, system-ui, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: var(--text-color);
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        input[type="file"] {
+            padding: 0.5rem;
+            background: var(--background-color);
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-size: 14px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            background: var(--border-color);
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .progress {
+            background: var(--background-color);
+            border-radius: 6px;
+            overflow: hidden;
+            height: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        #status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .success { 
+            background: rgba(47, 167, 50, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(47, 167, 50, 0.2);
+        }
+
+        .error { 
+            background: rgba(214, 62, 64, 0.1);
+            color: var(--error-color);
+            border: 1px solid rgba(214, 62, 64, 0.2);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header img {
+            height: 32px;
+            margin-right: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="./images/pre-login/countly-logo-dark.svg" alt="Countly">
+        </div>
+        <div class="header">
+            <h1>Import Data</h1>
+        </div>
+        <form id="importForm">
+            <div class="form-group">
+                <label for="file">Export File (JSON or CSV)</label>
+                <input type="file" id="file" accept=".json,.csv" required>
+            </div>
+            <div class="form-group">
+                <label for="server">Server URL</label>
+                <input type="url" id="server" required>
+            </div>
+            <div class="form-group">
+                <label for="batchSize">Batch Size</label>
+                <input type="number" id="batchSize" value="10" min="1" max="100" required>
+            </div>
+            <div class="form-group">
+                <label for="delay">Delay between batches (ms)</label>
+                <input type="number" id="delay" value="1000" min="0" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">Start Import</button>
+            </div>
+        </form>
+        <div class="progress-container">
+            <div class="progress">
+                <div class="progress-bar"></div>
+            </div>
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('importForm');
+        const serverInput = document.getElementById('server');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressContainer = document.querySelector('.progress-container');
+        const status = document.getElementById('status');
+
+        // Set default server URL from current location or fallback
+        function setDefaultServer() {
+            const defaultServer = 'http://localhost:3000';
+            try {
+                const currentUrl = new URL(window.location.href);
+                serverInput.value = `${currentUrl.protocol}//${currentUrl.host}`;
+            } catch (error) {
+                serverInput.value = defaultServer;
+            }
+        }
+
+        // Call on page load
+        setDefaultServer();
+
+        async function processFile(file) {
+            const text = await file.text();
+            if (file.name.endsWith('.csv')) {
+                return text
+                    .split('\n')
+                    .slice(1)
+                    .filter(line => line.trim())
+                    .map(line => {
+                        const [, , data] = line.split(',');
+                        return JSON.parse(data);
+                    });
+            } else {
+                const json = JSON.parse(text);
+                return json.records.map(r => r.data);
+            }
+        }
+
+        async function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = document.getElementById('file').files[0];
+            if (!file) return;
+
+            const server = document.getElementById('server').value;
+            const batchSize = parseInt(document.getElementById('batchSize').value);
+            const delay = parseInt(document.getElementById('delay').value);
+
+            try {
+                form.querySelector('button').disabled = true;
+                progressContainer.style.display = 'block';
+                status.className = '';
+                status.textContent = 'Processing file...';
+
+                const records = await processFile(file);
+                let processed = 0;
+
+                for (let i = 0; i < records.length; i += batchSize) {
+                    const batch = records.slice(i, i + batchSize);
+                    try {
+                        const response = await fetch(`${server}/i/bulk`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ requests: batch })
+                        });
+
+                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                        
+                        processed += batch.length;
+                        const percent = (processed / records.length * 100).toFixed(1);
+                        progressBar.style.width = percent + '%';
+                        status.textContent = `Processed ${processed}/${records.length} records (${percent}%)`;
+
+                        if (i + batchSize < records.length) {
+                            await sleep(delay);
+                        }
+                    } catch (error) {
+                        throw new Error(`Error sending batch at index ${i}: ${error.message}`);
+                    }
+                }
+
+                status.className = 'success';
+                status.textContent = `Import completed! Processed ${processed} records.`;
+            } catch (error) {
+                status.className = 'error';
+                status.textContent = `Import failed: ${error.message}`;
+            } finally {
+                form.querySelector('button').disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
