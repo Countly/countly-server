@@ -1,9 +1,19 @@
 ## Version 24.05.XX
+Fixes:
+- [languages] Calculated  total users percentage correctly
+
+## Version 24.05.24
+Enterprise fixes:
+- [ldap] Fixed issues that would lead to configuration options not being picked up
+
+## Version 24.05.23
 Features:
-- [hooks] Added remote config changes to internal actions
-- [system-utility] New endpoint: /take-heap-snapshot.
-- [system-utility] Using nodejs fs to write profiler files instead of gridfs.
 - [countly-edge] Add import from Countly Edge Server
+- [hooks] Added remote config changes to internal actions
+- [system-utility] New endpoint: /take-heap-snapshot
+- [system-utility] Using nodejs fs to write profiler files instead of gridfs
+
+
 Fixes:
 - [drill] Fix for UI error when push plugin is not enabled
 
