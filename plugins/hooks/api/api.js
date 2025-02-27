@@ -234,6 +234,7 @@ const CheckEffectProperties = function(effect) {
     if (effect) {
         if (effect.type === "HTTPEffect") {
             rules.url = { 'required': true, 'type': 'URL', 'regex': '^(?!.*(?:localhost|127\\.0\\.0\\.1|\\[::1\\])).*(?:https?|ftp):\\/\\/(?:[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)+|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\])(?::\\d{1,5})?(?:\\/\\S*)?$' };
+            rules.headers = { 'required': false, 'type': 'Object' };
         }
     }
     return rules;
