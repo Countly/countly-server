@@ -1,5 +1,14 @@
-## Version 24.10.X
+## Version 24.10.8
+Fixes:
+- [app-management] Unescaping HTML for created/updated application names
+- [countly-edge] Add import from Countly Edge Server
+- [languages] Calculated  total users percentage correctly
+
+Features:
+- [hooks] Support sending header information for HTTP actions
+
 Enterprise fixes:
+- [ab-testing] Mismatching user counts between ab-testing and user profiles
 - [ldap] Fixed issues that would lead to configuration options not being picked up
 
 ## Version 24.10.7

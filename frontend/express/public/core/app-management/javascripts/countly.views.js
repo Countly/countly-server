@@ -387,6 +387,7 @@
                                 countlyGlobal.admin_apps[data._id] = data;
                                 Backbone.history.appIds.push(data._id + "");
                                 countlyGlobal.apps[data._id].image = "appimages/" + data._id + ".png?" + Date.now().toString();
+                                self.apps[data._id].name = countlyCommon.unescapeHtml(data.name);
                                 self.appList.push({
                                     value: data._id + "",
                                     label: data.name
@@ -450,6 +451,7 @@
                             countlyGlobal.admin_apps[self.selectedApp][modAttr] = data[modAttr];
                         }
                         countlyGlobal.apps[self.selectedApp].label = data.name;
+                        self.apps[self.selectedApp].name = countlyCommon.unescapeHtml(data.name);
                         for (var i = 0; i < self.appList.length; i++) {
                             if (self.appList[i].value === self.selectedApp) {
                                 self.appList[i].label = data.name;
