@@ -1,5 +1,6 @@
 ## Version 24.05.25
 Fixes:
+- [app-management] Unescaping HTML for created/updated application names
 - [countly-edge] Add import from Countly Edge Server
 - [languages] Calculated  total users percentage correctly
 
