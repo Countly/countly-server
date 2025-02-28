@@ -105,8 +105,8 @@ function checkCountlyType() {
         plugins.dbConnection(countlyConfig).then(function(db) {
             db.collection('plugins').findOne({_id: 'plugins'}, (err, result) => {
                 if (result && result.plugins && result.plugins['my-countly']) {
-                    console.log('Plugin status checked. Flex status:', IS_FLEX);
                     IS_FLEX = true;
+                    console.log('Plugin status checked. Flex status:', IS_FLEX);
                 }
 
                 setCountlyType(IS_FLEX);
