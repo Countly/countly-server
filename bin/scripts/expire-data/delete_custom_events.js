@@ -50,18 +50,14 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             ]).toArray();
             events = metaEvents.map(e => e.e);
         }
-        
         console.log("Events to delete:", events);
-        
         if (DRY_RUN) {
             console.log("DRY_RUN enabled. No changes will be made.");
             return close();
         }
-        
         if (!events.length) {
             return close("No events to delete");
         }
-        
         try {
             //DELETE EVENTS
             console.log(1 + ") Deleting drill events:");
@@ -75,10 +71,12 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             console.log(5 + ") Deleting event keys:");
             await deleteEventKeys(app._id, events);
             close();
-        } catch (err) {
+        }
+        catch (err) {
             close(err);
         }
-    } catch (err) {
+    }
+    catch (err) {
         console.log("App not found");
         close(err);
     }
@@ -129,7 +127,8 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     function close(err) {
         if (err) {
             console.log("Finished with errors:", err);
-        } else {
+        }
+        else {
             console.log("Finished successfully.");
         }
         countlyDb.close();
