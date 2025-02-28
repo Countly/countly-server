@@ -1,7 +1,8 @@
-## Version 24.05.XX
+## Version 24.05.25
 Fixes:
-- [languages] Calculated  total users percentage correctly
+- [app-management] Unescaping HTML for created/updated application names
 - [countly-edge] Add import from Countly Edge Server
+- [languages] Calculated  total users percentage correctly
 
 Features:
 - [hooks] Support sending header information for HTTP actions
