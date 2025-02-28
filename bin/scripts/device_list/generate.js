@@ -1,7 +1,7 @@
 // run as 
-// node generate.js > countly.device.list.js
+// node generate.js > ../../../frontend/express/public/javascripts/countly/countly.device.list.js
 
-//https://www.theiphonewiki.com/wiki/Models
+//https://www.theiphonewiki.com/wiki/Models 
 //https://gist.github.com/adamawolf/3048717
 //scrape_mac_devices.txt
 var devices = require("./apple.json");
@@ -17,6 +17,7 @@ for (var i in amazon) {
 }
 var csv = require('csvtojson');
 csv()
+//Shift + Cmd + P -> Convert Encoding -> Save with encoding -> UTF-8
 //from https://support.google.com/googleplay/answer/1727131?hl=en-GB
     .fromFile("./supported_devices.csv")
     .on('json', (jsonObj)=>{
