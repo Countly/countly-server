@@ -77,7 +77,7 @@
                     },
                     features: {
                         label: "SDK Features",
-                        list: ["crt", "vt", "st", "cet", "ecz", "cr"]
+                        list: ["crt", "vt", "st", "cet", "lt", "ecz", "cr"]
                     },
                     settings: {
                         label: "SDK Settings",
@@ -138,17 +138,24 @@
                         default: true,
                         value: null
                     },
+                    lt: {
+                        type: "switch",
+                        name: "Allow Location Tracking",
+                        description: "Enable or disable tracking of location (default: enabled)",
+                        default: true,
+                        value: null
+                    },
                     ecz: {
                         type: "switch",
                         name: "Enable Content Zone",
-                        description: "Enable or disable listening to Journey related contents (default: false)",
+                        description: "Enable or disable listening to Journey related contents (default: disabled)",
                         default: false,
                         value: null
                     },
                     cr: {
                         type: "switch",
                         name: "Require Consent",
-                        description: "Enable or disable requiring consent for tracking (default: false)",
+                        description: "Enable or disable requiring consent for tracking (default: disabled)",
                         default: false,
                         value: null
                     },
@@ -176,7 +183,7 @@
                     dort: {
                         type: "number",
                         name: "Request Drop Age",
-                        description: "Provide time in hours after which an old request should be dropped if they are not sent to server (default: 0 = not enabled)",
+                        description: "Provide time in hours after which an old request should be dropped if they are not sent to server (default: 0 = disabled)",
                         default: 0,
                         value: null
                     },
@@ -270,6 +277,27 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+            },
+            resetSDKConfiguration: function() {
+                var helper_msg = "You are about to reset your SDK configuration to default state. Do you want to continue?";
+                var helper_title = "Reset configuration?";
+                var self = this;
+
+                CountlyHelpers.confirm(helper_msg, "red", function(result) {
+                    if (!result) {
+                        return true;
+                    }
+
+                    var params = self.$store.getters["countlySDK/sdk/all"];
+                    var data = params || {};
+                    for (var key in self.configs) {
+                        self.configs[key].value = self.configs[key].default;
+                        data[key] = self.configs[key].value;
+                    }
+                    self.$store.dispatch("countlySDK/sdk/update", data).then(function() {
+                        self.$store.dispatch("countlySDK/initialize");
+                    });
+                }, ["No, don't reset", "Yes, reset"], {title: helper_title});
             },
             save: function() {
                 var params = this.$store.getters["countlySDK/sdk/all"];
