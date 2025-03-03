@@ -77,7 +77,7 @@
                     },
                     features: {
                         label: "SDK Features",
-                        list: ["crt", "vt", "st", "cet", "ecz", "cr"]
+                        list: ["crt", "vt", "st", "cet", "lt", "ecz", "cr"]
                     },
                     settings: {
                         label: "SDK Settings",
@@ -138,17 +138,24 @@
                         default: true,
                         value: null
                     },
+                    lt: {
+                        type: "switch",
+                        name: "Allow Location Tracking",
+                        description: "Enable or disable tracking of location (default: enabled)",
+                        default: true,
+                        value: null
+                    },
                     ecz: {
                         type: "switch",
                         name: "Enable Content Zone",
-                        description: "Enable or disable listening to Journey related contents (default: false)",
+                        description: "Enable or disable listening to Journey related contents (default: disabled)",
                         default: false,
                         value: null
                     },
                     cr: {
                         type: "switch",
                         name: "Require Consent",
-                        description: "Enable or disable requiring consent for tracking (default: false)",
+                        description: "Enable or disable requiring consent for tracking (default: disabled)",
                         default: false,
                         value: null
                     },
@@ -176,7 +183,7 @@
                     dort: {
                         type: "number",
                         name: "Request Drop Age",
-                        description: "Provide time in hours after which an old request should be dropped if they are not sent to server (default: 0 = not enabled)",
+                        description: "Provide time in hours after which an old request should be dropped if they are not sent to server (default: 0 = disabled)",
                         default: 0,
                         value: null
                     },
