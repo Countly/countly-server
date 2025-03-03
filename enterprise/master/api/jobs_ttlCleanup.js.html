@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>parts/jobs/retry.js - Documentation</title>
+    <title>jobs/ttlCleanup.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -37,7 +37,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">parts/jobs/retry.js</h1>
+    <h1 class="page-title">jobs/ttlCleanup.js</h1>
     
 
     
@@ -47,133 +47,54 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>'use strict';
-
-const log = require('../../utils/log.js')('jobs:retry');
-
+            <pre class="prettyprint source linenums"><code>const plugins = require("../../plugins/pluginManager.js");
+const common = require('../utils/common');
+const job = require("../parts/jobs/job.js");
+const log = require("../utils/log.js")("job:ttlCleanup");
 
 /**
- * By default job will be retried 3 times with 1, 2 and 3 second delays for any error = new DefaultRetryPolicy(3)
+ * Class for job of cleaning expired records inside ttl collections
  */
-class DefaultRetryPolicy {
+class TTLCleanup extends job.Job {
     /**
-    * Constructor
-    * @param {numbe} retries
-    **/
-    constructor(retries) {
-        this._retries = retries;
-        this._retried = 0;
-        this._retrying = null;
-    }
+     * Run the job
+     */
+    async run() {
+        log.d("Started running TTL clean up job");
+        for (let i = 0; i &lt; plugins.ttlCollections.length; i++) {
+            const {
+                db = "countly",
+                collection,
+                property,
+                expireAfterSeconds = 0
+            } = plugins.ttlCollections[i];
+            let dbInstance;
+            switch (db) {
+            case "countly": dbInstance = common.db; break;
+            case "countly_drill": dbInstance = common.drillDb; break;
+            case "countly_out": dbInstance = common.outDb; break;
+            }
+            if (!dbInstance) {
+                log.e("Invalid db selection:", db);
+                continue;
+            }
 
-    /**
-    * Delay for retrying
-    * @returns {Promise} promise
-    **/
-    delay() {
-        if (!this._retrying) {
-            this._retrying = new Promise((resolve) => {
-                setTimeout(() => {
-                    this._retrying = null;
-                    resolve();
-                }, this._retried * 1000);
+            log.d("Started cleaning up", collection);
+            const result = await dbInstance.collection(collection).deleteMany({
+                [property]: {
+                    $lte: new Date(Date.now() - expireAfterSeconds * 1000)
+                }
             });
+            log.d("Finished cleaning up", result.deletedCount, "records from", collection);
+
+            // Sleep 1 second to prevent sending too many deleteMany queries
+            await new Promise(res => setTimeout(res, 1000));
         }
-        return this._retrying;
-    }
-
-    /**
-    * Check if error is retryable
-    * @returns {boolean} true
-    **/
-    errorIsRetriable(/*error*/) {
-        return true;
-    }
-
-    /**
-    * Run
-    * @param {function} runFun - function to run
-    * @returns {Promise} promise
-    **/
-    run(runFun) {
-        return new Promise((resolve, reject) => {
-            try {
-                log.d('Running job %d time out of %d attempts', this._retried + 1, this._retries);
-                runFun().then(resolve, (error) => {
-                    log.w('Error in retry: ', error, error.stack);
-                    if (this.errorIsRetriable(error)) {
-                        log.w('Retriable error in retry: spent %d, left %d attempts', this._retried, this._retries);
-                        if (this._retries) {
-                            this._retries--;
-                            this._retried++;
-
-                            this.delay().then(() => {
-                                this.run(runFun).then(resolve, reject);
-                            });
-                        }
-                        else {
-                            reject(error);
-                        }
-                    }
-                    else {
-                        try {
-                            log.e('Non-retriable error in retry: spent %d attempts, error %j', this._retried, error.stack);
-                            reject(error);
-                        }
-                        catch (e) {
-                            log.e(e, e.stack);
-                        }
-                    }
-                });
-            }
-            catch (e) {
-                log.e('Error in retry.run', e, e.stack);
-                reject(e);
-            }
-        });
+        log.d("Finished running TTL clean up job");
     }
 }
 
-/**
- * RetryPolicy which retries only crashed &amp; timed out resources, default for IPCJob
- */
-class IPCRetryPolicy extends DefaultRetryPolicy {
-    /**
-    * Check if error is retryable
-    * @param {Error} error - error to check
-    * @returns {boolean} true if retryable
-    **/
-    errorIsRetriable(error) {
-        return (error === 'Process exited') ||
-				(error.message === require('./job.js').ERROR.TIMEOUT) ||
-				(typeof error === 'object' &amp;&amp; error.length === 2 &amp;&amp;
-					(error[0] === require('./job.js').ERROR.CRASH || error[0] === require('./job.js').ERROR.TIMEOUT));
-    }
-}
-
-/**
- * Never retry
- */
-class NoRetryPolicy extends DefaultRetryPolicy {
-    /** Constructor **/
-    constructor() {
-        super(0);
-    }
-
-    /**
-    * Check if error is retryable
-    * @returns {boolean} false
-    **/
-    errorIsRetriable(/*error*/) {
-        return false;
-    }
-}
-
-module.exports = {
-    DefaultRetryPolicy: DefaultRetryPolicy,
-    IPCRetryPolicy: IPCRetryPolicy,
-    NoRetryPolicy: NoRetryPolicy
-};</code></pre>
+module.exports = TTLCleanup;</code></pre>
         </article>
     </section>
 
