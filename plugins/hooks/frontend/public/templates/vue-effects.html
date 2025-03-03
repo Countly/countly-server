@@ -95,5 +95,45 @@
         </validation-provider>
     </div>
     
+    <!-- HTTP Headers Section -->
+    <div class="cly-vue-drawer-step__section">
+        <div class="text-medium text-heading">
+            {{i18n('hooks.http-headers')}}
+        </div>
+        <div v-for="(header, index) in headers" :key="index" class="hooks-http-headers bu-mb-2">
+            <div class="bu-is-flex bu-is-align-items-center">
+                <validation-provider name="action-http-header-key" rules="required" class="hooks-http-headers__validation">
+                    <el-input 
+                        :placeholder="i18n('hooks.header-key')" 
+                        class="bu-mr-2" 
+                        style="width:40%;"
+                        v-model="header.key">
+                    </el-input>
+                </validation-provider>
+                <validation-provider name="action-http-header-value" rules="required" class="hooks-http-headers__validation">
+                    <el-input 
+                        :placeholder="i18n('hooks.header-value')" 
+                        class="bu-mr-2" 
+                        style="width:40%; flex:1"
+                        v-model="header.value">
+                    </el-input>
+                </validation-provider>
+                <el-button
+                    @click="removeHeader(index)"
+                    class="hooks-http-headers__remove-button color-red-100"
+                    type="text"
+                >
+                    <i class="cly-io cly-io-trash"></i>
+                </el-button>
+            </div>
+        </div>
+        <el-button 
+            @click="addHeader" 
+            class="hooks-http-headers__add-button bg-light-blue-100 color-blue-100 bu-mt-2"
+            type="text" 
+        >
+            + {{i18n('hooks.add-http-header')}}
+        </el-button>
+    </div>
 </div>
 </script>

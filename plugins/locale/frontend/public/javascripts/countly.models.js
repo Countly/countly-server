@@ -76,7 +76,7 @@
                 graphs.totalSessions.push({"name": tableData[k][metric], "value": tableData[k].t});
                 totals.newUsers += tableData[k].n;
                 totals.totalSessions += tableData[k].t;
-                totals.totalUsers += tableData[k].t;
+                totals.totalUsers += tableData[k].u;
             }
             //add % of t to table 
             for (var kz = 0; kz < tableData.length; kz++) {

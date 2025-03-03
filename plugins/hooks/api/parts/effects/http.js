@@ -41,7 +41,7 @@ class HTTPEffect {
     async run(options) {
         const logs = [];
         const {effect, params, rule, effectStep, _originalInput} = options;
-        const {method, url, requestData} = effect.configuration;
+        const {method, url, requestData, headers} = effect.configuration;
         try {
             const parsedURL = utils.parseStringTemplate(url, params);
             const parsedRequestData = utils.parseStringTemplate(requestData, params, method);
@@ -49,11 +49,15 @@ class HTTPEffect {
 
             // todo: assemble params for request;
             // const params = {}
-
+            const requestHeaders = headers || {};
             const methodOption = method && method.toLowerCase() || "get";
             switch (methodOption) {
             case 'get':
-                await request.get({uri: parsedURL + "?" + parsedRequestData, timeout: this._timeout}, function(e, r, body) {
+                await request.get({
+                    uri: parsedURL + "?" + parsedRequestData,
+                    timeout: this._timeout,
+                    headers: requestHeaders
+                }, function(e, r, body) {
                     log.d("[http get effect]", e, body);
                     if (e) {
                         logs.push(`Error: ${e.message}`);
@@ -91,6 +95,7 @@ class HTTPEffect {
                         uri: parsedURL,
                         json: parsedJSON,
                         timeout: this._timeout,
+                        headers: requestHeaders
                     },
                     function(e, r, body) {
                         log.d("[httpeffects]", e, body, rule);
