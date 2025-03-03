@@ -5,14 +5,14 @@
  *  Command: node delete_custom_events.js
  */
 
-
 const { ObjectId } = require('mongodb');
 const pluginManager = require('../../../plugins/pluginManager.js');
 const common = require('../../../api/utils/common.js');
 const drillCommon = require('../../../plugins/drill/api/common.js');
 
+const DRY_RUN = true;
 const APP_ID = "";
-const EVENTS = []; //If empty, no events will be deleted
+const EVENTS = []; // If empty, no events will be deleted . The format has to be "event1","event2"
 
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
@@ -20,34 +20,60 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     //SET COMMON DB AND DRILL DB
     common.db = countlyDb;
     common.drillDb = drillDb;
-
     //GET APP
     try {
         const app = await countlyDb.collection("apps").findOne({_id: ObjectId(APP_ID)}, {_id: 1, name: 1});
         console.log("App:", app.name);
         //GET EVENTS
-        var events = EVENTS;
+        let events = EVENTS;
         if (!events.length) {
-            close("No events to delete");
+            console.log("Fetching events from drill_meta...");
+            const metaEvents = await drillDb.collection("drill_meta").aggregate([
+                {
+                    $match: {
+                        'app_id': app._id + "",
+                        "type": "e",
+                        "e": { $nin: events }
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$e"
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        e: "$_id"
+                    }
+                }
+            ]).toArray();
+            events = metaEvents.map(e => e.e);
         }
-        else {
+        console.log("Events to delete:", events);
+        if (DRY_RUN) {
+            console.log("DRY_RUN enabled. No changes will be made.");
+            return close();
+        }
+        if (!events.length) {
+            return close("No events to delete");
+        }
+        try {
             //DELETE EVENTS
-            try {
-                console.log(1 + ") Deleting drill events:");
-                await deleteDrillEvents(app._id, events);
-                console.log(2 + ") Deleting countly events:");
-                await deleteCountlyEvents(app._id, events);
-                console.log(3 + ") Deleting event times:");
-                await deleteEventTimes(app._id, events);
-                console.log(4 + ") Deleting event groups:");
-                await deleteEventGroups(app._id, events);
-                console.log(5 + ") Deleting event keys:");
-                await deleteEventKeys(app._id, events);
-                close();
-            }
-            catch (err) {
-                close(err);
-            }
+            console.log(1 + ") Deleting drill events:");
+            await deleteDrillEvents(app._id, events);
+            console.log(2 + ") Deleting countly events:");
+            await deleteCountlyEvents(app._id, events);
+            console.log(3 + ") Deleting event times:");
+            await deleteEventTimes(app._id, events);
+            console.log(4 + ") Deleting event groups:");
+            await deleteEventGroups(app._id, events);
+            console.log(5 + ") Deleting event keys:");
+            await deleteEventKeys(app._id, events);
+            close();
+        }
+        catch (err) {
+            close(err);
         }
     }
     catch (err) {
