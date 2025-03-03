@@ -7,7 +7,7 @@ Features:
 Enterprise Features:
 - [journey_engine] Editing/Deleting/Duplication of blocks and version management
 
-## Version 24.12
+## Version 25.03
 Features:
 - [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
 - [core] Ability to mark reports as 'dirty' to make sure they are regenerated in full
@@ -54,6 +54,18 @@ Dependencies:
 - Bump puppeteer from 23.10.4 to 23.11.1
 - Bump sass from 1.81.0 to 1.83.3
 - Bump tslib from 2.7.0 to 2.8.1
+
+## Version 24.10.8
+Fixes:
+- [app-management] Unescaping HTML for created/updated application names
+- [countly-edge] Add import from Countly Edge Server
+- [languages] Calculated  total users percentage correctly
+
+Features:
+- [hooks] Support sending header information for HTTP actions
+
+Enterprise fixes:
+- [ab-testing] Mismatching user counts between ab-testing and user profiles
 
 ## Version 24.10.7
 Fixes:
