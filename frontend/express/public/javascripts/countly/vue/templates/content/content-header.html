@@ -1,0 +1,95 @@
+<div
+    class="cly-vue-content-builder-header"
+    :style="{ backgroundColor }"
+>
+    <div class="cly-vue-content-builder-header__left">
+        <div
+            class="cly-vue-content-builder-header__close-button"
+            @click="onCloseIconClick"
+        >
+            <i
+                class="cly-io color-warm-gray-60"
+                :class="closeButtonIcon"
+            />
+        </div>
+        <el-switch
+            v-if="toggle"
+            v-tooltip.right="toggleTooltip"
+            v-model="toggleLocalValue"
+            class="cly-vue-content-builder-header__toggle"
+            :disabled="isToggleDisabled"
+        />
+        <div class="cly-vue-content-builder-header__info">
+            <div
+                v-tooltip="inputTooltip"
+                class="cly-vue-content-builder-header__input-container"
+                @click="onInputContainerClick"
+            >
+                <el-input
+                    v-model="localValue"
+                    class="cly-vue-content-builder-header__input"
+                    :class="{ 'cly-vue-content-builder-header__input--editing': !isReadonlyInput }"
+                    :maxlength="valueMaxLength"
+                    :readonly="isReadonlyInput"
+                    @blur="onInputBlur"
+                    @keydown.enter.native="onInputKeydown"
+                />
+            </div>
+            <div class="cly-vue-content-builder-header__info-meta">
+                <div
+                    v-if="version"
+                    class="cly-vue-content-builder-header__version"
+                >
+                    {{ version }}
+                </div>
+                <div class="cly-vue-content-builder-header__created-by">
+                    {{ createdBy }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <cly-dynamic-tabs
+        v-if="tabs"
+        v-model="activeTab"
+        class="cly-vue-content-builder-header__tabs"
+        :custom-style="dynamicTabsCustomStyle"
+        no-history
+        :tabs="tabs"
+    />
+    <div class="cly-vue-content-builder-header__actions">
+        <cly-status-badge
+            v-if="status.show"
+            class="cly-vue-content-builder-header__badge"
+            :label="status.label"
+            :mode="status.mode"
+        />
+        <el-button
+            v-if="!hideSaveButton"
+            class="cly-vue-content-builder-header__save-button"
+            :disabled="disableSaveButton"
+            size="small"
+            type="success"
+            @click="onSaveButtonClick"
+        >
+            {{ saveButtonLabel }}
+        </el-button>
+        <cly-more-options
+            v-if="isOptionsButtonVisible"
+            class="cly-vue-content-builder-header__options-button"
+            size="small"
+            @command="onCommand"
+        >
+            <el-dropdown-item
+                v-for="(option, idx) in options"
+                :key="`cly-vue-content-builder-header-option-${idx}`"
+                class="cly-vue-content-builder-header__option"
+                :command="option.value"
+                :disabled="option.disabled"
+            >
+                <span class="cly-vue-content-builder-header__option-label">
+                    {{ option.label }}
+                </span>
+            </el-dropdown-item>
+        </cly-more-options>
+    </div>
+</div>

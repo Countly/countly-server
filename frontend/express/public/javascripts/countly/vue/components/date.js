@@ -929,14 +929,14 @@
                     var lengthStr = this.rangeLimits.maxLength[0] + ' ' + CV.i18n('common.buckets.' + this.rangeLimits.maxLength[1]);
                     return {'maxLength': CV.i18n('common.range-length-limit', lengthStr)};
                 }
-                return {};
+                return "";
             },
             setMinuteAndHourStyle: function() {
                 return { display: this.tableType === 'minute' || this.tableType === 'hour' ? 'none' : '' };
             },
             customStyle: function() {
                 return {
-                    height: (this.isVisible && (this.customRangeSelection || this.presetSelection)) ? "447px" : "auto",
+                    height: (this.isVisible && this.presetSelection) ? "447px" : "auto"
                 };
             }
         },
@@ -1660,9 +1660,48 @@
                 type: Boolean,
                 default: true,
                 required: false
+            },
+            minDateValue: {
+                type: Date
+            },
+            isFuture: {
+                type: Boolean,
+                default: false
             }
         },
-        template: '<el-time-picker :append-to-body="appendToBody" :style="{\'width\': width + \'px\'}" class="cly-vue-time-picker" v-bind="$attrs" v-on="$listeners" :format="format" :clearable="clearable"></el-time-picker>'
+        computed: {
+            pickerOptions() {
+                const defaultRange = { selectableRange: '00:00:00 - 23:59:00' };
+
+                if (!this.minDateValue) {
+                    return defaultRange;
+                }
+
+                const now = moment();
+                const minDateMoment = moment(this.minDateValue);
+                const isToday = minDateMoment.isSame(now, 'day');
+
+                if (this.isFuture && isToday) {
+                    return {
+                        selectableRange: `${now.format('HH:mm:ss')} - 23:59:00`
+                    };
+                }
+
+                return defaultRange;
+            }
+        },
+        template: `
+                <el-time-picker
+                    :append-to-body="appendToBody"
+                    :clearable="clearable"
+                    :format="format"
+                    :picker-options="pickerOptions"
+                    :style="{\'width\': width + \'px\'}"
+                    class="cly-vue-time-picker"
+                    v-bind="$attrs"
+                    v-on="$listeners"
+                >
+                </el-time-picker>`
     });
 
 

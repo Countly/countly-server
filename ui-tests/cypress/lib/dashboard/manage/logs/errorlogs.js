@@ -35,7 +35,7 @@ const verifyStaticElementsOfPage = () => {
     });
 };
 
-const verifyEmptyPageElements = () => {
+const verifyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
@@ -52,7 +52,7 @@ const clickAuditLogsTab = () => {
 };
 
 module.exports = {
-    verifyEmptyPageElements,
+    verifyPageElements,
     clickServerLogsTab,
     clickAuditLogsTab
 };

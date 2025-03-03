@@ -5,7 +5,7 @@
 				<cly-section :class="(idx === 0 || idx === 1)? 'bu-pb-2' : 'bu-pt-2 bu-pb-2'">
 						<div class="bu-level-left bu-p-5">
 							<span class="text-medium text-uppercase" :data-test-id="`cly-section-label-${item.title.toLowerCase().replaceAll(/\s/g, '-')}`">{{item.title}}</span>
-							<span class="cly-vue-tooltip-icon ion ion-help-circled has-tooltip" :data-test-id="`cly-section-${item.title.toLowerCase().replaceAll(/\s/g, '-')}-tooltip`" style="margin-left:10px" v-tooltip.top-center="item.description"></span>
+							<cly-tooltip-icon class="bu-ml-2" :tooltip="item.description" placement="top-center" :data-test-id="`cly-section-${item.title.toLowerCase().replaceAll(/\s/g, '-')}-tooltip`"></cly-tooltip-icon>
 						</div>
 						<div class="topData bu-pl-3 bu-pr-3 bu-pb-5" :data-test-id="`cly-section-${item.title.toLowerCase().replaceAll(/\s/g, '-')}-data-block`">
 							<div :key="idx2" v-for="(item2, idx2) in item.data" >

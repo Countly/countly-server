@@ -1,4 +1,52 @@
-## Version 24.05.25
+## Version 25.03
+Features:
+- [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
+- [core] Ability to mark reports as 'dirty' to make sure they are regenerated in full
+- [core] Adding a cancel button to "create new app" form
+- [core] Adding a nightly job to delete old data
+- [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
+- [core] Redirecting user to a newly created app
+- [core] Removing HTML from localization files
+- [core] Showing a flex banner on sidebar if the version is Countly Lite
+- [crashes] Adding confirmation for deleting crash groups
+- [dashoards] Fixed the "Add/manage notes" button that did not work for the technology widget
+- [dbviewer] Preventing aggregation of using any stages which might open user to harmful actions (like $merge, $out, $lookup, $uninonWith) for all users except global admin
+- [gridfs] fixes for moving to Promises
+- [nps] Fixing issues with default logo selection
+- [populator] Adding ability to select features to populate and other small improvements
+- [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
+- [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
+- [reports] Fixes report generation failure due to SSL error
+- [star-rating] Removed unnecessary limitation with using cohorts for targeting
+- [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
+- [user-management] Global admins can now disable 2FA for individual users
+
+Enterprise Features:
+- [cohorts] Adding ability to edit cohorts. This deletes historical calculations
+- [content] Adding "Content Builder" feature
+- [core] Adding support For SingleStore Kai
+- [flows] Adding UX improvements to the editor
+- [journey_engine] Adding "Journey Engine" feature
+- [ldap] Fixed issues that would lead to configuration options not being picked up
+- [remote-config] Moving enable/disable functionality to the dropdown
+- [surveys] "Select one" text in the widget can be edited now
+- [surveys] Removed unnecessary limitation with using cohorts for targeting
+
+Dependencies:
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
+- Bump countly-sdk-web from 24.11.2 to 24.11.3
+- Bump express from 4.21.1 to 4.21.2
+- Bump express-rate-limit from 7.4.1 to 7.5.0
+- Bump form-data from 4.0.0 to 4.0.1
+- Bump jimp from 0.22.12 to 1.6.0
+- Bump jsdoc from 4.0.3 to 4.0.4
+- Bump mocha from 10.2.0 to 10.8.2
+- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump puppeteer from 23.10.4 to 23.11.1
+- Bump sass from 1.81.0 to 1.83.3
+- Bump tslib from 2.7.0 to 2.8.1
+
+## Version 24.10.8
 Fixes:
 - [app-management] Unescaping HTML for created/updated application names
 - [countly-edge] Add import from Countly Edge Server
@@ -10,26 +58,21 @@ Features:
 Enterprise fixes:
 - [ab-testing] Mismatching user counts between ab-testing and user profiles
 
-## Version 24.05.24
-Enterprise fixes:
-- [ldap] Fixed issues that would lead to configuration options not being picked up
-
-## Version 24.05.23
-Features:
-- [hooks] Added remote config changes to internal actions
-- [system-utility] New endpoint: /take-heap-snapshot.
-- [system-utility] Using nodejs fs to write profiler files instead of gridfs.
-
+## Version 24.10.7
 Fixes:
+- [data-manager] Modifying existing values when segment values want to be updated in the Data Manager
 - [drill] Fix for UI error when push plugin is not enabled
 
 Enterprise fixes:
 - [drill] Fixed empty events list in drill section
- 
-## Version 24.05.22
+
 Features:
 - [core] Add self tracking capability
+- [hooks] Added remote config changes to internal actions
+- [system-utility] New endpoint: /take-heap-snapshot.
+- [system-utility] Using nodejs fs to write profiler files instead of gridfs.
 
+## Version 24.10.6
 Fixes:
 - [push] Using apns-id header as message result in debug mode
 - [server-stats] Fix data point calculation in job
@@ -38,6 +81,7 @@ Fixes:
 
 Enterprise fixes:
 - [drill] Encoding url component before changing history state
+- [drill] Fixed drill meta regeneration
 - [drill] [license] Update license loader to enable supplying db client
 - [users] Format data points displayed in user sidebar
 - [cohorts] Unescape drill texts in cohort component
@@ -50,15 +94,100 @@ Enterprise Dependencies:
 - Bump nanoid in /plugins/cognito from 2.1.11 to 3.3.8
 - Bump shortid in /plugins/cognito from 2.2.16 to 2.2.17
 
+## Version 24.10.3
+Fixes:
+- [dashboards] Fixing issue where dashboard widgets go into single column
+
+Security:
+- Bump puppeteer from 17.1.3 to 23.8.0
+- Bump express from 4.21.0 to 4.21.1 
+- Bump sass from 1.79.4 to 1.81.0
+- Bump express-session from 1.18.0 to 1.18.1
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /ui-tests
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /plugins/hooks
+
+## Version 24.10.2
+Fixes:
+- [core] Correct aggregated collection cleanup on event omitting
+- [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
+- [core] Fixed bug where exporting incoming data logs could result in "Incorrect parameter \"data\" error
+- [core] Removed use of commands which needs admin rights from report manager.
+- [crash] Fixed bug in crash ingestion for scenarios where the "app version" is not a string.
+- [script] Fixing bug with "delete_old_members" script that led to malformed requests
+
+Enterprise fixes:
+- [nps] Fixed bug that showed the wrong nps preview title
+
+## Version 24.10.1
+Fixes:
+- [core] Replaced "Users" with "Sessions" label on technology home widgets
+- [push] Improved ability to observe push related errors
+- [push] Replaced push plugin with an earlier version of the plugin
+
+Enterprise fixes:
+- [cohorts] Fixed issues with nightly cleanup
+- [data-manager] Fixed UI bug where rules were not visible when editing "Merge by regex" transformations
+- [drill] Fixed wrong pie chart label  tooltip in dashboard widget
+- [flows] Fixed bug in case of null data in schema
+- [license] Fixed bug with MAU type of licenses that would prevent the server from starting
+- [nps] Fixed bug in the editor where the "internal name" field was not mandatory
+- [nps] Fixed bug where it was possible to submit empty nps surveys
+- [ratings] Fixed bug with user consent
+- [ratings] Fixed UI bug where "Internal name" was not a mandatory field
+
+Security:
+- Bumped cookie-parser from 1.4.6 to 1.4.7
+- Bumped express-rate-limit from 7.4.0 to 7.4.1
+- Bumped moment-timezone from 0.5.45 to 0.5.46
+- Bumped sass from 1.79.3 to 1.79.4
+- Fixing minor vulnerability that would allow for unauthorized file upload
+
+Enterprise Features:
+- [block] Added a way to filter crashes by their error (stacktrace)
+
+## Version 24.10
+Fixes:
+- [core] Correct aggregated collection cleanup on event omitting
+- [core] Interpreting carrier value of "--" as an unknown value
+- [core] Removed use of commands which needs admin rights from report manager.
+- [crash] Fixed issues with visualisation of Flutter stack traces
+- [dashoards] If a user is given access to a dashboard, they will now be able to see all widgets even if they don't have access to the underlying data
+- [density] UI fixed
+- [events] Fixed issue where slower loading data would replace newest event selection
+
+Enterprise fixes:
+- [crashes-jira] Preventing crashing when jira authentification fails
+- [formulas] Removing HTML from tooltip localization
+
+Features:
+- Making user guide icons stand out more before first use
+- [alerts] UI improvements
+- [alerts] small improvements in email notifications
+- [code] Unifying bottom menu for bulk operations
+- [core] Aggregated events data collections merged together
+- [nps] UI improvements
+- [surveys] UI improvements
+- upgraded mongoDB to version 8
+- upgraded nodejs to version 20
+
+Enterprise Features:
+- [crash_symbolication] Added ability to set custom domain override for the symbolication server
+- [drill] Drill "by query" vizualization improved
+- [drill] Drill data collections merged together
+- [events] Added a quick transition to drill
+- [hooks] Added audit log entries for hook "create", "edit", "delete", "update" actions
+- [users] "Last Session" column in User Profiles is now sortable
+- [users] Crashes in the crashes tab can now be sorted
+- [users] UI improvements
+- [views] Added a quick transition to drill
+
 ## Version 24.05.21
 Fixes:
 - [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
-- [core] Fixed a bug that was causing drill to crash when there's a percentage symbol in the event name
 - [gridfs] fixes for moving to Promises
 - [reports] Fixes report generation failure due to SSL error
 - [surveys] "Select one" text in the widget can be edited now
 - [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
-
 
 Dependencies:
 - Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
@@ -117,7 +246,7 @@ Fixes:
 Enterprise fixes:
 - [cohorts] Fixed issues with nightly cleanup
 - [data-manager] Fixed UI bug where rules were not visible when editing "Merge by regex" transformations
-- [drill] Fixed wrong pie chart label  tooltip in dashboard widget
+- [drill] Fixed wrong pie chart label tooltip in dashboard widget
 - [flows] Fixed bug in case of null data in schema
 - [nps] Fixed bug in the editor where the "internal name" field was not mandatory
 - [ratings] Fixed UI bug where "Internal name" was not a mandatory field

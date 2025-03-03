@@ -42,9 +42,23 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                             done();
                         }
                     }, function() {
-                        db.close();
-                        dbDrill.close();
-                        console.log("done");
+                        //delete property from merged drill events collection
+                        var unset = {};
+                        if (PROPERTY.startsWith("custom") || PROPERTY.startsWith("cmp")) {
+                            unset[PROPERTY] = "";
+                        }
+                        else {
+                            unset["up." + PROPERTY] = "";
+                        }
+
+                        dbDrill.collection("drill_events").updateMany({"a": (APP_ID + "")}, {$unset: unset}, function(err) {
+                            if (err) {
+                                console.log("Error", err);
+                            }
+                            db.close();
+                            dbDrill.close();
+                            console.log("done");
+                        });
                     });
                 }
             });

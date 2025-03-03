@@ -5,10 +5,7 @@
     >
 		<template v-slot:header-right>
           <cly-more-options v-if="topDropdown" size="small">
-            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-              <!--<span :class="item.icon"></span>-->  
-              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
-            </el-dropdown-item>
+            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown" :command="{url: item.value}">{{item.label}}</el-dropdown-item>
           </cly-more-options>
         </template>
     </cly-header>
@@ -25,7 +22,8 @@
 		<div class="technology-analytics-wrapper__items bu-pb-5" v-loading="isLoading">
             <vue-scroll :ops="scrollCards" ref="topSlider" @handle-scroll="handleCardsScroll">
                 <cly-metric-cards :multiline="false" :is-synced-scroll="true">
-                    <cly-metric-card 
+                    <cly-metric-card
+                        :test-id="'platform-' + idx" 
                         :is-percentage="true" 
                         :column-width=3 
                         :color="item.color" 
@@ -55,6 +53,7 @@
             <vue-scroll :ops="scrollCards" ref="bottomSlider" @handle-scroll="handleBottomScroll">
 					<cly-metric-cards :multiline="false" :is-synced-scroll="true">
 						<cly-metric-breakdown 
+                            :test-id="'platform-' + idx"
 							:name="item.name" 
 							:values="item.values" 
 							:key="idx"

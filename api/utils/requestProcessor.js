@@ -7,7 +7,7 @@ const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
 const countlyCommon = require('../lib/countly.common.js');
-const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate } = require('./rights.js');
+const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
 const plugins = require('../../plugins/pluginManager.js');
@@ -828,17 +828,6 @@ const processRequest = (params) => {
                         });
                     });
                     break;
-                case 'stop':
-                    validateUserForWrite(params, () => {
-                        taskmanager.stopTask({
-                            db: common.db,
-                            id: params.qstring.task_id,
-                            op_id: params.qstring.op_id
-                        }, (err, res) => {
-                            common.returnMessage(params, 200, res);
-                        });
-                    });
-                    break;
                 case 'delete':
                     validateUserForWrite(params, () => {
                         taskmanager.deleteResult({
@@ -1011,44 +1000,46 @@ const processRequest = (params) => {
                                 catch (SyntaxError) {
                                     update_array.overview = []; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', params.req.url, params.req.body);
                                 }
-                                if (update_array.overview && Array.isArray(update_array.overview) && update_array.overview.length > 12) {
-                                    common.returnMessage(params, 400, "You can't add more than 12 items in overview");
-                                    return;
-                                }
-                                //sanitize overview
-                                var allowedEventKeys = event.list;
-                                var allowedProperties = ['dur', 'sum', 'count'];
-                                var propertyNames = {
-                                    'dur': 'Dur',
-                                    'sum': 'Sum',
-                                    'count': 'Count'
-                                };
-                                for (let i = 0; i < update_array.overview.length; i++) {
-                                    update_array.overview[i].order = i;
-                                    update_array.overview[i].eventKey = update_array.overview[i].eventKey || "";
-                                    update_array.overview[i].eventProperty = update_array.overview[i].eventProperty || "";
-                                    if (allowedEventKeys.indexOf(update_array.overview[i].eventKey) === -1 || allowedProperties.indexOf(update_array.overview[i].eventProperty) === -1) {
-                                        update_array.overview.splice(i, 1);
-                                        i = i - 1;
+                                if (update_array.overview && Array.isArray(update_array.overview)) {
+                                    if (update_array.overview.length > 12) {
+                                        common.returnMessage(params, 400, "You can't add more than 12 items in overview");
+                                        return;
                                     }
-                                    else {
-                                        update_array.overview[i].is_event_group = (typeof update_array.overview[i].is_event_group === 'boolean' && update_array.overview[i].is_event_group) || false;
-                                        update_array.overview[i].eventName = update_array.overview[i].eventName || update_array.overview[i].eventKey;
-                                        update_array.overview[i].propertyName = propertyNames[update_array.overview[i].eventProperty];
+                                    //sanitize overview
+                                    var allowedEventKeys = event.list;
+                                    var allowedProperties = ['dur', 'sum', 'count'];
+                                    var propertyNames = {
+                                        'dur': 'Dur',
+                                        'sum': 'Sum',
+                                        'count': 'Count'
+                                    };
+                                    for (let i = 0; i < update_array.overview.length; i++) {
+                                        update_array.overview[i].order = i;
+                                        update_array.overview[i].eventKey = update_array.overview[i].eventKey || "";
+                                        update_array.overview[i].eventProperty = update_array.overview[i].eventProperty || "";
+                                        if (allowedEventKeys.indexOf(update_array.overview[i].eventKey) === -1 || allowedProperties.indexOf(update_array.overview[i].eventProperty) === -1) {
+                                            update_array.overview.splice(i, 1);
+                                            i = i - 1;
+                                        }
+                                        else {
+                                            update_array.overview[i].is_event_group = (typeof update_array.overview[i].is_event_group === 'boolean' && update_array.overview[i].is_event_group) || false;
+                                            update_array.overview[i].eventName = update_array.overview[i].eventName || update_array.overview[i].eventKey;
+                                            update_array.overview[i].propertyName = propertyNames[update_array.overview[i].eventProperty];
+                                        }
                                     }
-                                }
-                                //check for duplicates
-                                var overview_map = Object.create(null);
-                                for (let p = 0; p < update_array.overview.length; p++) {
-                                    if (!overview_map[update_array.overview[p].eventKey]) {
-                                        overview_map[update_array.overview[p].eventKey] = {};
-                                    }
-                                    if (!overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty]) {
-                                        overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty] = 1;
-                                    }
-                                    else {
-                                        update_array.overview.splice(p, 1);
-                                        p = p - 1;
+                                    //check for duplicates
+                                    var overview_map = Object.create(null);
+                                    for (let p = 0; p < update_array.overview.length; p++) {
+                                        if (!overview_map[update_array.overview[p].eventKey]) {
+                                            overview_map[update_array.overview[p].eventKey] = {};
+                                        }
+                                        if (!overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty]) {
+                                            overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty] = 1;
+                                        }
+                                        else {
+                                            update_array.overview.splice(p, 1);
+                                            p = p - 1;
+                                        }
                                     }
                                 }
                             }
@@ -1181,7 +1172,7 @@ const processRequest = (params) => {
                                         return new Promise(function(resolve) {
                                             var collectionNameWoPrefix = common.crypto.createHash('sha1').update(obj.key + params.qstring.app_id).digest('hex');
                                             //removes all document for current segment
-                                            common.db.collection("events" + collectionNameWoPrefix).remove({"s": {$in: obj.list}}, {multi: true}, function(err3) {
+                                            common.db.collection("events_data").remove({"_id": {"$regex": ("^" + params.qstring.app_id + "_" + collectionNameWoPrefix + "_.*")}, "s": {$in: obj.list}}, {multi: true}, function(err3) {
                                                 if (err3) {
                                                     console.log(err3);
                                                 }
@@ -1196,7 +1187,7 @@ const processRequest = (params) => {
                                                         unsetUs["meta_v2." + obj.list[p]] = "";
                                                     }
                                                     //clears out meta data for segments
-                                                    common.db.collection("events" + collectionNameWoPrefix).update({$or: my_query}, {$unset: unsetUs}, {multi: true}, function(err4) {
+                                                    common.db.collection("events_data").update({"_id": {"$regex": ("^" + params.qstring.app_id + "_" + collectionNameWoPrefix + "_.*")}, $or: my_query}, {$unset: unsetUs}, {multi: true}, function(err4) {
                                                         if (err4) {
                                                             console.log(err4);
                                                         }
@@ -1240,7 +1231,6 @@ const processRequest = (params) => {
                                                         else {
                                                             resolve();
                                                         }
-
                                                     });
                                                 }
                                                 else {
@@ -2129,9 +2119,34 @@ const processRequest = (params) => {
                         }
 
                         dbUserHasAccessToCollection(params, params.qstring.collection, (hasAccess) => {
-                            if (hasAccess) {
+                            if (hasAccess || (params.qstring.db === "countly_drill" && params.qstring.collection === "drill_events") || (params.qstring.db === "countly" && params.qstring.collection === "events_data")) {
+                                var dbs = { countly: common.db, countly_drill: common.drillDb, countly_out: common.outDb, countly_fs: countlyFs.gridfs.getHandler() };
+                                var db = "";
+                                if (params.qstring.db && dbs[params.qstring.db]) {
+                                    db = dbs[params.qstring.db];
+                                }
+                                else {
+                                    db = common.db;
+                                }
+                                if (!params.member.global_admin && params.qstring.collection === "drill_events" || params.qstring.collection === "events_data") {
+                                    var base_filter = getBaseAppFilter(params.member, params.qstring.db, params.qstring.collection);
+                                    if (base_filter && Object.keys(base_filter).length > 0) {
+                                        params.qstring.query = params.qstring.query || {};
+                                        for (var key in base_filter) {
+                                            if (params.qstring.query[key]) {
+                                                params.qstring.query.$and = params.qstring.query.$and || [];
+                                                params.qstring.query.$and.push({[key]: base_filter[key]});
+                                                params.qstring.query.$and.push({[key]: params.qstring.query[key]});
+                                                delete params.qstring.query[key];
+                                            }
+                                            else {
+                                                params.qstring.query[key] = base_filter[key];
+                                            }
+                                        }
+                                    }
+                                }
                                 countlyApi.data.exports.fromDatabase({
-                                    db: (params.qstring.db === "countly_drill") ? common.drillDb : (params.qstring.dbs === "countly_drill") ? common.drillDb : common.db,
+                                    db: db,
                                     params: params,
                                     collection: params.qstring.collection,
                                     query: params.qstring.query,
@@ -3650,7 +3665,7 @@ const restartRequest = (params, initiator, done, try_times, fail) => {
  */
 function processUser(params, initiator, done, try_times) {
     return new Promise((resolve) => {
-        if (!params.app_user.uid) {
+        if (params && params.app_user && !params.app_user.uid) {
             //first time we see this user, we need to id him with uid
             countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
                 plugins.dispatch("/i/app_users/create", {
@@ -3709,7 +3724,7 @@ function processUser(params, initiator, done, try_times) {
             });
         }
         //check if device id was changed
-        else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
+        else if (params && params.qstring && params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
             const old_id = common.crypto.createHash('sha1')
                 .update(params.qstring.app_key + params.qstring.old_device_id + "")
                 .digest('hex');

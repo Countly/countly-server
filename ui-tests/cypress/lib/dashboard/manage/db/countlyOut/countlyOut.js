@@ -76,6 +76,13 @@ const verifyEmptyPageElements = () => {
     });
 };
 
+const verifyFullDataPageElements = () => {
+
+    verifyStaticElementsOfPage();
+
+    cy.shouldNotExist(dbCountlyOutPageElements.EMPTY_TABLE_ICON);
+};
+
 const clickCountlyDatabaseTab = () => {
     cy.scrollPageToTop();
     cy.clickElement(dbCountlyOutPageElements.TAB_COUNTLY_DATABASE);
@@ -93,6 +100,7 @@ const clickCountlyFileSystemDatabaseTab = () => {
 
 module.exports = {
     verifyEmptyPageElements,
+    verifyFullDataPageElements,
     clickCountlyDatabaseTab,
     clickCountlyOutDatabaseTab,
     clickCountlyFileSystemDatabaseTab
