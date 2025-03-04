@@ -1,5 +1,3 @@
-const crypto = require('crypto');
-const cluster = require('cluster');
 const plugins = require('../../../plugins/pluginManager.js');
 const log = require('../../utils/log.js')("batcher");
 const common = require('../../utils/common.js');
@@ -59,7 +57,6 @@ class InsertBatcher {
         let config = plugins.getConfig("api");
         this.period = config.batch_period * 1000;
         this.process = config.batch_processing;
-        this.shared = false;
     }
 
     /**
@@ -152,26 +149,21 @@ class InsertBatcher {
      *  @param {string} db - name of the database for which to write data
      */
     insert(collection, doc, db = "countly") {
-        if (!this.shared || cluster.isMaster) {
-            if (!this.data[db][collection]) {
-                this.data[db][collection] = [];
+        if (!this.data[db][collection]) {
+            this.data[db][collection] = [];
+        }
+        if (Array.isArray(doc)) {
+            for (let i = 0; i < doc.length; i++) {
+                this.data[db][collection].push(doc[i]);
             }
-            if (Array.isArray(doc)) {
-                for (let i = 0; i < doc.length; i++) {
-                    this.data[db][collection].push(doc[i]);
-                }
-                batcherStats.insert_queued += doc.length;
-            }
-            else {
-                batcherStats.insert_queued++;
-                this.data[db][collection].push(doc);
-            }
-            if (!this.process) {
-                this.flush(db, collection);
-            }
+            batcherStats.insert_queued += doc.length;
         }
         else {
-            process.send({ cmd: "batch_insert", data: {collection, doc, db} });
+            batcherStats.insert_queued++;
+            this.data[db][collection].push(doc);
+        }
+        if (!this.process) {
+            this.flush(db, collection);
         }
     }
 }
@@ -213,7 +205,6 @@ class WriteBatcher {
         let config = plugins.getConfig("api");
         this.period = config.batch_period * 1000;
         this.process = config.batch_processing;
-        this.shared = false;
     }
 
     /**
@@ -343,29 +334,24 @@ class WriteBatcher {
      *  @param {object=} options - options for operation ((upsert: false) - if you don't want to upsert document)
      */
     add(collection, id, operation, db = "countly", options) {
-        if (!this.shared || cluster.isMaster) {
-            if (!this.data[db][collection]) {
-                this.data[db][collection] = {};
+        if (!this.data[db][collection]) {
+            this.data[db][collection] = {};
+        }
+        if (!this.data[db][collection][id]) {
+            this.data[db][collection][id] = {id: id, value: operation, upsert: true};
+            if (options && options.upsert === false) {
+                this.data[db][collection][id].upsert = false;
             }
-            if (!this.data[db][collection][id]) {
-                this.data[db][collection][id] = {id: id, value: operation, upsert: true};
-                if (options && options.upsert === false) {
-                    this.data[db][collection][id].upsert = false;
-                }
-                batcherStats.update_queued++;
-            }
-            else {
-                this.data[db][collection][id].value = common.mergeQuery(this.data[db][collection][id].value, operation);
-                if (options && options.upsert === false) {
-                    this.data[db][collection][id].upsert = this.data[db][collection][id].upsert || false;
-                }
-            }
-            if (!this.process) {
-                this.flush(db, collection);
-            }
+            batcherStats.update_queued++;
         }
         else {
-            process.send({ cmd: "batch_write", data: {collection, id, operation, db} });
+            this.data[db][collection][id].value = common.mergeQuery(this.data[db][collection][id].value, operation);
+            if (options && options.upsert === false) {
+                this.data[db][collection][id].upsert = this.data[db][collection][id].upsert || false;
+            }
+        }
+        if (!this.process) {
+            this.flush(db, collection);
         }
     }
 }
@@ -384,25 +370,10 @@ class ReadBatcher {
     constructor(db) {
         this.db = db;
         this.data = {};
-        this.promises = {};
         plugins.loadConfigs(db, () => {
             this.loadConfig();
             this.schedule();
         });
-
-        if (!cluster.isMaster) {
-            process.on("message", (msg) => {
-                if (msg.cmd === "batch_read" && msg.data && msg.data.msgId && this.promises[msg.data.msgId]) {
-                    if (msg.data.data) {
-                        this.promises[msg.data.msgId].resolve(msg.data.data);
-                    }
-                    else {
-                        this.promises[msg.data.msgId].reject(msg.data.err);
-                    }
-                    delete this.promises[msg.data.msgId];
-                }
-            });
-        }
     }
 
     /**
@@ -413,7 +384,6 @@ class ReadBatcher {
         this.period = config.batch_read_period * 1000;
         this.ttl = config.batch_read_ttl * 1000;
         this.process = config.batch_read_processing;
-        this.onMaster = false;
     }
 
     /**
@@ -520,17 +490,12 @@ class ReadBatcher {
      *  @param {bool} multi - true if multiple documents
      */
     invalidate(collection, query, projection, multi) {
-        if (!this.onMaster || cluster.isMaster) {
-            var id = JSON.stringify(query) + "_" + multi;
-            if (!this.data[collection]) {
-                this.data[collection] = {};
-            }
-            if (this.data[collection][id] && !this.data[collection][id].promise) {
-                delete this.data[collection][id];
-            }
+        var id = JSON.stringify(query) + "_" + multi;
+        if (!this.data[collection]) {
+            this.data[collection] = {};
         }
-        else {
-            process.send({ cmd: "batch_invalidate", data: {collection, query, projection, multi} });
+        if (this.data[collection][id] && !this.data[collection][id].promise) {
+            delete this.data[collection][id];
         }
     }
 
@@ -543,65 +508,56 @@ class ReadBatcher {
      *  @returns {Promise} promise
      */
     get(collection, query, projection, multi) {
-        if (!this.onMaster || cluster.isMaster) {
-            var id = JSON.stringify(query) + "_" + multi;
-            if (!this.data[collection]) {
-                this.data[collection] = {};
-            }
-            var good_projection = true;
-            var keysSaved = this.keysFromProjectionObject(this.data[collection][id] && this.data[collection][id].projection);
-            var keysNew = this.keysFromProjectionObject(projection);
+        var id = JSON.stringify(query) + "_" + multi;
+        if (!this.data[collection]) {
+            this.data[collection] = {};
+        }
+        var good_projection = true;
+        var keysSaved = this.keysFromProjectionObject(this.data[collection][id] && this.data[collection][id].projection);
+        var keysNew = this.keysFromProjectionObject(projection);
 
-            if (this.data[collection][id] && (keysSaved.have_projection || keysNew.have_projection)) {
-                if (keysSaved.have_projection) {
-                    for (let p = 0; p < keysNew.keys.length; p++) {
-                        if (keysSaved.keys.indexOf(keysNew.keys[p]) === -1) {
-                            good_projection = false;
-                            keysSaved.keys.push(keysNew.keys[p]);
-                        }
-                    }
-                }
-                if (!good_projection) {
-                    projection = {};
-                    for (var p = 0; p < keysSaved.keys.length; p++) {
-                        projection[keysSaved.keys[p]] = 1;
+        if (this.data[collection][id] && (keysSaved.have_projection || keysNew.have_projection)) {
+            if (keysSaved.have_projection) {
+                for (let p = 0; p < keysNew.keys.length; p++) {
+                    if (keysSaved.keys.indexOf(keysNew.keys[p]) === -1) {
+                        good_projection = false;
+                        keysSaved.keys.push(keysNew.keys[p]);
                     }
                 }
             }
-
-            if (!this.process || !good_projection || !this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
-                if (this.process) {
-                    this.data[collection][id] = {
-                        query: query,
-                        promise: this.getData(collection, id, query, projection, multi),
-                        projection: projection,
-                        last_used: Date.now(),
-                        last_updated: Date.now(),
-                        multi: multi
-                    };
-                    return this.data[collection][id].promise;
-                }
-                else {
-                    return this.getData(collection, id, query, projection, multi);
+            if (!good_projection) {
+                projection = {};
+                for (var p = 0; p < keysSaved.keys.length; p++) {
+                    projection[keysSaved.keys[p]] = 1;
                 }
             }
-            //we already have a read for this
-            else if (this.data[collection][id] && this.data[collection][id].promise) {
+        }
+
+        if (!this.process || !good_projection || !this.data[collection][id] || this.data[collection][id].last_updated < Date.now() - this.period) {
+            if (this.process) {
+                this.data[collection][id] = {
+                    query: query,
+                    promise: this.getData(collection, id, query, projection, multi),
+                    projection: projection,
+                    last_used: Date.now(),
+                    last_updated: Date.now(),
+                    multi: multi
+                };
                 return this.data[collection][id].promise;
             }
             else {
-                this.data[collection][id].last_used = Date.now();
-
-                return new Promise((resolve) => {
-                    resolve(this.data[collection][id].data);
-                });
+                return this.getData(collection, id, query, projection, multi);
             }
         }
+        //we already have a read for this
+        else if (this.data[collection][id] && this.data[collection][id].promise) {
+            return this.data[collection][id].promise;
+        }
         else {
-            return new Promise((resolve, reject) => {
-                let msgId = getId();
-                this.promises[msgId] = {resolve, reject};
-                process.send({ cmd: "batch_read", data: {collection, query, projection, multi, msgId} });
+            this.data[collection][id].last_used = Date.now();
+
+            return new Promise((resolve) => {
+                resolve(this.data[collection][id].data);
             });
         }
     }
@@ -685,12 +641,5 @@ function promiseOrCallback(promise, callback) {
     return promise;
 }
 
-/**
- *  Generate random id
- *  @returns {string} randomly generated id
- */
-function getId() {
-    return crypto.randomBytes(16).toString("hex");
-}
 
 module.exports = {WriteBatcher, ReadBatcher, InsertBatcher};

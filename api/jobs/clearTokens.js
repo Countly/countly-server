@@ -1,10 +1,23 @@
 'use strict';
 
-const job = require('../parts/jobs/job.js'),
-    authorize = require('../utils/authorizer.js');
+// const job = require('../parts/jobs/job.js'),
+const authorize = require('../utils/authorizer.js');
+const Job = require("../../jobServer/Job");
 
 /** Class for job of clearing tokens **/
-class CleanTokensJob extends job.Job {
+class CleanTokensJob extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "30 2 * * *" // Every day at 2:30 AM
+        };
+    }
+
     /**
      * Run the job
      * @param {Db} db connection

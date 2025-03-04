@@ -1,8 +1,10 @@
 "use strict";
 
-const job = require("../parts/jobs/job.js");
+// const job = require("../parts/jobs/job.js");
 const log = require('../utils/log.js')('job:clearAutoTasks');
 const taskManager = require('../utils/taskmanager');
+const Job = require("../../jobServer/Job");
+
 /**
  * clear task record in db with  task id
  * @param {string} taskId - the id of task in db.
@@ -20,7 +22,18 @@ const clearTaskRecord = (taskId) => {
 };
 
 /** Class for job of clearing auto tasks created long time ago **/
-class ClearAutoTasks extends job.Job {
+class ClearAutoTasks extends Job {
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "0 2 * * *" // Every day at 2:00 AM
+        };
+    }
+
     /**
      * Run the job
      * @param {Db} db connection

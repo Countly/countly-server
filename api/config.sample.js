@@ -24,6 +24,7 @@ var countlyConfig = {
         db: "countly",
         port: 27017,
         max_pool_size: 500,
+        replicaName: "rs0",
         //username: test,
         //password: test,
         //mongos: false,

@@ -1,28 +1,45 @@
 'use strict';
 
-const job = require('../parts/jobs/job.js'),
-    log = require('../utils/log.js')('job:ping'),
-    countlyConfig = require("../../frontend/express/config.js"),
-    versionInfo = require('../../frontend/express/version.info'),
-    plugins = require('../../plugins/pluginManager.js'),
-    request = require('countly-request')(plugins.getConfig("security"));
+// const job = require('../parts/jobs/job.js');
+const log = require('../utils/log.js')('job:ping');
+const countlyConfig = require("../../frontend/express/config.js");
+const versionInfo = require('../../frontend/express/version.info');
+const plugins = require('../../plugins/pluginManager.js');
+
+
+const Job = require("../../jobServer/Job");
 
 
 /** Class for the job of pinging servers **/
-class PingJob extends job.Job {
+class PingJob extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "0 1 * * *" // Every day at 1:00 AM
+        };
+    }
+
     /**
      * Run the ping job
      * @param {Db} db connection
      * @param {done} done callback
      */
     run(db, done) {
-        request({strictSSL: false, uri: (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + "/configs"}, function() {});
-        var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
-        var url = "https://count.ly/configurations/ce/tracking";
-        if (versionInfo.type !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
-            url = "https://count.ly/configurations/ee/tracking";
-        }
+
         plugins.loadConfigs(db, function() {
+            const request = require('countly-request')(plugins.getConfig("security"));
+            request({strictSSL: false, uri: (process.env.COUNTLY_CONFIG_PROTOCOL || "http") + "://" + (process.env.COUNTLY_CONFIG_HOSTNAME || "localhost") + (countlyConfig.path || "") + "/configs"}, function() {});
+            var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
+            var url = "https://count.ly/configurations/ce/tracking";
+            if (versionInfo.type !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
+                url = "https://count.ly/configurations/ee/tracking";
+            }
+
             const offlineMode = plugins.getConfig("api").offline_mode;
             const { countly_tracking } = plugins.getConfig('frontend');
             if (!offlineMode) {
@@ -56,12 +73,12 @@ class PingJob extends job.Job {
                                 let domain = plugins.getConfig('api').domain;
 
                                 try {
-                                    // try to extract hostname from full domain url
+                                // try to extract hostname from full domain url
                                     const urlObj = new URL(domain);
                                     domain = urlObj.hostname;
                                 }
                                 catch (_) {
-                                    // do nothing, domain from config will be used as is
+                                // do nothing, domain from config will be used as is
                                 }
 
                                 request({

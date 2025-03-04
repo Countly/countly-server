@@ -1,16 +1,29 @@
 'use strict';
 
-const job = require('../../../../api/parts/jobs/job.js'),
-    log = require('../../../../api/utils/log.js')('job:reports');
-var plugins = require('../../../pluginManager.js'),
-    async = require("async"),
-    reports = require("../reports");
+// const job = require('../../../../api/parts/jobs/job.js'),
+const Job = require('../../../../jobServer/Job');
+const log = require('../../../../api/utils/log.js')('job:reports');
+const plugins = require('../../../pluginManager.js');
+const async = require("async");
+const reports = require("../reports");
 /**
  * @class
  * @classdesc Class ReportsJob is report Job extend from Countly Job
  * @extends Job
  */
-class ReportsJob extends job.Job {
+class ReportsJob extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "0 * * * *" // every hour
+        };
+    }
+
     /**
     * run task
     * @param {object} countlyDb - db object
