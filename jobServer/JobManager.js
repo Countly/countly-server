@@ -134,7 +134,7 @@ class JobManager {
             }
 
             if (jobConfig.schedule) {
-                await this.#jobRunner.updateSchedule(jobName, jobConfig.schedule);
+                await this.#jobRunner.updateSchedule(jobName, {type: "schedule", value: jobConfig.schedule});
             }
 
             if (jobConfig.retry) {

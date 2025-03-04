@@ -8,18 +8,40 @@
      */
     var getColor = function(row) {
         // row is the merged job object
-        if (row.status === "RUNNING") {
-            return "green";
+        // Use _originalStatus if available, otherwise fall back to status
+        var status = row._originalStatus || row.status;
+        if (status) {
+            status = status.toUpperCase(); // Convert to uppercase for consistent comparison
         }
-        else if (row.status === "SCHEDULED" && row.enabled) {
-            return "yellow";
+
+        // Use _originalLastRunStatus if available, otherwise fall back to lastRunStatus
+        var lastRunStatus = row._originalLastRunStatus || row.lastRunStatus;
+        if (lastRunStatus) {
+            lastRunStatus = lastRunStatus.toUpperCase(); // Convert to uppercase for consistent comparison
         }
-        else if (row.status === "SUSPENDED" || !row.enabled) {
+
+        // Check if job is disabled via config.enabled
+        if (!row.config || !row.config.enabled) {
             return "gray";
         }
-        else if (row.status === "CANCELLED" || row.lastRunStatus === "failed") {
+
+        // Backend uses "COMPLETED", "FAILED", "RUNNING", "SCHEDULED" (see getJobStatus in api.js)
+        // But also "success", "failed", "pending" (see getRunStatus in api.js)
+        switch (status) {
+        case "RUNNING": return "green";
+        case "COMPLETED": return "green";
+        case "SUCCESS": return "green";
+        case "SCHEDULED":
+        case "PENDING": return "yellow";
+        case "SUSPENDED": return "gray";
+        case "CANCELLED": return "red";
+        }
+
+        // If status doesn't match, check lastRunStatus
+        if (lastRunStatus === "FAILED") {
             return "red";
         }
+
         return "gray";
     };
 
@@ -29,9 +51,55 @@
      * @returns {void}
      */
     var updateScheduleRow = function(row) {
-        row.nextRunDate = row.nextRunAt ? moment(row.nextRunAt).format('YYYY-MM-DD') : '';
-        row.nextRunTime = row.nextRunAt ? moment(row.nextRunAt).format('HH:mm:ss') : '';
-        row.lastRun = row.lastFinishedAt ? moment(row.lastFinishedAt).fromNow() : '';
+        // Store original values for sorting
+        if (row.name !== undefined) {
+            row._sortName = String(row.name);
+        }
+
+        if (row.status !== undefined) {
+            // Store the original status value for color determination and sorting
+            row._originalStatus = row.status;
+            row._sortStatus = String(row.status);
+        }
+
+        // Add sortBy properties for date fields to ensure correct sorting
+        if (row.nextRunAt) {
+            var nextRunMoment = moment(row.nextRunAt);
+            row.nextRunDate = nextRunMoment.format('YYYY-MM-DD');
+            row.nextRunTime = nextRunMoment.format('HH:mm:ss');
+
+            // Store original value for sorting
+            row._sortNextRunAt = new Date(row.nextRunAt).getTime();
+        }
+        else {
+            row.nextRunDate = '';
+            row.nextRunTime = '';
+        }
+
+        if (row.lastFinishedAt) {
+            var lastFinishedMoment = moment(row.lastFinishedAt);
+            row.lastRun = lastFinishedMoment.fromNow();
+
+            // Store original value for sorting
+            row._sortLastFinishedAt = new Date(row.lastFinishedAt).getTime();
+        }
+        else {
+            row.lastRun = '';
+        }
+
+        if (row.scheduleLabel !== undefined) {
+            row._sortScheduleLabel = String(row.scheduleLabel);
+        }
+
+        if (row.lastRunStatus !== undefined) {
+            // Store the original lastRunStatus value for color determination and sorting
+            row._originalLastRunStatus = row.lastRunStatus;
+            row._sortLastRunStatus = String(row.lastRunStatus);
+        }
+
+        if (row.total !== undefined) {
+            row._sortTotal = Number(row.total);
+        }
 
         // If the row has .config.defaultConfig.schedule.value, use it as its "default schedule"
         if (row.config && row.config.defaultConfig && row.config.defaultConfig.schedule) {
@@ -53,15 +121,7 @@
             var tableStore = countlyVue.vuex.getLocalStore(
                 countlyVue.vuex.ServerDataTable("jobsTable", {
                     // columns: ['name', "schedule", "next", "finished", "status", "total"],
-                    columns: [
-                        "name",
-                        "status",
-                        "scheduleLabel",
-                        "nextRunAt",
-                        "lastFinishedAt",
-                        "lastRunStatus",
-                        "total"
-                    ],
+                    columns: ["name", "status", "scheduleLabel", "nextRunAt", "lastFinishedAt", "lastRunStatus", "total"],
 
                     onRequest: function() {
                         // Called before making the request
@@ -134,7 +194,7 @@
                     return 'gray';
                 }
                 if (details.currentState.status === 'RUNNING') {
-                    return 'blue';
+                    return 'green';
                 }
                 if (details.currentState.status === 'FAILED') {
                     return 'red';
@@ -142,17 +202,32 @@
                 if (details.currentState.status === 'COMPLETED') {
                     return 'green';
                 }
+                if (details.currentState.status === 'PENDING') {
+                    return 'yellow';
+                }
                 return 'yellow';
             },
             getRunStatusColor(status) {
                 // For run status
-                if (status === 'success') {
-                    return 'green';
+                // Use _originalLastRunStatus if available
+                var statusValue = status && status._originalLastRunStatus ? status._originalLastRunStatus : status;
+
+                // Convert to uppercase for consistent comparison with backend values
+                if (typeof statusValue === 'string') {
+                    statusValue = statusValue.toUpperCase();
                 }
-                if (status === 'failed') {
-                    return 'red';
+
+                // Backend uses "COMPLETED", "FAILED", "RUNNING", "SCHEDULED" (see getJobStatus in api.js)
+                // But also "success", "failed", "pending" (see getRunStatus in api.js)
+                switch (statusValue) {
+                case "SUCCESS":
+                case "COMPLETED": return 'green';
+                case "RUNNING": return 'green';
+                case "FAILED": return 'red';
+                case "PENDING":
+                case "SCHEDULED": return 'yellow';
+                default: return 'gray';
                 }
-                return 'gray';
             },
             refresh: function(force) {
                 if (this.loaded || force) {
@@ -356,12 +431,13 @@
              */
             getStatusColor: function(jobDetails) {
                 if (!jobDetails.config?.enabled) {
-                    return "grey";
+                    return "gray";
                 }
                 switch (jobDetails.currentState.status) {
-                case "RUNNING": return "blue";
+                case "RUNNING": return "green";
                 case "FAILED": return "red";
                 case "COMPLETED": return "green";
+                case "PENDING": return "yellow";
                 default: return "yellow";
                 }
             },
@@ -371,11 +447,25 @@
              * @returns {string} Color code for the status
              */
             getRunStatusColor: function(run) {
-                switch (run.status) {
-                case "success": return "green";
-                case "failed": return "red";
-                case "running": return "blue";
-                default: return "yellow";
+                // Handle both string and object status
+                // Use _originalLastRunStatus if available
+                var status = run._originalLastRunStatus || run.status;
+
+                // Convert to uppercase for consistent comparison with backend values
+                if (typeof status === 'string') {
+                    status = status.toUpperCase();
+                }
+
+                // Backend uses "COMPLETED", "FAILED", "RUNNING", "SCHEDULED" (see getJobStatus in api.js)
+                // But also "success", "failed", "pending" (see getRunStatus in api.js)
+                switch (status) {
+                case "SUCCESS":
+                case "COMPLETED": return "green";
+                case "RUNNING": return "green";
+                case "FAILED": return "red";
+                case "PENDING":
+                case "SCHEDULED": return "yellow";
+                default: return "gray";
                 }
             }
         },

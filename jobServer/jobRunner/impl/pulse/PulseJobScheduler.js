@@ -126,7 +126,9 @@ class PulseJobScheduler extends IJobScheduler {
             this.#validateScheduleConfig(schedule);
 
             // First remove the existing job
-            await this.pulseRunner.remove({ name: jobName });
+            let job = this.pulseRunner.create(jobName);
+            await job.remove();
+            // await this.pulseRunner.remove({ name: jobName });
 
             // Then create a new schedule based on the type
             switch (schedule.type) {

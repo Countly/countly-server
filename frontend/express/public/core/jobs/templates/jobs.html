@@ -16,6 +16,8 @@
                 v-on:row-click="goTo"
                 :isClickable="true"
                 :default-sort="{ prop: 'name', order: 'ascending' }"
+                persistKey="jobs-table"
+                class="jobs-table"
             >
                 <template v-slot="scope">
                     <!-- Job Name Column -->
@@ -71,14 +73,19 @@
                                     size="mini"
                                     type="warning"
                                 >
-                                    Overridden
+                                    {{ i18n('jobs.schedule-overridden') }}
                                 </el-tag>
                             </p>
                             <p
                                 :data-test-id="'datatable-jobs-schedule-detail-' + scope.$index"
                                 class="bu-has-text-grey bu-is-size-7"
                             >
-                                {{ scope.row.configuredSchedule || scope.row.schedule }}
+                                <template v-if="scope.row.scheduleOverridden">
+                                    <span class="bu-has-text-weight-bold">{{ i18n('jobs.override') }}:</span> {{ scope.row.configuredSchedule }}
+                                </template>
+                                <template v-else>
+                                    {{ scope.row.schedule }}
+                                </template>
                             </p>
                         </template>
                     </el-table-column>
@@ -139,9 +146,7 @@
                             <span :data-test-id="'datatable-jobs-last-run-status-' + scope.$index">
                                 <cly-status-tag
                                     :text="scope.row.lastRunStatus"
-                                    :color="scope.row.lastRunStatus === 'success'
-                                        ? 'green'
-                                        : (scope.row.lastRunStatus === 'failed' ? 'red' : 'gray')"
+                                    :color="getRunStatusColor(scope.row)"
                                 >
                                 </cly-status-tag>
                             </span>
@@ -152,56 +157,11 @@
                     <el-table-column
                         align="center"
                         type="options"
+                        header-align="center"
+                        width="100"
                     >
                         <template v-slot="scope">
-                            <!--
-                                This is your schedule dialog.
-                                It's placed here so you can reuse the same dialog instance
-                                for each row, opening it via 'handleCommand'.
-                            -->
-                            <el-dialog
-                                :title="i18n('jobs.schedule-configuration')"
-                                :visible.sync="scheduleDialogVisible"
-                                width="30%"
-                            >
-                                <div class="bu-columns">
-                                    <div class="bu-column">
-                                        <div class="config-item">
-                                            <label>{{ i18n('jobs.schedule') }}:</label>
-                                            <el-input
-                                                v-model="selectedJobConfig.schedule"
-                                                :placeholder="selectedJobConfig.defaultSchedule"
-                                            ></el-input>
 
-                                            <div class="bu-mt-2 bu-is-size-7 bu-has-text-grey">
-                                                {{ i18n('jobs.schedule-hint') }}
-                                            </div>
-
-                                            <div
-                                                v-if="selectedJobConfig.scheduleLabel"
-                                                class="bu-mt-2 bu-is-size-7"
-                                            >
-                                                {{ selectedJobConfig.scheduleLabel }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <span slot="footer" class="dialog-footer">
-                                    <el-button @click="scheduleDialogVisible = false">
-                                        {{ i18n('common.cancel') }}
-                                    </el-button>
-                                    <el-button
-                                        type="primary"
-                                        @click="saveSchedule"
-                                        :loading="saving"
-                                    >
-                                        {{ i18n('common.save') }}
-                                    </el-button>
-                                </span>
-                            </el-dialog>
-
-                            <!-- The 'More Options' dropdown -->
                             <cly-more-options
                                 v-if="canSuspendJob"
                                 @command="handleCommand($event, scope.row)"
@@ -231,6 +191,50 @@
                     </el-table-column>
                 </template>
             </cly-datatable-n>
+            
+            <!-- Schedule dialog moved outside of the table structure -->
+            <el-dialog
+                :title="i18n('jobs.schedule-configuration')"
+                :visible.sync="scheduleDialogVisible"
+                width="30%"
+                append-to-body
+            >
+                <div class="bu-columns">
+                    <div class="bu-column">
+                        <div class="config-item">
+                            <label>{{ i18n('jobs.schedule') }}:</label>
+                            <el-input
+                                v-model="selectedJobConfig.schedule"
+                                :placeholder="selectedJobConfig.defaultSchedule"
+                            ></el-input>
+
+                            <div class="bu-mt-2 bu-is-size-7 bu-has-text-grey">
+                                {{ i18n('jobs.schedule-hint') }}
+                            </div>
+
+                            <div
+                                v-if="selectedJobConfig.scheduleLabel"
+                                class="bu-mt-2 bu-is-size-7"
+                            >
+                                {{ selectedJobConfig.scheduleLabel }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="scheduleDialogVisible = false">
+                        {{ i18n('common.cancel') }}
+                    </el-button>
+                    <el-button
+                        type="primary"
+                        @click="saveSchedule"
+                        :loading="saving"
+                    >
+                        {{ i18n('common.save') }}
+                    </el-button>
+                </span>
+            </el-dialog>
         </cly-section>
     </cly-main>
 </div>
