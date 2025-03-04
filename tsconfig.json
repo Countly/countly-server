@@ -1,0 +1,16 @@
+{
+    "include": [
+        "plugins/push/**/*.ts",
+        "plugins/push/**/*.js"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+    "compilerOptions": {
+        "outDir": "dist", // we're not building the app. but still necessary for, reasons...
+        "allowJs": true,
+        "checkJs": true,
+        "resolveJsonModule": true,
+        "strict": true
+    }
+}
