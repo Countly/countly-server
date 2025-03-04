@@ -189,7 +189,7 @@ plugins.connectToAllDatabases(true).then(function() {
     //since process restarted mark running tasks as errored
     plugins.dispatch("/ingestor", {common: common});
     plugins.init({"skipDependencies": true, "filename": "ingestor"});
-    console.log("Loading configs");
+    console.log("Loading configs"); 
     plugins.loadConfigs(common.db, function() {
         console.log("Configs loaded. Opening server connection");
         console.log(JSON.stringify(common.config.ingestor || {}));
