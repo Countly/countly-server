@@ -1,4 +1,4 @@
-/*global countlyVue */
+/*global countlyVue, $, countlyCommon, CV, CountlyHelpers*/
 (function(countlyAggregationManager) {
     countlyAggregationManager.fetchData = function() {
         return $.ajax({
@@ -8,9 +8,6 @@
             data: {
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 "preventRequestAbort": true
-            },
-            success: function(json) {
-                _users = json;
             },
             error: function(/*xhr, status, error*/) {
                 // TODO: handle error
@@ -32,16 +29,11 @@
                     app_id: countlyCommon.ACTIVE_APP_ID,
                     "preventRequestAbort": true
                 },
-                success: function(json) {
-                    _data = json;
-                },
                 error: function(/*xhr, status, error*/) {
                     // TODO: handle error
                 }
             });
         };
-
-        var _data = [];
 
         var actions = {
             fetchData: function() {

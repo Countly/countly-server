@@ -1,4 +1,4 @@
-/* global countlyVue, app, countlyGlobal, countlyVersionHistoryManager, CV, jQuery*/
+/* global countlyVue, app, countlyAggregationManager, CV*/
 
 
 var AggregatorStatusView = countlyVue.views.create({
@@ -15,7 +15,7 @@ var AggregatorStatusView = countlyVue.views.create({
         });
     },
     methods: {
-        getTable: function(dataObj) {
+        getTable: function() {
             return this.tableData;
         },
         refresh: function() {

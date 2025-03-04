@@ -22,9 +22,8 @@ pluginManager.dbConnection().then(async(countlyDb) => {
 
         for (var z = 0; z < collectionNames.length; z++) {
             if ((collectionNames[z].indexOf("app_viewdata") === 0 && collectionNames[z].length > 13) ||
-                (collectionNames[z].indexOf("app_userviews") === 0 && collectionNames[z].length > 14)||
-                (collectionNames[z].indexOf("app_viewsmeta") === 0 && collectionNames[z].length > 13) )
-            {
+                (collectionNames[z].indexOf("app_userviews") === 0 && collectionNames[z].length > 14) ||
+                (collectionNames[z].indexOf("app_viewsmeta") === 0 && collectionNames[z].length > 13)) {
                 if (force) {
                     console.log("Dropping collection: " + collectionNames[z]);
                     await countlyDb.collection(collectionNames[z]).drop();
