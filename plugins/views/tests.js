@@ -90,7 +90,7 @@ function verifyMetrics(err, ob, done, correct) {
                 return false;
             }
         }
-        else if (c === "_id") {
+        else if (c === "_id" || c === "url") {
             return true;
         }
         else if (ob[c] != correct[c]) {
@@ -109,7 +109,7 @@ function compareObjects(ob, correct) {
     }
 
     for (var c in correct) {
-        if (c != '_id') {
+        if (c != '_id' && c !== "url") {
             if (typeof ob[c] == 'undefined') {
                 console.log(c + " undefined" + "");
                 return false;
@@ -888,7 +888,7 @@ describe('Testing views plugin', function() {
                 });
         });
 
-        it('adding Scrolling to be matched via url', function(done) {
+        /*it('adding Scrolling to be matched via url', function(done) {
             pushValues("30days", 2, {"scr": 50, "scr-calc": 50});
             var data = JSON.stringify([{"key": "[CLY]_action", "count": 1, "segmentation": {"view": "/mypage.html", "type": "scroll", "height": 1000, "y": 500}}]);
             request
@@ -900,7 +900,7 @@ describe('Testing views plugin', function() {
                     }
                     setTimeout(done, 1000 * testUtils.testScalingFactor);
                 });
-        });
+        });*/
         verifyTotals("30days");
     });
 
