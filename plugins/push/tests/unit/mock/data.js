@@ -3,6 +3,7 @@
  * @typedef {import("../../../api/new/types/message.ts").RecurringTrigger} RecurringTrigger
  * @typedef {import("../../../api/new/types/message.ts").PlainTrigger} PlainTrigger
  * @typedef {import("../../../api/new/types/schedule.ts").Schedule} Schedule
+ * @typedef {import("../../../api/new/types/queue.ts").ScheduleEvent} ScheduleEvent
  * @typedef {import("../../../api/new/types/user.js").User} User
  */
 const { ObjectId } = require("mongodb");
@@ -11,63 +12,85 @@ module.exports = {
     /**
      * @returns {Schedule}
      */
-    schedule: () => ({
-        _id: new ObjectId,
-        appId: new ObjectId,
-        messageId: new ObjectId,
-        scheduledTo: new Date,
-        timezoneAware: true,
-        schedulerTimezone: 180,
-        status: "scheduled"
-    }),
+    schedule() {
+        return {
+            _id: new ObjectId,
+            appId: new ObjectId,
+            messageId: new ObjectId,
+            scheduledTo: new Date,
+            timezoneAware: true,
+            schedulerTimezone: 180,
+            status: "scheduled"
+        }
+    },
+    /**
+     * @returns {ScheduleEvent}
+     */
+    scheduleEvent() {
+        return {
+            appId: new ObjectId,
+            messageId: new ObjectId,
+            scheduleId: new ObjectId,
+            scheduledTo: new Date,
+            timezone: "180"
+        };
+    },
     /**
      * @returns {PlainTrigger}
      */
-    plainTrigger: () => ({
-        kind: "plain",
-        start: new Date,
-    }),
+    plainTrigger() {
+        return {
+            kind: "plain",
+            start: new Date,
+        }
+    },
     /**
      * @returns {RecurringTrigger}
      */
-    dailyRecurringTrigger: () => ({
-        kind: "rec",
-        bucket: "daily",
-        time: 53100000, // 14:45
-        start: new Date("2024-02-01T09:00:00.000+03:00"),
-        every: 5,
-        end: new Date("2024-03-09T08:00:00.000+03:00"),
-        tz: true,
-        sctz: -180,
-    }),
+    dailyRecurringTrigger() {
+        return {
+            kind: "rec",
+            bucket: "daily",
+            time: 53100000, // 14:45
+            start: new Date("2024-02-01T09:00:00.000+03:00"),
+            every: 5,
+            end: new Date("2024-03-09T08:00:00.000+03:00"),
+            tz: true,
+            sctz: -180,
+        }
+    },
     /**
      * @returns {RecurringTrigger}
      */
-    weeklyRecurringTrigger: () => ({
-        kind: "rec",
-        bucket: "weekly",
-        time: 53100000, // 14:45
-        start: new Date("2024-02-01T09:00:00.000+03:00"),
-        tz: true,
-        sctz: -180,
-        every: 2,
-        end: new Date("2024-03-15T09:00:00.000+03:00"),
-        on: [2, 4, 5] // on monday, thursday, friday,
-    }),
+    weeklyRecurringTrigger() {
+        return {
+            kind: "rec",
+            bucket: "weekly",
+            time: 53100000, // 14:45
+            start: new Date("2024-02-01T09:00:00.000+03:00"),
+            tz: true,
+            sctz: -180,
+            every: 2,
+            end: new Date("2024-03-15T09:00:00.000+03:00"),
+            on: [2, 4, 5] // on monday, thursday, friday,
+        }
+    },
     /**
      * @returns {RecurringTrigger}
      */
-    monthlyRecurringTrigger: () => ({
-        kind: "rec",
-        bucket: "monthly",
-        time: 53100000, // 14:45
-        tz: true,
-        sctz: -180,
-        start: new Date("2024-02-01T09:00:00.000+03:00"),
-        every: 3,
-        end: new Date("2024-09-15T09:00:00.000+03:00"),
-        on: [3, -1, 0, 20] // 0: last day of the month, -1: previous day of the last day
-    }),
+    monthlyRecurringTrigger() {
+        return {
+            kind: "rec",
+            bucket: "monthly",
+            time: 53100000, // 14:45
+            tz: true,
+            sctz: -180,
+            start: new Date("2024-02-01T09:00:00.000+03:00"),
+            every: 3,
+            end: new Date("2024-09-15T09:00:00.000+03:00"),
+            on: [3, -1, 0, 20] // 0: last day of the month, -1: previous day of the last day
+        }
+    },
     /**
      * @returns {User}
      */
@@ -83,7 +106,7 @@ module.exports = {
                 {
                     _id: uid,
                     tk: {
-                        ip: "token"
+                        ap: "token"
                     }
                 }
             ],
@@ -112,69 +135,72 @@ module.exports = {
     /**
      * @returns {Message}
      */
-    message: () => ({
-        _id: new ObjectId,
-        app: new ObjectId,
-        platforms: ["a"],
-        state: 1,
-        status: "created",
-        triggers: [
-            {
-                kind: 'plain',
-                start: new Date,
-                tz: false,
-                delayed: false
-            }
-        ],
-        filter: {
-            user: '{"message":{"$nin":["67b892be7b12b404b790efa1"]}}'
-        },
-        contents: [
-
-        ],
-        result: {
-            total: 1,
-            processed: 1,
-            sent: 1,
-            lastRuns: [
+    message() {
+        return {
+            _id: new ObjectId,
+            app: new ObjectId,
+            platforms: ["a"],
+            state: 1,
+            status: "created",
+            triggers: [
                 {
+                    kind: 'plain',
                     start: new Date,
-                    processed: 1,
-                    errored: 0,
-                    ended: new Date
+                    tz: false,
+                    delayed: false
                 }
             ],
-            subs: {
-                a: {
-                    total: 1,
-                    processed: 1,
-                    sent: 1,
-                    subs: {
-                        en: {
-                            total: 1,
-                            processed: 1,
-                            sent: 1
+            filter: {
+                user: '{"message":{"$nin":["67b892be7b12b404b790efa1"]}}'
+            },
+            contents: [
+                { title: 'title', message: 'message', expiration: 604800000 },
+                { p: 'a', sound: 'default' }
+            ],
+            result: {
+                total: 1,
+                processed: 1,
+                sent: 1,
+                lastRuns: [
+                    {
+                        start: new Date,
+                        processed: 1,
+                        errored: 0,
+                        ended: new Date
+                    }
+                ],
+                subs: {
+                    a: {
+                        total: 1,
+                        processed: 1,
+                        sent: 1,
+                        subs: {
+                            en: {
+                                total: 1,
+                                processed: 1,
+                                sent: 1
+                            }
                         }
                     }
                 }
+            },
+            info: {
+                appName: "test",
+                silent: false,
+                scheduled: false,
+                locales: { en: 1, default: 0, count: 1 },
+                created: new Date,
+                createdBy: new ObjectId,
+                createdByName: "Test admin",
+                updated: new Date,
+                updatedBy: new ObjectId,
+                updatedByName: "Test admin",
+                started: new Date,
+                startedLast: new Date,
+                finished: new Date
             }
-        },
-        info: {
-            appName: 'test',
-            silent: false,
-            scheduled: false,
-            locales: { en: 1, default: 0, count: 1 },
-            created: new Date,
-            createdBy: new ObjectId,
-            createdByName: "Test admin",
-            updated: new Date,
-            updatedBy: new ObjectId,
-            updatedByName: "Test admin",
-            started: new Date,
-            startedLast: new Date,
-            finished: new Date
         }
-    }),
+    },
 /*
 AGGREGATION PIPELINE: [
   {

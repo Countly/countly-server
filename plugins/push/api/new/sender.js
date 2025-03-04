@@ -8,7 +8,9 @@ const { send: androidSend } = require("./platforms/android.js");
  *
  * @param {PushEvent} push
  */
-async function sendPushMessage(push) {
+async function sendPushToProvider(push) {
+    // TODO: Handle errors and send as result
+    // TODO: Send results
     if (push.platform === "a") {
         await androidSend(push);
     }
@@ -20,4 +22,8 @@ async function sendPushMessage(push) {
         // TODO: IMPLEMENT
         console.log("HUAWEI SEND IS NOT IMPLEMENTED");
     }
+}
+
+module.exports = {
+    sendPushToProvider
 }

@@ -3,7 +3,6 @@
  * @typedef {import('./types/queue.ts').PushEvent} PushEvent
  * @typedef {import('./types/message.ts').Message} Message
  * @typedef {import('./types/message.ts').PlatformKeys} PlatformKeys
- * @typedef {import('./types/message.ts').PlatformFieldKeys} PlatformFieldKeys
  * @typedef {import('./types/message.ts').PlatformCombinedKeys} PlatformCombinedKeys
  * @typedef {import('./types/credentials.ts').SomeCredential} SomeCredential
  * @typedef {import('./types/proxy.ts').ProxyConfiguration} ProxyConfiguration
@@ -68,6 +67,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
         }
     }
 
+    let numberOfPushes = 0;
     for await (let user of stream) {
         let tokenObj = user?.tk?.[0]?.tk;
         if (!tokenObj) {
@@ -94,8 +94,10 @@ async function composeScheduledPushes(db, scheduleEvent) {
             };
 
             await queue.sendPushEvent(push);
+            numberOfPushes++;
         }
     }
+    return numberOfPushes;
 }
 
 /**

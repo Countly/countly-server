@@ -113,19 +113,4 @@ describe("Message template", () => {
             }
         });
     });
-
-    // it("should do stuff", () => {
-    //     const result1 = Message.userFieldsFor(mockData.parametricMessage().contents, false);
-    //     const result2 = []
-    //     Message.userFieldsFor(mockData.parametricMessage().contents, true)
-    //         .forEach(k => {
-    //             result2.push(
-    //                 k.indexOf('.') === -1
-    //                     ? k
-    //                     : k.substr(0, k.indexOf('.'))
-    //             )
-    //         }); // make sure we have 'custom', not 'custom.x'
-
-    //     // console.log(result1, result2);
-    // });
 });

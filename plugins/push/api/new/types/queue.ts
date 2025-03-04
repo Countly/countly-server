@@ -12,7 +12,6 @@ export interface ScheduleEvent {
     finishedAt?: Date;
     timezone?: string;
 }
-
 export interface PushEvent {
     appId: ObjectId;
     messageId: ObjectId;
@@ -24,12 +23,16 @@ export interface PushEvent {
     credentials: SomeCredential;
     proxy?: ProxyConfiguration;
 }
-
-export interface ResultEvent {
-    appId: ObjectId;
-    messageId: ObjectId;
-    scheduleId: ObjectId;
+export interface ResultEvent extends PushEvent {
+    result: any;
+    error?: string;
 }
+
+type DTO<T> = { [P in keyof T]: T[P] extends ObjectId|Date ? string : T[P] }
+export type ScheduleEventDTO = DTO<ScheduleEvent>;
+export type CredentialsDTO = DTO<SomeCredential>;
+export type PushEventDTO = Omit<DTO<PushEvent>,"credentials"> & { credentials: CredentialsDTO };
+export type ResultEventDTO = Omit<DTO<ResultEvent>,"credentials"> & { credentials: CredentialsDTO };
 
 export type PushEventHandler = (push: PushEvent) => Promise<void>;
 export type ScheduleEventHandler = (schedule: ScheduleEvent) => Promise<void>;
@@ -44,4 +47,5 @@ export interface PushQueue {
     ): Promise<void>;
     sendScheduleEvent(scheduleEvent: ScheduleEvent): Promise<void>;
     sendPushEvent(pushEvent: PushEvent): Promise<void>;
+    sendResultEvent(resultEvent: ResultEvent): Promise<void>;
 }

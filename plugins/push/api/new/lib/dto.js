@@ -1,47 +1,81 @@
 /**
  * @typedef {import('../types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('../types/queue.ts').PushEvent} PushEvent
- * @typedef {{[key: string]: string|number|boolean|PlainNestedObject}} PlainNestedObject
+ * @typedef {import('../types/queue.ts').ResultEvent} ResultEvent
+ * @typedef {import('../types/queue.ts').ScheduleEventDTO} ScheduleEventDTO
+ * @typedef {import('../types/queue.ts').PushEventDTO} PushEventDTO
+ * @typedef {import('../types/queue.ts').ResultEventDTO} ResultEventDTO
+ * @typedef {import('../types/queue.ts').CredentialsDTO} CredentialsDTO
+ * @typedef {import('../types/credentials.js').SomeCredential} SomeCredential
  */
 
 const { ObjectId } = require("mongodb");
 
 /**
- * @param {any} scheduleEventDTO
+ * @param {ScheduleEventDTO} scheduleEventDTO
  * @returns {ScheduleEvent}
  */
 function scheduleEventDTOToObject(scheduleEventDTO) {
-    const scheduleEvent = {
+    return {
         ...scheduleEventDTO,
-        appId: new ObjectId(/** @type {string} */(scheduleEventDTO.appId)),
-        messageId: new ObjectId(/** @type {string} */(scheduleEventDTO.messageId)),
-        scheduleId: new ObjectId(/** @type {string} */(scheduleEventDTO.scheduleId)),
-        scheduledTo: new Date(/** @type {string} */(scheduleEventDTO.scheduledTo)),
+        appId: new ObjectId(scheduleEventDTO.appId),
+        messageId: new ObjectId(scheduleEventDTO.messageId),
+        scheduleId: new ObjectId(scheduleEventDTO.scheduleId),
+        scheduledTo: new Date(scheduleEventDTO.scheduledTo),
     }
-    return scheduleEvent;
 }
 
 /**
- * @param {any} pushEventDTO
+ * @param {PushEventDTO} pushEventDTO
  * @returns {PushEvent}
  */
 function pushEventDTOToObject(pushEventDTO) {
-    const pushEvent = {
+    return {
         ...pushEventDTO,
-        appId: new ObjectId(/** @type {string} */(pushEventDTO.appId)),
-        messageId: new ObjectId(/** @type {string} */(pushEventDTO.messageId)),
-        scheduleId: new ObjectId(/** @type {string} */(pushEventDTO.scheduleId)),
+        appId: new ObjectId(pushEventDTO.appId),
+        messageId: new ObjectId(pushEventDTO.messageId),
+        scheduleId: new ObjectId(pushEventDTO.scheduleId),
+        credentials: credentialsDTOToObject(pushEventDTO.credentials)
     }
-    if (pushEventDTO.credentials?.notAfter) {
-        pushEvent.credentials.notAfter = new Date(pushEvent.credentials.notAfter);
-    }
-    if (pushEventDTO.credentials?.notBefore) {
-        pushEvent.credentials.notBefore = new Date(pushEvent.credentials.notBefore);
-    }
-    return pushEvent;
 }
+
+/**
+ * @param {CredentialsDTO} credentialsDTO
+ * @returns {SomeCredential}
+ */
+function credentialsDTOToObject(credentialsDTO) {
+    if ("notAfter" in credentialsDTO) {
+        return {
+            ...credentialsDTO,
+            notAfter: new Date(credentialsDTO.notAfter),
+            notBefore: new Date(credentialsDTO.notBefore),
+            _id: new ObjectId(credentialsDTO._id)
+        }
+    } else {
+        return {
+            ...credentialsDTO,
+            _id: new ObjectId(credentialsDTO._id)
+        }
+    }
+}
+
+/**
+ * @param {ResultEventDTO} resultEvent
+ * @returns {PushEvent}
+ */
+function resultEventDTOToObject(resultEvent) {
+    return {
+        ...resultEvent,
+        appId: new ObjectId(resultEvent.appId),
+        messageId: new ObjectId(resultEvent.messageId),
+        scheduleId: new ObjectId(resultEvent.scheduleId),
+        credentials: credentialsDTOToObject(resultEvent.credentials)
+    }
+}
+
 
 module.exports = {
     scheduleEventDTOToObject,
-    pushEventDTOToObject
+    pushEventDTOToObject,
+    resultEventDTOToObject
 }

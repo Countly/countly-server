@@ -1,53 +1,56 @@
+// TODO: update firebase-admin and make it work with http2
 /**
- * @typedef {import("../types/results.js").FCMResponse} FCMResponse
+ * @typedef {import("../types/credentials").FCMCredentials} FCMCredentials
  */
-
 const firebaseAdmin = require("firebase-admin");
-const FORGE = require('node-forge');
 const { HttpsProxyAgent } = require("https-proxy-agent");
 const { buildProxyUrl } = require("../lib/utils.js");
 
-module.exports = { send }
-
 /**
- * @param {import("../types/queue.js").PushEvent} push
- * @returns {Promise<FCMResponse>}
+ * @param {import("../types/queue.js").PushEvent} pushEvent
+ * @returns {Promise<string>}
  */
-async function send(push) {
-    const creds = /** @type {import('../types/credentials').FCMCredentials} */(push.credentials);
-    const serviceAccountJSON = FORGE.util.decode64(
-        creds.serviceAccountFile.substring(
-            creds.serviceAccountFile.indexOf(',') + 1
-        )
-    );
-    const serviceAccountObject = JSON.parse(serviceAccountJSON);
+async function send(pushEvent) {
+    const creds = /** @type {FCMCredentials} */(pushEvent.credentials);
     const appName = creds.hash;
 
-    let firebaseApp = firebaseAdmin.apps.find(app => app ? app.name === appName : false);
+    let firebaseApp = firebaseAdmin.apps.find(
+        app => app ? app.name === appName : false
+    );
 
     if (!firebaseApp) {
         /** @type {HttpsProxyAgent<"proxy-address">=} */
         let agent = undefined;
 
-        if (push.proxy) {
-            agent = new HttpsProxyAgent(buildProxyUrl(push.proxy), {
+        if (pushEvent.proxy) {
+            agent = new HttpsProxyAgent(buildProxyUrl(pushEvent.proxy), {
                 keepAlive: true,
                 timeout: 5000,
-                rejectUnauthorized: push.proxy.auth,
-                // ALPNProtocols: push.proxy.http2 ? ["h2"] : undefined,
+                rejectUnauthorized: pushEvent.proxy.auth,
+                // TODO: this may be required for http2
+                // ALPNProtocols: pushEvent.proxy.http2 ? ["h2"] : undefined,
             });
         }
+        const serviceAccountObject = JSON.parse(
+            Buffer.from(creds.serviceAccountFile.replace(/^[^,]+,/, ""), "base64")
+                .toString()
+        );
 
         firebaseApp = firebaseAdmin.initializeApp({
-            credential: firebaseAdmin.credential.cert(serviceAccountObject, agent),
-            httpAgent: agent
+            httpAgent: agent,
+            credential: firebaseAdmin.credential.cert(
+                serviceAccountObject,
+                agent
+            ),
         }, appName);
     }
 
     const messageId = await firebaseApp.messaging().send({
-        token: push.token,
-        ...push.message
+        token: pushEvent.token,
+        ...pushEvent.message
     });
 
-    return { messageId }
+    return messageId;
 }
+
+module.exports = { send }

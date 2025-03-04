@@ -1,3 +1,4 @@
+/** @typedef {import("mongodb").Db} MongoDb */
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api'),
@@ -47,7 +48,7 @@ const plugins = require('../../pluginManager'),
 
 const { init: initQueue } = require("./new/lib/kafka.js");
 const { composeScheduledPushes } = require('./new/composer.js');
-const { sendPush } = require('./new/sender.js');
+const { sendPushToProvider } = require('./new/sender.js');
 
 plugins.setConfigs(FEATURE_NAME, {
     proxyhost: '',
@@ -82,16 +83,15 @@ plugins.internalDrillEvents.push('[CLY]_push_sent');
 
 
 /**
- *
+ * @param {MongoDb} db
  * @param {boolean} isMaster
  */
-async function queueInitializer(isMaster = false) {
-    return;
+async function queueInitializer(db, isMaster = false) {
     try {
         await initQueue(
             async function(push) {
                 try {
-                    await processPushEvent(push);
+                    await sendPushToProvider(push);
                 }
                 catch (err) {
                     console.error("ERROR ON QUEUE PUSH HANDLER", err);
@@ -100,7 +100,7 @@ async function queueInitializer(isMaster = false) {
             },
             async function(schedule) {
                 try {
-                    await processScheduleEvent(schedule);
+                    await composeScheduledPushes(db, schedule);
                 }
                 catch (err) {
                     console.error("ERROR ON QUEUE JOB HANDLER", err);
@@ -128,7 +128,7 @@ plugins.register('/worker', async function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
-    queueInitializer(false);
+    queueInitializer(common.db, false);
 });
 
 plugins.register('/master', async function() {
@@ -138,7 +138,7 @@ plugins.register('/master', async function() {
     setTimeout(() => {
         require('../../../api/parts/jobs').job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
     }, 10000);
-    queueInitializer(true);
+    queueInitializer(common.db, true);
 });
 
 

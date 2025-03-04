@@ -10,8 +10,12 @@
  * @typedef {import('../types/queue.ts').ResultEventHandler} ResultEventHandler
  */
 const config = require("../constants/kafka-config.json");
-const { scheduleEventDTOToObject, pushEventDTOToObject } = require("./dto.js");
 const kafkaJs = require("kafkajs"); // do not import by destructuring; it's being mocked in the tests
+const {
+    scheduleEventDTOToObject,
+    pushEventDTOToObject,
+    resultEventDTOToObject
+} = require("./dto.js");
 
 /** @type {Admin=} */
 let _admin;
@@ -22,7 +26,6 @@ let _producer;
  * @param {PushEventHandler} onPushMessage function to call when there's a PushTicket in the PUSH_MESSAGES_TOPIC topic
  * @param {ScheduleEventHandler} onMessageSchedule function to call when there's a
  * @param {ResultEventHandler} onMessageResults
- * @param {Boolean=} isMaster
  * @returns {Promise<void>}
  */
 async function init(onPushMessage, onMessageSchedule, onMessageResults, isMaster = false) {
