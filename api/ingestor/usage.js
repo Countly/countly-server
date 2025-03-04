@@ -327,9 +327,10 @@ usage.processSession = function(ob) {
                     if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
                         drill_updates.custom = JSON.parse(JSON.stringify(params.app_user.custom));
                     }
-                    if (drill_updates.dur || drill_updates.custom) {
-                        ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates}}});
-                    }
+                    drill_updates["sg.ended"] = "true";
+                    //if (drill_updates.dur || drill_updates.custom) {
+                    ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates}}});
+                    //}
                 }
                 userProps.sd = 0 + session_duration;
                 userProps.data = {};
@@ -366,9 +367,10 @@ usage.processSession = function(ob) {
                 if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
                     drill_updates2.custom = JSON.parse(JSON.stringify(params.app_user.custom));
                 }
-                if (drill_updates2.dur || drill_updates2.custom) {
-                    ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
-                }
+                drill_updates2["sg.ended"] = "true";
+                //if (drill_updates2.dur || drill_updates2.custom) {
+                ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
+                //}
             }
             userProps.data = {};
         }

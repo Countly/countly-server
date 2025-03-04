@@ -25,28 +25,73 @@ plugins.connectToAllDatabases(true).then(function() {
     common.secondaryWriteBatcher = new WriteBatcher(common.db);
     common.readBatcher = new Cacher(common.db); //Used for Apps info
 
+    common.readBatcher.transformationFunctions = {
+        "event_object": function(data) {
+            if (data && data.list) {
+                data._list = {};
+                data._list_length = 0;
+                for (let i = 0; i < data.list.length; i++) {
+                    data._list[data.list[i]] = true;
+                    data._list_length++;
+                }
+            }
+            if (data && data.segments) {
+                data._segments = {};
+                for (var key in data.segments) {
+                    data._segments[key] = {};
+                    data._segments[key]._list = {};
+                    data._segments[key]._list_length = 0;
+                    for (let i = 0; i < data.segments[key].length; i++) {
+                        data._segments[key]._list[data.segments[key][i]] = true;
+                        data._segments[key]._list_length++;
+                    }
+                }
+            }
+            if (data && data.omitted_segments) {
+                data._omitted_segments = {};
+                for (var key3 in data.omitted_segments) {
+                    for (let i = 0; i < data.omitted_segments[key3].length; i++) {
+                        data._omitted_segments[key3] = data._omitted_segments[key3] || {};
+                        data._omitted_segments[key3][data.omitted_segments[key3][i]] = true;
+                    }
+                }
+            }
+
+            if (data && data.whitelisted_segments) {
+                data._whitelisted_segments = {};
+                for (var key4 in data.whitelisted_segments) {
+                    for (let i = 0; i < data.whitelisted_segments[key4].length; i++) {
+                        data._whitelisted_segments[key4] = data._whitelisted_segments[key4] || {};
+                        data._whitelisted_segments[key4][data.whitelisted_segments[key4][i]] = true;
+                    }
+                }
+            }
+            return data;
+        }
+    };
+
 
     //Events processing
     plugins.register("/aggregator", function() {
         var changeStream = new changeStreamReader(common.drillDb, {
             pipeline: [
-                {"$match": {"operationType": "insert", "fullDocument.ce": true}},
-                {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "key": "$fullDocument.e", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "count": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
+                {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_custom"}},
+                {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "c": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
             ],
             "name": "event-ingestion"
         }, (token, currEvent) => {
             if (currEvent && currEvent.a && currEvent.e) {
-                // usage.processEventFromStream(currEvent));
+                usage.processEventFromStream(token, currEvent);
             }
             // process next document
         });
-
         common.writeBatcher.addFlushCallback("events_data", function(token) {
-            console.log("flush callback");
             changeStream.acknowledgeToken(token);
         });
     });
 
+
+    //Sessions processing
     plugins.register("/aggregator", function() {
         var changeStream = new changeStreamReader(common.drillDb, {
             pipeline: [
@@ -70,12 +115,52 @@ plugins.connectToAllDatabases(true).then(function() {
                 });
             }
         });
-
         common.writeBatcher.addFlushCallback("users", function(token) {
             changeStream.acknowledgeToken(token);
         });
-
     });
+
+    plugins.register("/aggregator", function() {
+        var writeBatcher = new WriteBatcher(common.db);
+
+        var changeStream = new changeStreamReader(common.drillDb, {
+            pipeline: [
+                {"$match": {"operationType": "update"}},
+                {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}}
+            ],
+            "options": {fullDocument: "updateLookup"},
+            "name": "session-updates",
+            "collection": "drill_events",
+            "onClose": async function(callback) {
+                await common.writeBatcher.flush("countly", "users");
+                if (callback) {
+                    callback();
+                }
+            }
+        }, (token, fullDoc) => {
+            var next = fullDoc.fullDocument;
+            if (next && next.a && next.e && next.e === "[CLY]_session" && next.n && next.ts) {
+                common.readBatcher.getOne("apps", common.db.ObjectID(next.a), function(err, app) {
+                    //record event totals in aggregated data
+                    if (err) {
+                        log.e("Error getting app data for session", err);
+                        return;
+                    }
+                    if (app) {
+                        var dur = (fullDoc && fullDoc.updateDescription && fullDoc.updateDescription.updatedFields && fullDoc.updateDescription.updatedFields.dur) || 0;
+                        //if(dur){
+                        usage.processSessionDurationRange(writeBatcher, token, dur, next.did, {"app_id": next.a, "app": app, "time": common.initTimeObj(app.timezone, next.ts), "appTimezone": (app.timezone || "UTC")});
+                        //}
+                    }
+                });
+            }
+        });
+        writeBatcher.addFlushCallback("users", function(token) {
+            changeStream.acknowledgeToken(token);
+        });
+    });
+
+
     /** 
     * Set Plugins APIs Config
     */
@@ -181,7 +266,7 @@ plugins.connectToAllDatabases(true).then(function() {
         try {
             await common.writeBatcher.flushAll();
             await common.secondaryWriteBatcher.flushAll();
-            await common.insertBatcher.flushAll();
+            // await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
         }
         catch (ex) {

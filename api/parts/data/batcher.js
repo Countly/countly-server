@@ -252,6 +252,7 @@ class WriteBatcher {
                     });
                 }
             }
+            token0 = this.data[db][collection].t;
             this.data[db][collection] = {"data": {}};
             batcherStats.update_queued -= queries.length;
             batcherStats.update_processing += queries.length;
@@ -299,6 +300,12 @@ class WriteBatcher {
                         }
                     }
                 }
+            }
+        }
+        else {
+            //No data. Acknowledge token if there is any
+            if (this.flushCallbacks[collection] && this.data[db] && this.data[db][collection] && this.data[db][collection].t) {
+                this.flushCallbacks[collection](this.data[db][collection].t);
             }
         }
     }
@@ -368,15 +375,18 @@ class WriteBatcher {
                     this.data[db][collection].upsert = options.upsert;
                 }
             }
-            if (!this.data[db][collection].data[id]) {
-                this.data[db][collection].data[id] = {id: id, value: operation};
-                batcherStats.update_queued++;
-            }
-            else {
-                this.data[db][collection].data[id].value = common.mergeQuery(this.data[db][collection].data[id].value, operation);
-            }
-            if (!this.process) {
-                this.flush(db, collection);
+
+            if (id) {
+                if (!this.data[db][collection].data[id]) {
+                    this.data[db][collection].data[id] = {id: id, value: operation};
+                    batcherStats.update_queued++;
+                }
+                else {
+                    this.data[db][collection].data[id].value = common.mergeQuery(this.data[db][collection].data[id].value, operation);
+                }
+                if (!this.process) {
+                    this.flush(db, collection);
+                }
             }
         }
         else {
