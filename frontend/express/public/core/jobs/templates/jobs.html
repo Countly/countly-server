@@ -16,7 +16,7 @@
                 v-on:row-click="goTo"
                 :isClickable="true"
                 :default-sort="{ prop: 'name', order: 'ascending' }"
-                persistKey="jobs-table"
+                :persist-key="jobsTablePersistKey"
                 class="jobs-table"
             >
                 <template v-slot="scope">
@@ -68,20 +68,19 @@
                         <template v-slot="scope">
                             <p :data-test-id="'datatable-jobs-schedule-' + scope.$index">
                                 {{ scope.row.scheduleLabel }}
-                                <el-tag
-                                    v-if="scope.row.scheduleOverridden"
-                                    size="mini"
-                                    type="warning"
-                                >
-                                    {{ i18n('jobs.schedule-overridden') }}
-                                </el-tag>
                             </p>
                             <p
                                 :data-test-id="'datatable-jobs-schedule-detail-' + scope.$index"
                                 class="bu-has-text-grey bu-is-size-7"
                             >
                                 <template v-if="scope.row.scheduleOverridden">
-                                    <span class="bu-has-text-weight-bold">{{ i18n('jobs.override') }}:</span> {{ scope.row.configuredSchedule }}
+                                    <el-tooltip
+                                    :content= "'Default: ' + scope.row.schedule + (scope.row.configuredSchedule ? ' | Override: ' + scope.row.configuredSchedule : '')"
+                                    placement="top">
+                                        <i class="ion-alert-circled bu-ml-2""></i>
+                                    <span class="bu-has-text-weight-bold">{{ i18n('jobs.override') }}:</span>
+                                    </el-tooltip>
+                                    {{scope.row.configuredSchedule}}
                                 </template>
                                 <template v-else>
                                     {{ scope.row.schedule }}

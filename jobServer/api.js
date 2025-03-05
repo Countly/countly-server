@@ -131,19 +131,22 @@ function buildJobDetails(scheduledDoc, jobConfig, latestRunData = null) {
     const defaultScheduleLabel = getScheduleLabel(defaultScheduleValue);
     const overrideScheduleLabel = overrideScheduleValue ? getScheduleLabel(overrideScheduleValue) : null;
 
+    // Get default config from the scheduled doc or use existing defaultConfig from jobConfig
+    const defaultConfig = jobConfig?.defaultConfig || {
+        schedule: { value: scheduledDoc?.repeatInterval },
+        retry: {
+            attempts: scheduledDoc?.attempts,
+            delay: scheduledDoc?.backoff
+        }
+    };
+
     // Combine default config from the scheduled doc + overrides from jobConfigs
     const details = {
         config: {
             ...(jobConfig || {}),
 
-            // We ensure we have defaultConfig if jobConfig is missing it
-            defaultConfig: {
-                schedule: { value: scheduledDoc?.repeatInterval },
-                retry: {
-                    attempts: scheduledDoc?.attempts,
-                    delay: scheduledDoc?.backoff
-                }
-            },
+            // Ensure we have the correct defaultConfig
+            defaultConfig: defaultConfig,
 
             enabled,
             // Keep original field names for API compatibility
@@ -211,14 +214,110 @@ function processRunDoc(doc) {
     };
 }
 
+// Helper functions are defined above
+
+/**
+ * Get the most recent status information between scheduled and manual runs
+ * @param {Object} scheduledJob The scheduled job document (type='single')
+ * @param {Array} manualRuns Array of manual run documents (type='normal')
+ * @returns {Object} Combined status information with the most recent data
+ */
+function getLatestStatusInfo(scheduledJob, manualRuns) {
+    // Initialize with scheduled job data or empty object
+    const statusInfo = {
+        lockedAt: scheduledJob?.lockedAt || null,
+        failedAt: scheduledJob?.failedAt || null,
+        lastFinishedAt: scheduledJob?.lastFinishedAt || null,
+        lastRunAt: scheduledJob?.lastRunAt || null,
+        failReason: scheduledJob?.failReason || null,
+        // Count manual runs
+        manualRunCount: manualRuns.length,
+        manualFinishedCount: manualRuns.filter(doc => doc.lastFinishedAt).length
+    };
+
+    // If no manual runs, return scheduled job data
+    if (!manualRuns.length) {
+        return statusInfo;
+    }
+
+    // Find the most recent manual run by lastRunAt
+    const sortedManualRuns = [...manualRuns].sort((a, b) => {
+        if (!a.lastRunAt) {
+            return 1;
+        }
+        if (!b.lastRunAt) {
+            return -1;
+        }
+        return new Date(b.lastRunAt) - new Date(a.lastRunAt);
+    });
+
+    const latestManualRun = sortedManualRuns[0];
+
+    // Update with the latest manual run data
+    if (latestManualRun.lastRunAt && (!statusInfo.lastRunAt || new Date(latestManualRun.lastRunAt) > new Date(statusInfo.lastRunAt))) {
+        statusInfo.lastRunAt = latestManualRun.lastRunAt;
+    }
+
+    // Check for running jobs (lockedAt present)
+    const runningJobs = manualRuns.filter(job => job.lockedAt);
+    if (runningJobs.length) {
+        // Find the most recently started running job
+        const latestRunningJob = runningJobs.sort((a, b) => {
+            return new Date(b.lockedAt) - new Date(a.lockedAt);
+        })[0];
+
+        statusInfo.lockedAt = latestRunningJob.lockedAt;
+        // Update lastRunAt for the running job if available
+        if (latestRunningJob.lastRunAt) {
+            statusInfo.lastRunAt = latestRunningJob.lastRunAt;
+        }
+    }
+
+    // Find the most recent failure across all manual runs
+    const failedJobs = manualRuns.filter(job => job.failedAt);
+    if (failedJobs.length) {
+        const latestFailedJob = failedJobs.sort((a, b) => {
+            return new Date(b.failedAt) - new Date(a.failedAt);
+        })[0];
+
+        // Only update if this failure is more recent than our current failure and completion
+        if ((!statusInfo.failedAt || new Date(latestFailedJob.failedAt) > new Date(statusInfo.failedAt)) &&
+            (!statusInfo.lastFinishedAt || new Date(latestFailedJob.failedAt) > new Date(statusInfo.lastFinishedAt))) {
+            statusInfo.failedAt = latestFailedJob.failedAt;
+            statusInfo.failReason = latestFailedJob.failReason;
+        }
+    }
+
+    // Find the most recent successful completion
+    const completedJobs = manualRuns.filter(job => job.lastFinishedAt);
+    if (completedJobs.length) {
+        const latestCompletedJob = completedJobs.sort((a, b) => {
+            return new Date(b.lastFinishedAt) - new Date(a.lastFinishedAt);
+        })[0];
+
+        // Update if this is the most recent completion
+        if (!statusInfo.lastFinishedAt || new Date(latestCompletedJob.lastFinishedAt) > new Date(statusInfo.lastFinishedAt)) {
+            statusInfo.lastFinishedAt = latestCompletedJob.lastFinishedAt;
+
+            // Clear failure status if completion is more recent
+            if (statusInfo.failedAt && new Date(latestCompletedJob.lastFinishedAt) > new Date(statusInfo.failedAt)) {
+                statusInfo.failedAt = null;
+                statusInfo.failReason = null;
+            }
+        }
+    }
+
+    return statusInfo;
+}
+
 /**
  * Build a job row for the listing page
  * @param {Object} mainDoc doc from pipeline ($first)
  * @param {Object} jobConfig from jobConfigs
- * @param {Object} groupItem aggregator object (with lastRunAt, lastFinishedAt, etc.)
+ * @param {Object} statusInfo Combined status info from scheduled and manual runs
  * @returns {Object} { job: {...}, config: {...} }
  */
-function buildListViewJob(mainDoc, jobConfig, groupItem) {
+function buildListViewJob(mainDoc, jobConfig, statusInfo) {
     // If there's no doc, return something minimal
     if (!mainDoc) {
         return { job: {}, config: {} };
@@ -237,57 +336,43 @@ function buildListViewJob(mainDoc, jobConfig, groupItem) {
     // Use the appropriate label based on which schedule is active
     const effectiveScheduleLabel = overrideScheduleValue ? overrideScheduleLabel : defaultScheduleLabel;
 
+    // Get default config values from the main doc
+    const defaultConfig = jobConfig?.defaultConfig || {
+        schedule: { value: defaultScheduleValue },
+        retry: { attempts: mainDoc.attempts, delay: mainDoc.backoff }
+    };
+
     // Merge in config overrides
     const finalConfig = {
         enabled: jobConfig?.enabled ?? true,
 
-        // The default config is taken from the doc
-        defaultConfig: {
-            schedule: { value: defaultScheduleValue },
-            retry: { attempts: mainDoc.attempts, delay: mainDoc.backoff }
-        },
+        // The default config is taken from either jobConfig or the doc
+        defaultConfig: defaultConfig,
 
         // Keep the original field names for API compatibility 
         schedule: overrideScheduleValue,
         retry: jobConfig?.retry
     };
 
-    // Create a composite document with data from the latest run
-    // This ensures status is determined from the most recent run
-    const latestRunData = {
-        // Take the lockedAt value from either mainDoc or the group data
-        lockedAt: groupItem.lockedAt || mainDoc.lockedAt || null,
-        // Prioritize failedAt and lastFinishedAt from groupItem as they represent max values
-        failedAt: groupItem.failedAt || mainDoc.failedAt || null,
-        lastFinishedAt: groupItem.lastFinishedAt || mainDoc.lastFinishedAt || null,
-        // Use the latest lastRunAt value
-        lastRunAt: groupItem.lastRunAt || mainDoc.lastRunAt || null,
-        // Include failReason if available
-        failReason: groupItem.failedAt ? (groupItem.failReason || mainDoc.failReason) : mainDoc.failReason,
-        // Include counts of normal docs (manual runs)
-        manualRunCount: groupItem.normalDocCount || 0,
-        manualFinishedCount: groupItem.normalFinishedCount || 0
-    };
-
     const jobObj = {
         name: mainDoc.name,
         // Determine status using the latest run data
-        status: getJobStatus(latestRunData),
+        status: getJobStatus(statusInfo),
         // Include both the effective schedule and the original values
         schedule: defaultScheduleValue,
         configuredSchedule: overrideScheduleValue,
         scheduleLabel: effectiveScheduleLabel,
         scheduleOverridden: !!overrideScheduleValue,
         // Include all timestamp fields from the latest run
-        lockedAt: latestRunData.lockedAt,
-        failedAt: latestRunData.failedAt,
-        lastRunAt: latestRunData.lastRunAt,
+        lockedAt: statusInfo.lockedAt,
+        failedAt: statusInfo.failedAt,
+        lastRunAt: statusInfo.lastRunAt,
         nextRunAt: mainDoc.nextRunAt || null,
-        lastFinishedAt: latestRunData.lastFinishedAt,
-        lastRunStatus: getRunStatus(latestRunData),
-        failReason: latestRunData.failReason,
+        lastFinishedAt: statusInfo.lastFinishedAt,
+        lastRunStatus: getRunStatus(statusInfo),
+        failReason: statusInfo.failReason,
         // Calculate total runs (scheduled + manual)
-        total: (mainDoc.runCount || 0) + (latestRunData.manualRunCount || 0)
+        total: (mainDoc.runCount || 0) + (statusInfo.manualRunCount || 0)
     };
 
     return {
@@ -421,11 +506,9 @@ plugins.register('/o/jobs', async function(ob) {
                 // Handle direct date field sorting
                 else if (['lastRunAt', 'lastFinishedAt'].includes(sortColumn)) {
                     // For date fields, handle null values consistently
-                    // This can be implemented directly in MongoDB sort
                     detailSortQuery[sortColumn] = sortDir;
 
                     // Add consistent secondary sort fields to ensure stable ordering
-                    // This ensures runs with the same value in the sorted column always appear in the same order
                     if (sortColumn !== 'lastRunAt') {
                         detailSortQuery.lastRunAt = -1;
                     }
@@ -467,119 +550,10 @@ plugins.register('/o/jobs', async function(ob) {
                 // Fetch config override
                 const jobConfig = await jobConfigsCollection.findOne({ jobName });
 
-                // Aggregate the latest run data with focus on the newest manual run
-                let latestRunData = null;
+                // Get the latest run information combining scheduled and manual runs
+                const latestRunData = getLatestStatusInfo(scheduledDoc, normalDocs);
 
-                if (normalDocs.length > 0 || scheduledDoc) {
-                    // First, find the newest manual run document (type='normal') based on lastRunAt
-                    let newestManualRun = null;
-
-                    if (normalDocs.length > 0) {
-                        // Sort normalDocs by lastRunAt in descending order
-                        const sortedDocs = [...normalDocs].sort((a, b) => {
-                            if (!a.lastRunAt) {
-                                return 1;
-                            } // null/undefined lastRunAt goes last
-                            if (!b.lastRunAt) {
-                                return -1;
-                            }
-                            // If timestamps are exactly equal, use _id for stable sorting
-                            const timeCompare = new Date(b.lastRunAt) - new Date(a.lastRunAt);
-                            if (timeCompare === 0 && a._id && b._id) {
-                                return a._id.toString().localeCompare(b._id.toString());
-                            }
-                            return timeCompare; // newest first
-                        });
-
-                        // The first document is the newest manual run
-                        newestManualRun = sortedDocs[0];
-                    }
-
-                    // Create base latestRunData object
-                    const latestByStatus = {
-                        lockedAt: null,
-                        failedAt: null,
-                        lastFinishedAt: null,
-                        lastRunAt: null,
-                        failReason: null,
-                        // Count manual runs
-                        manualRunCount: normalDocs.length,
-                        manualFinishedCount: normalDocs.filter(doc => doc.lastFinishedAt).length
-                    };
-
-                    // First, apply data from the newest manual run if available
-                    if (newestManualRun) {
-                        if (newestManualRun.lockedAt) {
-                            latestByStatus.lockedAt = newestManualRun.lockedAt;
-                        }
-                        if (newestManualRun.failedAt) {
-                            // Only update failedAt if it's more recent than any existing lastFinishedAt
-                            if (!latestByStatus.lastFinishedAt || new Date(newestManualRun.failedAt) > new Date(latestByStatus.lastFinishedAt)) {
-                                latestByStatus.failedAt = newestManualRun.failedAt;
-                                latestByStatus.failReason = newestManualRun.failReason;
-                            }
-                        }
-                        if (newestManualRun.lastFinishedAt) {
-                            // Update lastFinishedAt and clear failedAt if the successful completion is more recent
-                            latestByStatus.lastFinishedAt = newestManualRun.lastFinishedAt;
-                            if (latestByStatus.failedAt && new Date(newestManualRun.lastFinishedAt) > new Date(latestByStatus.failedAt)) {
-                                latestByStatus.failedAt = null;
-                                latestByStatus.failReason = null;
-                            }
-                        }
-                        if (newestManualRun.lastRunAt) {
-                            latestByStatus.lastRunAt = newestManualRun.lastRunAt;
-                        }
-                    }
-
-                    // Then check if the scheduled doc has more recent timestamps
-                    if (scheduledDoc) {
-                        if (scheduledDoc.lockedAt && (!latestByStatus.lockedAt || new Date(scheduledDoc.lockedAt) > new Date(latestByStatus.lockedAt))) {
-                            latestByStatus.lockedAt = scheduledDoc.lockedAt;
-                        }
-                        if (scheduledDoc.failedAt) {
-                            // Only update failedAt if it's more recent than any existing lastFinishedAt
-                            const failedDate = new Date(scheduledDoc.failedAt);
-                            if ((!latestByStatus.failedAt || failedDate > new Date(latestByStatus.failedAt)) &&
-                                (!latestByStatus.lastFinishedAt || failedDate > new Date(latestByStatus.lastFinishedAt))) {
-                                latestByStatus.failedAt = scheduledDoc.failedAt;
-                                latestByStatus.failReason = scheduledDoc.failReason;
-                            }
-                        }
-                        if (scheduledDoc.lastFinishedAt) {
-                            const finishedDate = new Date(scheduledDoc.lastFinishedAt);
-                            if (!latestByStatus.lastFinishedAt || finishedDate > new Date(latestByStatus.lastFinishedAt)) {
-                                latestByStatus.lastFinishedAt = scheduledDoc.lastFinishedAt;
-
-                                // Clear failed status if the successful completion is more recent
-                                if (latestByStatus.failedAt && finishedDate > new Date(latestByStatus.failedAt)) {
-                                    latestByStatus.failedAt = null;
-                                    latestByStatus.failReason = null;
-                                }
-                            }
-                        }
-                        if (scheduledDoc.lastRunAt && (!latestByStatus.lastRunAt || new Date(scheduledDoc.lastRunAt) > new Date(latestByStatus.lastRunAt))) {
-                            latestByStatus.lastRunAt = scheduledDoc.lastRunAt;
-                        }
-                    }
-
-                    // Look for any running job (lockedAt is set) across all documents
-                    // This takes precedence as we want to show running status immediately
-                    for (const doc of normalDocs) {
-                        if (doc.lockedAt && (!latestByStatus.lockedAt || new Date(doc.lockedAt) > new Date(latestByStatus.lockedAt))) {
-                            latestByStatus.lockedAt = doc.lockedAt;
-                            // Update other fields from this running document
-                            if (doc.lastRunAt) {
-                                latestByStatus.lastRunAt = doc.lastRunAt;
-                            }
-                            // Note: we don't update failedAt/lastFinishedAt because a running job hasn't failed/finished yet
-                        }
-                    }
-
-                    latestRunData = latestByStatus;
-                }
-
-                // Build jobDetails with latest run data
+                // Build job details using the combined latest run data
                 const jobDetails = buildJobDetails(scheduledDoc, jobConfig, latestRunData);
 
                 // Process normal docs
@@ -595,203 +569,193 @@ plugins.register('/o/jobs', async function(ob) {
                 return;
             }
             else {
+                // OPTIMIZED LIST VIEW APPROACH
+
                 // Set up search based on query parameter
-                const search = sSearch ? { name: new RegExp(sSearch, 'i') } : {};
+                const searchQuery = sSearch ? { name: new RegExp(sSearch, 'i') } : {};
 
-                // We'll create a pipeline that groups by name. 
-                // We prefer the doc with type='single' if it exists, because we sort by type ascending first.
-                const pipeline = [
-                    { $match: search },
-                    {
-                        $sort: (() => {
-                            // Always sort by type first to prioritize 'single' jobs
-                            const sortObj = { type: -1 };
+                // 1. Count total distinct job names for pagination info
+                const totalCount = (await jobsCollection.distinct('name', {
+                    ...searchQuery,
+                    type: 'single'
+                })).length;
 
-                            // Handle special sorting for status (which is derived from timestamps)
-                            if (sortColumn === 'status') {
-                                // For status sorting, we need to sort by the relevant timestamps
-                                // Status priority: RUNNING (lockedAt) > FAILED (failedAt) > COMPLETED (lastFinishedAt) > SCHEDULED
-                                if (sortDir === 1) { // ascending
-                                    // Prioritize in natural order: SCHEDULED, COMPLETED, FAILED, RUNNING
-                                    sortObj.lockedAt = -1; // RUNNING last (if lockedAt exists)
-                                    sortObj.failedAt = -1; // FAILED before RUNNING
-                                    sortObj.lastFinishedAt = -1; // COMPLETED before FAILED
-                                }
-                                else { // descending
-                                    // Prioritize in reverse order: RUNNING, FAILED, COMPLETED, SCHEDULED
-                                    sortObj.lockedAt = 1; // RUNNING first (if lockedAt exists)
-                                    sortObj.failedAt = 1; // FAILED after RUNNING
-                                    sortObj.lastFinishedAt = 1; // COMPLETED after FAILED
-                                }
-                                // For jobs with the same status, sort by lastRunAt to show most recent first
-                                sortObj.lastRunAt = -1;
-                                // Add name as secondary sort for consistent ordering when status is the same
-                                sortObj.name = sortDir;
-                                // Add _id as tertiary sort for absolute stability
-                                sortObj._id = sortDir;
-                            }
-                            // Handle sorting for timestamp-based fields used in lastRunStatus
-                            else if (sortColumn === 'lastRunStatus') {
-                                if (sortDir === 1) { // ascending: pending, success, failed
-                                    sortObj.failedAt = -1;
-                                    sortObj.lastFinishedAt = -1;
-                                }
-                                else { // descending: failed, success, pending
-                                    sortObj.failedAt = 1;
-                                    sortObj.lastFinishedAt = 1;
-                                }
-                                // For jobs with the same run status, sort by lastRunAt
-                                sortObj.lastRunAt = -1;
-                                // Add name as secondary sort for consistent ordering when status is the same
-                                sortObj.name = sortDir;
-                                // Add _id as tertiary sort for absolute stability
-                                sortObj._id = sortDir;
-                            }
-                            // Handle direct sorting for actual date fields
-                            else if (sortColumn === 'lastFinishedAt' || sortColumn === 'nextRunAt' || sortColumn === 'lastRunAt') {
-                                // For date fields, always sort nulls last regardless of direction
-                                // MongoDB can't do this directly in the sort stage, but we can handle nulls in the group stage
-                                sortObj[sortColumn] = sortDir;
-                                // Add name as secondary sort for consistent ordering when date is the same
-                                sortObj.name = sortDir;
-                                // Add _id as tertiary sort for absolute stability
-                                sortObj._id = sortDir;
-                            }
-                            // Handle sorting when total is selected
-                            else if (sortColumn === 'total') {
-                                // Sort by the combined run count (scheduled + manual)
-                                // This will be calculated later, but we can sort by the initial factors here
-                                sortObj.runCount = sortDir; // From the single doc
-                                sortObj.normalDocCount = sortDir; // From the aggregation
-                                // Add name for secondary sort
-                                sortObj.name = sortDir;
-                                // Add _id as tertiary sort
-                                sortObj._id = sortDir;
-                            }
-                            // Default to name sorting if column isn't directly sortable at db level
-                            else if (sortColumn !== 'name' && sortColumn !== 'scheduleLabel') {
-                                // Sort by name in a case-insensitive manner for consistency
-                                sortObj.name = sortDir;
-                                // Add _id as secondary sort for absolute stability when names are the same
-                                sortObj._id = sortDir;
-                            }
-                            else {
-                                // Sort by name in a case-insensitive manner for consistency
-                                sortObj.name = sortDir;
-                                // Add _id as secondary sort for absolute stability when names are the same
-                                sortObj._id = sortDir;
-                            }
-
-                            return sortObj;
-                        })()
-                    },
-                    {
-                        $group: {
-                            _id: "$name",
-                            doc: { $first: "$$ROOT" }, // the first doc in each group
-                            lastRunAt: { $max: "$lastRunAt" },
-                            lastFinishedAt: { $max: "$lastFinishedAt" },
-                            failedAt: { $max: "$failedAt" },
-                            // Add lockedAt to track running jobs
-                            lockedAt: { $max: "$lockedAt" },
-                            // Count documents to help with run counts
-                            normalDocCount: {
-                                $sum: { $cond: [{ $eq: ["$type", "normal"] }, 1, 0] }
-                            },
-                            // Count finished normal docs
-                            normalFinishedCount: {
-                                $sum: {
-                                    $cond: [
-                                        {
-                                            $and: [
-                                                { $eq: ["$type", "normal"] },
-                                                { $ne: ["$lastFinishedAt", null] }
-                                            ]
-                                        },
-                                        1,
-                                        0
-                                    ]
-                                }
-                            },
-                            // Also gather failReason from the document with the latest failedAt
-                            failReason: {
-                                $first: {
-                                    $cond: [
-                                        { $eq: ["$failedAt", { $max: "$failedAt" }] },
-                                        "$failReason",
-                                        null
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                            name: "$_id",
-                            doc: 1,
-                            lastRunAt: 1,
-                            lastFinishedAt: 1,
-                            failedAt: 1,
-                            lockedAt: 1,
-                            failReason: 1,
-                            normalDocCount: 1,
-                            normalFinishedCount: 1
-                        }
-                    },
-                    { $skip: skip },
-                    { $limit: limit }
-                ];
-
-                // total distinct job names
-                const allNames = await jobsCollection.distinct('name', search);
-                const totalCount = allNames.length;
-
-                // Check if we need to use a collation for case-insensitive name sorting
-                const options = {
-                    allowDiskUse: true
+                // 2. Fetch single (scheduled) jobs with pagination and sorting
+                const singleJobsQuery = {
+                    ...searchQuery,
+                    type: 'single'
                 };
 
-                // Run pipeline
-                const rawJobs = await jobsCollection.aggregate(pipeline, options).toArray();
+                // Handle sorting
+                let singleJobsSort = {};
 
-                // Fetch jobConfigs in one pass
-                const jobConfigs = await jobConfigsCollection.find({}).toArray();
-                const configMap = {};
-                jobConfigs.forEach(cfg => {
-                    // Store by jobName to match with the name field in pulseJobs
-                    configMap[cfg.jobName] = cfg;
+                // Default to name sorting
+                if (sortColumn === 'name') {
+                    singleJobsSort.name = sortDir;
+                }
+                // Handle status sorting (depends on timestamp fields)
+                else if (sortColumn === 'status') {
+                    if (sortDir === 1) { // ascending: SCHEDULED, COMPLETED, FAILED, RUNNING
+                        singleJobsSort = {
+                            lockedAt: -1,
+                            failedAt: -1,
+                            lastFinishedAt: -1
+                        };
+                    }
+                    else { // descending
+                        singleJobsSort = {
+                            lockedAt: 1,
+                            failedAt: 1,
+                            lastFinishedAt: 1
+                        };
+                    }
+                    // Secondary sort by name for consistent ordering
+                    singleJobsSort.name = 1;
+                }
+                // Handle timestamp sorting
+                else if (['lastFinishedAt', 'nextRunAt', 'lastRunAt'].includes(sortColumn)) {
+                    singleJobsSort[sortColumn] = sortDir;
+                    // Secondary sort by name for consistent ordering
+                    singleJobsSort.name = 1;
+                }
+                // Handle total sorting (runCount)
+                else if (sortColumn === 'total') {
+                    singleJobsSort.runCount = sortDir;
+                    // Secondary sort by name for consistent ordering
+                    singleJobsSort.name = 1;
+                }
+                // For other columns, default to name sort
+                else {
+                    singleJobsSort.name = sortDir;
+                }
+
+                // Add _id as final sort for absolute stability
+                singleJobsSort._id = 1;
+
+                // Set collation for case-insensitive sorting when sorting by name
+                const sortOptions = {};
+                if (sortColumn === 'name' || !columns.includes(sortColumn)) {
+                    sortOptions.collation = { locale: 'en', strength: 2 };
+                }
+
+                // Fetch scheduled (single) jobs with pagination and sorting
+                const singleJobsCursor = jobsCollection.find(singleJobsQuery)
+                    .sort(singleJobsSort)
+                    .skip(skip)
+                    .limit(limit);
+
+                // Apply collation if needed
+                if (sortOptions.collation) {
+                    singleJobsCursor.collation(sortOptions.collation);
+                }
+
+                // Get scheduled jobs
+                const singleJobs = await singleJobsCursor.toArray();
+
+                // If no jobs found, return empty result
+                if (singleJobs.length === 0) {
+                    common.returnOutput(ob.params, {
+                        sEcho: ob.params.qstring.sEcho,
+                        iTotalRecords: totalCount,
+                        iTotalDisplayRecords: totalCount,
+                        aaData: []
+                    });
+                    return;
+                }
+
+                // Extract job names to fetch related data
+                const jobNames = singleJobs.map(job => job.name);
+
+                // 3. Fetch all relevant job configs at once
+                const jobConfigs = await jobConfigsCollection.find({
+                    jobName: { $in: jobNames }
+                }).toArray();
+
+                // Create a map for faster config lookups
+                const jobConfigMap = {};
+                jobConfigs.forEach(config => {
+                    jobConfigMap[config.jobName] = config;
                 });
 
-                // Merge data
-                const processed = rawJobs.map(item => {
-                    const name = item.name;
-                    const mainDoc = item.doc; // the doc from $first
-                    const jobConfig = configMap[name] || null; // Use name to look up in configMap
+                // 4. Fetch all manual runs for these jobs at once
+                const normalJobs = await jobsCollection.find({
+                    name: { $in: jobNames },
+                    type: 'normal'
+                }).toArray();
 
-                    // Ensure we're getting the latest status data, especially for manual runs
-                    // The group aggregation already provides max values for timestamps,
-                    // but we need to make sure lockedAt reflects current running state
-                    const status = {
-                        lockedAt: item.lockedAt,
-                        failedAt: item.failedAt,
-                        lastFinishedAt: item.lastFinishedAt,
-                        lastRunAt: item.lastRunAt,
-                        failReason: item.failReason,
-                        normalDocCount: item.normalDocCount,
-                        normalFinishedCount: item.normalFinishedCount
-                    };
-
-                    return buildListViewJob(mainDoc, jobConfig, status);
+                // Group manual jobs by name for faster processing
+                const normalJobsByName = {};
+                normalJobs.forEach(job => {
+                    if (!normalJobsByName[job.name]) {
+                        normalJobsByName[job.name] = [];
+                    }
+                    normalJobsByName[job.name].push(job);
                 });
 
-                // Each entry in final array should be { job: {...}, config: {...} }
-                const finalOutput = processed.map(data => ({
+                // 5. Process each job with its manual runs and config
+                const processedJobs = singleJobs.map(singleJob => {
+                    const name = singleJob.name;
+                    const jobConfig = jobConfigMap[name] || null;
+                    const relatedManualJobs = normalJobsByName[name] || [];
+
+                    // Get combined status from scheduled job and all its manual runs
+                    const latestStatusInfo = getLatestStatusInfo(singleJob, relatedManualJobs);
+
+                    // Build the list view job with correct status information
+                    return buildListViewJob(singleJob, jobConfig, latestStatusInfo);
+                });
+
+                // Format the final output array with { job, config } structure
+                const finalOutput = processedJobs.map(data => ({
                     job: data.job,
                     config: data.config
                 }));
 
-                // Return
+                // Post-sort the results if we're sorting by a computed field
+                // This ensures that status sorting works correctly since it depends on multiple fields
+                if (sortColumn === 'status' || sortColumn === 'lastRunStatus') {
+                    finalOutput.sort((a, b) => {
+                        // For status sorting
+                        if (sortColumn === 'status') {
+                            const statusOrder = {
+                                'RUNNING': 0,
+                                'FAILED': 1,
+                                'COMPLETED': 2,
+                                'SCHEDULED': 3
+                            };
+
+                            const statusA = statusOrder[a.job.status];
+                            const statusB = statusOrder[b.job.status];
+
+                            if (statusA !== statusB) {
+                                return sortDir === 1 ? statusA - statusB : statusB - statusA;
+                            }
+                        }
+
+                        // For lastRunStatus sorting
+                        if (sortColumn === 'lastRunStatus') {
+                            const runStatusOrder = {
+                                'failed': 0,
+                                'success': 1,
+                                'pending': 2
+                            };
+
+                            const runStatusA = runStatusOrder[a.job.lastRunStatus];
+                            const runStatusB = runStatusOrder[b.job.lastRunStatus];
+
+                            if (runStatusA !== runStatusB) {
+                                return sortDir === 1 ? runStatusA - runStatusB : runStatusB - runStatusA;
+                            }
+                        }
+
+                        // Fallback to name sorting for consistent ordering
+                        return sortDir === 1
+                            ? a.job.name.localeCompare(b.job.name)
+                            : b.job.name.localeCompare(a.job.name);
+                    });
+                }
+
+                // Return the final result
                 common.returnOutput(ob.params, {
                     sEcho: ob.params.qstring.sEcho,
                     iTotalRecords: totalCount,

@@ -172,7 +172,8 @@
                     enabled: true
                 },
                 tableStore: tableStore,
-                remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "jobsTable")
+                remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "jobsTable"),
+                jobsTablePersistKey: "cly-jobs-table"
             };
         },
         computed: {
