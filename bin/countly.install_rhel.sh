@@ -50,7 +50,7 @@ cp "$DIR/config/supervisord.example.conf" "$DIR/config/supervisord.conf"
 if [[ "$CENTOS_MAJOR" = "9" ]]; then
     sudo rpm -ivh https://pkgs.sysadmins.ws/el8/base/x86_64/ipa-gothic-fonts-003.03-15.el8.noarch.rpm
 else
-    sudo yum install https://pkgs.sysadmins.ws/el8/base/x86_64/raven-release-1.0-3.el8.noarch.rpm
+    sudo yum install -y https://pkgs.sysadmins.ws/el8/base/x86_64/raven-release-1.0-3.el8.noarch.rpm
     sudo yum install -y ipa-gothic-fonts
 fi
 
