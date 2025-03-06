@@ -1,3 +1,7 @@
+## Version 25.03.X
+Enterprise fixes:
+- [license] Fixed issue with handling invalid date periods
+
 ## Version 25.03
 Features:
 - [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
