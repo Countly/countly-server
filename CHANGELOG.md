@@ -9,6 +9,7 @@ Enterprise fixes:
 
 Dependencies:
 - Bump moment-timezone from 0.5.46 to 0.5.47
+- Bump countly-sdk-web from 24.11.4 to 25.1.0
 
 ## Version 25.03
 Features:
