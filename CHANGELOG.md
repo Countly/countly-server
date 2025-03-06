@@ -1,3 +1,11 @@
+## Version 24.10.X
+Enterprise fixes:
+- [ab-testing] Fixed bug with variant user filtering
+- [license] Fixed issue with handling invalid date periods
+
+Fixes:
+- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+
 ## Version 24.10.8
 Fixes:
 - [app-management] Unescaping HTML for created/updated application names
