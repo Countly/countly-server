@@ -2,7 +2,7 @@
 
 echo "Running filesystem modifications"
 
-VER="24.12"
+VER="25.03"
 
 CONTINUE="$(countly check before upgrade fs "$VER")"
 
