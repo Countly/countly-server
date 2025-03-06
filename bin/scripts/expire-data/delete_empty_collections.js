@@ -16,14 +16,17 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                     database.collection(collection).drop(function(err, delOK) {
                         if (err) {
                             console.log("Error dropping collection: " + collection, err);
-                        } else if (delOK) {
+                        }
+                        else if (delOK) {
                             console.log("Collection dropped: " + collection);
-                        } else {
+                        }
+                        else {
                             console.log("Failed to drop collection: " + collection);
                         }
                     });
                 }
-            } else {
+            }
+            else {
                 console.log("Collection not found: " + collection);
             }
         });
@@ -34,7 +37,8 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
     drill.listCollections().toArray(function(err, collections) {
         if (err) {
             console.log("Error fetching collections:", err);
-        } else {
+        }
+        else {
             collections.forEach(function(collection) {
                 drill.collection(collection.name).countDocuments({}, function(err, count) {
                     if (!err && count === 0) {
