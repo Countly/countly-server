@@ -1,10 +1,14 @@
 ## Version 25.03.X
+
+Fixes:
+- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+ 
 Enterprise fixes:
 - [ab-testing] Fixed bug with variant user filtering
 - [license] Fixed issue with handling invalid date periods
 
-Fixes:
-- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+Dependencies:
+- Bump moment-timezone from 0.5.46 to 0.5.47
 
 ## Version 25.03
 Features:
