@@ -7,14 +7,14 @@
 
 ## Installation Steps
 
-### 1. Install Homebrew (if not installed) (macOS only)
+### 1. Install [Homebrew](https://brew.sh/) (if not installed) (macOS only)
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
 ### 2. Install MongoDB
 
-macOS:
+[macOS](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/):
 
 ```bash
 brew tap mongodb/brew
@@ -22,7 +22,7 @@ brew install mongodb-community
 brew services start mongodb-community
 ```
 
-Ubuntu:
+[Ubuntu](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/):
 
 ```bash
 # Install required packages
@@ -46,12 +46,7 @@ sudo systemctl start mongod
 sudo systemctl enable mongod
 ```
 
-Verify MongoDB is running:
-```bash
-brew services list | grep mongodb
-```
-
-### 3. Install Fast Node Manager (fnm) (if no Node.js version manager is installed)
+### 3. Install [Fast Node Manager (fnm)](https://github.com/Schniz/fnm)  (if no Node.js version manager is installed)
 ```bash
 curl -fsSL https://fnm.vercel.app/install | bash
 ```

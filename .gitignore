@@ -1,5 +1,6 @@
 api/node_modules/
 .idea
+.vscode
 .cache
 .npm
 .npmrc
