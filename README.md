@@ -71,6 +71,8 @@ There are several ways to install Countly:
 
 3. Countly Lite also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/r/countly/countly-server/) and [installation instructions for Docker](https://support.countly.com/hc/en-us/articles/360036862332-Installing-the-Countly-Server).
 
+4. There is a community maintained Helm Chart. See [ArtifactHub](https://artifacthub.io/packages/helm/christianhuth/countly) for installation instructions or check the [source code on GitHub](https://github.com/christianhuth/helm-charts/tree/main/charts/countly).
+
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](https://support.countly.com/hc/en-us/articles/360037443652-Upgrading-the-Countly-Server).
 
 ## 🧩 API, extensibility and plugins
