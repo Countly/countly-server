@@ -22,19 +22,6 @@ plugins.connectToAllDatabases(true).then(function() {
     log.i("Db connections done");
     // common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new Cacher(common.db);
-    common.readBatcher.transformationFunctions = {
-        "event_object": function(data) {
-            if (data && data.list) {
-                data._list = {};
-                data._list_length = 0;
-                for (let i = 0; i < data.list.length; i++) {
-                    data._list[data.list[i]] = true;
-                    data._list_length++;
-                }
-            }
-            return data;
-        }
-    };
     //common.insertBatcher = new InsertBatcher(common.db);
     if (common.drillDb) {
         common.drillReadBatcher = new Cacher(common.drillDb);
@@ -202,7 +189,10 @@ plugins.connectToAllDatabases(true).then(function() {
     //since process restarted mark running tasks as errored
     plugins.dispatch("/ingestor", {common: common});
     plugins.init({"skipDependencies": true, "filename": "ingestor"});
+    console.log("Loading configs");
     plugins.loadConfigs(common.db, function() {
+        console.log("Configs loaded. Opening server connection");
+        console.log(JSON.stringify(common.config.ingestor || {}));
         http.Server((req, res) => {
             const params = {
                 qstring: {},

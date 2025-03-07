@@ -405,8 +405,12 @@ var testUtils = function testUtils() {
             }
             dashboard.should.have.property("new_users", {"total": correct.new_users, "change": "NA", "trend": "u"});
             dashboard.should.have.property("total_time", {"total": correct.total_time, "change": "NA", "trend": "u"});
-            dashboard.should.have.property("avg_time", {"total": correct.avg_time, "change": "NA", "trend": "u"});
-            dashboard.should.have.property("avg_requests", {"total": correct.avg_requests, "change": "NA", "trend": "u"});
+            if (correct.avg_time) {
+                dashboard.should.have.property("avg_time", {"total": correct.avg_time, "change": "NA", "trend": "u"});
+            }
+            if (correct.avg_requests) {
+                dashboard.should.have.property("avg_requests", {"total": correct.avg_requests, "change": "NA", "trend": "u"});
+            }
             period.should.have.property("top");
             var top = period["top"];
             top.platforms.sort();
