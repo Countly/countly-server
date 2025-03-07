@@ -1,3 +1,7 @@
+## Version 24.05.XX
+Fixes:
+- [crashes] Remove memory addresses from stack trace grouping
+
 ## Version 24.05.26
 Enterprise fixes:
 - [ab-testing] Fixed bug with variant user filtering
