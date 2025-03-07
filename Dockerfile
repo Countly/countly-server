@@ -37,12 +37,16 @@ RUN apt-get update && apt-get install -y sudo && \
     mkdir /etc/service/nginx && \
     mkdir /etc/service/countly-api && \
     mkdir /etc/service/countly-dashboard && \
+    mkdir /etc/service/countly-ingestor && \
+    mkdir /etc/service/countly-aggregator && \
     echo "" >> /etc/nginx/nginx.conf && \
     echo "daemon off;" >> /etc/nginx/nginx.conf && \
     \
     cp /opt/countly/bin/commands/docker/mongodb.sh /etc/service/mongodb/run && \
     cp /opt/countly/bin/commands/docker/nginx.sh /etc/service/nginx/run && \
     cp /opt/countly/bin/commands/docker/countly-api.sh /etc/service/countly-api/run && \
+    cp /opt/countly/bin/commands/docker/countly-ingestor.sh /etc/service/countly-ingestor/run && \
+    cp /opt/countly/bin/commands/docker/countly-aggregator.sh /etc/service/countly-aggregator/run && \
     cp /opt/countly/bin/commands/docker/countly-dashboard.sh /etc/service/countly-dashboard/run && \
     \
     chown mongodb /etc/service/mongodb/run && \

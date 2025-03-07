@@ -11,6 +11,8 @@ const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
 
+var {MongoDbQueryRunner} = require('./utils/mongoDbQueryRunner.js');
+
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
 
@@ -26,8 +28,11 @@ plugins.connectToAllDatabases().then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
+
+
     if (common.drillDb) {
         common.drillReadBatcher = new ReadBatcher(common.drillDb);
+        common.drillQueryRunner = new MongoDbQueryRunner(common.drillDb);
     }
 
     /**

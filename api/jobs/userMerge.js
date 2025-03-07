@@ -1,4 +1,3 @@
-'use strict';
 
 // const job = require('../parts/jobs/job.js');
 const Job = require("../../jobServer/Job");
@@ -181,7 +180,13 @@ var handleMerges = function(db, callback) {
                 }
             }
             else {
-                resolve();
+                //delete invalid document
+                db.collection('app_user_merges').remove({"_id": user._id}, function(err5) {
+                    if (err5) {
+                        log.e(err5);
+                    }
+                    resolve();
+                });
             }
         }
     }
@@ -198,12 +203,11 @@ var handleMerges = function(db, callback) {
             for (var z = 0; z < paralel_cn; z++) {
                 promises.push(new Promise((resolve)=>{
                     processMerging(dataObj, resolve);
-
                 }));
             }
 
             Promise.all(promises).then(()=>{
-                if (mergedocs.length === 100) {
+                if (mergedocs.length === limit) {
                     setTimeout(()=>{
                         handleMerges(db, callback);
                     }, 0); //To do not grow stack.

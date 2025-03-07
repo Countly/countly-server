@@ -67,11 +67,15 @@ RUN useradd -r -M -U -d /opt/countly -s /bin/false countly && \
     mkdir -p /etc/my_init.d && cp ./bin/docker/postinstall.sh /etc/my_init.d/ && \
     mkdir /etc/service/nginx && \
     mkdir /etc/service/countly-api && \
+    mkdir /etc/service/countly-ingestor && \
+    mkdir /etc/service/countly-aggregator && \
     mkdir /etc/service/countly-dashboard && \
     echo "" >> /etc/nginx/nginx.conf && \
     echo "daemon off;" >> /etc/nginx/nginx.conf && \
     cp ./bin/commands/docker/nginx.sh /etc/service/nginx/run && \
     cp ./bin/commands/docker/countly-api.sh /etc/service/countly-api/run && \
+    cp ./bin/commands/docker/countly-ingestor.sh /etc/service/countly-ingestor/run && \
+    cp ./bin/commands/docker/countly-aggregator.sh /etc/service/countly-aggregator/run && \
     cp ./bin/commands/docker/countly-dashboard.sh /etc/service/countly-dashboard/run && \
     chown -R countly:countly /opt/countly && \
     # cleanup

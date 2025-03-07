@@ -7,6 +7,7 @@ var APP_KEY = "";
 var API_KEY_ADMIN = "";
 var APP_ID = "";
 var DEVICE_ID = "1234567890";
+var drill_db = testUtils.drillDb;
 
 describe('Testing Language metrics', function() {
     describe('Empty language', function() {
@@ -14,6 +15,7 @@ describe('Testing Language metrics', function() {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
+            drill_db = testUtils.client.db("countly_drill");
             request
                 .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=langs')
                 .expect(200)
@@ -39,18 +41,13 @@ describe('Testing Language metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 300 * testUtils.testScalingFactor);
+                    done();
                 });
         });
     });
     describe('Verify Language', function() {
         it('should have language', function(done) {
-            request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=langs')
-                .expect(200)
-                .end(function(err, res) {
-                    testUtils.validateMetrics(err, res, done, {meta: {"langs": ['en']}, "en": {"n": 1, "t": 1, "u": 1}});
-                });
+            testUtils.validateTotalsInDrillData(drill_db, {app_id: APP_ID, event: "[CLY]_session", query: {"up.la": "en", "up.lo": "en_GB"}, values: {u: 1, t: 1, n: 1}}, done);
         });
     });
     describe('write bulk language', function() {
@@ -66,7 +63,7 @@ describe('Testing Language metrics', function() {
                 {"device_id": DEVICE_ID + "8", "app_key": APP_KEY, "begin_session": 1, "metrics": {"_locale": "en_US"}}
             ];
             request
-                .get('/i/bulk?requests=' + JSON.stringify(params))
+                .get('/i/bulk?safe_api_response=true&requests=' + JSON.stringify(params))
                 .expect(200)
                 .end(function(err, res) {
                     if (err) {
@@ -74,18 +71,26 @@ describe('Testing Language metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    done();
                 });
         });
     });
     describe('Verify bulk language', function() {
         it('should match provided language', function(done) {
-            request
-                .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=langs')
-                .expect(200)
-                .end(function(err, res) {
-                    testUtils.validateMetrics(err, res, done, {meta: {"langs": ["en", "fr", "zh_hans", "de", "it", "ja", "ko"]}, "en": {"n": 3, "t": 3, "u": 3}, "fr": {"n": 1, "t": 1, "u": 1}, "zh_hans": {"n": 1, "t": 1, "u": 1}, "de": {"n": 1, "t": 1, "u": 1}, "it": {"n": 1, "t": 1, "u": 1}, "ja": {"n": 1, "t": 1, "u": 1}, "ko": {"n": 1, "t": 1, "u": 1}});
-                });
+            testUtils.validateBreakdownTotalsInDrillData(drill_db, {
+                app_id: APP_ID,
+                event: "[CLY]_session",
+                breakdownKeys: ["up.la"],
+                values: {
+                    "en": {u: 3, t: 3, n: 1},
+                    "fr": {u: 1, t: 1, n: 1},
+                    "zh_hans": {u: 1, t: 1, n: 1},
+                    "de": {u: 1, t: 1, n: 1},
+                    "it": {u: 1, t: 1, n: 1},
+                    "ja": {u: 1, t: 1, n: 1},
+                    "ko": {u: 1, t: 1, n: 1}
+                }
+            }, done);
         });
     });
     describe('reset app', function() {

@@ -331,7 +331,7 @@
                 showViewCountWarning: false,
                 tableDynamicCols: dynamicCols,
                 isGraphLoading: true,
-                isTableLoading: true,
+                //isTableLoading: true,
                 showActionMapColumn: showActionMapColumn, //for action map
                 domains: [], //for action map
                 persistentSettings: [],
@@ -368,7 +368,7 @@
                 var self = this;
                 if (force) {
                     self.isGraphLoading = true;
-                    self.isTableLoading = true;
+                    //self.isTableLoading = true;
                 }
                 this.$store.dispatch('countlyViews/fetchData').then(function() {
                     self.calculateGraphSeries();
@@ -383,7 +383,7 @@
                 });
 
                 this.$store.dispatch("countlyViews/fetchViewsMainTable", {"segmentKey": this.$store.state.countlyViews.selectedSegment, "segmentValue": this.$store.state.countlyViews.selectedSegmentValue}).then(function() {
-                    self.isTableLoading = false;
+                    //self.isTableLoading = false;
                 });
             },
             validateTotalViewCount: function() {
@@ -524,6 +524,7 @@
                 totals.uvc = totals.uvc || 0;
                 totals.s = totals.s || 0;
                 totals.b = totals.b || 0;
+                totals.u = totals.u || 0;
                 if (totals.s) {
                     totals.br = Math.round(totals.b / totals.s * 1000) / 10;
                 }
@@ -540,9 +541,10 @@
                         isPercentage: false
                     },
                     {
-                        "name": CV.i18n('views.uvc'),
-                        "description": CV.i18n('views.unique_page_views.desc'),
-                        "value": countlyCommon.formatNumber(totals.uvc),
+                        "name": CV.i18n('views.u'),
+                        "description": CV.i18n('views.unique_users.desc'),
+                        "value": countlyCommon.formatNumber(totals.u),
+                        "lu": totals.lu,
                         "percent": 0,
                         isPercentage: false
                     },
@@ -693,14 +695,14 @@
                 return [
                     {"value": "t", "name": CV.i18n('views.total-visits')},
                     {"value": "u", "name": CV.i18n('common.table.total-users')},
-                    {"value": "n", "name": CV.i18n('common.table.new-users')},
+                    // {"value": "n", "name": CV.i18n('common.table.new-users')},
                     {"value": "d", "name": CV.i18n('views.avg-duration')},
                     {"value": "s", "name": CV.i18n('views.starts')},
                     {"value": "e", "name": CV.i18n('views.exits')},
                     {"value": "b", "name": CV.i18n('views.bounces')},
                     {"value": "br", "name": CV.i18n('views.br')},
                     {"value": "scr", "name": CV.i18n('views.scrolling-avg')},
-                    {"value": "uvc", "name": CV.i18n('views.uvc')},
+                    // {"value": "uvc", "name": CV.i18n('views.uvc')},
                 ];
             },
             topDropdown: function() {
@@ -1146,14 +1148,14 @@
                 var app = this.scope.editedObject.apps[0];
                 var metrics = [
                     { label: CV.i18n("views.u"), value: "u" },
-                    { label: CV.i18n("views.n"), value: "n" },
+                    //{ label: CV.i18n("views.n"), value: "n" },
                     { label: CV.i18n("views.t"), value: "t" },
                     { label: CV.i18n("views.d"), value: "d" },
                     { label: CV.i18n("views.s"), value: "s" },
                     { label: CV.i18n("views.e"), value: "e" },
                     { label: CV.i18n("views.b"), value: "b" },
                     { label: CV.i18n("views.br"), value: "br" },
-                    { label: CV.i18n("views.uvc"), value: "uvc" }
+                    // { label: CV.i18n("views.uvc"), value: "uvc" }
                 ];
                 if (app && countlyGlobal.apps[app] && countlyGlobal.apps[app].type === "web") {
                     metrics.push({ label: CV.i18n("views.scr"), value: "scr" });
