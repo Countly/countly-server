@@ -8,6 +8,7 @@ Enterprise fixes:
 - [license] Fixed issue with handling invalid date periods
 
 Dependencies:
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
 - Bump countly-sdk-web from 24.11.4 to 25.1.0
 - Bump moment-timezone from 0.5.46 to 0.5.47
 - Bump sass from 1.83.4 to 1.85.1
