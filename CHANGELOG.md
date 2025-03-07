@@ -11,6 +11,7 @@ Dependencies:
 - Bump axios from 1.7.4 to 1.8.2 in /plugins/hooks
 - Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
 - Bump countly-sdk-web from 24.11.4 to 25.1.0
+- Bump form-data from 4.0.1 to 4.0.2
 - Bump moment-timezone from 0.5.46 to 0.5.47
 - Bump sass from 1.83.4 to 1.85.1
 
