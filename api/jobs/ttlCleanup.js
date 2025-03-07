@@ -1,12 +1,25 @@
 const plugins = require("../../plugins/pluginManager.js");
 const common = require('../utils/common');
-const job = require("../parts/jobs/job.js");
+// const job = require("../parts/jobs/job.js");
 const log = require("../utils/log.js")("job:ttlCleanup");
+const Job = require("../../jobServer/Job");
 
 /**
  * Class for job of cleaning expired records inside ttl collections
  */
-class TTLCleanup extends job.Job {
+class TTLCleanup extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "* * * * *" // Every minute
+        };
+    }
+
     /**
      * Run the job
      */

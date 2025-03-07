@@ -6,7 +6,6 @@ var pluginDependencies = require('./pluginDependencies.js'),
     }),
     pluginsApis = {},
     mongodb = require('mongodb'),
-    cluster = require('cluster'),
     countlyConfig = require('../frontend/express/config', 'dont-enclose'),
     apiCountlyConfig = require('../api/config', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
@@ -166,7 +165,6 @@ var pluginManager = function pluginManager() {
                 }
                 else {
                     self.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
-                    // process.send({ cmd: "startPlugins" });
                     self.loadConfigs(db, function() {
                         callback();
                     });
@@ -1252,53 +1250,45 @@ var pluginManager = function pluginManager() {
     };
 
     /**
-    * We check plugins and sync between processes/servers
+    * We check plugins and sync configuration
     * @param {object} db - connection to countly database
     * @param {function} callback - when finished checking and syncing
     **/
     this.checkPlugins = function(db, callback) {
-        var plugConf;
-        if (cluster.isMaster) {
-            plugConf = this.getConfig("plugins");
-            if (Object.keys(plugConf).length === 0) {
-                //no plugins inserted yet, upgrading by inserting current plugins
-                var list = this.getPlugins();
-                for (let i = 0; i < list.length; i++) {
-                    plugConf[list[i]] = true;
-                }
-                this.updateConfigs(db, "plugins", plugConf, callback);
+        var plugConf = this.getConfig("plugins");
+
+        if (Object.keys(plugConf).length === 0) {
+            // No plugins inserted yet, initialize by inserting current plugins
+            var list = this.getPlugins();
+            for (let i = 0; i < list.length; i++) {
+                plugConf[list[i]] = true;
             }
-            else {
-                this.syncPlugins(plugConf, callback);
-            }
+            this.updateConfigs(db, "plugins", plugConf, callback);
         }
         else {
-            //check if we need to sync plugins
+            // Check if we need to sync plugins
             var pluginList = this.getPlugins();
-            plugConf = this.getConfig("plugins") || {};
-            //let master know we need to include initial plugins
-            if (Object.keys(plugConf).length === 0) {
-                process.send({ cmd: "checkPlugins" });
+            var changes = 0;
+
+            for (let plugin in plugConf) {
+                var state = plugConf[plugin],
+                    index = pluginList.indexOf(plugin);
+                if (index !== -1 && !state) {
+                    changes++;
+                    plugins.splice(plugins.indexOf(plugin), 1);
+                }
+                else if (index === -1 && state) {
+                    changes++;
+                    plugins.push(plugin);
+                }
             }
-            else {
-                //check if we need to sync plugins
-                var changes = 0;
-                for (let plugin in plugConf) {
-                    var state = plugConf[plugin],
-                        index = pluginList.indexOf(plugin);
-                    if (index !== -1 && !state) {
-                        changes++;
-                        plugins.splice(plugins.indexOf(plugin), 1);
-                    }
-                    else if (index === -1 && state) {
-                        changes++;
-                        plugins.push(plugin);
-                    }
-                }
-                if (changes > 0) {
-                    //let master process know we need to sync plugins
-                    process.send({ cmd: "checkPlugins" });
-                }
+
+            if (changes > 0) {
+                // Sync plugins directly since we're in a single process
+                this.syncPlugins(plugConf, callback);
+            }
+            else if (callback) {
+                callback();
             }
         }
     };
@@ -1578,6 +1568,7 @@ var pluginManager = function pluginManager() {
 
     /**
     * Procedure to uninstall plugin
+    * Should be used only to hard disabled plugins mainly in dev mode
     * @param {string} plugin - plugin name
     * @param {function} callback - when finished uninstalling plugin
     * @returns {void} void
@@ -1585,28 +1576,45 @@ var pluginManager = function pluginManager() {
     this.uninstallPlugin = function(plugin, callback) {
         console.log('Uninstalling plugin %j...', plugin);
         callback = callback || function() {};
-        var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
-        var errors = false;
-        var args = [scriptPath];
-        if (apiCountlyConfig.symlinked === true) {
-            args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
-        }
-        var m = cp.spawn("nodejs", args);
+        var self = this;
 
-        m.stdout.on('data', (data) => {
-            console.log(data.toString());
-        });
+        // First update database to disable plugin
+        self.singleDefaultConnection().then((db) => {
+            db.collection("plugins").updateOne(
+                {_id: "plugins"},
+                {$set: {[`plugins.${plugin}`]: false}},
+                function(err) {
+                    if (err) {
+                        console.log("Error updating plugin state:", err);
+                    }
 
-        m.stderr.on('data', (data) => {
-            console.log(data.toString());
-        });
+                    // Then run uninstall script
+                    var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
+                    var errors = false;
+                    var args = [scriptPath];
+                    if (apiCountlyConfig.symlinked === true) {
+                        args.unshift(...["--preserve-symlinks", "--preserve-symlinks-main"]);
+                    }
+                    var m = cp.spawn("nodejs", args);
 
-        m.on('close', (code) => {
-            console.log('Done running uninstall.js with %j', code);
-            if (parseInt(code, 10) !== 0) {
-                errors = true;
-            }
-            callback(errors);
+                    m.stdout.on('data', (data) => {
+                        console.log(data.toString());
+                    });
+
+                    m.stderr.on('data', (data) => {
+                        console.log(data.toString());
+                    });
+
+                    m.on('close', (code) => {
+                        console.log('Done running uninstall.js with %j', code);
+                        if (parseInt(code, 10) !== 0) {
+                            errors = true;
+                        }
+                        db.close();
+                        callback(errors);
+                    });
+                }
+            );
         });
     };
 
@@ -1855,17 +1863,12 @@ var pluginManager = function pluginManager() {
     * @returns {object} db connection params
     **/
     this.dbConnection = async function(config, return_original) {
-        var db, maxPoolSize = 10;
+        var db, maxPoolSize = 100;
         var mngr = this;
         var dbList = [];
 
-        if (!cluster.isMaster) {
-            //we are in worker
-            maxPoolSize = 100;
-        }
-
         var useConfig = JSON.parse(JSON.stringify(countlyConfig));
-        if (process.argv[1] && process.argv[1].endsWith('api/api.js') && !cluster.isMaster) {
+        if (process.argv[1] && process.argv[1].endsWith('api/api.js')) {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
         }
         if (typeof config === "string") {

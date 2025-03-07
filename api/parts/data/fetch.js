@@ -20,7 +20,6 @@ var fetch = {},
     _ = require('underscore'),
     crypto = require('crypto'),
     usage = require('./usage.js'),
-    STATUS_MAP = require('../jobs/job').STATUS_MAP,
     plugins = require('../../../plugins/pluginManager.js');
 
 
@@ -2160,130 +2159,6 @@ function union(x, y) {
 
     return res;
 }
-
-/**
-* Get data for jobs listing for jobs api
-* @param {string} metric - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
-*/
-fetch.fetchJobs = async function(metric, params) {
-    try {
-        if (params.qstring.name) {
-            await fetch.jobDetails(metric, params);
-        }
-        else {
-            await fetch.alljobs(metric, params);
-        }
-    }
-    catch (e) {
-        console.log(e);
-        common.returnOutput(params, 500, "Fetching jobs failed");
-    }
-};
-
-/**
-* Get all jobs grouped by job name for jobs api
-* @param {string} metric - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
-*/
-fetch.alljobs = async function(metric, params) {
-    const columns = ["name", "schedule", "next", "finished", "status", "total"];
-    let sort = {};
-    let total = await common.db.collection('jobs').aggregate([
-        {
-            $group: { _id: "$name" }
-        },
-        {
-            $count: 'total'
-        }
-    ]).toArray();
-    total = total.length > 0 ? total[0].total : 0;
-    const pipeline = [
-        {
-            $addFields: {
-                sortKey: {
-                    $cond: {
-                        if: { $eq: ["$status", 0] },
-                        then: 0,
-                        else: {
-                            $cond: {
-                                if: { $eq: ["$status", 7] },
-                                then: 1,
-                                else: 2
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        {
-            $sort: {
-                sortKey: 1,
-                finished: -1
-            }
-        },
-        {
-            $group: {
-                _id: "$name",
-                name: { $first: "$name" },
-                status: { $first: "$status" },
-                schedule: { $first: "$schedule" },
-                next: { $first: "$next" },
-                finished: { $first: "$finished" },
-                total: { $sum: 1 },
-                rowId: { $first: "$_id" }
-            }
-        }
-    ];
-    if (params.qstring.sSearch) {
-        var rr;
-        try {
-            rr = new RegExp(params.qstring.sSearch, "i");
-            pipeline.unshift({
-                $match: { name: { $regex: rr } }
-            });
-        }
-        catch (e) {
-            console.log('Could not use as regex:' + params.qstring.sSearch);
-        }
-    }
-    const cursor = common.db.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
-    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
-    cursor.sort(sort);
-    cursor.skip(Number(params.qstring.iDisplayStart || 0));
-    cursor.limit(Number(params.qstring.iDisplayLength || 10));
-    let items = await cursor.toArray();
-    items = items.map((job) => {
-        job.status = STATUS_MAP[job.status];
-        return job;
-    });
-    cursor.close();
-    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || [] });
-};
-
-/**
-* Get all documents for a given job name
-* @param {string} metric - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
-*/
-fetch.jobDetails = async function(metric, params) {
-    const columns = ["schedule", "next", "finished", "status", "data", "duration"];
-    let sort = {};
-    const total = await common.db.collection('jobs').count({ name: params.qstring.name });
-    const cursor = common.db.collection('jobs').find({ name: params.qstring.name });
-    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
-    cursor.sort(sort);
-    cursor.skip(Number(params.qstring.iDisplayStart || 0));
-    cursor.limit(Number(params.qstring.iDisplayLength || 10));
-    let items = await cursor.toArray();
-    items = items.map((job) => {
-        job.status = STATUS_MAP[job.status];
-        return job;
-    });
-    cursor.close();
-    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || [] });
-};
-
 
 /**
  * Fetch data for tops

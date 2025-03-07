@@ -1,4 +1,5 @@
-const job = require('../../../../api/parts/jobs/job.js');
+// const job = require('../../../../api/parts/jobs/job.js');
+const Job = require('../../../../jobServer/Job');
 const log = require('../../../../api/utils/log.js')('job:views:cleanup_meta');
 var Promise = require("bluebird");
 
@@ -8,7 +9,19 @@ const viewsUtils = require("../parts/viewsUtils.js");
 /**
  * Class for running job
  */
-class CleanupMetaJob extends job.Job {
+class CleanupMetaJob extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "0 4 * * *" // every day at 4am
+        };
+    }
+
     /**
      * Get's called to run the job
      * @param {mongoDatabase} countlyDb ref to countlyDb

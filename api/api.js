@@ -1,14 +1,11 @@
 const http = require('http');
-const cluster = require('cluster');
 const formidable = require('formidable');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');
-const jobs = require('./parts/jobs');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
-const {CacheMaster, CacheWorker} = require('./parts/data/cache.js');
 const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
 const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
@@ -19,18 +16,9 @@ var {MongoDbQueryRunner} = require('./utils/mongoDbQueryRunner.js');
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
 
-if (cluster.isMaster) {
-    console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
-    if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
-        log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
-    }
-    t.push("master");
-    t.push("node");
-    t.push(process.argv[1]);
-}
-else {
-    t.push("worker");
-    t.push("node");
+console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
+if (!common.checkDatabaseConfigMatch(countlyConfig.mongodb, frontendConfig.mongodb)) {
+    log.w('API AND FRONTEND DATABASE CONFIGS ARE DIFFERENT');
 }
 
 // Finaly set the visible title
@@ -46,8 +34,6 @@ plugins.connectToAllDatabases().then(function() {
         common.drillReadBatcher = new ReadBatcher(common.drillDb);
         common.drillQueryRunner = new MongoDbQueryRunner(common.drillDb);
     }
-
-    let workers = [];
 
     /**
     * Set Max Sockets
@@ -127,22 +113,15 @@ plugins.connectToAllDatabases().then(function() {
     /**
     * Set Plugins Logs Config
     */
-    plugins.setConfigs('logs', {
-        debug: (countlyConfig.logging && countlyConfig.logging.debug) ? countlyConfig.logging.debug.join(', ') : '',
-        info: (countlyConfig.logging && countlyConfig.logging.info) ? countlyConfig.logging.info.join(', ') : '',
-        warn: (countlyConfig.logging && countlyConfig.logging.warn) ? countlyConfig.logging.warn.join(', ') : '',
-        error: (countlyConfig.logging && countlyConfig.logging.error) ? countlyConfig.logging.error.join(', ') : '',
-        default: (countlyConfig.logging && countlyConfig.logging.default) ? countlyConfig.logging.default : 'warn',
-    }, undefined, () => {
-        const cfg = plugins.getConfig('logs'), msg = {
-            cmd: 'log',
-            config: cfg
-        };
-        if (process.send) {
-            process.send(msg);
+    plugins.setConfigs('logs',
+        {
+            debug: (countlyConfig.logging && countlyConfig.logging.debug) ? countlyConfig.logging.debug.join(', ') : '',
+            info: (countlyConfig.logging && countlyConfig.logging.info) ? countlyConfig.logging.info.join(', ') : '',
+            warn: (countlyConfig.logging && countlyConfig.logging.warn) ? countlyConfig.logging.warn.join(', ') : '',
+            error: (countlyConfig.logging && countlyConfig.logging.error) ? countlyConfig.logging.error.join(', ') : '',
+            default: (countlyConfig.logging && countlyConfig.logging.default) ? countlyConfig.logging.default : 'warn',
         }
-        require('./utils/log.js').ipcHandler(msg);
-    });
+    );
 
     /**
     * Initialize Plugins
@@ -155,6 +134,19 @@ plugins.connectToAllDatabases().then(function() {
     */
     async function storeBatchedData(code) {
         try {
+
+            await new Promise((resolve) => {
+                server.close((err) => {
+                    if (err) {
+                        console.log("Error closing server:", err);
+                    }
+                    else {
+                        console.log("Server closed successfully");
+                        resolve();
+                    }
+                });
+            });
+
             await common.writeBatcher.flushAll();
             await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
@@ -208,243 +200,113 @@ plugins.connectToAllDatabases().then(function() {
         console.trace();
     });
 
-    /**
-    * Pass To Master
-    * @param {cluster.Worker} worker - worker thatw as spawned by master
-    */
-    const passToMaster = (worker) => {
-        worker.on('message', (msg) => {
-            if (msg.cmd === 'log') {
-                workers.forEach((w) => {
-                    if (w !== worker) {
-                        w.send({
-                            cmd: 'log',
-                            config: msg.config
-                        });
-                    }
-                });
-                require('./utils/log.js').ipcHandler(msg);
-            }
-            else if (msg.cmd === "checkPlugins") {
-                plugins.checkPluginsMaster();
-            }
-            else if (msg.cmd === "startPlugins") {
-                plugins.startSyncing();
-            }
-            else if (msg.cmd === "endPlugins") {
-                plugins.stopSyncing();
-            }
-            else if (msg.cmd === "batch_insert") {
-                const {collection, doc, db} = msg.data;
-                common.insertBatcher.insert(collection, doc, db);
-            }
-            else if (msg.cmd === "batch_write") {
-                const {collection, id, operation, db} = msg.data;
-                common.writeBatcher.add(collection, id, operation, db);
-            }
-            else if (msg.cmd === "batch_read") {
-                const {collection, query, projection, multi, msgId} = msg.data;
-                common.readBatcher.get(collection, query, projection, multi).then((data) => {
-                    worker.send({ cmd: "batch_read", data: {msgId, data} });
-                })
-                    .catch((err) => {
-                        worker.send({ cmd: "batch_read", data: {msgId, err} });
-                    });
-            }
-            else if (msg.cmd === "batch_invalidate") {
-                const {collection, query, projection, multi} = msg.data;
-                common.readBatcher.invalidate(collection, query, projection, multi);
-            }
-            else if (msg.cmd === "dispatchMaster" && msg.event) {
-                plugins.dispatch(msg.event, msg.data);
-            }
-            else if (msg.cmd === "dispatch" && msg.event) {
-                workers.forEach((w) => {
-                    w.send(msg);
-                });
-            }
-        });
-    };
-
-    if (cluster.isMaster) {
-        plugins.installMissingPlugins(common.db);
-        common.runners = require('./parts/jobs/runner');
-        common.cache = new CacheMaster();
-        common.cache.start().then(() => {
-            setImmediate(() => {
-                plugins.dispatch('/cache/init', {});
-            });
-        }, e => {
-            console.log(e);
-            process.exit(1);
-        });
-
-        /*const workerCount = (countlyConfig.api.workers)
-            ? countlyConfig.api.workers
-            : os.cpus().length;*/
-
-        const workerCount = 1;
-
-        for (let i = 0; i < workerCount; i++) {
-            // there's no way to define inspector port of a worker in the code. So if we don't
-            // pick a unique port for each worker, they conflict with each other.
-            let nodeOptions = {};
-            if (countlyConfig?.symlinked !== true) { // countlyConfig.symlinked is passed when running in a symlinked setup
-                const inspectorPort = i + 1 + (common?.config?.masterInspectorPort || 9229);
-                nodeOptions = { NODE_OPTIONS: "--inspect-port=" + inspectorPort };
-            }
-            const worker = cluster.fork(nodeOptions);
-            workers.push(worker);
+    var utcMoment = moment.utc();
+    var incObj = {};
+    incObj.r = 1;
+    incObj[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.r`] = 1;
+    common.db.collection("diagnostic").updateOne({"_id": "no-segment_" + utcMoment.format("YYYY:M")}, {"$set": {"m": utcMoment.format("YYYY:M")}, "$inc": incObj}, {"upsert": true}, function(err) {
+        if (err) {
+            log.e(err);
         }
+    });
 
-        workers.forEach(passToMaster);
 
-        cluster.on('exit', (worker) => {
-            workers = workers.filter((w) => {
-                return w !== worker;
-            });
-            const newWorker = cluster.fork();
-            workers.push(newWorker);
-            passToMaster(newWorker);
-        });
+    plugins.installMissingPlugins(common.db);
+    const taskManager = require('./utils/taskmanager.js');
+    //since process restarted mark running tasks as errored
+    taskManager.errorResults({db: common.db});
 
-        plugins.dispatch("/master", {});
+    plugins.dispatch("/master", {}); // init hook
 
-        // Allow configs to load & scanner to find all jobs classes
-        setTimeout(() => {
-            jobs.job('api:topEvents').replace().schedule('at 00:01 am ' + 'every 1 day');
-            jobs.job('api:ping').replace().schedule('every 1 day');
-            jobs.job('api:clear').replace().schedule('every 1 day');
-            jobs.job('api:clearTokens').replace().schedule('every 1 day');
-            jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
-            jobs.job('api:task').replace().schedule('every 5 minutes');
-            jobs.job('api:userMerge').replace().schedule('every 10 minutes');
-            jobs.job("api:ttlCleanup").replace().schedule("every 1 minute");
-            //jobs.job('api:appExpire').replace().schedule('every 1 day');
-        }, 10000);
+    const server = http.Server((req, res) => {
+        const params = {
+            qstring: {},
+            res: res,
+            req: req
+        };
 
-        //Record as restarted
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('Keep-Alive', 'timeout=5, max=1000');
 
-        var utcMoment = moment.utc();
-
-        var incObj = {};
-        incObj.r = 1;
-        incObj[`d.${utcMoment.format("D")}.${utcMoment.format("H")}.r`] = 1;
-        common.db.collection("diagnostic").updateOne({"_id": "no-segment_" + utcMoment.format("YYYY:M")}, {"$set": {"m": utcMoment.format("YYYY:M")}, "$inc": incObj}, {"upsert": true}, function(err) {
-            if (err) {
-                log.e(err);
+        if (req.method.toLowerCase() === 'post') {
+            const formidableOptions = {};
+            if (countlyConfig.api.maxUploadFileSize) {
+                formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
             }
-        });
-    }
-    else {
-        console.log("Starting worker", process.pid, "parent:", process.ppid);
-        const taskManager = require('./utils/taskmanager.js');
 
-        common.cache = new CacheWorker();
-        common.cache.start();
-
-        //since process restarted mark running tasks as errored
-        taskManager.errorResults({db: common.db});
-
-        process.on('message', common.log.ipcHandler);
-
-        process.on('message', (msg) => {
-            if (msg.cmd === 'log') {
-                common.log.ipcHandler(msg);
-            }
-            else if (msg.cmd === "dispatch" && msg.event) {
-                plugins.dispatch(msg.event, msg.data || {});
-            }
-        });
-
-        process.on('exit', () => {
-            console.log('Exiting due to master exited');
-        });
-
-        plugins.dispatch("/worker", {common: common});
-
-        http.Server((req, res) => {
-            const params = {
-                qstring: {},
-                res: res,
-                req: req
-            };
-
-            if (req.method.toLowerCase() === 'post') {
-                const formidableOptions = {};
-                if (countlyConfig.api.maxUploadFileSize) {
-                    formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
-                }
-
-                const form = new formidable.IncomingForm(formidableOptions);
-                if (/crash_symbols\/(add_symbol|upload_symbol)/.test(req.url)) {
-                    req.body = [];
-                    req.on('data', (data) => {
-                        req.body.push(data);
-                    });
-                }
-                else {
-                    req.body = '';
-                    req.on('data', (data) => {
-                        req.body += data;
-                    });
-                }
-
-                let multiFormData = false;
-                // Check if we have 'multipart/form-data'
-                if (req.headers['content-type']?.startsWith('multipart/form-data')) {
-                    multiFormData = true;
-                }
-
-                form.parse(req, (err, fields, files) => {
-                    //handle bakcwards compatability with formiddble v1
-                    for (let i in files) {
-                        if (files[i].filepath) {
-                            files[i].path = files[i].filepath;
-                        }
-                        if (files[i].mimetype) {
-                            files[i].type = files[i].mimetype;
-                        }
-                        if (files[i].originalFilename) {
-                            files[i].name = files[i].originalFilename;
-                        }
-                    }
-                    params.files = files;
-                    if (multiFormData) {
-                        let formDataUrl = [];
-                        for (const i in fields) {
-                            params.qstring[i] = fields[i];
-                            formDataUrl.push(`${i}=${fields[i]}`);
-                        }
-                        params.formDataUrl = formDataUrl.join('&');
-                    }
-                    else {
-                        for (const i in fields) {
-                            params.qstring[i] = fields[i];
-                        }
-                    }
-                    if (!params.apiPath) {
-                        processRequest(params);
-                    }
+            const form = new formidable.IncomingForm(formidableOptions);
+            if (/crash_symbols\/(add_symbol|upload_symbol)/.test(req.url)) {
+                req.body = [];
+                req.on('data', (data) => {
+                    req.body.push(data);
                 });
-            }
-            else if (req.method.toLowerCase() === 'options') {
-                const headers = {};
-                headers["Access-Control-Allow-Origin"] = "*";
-                headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
-                headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type";
-                res.writeHead(200, headers);
-                res.end();
-            }
-            //attempt process GET request
-            else if (req.method.toLowerCase() === 'get') {
-                processRequest(params);
             }
             else {
-                common.returnMessage(params, 405, "Method not allowed");
+                req.body = '';
+                req.on('data', (data) => {
+                    req.body += data;
+                });
             }
-        }).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
 
-        plugins.loadConfigs(common.db);
-    }
+            let multiFormData = false;
+            // Check if we have 'multipart/form-data'
+            if (req.headers['content-type']?.startsWith('multipart/form-data')) {
+                multiFormData = true;
+            }
+
+            form.parse(req, (err, fields, files) => {
+                //handle bakcwards compatability with formiddble v1
+                for (let i in files) {
+                    if (files[i].filepath) {
+                        files[i].path = files[i].filepath;
+                    }
+                    if (files[i].mimetype) {
+                        files[i].type = files[i].mimetype;
+                    }
+                    if (files[i].originalFilename) {
+                        files[i].name = files[i].originalFilename;
+                    }
+                }
+                params.files = files;
+                if (multiFormData) {
+                    let formDataUrl = [];
+                    for (const i in fields) {
+                        params.qstring[i] = fields[i];
+                        formDataUrl.push(`${i}=${fields[i]}`);
+                    }
+                    params.formDataUrl = formDataUrl.join('&');
+                }
+                else {
+                    for (const i in fields) {
+                        params.qstring[i] = fields[i];
+                    }
+                }
+                if (!params.apiPath) {
+                    processRequest(params);
+                }
+            });
+        }
+        else if (req.method.toLowerCase() === 'options') {
+            const headers = {};
+            headers["Access-Control-Allow-Origin"] = "*";
+            headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
+            headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type";
+            res.writeHead(200, headers);
+            res.end();
+        }
+        //attempt process GET request
+        else if (req.method.toLowerCase() === 'get') {
+            processRequest(params);
+        }
+        else {
+            common.returnMessage(params, 405, "Method not allowed");
+        }
+    });
+    server.listen(common.config.api.port, common.config.api.host || '');
+    server.timeout = common.config.api.timeout || 120000;
+    server.keepAliveTimeout = common.config.api.timeout || 120000;
+    server.headersTimeout = (common.config.api.timeout || 120000) + 1000; // Slightly higher
+
+
+    plugins.loadConfigs(common.db);
 });

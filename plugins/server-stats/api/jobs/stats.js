@@ -1,13 +1,13 @@
 'use strict';
 
-const job = require('../../../../api/parts/jobs/job.js'),
-    tracker = require('../../../../api/parts/mgmt/tracker.js'),
-    log = require('../../../../api/utils/log.js')('job:stats'),
-    config = require('../../../../frontend/express/config.js'),
-    pluginManager = require('../../../pluginManager.js'),
-    serverStats = require('../parts/stats.js'),
-    moment = require('moment-timezone'),
-    request = require('countly-request')(pluginManager.getConfig('security'));
+const Job = require('../../../../jobServer/Job');
+const tracker = require('../../../../api/parts/mgmt/tracker.js');
+const log = require('../../../../api/utils/log.js')('job:stats');
+const config = require("../../../../frontend/express/config.js");
+const pluginManager = require('../../../pluginManager.js');
+const serverStats = require('../parts/stats.js');
+const moment = require('moment-timezone');
+const request = require('countly-request')(pluginManager.getConfig("security"));
 
 let drill;
 try {
@@ -27,14 +27,17 @@ const promisedLoadConfigs = function(db) {
 };
 
 /** Representing a StatsJob. Inherits api/parts/jobs/job.js (job.Job) */
-class StatsJob extends job.Job {
+class StatsJob extends Job {
+
     /**
-    * Inherits api/parts/jobs/job.js, please review for detailed description
-    * @param {string|Object} name - Name for job
-    * @param {Object} data - Data for job
-    */
-    constructor(name, data) {
-        super(name, data);
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "0 3 * * *" // Every day at 2:00 AM
+        };
     }
 
     /**
