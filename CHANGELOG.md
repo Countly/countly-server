@@ -7,6 +7,14 @@ Features:
 Enterprise Features:
 - [journey_engine] Editing/Deleting/Duplication of blocks and version management
 
+## Version 25.03.X
+Enterprise fixes:
+- [ab-testing] Fixed bug with variant user filtering
+- [license] Fixed issue with handling invalid date periods
+
+Fixes:
+- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+
 ## Version 25.03
 Features:
 - [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
