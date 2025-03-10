@@ -2,6 +2,9 @@
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
 
+Enterprise Fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+
 ## Version 24.05.26
 Enterprise fixes:
 - [ab-testing] Fixed bug with variant user filtering
