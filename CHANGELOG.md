@@ -2,11 +2,20 @@
 Features:
 - [alerts] alerts table default order should be by creation time newest at the top
 - [core] allow tracking Countly dashboard usage with Countly
+- [sdk] Improved and added new Server Config options
 
 Enterprise Features:
 - [journey_engine] Editing/Deleting/Duplication of blocks and version management
 
-## Version 24.12
+## Version 25.03.X
+Enterprise fixes:
+- [ab-testing] Fixed bug with variant user filtering
+- [license] Fixed issue with handling invalid date periods
+
+Fixes:
+- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+
+## Version 25.03
 Features:
 - [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
 - [core] Ability to mark reports as 'dirty' to make sure they are regenerated in full
@@ -53,6 +62,18 @@ Dependencies:
 - Bump puppeteer from 23.10.4 to 23.11.1
 - Bump sass from 1.81.0 to 1.83.3
 - Bump tslib from 2.7.0 to 2.8.1
+
+## Version 24.10.8
+Fixes:
+- [app-management] Unescaping HTML for created/updated application names
+- [countly-edge] Add import from Countly Edge Server
+- [languages] Calculated  total users percentage correctly
+
+Features:
+- [hooks] Support sending header information for HTTP actions
+
+Enterprise fixes:
+- [ab-testing] Mismatching user counts between ab-testing and user profiles
 
 ## Version 24.10.7
 Fixes:
