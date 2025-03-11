@@ -1,4 +1,4 @@
-## Version 25.03.
+## Version 25.03.1
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
 - [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
