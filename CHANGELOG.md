@@ -1,6 +1,7 @@
 ## Version 24.05.XX
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
+- [user-management] Prevent global admin from self-revoke and self-delete
 
 ## Version 24.05.26
 Enterprise fixes:
