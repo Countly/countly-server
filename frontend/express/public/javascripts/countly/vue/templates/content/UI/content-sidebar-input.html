@@ -26,11 +26,14 @@
     <slot name="content-builder-layout-step">
       <component
         :is="mainComponent"
-        v-bind="$attrs"
+        v-bind="computedAttrs"
         v-model="componentValue"
         v-tooltip.left="tooltip"
         class="cly-vue-content-builder-sidebar-input__component"
-        :class="{ 'cly-vue-content-builder-sidebar-input__component--slider': isSliderInput }"
+        :class="{
+          'cly-vue-content-builder-sidebar-input__component--slider': isSliderInput,
+          'cly-vue-content-builder-sidebar-input__component--upload': isUploadInput
+        }"
         :controls="controlsProp"
         :disabled="disabled"
         :options="options"
@@ -49,6 +52,31 @@
             :label="option.label"
             :value="option.value"
           />
+        </template>
+        <template v-if="isUploadInput">
+          <img
+            v-if="value"
+            class="cly-vue-content-builder-sidebar-input__upload-value"
+            :src="value"
+          >
+          <i
+            v-else
+            class="cly-io cly-io-photograph cly-vue-content-builder-sidebar-input__upload-placeholder"
+          />
+          <div class="cly-vue-content-builder-sidebar-input__upload-actions">
+            <el-button
+              class="cly-vue-content-builder-sidebar-input__upload-action"
+              icon="cly-io cly-io-upload"
+              type="info"
+              @click.stop="onUploadAddButtonClick"
+            />
+            <el-button
+              class="cly-vue-content-builder-sidebar-input__upload-action"
+              icon="cly-io cly-io-trash"
+              type="info"
+              @click.stop="onUploadDeleteButtonClick"
+            />
+          </div>
         </template>
       </component>
       <div
