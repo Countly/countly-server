@@ -1,0 +1,181 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Test Plugin",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/mocha.js",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--reporter",
+                "spec",
+                "--timeout",
+                "50000",
+                "--colors",
+                "--debug",
+                "--trace-warnings",
+                "--trace-deprecation",
+                "test/4.plugins/separation/1.setup.js",
+                "plugins/${input:pluginName}/tests/index.js",
+                "test/4.plugins/separation/2.teardown.js"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "env": {
+                "COUNTLY_CONFIG_HOSTNAME": "localhost:3001"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Server",
+            "program": "${workspaceFolder}/api/api.js",
+            "autoAttachChildProcesses": true,
+            "cwd": "${workspaceFolder}",
+            "skipFiles": [
+                "${workspaceFolder}/node_modules/**",
+                "${workspaceFolder}/node_modules/**",
+                "<node_internals>/**/*.js"
+            ],
+            "env": {
+                "COUNTLY_CONFIG_API_API_WORKERS": "2",
+                "COUNTLY_CONFIG__SYMLINKED": "true"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Client",
+            "program": "${workspaceFolder}/frontend/express/app.js",
+            "cwd": "${workspaceFolder}",
+            "sourceMaps": true,
+            "smartStep": true,
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/frontend/express/public/**/*.js",
+                "${workspaceFolder}/plugins/*/frontend/public/**/*.js"
+            ],
+            "env": {
+                // "COUNTLY_CONFIG__API-URL" : "http://localhost:3001"
+            }
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Chrome at localhost",
+            "runtimeExecutable": "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+            // YOUR CHROME PATH
+            //"runtimeExecutable": "/Applications/Chromium.app/Contents/MacOS/Chromium",
+            "userDataDir": true,
+            "url": "http://localhost:6001",
+            "webRoot": "${workspaceFolder}",
+            "sourceMaps": true,
+            "pathMapping": {
+                "/crashes/": "${workspaceFolder}/plugins/crashes/frontend/public/",
+                "/ab-testing/": "${workspaceFolder}/plugins/ab-testing/frontend/public/",
+                "/active_directory/": "${workspaceFolder}/plugins/active_directory/frontend/public/",
+                "/active_users/": "${workspaceFolder}/plugins/active_users/frontend/public/",
+                "/activity-map/": "${workspaceFolder}/plugins/activity-map/frontend/public/",
+                "/alerts/": "${workspaceFolder}/plugins/alerts/frontend/public/",
+                "/attribution/": "${workspaceFolder}/plugins/attribution/frontend/public/",
+                "/block/": "${workspaceFolder}/plugins/block/frontend/public/",
+                "/browser/": "${workspaceFolder}/plugins/browser/frontend/public/",
+                "/cognito/": "${workspaceFolder}/plugins/cognito/frontend/public/",
+                "/cohorts/": "${workspaceFolder}/plugins/cohorts/frontend/public/",
+                "/compare/": "${workspaceFolder}/plugins/compare/frontend/public/",
+                "/compliance-hub/": "${workspaceFolder}/plugins/compliance-hub/frontend/public/",
+                "/concurrent_users/": "${workspaceFolder}/plugins/concurrent_users/frontend/public/",
+                "/config-transfer/": "${workspaceFolder}/plugins/config-transfer/frontend/public/",
+                "/consolidate/": "${workspaceFolder}/plugins/consolidate/frontend/public/",
+                "/crash_symbolication/": "${workspaceFolder}/plugins/crash_symbolication/frontend/public/",
+                "/crashes-jira/": "${workspaceFolder}/plugins/crashes-jira/frontend/public/",
+                "/dashboards/": "${workspaceFolder}/plugins/dashboards/frontend/public/",
+                "/data-manager/": "${workspaceFolder}/plugins/data-manager/frontend/public/",
+                "/data_migration/": "${workspaceFolder}/plugins/data_migration/frontend/public/",
+                "/dbviewer/": "${workspaceFolder}/plugins/dbviewer/frontend/public/",
+                "/density/": "${workspaceFolder}/plugins/density/frontend/public/",
+                "/desktop/": "${workspaceFolder}/plugins/desktop/frontend/public/",
+                "/drill/": "${workspaceFolder}/plugins/drill/frontend/public/",
+                "/empty/": "${workspaceFolder}/plugins/empty/frontend/public/",
+                "/enterpriseinfo/": "${workspaceFolder}/plugins/enterpriseinfo/frontend/public/",
+                "/errorlogs/": "${workspaceFolder}/plugins/errorlogs/frontend/public/",
+                "/flows/": "${workspaceFolder}/plugins/flows/frontend/public/",
+                "/formulas/": "${workspaceFolder}/plugins/formulas/frontend/public/",
+                "/funnels/": "${workspaceFolder}/plugins/funnels/frontend/public/",
+                "/gateway_monitor/": "${workspaceFolder}/plugins/gateway_monitor/frontend/public/",
+                "/gateway_processor/": "${workspaceFolder}/plugins/gateway_processor/frontend/public/",
+                "/geo/": "${workspaceFolder}/plugins/geo/frontend/public/",
+                "/groups/": "${workspaceFolder}/plugins/groups/frontend/public/",
+                "/guides/": "${workspaceFolder}/plugins/guides/frontend/public/",
+                "/heatmaps/": "${workspaceFolder}/plugins/heatmaps/frontend/public/",
+                "/hooks/": "${workspaceFolder}/plugins/hooks/frontend/public/",
+                "/ip_store/": "${workspaceFolder}/plugins/ip_store/frontend/public/",
+                "/ldap/": "${workspaceFolder}/plugins/ldap/frontend/public/",
+                "/license/": "${workspaceFolder}/plugins/license/frontend/public/",
+                "license-manager/": "${workspaceFolder}/plugins/license-manager/frontend/public/",
+                "license-viewer/": "${workspaceFolder}/plugins/license-viewer/frontend/public/",
+                "/locale/": "${workspaceFolder}/plugins/locale/frontend/public/",
+                "/logger/": "${workspaceFolder}/plugins/logger/frontend/public/",
+                "/mobile/": "${workspaceFolder}/plugins/mobile/frontend/public/",
+                "/oidc/": "${workspaceFolder}/plugins/oidc/frontend/public/",
+                "/okta/": "${workspaceFolder}/plugins/okta/frontend/public/",
+                "/old-ui-compatibility/": "${workspaceFolder}/plugins/old-ui-compatibility/frontend/public/",
+                "/onboarding/": "${workspaceFolder}/plugins/onboarding/frontend/public/",
+                "/performance-monitoring/": "${workspaceFolder}/plugins/performance-monitoring/frontend/public/",
+                "/pluginDependencies.js/": "${workspaceFolder}/plugins/pluginDependencies.js/frontend/public/",
+                "/pluginManager.js/": "${workspaceFolder}/plugins/pluginManager.js/frontend/public/",
+                "/populator/": "${workspaceFolder}/plugins/populator/frontend/public/",
+                "/push/": "${workspaceFolder}/plugins/push/frontend/public/",
+                "/push_approver/": "${workspaceFolder}/plugins/push_approver/frontend/public/",
+                "/recaptcha/": "${workspaceFolder}/plugins/recaptcha/frontend/public/",
+                "/remote-config/": "${workspaceFolder}/plugins/remote-config/frontend/public/",
+                "/reports/": "${workspaceFolder}/plugins/reports/frontend/public/",
+                "/retention_segments/": "${workspaceFolder}/plugins/retention_segments/frontend/public/",
+                "/revenue/": "${workspaceFolder}/plugins/revenue/frontend/public/",
+                "/sdk/": "${workspaceFolder}/plugins/sdk/frontend/public/",
+                "/server-stats/": "${workspaceFolder}/plugins/server-stats/frontend/public/",
+                "/slipping-away-users/": "${workspaceFolder}/plugins/slipping-away-users/frontend/public/",
+                "/sources/": "${workspaceFolder}/plugins/sources/frontend/public/",
+                "/star-rating/": "${workspaceFolder}/plugins/star-rating/frontend/public/",
+                "/surveys/": "${workspaceFolder}/plugins/surveys/frontend/public/",
+                "/system-utility/": "${workspaceFolder}/plugins/system-utility/frontend/public/",
+                "/systemlogs/": "${workspaceFolder}/plugins/systemlogs/frontend/public/",
+                "/times-of-day/": "${workspaceFolder}/plugins/times-of-day/frontend/public/",
+                "/tracker/": "${workspaceFolder}/plugins/tracker/frontend/public/",
+                "/two-factor-auth/": "${workspaceFolder}/plugins/two-factor-auth/frontend/public/",
+                "/users/": "${workspaceFolder}/plugins/users/frontend/public/",
+                "/views/": "${workspaceFolder}/plugins/views/frontend/public/",
+                "/vue-example/": "${workspaceFolder}/plugins/vue-example/frontend/public/",
+                "/web/": "${workspaceFolder}/plugins/web/frontend/public/",
+                "/white-label/": "${workspaceFolder}/plugins/white-label/frontend/public/",
+                "/": "${workspaceFolder}/frontend/express/public"
+            },
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Server/Client/Browser",
+            "configurations": [
+                "Server",
+                "Client",
+                "Launch Chrome at localhost"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "pluginName",
+            "type": "promptString",
+            "description": "Enter the plugin name for running tests:",
+            "default": "drill"
+        }
+    ]
+}
