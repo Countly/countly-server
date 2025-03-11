@@ -1,4 +1,4 @@
-## Version 24.05.XX
+## Version 24.05.27
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
 
