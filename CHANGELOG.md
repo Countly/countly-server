@@ -1,8 +1,8 @@
-## Version 25.03.X
-
+## Version 25.03.1
 Fixes:
+- [crashes] Remove memory addresses from stack trace grouping
 - [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
- 
+
 Enterprise fixes:
 - [ab-testing] Fixed bug with variant user filtering
 - [license] Fixed issue with handling invalid date periods
