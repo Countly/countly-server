@@ -1,8 +1,9 @@
-## Version 25.03.X
 
+## Version 25.03.1
 Fixes:
+- [crashes] Remove memory addresses from stack trace grouping
 - [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
- 
+
 Enterprise fixes:
 - [ab-testing] Fixed bug with variant user filtering
 - [license] Fixed issue with handling invalid date periods
@@ -64,6 +65,8 @@ Dependencies:
 - Bump sass from 1.81.0 to 1.83.3
 - Bump tslib from 2.7.0 to 2.8.1
 
+=======
+>>>>>>> release.24.10
 ## Version 24.10.8
 Fixes:
 - [app-management] Unescaping HTML for created/updated application names
