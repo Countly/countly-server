@@ -1,10 +1,20 @@
-## Version 25.03.X
+## Version 25.03.1
+Fixes:
+- [crashes] Remove memory addresses from stack trace grouping
+- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+
 Enterprise fixes:
 - [ab-testing] Fixed bug with variant user filtering
 - [license] Fixed issue with handling invalid date periods
 
-Fixes:
-- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+Dependencies:
+- Bump axios from 1.7.4 to 1.8.2 in /plugins/hooks
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
+- Bump countly-sdk-web from 24.11.4 to 25.1.0
+- Bump form-data from 4.0.1 to 4.0.2
+- Bump moment-timezone from 0.5.46 to 0.5.47
+- Bump mongodb from 6.11.0 to 6.14.2
+- Bump sass from 1.83.4 to 1.85.1
 
 ## Version 25.03
 Features:
