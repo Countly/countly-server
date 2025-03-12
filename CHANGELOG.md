@@ -1,3 +1,7 @@
+##Version 25.03.XX
+Enterprise fixes:
+- [drill] Fixed issue with column naming in export according to event
+
 ## Version 25.03.1
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
