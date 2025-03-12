@@ -7,6 +7,7 @@ Fixes:
 Enterprise fixes:
 - [ab-testing] Fixed bug with variant user filtering
 - [license] Fixed issue with handling invalid date periods
+- [drill] Fixed issue with column naming in export according to event selection 
 
 ## Version 24.10.8
 Fixes:
