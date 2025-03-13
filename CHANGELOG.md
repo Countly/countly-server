@@ -1,6 +1,7 @@
 ## Version 24.05.27
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
+- [user-management] Prevent global admin from self-revoke and self-delete
 
 Enterprise Fixes:
 - [cohorts] Fixed issue with combining multiple cohorts
