@@ -956,6 +956,7 @@
                         },
                         animation: false
                     },
+                    symbol: 'none'
                 },
                 mergedNotes: [],
             };
