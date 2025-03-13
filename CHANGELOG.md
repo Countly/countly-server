@@ -1,6 +1,9 @@
-## Version 24.05.XX
+## Version 24.05.27
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
+
+Enterprise Fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
 
 ## Version 24.05.26
 Enterprise fixes:
