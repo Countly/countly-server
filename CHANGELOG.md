@@ -1,6 +1,7 @@
 ##Version 25.03.XX
 Enterprise fixes:
 - [drill] Fixed issue with column naming in export according to event
+- [drill] Fixed an issue with incorrect date range in report manager
 
 ## Version 25.03.1
 Fixes:
