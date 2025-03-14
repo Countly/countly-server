@@ -746,6 +746,16 @@
                             });
                             self.isLoading = false;
                             resolve(preparedEventList);
+                        }, function() {
+                            const events = countlyEvent.getEvents();
+                            preparedEventList[1].options = events.map(function(event) {
+                                return {label: countlyCommon.unescapeHtml(event.name), value: event.key};
+                            });
+                            preparedEventList = preparedEventList.filter(function(evt) {
+                                return !(self.blacklistedEvents.includes(evt.name));
+                            });
+                            self.isLoading = false;
+                            resolve(preparedEventList);
                         });
                     }
                 });
