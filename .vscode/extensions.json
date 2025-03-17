@@ -1,0 +1,15 @@
+{
+	"recommendations": [
+		"dbaeumer.vscode-eslint",
+		"github.vscode-pull-request-github",
+		"eamodio.gitlens",
+        "christian-kohler.npm-intellisense",
+        "christian-kohler.path-intellisense",
+        "ms-vscode-remote.remote-ssh",
+        "ms-vscode-remote.remote-ssh-edit",
+        "ms-vscode.remote-explorer",
+        "syler.sass-indented",
+        "vue.volar",
+        "usernamehw.vscode-error-lens"
+	]
+}
