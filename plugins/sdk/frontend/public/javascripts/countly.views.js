@@ -1,5 +1,36 @@
 /*global app, countlyVue, countlySDK, CV, countlyCommon*/
 (function() {
+    var SC_VER = 1; // check/update sdk/api/api.js for this
+    var v0_android = "22.09.4";
+    var v0_ios = "23.02.2";
+    var v1_android = "25.3.0";
+    var v1_ios = "25.3.0";
+    var v1_web = "25.3.0";
+    // Supporting SDK Versions for the SC options
+    var supportedSDKVersion = {
+        tracking: { android: v0_android, ios: v0_ios, web: v1_web },
+        networking: { android: v0_android, ios: v0_ios, web: v1_web },
+        crt: { android: v1_android, ios: v1_ios, web: v1_web },
+        vt: { android: v1_android, ios: v1_ios, web: v1_web },
+        st: { android: v1_android, ios: v1_ios, web: v1_web },
+        cet: { android: v1_android, ios: v1_ios, web: v1_web },
+        ecz: { android: v1_android, ios: v1_ios, web: v1_web },
+        cr: { android: v1_android, ios: v1_ios, web: v1_web },
+        sui: { android: v1_android, ios: v1_ios, web: v1_web },
+        eqs: { android: v1_android, ios: v1_ios, web: v1_web },
+        rqs: { android: v1_android, ios: v1_ios, web: v1_web },
+        czi: { android: v1_android, ios: v1_ios, web: v1_web },
+        dort: { android: v1_android, ios: v1_ios, web: v1_web },
+        scui: { android: v1_android, ios: v1_ios, web: v1_web },
+        lkl: { android: v1_android, ios: v1_ios, web: v1_web },
+        lvs: { android: v1_android, ios: v1_ios, web: v1_web },
+        lsv: { android: v1_android, ios: v1_ios, web: v1_web },
+        lbc: { android: v1_android, ios: v1_ios, web: v1_web },
+        ltlpt: { android: v1_android, ios: v1_ios, web: v1_web },
+        ltl: { android: v1_android, ios: v1_ios, web: v1_web },
+        lt: { android: v1_android, ios: v1_ios, web: v1_web }
+    };
+
     var FEATURE_NAME = "sdk";
     var SDK = countlyVue.views.create({
         template: CV.T('/sdk/templates/sdk-main.html'),
@@ -49,7 +80,10 @@
         template: CV.T('/sdk/templates/config.html'),
         created: function() {
             var self = this;
-            this.$store.dispatch("countlySDK/initialize").then(function() {
+            Promise.all([
+                this.$store.dispatch("countlySDK/initialize"),
+                this.$store.dispatch("countlySDK/fetchSDKStats") // fetch sdk version data for tooltips
+            ]).then(function () {
                 self.$store.dispatch("countlySDK/sdk/setTableLoading", false);
             });
         },
@@ -238,9 +272,14 @@
                     }
                 },
                 diff: [],
-                description: "This is experimental feature and not all SDKs and SDK versions yet support it. Refer to the SDK documentation for more information",
-                downloadDescription: "Download the current SDK configuration as a JSON file to provide to the SDK",
+                description: "This is experimental feature and not all SDKs and SDK versions yet support it. Refer to the SDK documentation for more information"
             };
+        },
+        mounted: function() {
+            var self = this;
+            this.$nextTick(function () {
+                self.checkSdkSupport();
+            });
         },
         methods: {
             onChange: function(key, value) {
@@ -264,7 +303,7 @@
             downloadConfig: function() {
                 var params = this.$store.getters["countlySDK/sdk/all"];
                 var data = {};
-                data.v = 1; // check sdk/api/api.js for version
+                data.v = SC_VER;
                 data.t = Date.now();
                 data.c = params || {};
                 var configData = JSON.stringify(data, null, 2);
@@ -318,6 +357,85 @@
                 for (var key in this.configs) {
                     this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
                 }
+            },
+            semverToNumber: function(version) {
+                const parts = version.split('.').map(Number);
+                return parts[0] * 1_000_000 + parts[1] * 1_000 + parts[2];
+            },
+            checkSdkSupport: function() {
+                for (var key in this.configs) {
+                    this.configs[key].tooltipMessage = "No SDK data present. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this Server Config option.";
+                    this.configs[key].tooltipClass = 'tooltip-neutral';
+                }
+
+                if (!this.$store.state.countlySDK ||
+                    !this.$store.state.countlySDK.stats ||
+                    !this.$store.state.countlySDK.stats.sdk ||
+                    !this.$store.state.countlySDK.stats.sdk.versions ||
+                    this.$store.state.countlySDK.stats.sdk.versions.length === 0) {
+                    setTimeout(() => {
+                        this.checkSdkSupport();
+                    }, 500);
+                    return;
+                }
+                
+                const availableData = this.$store.state.countlySDK.stats.sdk.versions;
+                const latestVersions = availableData.reduce((acc, sdk) => {
+                    if (!sdk.data || sdk.data.length === 0) {
+                        return acc;
+                    }
+                    acc[sdk.label] = sdk.data[0].sdk_version;
+                    return acc;
+                }, {});
+
+                const configKeyList = Object.keys(this.configs);
+                configKeyList.forEach(configKey => {
+                    const configSupportedVersions = supportedSDKVersion[configKey];
+                    if (!configSupportedVersions) {
+                        return;
+                    }
+
+                    var supportLevel = 0;
+                    var unsupportedList = [];
+                    if (latestVersions["javascript_native_web"]) {
+                        if (this.semverToNumber(latestVersions["javascript_native_web"]) >= this.semverToNumber(configSupportedVersions.web)) {
+                            supportLevel++;
+                        } else {
+                            unsupportedList.push("Web SDK");
+                        }
+                    }
+
+                    if (latestVersions["java-native-android"]) {
+                        if (this.semverToNumber(latestVersions["java-native-android"]) >= this.semverToNumber(configSupportedVersions.android)) {
+                            supportLevel++;
+                        } else {
+                            unsupportedList.push("Android SDK");
+                        }
+                    }
+
+                    if (latestVersions["objc-native-ios"]) {
+
+                        if (this.semverToNumber(latestVersions["objc-native-ios"]) >= this.semverToNumber(configSupportedVersions.ios)) {
+                            supportLevel++;
+                        } else {
+                            unsupportedList.push("iOS SDK");
+                        }
+                    }
+
+                    if (supportLevel === Object.keys(latestVersions).length) { // all correct version
+                        this.configs[configKey].tooltipMessage = 'You are using SDKs that support this option.';
+                        this.configs[configKey].tooltipClass = 'tooltip-success';
+                    } else if (unsupportedList.length > 0) { // some/all wrong version
+                        this.configs[configKey].tooltipMessage = 'Some SDKs you use do not support this option: ' + unsupportedList.join(', ') + '. Try upgrading to the latest version.';
+                        this.configs[configKey].tooltipClass = 'tooltip-warning';
+
+                    } else { // none supported
+                        this.configs[configKey].tooltipMessage = 'None of the SDKs you use support this option. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this Server Config option.';
+                        this.configs[configKey].tooltipClass = 'tooltip-danger';
+                    }
+
+                });    
+                this.$forceUpdate();
             }
         }
     });
@@ -775,4 +893,5 @@
         permission: FEATURE_NAME,
         vuex: []
     });
+
 })();
