@@ -7,7 +7,7 @@
 const pluginManager = require('../../../plugins/pluginManager.js');
 const DRY_RUN = true;
 const COLLECTION_NAMES = []; //"app_users12345", "app_users6789"
-const LAC_THRESHOLD =  ; //timestamp for which you want to delete 
+const LAC_THRESHOLD =  ; //timestamp for which you want to delete eg: 1730980706
 (async () => {
     try {
         const db = await pluginManager.dbConnection("countly");
