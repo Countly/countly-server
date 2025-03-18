@@ -109,8 +109,8 @@ plugins.connectToAllDatabases().then(function() {
         password_rotation: 3,
         password_autocomplete: true,
         robotstxt: "User-agent: *\nDisallow: /",
-        dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
-        api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
+        dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
+        api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
         dashboard_rate_limit_window: 60,
         dashboard_rate_limit_requests: 500,
         proxy_hostname: "",
@@ -370,10 +370,18 @@ plugins.connectToAllDatabases().then(function() {
                 }
 
                 const form = new formidable.IncomingForm(formidableOptions);
-                req.body = '';
-                req.on('data', (data) => {
-                    req.body += data;
-                });
+                if (/crash_symbols\/(add_symbol|upload_symbol)/.test(req.url)) {
+                    req.body = [];
+                    req.on('data', (data) => {
+                        req.body.push(data);
+                    });
+                }
+                else {
+                    req.body = '';
+                    req.on('data', (data) => {
+                        req.body += data;
+                    });
+                }
 
                 let multiFormData = false;
                 // Check if we have 'multipart/form-data'

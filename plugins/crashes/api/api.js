@@ -464,6 +464,9 @@ plugins.setConfigs("crashes", {
                         }
                         updateUser.hadAnyNonfatalCrash = report.ts;
                     }
+                    if ('app_version' in report && typeof report.app_version !== 'string') {
+                        report.app_version += '';
+                    }
                     let updateData = {$inc: {}};
                     updateData.$inc["data.crashes"] = 1;
                     if (Object.keys(updateUser).length) {

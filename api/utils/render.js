@@ -62,7 +62,12 @@ exports.renderView = function(options, cb) {
 
             var settings = {
                 headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                env: {
+                    //https://github.com/hardkoded/puppeteer-sharp/issues/2633
+                    XDG_CONFIG_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium"),
+                    XDG_CACHE_HOME: pathModule.resolve(__dirname, "../../.cache/chrome/tmp/.chromium")
+                },
+                args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors'],
                 ignoreHTTPSErrors: true,
                 userDataDir: pathModule.resolve(__dirname, "../../dump/chrome")
             };
@@ -118,8 +123,11 @@ exports.renderView = function(options, cb) {
                 };
 
                 page.setDefaultNavigationTimeout(updatedTimeout);
-
-                await page.goto(host + '/login/token/' + token + '?ssr=true');
+                const resp = await page.goto(host + '/login/token/' + token + '?ssr=true');
+                const status = resp?.status();
+                if (status !== 200) {
+                    throw new Error(`Failed to open login page. Status: ${status}`);
+                }
 
                 await page.waitForSelector('countly', {timeout: updatedTimeout});
 

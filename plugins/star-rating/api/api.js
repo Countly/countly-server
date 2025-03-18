@@ -722,9 +722,15 @@ function uploadFile(myfile, id, callback) {
                             if (!changes.targeting) {
                                 changes.targeting = {};
                             }
+                            if (!changes.targeting.user_segmentation) {
+                                changes.targeting.user_segmentation = '{"query":{},"queryText":""}';
+                            }
+                            if (!changes.targeting.steps) {
+                                changes.targeting.steps = '[]';
+                            }
                             changes.targeting.app_id = params.app_id + "";//has to be string
                             // eslint-disable-next-line
-                            createCohort(params, type, widgetId, changes.targeting, function(cohortId) { //create cohort using this 
+                            createCohort(params, type, widgetId, changes.targeting, function(cohortId) { //create cohort using this
                                 if (cohortId) {
                                     //update widget record to have this cohortId
                                     common.db.collection("feedback_widgets").findAndModify({ "_id": widgetId }, {}, { $set: { "cohortID": cohortId } }, function(/*err, widget*/) {
@@ -875,7 +881,7 @@ function uploadFile(myfile, id, callback) {
                     */
                     currEvent.segmentation.platform = currEvent.segmentation.platform || "undefined"; //because we have a lot of old data with undefined
                     currEvent.segmentation.rating = currEvent.segmentation.rating || "undefined";
-                    currEvent.segmentation.ratingSum = currEvent.segmentation.rating || 0;
+                    currEvent.segmentation.ratingSum = Number(currEvent.segmentation.rating) || 0;
                     currEvent.segmentation.widget_id = currEvent.segmentation.widget_id || "undefined";
                     currEvent.segmentation.app_version = currEvent.segmentation.app_version || "undefined";
                     currEvent.segmentation.platform_version_rate = currEvent.segmentation.platform + "**" + currEvent.segmentation.app_version + "**" + currEvent.segmentation.rating + "**" + currEvent.segmentation.widget_id + "**";

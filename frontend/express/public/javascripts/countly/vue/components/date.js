@@ -1138,6 +1138,9 @@
         },
         methods: {
             loadValue: function(value) {
+                if (!value) {
+                    return;
+                }
                 var changes = this.valueToInputState(value),
                     self = this;
                 changes.label = getRangeLabel(changes, this.type);

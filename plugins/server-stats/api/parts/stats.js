@@ -246,7 +246,7 @@ function fetchDatapoints(db, filter, options, callback) {
         if (options.monthlyBreakdown) {
             const dataPoints = result
                 .reduce((acc, current) => {
-                    let dp = current.e + current.s;
+                    let dp = (current.e || 0) + (current.s || 0);
 
                     if (/^\[CLY\]_consolidated/.test(current._id)) {
                         // do not count consolidated dp for countly hosted clients

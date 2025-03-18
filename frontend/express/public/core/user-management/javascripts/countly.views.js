@@ -118,6 +118,16 @@
                 switch (command) {
                 case "delete-user":
                     var self = this;
+
+                    // Check if user is trying to delete themselves
+                    if (index === countlyGlobal.member._id) {
+                        CountlyHelpers.notify({
+                            type: 'error',
+                            message: CV.i18n('management-users.cannot-delete-own-account')
+                        });
+                        return;
+                    }
+
                     CountlyHelpers.confirm(CV.i18n('management-users.this-will-delete-user'), "red", function(result) {
                         if (!result) {
                             CountlyHelpers.notify({
@@ -693,6 +703,15 @@
             // drawer event handlers
             onClose: function() {},
             onSubmit: function(submitted, done) {
+                if (submitted._id === countlyGlobal.member._id && countlyGlobal.member.global_admin && !submitted.global_admin) {
+                    CountlyHelpers.notify({
+                        message: CV.i18n('management-users.cannot-revoke-own-admin'),
+                        type: 'error'
+                    });
+                    done(CV.i18n('management-users.cannot-revoke-own-admin'));
+                    return;
+                }
+
                 var atLeastOneAppSelected = false;
 
                 for (var i = 0; i < submitted.permission._.u.length; i++) {
@@ -949,8 +968,20 @@
         watch: {
             'groups': function() {
                 if (this.groups.length > 0) {
-                    // Remove global admin role if user is assigned to any group
-                    this.$refs.userDrawer.editedObject.global_admin = false;
+                    // Remove global admin role if the assigned groups does not have global admin access
+                    var groupHasGlobalAdmin = false;
+
+                    this.groups.forEach(function(grpId) {
+                        var group = groupsModel.data().find(function(grp) {
+                            return grpId === grp._id;
+                        });
+
+                        if (group && group.global_admin === true) {
+                            groupHasGlobalAdmin = true;
+                        }
+                    });
+
+                    this.$refs.userDrawer.editedObject.global_admin = groupHasGlobalAdmin;
                 }
 
                 if (this.groups.length === 0) {

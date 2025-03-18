@@ -2090,21 +2090,27 @@ var pluginManager = function pluginManager() {
             return value;
         }
         else {
-            return !!myOb;
+            if (myOb === true) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
     }
     this.isAnyMasked = function() {
+        var result = false;
         if (masking && masking.apps) {
             for (var app in masking.apps) {
                 if (masking.apps[app]) {
-                    return hasAnyValueTrue(masking.apps[app].masking);
+                    result = result || hasAnyValueTrue(masking.apps[app]);
+                    if (result) {
+                        return true;
+                    }
                 }
             }
-            return false;
         }
-        else {
-            return false;
-        }
+        return result;
     };
 
     this.getMaskingSettings = function(appID) {
@@ -2223,7 +2229,58 @@ var pluginManager = function pluginManager() {
             }
         });
 
-        var findOptions = ["limit", "sort", "projection", "skip", "hint", "explain", "snapshot", "timeout", "tailable", "batchSize", "returnKey", "maxScan", "min", "max", "showDiskLoc", "comment", "raw", "promoteLongs", "promoteValues", "promoteBuffers", "readPreference", "partial", "maxTimeMS", "collation", "session", "omitReadPreference"];
+        var findOptions = [
+            "allowDiskUse",
+            "allowPartialResults",
+            "authdb",
+            "awaitData",
+            "batchSize",
+            "bsonRegExp",
+            "checkKeys",
+            "collation",
+            "comment",
+            "dbName",
+            "enableUtf8Validation",
+            "explain",
+            "fieldsAsRaw",
+            "hint",
+            "ignoreUndefined",
+            "let",
+            "limit",
+            "max",
+            "maxAwaitTimeMS",
+            "maxScan",
+            "maxTimeMS",
+            "min",
+            "noCursorTimeout",
+            "noResponse",
+            "omitReadPreference",
+            "oplogReplay",
+            "partial",
+            "projection",
+            "promoteBuffers",
+            "promoteLongs",
+            "promoteValues",
+            "raw",
+            "readConcern",
+            "readPreference",
+            "retryWrites",
+            "returnKey",
+            "serializeFunctions",
+            "session",
+            "showDiskLoc",
+            "showRecordId",
+            "singleBatch",
+            "skip",
+            "snapshot",
+            "sort",
+            "tailable",
+            "timeout",
+            "timeoutMode",
+            "timeoutMS",
+            "useBigInt64",
+            "willRetryWrite"
+        ];
 
         countlyDb._collection_cache = {};
         //overwrite some methods

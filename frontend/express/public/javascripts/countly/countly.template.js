@@ -1159,7 +1159,7 @@ var AppRouter = Backbone.Router.extend({
             }
         });
 
-        if (countlyAuth.validateRead('core')) {
+        if (countlyAuth.validateCreate('core')) {
             self.addSubMenu("management", {code: "longtasks", permission: "core", url: "#/manage/tasks", text: "sidebar.management.longtasks", priority: 10});
         }
 
@@ -3901,7 +3901,7 @@ Backbone.history.checkUrl = function() {
 
 Backbone.history.noHistory = function(hash) {
     if (history && history.replaceState) {
-        history.replaceState(undefined, undefined, hash);
+        history.replaceState(undefined, undefined, encodeURI(hash));
     }
     else {
         location.replace(hash);

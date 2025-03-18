@@ -367,7 +367,7 @@
                 display: inline-block;
                 width: 60px;
                 height: 60px;
-                background-image: url("../images/dashboard/graph-no-data.svg");
+                background-image: url("../../images/dashboard/graph-no-data.svg");
                 background-size: contain;
                 margin-right: 20px;
                 background-repeat: no-repeat;
@@ -4180,4 +4180,13 @@
           margin-left: 10px;
         }
     }		
+}
+
+.cly-event-select {
+    &__loading {
+        display: flex;
+        margin-top:0;
+        position: unset;
+        top:0;
+    }
 }

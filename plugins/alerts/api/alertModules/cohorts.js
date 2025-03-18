@@ -9,7 +9,7 @@ const commonLib = require("../parts/common-lib.js");
 const { ObjectId } = require('mongodb');
 
 module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
-    const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
+    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
         return done();
@@ -22,7 +22,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
-            await commonLib.trigger({ alert, app, metricValue, date });
+            await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
     else {
@@ -38,7 +38,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
             : change <= -compareValue;
 
         if (shouldTrigger) {
-            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
+            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
 

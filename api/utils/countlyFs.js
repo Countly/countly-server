@@ -68,7 +68,7 @@ countlyFs.gridfs = {};
     **/
     function beforeSave(category, filename, options, callback, done) {
         log.d("checking file", filename);
-        ob.getId(category, filename, function(err, res) {
+        ob.getId(category, filename, async function(err, res) {
             log.d("file state", filename, err, res);
             if (options.forceClean) {
                 ob.clearFile(category, filename, done);
@@ -80,15 +80,20 @@ countlyFs.gridfs = {};
                 else if (options.writeMode === "overwrite") {
                     var bucket = new GridFSBucket(db, { bucketName: category });
                     log.d("deleting file", filename);
-                    bucket.delete(res, function(error) {
-                        log.d("deleted", filename, error);
-                        if (!error) {
-                            setTimeout(done, 1);
-                        }
-                        else if (callback) {
-                            callback(error);
-                        }
-                    });
+                    let errHandle = null;
+                    try {
+                        await bucket.delete(res);
+                    }
+                    catch (error) {
+                        errHandle = error;
+                    }
+                    log.d("deleted", filename, errHandle);
+                    if (!errHandle) {
+                        setTimeout(done, 1);
+                    }
+                    else if (callback) {
+                        callback(errHandle);
+                    }
                 }
                 else {
                     if (callback) {
@@ -116,6 +121,7 @@ countlyFs.gridfs = {};
     * });
     */
     ob.getId = function(category, filename, callback) {
+        log.d("getId", category, filename);
         db.collection(category + ".files").findOne({ filename: filename }, {_id: 1}, function(err, res) {
             if (callback) {
                 callback(err, (res && res._id) ? res._id : false);
@@ -144,6 +150,7 @@ countlyFs.gridfs = {};
         if (!options) {
             options = {};
         }
+        log.d("exists", category, dest, options);
         var query = {};
         if (options.id) {
             query._id = options.id;
@@ -184,7 +191,7 @@ countlyFs.gridfs = {};
         if (!options) {
             options = {};
         }
-
+        log.d("saveFile", category, dest, source, options);
         var filename = dest.split(path.sep).pop();
         beforeSave(category, filename, options, callback, function() {
             save(category, filename, fs.createReadStream(source), options, callback);
@@ -218,6 +225,7 @@ countlyFs.gridfs = {};
         if (!options) {
             options = {};
         }
+        log.d("saveData", category, dest, typeof data, options);
         beforeSave(category, filename, options, callback, function() {
             var readStream = new Readable;
             readStream.push(data);
@@ -253,6 +261,7 @@ countlyFs.gridfs = {};
         if (!options) {
             options = {};
         }
+        log.d("saveStream", category, dest, typeof readStream, options);
         beforeSave(category, filename, options, callback, function() {
             save(category, filename, readStream, options, callback);
         });
@@ -271,7 +280,7 @@ countlyFs.gridfs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.rename = function(category, dest, source, options, callback) {
+    ob.rename = async function(category, dest, source, options, callback) {
         var newname = dest.split(path.sep).pop();
         var oldname = source.split(path.sep).pop();
         if (typeof options === "function") {
@@ -281,25 +290,35 @@ countlyFs.gridfs = {};
         if (!options) {
             options = {};
         }
-
+        log.d("rename", category, dest, source, options);
         if (options.id) {
             let bucket = new GridFSBucket(db, { bucketName: category });
-            bucket.rename(options.id, newname, function(error) {
-                if (callback) {
-                    callback(error);
-                }
-            });
+            let errHandle = null;
+            try {
+                await bucket.rename(options.id, newname);
+            }
+            catch (error) {
+                errHandle = error;
+            }
+            if (callback) {
+                callback(errHandle);
+            }
         }
         else {
-            db.collection(category + ".files").findOne({ filename: oldname }, {_id: 1}, function(err, res) {
+            db.collection(category + ".files").findOne({ filename: oldname }, {_id: 1}, async function(err, res) {
                 if (!err) {
                     if (res && res._id) {
                         let bucket = new GridFSBucket(db, { bucketName: category });
-                        bucket.rename(res._id, newname, function(error) {
-                            if (callback) {
-                                callback(error);
-                            }
-                        });
+                        let errHandle = null;
+                        try {
+                            await bucket.rename(res._id, newname);
+                        }
+                        catch (error) {
+                            errHandle = error;
+                        }
+                        if (callback) {
+                            callback(errHandle);
+                        }
                     }
                     else {
                         if (callback) {
@@ -337,7 +356,7 @@ countlyFs.gridfs = {};
         if (!options) {
             options = {};
         }
-
+        log.d("deleteFile", category, dest, options);
         if (options.id) {
             ob.deleteFileById(category, options.id, callback);
         }
@@ -372,13 +391,19 @@ countlyFs.gridfs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.deleteAll = function(category, dest, callback) {
+    ob.deleteAll = async function(category, dest, callback) {
+        log.d("deleteAll", category, dest);
         var bucket = new GridFSBucket(db, { bucketName: category });
-        bucket.drop(function(error) {
-            if (callback) {
-                callback(error);
-            }
-        });
+        let errHandle = null;
+        try {
+            await bucket.drop();
+        }
+        catch (error) {
+            errHandle = error;
+        }
+        if (callback) {
+            callback(errHandle);
+        }
     };
 
     /**
@@ -403,7 +428,7 @@ countlyFs.gridfs = {};
         if (!options) {
             options = {};
         }
-
+        log.d("getStream", category, dest, options);
         if (callback) {
             if (options.id) {
                 ob.getStreamById(category, options.id, callback);
@@ -436,7 +461,7 @@ countlyFs.gridfs = {};
         if (!options) {
             options = {};
         }
-
+        log.d("getData", category, dest, options);
         if (options.id) {
             ob.getDataById(category, options.id, callback);
         }
@@ -482,7 +507,7 @@ countlyFs.gridfs = {};
         if (!options) {
             options = {};
         }
-
+        log.d("getSize", category, dest, options);
         var query = {};
         if (options.id) {
             query._id = options.id;
@@ -517,7 +542,7 @@ countlyFs.gridfs = {};
         if (!options) {
             options = {};
         }
-
+        log.d("getStats", category, dest, options);
         var query = {};
         if (options.id) {
             query._id = options.id;
@@ -554,6 +579,7 @@ countlyFs.gridfs = {};
     * });
     */
     ob.getDataById = function(category, id, callback) {
+        log.d("getDataById", category, id);
         var bucket = new GridFSBucket(db, { bucketName: category });
         var downloadStream = bucket.openDownloadStream(id);
         downloadStream.on('error', function(error) {
@@ -585,6 +611,7 @@ countlyFs.gridfs = {};
     * });
     */
     ob.getStreamById = function(category, id, callback) {
+        log.d("getStreamById", category, id);
         if (callback) {
             var bucket = new GridFSBucket(db, { bucketName: category });
             callback(null, bucket.openDownloadStream(id));
@@ -601,13 +628,19 @@ countlyFs.gridfs = {};
     *   console.log("Finished", err);
     * });
     */
-    ob.deleteFileById = function(category, id, callback) {
+    ob.deleteFileById = async function(category, id, callback) {
+        log.d("deleteFileById", category, id);
         var bucket = new GridFSBucket(db, { bucketName: category });
-        bucket.delete(id, function(error) {
-            if (callback) {
-                callback(error);
-            }
-        });
+        let errHandle = null;
+        try {
+            await bucket.delete(id);
+        }
+        catch (error) {
+            errHandle = error;
+        }
+        if (callback) {
+            callback(errHandle);
+        }
     };
 
     /**
@@ -621,6 +654,7 @@ countlyFs.gridfs = {};
     * });
     */
     ob.clearFile = function(category, filename, callback) {
+        log.d("clearFile", category, filename);
         db.collection(category + ".files").deleteMany({ filename: filename }, function(err1, res1) {
             log.d("deleting files", category, { filename: filename }, err1, res1 && res1.result);
             db.collection(category + ".chunks").deleteMany({ files_id: filename }, function(err2, res2) {
@@ -637,6 +671,7 @@ countlyFs.gridfs = {};
      * @param {function} callback - function called when files found or query errored, providing error object as first param and a list of filename, creation date and size as secondas second
      */
     ob.listFiles = function(category, callback) {
+        log.d("listFiles", category);
         const bucket = new GridFSBucket(db, { bucketName: category });
         bucket.find().toArray()
             .then((records) => callback(

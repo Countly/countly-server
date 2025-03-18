@@ -209,7 +209,7 @@ function processDrillCollection(collection, seconds, callback) {
 
     function generateIterationList(z) {
         z = (start === 0 && z) ? z : start;
-        if (timeSpan === 0 && start === 0) {
+        if (timeSpan === 0 && z === 0) {
             listed.push({"collection": collection.collection, "db": collection.db, "start": 0, "end": end, "query": {"ts": {"$lt": end}}});
         }
         else if (timeSpan === 0) {
