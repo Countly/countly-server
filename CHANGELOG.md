@@ -1,9 +1,11 @@
 ## Version 25.03.2
+Fixes:
+- [user-management] Prevent global admin from self-revoke and self-delete
+
 Enterprise fixes:
 - [cohorts] Fixed issue with combining multiple cohorts
 - [drill] Fixed issue with column naming in export according to event
 - [drill] Fixed an issue with incorrect date range in report manager
-- [user-management] Prevent global admin from self-revoke and self-delete
 
 ## Version 25.03.1
 Fixes:
