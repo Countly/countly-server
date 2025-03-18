@@ -2,17 +2,12 @@
  *  Description: Deletes users from multiple app_users collections based on specified conditions
  *  Server: countly
  *  Path: $(countly dir)/bin/scripts
- *  Command: node delete_invalid_docs.js
+ *  Command: node delete_users.js
  */
-const { ObjectId } = require('mongodb');
 const pluginManager = require('../../../plugins/pluginManager.js');
 const DRY_RUN = true;
-const COLLECTION_NAMES = [
-    "app_users67fcd37eb89933fa76e0d448",
-    "app_users67912f91440130c1b2f3b4",
-    "app_users67837eb89933fa76e0f448"
-];
-const LAC_THRESHOLD = 1730980706;
+const COLLECTION_NAMES = []; //"app_users12345", "app_users6789"
+const LAC_THRESHOLD =  ; //timestamp for which you want to delete 
 (async () => {
     try {
         const db = await pluginManager.dbConnection("countly");
@@ -38,16 +33,19 @@ const LAC_THRESHOLD = 1730980706;
             if (count > 0) {
                 if (DRY_RUN) {
                     console.log(`DRY_RUN enabled. Would delete ${count} documents from collection: ${collectionName}`);
-                } else {
+                }
+                else {
                     const result = await db.collection(collectionName).deleteMany(query);
                     console.log(`Deleted ${result.deletedCount} documents from collection: ${collectionName}`);
                 }
-            } else {
+            }
+            else {
                 console.log(`No matching documents found in ${collectionName}.`);
             }
         }
         close(db);
-    } catch (err) {
+    }
+    catch (err) {
         console.error("Error:", err);
     }
 })();
