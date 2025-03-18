@@ -23,12 +23,14 @@
             <div
                 v-tooltip="inputTooltip"
                 class="cly-vue-content-builder-header__input-container"
+                data-test-id="content-header-input-container"
                 @click="onInputContainerClick"
             >
                 <el-input
                     v-model="localValue"
                     class="cly-vue-content-builder-header__input"
                     :class="{ 'cly-vue-content-builder-header__input--editing': !isReadonlyInput }"
+                    test-id="content-header-input"
                     :maxlength="valueMaxLength"
                     :readonly="isReadonlyInput"
                     @blur="onInputBlur"
@@ -66,6 +68,7 @@
         <el-button
             v-if="!hideSaveButton"
             class="cly-vue-content-builder-header__save-button"
+            data-test-id="content-header-save-button"
             :disabled="disableSaveButton"
             size="small"
             type="success"
