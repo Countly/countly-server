@@ -1,11 +1,12 @@
-
 ## Version 24.10.X
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
 - [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+- [user-management] Prevent global admin from self-revoke and self-delete
 
-Enterprise fixes:
+Enterprise Fixes:
 - [ab-testing] Fixed bug with variant user filtering
+- [cohorts] Fixed issue with combining multiple cohorts
 - [license] Fixed issue with handling invalid date periods
 
 ## Version 24.10.8
