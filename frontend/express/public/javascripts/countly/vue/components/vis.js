@@ -1367,6 +1367,7 @@
                         },
                         animation: false
                     },
+                    symbol: 'none'
                 },
             };
         },
