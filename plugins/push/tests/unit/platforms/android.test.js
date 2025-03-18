@@ -57,7 +57,9 @@ describe("Android sender", () => {
         uid: "1",
         token: "lorem",
         message: { data: { test: "message" } },
+        language: "default",
         platform: "a",
+        env: "p",
         credentials: credentials,
     }
     beforeEach(() => {

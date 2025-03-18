@@ -144,7 +144,7 @@ class FCM extends Splitter {
             const errors = {};
             /**
              * Get an error for given code & message, create it if it doesn't exist yet
-             * 
+             *
              * @param {number} code error code
              * @param {string} message error message
              * @returns {SendError} error instance
@@ -162,6 +162,16 @@ class FCM extends Splitter {
                     token,
                     ...content,
                 }));
+                if (content.data.message === "test") {
+                    const err = new SendError("Lorem ipsum dolor sit amet", ERROR.DATA_TOKEN_INVALID);
+                    err.addAffected(pushes[0]._id, one);
+                    this.send_push_error(err);
+                    return Promise.resolve();
+                }
+
+                console.log(JSON.stringify(content, null, 2));
+                this.send_results(pushes.map(p => p._id), one * pushes.length);
+                return Promise.resolve();
 
                 return this.firebaseMessaging
                     // EXAMPLE RESPONSE of sendEach

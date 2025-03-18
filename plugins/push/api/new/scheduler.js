@@ -5,13 +5,17 @@
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
  * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import("mongodb").Db} Db
+ * @typedef {import('./types/utils.ts').LogObject} LogObject
  */
 
 const { ObjectId } = require('mongodb');
 const queue = require("./lib/kafka.js"); // do not import by destructuring; it's being mocked in the tests
 const moment = require("moment");
 const allTZOffsets = require("./constants/all-tz-offsets.json");
+const { buildResultObject } = require('./lib/result.js');
 const schedulableTriggers = ["plain", "rec", "multi"];
+/** @type {LogObject} */
+const log = require('../../../../api/utils/common').log('push:scheduler');
 
 /**
  * Schedules the provided message to be sent on the next calculated date,
@@ -31,11 +35,14 @@ async function scheduleMessage(db, message) {
 
     /** @type {Date|undefined} */
     let scheduleTo;
-    let startFrom = await findStartDateForSearch(db, message._id, trigger.kind);
+    let startFrom = await findWhereToStartSearchFrom(db, message._id, trigger.kind);
 
     switch(trigger.kind) {
     case "plain":
-        if (trigger.start.getTime() > startFrom.getTime()) {
+        if (!message?.info?.scheduled) {
+            scheduleTo = new Date;
+        }
+        else if (trigger.start.getTime() > startFrom.getTime()) {
             scheduleTo = trigger.start;
         }
         break;
@@ -55,6 +62,7 @@ async function scheduleMessage(db, message) {
 
     // couldn't find a matching date
     if (!scheduleTo) {
+        log.w("Couldn't find a matchin trigger for the message", message._id);
         return;
     }
 
@@ -97,7 +105,8 @@ async function createSchedule(
         scheduledTo,
         status: "scheduled",
         timezoneAware,
-        schedulerTimezone
+        schedulerTimezone,
+        result: buildResultObject()
     };
     await db.collection("message_schedules").insertOne(messageSchedule);
     await createScheduleEvents(messageSchedule);
@@ -162,15 +171,15 @@ function tzOffsetAdjustedTime(date, offset, time) {
         .add(offset, "minutes")
         .toDate();
 }
+
 /**
  * @param {Db} db
  * @param {ObjectId} messageId
  * @param {string} triggerKind
  * @returns {Promise<Date>}
  */
-async function findStartDateForSearch(db, messageId, triggerKind) {
+async function findWhereToStartSearchFrom(db, messageId, triggerKind) {
     let startFrom = new Date;
-
     // find the last schedule date if this trigger is recurring or multi
     if (["rec", "multi"].includes(triggerKind)) {
         const lastSchedule = /** @type {Schedule[]} */(
@@ -186,9 +195,9 @@ async function findStartDateForSearch(db, messageId, triggerKind) {
             }
         }
     }
-
     return startFrom;
 }
+
 /**
  *
  * @param {RecurringTrigger} trigger
@@ -286,6 +295,7 @@ function findNextMatchForRecurring(trigger, startFrom = new Date) {
         }
     }
 }
+
 /**
  *
  * @param {MultiTrigger} trigger
@@ -314,5 +324,5 @@ module.exports = {
     tzOffsetAdjustedTime,
     findNextMatchForRecurring,
     findNextMatchForMulti,
-    findStartDateForSearch,
+    findWhereToStartSearchFrom,
 };

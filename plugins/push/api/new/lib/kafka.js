@@ -4,10 +4,14 @@
  * @typedef {import('kafkajs').Producer} Producer
  * @typedef {import('kafkajs').Admin} Admin
  * @typedef {import('../types/queue.ts').PushQueue} PushQueue
- * @typedef {import('../types/queue.ts').PushEvent} PushTicket
+ * @typedef {import('../types/queue.ts').PushEvent} PushEvent
+ * @typedef {import('../types/queue.ts').PushEventDTO} PushEventDTO
  * @typedef {import('../types/queue.ts').PushEventHandler} PushEventHandler
  * @typedef {import('../types/queue.ts').ScheduleEventHandler} ScheduleEventHandler
  * @typedef {import('../types/queue.ts').ResultEventHandler} ResultEventHandler
+ * @typedef {import('../types/utils.ts').LogObject} LogObject
+ * @typedef {import('../types/queue.ts').ResultEvent} ResultEvent
+ * @typedef {import('../types/queue.ts').ResultEventDTO} ResultEventDTO
  */
 const config = require("../constants/kafka-config.json");
 const kafkaJs = require("kafkajs"); // do not import by destructuring; it's being mocked in the tests
@@ -16,6 +20,10 @@ const {
     pushEventDTOToObject,
     resultEventDTOToObject
 } = require("./dto.js");
+/**
+ * @type {LogObject}
+ */
+const log = require('../../../../../api/utils/common').log('push:kafka');
 
 /** @type {Admin=} */
 let _admin;
@@ -23,12 +31,13 @@ let _admin;
 let _producer;
 /**
  * Connects to the kafka broker and creates the required topics
- * @param {PushEventHandler} onPushMessage function to call when there's a PushTicket in the PUSH_MESSAGES_TOPIC topic
- * @param {ScheduleEventHandler} onMessageSchedule function to call when there's a
+ * @param {PushEventHandler} onPushMessages function to call when there's a PushEvent in the PUSH_MESSAGES_TOPIC topic
+ * @param {ScheduleEventHandler} onMessageSchedules function to call when there's a
  * @param {ResultEventHandler} onMessageResults
+ * @param {Boolean=} isMaster
  * @returns {Promise<void>}
  */
-async function init(onPushMessage, onMessageSchedule, onMessageResults, isMaster = false) {
+async function init(onPushMessages, onMessageSchedules, onMessageResults, isMaster = false) {
     const kafka = new kafkaJs.Kafka({
         clientId: config.clientId,
         brokers: config.brokers,
@@ -46,36 +55,46 @@ async function init(onPushMessage, onMessageSchedule, onMessageResults, isMaster
     });
     await _producer.connect();
 
-    const consumer = kafka.consumer({ groupId: config.consumerGroupId });
+    const consumer = kafka.consumer({
+        groupId: config.consumerGroupId,
+        allowAutoTopicCreation: false,
+    });
     await consumer.connect();
     await consumer.subscribe({
-        topics: Object.values(config.topics).map(i => i.name),
-        fromBeginning: true
+        topics: Object.values(config.topics)
+            .map(i => i.name)
+            .filter(name => name !== config.topics.SCHEDULE.name),
+        fromBeginning: true,
     });
     await consumer.run({
-        eachMessage: async({
-            topic,
-            // partition: _partition,
-            message: { value }
+        eachBatch: async({
+            batch: {
+                topic,
+                messages,
+            },
         }) => {
             try {
-                if (!value) {
-                    throw new Error("Message with empty payload");
-                }
-                const payload = JSON.parse(value.toString("utf8"));
-
+                log.i("Received", messages.length, "message in topic", topic);
+                const parsed = messages
+                    .map(
+                        ({ value }) => value
+                            ? JSON.parse(value.toString("utf8"))
+                            : null
+                    )
+                    .filter(value => !!value);
                 switch (topic) {
                 case config.topics.SEND.name:
-                    await onPushMessage(pushEventDTOToObject(payload));
+                    await onPushMessages(parsed.map(pushEventDTOToObject));
                     break;
                 case config.topics.COMPOSE.name:
-                    await onMessageSchedule(scheduleEventDTOToObject(payload));
+                    await onMessageSchedules(parsed.map(scheduleEventDTOToObject));
+                    break;
+                case config.topics.RESULT.name:
+                    await onMessageResults(parsed.map(resultEventDTOToObject));
                     break;
                 }
-            }
-            catch (err) {
-                console.error(err);
-                // TODO: log the error
+            } catch(err) {
+                log.e("Error while consuming. topic:", topic, err);
             }
         }
     });
@@ -99,7 +118,7 @@ async function sendScheduleEvent(scheduleEvent) {
                 value: JSON.stringify(scheduleEvent),
                 headers: {
                     "scheduler-epoch": String(Math.round(scheduleTime / 1000)),
-                    "scheduler-target-topic": config.topics.SEND.name,
+                    "scheduler-target-topic": config.topics.COMPOSE.name,
                     // "scheduler-target-key": "job-key"
                 },
                 // TODO: find out why this is required. normally it should distribute
@@ -114,7 +133,7 @@ async function sendScheduleEvent(scheduleEvent) {
 
 /**
  *
- * @param {PushTicket} push
+ * @param {PushEvent} push
  */
 async function sendPushEvent(push) {
     if (!_producer) {
@@ -125,6 +144,21 @@ async function sendPushEvent(push) {
         messages: [{
             value : JSON.stringify(push)
         }]
+    });
+}
+
+/**
+ * @param {ResultEvent[]} results
+ */
+async function sendResultEvents(results) {
+    if (!_producer) {
+        throw new Error("Producer is not initialized");
+    }
+    await _producer.send({
+        topic: config.topics.RESULT.name,
+        messages: results.map(result => ({
+            value: JSON.stringify(result)
+        }))
     });
 }
 
@@ -164,5 +198,6 @@ async function createTopics() {
 module.exports = /** @type {PushQueue} */({
     sendPushEvent,
     sendScheduleEvent,
+    sendResultEvents,
     init,
 });

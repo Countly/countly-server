@@ -20,7 +20,15 @@ module.exports = {
             scheduledTo: new Date,
             timezoneAware: true,
             schedulerTimezone: 180,
-            status: "scheduled"
+            status: "scheduled",
+            result: {
+                actioned: 0,
+                total: 0,
+                errored: 0,
+                sent: 0,
+                errors: {},
+                subs: {}
+            }
         }
     },
     /**
@@ -159,26 +167,25 @@ module.exports = {
             ],
             result: {
                 total: 1,
-                processed: 1,
+                actioned: 0,
                 sent: 1,
-                lastRuns: [
-                    {
-                        start: new Date,
-                        processed: 1,
-                        errored: 0,
-                        ended: new Date
-                    }
-                ],
+                errored: 0,
+                errors: {},
                 subs: {
                     a: {
                         total: 1,
-                        processed: 1,
+                        actioned: 0,
                         sent: 1,
+                        errored: 0,
+                        errors: {},
                         subs: {
                             en: {
                                 total: 1,
-                                processed: 1,
-                                sent: 1
+                                sent: 1,
+                                actioned: 0,
+                                errored: 0,
+                                errors: {},
+                                subs: {}
                             }
                         }
                     }

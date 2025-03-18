@@ -1,12 +1,16 @@
-const { URL } = require("url");
+/**
+ * @typedef {import("../types/proxy").ProxyConfiguration} ProxyConfiguration
+ * @typedef {import("../types/proxy").ProxyConfigurationKey} ProxyConfigurationKey
+ * @typedef {import("../types/credentials").APNP12Credentials} APNP12Credentials
+ * @typedef {import("../types/credentials").TLSKeyPair} TLSKeyPair
+ */
 
-module.exports = {
-    buildProxyUrl
-}
+const { URL } = require("url");
+const nodeForge = require("node-forge");
 
 /**
- * 
- * @param {import("../types/proxy").ProxyConfiguration} config 
+ *
+ * @param {ProxyConfiguration} config
  * @returns {URL}
  */
 function buildProxyUrl(config) {
@@ -20,4 +24,43 @@ function buildProxyUrl(config) {
         proxyUrl.password = config.pass;
     }
     return proxyUrl;
+}
+/** @type {ProxyConfigurationKey[]} */
+const KEY_ORDER = ["auth", "host", "pass", "port", "user"];
+/**
+ * @param {ProxyConfiguration=} config
+ * @returns {string}
+ */
+function serializeProxyConfig(config) {
+    return config
+        ? KEY_ORDER.map(key => config[key]).join("-")
+        : "undefined"
+}
+/**
+ * @param {APNP12Credentials} credentials
+ * @returns {TLSKeyPair} PEM strings
+ */
+function parseKeyPair(credentials) {
+    const buffer = nodeForge.util.decode64(credentials.cert);
+    const asn1 = nodeForge.asn1.fromDer(buffer);
+    const p12 = nodeForge.pkcs12.pkcs12FromAsn1(asn1, false, credentials.secret);
+    const cert = p12.getBags({
+        bagType: nodeForge.pki.oids.certBag
+    })?.[nodeForge.pki.oids.certBag]?.[0];
+    const pk = p12.getBags({
+        bagType: nodeForge.pki.oids.pkcs8ShroudedKeyBag
+    })?.[nodeForge.pki.oids.pkcs8ShroudedKeyBag]?.[0];
+    if (!cert || !pk || !cert.cert || !pk.key) {
+        throw new Error('Failed to get TLS key pairs from crededentials');
+    }
+    return {
+        cert: nodeForge.pki.certificateToPem(cert.cert),
+        key: nodeForge.pki.privateKeyToPem(pk.key)
+    };
+}
+
+module.exports = {
+    buildProxyUrl,
+    serializeProxyConfig,
+    parseKeyPair
 }

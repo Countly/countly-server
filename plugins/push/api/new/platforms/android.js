@@ -1,40 +1,68 @@
-// TODO: update firebase-admin and make it work with http2
 /**
- * @typedef {import("../types/credentials").FCMCredentials} FCMCredentials
+ * @typedef {import("../types/queue.js").PushEvent} PushEvent
+ * @typedef {import("../types/proxy.js").ProxyConfiguration} ProxyConfiguration
+ * @typedef {import("../types/proxy.js").ProxyConfigurationKey} ProxyConfigurationKey
+ * @typedef {{ proxy?: ProxyConfiguration, serviceAccount: string }} FirebaseAppConfiguration
  */
 const firebaseAdmin = require("firebase-admin");
 const { HttpsProxyAgent } = require("https-proxy-agent");
-const { buildProxyUrl } = require("../lib/utils.js");
+const { buildProxyUrl, serializeProxyConfig } = require("../lib/utils.js");
+const { PROXY_CONNECTION_TIMEOUT } = require("../constants/proxy-config.json");
+
+/** @type {WeakMap<firebaseAdmin.app.App, ProxyConfiguration>} */
+const appProxyMap = new WeakMap();
+/**
+ * Checks weather a previously used proxy configuration for an app is updated or not
+ * @param {firebaseAdmin.app.App} app - Previously created FCM application object
+ * @param {ProxyConfiguration=} newProxy - Proxy configuration for the given PushEvent
+ * @returns {boolean} true if proxy configuration changed
+ */
+function isProxyConfigurationUpdated(app, newProxy) {
+    const oldSerialized = serializeProxyConfig(appProxyMap.get(app));
+    const newSerialized = serializeProxyConfig(newProxy);
+    return oldSerialized !== newSerialized;
+}
 
 /**
- * @param {import("../types/queue.js").PushEvent} pushEvent
+ * @param {PushEvent} pushEvent
  * @returns {Promise<string>}
  */
 async function send(pushEvent) {
-    const creds = /** @type {FCMCredentials} */(pushEvent.credentials);
+    const creds = /** @type {import("../types/credentials").FCMCredentials} */(
+        pushEvent.credentials
+    );
     const appName = creds.hash;
 
     let firebaseApp = firebaseAdmin.apps.find(
         app => app ? app.name === appName : false
     );
 
-    if (!firebaseApp) {
-        /** @type {HttpsProxyAgent<"proxy-address">=} */
-        let agent = undefined;
+    // delete the old application if proxy configuration is updated
+    if (firebaseApp) {
+        if (isProxyConfigurationUpdated(firebaseApp, pushEvent.proxy)) {
+            appProxyMap.delete(firebaseApp);
+            await firebaseApp.delete();
+            firebaseApp = undefined;
+        }
+    }
 
+    // create the application instance
+    if (!firebaseApp) {
+        const buffer = Buffer.from(
+            creds.serviceAccountFile.replace(/^[^,]+,/, ""),
+            "base64"
+        );
+        const serviceAccountObject = JSON.parse(buffer.toString("utf8"));
+
+        /** @type {HttpsProxyAgent<"proxy-address">=} */
+        let agent;
         if (pushEvent.proxy) {
             agent = new HttpsProxyAgent(buildProxyUrl(pushEvent.proxy), {
                 keepAlive: true,
-                timeout: 5000,
+                timeout: PROXY_CONNECTION_TIMEOUT,
                 rejectUnauthorized: pushEvent.proxy.auth,
-                // TODO: this may be required for http2
-                // ALPNProtocols: pushEvent.proxy.http2 ? ["h2"] : undefined,
             });
         }
-        const serviceAccountObject = JSON.parse(
-            Buffer.from(creds.serviceAccountFile.replace(/^[^,]+,/, ""), "base64")
-                .toString()
-        );
 
         firebaseApp = firebaseAdmin.initializeApp({
             httpAgent: agent,
@@ -43,6 +71,11 @@ async function send(pushEvent) {
                 agent
             ),
         }, appName);
+
+        // save proxy object to track its state
+        if (pushEvent.proxy) {
+            appProxyMap.set(firebaseApp, pushEvent.proxy);
+        }
     }
 
     const messageId = await firebaseApp.messaging().send({

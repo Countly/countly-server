@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { SomeCredential } from "./credentials";
 import { ProxyConfiguration } from "./proxy";
-import { PlatformKeys } from "./message";
+import { PlatformKeys, PlatformEnvKeys } from "./message";
 
 export interface ScheduleEvent {
     appId: ObjectId;
@@ -20,12 +20,20 @@ export interface PushEvent {
     token: string;
     message: any;
     platform: PlatformKeys;
+    env: PlatformEnvKeys;
+    language: string;
     credentials: SomeCredential;
     proxy?: ProxyConfiguration;
 }
 export interface ResultEvent extends PushEvent {
-    result: any;
-    error?: string;
+    response?: any;
+    error?: ResultError;
+}
+
+export interface ResultError {
+    name: string;
+    message: string;
+    stack: string;
 }
 
 type DTO<T> = { [P in keyof T]: T[P] extends ObjectId|Date ? string : T[P] }
@@ -34,8 +42,8 @@ export type CredentialsDTO = DTO<SomeCredential>;
 export type PushEventDTO = Omit<DTO<PushEvent>,"credentials"> & { credentials: CredentialsDTO };
 export type ResultEventDTO = Omit<DTO<ResultEvent>,"credentials"> & { credentials: CredentialsDTO };
 
-export type PushEventHandler = (push: PushEvent) => Promise<void>;
-export type ScheduleEventHandler = (schedule: ScheduleEvent) => Promise<void>;
+export type PushEventHandler = (pushes: PushEvent[]) => Promise<void>;
+export type ScheduleEventHandler = (schedules: ScheduleEvent[]) => Promise<void>;
 export type ResultEventHandler = (results: ResultEvent[]) => Promise<void>;
 
 export interface PushQueue {
@@ -47,5 +55,5 @@ export interface PushQueue {
     ): Promise<void>;
     sendScheduleEvent(scheduleEvent: ScheduleEvent): Promise<void>;
     sendPushEvent(pushEvent: PushEvent): Promise<void>;
-    sendResultEvent(resultEvent: ResultEvent): Promise<void>;
+    sendResultEvents(resultEvents: ResultEvent[]): Promise<void>;
 }

@@ -61,7 +61,7 @@ function credentialsDTOToObject(credentialsDTO) {
 
 /**
  * @param {ResultEventDTO} resultEvent
- * @returns {PushEvent}
+ * @returns {ResultEvent}
  */
 function resultEventDTOToObject(resultEvent) {
     return {

@@ -3,6 +3,7 @@
  * @typedef {import('./types/queue.ts').PushEvent} PushEvent
  * @typedef {import('./types/message.ts').Message} Message
  * @typedef {import('./types/message.ts').PlatformKeys} PlatformKeys
+ * @typedef {import('./types/message.ts').PlatformEnvKeys} PlatformEnvKeys
  * @typedef {import('./types/message.ts').PlatformCombinedKeys} PlatformCombinedKeys
  * @typedef {import('./types/credentials.ts').SomeCredential} SomeCredential
  * @typedef {import('./types/proxy.ts').ProxyConfiguration} ProxyConfiguration
@@ -10,24 +11,43 @@
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
  * @typedef {import('./types/user.ts').User} User
  * @typedef {import('stream').Readable} Readable
- * @typedef {import('./types/utils.js').LogObject} LogObject
+ * @typedef {import('./types/utils.ts').LogObject} LogObject
  */
 
 const { ObjectId } = require('mongodb');
 const queue = require("./lib/kafka.js"); // do not import by destructuring; it's being mocked in the tests
 const { createTemplate, getUserPropertiesUsedInsideMessage } = require("./lib/template.js");
 const PLATFORM_KEYMAP = require("./constants/platform-keymap.json");
-
-/**
- * @type {LogObject}
- */
+const { buildResultObject, increaseResultStat, updateScheduleResults} = require("./lib/result.js");
+/** @type {LogObject} */
 const log = require('../../../../api/utils/common').log('push:composer');
 
 /**
  *
  * @param {MongoDb} db
+ * @param {ScheduleEvent[]} scheduleEvents
+ * @returns {Promise<number>}
+ */
+async function composeAllScheduledPushes(db, scheduleEvents) {
+    let totalNumberOfPushes = 0;
+    for (let i = 0; i < scheduleEvents.length; i++) {
+        const scheduleEvent = scheduleEvents[i];
+        try {
+            const result = await composeScheduledPushes(db, scheduleEvent)
+            totalNumberOfPushes += result;
+        }
+        catch(err) {
+            // TODO: handle error as result
+        }
+    }
+    return totalNumberOfPushes;
+}
+
+/**
+ *
+ * @param {MongoDb} db
  * @param {ScheduleEvent} scheduleEvent
- * @returns {Promise<number|undefined>}
+ * @returns {Promise<number>}
  */
 async function composeScheduledPushes(db, scheduleEvent) {
     const messageId = scheduleEvent.messageId;
@@ -38,9 +58,9 @@ async function composeScheduledPushes(db, scheduleEvent) {
         await db.collection("message_schedules").deleteMany({ messageId });
         log.i("Message " + messageId.toString()
             + " was deleted. Cleaning up all schedules for this message.");
-        return;
+        return 0;
     }
-    const scheduleDoc =/** @type {Schedule|null} */(
+    const scheduleDoc =/** @type {Schedule?} */(
         await db.collection("message_schedules").findOne({
             _id: scheduleEvent.scheduleId,
             status: "scheduled"
@@ -50,7 +70,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
         log.i("Schedule "+ scheduleEvent.scheduleId.toString()
             + " for message " + messageId.toString()
             + " was deleted or canceled.");
-        return;
+        return 0;
     }
 
     // TODO: other filters to aggregation pipeline (check PusherPopper.steps)
@@ -67,7 +87,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
         }
     }
 
-    let numberOfPushes = 0;
+    const result = buildResultObject();
     for await (let user of stream) {
         let tokenObj = user?.tk?.[0]?.tk;
         if (!tokenObj) {
@@ -76,9 +96,11 @@ async function composeScheduledPushes(db, scheduleEvent) {
         for (let pf in tokenObj) {
             // casts...
             const platform = /** @type {PlatformKeys} */(pf[0]);
+            const env = /** @type {PlatformEnvKeys} */(pf[1]);
             const token = /** @type {string} */(
                 tokenObj[/** @type {PlatformCombinedKeys} */(pf)]
             );
+            const language = user.la ?? "default";
 
             /** @type {PushEvent} */
             const push = {
@@ -88,16 +110,23 @@ async function composeScheduledPushes(db, scheduleEvent) {
                 token,
                 uid: user.uid,
                 platform,
+                env,
+                language,
                 credentials: creds[platform],
                 message: compileTemplate(platform, user),
                 proxy,
             };
 
             await queue.sendPushEvent(push);
-            numberOfPushes++;
+
+            // update results
+            increaseResultStat(result, platform, language, "total");
         }
     }
-    return numberOfPushes;
+
+    // update the message document
+    await updateScheduleResults(db, scheduleEvent.scheduleId, result);
+    return result.total;
 }
 
 /**
@@ -178,6 +207,7 @@ async function loadCredentials(db, appId) {
     }
     return creds;
 }
+
 /**
  * @param {MongoDb} db
  * @returns {Promise<ProxyConfiguration|undefined>}
@@ -194,9 +224,10 @@ async function loadProxyConfiguration(db) {
 }
 
 module.exports = {
+    composeAllScheduledPushes,
     composeScheduledPushes,
     loadProxyConfiguration,
     loadCredentials,
     getUserStream,
-    userPropsProjection
+    userPropsProjection,
 }

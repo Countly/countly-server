@@ -260,7 +260,7 @@ describe("Push composer", async () => {
                 _id: scheduleEvent.scheduleId,
                 status: "scheduled"
             }));
-            assert(numberOfPushes === undefined);
+            assert(numberOfPushes === 0);
         });
         it("should throw if app is not configured for the targeted platform", async () => {
             const scheduleEvent = mockData.scheduleEvent();
@@ -323,8 +323,10 @@ describe("Push composer", async () => {
                 token: "",
                 uid: "",
                 platform: "a",
+                env: "p",
                 credentials: creds,
-                proxy: undefined
+                proxy: undefined,
+                language: "en"
             };
             /** @type {User[]} */
             const users = [

@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { Result } from "./message";
 
 export interface Schedule {
     _id: ObjectId;
@@ -10,4 +11,5 @@ export interface Schedule {
     timezoneAware: boolean;
     schedulerTimezone?: number;
     status: "scheduled"|"started"|"finished"|"canceled";
+    result: Result;
 }

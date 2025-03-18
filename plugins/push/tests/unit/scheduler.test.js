@@ -18,12 +18,13 @@ const {
     createScheduleEvents,
     createSchedule,
     scheduleMessage,
-    findStartDateForSearch
+    findWhereToStartSearchFrom
 } = require("../../api/new/scheduler.js");
 const queue = require("../../api/new/lib/kafka.js");
 const { mockMongoDb } = require("./mock/mongo.js");
 const timezones = require("../../api/new/constants/all-tz-offsets.json");
 const mockData = require("./mock/data.js");
+const { buildResultObject } = require("../../api/new/lib/result.js");
 
 describe("Scheduler", () => {
     /** @type {sinon.SinonStub} */
@@ -80,7 +81,7 @@ describe("Scheduler", () => {
         const messageId = new ObjectId;
         it("should return Date.now when the message trigger is plain kind", async () => {
             const before = Date.now();
-            const result = await findStartDateForSearch(
+            const result = await findWhereToStartSearchFrom(
                 db,
                 messageId,
                 mockData.plainTrigger().kind
@@ -92,7 +93,7 @@ describe("Scheduler", () => {
         it("should return Date.now when the message is being scheduled for the first time", async () => {
             findCursor.toArray.resolves([]);
             const before = Date.now();
-            const result = await findStartDateForSearch(
+            const result = await findWhereToStartSearchFrom(
                 db,
                 messageId,
                 mockData.dailyRecurringTrigger().kind
@@ -110,7 +111,7 @@ describe("Scheduler", () => {
             const scheduledTo = new Date(Date.now() - 1000);
             const before = Date.now();
             findCursor.toArray.resolves([ { scheduledTo } ]);
-            const result = await findStartDateForSearch(
+            const result = await findWhereToStartSearchFrom(
                 db,
                 messageId,
                 mockData.dailyRecurringTrigger().kind
@@ -127,7 +128,7 @@ describe("Scheduler", () => {
         it("should return the last schedule date from database when it was already scheduled for a future date", async () => {
             const scheduledTo = new Date(Date.now() + 1000);
             findCursor.toArray.resolves([ { scheduledTo } ]);
-            const result = await findStartDateForSearch(
+            const result = await findWhereToStartSearchFrom(
                 db,
                 messageId,
                 mockData.dailyRecurringTrigger().kind
@@ -335,6 +336,7 @@ describe("Scheduler", () => {
                 status: "scheduled",
                 timezoneAware: false,
                 schedulerTimezone: undefined,
+                result: buildResultObject()
             }));
         });
     });

@@ -33,11 +33,15 @@ describe("Kafka queue", () => {
             }));
             assert(kafkaMock.ProducerInstance.connect.called);
             assert(kafkaMock.KafkaInstance.consumer.calledWith({
-                groupId: kafkaConfig.consumerGroupId
+                groupId: kafkaConfig.consumerGroupId,
+                allowAutoTopicCreation: false
             }));
             assert(kafkaMock.ConsumerInstance.connect.called)
+            const topics = Object.values(kafkaConfig.topics)
+                .filter(i => i.name !== kafkaConfig.topics.SCHEDULE.name)
+                .map(i => i.name);
             assert(kafkaMock.ConsumerInstance.subscribe.calledWith({
-                topics: Object.values(kafkaConfig.topics).map(i => i.name),
+                topics,
                 fromBeginning: true
             }));
             assert(kafkaMock.ConsumerInstance.run.called);
@@ -58,6 +62,8 @@ describe("Kafka queue", () => {
                     token: "token",
                     message: "message",
                     platform: "i",
+                    env: "p",
+                    language: "en",
                     credentials: {
                         _id: new ObjectId,
                         serviceAccountFile: "service account",
@@ -73,15 +79,15 @@ describe("Kafka queue", () => {
                     scheduledTo: new Date
                 };
                 /** @type {PushEventHandler} */
-                async function pushEventHandler(event) {
+                async function pushEventHandler(events) {
                     try {
-                        assert(event.appId instanceof ObjectId);
-                        assert(event.messageId instanceof ObjectId);
-                        assert(event.scheduleId instanceof ObjectId);
+                        assert(events[0].appId instanceof ObjectId);
+                        assert(events[0].messageId instanceof ObjectId);
+                        assert(events[0].scheduleId instanceof ObjectId);
 
                         assert.deepStrictEqual(
-                            JSON.parse(JSON.stringify(pushEvent)),
-                            JSON.parse(JSON.stringify(event))
+                            JSON.parse(JSON.stringify([pushEvent])),
+                            JSON.parse(JSON.stringify(events))
                         );
                         --noResolves || res(undefined);
                     }
@@ -90,16 +96,16 @@ describe("Kafka queue", () => {
                     }
                 }
                 /** @type {ScheduleEventHandler} */
-                async function scheduleEventHandler(event) {
+                async function scheduleEventHandler(events) {
                     try {
-                        assert(event.appId instanceof ObjectId);
-                        assert(event.messageId instanceof ObjectId);
-                        assert(event.scheduleId instanceof ObjectId);
-                        assert(event.scheduledTo instanceof Date);
+                        assert(events[0].appId instanceof ObjectId);
+                        assert(events[0].messageId instanceof ObjectId);
+                        assert(events[0].scheduleId instanceof ObjectId);
+                        assert(events[0].scheduledTo instanceof Date);
 
                         assert.deepStrictEqual(
-                            JSON.parse(JSON.stringify(scheduleEvent)),
-                            JSON.parse(JSON.stringify(event))
+                            JSON.parse(JSON.stringify([scheduleEvent])),
+                            JSON.parse(JSON.stringify(events))
                         );
                         --noResolves || res(undefined);
                     }
@@ -108,14 +114,18 @@ describe("Kafka queue", () => {
                     }
                 }
                 await init(pushEventHandler, scheduleEventHandler, async () => {}, false);
-                const { eachMessage } = kafkaMock.ConsumerInstance.run.firstCall.firstArg;
-                await eachMessage({
-                    topic: kafkaConfig.topics.SEND.name,
-                    message: { value: JSON.stringify(pushEvent) }
+                const { eachBatch } = kafkaMock.ConsumerInstance.run.firstCall.firstArg;
+                await eachBatch({
+                    batch: {
+                        topic: kafkaConfig.topics.SEND.name,
+                        messages: [{ value: JSON.stringify(pushEvent) }]
+                    }
                 });
-                await eachMessage({
-                    topic: kafkaConfig.topics.COMPOSE.name,
-                    message: { value: JSON.stringify(scheduleEvent) }
+                await eachBatch({
+                    batch: {
+                        topic: kafkaConfig.topics.COMPOSE.name,
+                        messages: [{ value: JSON.stringify(scheduleEvent) }]
+                    }
                 });
             });
         });
@@ -135,6 +145,8 @@ describe("Kafka queue", () => {
                 token: "token",
                 message: "message",
                 platform: "i",
+                env: "p",
+                language: "en",
                 credentials: {
                     _id: new ObjectId,
                     serviceAccountFile: "service account",
@@ -183,7 +195,7 @@ describe("Kafka queue", () => {
                         value: JSON.stringify(scheduleEvent),
                         headers: {
                             "scheduler-epoch": String(Math.round(scheduleEvent.scheduledTo.getTime() / 1000)),
-                            "scheduler-target-topic": kafkaConfig.topics.SEND.name,
+                            "scheduler-target-topic": kafkaConfig.topics.COMPOSE.name,
                         },
                     }
                 ]

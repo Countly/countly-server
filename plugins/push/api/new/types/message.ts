@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 
 export type PlatformKeys = "a"|"i"|"h"; // android|ios|huawei
-export type PlatformFieldKeys = "p"|"d"|"a"; // production|debug|adhoc
+export type PlatformEnvKeys = "p"|"d"|"a"; // production|debug|adhoc
 export type PlatformCombinedKeys = "ap"|"hp"|"ip"|"id"|"ia";
 
 export type MessageStatus =
@@ -128,26 +128,28 @@ export interface Content {
 }
 
 // TODO: this has missing props
+// TODO: remove this completely. we have schedules now
 export interface MessageRun {
     start: Date;
-    processed: number;
+    // processed: number;
     errored: number;
     ended: Date;
 }
 
+// TODO: Update this accordingly to the new results
 export interface Result {
     total: number;
-    processed: number;
+    // processed: number;
     sent: number;
-    actioned?: number;
-    errored?: number;
+    actioned: number;
+    errored: number;
     virtual?: string;
     error?: any; // this is PushError most of the time
-    errors?: { [key: string]: number }; // number of each error
     lastErrors?: any; // this is PushError[] most of the time
     lastRuns?: MessageRun[];
     next?: Date;
-    subs?: { [key: string]: Result };
+    subs: { [key: string]: Result };
+    errors: { [key: string]: number };
 }
 
 export interface Info {

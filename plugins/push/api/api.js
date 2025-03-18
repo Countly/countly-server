@@ -47,8 +47,9 @@ const plugins = require('../../pluginManager'),
     };
 
 const { init: initQueue } = require("./new/lib/kafka.js");
-const { composeScheduledPushes } = require('./new/composer.js');
-const { sendPushToProvider } = require('./new/sender.js');
+const { composeAllScheduledPushes } = require('./new/composer.js');
+const { sendAllPushes } = require('./new/sender.js');
+const { saveResults } = require("./new/resultor.js");
 
 plugins.setConfigs(FEATURE_NAME, {
     proxyhost: '',
@@ -89,18 +90,20 @@ plugins.internalDrillEvents.push('[CLY]_push_sent');
 async function queueInitializer(db, isMaster = false) {
     try {
         await initQueue(
-            async function(push) {
+            async function(pushes) {
                 try {
-                    await sendPushToProvider(push);
+                    console.log(JSON.stringify(pushes, null, 2));
+                    await sendAllPushes(pushes);
                 }
                 catch (err) {
                     console.error("ERROR ON QUEUE PUSH HANDLER", err);
                     // TODO: log the error
                 }
             },
-            async function(schedule) {
+            async function(schedules) {
                 try {
-                    await composeScheduledPushes(db, schedule);
+                    console.log(JSON.stringify(schedules, null, 2));
+                    await composeAllScheduledPushes(db, schedules);
                 }
                 catch (err) {
                     console.error("ERROR ON QUEUE JOB HANDLER", err);
@@ -109,7 +112,8 @@ async function queueInitializer(db, isMaster = false) {
             },
             async function(results) {
                 try {
-                    console.log(results);
+                    console.log(JSON.stringify(results, null, 2));
+                    await saveResults(db, results);
                 }
                 catch(err) {
                     console.error("ERROR ON QUEUE RESULT HANDLER", err);
@@ -119,6 +123,7 @@ async function queueInitializer(db, isMaster = false) {
         );
     }
     catch(err) {
+        console.error("ERROR ON KAFKA INITIALIZATION");
         // TODO: log the error
     }
 }

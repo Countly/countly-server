@@ -9,6 +9,7 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
 
 const countlyFetch = require("../../../api/parts/data/fetch.js");
 
+const { buildResultObject } = require("./new/lib/result.js");
 const { scheduleMessage } = require("./new/scheduler.js");
 
 /**
@@ -58,6 +59,7 @@ async function validate(args, draft = false) {
         msg.status = Status.Draft;
     }
     else {
+        args.result = buildResultObject();
         msg = Message.validate(args);
         if (msg.result) {
             msg = new Message(msg.obj);
@@ -294,8 +296,8 @@ module.exports.create = async params => {
         msg.status = Status.Created;
         await msg.save();
         if (!demo) {
-            // scheduleMessage(common.db, msg);
-            await msg.schedule(log, params);
+            await scheduleMessage(common.db, msg);
+            // await msg.schedule(log, params);
         }
         log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});

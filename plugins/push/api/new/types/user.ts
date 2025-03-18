@@ -1,6 +1,7 @@
 import { PlatformCombinedKeys } from "./message";
 
-// contains only the required properties for push
+// contains only the required properties. other ones are denoted with "[key: string]: any". which are
+// only populated from app_user to be used inside the template.
 export interface User {
     [key: string]: any;
     _id: string;
@@ -8,7 +9,6 @@ export interface User {
     did: string;
     la?: string;
     tz?: string;
-
     tk?: TokenRecord[]; // populated from push_{APPID}
 }
 

@@ -20,15 +20,16 @@
     "notifications"
   ],
   "scripts": {
-    "test-unit": "mocha tests/unit/* --watch"
+    "unit-tests": "mocha tests/unit/* --watch",
+    "integration-tests": "mocha tests/integration/* --watch"
   },
   "dependencies": {
-    "firebase-admin": "^12.1.0",
+    "firebase-admin": "^13.2.0",
+    "http2-wrapper": "^2.2.1",
     "https-proxy-agent": "^7.0.5",
     "jsonwebtoken": "9.0.2",
     "kafkajs": "^2.2.4",
-    "node-forge": "1.3.1",
-    "proxyquire": "^2.1.3"
+    "node-forge": "1.3.1"
   },
   "private": true,
   "devDependencies": {
@@ -36,6 +37,7 @@
     "@types/node-forge": "^1.3.11",
     "@types/proxyquire": "^1.3.31",
     "@types/sinon": "^17.0.3",
+    "proxyquire": "^2.1.3",
     "sinon": "^19.0.2"
   }
 }

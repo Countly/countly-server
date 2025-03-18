@@ -10,7 +10,7 @@ const { PushError, ERROR } = require('./error'),
  */
 class Result extends Validatable {
     /**
-     * 
+     *
      * @param {object}                  data                delivery data
      * @param {number}                  data.total          total number of queued notifications
      * @param {number}                  data.processed      number of queued notifications processed
@@ -27,13 +27,12 @@ class Result extends Validatable {
      */
     constructor(data) {
         super(data);
-        if (this._data.lastError) {
-            this._data.lastError = PushError.deserialize(this._data.lastError);
-        }
-        if (this._data.lastErrors) {
-            this._data.lastErrors = this._data.lastErrors.map(e => PushError.deserialize(e));
-        }
-
+        // if (this._data.lastError) {
+        //     this._data.lastError = PushError.deserialize(this._data.lastError);
+        // }
+        // if (this._data.lastErrors) {
+        //     this._data.lastErrors = this._data.lastErrors.map(e => PushError.deserialize(e));
+        // }
         if (this._data.subs) {
             let subs = this._data.subs;
             this._data.subs = {};
@@ -47,23 +46,23 @@ class Result extends Validatable {
     static get scheme() {
         return {
             total: {type: 'Number', required: true},
-            processed: {type: 'Number', required: true},
+            // processed: {type: 'Number', required: true},
             sent: {type: 'Number', required: true},
             actioned: {type: 'Number', required: true},
-            errored: {type: 'Number', required: false},
-            virtual: {type: 'String', required: false},
-            error: {type: 'String', required: false},
+            errored: {type: 'Number', required: true},
+            // virtual: {type: 'String', required: false},
+            // error: {type: 'String', required: false},
             errors: {type: 'Object', required: false},
-            lastErrors: {type: 'Object[]', required: false},
-            lastRuns: {type: 'Object[]', required: false},
-            next: {type: 'Date', required: false},
+            // lastErrors: {type: 'Object[]', required: false},
+            // lastRuns: {type: 'Object[]', required: false},
+            // next: {type: 'Date', required: false},
             subs: {type: 'Object', required: false},
         };
     }
 
     /**
      * Getter for total
-     * 
+     *
      * @returns {number} total number of queued notifications
      */
     get total() {
@@ -72,7 +71,7 @@ class Result extends Validatable {
 
     /**
      * Setter for total
-     * 
+     *
      * @param {number|undefined} total total number of queued notifications
      */
     set total(total) {
@@ -86,7 +85,7 @@ class Result extends Validatable {
 
     /**
      * Getter for processed
-     * 
+     *
      * @returns {number|undefined} number of queued notifications processed
      */
     get processed() {
@@ -95,7 +94,7 @@ class Result extends Validatable {
 
     /**
      * Setter for processed
-     * 
+     *
      * @param {number|undefined} processed number of queued notifications processed
      */
     set processed(processed) {
@@ -109,7 +108,7 @@ class Result extends Validatable {
 
     /**
      * Getter for sent
-     * 
+     *
      * @returns {number} number of notifications accepted by service provider
      */
     get sent() {
@@ -118,7 +117,7 @@ class Result extends Validatable {
 
     /**
      * Setter for sent
-     * 
+     *
      * @param {number|undefined} sent number of notifications accepted by service provider
      */
     set sent(sent) {
@@ -132,7 +131,7 @@ class Result extends Validatable {
 
     /**
      * Getter for actioned
-     * 
+     *
      * @returns {number} number of notifications accepted by service provider
      */
     get actioned() {
@@ -141,7 +140,7 @@ class Result extends Validatable {
 
     /**
      * Setter for actioned
-     * 
+     *
      * @param {number|undefined} actioned number of notifications accepted by service provider
      */
     set actioned(actioned) {
@@ -155,7 +154,7 @@ class Result extends Validatable {
 
     /**
      * Getter for errored
-     * 
+     *
      * @returns {number} number of sending errors
      */
     get errored() {
@@ -164,7 +163,7 @@ class Result extends Validatable {
 
     /**
      * Setter for errored
-     * 
+     *
      * @param {number|undefined} errored number of sending errors
      */
     set errored(errored) {
@@ -178,18 +177,17 @@ class Result extends Validatable {
 
     /**
      * Getter for virtual
-     * 
+     *
      * @returns {string|undefined} virtual key of sibling sub which this sub belongs to
-     */
     get virtual() {
         return this._data.virtual;
     }
+    */
 
     /**
      * Setter for virtual
-     * 
+     *
      * @param {string|undefined} virtual virtual key of sibling parent sub
-     */
     set virtual(virtual) {
         if (virtual !== null && virtual !== undefined) {
             this._data.virtual = virtual;
@@ -198,21 +196,21 @@ class Result extends Validatable {
             delete this._data.virtual;
         }
     }
+    */
 
     /**
      * Getter for error
-     * 
+     *
      * @returns {PushError|undefined} message-global critical error object
-     */
     get error() {
         return this._data.error;
     }
+    */
 
     /**
      * Setter for error
-     * 
+     *
      * @param {PushError|undefined} error message-global critical error object
-     */
     set error(error) {
         if (error instanceof PushError) {
             this._data.error = error;
@@ -221,30 +219,30 @@ class Result extends Validatable {
             delete this._data.error;
         }
     }
+    */
 
     /**
      * Getter for lastErrors
-     * 
+     *
      * @returns {PushError[]|undefined} any non fatal noteworthy errors (mostly connectivity)
-     */
     get lastErrors() {
         return this._data.lastErrors;
     }
+    */
 
     /**
      * Getter for lastErrors
-     * 
+     *
      * @returns {PushError|undefined} any non fatal noteworthy errors (mostly connectivity)
-     */
     get lastError() {
         return this._data.lastErrors ? this._data.lastErrors[this._data.lastErrors.length - 1] : undefined;
     }
+    */
 
     /**
      * Add an error to lastErrors
-     * 
+     *
      * @param {PushError} error any non fatal noteworthy error (mostly connectivity)
-     */
     pushError(error) {
         if (!this._data.lastErrors) {
             this._data.lastErrors = [];
@@ -254,11 +252,12 @@ class Result extends Validatable {
         }
         this._data.lastErrors.push(error);
     }
+    */
 
     /**
      * Getter for errors
-     * 
-     * @returns {object|undefined} errors object 
+     *
+     * @returns {object|undefined} errors object
      */
     get errors() {
         if (!this._data.errors) {
@@ -269,11 +268,10 @@ class Result extends Validatable {
 
     /**
      * Add an error to errors object
-     * 
+     *
      * @param {string} code response code
      * @param {number} count number of errors to add
      * @returns {number} response count after addition
-     */
     recordError(code, count) {
         if (!this._data.errors) {
             this._data.errors = {};
@@ -281,31 +279,31 @@ class Result extends Validatable {
         this.errored++;
         return this._data.errors[code] = (this._data.errors[code] || 0) + count;
     }
+    */
 
     /**
      * Getter for last of lastRuns
-     * 
+     *
      * @returns {object|undefined} last run object with start, processed, errored & end? keys
-     */
     get lastRun() {
         return this._data.lastRuns && this._data.lastRuns[this._data.lastRuns.length - 1] || undefined;
     }
+    */
 
     /**
      * Getter for lastRuns
-     * 
+     *
      * @returns {object[]|undefined} last 10 lastRuns array
-     */
     get lastRuns() {
         return this._data.lastRuns;
     }
+    */
 
     /**
      * Add another run to lastRuns
-     * 
+     *
      * @param {Date} date date of run start
      * @returns {object} run object with start, processed & errored props
-     */
     startRun(date) {
         if (!this._data.lastRuns) {
             this._data.lastRuns = [];
@@ -317,21 +315,21 @@ class Result extends Validatable {
         this._data.lastRuns.push(run);
         return run;
     }
+    */
 
     /**
      * Getter for next
-     * 
+     *
      * @returns {Date} next run if any
-     */
     get next() {
         return this._data.next ? toDate(this._data.next) : undefined;
     }
+    */
 
     /**
      * Setter for next
-     * 
+     *
      * @param {Date|number|undefined} next next run if any
-     */
     set next(next) {
         if (next !== null && next !== undefined) {
             this._data.next = toDate(next);
@@ -340,10 +338,11 @@ class Result extends Validatable {
             delete this._data.next;
         }
     }
+    */
 
     /**
      * Getter for subs
-     * 
+     *
      * @returns {object} subs object
      */
     get subs() {
@@ -352,7 +351,7 @@ class Result extends Validatable {
 
     /**
      * Setter for subs
-     * 
+     *
      * @param {object} subs subs object
      */
     set subs(subs) {
@@ -366,12 +365,11 @@ class Result extends Validatable {
 
     /**
      * Utility method for getting/setting sub Result
-     * 
+     *
      * @param {string} key sub result key
      * @param {Result} result Result instance
      * @param {string} virtual virtual key of the sub it belongs to
      * @returns {Result} current Result for given sub key, adds result object if it doesn't exist
-     */
     sub(key, result, virtual) {
         if (!this._data.subs) {
             this._data.subs = {};
@@ -387,14 +385,14 @@ class Result extends Validatable {
         }
         return this._data.subs[key];
     }
+    */
 
     /**
      * Backwards-compatibility conversion of Note to Result
-     * 
+     *
      * @deprecated
      * @param {object} note Note object
      * @returns {Result} Result instance
-     */
     static fromNote(note) {
         let lastErrors = undefined,
             errors = undefined,
@@ -432,10 +430,11 @@ class Result extends Validatable {
             subs
         });
     }
+    */
 
     /**
      * Construct Result if needed
-     * 
+     *
      * @param {Result|object} data Result instance or result data
      * @returns {Result} Result instance
      */

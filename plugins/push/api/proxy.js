@@ -10,11 +10,11 @@ let protos = {
 
 /**
  * Create new Agent subclass
- * 
+ *
  * @param {string} url url to construct Agent for
  * @param {obejct} proxy push plugin proxy configuration object (user, pass, host, port, http, auth, http2)
  * @param {obejct|undefined} agentConfig standard proxy configuration object
- * 
+ *
  * @returns {Agent} Agent subclass with support for this particular request
  */
 function proxyAgent(url, proxy, agentConfig = {}) {
@@ -75,7 +75,6 @@ function proxyAgent(url, proxy, agentConfig = {}) {
                         }
 
                         callback(err);
-
                     });
                     socket.on('timeout', err => {
                         err = err || new Error('ProxyTimeout');
@@ -144,7 +143,7 @@ function proxyAgent(url, proxy, agentConfig = {}) {
 
 /**
  * Request either with proxy or without it, depending on conf
- * 
+ *
  * @param {string} url url to request
  * @param {string} method method
  * @param {object} conf proxy config

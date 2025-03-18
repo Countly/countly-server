@@ -1,4 +1,6 @@
 import { ObjectId } from "mongodb";
+import { SecureContextOptions } from "node:tls";
+
 
 export interface FCMCredentials {
     _id: ObjectId;
@@ -28,6 +30,8 @@ export interface APNP8Credentials {
     type: "apn_token";
     hash: string;
 }
+
+export type TLSKeyPair = Pick<SecureContextOptions, "key"|"cert">;
 
 export type APNCredentials = APNP12Credentials | APNP8Credentials;
 
