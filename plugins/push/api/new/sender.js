@@ -1,63 +1,75 @@
 /**
  * @typedef {import('./types/queue.ts').PushEvent} PushEvent
  * @typedef {import('./types/queue.ts').ResultEvent} ResultEvent
+ * @typedef {import('./types/queue.ts').ResultError} ResultError
  * @typedef {import('./types/utils.ts').LogObject} LogObject
  */
 
 const { send: androidSend } = require("./platforms/android.js");
+const { send: iosSend } = require("./platforms/ios.js");
 const { sendResultEvents } = require("./lib/kafka.js");
+const { SendError } = require("./lib/error.js");
 
 /** @type {LogObject} */
 const log = require('../../../../api/utils/common').log('push:sender');
-
 
 /**
  *
  * @param {PushEvent[]} pushes
  */
 async function sendAllPushes(pushes) {
-    /** @type {PushEvent[]} */
-    const huaweiPushes = [];
-    /** @type {ResultEvent[]} */
-    const results = [];
-
+    /** @type {Promise<string>[]} */
+    const promises = [];
     for (let i = 0; i < pushes.length; i++) {
-        /** @type {any} response from provider when successful */
-        let response;
-        /** @type {string|undefined} */
-        let error;
-        try {
-            switch (pushes[i].platform) {
-            case "i":
-                // TODO: IMPLEMENT
-                console.log("IOS SEND IS NOT IMPLEMENTED");
-                break;
-            case "h":
-                huaweiPushes.push(pushes[i]);
-                break;
-            case "a":
-                response = await androidSend(pushes[i]);
-                break;
+        switch (pushes[i].platform) {
+        case "i":
+            promises.push(iosSend(pushes[i]));
+            break;
+        case "a":
+            promises.push(androidSend(pushes[i]));
+            break;
+        case "h":
+            console.log("HUAWEI IS NOT IMPLEMENTED");
+            break;
+        }
+    }
+    const results = await Promise.allSettled(promises);
+    /** @type {ResultEvent[]} */
+    const resultEvents = results.map((result, i) => {
+        const pushEvent = pushes[i];
+        if (result.status === "fulfilled") {
+            return {
+                ...pushEvent,
+                response: result.value,
             }
         }
-        catch (err) {
-            error = typeof err?.toString === "function"
-                ? err.toString()
-                : "Unknown Error";
-            // TODO: filter out errors to log
-            log.e("Error while sending to provider", err);
+        else {
+            /** @type {string=} */
+            let response;
+            /** @type {ResultError} */
+            let error = { name: "UnkownError", message: "UnkownError" };
+            if (result.reason instanceof Error) {
+                const { name, message, stack } = result.reason;
+                error = { name, message, stack };
+                if (result.reason instanceof SendError) {
+                    response = result.reason.response;
+                }
+            }
+            else {
+                log.e(
+                    "Invalid rejection reason for push event:",
+                    JSON.stringify(pushEvent, null, 2),
+                    JSON.stringify(result.reason, null, 2)
+                );
+            }
+            return {
+                ...pushEvent,
+                response,
+                error
+            }
         }
-
-        results.push({ ...pushes[i], response, error });
-    }
-
-    // huawei pushes get sent in batches
-    if (huaweiPushes.length) {
-        // TODO: IMPLEMENT
-        console.log("HUAWEI SEND IS NOT IMPLEMENTED");
-    }
-
-    await sendResultEvents(results);
+    });
+    await sendResultEvents(resultEvents);
 }
 
 module.exports = {

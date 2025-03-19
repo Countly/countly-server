@@ -25,20 +25,12 @@ async function saveResults(db, results) {
             scheduleMap[scheduleId] = buildResultObject();
         }
         /** @type {"total"|"sent"|"errored"|"actioned"} */
-        let stat = "errored";
-        /** @type {ResultError|undefined} */
+        let stat = "sent";
+        /** @type {string|undefined} */
         let error = undefined;
         if (result.error) {
             stat = "errored";
-            error = result.error;
-        }
-        else if (result.response) {
-            stat = "sent";
-            error = undefined;
-        }
-        else {
-            stat = "errored";
-            error = "NoResponse";
+            error = result.error.name + ": " + result.error.message;
         }
         increaseResultStat(
             scheduleMap[scheduleId],

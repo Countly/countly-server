@@ -33,7 +33,7 @@ export interface ResultEvent extends PushEvent {
 export interface ResultError {
     name: string;
     message: string;
-    stack: string;
+    stack?: string;
 }
 
 type DTO<T> = { [P in keyof T]: T[P] extends ObjectId|Date ? string : T[P] }
