@@ -5,6 +5,7 @@
     <div class="cly-vue-content-builder-header__left">
         <div
             class="cly-vue-content-builder-header__close-button"
+            data-test-id="close-icon"
             @click="onCloseIconClick"
         >
             <i
@@ -17,6 +18,7 @@
             v-tooltip.right="toggleTooltip"
             v-model="toggleLocalValue"
             class="cly-vue-content-builder-header__toggle"
+            test-id="journey-publish"
             :disabled="isToggleDisabled"
         />
         <div class="cly-vue-content-builder-header__info">
@@ -44,7 +46,7 @@
                 >
                     {{ version }}
                 </div>
-                <div class="cly-vue-content-builder-header__created-by">
+                <div class="cly-vue-content-builder-header__created-by" data-test-id="created-by-label">
                     {{ createdBy }}
                 </div>
             </div>
@@ -62,6 +64,7 @@
         <cly-status-badge
             v-if="status.show"
             class="cly-vue-content-builder-header__badge"
+            data-test-id="content-header-status-badge"
             :label="status.label"
             :mode="status.mode"
         />
@@ -79,6 +82,7 @@
         <cly-more-options
             v-if="isOptionsButtonVisible"
             class="cly-vue-content-builder-header__options-button"
+            test-id="content-header"
             size="small"
             @command="onCommand"
         >
@@ -86,6 +90,7 @@
                 v-for="(option, idx) in options"
                 :key="`cly-vue-content-builder-header-option-${idx}`"
                 class="cly-vue-content-builder-header__option"
+                :data-test-id="'more-button-option-' + option.value"
                 :command="option.value"
                 :disabled="option.disabled"
             >
