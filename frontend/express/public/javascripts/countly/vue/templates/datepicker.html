@@ -28,7 +28,7 @@
             </cly-input-dropdown-trigger>
         </slot>
     </template>
-    <div class="cly-vue-daterp">
+    <div class="cly-vue-daterp" :style="customStyle">
         <div class="cly-vue-daterp__shortcuts-col" v-if="shortcuts && shortcuts.length > 0">
             <div v-if="allowCustomRange && !moveRangeTabsToLeftSide" class="text-medium font-weight-bold cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom"
             :class="{'cly-vue-daterp__shortcut--active': customRangeSelection,  'cly-vue-daterp__shortcut--deactive': !customRangeSelection, 'cly-vue-daterp__shortcut cly-vue-daterp__shortcut--custom--override': enabledShortcuts.length === 1 || allowPresets}"
@@ -207,7 +207,7 @@
                         <span class="text-medium">{{i18n('common.time')}}</span>
                     </div>
                     <div>
-                        <cly-time-picker align="right" :width="100" v-model="minTime"></cly-time-picker>
+                        <cly-time-picker align="right" :width="100" v-model="minTime" :min-date-value="minDate" :is-future="isFuture"></cly-time-picker>
                     </div>
                 </div>
             </div>

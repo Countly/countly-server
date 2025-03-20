@@ -55,7 +55,7 @@ function validate_token_if_exists(params) {
 * Additionally populates params with member information and app information.
 * @param {params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
 exports.validateUserForRead = function(params, callback, callbackParam) {
@@ -151,7 +151,7 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
 * Additionally populates params with member information and app information.
 * @param {params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
 exports.validateUserForWrite = function(params, callback, callbackParam) {
@@ -240,7 +240,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
 * Additionally populates params with member information.
 * @param {params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
 exports.validateGlobalAdmin = function(params, callback, callbackParam) {
@@ -311,7 +311,7 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
 * Additionally populates params with member information.
 * @param {params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
 exports.validateAppAdmin = function(params, callback, callbackParam) {
@@ -389,7 +389,7 @@ exports.validateAppAdmin = function(params, callback, callbackParam) {
 * Additionally populates params with member information.
 * @param {params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
 exports.validateUser = function(params, callback, callbackParam) {
@@ -458,7 +458,7 @@ exports.validateUser = function(params, callback, callbackParam) {
 * Wrap callback using promise
 * @param {params} params - {@link params} object
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function 
+* @param {any=} callbackParam - parameter to pass to callback function
 * @param {function} func - promise function
 * @returns {Promise} promise
 */
@@ -794,7 +794,7 @@ exports.dbUserHasAccessToCollection = function(params, collection, app_id, callb
 * @param {params} params - {@link params} object
 * @param {string} feature - feature that trying to access
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
 exports.validateRead = function(params, feature, callback, callbackParam) {
@@ -947,7 +947,7 @@ exports.validateRead = function(params, feature, callback, callbackParam) {
 * @param {string} feature - feature that trying to access
 * @param {string} accessType - required access type for related request (c: create, u: update and d: delete)
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 * @returns {Promise} promise
 */
 function validateWrite(params, feature, accessType, callback, callbackParam) {
@@ -1083,13 +1083,38 @@ function validateWrite(params, feature, accessType, callback, callbackParam) {
         });
     });
 }
-
+/**
+ * Creates filter object  to filter by member allowed collections
+ * @param {object} member - members object from params
+ * @param {string} dbName  - database name as string
+ * @param {string} collectionName  - collection Name
+ * @returns {object} filter object
+ */
+exports.getBaseAppFilter = function(member, dbName, collectionName) {
+    var base_filter = {};
+    var apps = exports.getUserApps(member);
+    if (dbName === "countly_drill" && collectionName === "drill_events") {
+        if (Array.isArray(apps) && apps.length > 0) {
+            base_filter.a = {"$in": apps};
+        }
+    }
+    else if (dbName === "countly" && collectionName === "events_data") {
+        var in_array = [];
+        if (Array.isArray(apps) && apps.length > 0) {
+            for (var i = 0; i < apps.length; i++) {
+                in_array.push(new RegExp("^" + apps[i] + "_.*"));
+            }
+            base_filter = {"_id": {"$in": in_array}};
+        }
+    }
+    return base_filter;
+};
 /**
 * Validate user for create access by api_key for provided app_id (both required parameters for the request).
 * @param {params} params - {@link params} object
 * @param {string} feature - feature that trying to access
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 */
 exports.validateCreate = function(params, feature, callback, callbackParam) {
     validateWrite(params, feature, 'c', callback, callbackParam);
@@ -1100,7 +1125,7 @@ exports.validateCreate = function(params, feature, callback, callbackParam) {
 * @param {params} params - {@link params} object
 * @param {string} feature - feature that trying to access
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 */
 exports.validateUpdate = function(params, feature, callback, callbackParam) {
     validateWrite(params, feature, 'u', callback, callbackParam);
@@ -1111,7 +1136,7 @@ exports.validateUpdate = function(params, feature, callback, callbackParam) {
 * @param {params} params - {@link params} object
 * @param {string} feature - feature that trying to access
 * @param {function} callback - function to call only if validation passes
-* @param {any} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
+* @param {any=} callbackParam - parameter to pass to callback function (params is automatically passed to callback function, no need to include that)
 */
 exports.validateDelete = function(params, feature, callback, callbackParam) {
     validateWrite(params, feature, 'd', callback, callbackParam);

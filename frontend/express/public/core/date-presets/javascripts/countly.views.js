@@ -1,4 +1,4 @@
-/*global Vue app, countlyVue, CV, countlyGlobal, groupsModel, _, CountlyHelpers, countlyPresets*/
+/*global Vue app, countlyVue, CV, countlyGlobal, groupsModel, _, CountlyHelpers, countlyPresets, countlyAuth*/
 
 (function() {
 
@@ -54,6 +54,14 @@
                 }).join(",");
 
                 return key;
+            },
+            period: {
+                get: function() {
+                    return {period: this.$refs.drawerScope.editedObject.range, exclude_current_day: this.$refs.drawerScope.editedObject.exclude_current_day};
+                },
+                set: function(value) {
+                    this.$refs.drawerScope.editedObject.range = value;
+                }
             }
         },
         created: function() {
@@ -186,8 +194,8 @@
             onClose: function() {
                 this.$emit("close-drawer");
             },
-            handleLabelChanged: function(payload, drawerScope) {
-                drawerScope.editedObject.name = payload.label;
+            handleLabelChanged: function(payload) {
+                this.$refs.drawerScope.editedObject.name = payload.label;
             },
             showExcludeCurrentDay: function(range) {
                 return !Array.isArray(range);
@@ -430,9 +438,6 @@
                     }
                 }
             },
-            containerHeight: function() {
-                return this.presets.length > 5 ? "450px" : "auto";
-            },
             isLoading: function() {
                 return this.$store.getters["countlyPresets/isLoading"];
             },
@@ -454,11 +459,13 @@
         });
     };
 
-    app.route("/manage/date-presets", "date-presets", function() {
-        const PresetManagementView = getManagementView();
-        this.renderWhenReady(PresetManagementView);
-    });
+    if (countlyAuth.validateCreate('core')) {
+        app.route("/manage/date-presets", "date-presets", function() {
+            const PresetManagementView = getManagementView();
+            this.renderWhenReady(PresetManagementView);
+        });
 
-    app.addMenu("management", {code: "presets", permission: "core", url: "#/manage/date-presets", text: "sidebar.management.presets", priority: 30});
+        app.addMenu("management", {code: "presets", permission: "core", url: "#/manage/date-presets", text: "sidebar.management.presets", priority: 30});
+    }
 
 })();

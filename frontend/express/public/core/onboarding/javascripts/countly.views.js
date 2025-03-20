@@ -37,7 +37,7 @@
                 types: Object.keys(app.appTypes),
                 appTemplates: appTemplates,
                 populatorProgress: 0,
-                populatorMaxTime: 60,
+                populatorMaxTime: 30,
                 isPopulatorFinished: false,
                 isCountlyEE: countlyGlobal.plugins.includes('drill'),
                 selectedAppTemplate: null,
@@ -99,6 +99,7 @@
                 countlyPopulator.setStartTime(countlyCommon.periodObj.start / 1000);
                 countlyPopulator.setEndTime(countlyCommon.periodObj.end / 1000);
                 countlyPopulator.setSelectedTemplate(selectedAppTemplate);
+                countlyPopulator.setSelectedFeatures("all");
                 countlyPopulator.getTemplate(selectedAppTemplate, function(template) {
                     countlyPopulator.generateUsers(10, template);
                     self.populatorProgress = 0;
@@ -474,7 +475,7 @@
             app.navigate("/not-responded-consent", true);
         }
     }
-    else if (hasNewsLetter && (!countlyGlobal.member.subscribe_newsletter && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0))) {
+    else if (hasNewsLetter && (typeof countlyGlobal.member.subscribe_newsletter !== 'boolean' && !store.get('disable_newsletter_prompt') && (countlyGlobal.member.login_count === 3 || moment().dayOfYear() % 90 === 0))) {
         if (Backbone.history.fragment !== '/not-subscribed-newsletter' && !/initial-setup|initial-consent/.test(window.location.hash)) {
             app.navigate("/not-subscribed-newsletter", true);
         }

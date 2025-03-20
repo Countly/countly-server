@@ -118,6 +118,9 @@
                 "surveys": periodData.surveys,
                 "ratings": periodData.ratings,
                 "apm": periodData.apm,
+                "push": periodData.push,
+                "ps": periodData.ps,
+                "cs": periodData.cs,
                 "custom": periodData.custom,
             };
             let sortable = [];
@@ -133,7 +136,6 @@
                 "appName": getAppName(app),
                 "appId": appId,
                 "sessions": periodData.sessions,
-                "push": periodData.push,
                 "data-points": periodData.dp,
                 "change": periodData.change,
                 "approximated": approx,
@@ -146,6 +148,9 @@
                     "surveys": periodData.surveys,
                     "ratings": periodData.ratings,
                     "apm": periodData.apm,
+                    "push": periodData.push,
+                    "ps": periodData.ps,
+                    "cs": periodData.cs,
                     "custom": periodData.custom,
                 },
                 "sorted_breakdown": sortable,

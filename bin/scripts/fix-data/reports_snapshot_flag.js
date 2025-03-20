@@ -52,8 +52,8 @@ Promise.all([pluginManager.dbConnection("countly")]).then(async function([countl
                 console.log('Finished');
                 countlyDb.close();
                 process.exit();
-            }).catch(function(err) {
-                console.log('Error', err);
+            }).catch(function() {
+                console.log('Unknown Error while executing script');
                 countlyDb.close();
                 process.exit();
             });

@@ -449,9 +449,9 @@
             return res[context.state.selectedEventName].data;
         },
         getAllEventsList: function(eventsList, groupList) {
-            var map = eventsList.map || {};
             var allEvents = [];
             if (eventsList && eventsList.list) {
+                var map = eventsList.map || {};
                 eventsList.list.forEach(function(item) {
                     if (!map[item] || (map[item] && (map[item].is_visible || map[item].is_visible === undefined))) {
                         var label;
@@ -544,6 +544,10 @@
             if (eventsLength >= limits.event_limit) {
                 eventLimit.message = CV.i18n("events.max-event-key-limit", limits.event_limit);
                 eventLimit.show = true;
+                eventLimit.goTo = {
+                    title: CV.i18n("common.go-to-settings"),
+                    url: "#/manage/configurations/api"
+                };
                 limitAlert.push(eventLimit);
             }
             if (!context.state.selectedEventName.startsWith('[CLY]_group')) {
@@ -779,15 +783,20 @@
                 dataType: "json",
             }, {"disableAutoCatch": true});
         },
-        fetchSelectedEventsData: function(context, period) {
+        fetchSelectedEventsData: function(context, period, selectedEventName, segmentation) {
+            let _selectedEventName = selectedEventName ? selectedEventName : context.state.selectedEventName;
+            let _segmentation = segmentation ?
+                (segmentation === "segment" ? "" : segmentation) :
+                (context.state.currentActiveSegmentation === "segment" ? "" : context.state.currentActiveSegmentation);
+
             return CV.$.ajax({
                 type: "GET",
                 url: countlyCommon.API_PARTS.data.r,
                 data: {
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "events",
-                    "event": context.state.selectedEventName,
-                    "segmentation": context.state.currentActiveSegmentation === "segment" ? "" : context.state.currentActiveSegmentation,
+                    "event": _selectedEventName,
+                    "segmentation": _segmentation,
                     "period": CountlyHelpers.getPeriodUrlQueryParameter(period),
                     "preventRequestAbort": true
                 },
@@ -886,6 +895,9 @@
                 return countlyAllEvents.service.fetchAllEventsData(context, period)
                     .then(function(res) {
                         if (res) {
+                            if (Array.isArray(res.list)) {
+                                res.list = res.list.map(eventName => countlyCommon.unescapeHtml(eventName));
+                            }
                             context.commit("setAllEventsData", res);
                             if ((!context.state.selectedEventName) || (res.map && res.map[context.state.selectedEventName] && !res.map[context.state.selectedEventName].is_visible) || (res.list && res.list.indexOf(context.state.selectedEventName) === -1)) {
                                 var appId = countlyCommon.ACTIVE_APP_ID;
@@ -893,7 +905,7 @@
                                 var eventKey = res.list[0];
                                 if (res.map && res.map[context.state.selectedEventName]) {
                                     eventKey = res.list.find(function(item) {
-                                        return !(res.map[item] && res.map[item].is_visible === false);
+                                        return res.map[item] && item === context.state.selectedEventName;
                                     });
                                 }
                                 eventKeyForStorage[appId] = eventKey;
@@ -912,7 +924,7 @@
                                         context.commit("setLabels", countlyAllEvents.helpers.getLabels(res, context.state.groupData, context.state.selectedEventName));
                                         countlyAllEvents.service.fetchSelectedEventsData(context, period)
                                             .then(function(response) {
-                                                if (response) {
+                                                if (response?.eventName === context.state.selectedEventName) {
                                                     context.commit("setSelectedEventsData", response);
                                                     context.commit("setAvailableSegments", countlyAllEvents.helpers.getSegments(context, response) || []);
                                                     context.commit("setTableRows", countlyAllEvents.helpers.getTableRows(context) || []);
@@ -1072,7 +1084,7 @@
                                                         .then(function(resp) {
                                                             if (resp) {
                                                                 context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
-                                                                context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                                context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context));
                                                             }
                                                         });
                                                 }

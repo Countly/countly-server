@@ -15,7 +15,10 @@
                 <el-link v-on:click="clear" class="bu-is-underlined bu-is-pulled-right bu-ml-4" data-test-id="clear-log-button">
                     {{i18n('errorlogs.clear')}}
                 </el-link>
-                <a :href="downloadLink" target="_blank">
+                <form name="errorlogsform" method="post" :action="downloadLink" target="_blank">
+                    <input type="hidden" name="auth_token" :value="authToken">
+                </form>
+                <a v-on:click="download">
                     <el-link class="bu-is-underlined bu-is-pulled-right" data-test-id="download-link-button">{{i18n('errorlogs.download')}}</el-link>
                 </a>
             </div>

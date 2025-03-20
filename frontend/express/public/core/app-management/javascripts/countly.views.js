@@ -381,26 +381,29 @@
                         },
                         dataType: "json",
                         success: function(data) {
-                            data.locked = false;
-                            countlyGlobal.apps[data._id] = data;
-                            countlyGlobal.admin_apps[data._id] = data;
-                            Backbone.history.appIds.push(data._id + "");
-                            countlyGlobal.apps[data._id].image = "appimages/" + data._id + ".png?" + Date.now().toString();
-                            self.appList.push({
-                                value: data._id + "",
-                                label: data.name
-                            });
-                            self.$store.dispatch("countlyCommon/addToAllApps", data);
-                            if (self.firstApp) {
-                                countlyCommon.ACTIVE_APP_ID = data._id + "";
-                                app.onAppManagementSwitch(data._id + "", data && data.type || "mobile");
+                            if (data && data._id) {
+                                data.locked = false;
+                                countlyGlobal.apps[data._id] = data;
+                                countlyGlobal.admin_apps[data._id] = data;
+                                Backbone.history.appIds.push(data._id + "");
+                                countlyGlobal.apps[data._id].image = "appimages/" + data._id + ".png?" + Date.now().toString();
+                                self.apps[data._id].name = countlyCommon.unescapeHtml(data.name);
+                                self.appList.push({
+                                    value: data._id + "",
+                                    label: data.name
+                                });
+                                self.$store.dispatch("countlyCommon/addToAllApps", data);
                                 self.$store.dispatch("countlyCommon/updateActiveApp", data._id + "");
-                                app.initSidebar();
+                                if (self.firstApp) {
+                                    countlyCommon.ACTIVE_APP_ID = data._id + "";
+                                    app.onAppManagementSwitch(data._id + "", data && data.type || "mobile");
+                                    app.initSidebar();
+                                }
+                                self.firstApp = self.checkIfFirst();
+                                setTimeout(function() {
+                                    self.selectedSearchBar = data._id + "";
+                                }, 1);
                             }
-                            self.firstApp = self.checkIfFirst();
-                            setTimeout(function() {
-                                self.selectedSearchBar = data._id + "";
-                            }, 1);
                         },
                         error: function(xhr, status, error) {
                             CountlyHelpers.notify({
@@ -448,6 +451,7 @@
                             countlyGlobal.admin_apps[self.selectedApp][modAttr] = data[modAttr];
                         }
                         countlyGlobal.apps[self.selectedApp].label = data.name;
+                        self.apps[self.selectedApp].name = countlyCommon.unescapeHtml(data.name);
                         for (var i = 0; i < self.appList.length; i++) {
                             if (self.appList[i].value === self.selectedApp) {
                                 self.appList[i].label = data.name;
@@ -847,6 +851,9 @@
                         return countlyGlobal.apps[key].plugins.consolidate.includes(self.selectedApp);
                     }
                 }) || [];
+            },
+            handleCancelForm: function() {
+                CountlyHelpers.goTo({url: "/manage/apps"});
             }
         },
         mounted: function() {

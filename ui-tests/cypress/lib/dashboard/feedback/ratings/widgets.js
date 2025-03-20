@@ -1,5 +1,6 @@
 import {
     feedbackRatingWidgetsPageElements,
+    feedbackRatingWidgetAddUserConsentElements,
     widgetsDataTableElements,
     feedbackRatingWidgetDetailsPageElements,
     feedbackRatingWidgetDetailsCommentsDataTableElements,
@@ -17,6 +18,13 @@ const createRating = require('../../../../api/feedbackWidgetsCreate');
 const verifyEmptyPageElements = () => {
 
     cy.verifyElement({
+        labelElement: feedbackRatingWidgetsPageElements.RATING_WIDGETS_HEADER_TITLE_LABEL,
+        labelText: "Rating Widgets",
+        element: feedbackRatingWidgetsPageElements.ADD_NEW_WIDGET_BUTTON,
+        elementText: 'Add New Widget'
+    });
+
+    cy.verifyElement({
         element: feedbackRatingWidgetsPageElements.RATINGS_WIDGETS_EMPTY_PAGE_ICON,
         labelElement: feedbackRatingWidgetsPageElements.RATINGS_WIDGETS_EMPTY_PAGE_TITLE,
         labelText: "Create your first Ratings Widget",
@@ -27,6 +35,22 @@ const verifyEmptyPageElements = () => {
         labelText: 'Create a Ratings Widget to collect, store, search, and track user feedback from web and mobile applications.',
         element: feedbackRatingWidgetsPageElements.RATINGS_WIDGETS_EMPTY_PAGE_ADD_NEW_WIDGET_BUTTON,
         elementText: '+ Add New Widget'
+    });
+};
+
+const verifyFullDataPageElements = () => {
+
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetsPageElements.RATING_WIDGETS_HEADER_TITLE_LABEL,
+        labelText: "Rating Widgets",
+        element: feedbackRatingWidgetsPageElements.ADD_NEW_WIDGET_BUTTON,
+        elementText: 'Add New Widget'
+    });
+
+    verifyWidgetDataFromTable({
+        index: 0,
+        shouldNot: true,
+        isActive: false,
     });
 };
 
@@ -42,6 +66,9 @@ const verifySettingsPageElements = ({
     commentText,
     isCheckedViaContact,
     viaContactText,
+    isCheckedAddConsent,
+    consentText,
+    consentItems = [],
     submitButtonText,
     thanksMessageText
 }) => {
@@ -50,7 +77,7 @@ const verifySettingsPageElements = ({
 
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.WIDGET_NAME_LABEL,
-        labelText: "surveys.drawer.internal.name",
+        labelText: "Internal Name",
         element: feedbackRatingWidgetsPageElements.WIDGET_NAME_INPUT,
         value: widgetName,
         elementPlaceHolder: "Widget Name"
@@ -115,6 +142,53 @@ const verifySettingsPageElements = ({
             value: viaContactText,
         });
     }
+
+    cy.verifyElement({
+        labelElement: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_LABEL,
+        labelText: "Add user consent",
+        element: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_CHECKBOX,
+        isChecked: isCheckedAddConsent
+    });
+
+    if (isCheckedAddConsent) {
+        cy.verifyElement({
+            labelElement: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_TEXT_LABEL,
+            labelText: "Text",
+        });
+
+        cy.verifyElement({
+            element: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_TEXT_INPUT,
+            value: consentText,
+        });
+
+        cy.verifyElement({
+            labelElement: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_LINK_LABEL,
+            labelText: "Link(s)",
+            tooltipElement: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_LINK_TOOLTIP,
+            tooltipText: "Matching link texts inside the consent text are modified to be links",
+        });
+
+        cy.verifyElement({
+            element: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_CONSENT_ADD_LINK_BUTTON,
+        });
+
+        consentItems.forEach((consent, index) => {
+            const consentLinkElements = feedbackRatingWidgetAddUserConsentElements(index);
+
+            cy.verifyElement({
+                element: consentLinkElements.ADD_USER_CONSENT_CONSENT_LINKS_TEXT_INPUT,
+                value: consent.text,
+            });
+
+            cy.verifyElement({
+                element: consentLinkElements.ADD_USER_CONSENT_CONSENT_LINKS_URL_INPUT,
+                value: consent.link,
+            });
+        });
+    }
+
+    cy.scrollPageToBottom('.cly-vue-drawer__steps-container.is-multi-step');
+
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.BUTTON_CALLOUT_LABEL,
         labelText: "Button Callout",
@@ -426,6 +500,22 @@ const typeContactViaCheckboxLabelText = (email) => {
     cy.typeInput(feedbackRatingWidgetsPageElements.CONTACT_VIA_INPUT, email);
 };
 
+const clickAddUserConsentCheckbox = () => {
+    cy.clickElement(feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_CHECKBOX);
+};
+
+const typeAddUserConsentText = (text) => {
+    cy.typeInput(feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_TEXT_INPUT, text);
+};
+
+const typeAddUserConsentLinkText = (index, text) => {
+    cy.typeInput(feedbackRatingWidgetAddUserConsentElements(index).ADD_USER_CONSENT_CONSENT_LINKS_TEXT_INPUT, text);
+};
+
+const typeAddUserConsentLinkUrl = (index, link) => {
+    cy.typeInput(feedbackRatingWidgetAddUserConsentElements(index).ADD_USER_CONSENT_CONSENT_LINKS_URL_INPUT, link);
+};
+
 const typeButtonCallOut = (buttonText) => {
     cy.typeInput(feedbackRatingWidgetsPageElements.BUTTON_CALLOUT_INPUT, buttonText);
 };
@@ -523,29 +613,127 @@ const clickSetActiveCheckbox = (page) => {
 
 const verifyWidgetDataFromTable = ({
     index,
-    question,
-    internalName,
-    pages,
-    isActive
+    shouldNot = false,
+    widgetName = null,
+    internalName = null,
+    ratingScore = null,
+    responses = null,
+    pages = null,
+    isActive = true
 }) => {
+
     cy.verifyElement({
-        element: widgetsDataTableElements(index).WIDGET_QUESTION,
-        elementText: question
+        element: widgetsDataTableElements().EDIT_COLUMNS_BUTTON,
     });
 
     cy.verifyElement({
-        element: widgetsDataTableElements(index).INTERNAL_NAME,
-        elementText: internalName
+        element: widgetsDataTableElements().EXPORT_AS_BUTTON,
     });
 
     cy.verifyElement({
-        element: widgetsDataTableElements(index).PAGES,
-        elementText: pages
+        element: widgetsDataTableElements().TABLE_SEARCH_INPUT,
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_STATUS_LABEL,
+        elementText: "Status",
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_STATUS_SORTABLE_ICON,
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_RATINGS_WIDGET_NAME_LABEL,
+        elementText: "Ratings Widget Name",
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_INTERNAL_NAME_LABEL,
+        elementText: "Internal Name",
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_RATING_SCORE_LABEL,
+        elementText: "Rating Score"
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_RATING_SCORE_SORTABLE_ICON,
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_RESPONSES_LABEL,
+        elementText: "Responses"
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements().COLUMN_NAME_RESPONSES_SORTABLE_ICON,
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements(index).COLUMN_NAME_PAGES_LABEL,
+        elementText: "Pages"
+    });
+
+    cy.verifyElement({
+        isElementVisible: false,
+        element: widgetsDataTableElements(index).COLUMN_NAME_PAGES_SORTABLE_ICON,
     });
 
     cy.verifyElement({
         element: widgetsDataTableElements(index).STATUS_SWITCH_WRAPPER,
         isChecked: isActive
+    });
+
+    cy.verifyElement({
+        shouldNot: shouldNot,
+        element: widgetsDataTableElements(index).WIDGET_NAME,
+        elementText: widgetName
+    });
+
+    cy.verifyElement({
+        element: widgetsDataTableElements(index).WIDGET_ID_LABEL,
+        elementText: "Widget ID"
+    });
+
+    cy.verifyElement({
+        element: widgetsDataTableElements(index).WIDGET_ID,
+    });
+
+    if (internalName != null) {
+        cy.verifyElement({
+            shouldNot: shouldNot,
+            element: widgetsDataTableElements(index).INTERNAL_NAME,
+            elementText: internalName
+        });
+    }
+
+    cy.verifyElement({
+        shouldNot: shouldNot,
+        element: widgetsDataTableElements(index).RATING_SCORE,
+        elementText: ratingScore
+    });
+
+    cy.verifyElement({
+        shouldNot: shouldNot,
+        element: widgetsDataTableElements(index).RESPONSES,
+        elementText: responses
+    });
+
+    cy.verifyElement({
+        shouldNot: shouldNot,
+        element: widgetsDataTableElements(index).PAGES,
+        elementText: pages
     });
 };
 
@@ -560,6 +748,8 @@ const verifyPreviewRatingsPopUpElements = ({
     commentCheckboxLabelText,
     isCheckedViaContact,
     viaContactCheckboxLabelText,
+    isCheckedAddConsent = false,
+    consentText,
     submitButtonText,
     submitButtonColor,
     submitButtonFontColor,
@@ -611,6 +801,16 @@ const verifyPreviewRatingsPopUpElements = ({
         element: feedbackRatingWidgetsPageElements.RATINGS_POPUP_CONTACT_VIA_CHECKBOX,
         isChecked: isCheckedViaContact
     });
+
+    if (isCheckedAddConsent) {
+        cy.verifyElement({
+            labelElement: feedbackRatingWidgetsPageElements.RATINGS_POPUP_CONSENT_LABEL,
+            labelText: consentText,
+            element: feedbackRatingWidgetsPageElements.RATINGS_POPUP_CONSENT_CHECKBOX,
+            attr: "checked",
+            attrText: "checked",
+        });
+    }
 
     cy.verifyElement({
         element: feedbackRatingWidgetsPageElements.RATINGS_POPUP_SUBMIT_BUTTON,
@@ -704,9 +904,9 @@ const getWidgetIdFromDataTable = (index) => {
     return cy.getElement(widgetsDataTableElements(index).WIDGET_ID).eq(0).getText();
 };
 
-const navigateToWidgetsDetailPage = (question) => {
-    searchWidgetOnDataTable(question);
-    cy.clickElement(widgetsDataTableElements().WIDGET_QUESTION, true);
+const navigateToWidgetsDetailPage = (widgetName) => {
+    searchWidgetOnDataTable(widgetName);
+    cy.clickElement(widgetsDataTableElements().WIDGET_NAME, true);
 };
 
 const verifyWidgetDetailsPageElements = ({
@@ -929,7 +1129,7 @@ const shouldBeWidgetDeleted = (question) => {
             if (!isExists) {
                 cy.getElement(widgetsDataTableElements().TABLE_ROWS).its('length').then((count) => {
                     for (var index = 0; index < (count / 2) - 1; index++) {
-                        cy.shouldNotContainText(widgetsDataTableElements(index).WIDGET_QUESTION, question);
+                        cy.shouldNotContainText(widgetsDataTableElements(index).WIDGET_NAME, question);
                     }
                 });
             }
@@ -979,6 +1179,7 @@ const createRatingWithApi = (username, password, appName, widgetName) => {
 
 module.exports = {
     verifyEmptyPageElements,
+    verifyFullDataPageElements,
     verifySettingsPageElements,
     verifyAppearancePageElements,
     verifyDevicesAndTargetingPageElements,
@@ -1003,6 +1204,10 @@ module.exports = {
     typeAddCommentCheckboxLabelText,
     clickContactViaCheckbox,
     typeContactViaCheckboxLabelText,
+    clickAddUserConsentCheckbox,
+    typeAddUserConsentText,
+    typeAddUserConsentLinkText,
+    typeAddUserConsentLinkUrl,
     typeButtonCallOut,
     typeThanksMessage,
     selectRatingSymbol,

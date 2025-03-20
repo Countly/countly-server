@@ -9,6 +9,7 @@
                 currentTab: "data-populator",
                 dialog: {type: '', showDialog: false, saveButtonLabel: '', cancelButtonLabel: '', title: '', text: '', params: {}},
                 selectedTemplate: '',
+                selectedFeatures: [],
                 generateDataModal: {showDialog: false},
                 percentage: 0,
                 templates: [],
@@ -47,6 +48,25 @@
                     }
                 ];
             },
+            availableFeatures: function() {
+                var plugins = [
+                    {value: "ab-testing", label: CV.i18n("ab-testing.title")},
+                    {value: "cohorts", label: CV.i18n("cohorts.cohorts")},
+                    {value: "crashes", label: CV.i18n(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web" ? "web.crashes.title" : "crashes.title")},
+                    {value: "funnels", label: CV.i18n("funnels.plugin-title")},
+                    {value: "performance-monitoring", label: CV.i18n("performance-monitoring.title")},
+                    {value: "star-rating", label: CV.i18n("star-rating.plugin-title")},
+                    {value: "surveys", label: CV.i18n("surveys.nps.plugin-title")},
+                ];
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "mobile") {
+                    plugins.push({value: "push", label: CV.i18n("push-notification.title")});
+                }
+                return plugins.filter(function(plugin) {
+                    return CountlyHelpers.isPluginEnabled(plugin.value);
+                }).sort(function(a, b) {
+                    return a.label.localeCompare(b.label);
+                });
+            }
         },
         methods: {
             refreshTable: function(res) {
@@ -304,6 +324,7 @@
                 }
                 else {
                     countlyPopulator.setSelectedTemplate(self.selectedTemplate);
+                    countlyPopulator.setSelectedFeatures(this.selectedFeatures);
                     this.selectedTemplateInformation.saveEnvironment = this.isOpen;
                     this.selectedTemplateInformation.environmentName = this.environmentName;
                     countlyPopulator.generateUsers(self.selectedRunCount, this.selectedTemplateInformation);
@@ -327,6 +348,10 @@
                 });
             },
             openDialog: function() {
+                if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].salt || countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].checksum_salt) {
+                    CountlyHelpers.notify({type: 'error', message: CV.i18n("populator.error-salt"), sticky: true});
+                    return;
+                }
                 var self = this;
                 let selectedTemplateId = this.selectedTemplate;
                 if (this.currentPopulateTab === 'pop-with-env') { // populate with environment selected

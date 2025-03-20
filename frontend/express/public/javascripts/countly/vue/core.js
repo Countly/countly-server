@@ -540,21 +540,46 @@
             countlySidebar: {
                 namespaced: true,
                 state: {
-                    selectedMenuItem: {}
+                    selectedMenuItem: {},
+                    guidesButton: '',
                 },
                 getters: {
                     getSelectedMenuItem: function(state) {
                         return state.selectedMenuItem;
+                    },
+                    getGuidesButton: function(state) {
+                        return state.guidesButton;
                     }
                 },
                 mutations: {
                     setSelectedMenuItem: function(state, payload) {
                         state.selectedMenuItem = payload;
+                    },
+                    setGuidesButton: function(state, payload) {
+                        state.guidesButton = payload;
                     }
                 },
                 actions: {
-                    updateSelectedMenuItem: function(context, payload) {
-                        context.commit('setSelectedMenuItem', payload);
+                    updateSelectedMenuItem: function({commit}, payload) {
+                        commit('setSelectedMenuItem', payload);
+                    },
+                    selectGuidesButton: function(context) {
+                        context.commit('setGuidesButton', 'selected');
+                    },
+                    deselectGuidesButton: ({ getters, commit }) => {
+                        const buttonState = getters.getGuidesButton;
+                        if (buttonState !== 'highlighted') {
+                            commit('setGuidesButton', '');
+                        }
+                    },
+                    highlightGuidesButton: function({getters, commit}, payload) {
+                        const buttonState = getters.getGuidesButton;
+                        if (!payload) {
+                            payload = 'hover';
+                        }
+                        if (buttonState !== 'selected') {
+                            commit('setGuidesButton', payload);
+                        }
                     }
                 }
             }
@@ -688,7 +713,7 @@
 
     var NotificationToastsView = {
         template: '<div class="notification-toasts"> \
-                        <cly-notification v-for="(toast) in notificationToasts" :key="toast.id" :id="toast.id" :text="toast.text" :autoHide="toast.autoHide" :color="toast.color" :closable="true" :customWidth="toast.width" @close="onClose" class="notification-toasts__item"></cly-notification>\
+                        <cly-notification v-for="(toast) in notificationToasts" :key="toast.id" :id="toast.id" :text="toast.text" :goTo="toast.goTo" :autoHide="toast.autoHide" :color="toast.color" :closable="true" :customWidth="toast.width" :toast="true" @close="onClose" class="notification-toasts__item"></cly-notification>\
                     </div>',
         store: _vuex.getGlobalStore(),
         computed: {

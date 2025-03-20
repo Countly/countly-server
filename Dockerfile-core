@@ -2,7 +2,7 @@ FROM phusion/baseimage:focal-1.2.0
 
 ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards,sdk,data-manager,guides
 # Countly Enterprise:
-#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk,guides
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk,guides,journey_engine,content
 
 ARG COUNTLY_CONFIG_API_MONGODB_HOST=localhost
 ARG COUNTLY_CONFIG_FRONTEND_MONGODB_HOST=localhost
@@ -40,7 +40,7 @@ RUN useradd -r -M -U -d /opt/countly -s /bin/false countly && \
         gcc g++ make binutils autoconf automake autotools-dev libtool pkg-config zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev \
         libevent-dev libjansson-dev libjemalloc-dev cython python3-dev python-setuptools && \
     # node
-    wget -qO- https://deb.nodesource.com/setup_18.x | bash - && \
+    wget -qO- https://deb.nodesource.com/setup_20.x | bash - && \
     # data_migration (mongo clients)
     wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add - && \
     echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list && \

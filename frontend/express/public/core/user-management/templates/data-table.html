@@ -1,5 +1,6 @@
 <div class="manage-users-table">
   <cly-datatable-n
+    test-id= "datatable-users"
     :rows="filteredRows"
     :force-loading="loading"
     :exportFormat="formatExportFunction"
@@ -65,10 +66,16 @@
           <el-table-column
             v-if="col.value === 'full_name'"
             sortable="true" prop="full_name" :label="i18n('management-users.user')">
+            <template v-slot="rowScope">
+              <span class="text-medium" :data-test-id="'datatable-users-user-' + rowScope.$index"> {{rowScope.row.full_name}} </span>
+            </template>
           </el-table-column>
           <el-table-column
             v-if="col.value === 'username'"
             sortable="true" prop="username" :label="i18n('management-users.username')">
+            <template v-slot="rowScope">
+              <span class="text-medium" :data-test-id="'datatable-users-username-' + rowScope.$index">{{rowScope.row.username}}</span>
+            </template>
           </el-table-column>
           <el-table-column
             v-if="col.value === 'role'"
@@ -76,12 +83,15 @@
             sortable="true"
             :label="i18n('management-users.role')">
             <template v-slot="rowScope">
-              <span class="text-medium" :data-test-id="'users-data-table-user-role-' + rowScope.$index">{{rowScope.row.dispRole}}</span>
+              <span class="text-medium" :data-test-id="'datatable-users-role-' + rowScope.$index">{{rowScope.row.dispRole}}</span>
             </template>
           </el-table-column>
           <el-table-column
             v-if="col.value === 'email'"
             sortable="true" prop="email" :label="i18n('management-users.email')">
+            <template v-slot="rowScope">
+              <span class="text-medium" :data-test-id="'datatable-users-email-' + rowScope.$index">{{rowScope.row.email}}</span>
+            </template>
           </el-table-column>
           <el-table-column v-if="col.value === 'group'" sortable="true" prop="groupNames" :label="i18n('management-users.group')">
             <template v-slot="rowScope">
@@ -109,18 +119,19 @@
             prop="last_login"
             :label="i18n('management-users.last_login')">
             <template v-slot="rowScope">
-                <span class="text-medium" v-html="rowScope.row.last_login === 0 ? i18n('management-users.not-logged-in-yet') : formatTimeAgo(rowScope.row.last_login)">
+                <span class="text-medium" :data-test-id="'datatable-users-last-login-' + rowScope.$index" v-html="rowScope.row.last_login === 0 ? i18n('management-users.not-logged-in-yet') : formatTimeAgo(rowScope.row.last_login)">
                 </span>
             </template>
           </el-table-column>
         </template>
         <el-table-column type="options">
           <template v-slot="rowScope">
-            <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, rowScope.row._id)">
-              <el-dropdown-item command="edit-user">{{ i18n('management-users.edit-user') }}</el-dropdown-item>
-              <el-dropdown-item v-if="showLogs" command="show-logs">{{ i18n('management-users.view-user-logs') }}</el-dropdown-item>
-              <el-dropdown-item command="reset-logins">{{ i18n('management-users.reset-failed-logins') }}</el-dropdown-item>
-              <el-dropdown-item command="delete-user">{{ i18n('management-users.delete-user') }}</el-dropdown-item>
+            <cly-more-options v-if="rowScope.row.hover" size="small" @command="handleCommand($event, rowScope.row._id)" :test-id="'more-button-' + + rowScope.$index">
+              <el-dropdown-item command="edit-user" :data-test-id="'datatable-users-more-button-edit-select-' + rowScope.$index">{{ i18n('management-users.edit-user') }}</el-dropdown-item>
+              <el-dropdown-item v-if="showLogs" command="show-logs" :data-test-id="'datatable-users-more-button-view-logs-select-' + rowScope.$index">{{ i18n('management-users.view-user-logs') }}</el-dropdown-item>
+              <el-dropdown-item command="reset-logins" :data-test-id="'datatable-users-more-button-reset-logins-select-' + rowScope.$index">{{ i18n('management-users.reset-failed-logins') }}</el-dropdown-item>
+              <el-dropdown-item command="delete-user" :data-test-id="'datatable-users-more-button-delete-user-select-' + rowScope.$index">{{ i18n('management-users.delete-user') }}</el-dropdown-item>
+              <el-dropdown-item v-if="is2faEnabled(rowScope.row)" command="disable-2fa" :data-test-id="'datatable-users-more-button-disable-2fa-select-' + rowScope.$index">{{ i18n('management-users.disable-2fa-user') }}</el-dropdown-item>
             </cly-more-options>
           </template>
         </el-table-column>

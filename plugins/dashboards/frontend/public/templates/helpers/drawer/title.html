@@ -1,5 +1,7 @@
-<div class="bu-py-3">
-    <el-checkbox v-model="checkbox">{{i18nM("dashboards.custom-widget-title")}}</el-checkbox>
+<div class="bu-mt-4">
+    <el-checkbox v-model="checkbox">
+        <span class="text-smallish">{{ i18nM("dashboards.custom-widget-title") }}</span>
+    </el-checkbox>
 
     <cly-form-field
         v-if="checkbox"

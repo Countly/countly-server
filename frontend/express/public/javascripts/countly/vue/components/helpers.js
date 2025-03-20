@@ -1,4 +1,4 @@
-/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon CountlyHelpers*/
+/* global Vue, CV, $, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon CountlyHelpers*/
 
 (function(countlyVue) {
 
@@ -339,6 +339,11 @@
                 type: Boolean,
                 default: false,
                 required: false
+            },
+            testId: {
+                type: String,
+                default: "metric-breakdown-test-id",
+                required: false
             }
         },
         computed: {
@@ -405,7 +410,7 @@
         computed: {
             tooltipConf: function() {
                 return {
-                    content: this.tooltip,
+                    content: countlyCommon.unescapeHtml(this.tooltip),
                     placement: this.placement
                 };
             }
@@ -560,7 +565,7 @@
 
                 return Object.keys(apps).map(function(key) {
                     return {
-                        label: apps[key].name,
+                        label: countlyCommon.unescapeHtml(apps[key].name),
                         value: apps[key]._id
                     };
                 });
@@ -575,32 +580,36 @@
 
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
-        template: '<cly-select-x\
-                    :test-id="testId"\
-                    pop-class="cly-event-select"\
-                    all-placeholder="All Events"\
-                    search-placeholder="Search in Events"\
-                    placeholder="Select Event"\
-                    :disabled="disabled"\
-                    :hide-default-tabs="true"\
-                    :options="availableEvents"\
-                    :hide-all-options-tab="true"\
-                    :single-option-settings="singleOptionSettings"\
-                    :adaptive-length="adaptiveLength"\
-                    :arrow="arrow"\
-                    :width="width"\
-                    v-bind="$attrs"\
-                    v-on="$listeners">\
-                    <template v-slot:header="selectScope">\
-                        <h4 class="color-cool-gray-100 bu-mb-2" v-if="hasTitle">{{title}}</h4>\
-                        <el-radio-group\
-                            :value="selectScope.activeTabId"\
-                            @input="selectScope.updateTab"\
-                            size="small">\
-                            <el-radio-button :test-id="testId + \'-tab-\' + idx" v-for="(tab,idx) in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>\
-                        </el-radio-group>\
-                    </template>\
-                </cly-select-x>',
+        template: '<div class="cly-event-select">\
+                    <cly-select-x\
+                        :test-id="testId"\
+                        pop-class="cly-event-select"\
+                        all-placeholder="All Events"\
+                        search-placeholder="Search in Events"\
+                        placeholder="Select Event"\
+                        :disabled="disabled"\
+                        :hide-default-tabs="true"\
+                        :options="availableEvents"\
+                        :hide-all-options-tab="true"\
+                        :single-option-settings="singleOptionSettings"\
+                        :adaptive-length="adaptiveLength"\
+                        :arrow="arrow"\
+                        :width="width"\
+                        v-bind="$attrs"\
+                        v-if="!isLoading"\
+                        v-on="$listeners">\
+                        <template v-slot:header="selectScope">\
+                            <h4 class="color-cool-gray-100 bu-mb-2" v-if="hasTitle">{{title}}</h4>\
+                            <el-radio-group\
+                                :value="selectScope.activeTabId"\
+                                @input="selectScope.updateTab"\
+                                size="small">\
+                                <el-radio-button :test-id="testId + \'-tab-\' + idx" v-for="(tab,idx) in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>\
+                            </el-radio-group>\
+                        </template>\
+                    </cly-select-x>\
+                    <div v-else class="cly-event-select__loading el-loading-spinner"><i class="el-icon-loading bu-mr-2"></i><p class="el-loading-text">Loading...</p></div>\
+                </div>',
         props: {
             blacklistedEvents: {
                 type: Array,
@@ -621,16 +630,20 @@
                 singleOptionSettings: {
                     autoPick: true,
                     hideList: true
-                }
+                },
+                availableEvents: [],
+                isLoading: false
             };
         },
         computed: {
             hasTitle: function() {
                 return !!this.title;
-            },
-            availableEvents: function() {
+            }
+        },
+        methods: {
+            prepareAvailableEvents: function() {
                 var self = this;
-                var availableEvents = [
+                var preparedEventList = [
                     {
                         "label": this.i18n('sidebar.analytics.sessions'),
                         "name": "[CLY]_session",
@@ -643,7 +656,7 @@
                     }
                 ];
                 if (countlyGlobal.plugins.indexOf('views') !== -1) {
-                    availableEvents.push({
+                    preparedEventList.push({
                         "label": this.i18n('internal-events.[CLY]_view'),
                         "name": "[CLY]_view",
                         "options": [ { label: this.i18n('internal-events.[CLY]_view'), value: '[CLY]_view' } ]
@@ -660,7 +673,7 @@
                     feedbackOptions.push({ label: this.i18n('internal-events.[CLY]_survey'), value: '[CLY]_survey' });
                 }
                 if (feedbackOptions.length > 0) {
-                    availableEvents.push({
+                    preparedEventList.push({
                         "label": this.i18n("sidebar.feedback"),
                         "name": "feedback",
                         "options": feedbackOptions
@@ -669,7 +682,7 @@
 
 
                 if (countlyGlobal.plugins.indexOf('compliance-hub') !== -1) {
-                    availableEvents.push({
+                    preparedEventList.push({
                         "label": this.i18n('internal-events.[CLY]_consent'),
                         "name": "[CLY]_consent",
                         "options": [ { label: this.i18n('internal-events.[CLY]_consent'), value: '[CLY]_consent' } ]
@@ -677,7 +690,7 @@
                 }
 
                 if (countlyGlobal.plugins.indexOf('crashes') !== -1) {
-                    availableEvents.push({
+                    preparedEventList.push({
                         "label": this.i18n('internal-events.[CLY]_crash'),
                         "name": "[CLY]_crash",
                         "options": [ { label: this.i18n('internal-events.[CLY]_crash'), value: '[CLY]_crash' } ]
@@ -692,7 +705,7 @@
                             { label: this.i18n('internal-events.[CLY]_push_sent'), value: '[CLY]_push_sent' }
                         ]
                     });*/
-                    availableEvents.push({
+                    preparedEventList.push({
                         "label": 'Push Actioned',
                         "name": "[CLY]_push_action",
                         "options": [
@@ -707,26 +720,40 @@
                 //     "noChild": true
                 // }
 
-                if (this.selectedApp) {
-                    countlyEvent.getEventsForApps([this.selectedApp], function(eData) {
-                        availableEvents[1].options = eData.map(function(e) {
-                            return {label: countlyCommon.unescapeHtml(e.name), value: e.value};
+                return new Promise(function(resolve) {
+                    if (this.selectedApp) {
+                        self.isLoading = true;
+                        countlyEvent.getEventsForApps([this.selectedApp], function(eData) {
+                            preparedEventList[1].options = eData.map(function(e) {
+                                return {label: countlyCommon.unescapeHtml(e.name), value: e.value};
+                            });
                         });
-                    });
-                }
-                else {
-                    availableEvents[1].options = countlyEvent.getEvents().map(function(event) {
-                        return {label: countlyCommon.unescapeHtml(event.name), value: event.key};
-                    });
-                }
-
-                availableEvents = availableEvents.filter(function(evt) {
-                    return !(self.blacklistedEvents.includes(evt.name));
+                        preparedEventList = preparedEventList.filter(function(evt) {
+                            return !(self.blacklistedEvents.includes(evt.name));
+                        });
+                        self.isLoading = false;
+                        resolve(preparedEventList);
+                    }
+                    else {
+                        self.isLoading = true;
+                        $.when(countlyEvent.refreshEvents()).then(function() {
+                            const events = countlyEvent.getEvents();
+                            preparedEventList[1].options = events.map(function(event) {
+                                return {label: countlyCommon.unescapeHtml(event.name), value: event.key};
+                            });
+                            preparedEventList = preparedEventList.filter(function(evt) {
+                                return !(self.blacklistedEvents.includes(evt.name));
+                            });
+                            self.isLoading = false;
+                            resolve(preparedEventList);
+                        });
+                    }
                 });
-
-                return availableEvents;
             }
         },
+        created: async function() {
+            this.availableEvents = await this.prepareAvailableEvents();
+        }
     }));
 
     Vue.component("cly-paginate", countlyBaseComponent.extend({
@@ -974,25 +1001,63 @@
                    </div>'
     }));
     Vue.component("cly-notification", countlyBaseComponent.extend({
-        template: '<div v-if="isModalVisible===true" :class="dynamicClasses" class="cly-vue-notification__alert-box">\n' +
-                        '<div class="bu-is-flex bu-is-justify-content-space-between bu-p-3">\n' +
-                            '<div class="bu-is-flex">\n' +
-                                '<img data-test-id="cly-notification-img" :src="image" class="alert-image bu-mr-3">\n' +
-                                '<slot><span class="alert-text" data-test-id="cly-notification-text" style="margin-block:auto" v-html="innerText">{{text}}</span></slot>\n' +
-                            '</div>\n' +
-                            '<div v-if="goTo.title" class="bu-is-flex bu-ml-auto"><a class="bu-level-item bu-has-text-link bu-has-text-weight-medium" @click="goToUrl">{{goTo.title}}</a></div>' +
-                            '<div v-if="closable"  class="" >\n' +
-                                '<div v-if="size==\'full\'" @click="closeModal" class=" bu-ml-2" >\n' +
-                                    '<slot name="close"><i data-test-id="cly-notification-full-size-close-icon" class="el-icon-close"></i></slot>\n' +
-                                '</div>\n' +
-                                '<div v-else @click="closeModal" class="bu-ml-3 bu-pl-3 bu-ml-3" style="cursor:pointer;">\n' +
-                                    '<slot name="close"><i data-test-id="cly-notification-modal-close-icon" class="el-icon-close"></i></slot>\n' +
-                                '</div>\n' +
-                            '</div>\n' +
-                            '<div v-else class="bu-ml-5">\n' +
-                            '</div>\n' +
-                        '</div>\n' +
-                  '</div>\n',
+        template: `
+            <div
+                v-if="isModalVisible"
+                class="cly-vue-notification__alert-box"
+                :class="dynamicClasses"
+            >
+                <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center">
+                    <div class="bu-is-flex" style="width:100%">
+                        <img
+                            class="alert-image bu-p-2"
+                            data-test-id="cly-notification-img"
+                            :src="image"
+                        >
+                        <div :style="dynamicStyle">
+                            <slot>
+                                <span
+                                    class="alert-text"
+                                    data-test-id="cly-notification-text"
+                                    style="margin-block:auto"
+                                    v-html="innerText"
+                                >
+                                    {{ text }}
+                                </span>
+                            </slot>
+                            <span
+                                v-if="goTo.title"
+                                class="bu-is-flex cursor-pointer"
+                            >
+                                <a
+                                    class="bu-level-item bu-has-text-link bu-has-text-weight-medium"
+                                    @click="goToUrl"
+                                >
+                                    {{ goTo.title }}
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                    <div v-if="closable">
+                        <div
+                            :class="closeIconDynamicClasses"
+                            @click="closeModal"
+                        >
+                            <slot name="close">
+                                <i
+                                    :data-test-id="closeIconDataId"
+                                    class="cly-vue-notification__alert-box__close-icon el-icon-close bu-mr-2"
+                                />
+                            </slot>
+                        </div>
+                    </div>
+                    <div
+                        v-else
+                        class="bu-ml-5"
+                    />
+                </div>
+            </div>
+        `,
         mixins: [countlyVue.mixins.i18n],
         props: {
             id: {default: "", type: [String, Number], required: false},
@@ -1009,6 +1074,7 @@
                 type: Object
             },
             customWidth: { default: "", type: String },
+            toast: { default: false, type: Boolean }
         },
         data: function() {
             return {
@@ -1029,6 +1095,22 @@
             }
         },
         computed: {
+            closeIconDynamicClasses: function() {
+                if (this.size === 'full') {
+                    return 'bu-ml-2';
+                }
+
+                return 'bu-ml-3 bu-pl-3 bu-ml-3';
+            },
+
+            closeIconDataId: function() {
+                if (this.size === 'full') {
+                    return 'cly-notification-full-size-close-icon';
+                }
+
+                return 'cly-notification-modal-close-icon';
+            },
+
             dynamicClasses: function() {
                 var classes = ["cly-vue-notification__alert-box__alert-text--" + this.color, "cly-vue-notification__alert-box--" + this.size];
                 if (this.customWidth !== "") {
@@ -1055,6 +1137,20 @@
                     return this.text;
                 }
                 return "";
+            },
+            dynamicStyle: function() {
+                let style = {
+                    "display": "flex",
+                    "flex-direction": this.toast ? "column" : "row",
+                    "width": "100%"
+                };
+                if (this.toast) {
+                    style.gap = "5px";
+                }
+                else {
+                    style["justify-content"] = "space-between";
+                }
+                return style;
             }
         },
         methods: {
@@ -1218,6 +1314,63 @@
                         </component>\
                     </div>'
     });
+
+    Vue.component("cly-list-drawer", countlyBaseComponent.extend({
+        props: {
+            list: {
+                type: Array,
+                required: true,
+            },
+            dropdownText: {
+                type: String,
+                default: 'Listed item(s) will be affected by this action',
+                required: false,
+            },
+        },
+        data: function() {
+            return {
+                isOpen: false,
+                options: {
+                    vuescroll: {
+                        sizeStrategy: 'number',
+                    },
+                    scrollPanel: {
+                        initialScrollX: false,
+                    },
+                    rail: {
+                        gutterOfSide: "4px",
+                        gutterOfEnds: "16px",
+                        keepShow: false,
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        keepShow: false,
+                    }
+                },
+            };
+        },
+        methods: {
+            toggleList: function() {
+                this.isOpen = !this.isOpen;
+            },
+        },
+        template: '<div class="cly-list-drawer">\
+                        <div class="cly-list-drawer__text-clickable bu-pt-4 bu-pb-3 bu-has-text-weight-medium" @click="toggleList">\
+                            {{ dropdownText }}\
+                            <i class="cly-io-16 cly-io cly-io-chevron-down" :class="{ \'rotate-icon\': isOpen }"></i>\
+                        </div>\
+                        <div v-if="isOpen" class="cly-list-drawer__list">\
+                            <vue-scroll :ops="options">\
+                                <div>\
+                                    <ul>\
+                                        <li v-for="ev in list">{{ev}}</li>\
+                                    </ul>\
+                                </div>\
+                            </vue-scroll>\
+                        </div>\
+                    </div>'
+    }));
 
     Vue.component("cly-auto-refresh-toggle", countlyBaseComponent.extend({
         template: "<div class='cly-vue-auto-refresh-toggle'>\

@@ -929,10 +929,15 @@
                     var lengthStr = this.rangeLimits.maxLength[0] + ' ' + CV.i18n('common.buckets.' + this.rangeLimits.maxLength[1]);
                     return {'maxLength': CV.i18n('common.range-length-limit', lengthStr)};
                 }
-                return {};
+                return "";
             },
             setMinuteAndHourStyle: function() {
                 return { display: this.tableType === 'minute' || this.tableType === 'hour' ? 'none' : '' };
+            },
+            customStyle: function() {
+                return {
+                    height: (this.isVisible && this.presetSelection) ? "447px" : "auto"
+                };
             }
         },
         props: {
@@ -1071,11 +1076,7 @@
                 type: Boolean,
                 default: true
             },
-            excludeCurrentDayProp: {
-                type: Boolean,
-                default: false
-            },
-            labelMode: {
+            labelModeProp: {
                 type: String,
                 default: "mixed",
                 validator: function(value) {
@@ -1129,9 +1130,6 @@
                 this.inTheLastInput.raw.level = newVal;
                 this.tableType = this.tableTypeMapper[newVal];
             },
-            'excludeCurrentDayProp': function() {
-                this.loadValue(this.value);
-            },
             'label': function() {
                 this.$emit("change-label", {
                     label: this.label
@@ -1140,6 +1138,9 @@
         },
         methods: {
             loadValue: function(value) {
+                if (!value) {
+                    return;
+                }
                 var changes = this.valueToInputState(value),
                     self = this;
                 changes.label = getRangeLabel(changes, this.type);
@@ -1149,8 +1150,11 @@
                 });
             },
             valueToInputState: function(value) {
-
-                var excludeCurrentDay = this.excludeCurrentDayProp;
+                var excludeCurrentDay = false;
+                if (value.period) {
+                    excludeCurrentDay = value.exclude_current_day;
+                    value = value.period;
+                }
                 if (this.allowPresets) {
                     if (this.selectedPreset) {
                         excludeCurrentDay = this.selectedPreset.exclude_current_day;
@@ -1291,7 +1295,7 @@
                     };
                 }
                 state.minTime = new Date(state.minDate.getTime());
-                state.labelMode = this.labelMode;
+                state.labelMode = excludeCurrentDay ? "absolute" : this.labelModeProp;
                 return state;
             },
             handleDropdownHide: function(aborted) {
@@ -1557,7 +1561,8 @@
                         ],
                         isShortcut: isShortcut,
                         value: submittedVal,
-                        label: this.label
+                        label: this.label,
+                        excludeCurrentDay: this.selectedPreset ? this.selectedPreset.exclude_current_day : false
                     });
 
                     if (this.isGlobalDatePicker) {
@@ -1655,9 +1660,48 @@
                 type: Boolean,
                 default: true,
                 required: false
+            },
+            minDateValue: {
+                type: Date
+            },
+            isFuture: {
+                type: Boolean,
+                default: false
             }
         },
-        template: '<el-time-picker :append-to-body="appendToBody" :style="{\'width\': width + \'px\'}" class="cly-vue-time-picker" v-bind="$attrs" v-on="$listeners" :format="format" :clearable="clearable"></el-time-picker>'
+        computed: {
+            pickerOptions() {
+                const defaultRange = { selectableRange: '00:00:00 - 23:59:00' };
+
+                if (!this.minDateValue) {
+                    return defaultRange;
+                }
+
+                const now = moment();
+                const minDateMoment = moment(this.minDateValue);
+                const isToday = minDateMoment.isSame(now, 'day');
+
+                if (this.isFuture && isToday) {
+                    return {
+                        selectableRange: `${now.format('HH:mm:ss')} - 23:59:00`
+                    };
+                }
+
+                return defaultRange;
+            }
+        },
+        template: `
+                <el-time-picker
+                    :append-to-body="appendToBody"
+                    :clearable="clearable"
+                    :format="format"
+                    :picker-options="pickerOptions"
+                    :style="{\'width\': width + \'px\'}"
+                    class="cly-vue-time-picker"
+                    v-bind="$attrs"
+                    v-on="$listeners"
+                >
+                </el-time-picker>`
     });
 
 

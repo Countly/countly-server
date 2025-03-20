@@ -21,7 +21,7 @@
         </el-table-column>
         <el-table-column prop="condition_description" :label="i18n('remote-config.description')">
           <template v-slot:default="rowScope">
-            {{rowScope.row.condition_description || "-"}}
+            {{displayDescription(rowScope.row.condition_description)}}
           </template>
         </el-table-column>
         <el-table-column prop="condition_definition" :label="i18n('remote-config.definition')">

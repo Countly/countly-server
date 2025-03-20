@@ -1,7 +1,7 @@
 <div v-bind:class="[componentId]">
     <cly-header
 		:title="title"
-		:tooltip="!app_id && {description, placement: 'top-center'}"
+		:tooltip="tooltip"
 	>
 		<template v-slot:header-top >
 			<cly-back-link v-if="subPage" link="#/manage/data-points" :title ="i18n('common.back')"></cly-back-link>
@@ -13,7 +13,7 @@
 		</div>
 		<cly-section v-if="!subPage" class="bu-mt-4">
 			<cly-metric-cards :multiline="false" v-loading="isLoading" style="min-height:100px;">
-				<cly-metric-card formatting="long" :is-percentage="false" :box-type="3" :label="item.name" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in topApps">
+				<cly-metric-card :test-id="'datapoint-app-' + idx " formatting="long" :is-percentage="false" :box-type="3" :label="item.name" color="#097EFF" numberClasses="bu-is-flex bu-is-align-items-center" :key="idx" v-for="(item, idx) in topApps">
 					<template v-slot:number>{{item.value}}</template>
 				</cly-metric-card>
 				
@@ -21,30 +21,39 @@
 		</cly-section>
 		<cly-section>
 			<cly-date-picker-g class="bu-m-5"></cly-date-picker-g>
-			<cly-chart-bar v-if="useBasicGraph" :legend="{show:false}" :option="dataPointsGraph" :height="520" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
+			<cly-chart-bar test-id="chart-datapoint" v-if="useBasicGraph" :legend="{show:false}" :option="dataPointsGraph" :height="520" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
 			<cly-chart-generic v-else :height="520"  :option="dataPointsGraph" v-loading="isLoading" :force-loading="isLoading"></cly-chart-generic>
         </cly-section>
 		
 		<cly-section>
-            <cly-datatable-n data-test-id="apps-table" :exportFormat="formatExportFunction" :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
+            <cly-datatable-n test-id="datatable-apps-datapoint" :exportFormat="formatExportFunction" :rows="dataPointsRows" :resizable="true" v-loading="isLoading" :force-loading="isLoading" :default-sort="{prop: 'data-points', order: 'descending'}">
 				<el-table-column min-width="200" type="clickable" sortable="custom" prop="appName" :show-overflow-tooltip="true" :label="i18n('compare.apps.app-name')" fixed="left">
 					<template slot-scope="scope">
-						<a v-if="!subPage && scope.row.appId" :href='"#/manage/data-points/" +scope.row.appId'>{{scope.row.appName}}</a>
-						<span v-else class="i_am_not_clickable">{{scope.row.appName}}</span>
+						<a v-if="!subPage && scope.row.appId" :href='"#/manage/data-points/" +scope.row.appId' :data-test-id="'datatable-datapoints-app-name-' + scope.$index">{{scope.row.appName}}</a>
+						<span v-else class="i_am_not_clickable" data-test-id="datatable-all-datapoints">{{scope.row.appName}}</span>
 					</template>
 				</el-table-column>
 				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="sessions" :label="i18n('sidebar.analytics.sessions')">
 					<template v-slot:header>
 						{{i18n('sidebar.analytics.sessions')}}
-						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.sessions-description')"></span>
+						<cly-tooltip-icon class="bu-pl-1" :tooltip="i18n('server-stats.sessions-description')" placement="top-center" data-test-id="datatable-apps-datapoint-tooltip-sessions"></cly-tooltip-icon>
+					</template>
+					<template #default="scope">
+						<span
+							:data-test-id="'datatable-datapoints-sessions-' + scope.$index"
+						>
+							{{ eventsNumberFormatter(scope.row.sessions) }}
+						</span>
 					</template>
 				</el-table-column>
-				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="events" :label="i18n('sidebar.events')">
+				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="events" :label="i18n('server-stats.events')">
 					<template v-slot:header>
-						{{i18n('sidebar.events')}}
-						<span class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-1" v-tooltip.top-center="i18n('server-stats.events-description')"></span>
+						{{i18n('server-stats.events')}}
+						<cly-tooltip-icon class="bu-pl-1" :tooltip="i18n('server-stats.events-description')" placement="top-center" data-test-id="datatable-apps-datapoint-tooltip-non-session-datapoints"></cly-tooltip-icon>
 					</template>
-					<div slot-scope="scopeRow">
+
+					<template #default="scopeRow">
+					<div :data-test-id="'datatable-datapoints-no-session-datapoints-' + scopeRow.$index">
 						<el-popover
 							trigger="hover"
 							placement="right"
@@ -68,10 +77,22 @@
 							<span slot="reference">{{eventsNumberFormatter(scopeRow.row.events)}}</span>
 						</el-popover>
 					</div>
+				</template>
 				</el-table-column>
-				<el-table-column min-width="150" v-if="showPushColumn" :formatter="numberFormatter" sortable="custom" prop="push" :label="i18n('push-notification.title')"></el-table-column>
-				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="data-points" :label="i18n('server-stats.data-points')"></el-table-column>
-				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="change" :label="i18n('server-stats.datapoint-change')"></el-table-column>
+				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="data-points" :label="i18n('server-stats.total-datapoints')">
+					<template v-slot="rowScope">
+                        <div :data-test-id="'datatable-datapoints-total-datapoints-' + rowScope.$index">
+                            {{ eventsNumberFormatter(rowScope.row['data-points']) }}
+                        </div>
+                    </template>
+				</el-table-column>
+				<el-table-column min-width="150" :formatter="numberFormatter" sortable="custom" prop="change" :label="i18n('server-stats.datapoint-change')">
+					<template v-slot="rowScope">
+						<div :data-test-id="'datatable-datapoints-datapoint-change-' + rowScope.$index">
+							{{ eventsNumberFormatter(rowScope.row['change']) }}
+						</div>
+					</template>
+				</el-table-column>
 			</cly-datatable-n>
 		</cly-section>
 	</cly-main>

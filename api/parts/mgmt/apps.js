@@ -170,7 +170,7 @@ appsApi.getAppsDetails = function(params) {
 *  @param {params} params - params object with args to create app
 *  @return {object} return promise object;
 **/
-const iconUpload = function(params) {
+const iconUpload = async function(params) {
     const appId = params.app_id || common.sanitizeFilename(params.qstring.args.app_id);
     if (params.files && params.files.app_image) {
         const tmp_path = params.files.app_image.path,
@@ -183,25 +183,18 @@ const iconUpload = function(params) {
             return Promise.reject();
         }
         try {
-            return jimp.read(tmp_path, function(err, icon) {
-                if (err) {
-                    log.e(err, err.stack);
-                    fs.unlink(tmp_path, function() {});
-                    return true;
+            const icon = await jimp.Jimp.read(tmp_path);
+            const buffer = await icon.cover({h: 72, w: 72}).getBuffer(jimp.JimpMime.png);
+            countlyFs.saveData("appimages", target_path, buffer, {id: appId + ".png", writeMode: "overwrite"}, function(err3) {
+                if (err3) {
+                    log.e(err3, err3.stack);
                 }
-                icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                    countlyFs.saveData("appimages", target_path, buffer, {id: appId + ".png", writeMode: "overwrite"}, function(err3) {
-                        if (err3) {
-                            log.e(err3, err3.stack);
-                        }
-                        fs.unlink(tmp_path, function() {});
-                    });
-                });
             });
         }
         catch (e) {
-            log.e(e.stack);
+            console.log("Problem uploading app icon", e);
         }
+        fs.unlink(tmp_path, function() {});
     }
 };
 
@@ -613,6 +606,7 @@ appsApi.updateAppPlugins = function(params) {
 * @returns {boolean} true if operation successful
 **/
 appsApi.deleteApp = function(params) {
+    params = params || {};
     var argProps = {
             'app_id': {
                 'required': true,
@@ -849,15 +843,11 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     function deleteEvents() {
         common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
             if (!err && events && events.list) {
-
-                common.arrayAddUniq(events.list, plugins.internalEvents);
-                for (var i = 0; i < events.list.length; i++) {
-                    var collectionNameWoPrefix = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
-                    common.db.collection("events" + collectionNameWoPrefix).drop(function() {});
-                }
-                if (fromAppDelete || params.qstring.args.period === "reset") {
-                    common.db.collection('events').remove({'_id': common.db.ObjectID(appId)}, function() {});
-                }
+                common.db.collection("events_data").remove({'_id': {"$regex": "^" + appId + "_.*"}}, function() {
+                    if (fromAppDelete || params.qstring.args.period === "reset") {
+                        common.db.collection('events').remove({'_id': common.db.ObjectID(appId)}, function() {});
+                    }
+                });
             }
         });
     }
@@ -969,15 +959,16 @@ function deletePeriodAppData(appId, fromAppDelete, params, app) {
                     segments = events.segments[events.list[i]];
                 }
 
+                var collectionNameWoPrefix = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
                 segments.push("no-segment");
                 var docs = [];
                 for (let j = 0; j < segments.length; j++) {
                     for (let k = 0; k < dates.length; k++) {
-                        docs.push(segments[j] + "_" + dates[k]);
+                        docs.push(appId + "_" + collectionNameWoPrefix + "_" + segments[j] + "_" + dates[k]);
                     }
                 }
-                var collectionNameWoPrefix = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
-                common.db.collection("events" + collectionNameWoPrefix).remove({'_id': {$nin: docs}}, function() {});
+                var collectionNameWoPrefix2 = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
+                common.db.collection("events_data").remove({"$and": [{'_id': {"$regex": "^" + appId + "_" + collectionNameWoPrefix2 + "_.*"}}, {'_id': {$nin: docs}}]}, function() {});
             }
         }
     });

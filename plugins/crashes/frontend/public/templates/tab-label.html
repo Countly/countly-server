@@ -2,11 +2,11 @@
     <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">
         <div class="text-medium" :data-test-id="`cly-section-${title.toLowerCase().replaceAll(/\s/g, '-').replace('/', 'or')}-title`">
             <span>{{title}}</span>
-            <span v-if="tooltip" :data-test-id="`cly-section-${title.toLowerCase().replaceAll(/\s/g, '-').replace('/', 'or')}-tooltip`" class="cly-vue-tooltip-icon ion ion-help-circled bu-ml-1" v-tooltip.top-center="tooltip"></span>
+            <cly-tooltip-icon v-if="tooltip" class="bu-ml-1" :tooltip="tooltip" placement="top-center" :data-test-id="`cly-section-${title.toLowerCase().replaceAll(/\s/g, '-').replace('/', 'or')}-tooltip`"></cly-tooltip-icon>
         </div>
     </div>
     <div class="bu-is-flex bu-is-align-items-center">
-        <h2 v-if="data.isEstimate" v-tooltip="i18n('common.estimation')" class="is-estimate" :data-test-id="`cly-section-${title.toLowerCase().replaceAll(/\s/g, '-').replace('/', 'or')}-value`">
+        <h2 v-if="data && data.isEstimate" v-tooltip="i18n('common.estimation')" class="is-estimate" :data-test-id="`cly-section-${title.toLowerCase().replaceAll(/\s/g, '-').replace('/', 'or')}-value`">
             ~{{ data && data.total && !isNaN(data.total) && getShortNumber(data.total) || data && data.total}}
         </h2>
         <h2 v-else :data-test-id="`cly-section-${title.toLowerCase().replaceAll(/\s/g, '-').replace('/', 'or')}-value`">

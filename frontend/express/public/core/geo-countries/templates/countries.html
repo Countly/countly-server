@@ -5,10 +5,7 @@
 	>
 		<template v-slot:header-right>
           <cly-more-options v-if="topDropdown" size="small">
-            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown">
-			  <!--<span :class="item.icon"></span>-->
-              <a :href="item.value" class="bu-ml-1">{{item.label}}</a>
-            </el-dropdown-item>
+            <el-dropdown-item :key="idx" v-for="(item, idx) in topDropdown" :command="{url: item.value}">{{item.label}}</el-dropdown-item>
           </cly-more-options>
         </template>
     </cly-header>
@@ -41,32 +38,38 @@
 			</div>
 		</cly-section>
 		<cly-section>
-			<cly-datatable-n  :rows="countryTable" :resizable="true" :force-loading="isLoading">
+			<cly-datatable-n  test-id="countries" :rows="countryTable" :resizable="true" :force-loading="isLoading">
 				<template v-slot="scope">
 					<el-table-column sortable="custom" prop="countryTranslated" :label="i18n('countries.table.country')">
 						<template slot-scope="scope">
 								<div class="bu-level-left">
 									<div class="bu-level-item slipping-away-users-table-data-item">
-										<img :src='scope.row.flag' />
-										<span class="bu-pl-4">{{scope.row.countryTranslated}}</span>
+										<img :src='scope.row.flag' :data-test-id="'datatable-countries-country-flag-' + scope.$index" />
+										<span class="bu-pl-4" :data-test-id="'datatable-countries-country-name-' + scope.$index">{{scope.row.countryTranslated}}</span>
 									</div>
 								</div>
 							</template>
 					</el-table-column>
 					<el-table-column sortable="custom" prop="t" :label="i18n('common.table.total-sessions')">
 						<template slot-scope="scope">
-							{{formatNumber(scope.row.t)}}
-						</template>
+							<div :data-test-id="'datatable-countries-total-sessions-' + scope.$index">
+								{{formatNumber(scope.row.t)}}
+							</div>
+						  </template>
 					</el-table-column>
 					<el-table-column sortable="custom" prop="u" :label="i18n('common.table.total-users')">
 						<template slot-scope="scope">
-							{{formatNumber(scope.row.u)}}
-						</template>
+							<div :data-test-id="'datatable-countries-total-users-' + scope.$index">
+								{{formatNumber(scope.row.u)}}
+							</div>
+						  </template>
 					</el-table-column>
 					<el-table-column sortable="custom" prop="n" :label="i18n('common.table.new-users')">
 						<template slot-scope="scope">
-							{{formatNumber(scope.row.n)}}
-						</template>
+							<div :data-test-id="'datatable-countries-new-users-' + scope.$index">
+								{{formatNumber(scope.row.n)}}
+							</div>
+						  </template>
 					</el-table-column>
 				</template>
 			</cly-datatable-n>

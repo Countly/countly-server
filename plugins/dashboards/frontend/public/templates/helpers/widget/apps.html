@@ -5,10 +5,10 @@
             {{ i18n("dashboards.multiple-apps-count", apps.length) }}
         </span>
         <div v-else class="bu-is-flex apps__single">
-            <div class="apps__single--avatar" :style="app.avatar">
+            <div v-if="app.avatar" class="apps__single--avatar bu-mr-1" :style="app.avatar">
                 <span v-if="!app.image" class="has-ellipsis">{{getAppInitials(app.name)}}</span>
             </div>
-            <span class="bu-ml-1 text-small has-ellipsis bu-is-flex-shrink-1">{{app.name}}</span>
+            <span class="text-small has-ellipsis bu-is-flex-shrink-1">{{app.name}}</span>
         </div>
     </div>
 </div>

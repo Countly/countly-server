@@ -6,6 +6,22 @@
 // Set process name
 process.title = "countly: dashboard node " + process.argv[1];
 
+var fs = require('fs');
+var path = require('path');
+var IS_FLEX = false;
+
+if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
+    var deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
+    try {
+        if (JSON.parse(deploymentConf).DEPLOYMENT_ID) {
+            IS_FLEX = true;
+        }
+    }
+    catch (e) {
+        IS_FLEX = false;
+    }
+}
+
 var versionInfo = require('./version.info'),
     pack = require('../../package.json'),
     COUNTLY_VERSION = versionInfo.version,
@@ -27,8 +43,6 @@ var versionInfo = require('./version.info'),
         }
     }),
     crypto = require('crypto'),
-    fs = require('fs'),
-    path = require('path'),
     jimp = require('jimp'),
     flash = require('connect-flash'),
     cookieParser = require('cookie-parser'),
@@ -66,7 +80,13 @@ var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;
 var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
 var COUNTLY_TRACK_TYPE = "OSS";
-if (versionInfo.footer) {
+
+if (IS_FLEX) {
+    COUNTLY_NAMED_TYPE = "Countly v" + COUNTLY_VERSION;
+    COUNTLY_TYPE_CE = false;
+    COUNTLY_TRACK_TYPE = "Flex";
+}
+else if (versionInfo.footer) {
     COUNTLY_NAMED_TYPE = versionInfo.footer;
     COUNTLY_TYPE_CE = false;
     if (COUNTLY_NAMED_TYPE === "Countly Cloud") {
@@ -116,8 +136,8 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    google_maps_api_key: "",
     offline_mode: false,
+    self_tracking: "",
 });
 
 if (!plugins.isPluginEnabled('tracker')) {
@@ -137,7 +157,6 @@ plugins.setUserConfigs("frontend", {
     session_timeout: false,
     use_google: false,
     code: false,
-    google_maps_api_key: ""
 });
 
 plugins.setConfigs("security", {
@@ -151,8 +170,8 @@ plugins.setConfigs("security", {
     password_rotation: 3,
     password_autocomplete: true,
     robotstxt: "User-agent: *\nDisallow: /",
-    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
+    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
     dashboard_rate_limit_window: 60,
     dashboard_rate_limit_requests: 500
 });
@@ -486,12 +505,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.sendFile(__dirname + '/public/images/default_app_icon.png');
         }
         else {
-            countlyFs.getStats("appimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err, stats) {
+            countlyFs.getStats("appimages", __dirname + '/public/appimages/' + req.params[0], {id: req.params[0]}, function(err, stats) {
                 if (err || !stats || !stats.size) {
                     res.sendFile(__dirname + '/public/images/default_app_icon.png');
                 }
                 else {
-                    countlyFs.getStream("appimages", __dirname + '/public/' + req.path, {id: req.params[0]}, function(err2, stream) {
+                    countlyFs.getStream("appimages", __dirname + '/public/appimages/' + req.params[0], {id: req.params[0]}, function(err2, stream) {
                         if (err2 || !stream) {
                             res.sendFile(__dirname + '/public/images/default_app_icon.png');
                         }
@@ -603,6 +622,10 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.use(function(req, res, next) {
         var contentType = req.headers['content-type'];
         if (req.method.toLowerCase() === 'post' && contentType && contentType.indexOf('multipart/form-data') >= 0) {
+            if (!req.session?.uid || Date.now() > req.session?.expires) {
+                res.status(401).send('Unauthorized');
+                return;
+            }
             var form = new formidable.IncomingForm();
             form.uploadDir = __dirname + '/uploads';
             form.parse(req, function(err, fields, files) {
@@ -657,7 +680,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             favicon: "images/favicon.png",
             documentationLink: convertLink(versionInfo.documentationLink, "https://support.count.ly/hc/en-us/categories/360002373332-Knowledge-Base"),
             helpCenterLink: convertLink(versionInfo.helpCenterLink, "https://support.count.ly/hc/en-us"),
-            featureRequestLink: convertLink(versionInfo.featureRequestLink, "https://support.count.ly/hc/en-us/community/topics/360001464272-Feature-Requests"),
+            featureRequestLink: convertLink(versionInfo.featureRequestLink, "https://discord.com/channels/1088398296789299280/1088721958218248243"),
             feedbackLink: convertLink(versionInfo.feedbackLink, "https://count.ly/legal/privacy-policy"),
         };
         plugins.loadConfigs(countlyDb, function() {
@@ -903,8 +926,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             countly_tracking = plugins.isPluginEnabled('tracker') ? true : plugins.getConfig('frontend').countly_tracking,
             countly_domain = plugins.getConfig('api').domain,
             licenseNotification, licenseError;
+        var isLocked = false;
         configs.export_limit = plugins.getConfig("api").export_limit;
-        app.loadThemeFiles(configs.theme, function(theme) {
+        app.loadThemeFiles(configs.theme, async function(theme) {
             if (configs._user.theme) {
                 res.cookie("theme", configs.theme);
             }
@@ -917,6 +941,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Pragma', 'no-cache');
             if (member.upgrade) {
                 countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
+            }
+            if (IS_FLEX) {
+                let locked = await countlyDb.collection('mycountly').findOne({_id: 'lockServer'});
+                if (locked?.isLocked === true) {
+                    isLocked = true;
+                }
+
             }
 
             if (req.session.licenseError) {
@@ -974,6 +1005,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     timezones: timezones,
                     countlyTypeName: COUNTLY_NAMED_TYPE,
                     countlyTypeTrack: COUNTLY_TRACK_TYPE,
+                    countlyTypeCE: COUNTLY_TYPE_CE,
                     countly_tracking,
                     countly_domain,
                     frontend_app: versionInfo.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',
@@ -984,6 +1016,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         helpCenterLink: COUNTLY_HELPCENTER_LINK,
                         featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
                     },
+                    mycountly: IS_FLEX,
+                    isLocked: isLocked,
                 };
 
 
@@ -1606,7 +1640,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             req.body.app_id = req.body.app_image_id;
         }
         var params = paramsGenerator({req, res});
-        validateCreate(params, 'global_upload', function() {
+        validateCreate(params, 'global_upload', async function() {
             if (!req.session.uid && !req.body.app_image_id) {
                 res.end();
                 return false;
@@ -1630,25 +1664,18 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             }
             plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
             try {
-                jimp.read(tmp_path, function(err, icon) {
-                    if (err) {
-                        console.log(err, err.stack);
-                        fs.unlink(tmp_path, function() {});
-                        res.status(400).send(false);
-                        return true;
-                    }
-                    icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                        countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
-                            fs.unlink(tmp_path, function() {});
-                            res.send("appimages/" + req.body.app_image_id + ".png");
-                            countlyDb.collection('apps').updateOne({_id: countlyDb.ObjectID(req.body.app_image_id)}, {'$set': {'has_image': true}}, function() {});
-                        });
-                    }); // save
+                const icon = await jimp.Jimp.read(tmp_path);
+                const buffer = await icon.cover({h: 72, w: 72}).getBuffer(jimp.JimpMime.png);
+                countlyFs.saveData("appimages", target_path, buffer, {id: req.body.app_image_id + ".png", writeMode: "overwrite"}, function() {
+                    res.send("appimages/" + req.body.app_image_id + ".png");
+                    countlyDb.collection('apps').updateOne({_id: countlyDb.ObjectID(req.body.app_image_id)}, {'$set': {'has_image': true}}, function() {});
                 });
             }
             catch (e) {
-                console.log(e.stack);
+                console.log("Problem uploading app icon", e);
+                res.status(400).send(false);
             }
+            fs.unlink(tmp_path, function() {});
         });
     });
 
@@ -1690,23 +1717,19 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             }
             plugins.callMethod("iconUpload", {req: req, res: res, next: next, data: req.body});
             try {
-                jimp.read(tmp_path, function(err, icon) {
-                    if (err) {
-                        console.log(err, err.stack);
-                    }
-                    icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err2, buffer) {
-                        countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
-                            fs.unlink(tmp_path, function() {});
-                            countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.body.member_image_id + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
-                                res.send("memberimages/" + req.body.member_image_id + ".png");
-                            });
-                        });
-                    }); // save
+                const icon = await jimp.Jimp.read(tmp_path);
+                const buffer = await icon.cover({h: 72, w: 72}).getBuffer(jimp.JimpMime.png);
+                countlyFs.saveData("memberimages", target_path, buffer, {id: req.body.member_image_id + ".png", writeMode: "overwrite"}, function() {
+                    countlyDb.collection('members').updateOne({_id: countlyDb.ObjectID(req.body.member_image_id + "")}, {'$set': {'member_image': "memberimages/" + req.body.member_image_id + ".png"}}, function() {
+                        res.send("memberimages/" + req.body.member_image_id + ".png");
+                    });
                 });
             }
             catch (e) {
-                console.log(e.stack);
+                console.log("Problem uploading member icon", e);
+                res.status(400).send(false);
             }
+            fs.unlink(tmp_path, function() {});
         });
     });
 

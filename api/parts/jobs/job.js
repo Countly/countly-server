@@ -254,8 +254,32 @@ class Job extends EventEmitter {
 
             this._json.next = next.getTime();
         }
+        if (this.name !== "alerts:monitor") {
+            //check if any job already scheduled or running
+            let query = {
+                status: {"$in": [STATUS.SCHEDULED, STATUS.RUNNING]},
+                name: this.name,
+            };
+            if (this._id) {
+                query._id = {$ne: this._id};
+            }
+            var self = this;
+            return new Promise((resolve, reject) => {
+                Job.findMany(this.db(), query).then(existing => {
+                    if (existing && existing.length) {
+                        log.d('Job already scheduled or running: %j', existing);
+                        this._json.status = STATUS.CANCELLED; //set this as cancelled now as we have other scheduled
+                    }
+                    else {
+                        self._save().then(resolve, reject);
+                    }
 
-        return this._save();
+                });
+            });
+        }
+        else {
+            return this._save();
+        }
     }
 
     /**
@@ -1044,9 +1068,16 @@ class IPCFaçadeJob extends ResourcefulJob {
             this.ipcChannel.remove();
         }, (error) => {
             this.ipcChannel.remove();
-            log.e('[%s] Error in IPCFaçadeJob %s: %j / %j', this.job.channel, this.resourceFaçade._id, error, error.stack);
+            if (error) {
+                log.e('[%s] Error in IPCFaçadeJob %s: %j / %j', this.job.channel, this.resourceFaçade._id, error, error.stack);
+            }
+            else {
+                log.e('[%s] Error in IPCFaçadeJob %s: Unknown error', this.job.channel, this.resourceFaçade._id);
+            }
             this.job._finish(error || 'Aborted').catch(()=>{});
-            throw error;
+            if (error) {
+                throw error;
+            }
         });
     }
 

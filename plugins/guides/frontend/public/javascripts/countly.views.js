@@ -176,6 +176,7 @@
                         keepShow: false,
                     }
                 },
+                viewedGuides: countlyGlobal.member.viewedGuides,
             };
         },
         created: function() {
@@ -204,11 +205,28 @@
         beforeDestroy: function() {
             document.removeEventListener('keydown', this.handleEscapeKey);
         },
+        computed: {
+            dynamicClassGuideButton: function() {
+                var highlightGuidesButton = true;
+                if (this.viewedGuides === true) {
+                    highlightGuidesButton = false;
+                }
+                if (this.isDialogVisible) {
+                    highlightGuidesButton = true;
+                }
+                return highlightGuidesButton ? 'view-button-initial' : 'view-button';
+            }
+        },
         methods: {
             onClick: function() {
                 this.isDialogVisible = true;
                 let mainViewContainer = document.getElementById('main-views-container');
                 mainViewContainer.getElementsByClassName('main-view')[0].style.setProperty('overflow', 'hidden', 'important');
+
+                if (this.viewedGuides !== true) {
+                    countlyGuides.memberViewedGuides(countlyGlobal.member._id);
+                    this.viewedGuides = countlyGlobal.member.viewedGuides = true;
+                }
             },
             onClose: function() {
                 this.isDialogVisible = false;

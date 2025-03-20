@@ -16,13 +16,9 @@ module.exports.triggerByEvent = triggerByEvent;
  */
 async function triggerByEvent(payload) {
     const allEvents = payload?.events;
-    const appKey = payload?.app_key;
-    if (!Array.isArray(allEvents) || !appKey) {
-        return;
-    }
+    const app = payload?.app;
 
-    const app = await common.db.collection("apps").findOne({ key: appKey });
-    if (!app) {
+    if (!Array.isArray(allEvents) || !app) {
         return;
     }
 
@@ -34,22 +30,28 @@ async function triggerByEvent(payload) {
     );
 
     for (let event of validNPSEvents) {
-        const alert = await common.db.collection("alerts").findOne({
+        const alerts = await common.readBatcher.getMany("alerts", {
             selectedApps: app._id.toString(),
             alertDataSubType2: event.segmentation.widget_id,
             alertDataType: "nps",
             alertDataSubType: commonLib.TRIGGERED_BY_EVENT.nps,
         });
-        if (!alert) {
+
+        if (!alerts || !alerts.length) {
             continue;
         }
 
-        await commonLib.trigger({ alert, app, date: new Date }, log);
+        // trigger all alerts
+        await Promise.all(alerts.map(alert => commonLib.trigger({
+            alert,
+            app,
+            date: new Date,
+        }, log)));
     }
 }
 
 module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
-    const app = await common.db.collection("apps").findOne({ _id: ObjectId(alert.selectedApps[0]) });
+    const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
         return done();
@@ -62,7 +64,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
         if (metricValue > compareValue) {
-            await commonLib.trigger({ alert, app, metricValue, date });
+            await commonLib.trigger({ alert, app, metricValue, date }, log);
         }
     }
     else {
@@ -78,7 +80,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
             : change <= -compareValue;
 
         if (shouldTrigger) {
-            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore });
+            await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
 
@@ -91,7 +93,7 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
  * @param   {string}                    nps    - _id of the from feedback_widgets
  * @param   {Date}                      date   - date of the value you're looking for
  * @param   {string}                    period - hourly|daily|monthly
- * @param   {string}                    score  - detractor|passive|promoter
+ * @param   {string=}                   score  - detractor|passive|promoter
  * @returns {Promise<number|undefined>}        - a promise resolves to metric value or undefined
  */
 async function getResponsesByDate(app, nps, date, period, score) {
@@ -132,12 +134,15 @@ async function getResponsesByDate(app, nps, date, period, score) {
  * Calculates the sum of all valid responses inside a nps{app_id} date record.
  * @param   {object}           scope - object scope: Daily or hourly object from db
  * @param   {string}           nps   - feedback_widgets _id
- * @param   {string}           score - detractor|passive|promoter
+ * @param   {string=}          score - detractor|passive|promoter
  * @returns {number|undefined}       - number of valid responses
  */
 function sumOfAllResponses(scope, nps, score) {
     if (!scope) {
         return;
+    }
+    if (!score) {
+        score = "detractor|passive|promoter";
     }
 
     const recordKeyReg = new RegExp("\\*\\*\\d{1,2}\\*\\*" + nps + "\\*\\*(" + score + ")$");
@@ -161,9 +166,9 @@ function sumOfAllResponses(scope, nps, score) {
 
 /*
 (async function() {
-    const app = { _id: ObjectId("65c1f875a12e98a328d5eb9e"), timezone: "Europe/Istanbul" };
-    const nps = "65c383fcb46a4d172d7c5911";
-    const date = new Date("2024-02-07T12:00:00.000Z");
+    const app = {name: "test", _id: new ObjectId("6600901a71159e99a3434253"), timezone: "Europe/Istanbul", plugins: null };
+    const nps = "6600909ed476e1837317dc52";
+    const date = new Date("2024-09-16T12:00:00.000Z");
 
     let data = await getResponsesByDate(app, nps, date, "monthly");
     console.log("monthly:", data);

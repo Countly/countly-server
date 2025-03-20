@@ -8,7 +8,7 @@ const plugins = require('../../pluginManager'),
     { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
     { apiPop, apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, test, create, update, toggle, remove, all, one, mime, user, notificationsForUser, periodicStats } = require('./api-message'),
+    { estimate, test, create, update, toggle, remove, all, one, mime, user } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
     { legacyApis } = require('./legacy'),
@@ -26,10 +26,8 @@ const plugins = require('../../pluginManager'),
                 estimate: [validateRead, estimate],
                 all: [validateRead, all],
                 GET: [validateRead, one, '_id'],
-                stats: [validateRead, periodicStats],
             },
             user: [validateRead, user],
-            notifications: [validateRead, notificationsForUser],
         },
         i: {
             message: {
@@ -65,7 +63,6 @@ plugins.setConfigs(FEATURE_NAME, {
         rate: '',
         period: ''
     },
-    deduplicate: false,
     sendahead: 60000, // send pushes scheduled up to 60 sec in the future
     connection_retries: 3, // retry this many times on recoverable errors
     connection_factor: 1000, // exponential backoff factor
@@ -73,7 +70,6 @@ plugins.setConfigs(FEATURE_NAME, {
     pool_bytes: 10000, // bytes mode streams high water mark
     pool_concurrency: 5, // max number of same type connections
     pool_pools: 10, // max number of connections in total
-    message_timeout: 3600000, // timeout for a message not sent yet (for TooLateToSend error)
     default_content_available: false, // sets content-available: 1 by default for ios
 });
 
@@ -141,7 +137,8 @@ plugins.register('/master', async function() {
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
     setTimeout(() => {
-        require('../../../api/parts/jobs').job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
+        const jobManager = require('../../../api/parts/jobs');
+        jobManager.job("push:clear-stats").replace().schedule("at 3:00 am every 7 days");
     }, 10000);
     queueInitializer(common.db, true);
 });
@@ -161,7 +158,7 @@ plugins.register('/master/runners', runners => {
                 sender = undefined;
             }
             catch (e) {
-                log.e('Sending stopped with an error', e);
+                log.e('Sender crached', e);
                 sender = undefined;
             }
         }
@@ -222,9 +219,6 @@ plugins.register('/i', async ob => {
                     if (!msg || count !== 1) {
                         log.i('Invalid segmentation for [CLY]_push_action from %s: %j (msg %s, count %j)', params.qstring.device_id, event.segmentation, msg ? 'found' : 'not found', event.segmentation.count);
                         continue;
-                    }
-                    else {
-                        log.d('Recording push action: [%s] (%s) {%d}, %j', msg.id, params.app_user.uid, count, event);
                     }
 
                     let p = event.segmentation.p,
@@ -426,6 +420,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiDefine PushMessageBody
  *
  * @apiBody {ObjectID} app Application ID
+ * @apiBody {Boolean} saveStats Store each individual push records into push_stats for debugging
  * @apiBody {String[]} platforms Array of platforms to send to
  * @apiBody {String="draft"} [status] Message status, only set to draft when creating or editing a draft message, don't set otherwise
  * @apiBody {Object} filter={} User profile filter to limit recipients of this message
@@ -475,6 +470,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  *
  * @apiSuccess {ObjectID} _id Message ID
  * @apiSuccess {ObjectID} app Application ID
+ * @apiSuccess {Boolean} saveStats Store each individual push records into push_stats for debugging
  * @apiSuccess {String[]} platforms Array of platforms to send to
  * @apiSuccess {Number} state Message state, for internal use
  * @apiSuccess {String="created", "inactive", "draft", "scheduled", "sending", "sent", "stopped", "failed"} [status] Message status: "created" is for messages yet to be scheduled (put into queue), "inactive" - cannot be scheduled (approval required for push approver plugin), "draft", "scheduled", "sending", "sent", "stopped" - automated message has been stopped, "failed" - failed to send all notifications

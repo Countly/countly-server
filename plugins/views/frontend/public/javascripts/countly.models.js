@@ -24,6 +24,36 @@
     CountlyHelpers.createMetricModel(countlyViews, {name: "views"}, jQuery);
 
     countlyViews.service = {
+        fetchMetaData: function() {
+            return CV.$.ajax({
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "get_view_segments",
+                    "skip_domains": true
+                },
+                dataType: "json",
+                success: function(json) {
+                    if (json && json.segments) {
+                        for (var i = 0; i < json.segments.length; i++) {
+                            json.segments[i] = countlyCommon.decode(json.segments[i]);
+                        }
+                        _segments = json.segments;
+                        for (let segment in _segments) {
+                            _segments[segment].sort(Intl.Collator().compare);
+                        }
+                    }
+                    if (json && json.omit) {
+                        for (let index = 0; index < json.omit.length; index++) {
+                            json.omit[index] = countlyCommon.decode(json.omit[index]);
+                        }
+                        _omit = json.omit;
+                        _omit.sort(Intl.Collator().compare);
+                    }
+                }
+            });
+        },
         fetchData: function(context) {
             _segment = context.state.selectedSegment;
             _segmentVal = context.state.selectedSegmentValue;
@@ -59,8 +89,6 @@
                 data: data,
                 dataType: "json",
             }, {"disableAutoCatch": true});
-
-
         },
         updateViews: function(statusObj) {
             return CV.$.ajax({
@@ -82,6 +110,18 @@
                     app_id: countlyCommon.ACTIVE_APP_ID,
                     "method": "delete_view",
                     "view_id": view
+                },
+                dataType: "json"
+            }, {"disableAutoCatch": true});
+        },
+        omitSegments: function(segments) {
+            return CV.$.ajax({
+                type: "POST",
+                url: countlyCommon.API_PARTS.data.w + "/views",
+                data: {
+                    app_id: countlyCommon.ACTIVE_APP_ID,
+                    "method": "omit_segments",
+                    "omit_list": segments
                 },
                 dataType: "json"
             }, {"disableAutoCatch": true});
@@ -461,8 +501,17 @@
         };
 
         var ViewsActions = {
+            fetchMetaData: function(context) {
+                return countlyViews.service.fetchMetaData()
+                    .then(function() {
+                        context.commit('setSegments', _segments);
+                        context.commit('setOmittedSegments', _omit);
+                        context.dispatch('onFetchSuccess');
+                    }).catch(function(error) {
+                        context.dispatch('onFetchError', error);
+                    });
+            },
             fetchTotals: function(context) {
-
                 return countlyViews.service.fetchTotals()
                     .then(function(response) {
                         context.commit('setTotals', response || {});
@@ -516,6 +565,14 @@
                 context.dispatch('onUpdateError', "");
                 return countlyViews.service.deleteViews(data).then(function() {
                     context.dispatch("fetchViewsEditTable");
+                }).catch(function(error) {
+                    context.dispatch('onUpdateError', error);
+                });
+            },
+            omitSegments: function(context, data) {
+                context.dispatch('onUpdateError', "");
+                return countlyViews.service.omitSegments(data).then(function() {
+
                 }).catch(function(error) {
                     context.dispatch('onUpdateError', error);
                 });
@@ -766,6 +823,13 @@
             return _viewsNames[id];
         }
         return id;
+    };
+
+    /** Function gets array of view display names
+    * @returns {object}  - view names
+    */
+    countlyViews.getViewsNames = function() {
+        return _viewsNames;
     };
 
     /** Reverse function. Returns 'view' value from display name
