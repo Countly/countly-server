@@ -3,18 +3,29 @@
         <cly-main>
             <cly-section>
                 <cly-metric-cards :multiline="false">
-                    <cly-metric-card test-id="total-app-users" :number="totalAppUsers" :label="i18n('push-notification.total-app-users')">
+                    <cly-metric-card
+                        :number="totalAppUsers"
+                        :label="i18n('push-notification.total-app-users')"
+                        test-id="messaging-total-app-users">
                     </cly-metric-card>
-                    <cly-metric-card test-id="notification-enabled-users" :number="enabledUsers" :label="i18n('push-notification.enabled-users')">
+                    <cly-metric-card
+                        :number="enabledUsers"
+                        :label="i18n('push-notification.enabled-users')"
+                        test-id="messaging-notification-enabled-users">
                     </cly-metric-card>
-                    <cly-metric-card test-id="enabled-users-percentage" :is-percentage="true" :number="enabledUsersPercentage" :label="i18n('push-notification.enabled-users-percentage')" :tooltip="i18n('push-notification.enabled-users-percentage-description')">
+                    <cly-metric-card
+                        :is-percentage="true"
+                        :number="enabledUsersPercentage"
+                        :label="i18n('push-notification.enabled-users-percentage')"
+                        :tooltip="i18n('push-notification.enabled-users-percentage-description')"
+                        test-id="messaging-enabled-users-percentage">
                     </cly-metric-card>
                 </cly-metric-cards>
             </cly-section>
             <div>
                 <div class="bu-level-left" style="margin-bottom:32px">
                     <div class="bu-level-item bu-mr-4">
-                        <div class="cly-vue-platform-filter-label" data-test-id="push-notifications-result-for-label"> 
+                        <div class="cly-vue-platform-filter-label" data-test-id="messaging-datatable-filter-label">
                             {{i18n('push-notification.results-for')}}
                         </div>
                     </div>
@@ -30,9 +41,9 @@
                 </div>
             </div>
             <cly-section>
-                <cly-datatable-n test-id="messaging" :data-source="remoteTableDataSource" v-loading="areRowsLoading || isUserCommandLoading" :force-loading="isLoading" :available-dynamic-cols="optionalTableColumns" :resizable="true" class="is-clickable cly-vue-push-notification-table">
+                <cly-datatable-n test-id="messaging-datatable" :data-source="remoteTableDataSource" v-loading="areRowsLoading || isUserCommandLoading" :force-loading="isLoading" :available-dynamic-cols="optionalTableColumns" :resizable="true" class="is-clickable cly-vue-push-notification-table">
                     <template v-slot:header-left>
-                        <cly-multi-select 
+                        <cly-multi-select
                             class="bu-ml-3 ratings-tab-view__filter-selector"
                             v-model="activeFilter"
                             :fields="activeFilterFields">
@@ -43,7 +54,7 @@
                             <template slot-scope="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
                                     <a v-bind:href="'#/messaging/details/' + scope.row._id" class="bu-is-flex bu-is-align-items-center">
-                                        <a class="has-ellipsis" :data-test-id="'datatable-messaging-campaign-name-' + scope.$index">{{(scope.row.name)}}</a>
+                                        <a class="has-ellipsis" :data-test-id="'datatable-messaging-notification-name-' + scope.$index">{{(scope.row.name)}}</a>
                                     </a>
                                     <span class="cly-vue-push-notification-table-column__second-line">
                                         <span :data-test-id="'datatable-messaging-platform-name-' + scope.$index"> {{getPreviewPlatforms(scope.row.platforms)}} </span>
@@ -54,31 +65,31 @@
                             </template>
                         </el-table-column>
                         <template v-for="(col,idx) in scope.dynamicCols">
-                            <el-table-column 
+                            <el-table-column
                                 width="360"
-                                v-if="col.value === 'content'"  
-                                :key="idx" 
-                                sortable="custom" 
+                                v-if="col.value === 'content'"
+                                :key="idx"
+                                sortable="custom"
                                 :label="col.label">
                                 <template v-slot="rowScope">
                                     {{rowScope.row.content}}
                                 </template>
                             </el-table-column>
-                            <el-table-column 
+                            <el-table-column
                                 width="200"
-                                v-if="col.value === 'createdBy'"  
-                                :key="idx" 
-                                sortable="custom" 
+                                v-if="col.value === 'createdBy'"
+                                :key="idx"
+                                sortable="custom"
                                 :label="col.label">
                                 <template v-slot="rowScope">
                                     {{rowScope.row.createdBy}}
                                 </template>
                             </el-table-column>
-                            <el-table-column 
+                            <el-table-column
                                 width="200"
-                                v-if="col.value === 'created'"  
-                                :key="idx" 
-                                sortable="custom" 
+                                v-if="col.value === 'created'"
+                                :key="idx"
+                                sortable="custom"
                                 :label="col.label">
                                 <template v-slot="rowScope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
@@ -112,7 +123,7 @@
 						<el-table-column  min-width="280" sortable="custom" prop="lastDate" :label="i18n('push-notification.table-date-sent')" class="cly-vue-push-notification-table-column">
                             <template slot-scope="scope">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
-                                    <template v-if="scope.row.lastDate && scope.row.lastDate.date"> 
+                                    <template v-if="scope.row.lastDate && scope.row.lastDate.date">
                                         <span class="cly-vue-push-notification-table-column__first-line" :data-test-id="'datatable-messaging-date-sent-' + scope.$index">{{scope.row.lastDate.date}}</span>
                                         <span class="cly-vue-push-notification-table-column__second-line" :data-test-id="'datatable-messaging-scheduled-' + scope.$index">{{scope.row.lastDate.time}}</span>
                                     </template>
@@ -130,10 +141,10 @@
                                 </div>
                             </template>
                         </el-table-column> -->
-                        
+
                         <el-table-column type="options">
                             <template slot-scope="scope">
-                                <cly-more-options :test-id="'datatable-messaging-more-button-' + scope.$index" v-if="scope.row.hover" size="small" @command="handleUserCommands($event, scope.row._id, scope.row.notificationType)">
+                                <cly-more-options :test-id="'datatable-' + scope.$index" v-if="scope.row.hover" size="small" @command="handleUserCommands($event, scope.row._id, scope.row.notificationType)">
                                     <el-dropdown-item v-if="shouldShowStartUserCommand(scope.row.status)" :command="UserCommandEnum.START" :data-test-id="'datatable-messaging-more-option-start-' + scope.$index">{{i18n('push-notification.start')}} </el-dropdown-item>
                                     <el-dropdown-item v-if="shouldShowStopUserCommand(scope.row.status)" :command="UserCommandEnum.STOP" :data-test-id="'datatable-messaging-more-option-stop-' + scope.$index">{{i18n('push-notification.stop')}} </el-dropdown-item>
                                     <el-dropdown-item v-if="shouldShowEditUserCommand(scope.row.status)" :command="UserCommandEnum.EDIT" :data-test-id="'datatable-messaging-more-option-edit-' + scope.$index">{{i18n('push-notification.edit')}}</el-dropdown-item>
