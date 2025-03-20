@@ -1,9 +1,18 @@
+## Version 25.03.2
+Fixes:
+- [user-management] Prevent global admin from self-revoke and self-delete
+
+Enterprise fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+- [drill] Fixed issue with column naming in export according to event
+- [drill] Fixed an issue with incorrect date range in report manager
+
 ## Version 25.03.1
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
 - [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
 
-Enterprise fixes:
+Enterprise Fixes:
 - [ab-testing] Fixed bug with variant user filtering
 - [license] Fixed issue with handling invalid date periods
 
