@@ -770,7 +770,7 @@ class APN extends Base {
                         status = headers[':status'];
                         if (status === 200) {
                             // self.log.d('[%s] response done %d', p._id, status);
-                            const apnsUniqueId = headers?.["apns-unique-id"];
+                            const apnsUniqueId = headers["apns-unique-id"];
                             oks.push({ p: p._id, r: apnsUniqueId });
                             stream.destroy();
                             streamDone();
