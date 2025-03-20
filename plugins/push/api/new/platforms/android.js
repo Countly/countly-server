@@ -8,7 +8,6 @@ const firebaseAdmin = require("firebase-admin");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 const { buildProxyUrl, serializeProxyConfig } = require("../lib/utils.js");
 const { PROXY_CONNECTION_TIMEOUT } = require("../constants/proxy-config.json");
-const { FirebaseError } = require("firebase-admin/lib/utils/error.js");
 const { SendError, FCMErrors } = require("../lib/error.js");
 
 /** @type {WeakMap<firebaseAdmin.app.App, ProxyConfiguration>} */
@@ -87,8 +86,10 @@ async function send(pushEvent) {
         return messageId;
     }
     catch (error) {
-        if (error instanceof FirebaseError) {
-            const { libraryKey, message, mapsTo } = FCMErrors[error.code];
+        if ("code" in /** @type {Error} */(error)) {
+            const { libraryKey, message, mapsTo } = FCMErrors[
+                /** @type {import("firebase-admin").FirebaseError} */(error).code
+            ];
             const combinedMessage = libraryKey + ": " + message;
             if (mapsTo) {
                 throw new mapsTo(combinedMessage);
