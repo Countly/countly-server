@@ -110,10 +110,21 @@ function proxyAgent(url, proxy, agentConfig = {}) {
             });
 
             connect.once('timeout', () => {
-                connect.destroy(new Error('Proxy timeout'));
+                connect.destroy(new Error('ProxyTimeout'));
             });
 
             connect.end();
+        };
+
+        this.pushReject = rej => {
+            rejects.push(rej);
+        };
+
+        this.popReject = rej => {
+            let i = rejects.indexOf(rej);
+            if (i !== -1) {
+                rejects.splice(i, 1);
+            }
         };
     };
 

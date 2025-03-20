@@ -512,7 +512,7 @@ const FIELDS = {
  * A number comes from SDK, we need to map it into smth like tkhp/tkht
  */
 const FIELDS_TITLES = {
-    '0': 'HMS Token',
+    '0': 'Android Huawei Token',
 };
 
 /**

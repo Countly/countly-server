@@ -2,7 +2,7 @@ const mongodb = require('mongodb');
 
 module.exports.ObjectID = function(id) {
     try {
-        return new mongodb.ObjectId(id);
+        return mongodb.ObjectId(id);
     }
     catch (ex) {
         return id;
@@ -28,7 +28,7 @@ module.exports.isoid = function(id) {
  * @returns {ObjectID} id
  */
 module.exports.oid = function(id) {
-    return !id ? id : id instanceof mongodb.ObjectId ? id : new mongodb.ObjectId(id);
+    return !id ? id : id instanceof mongodb.ObjectId ? id : mongodb.ObjectId(id);
 };
 
 /**

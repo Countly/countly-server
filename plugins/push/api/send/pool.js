@@ -290,7 +290,7 @@ class Pool extends Duplex {
         let unsent = this.state.messages().filter(m => mids.indexOf(m._id.toString()) === -1);
         if (unsent.length) {
             this.log.i('Sending unsent messages to %s: %j', connection.worker.threadId, unsent);
-            connection.write(encode(FRAME.CONNECT, unsent.map(_m => this.state.messages().filter(m => m._id.toString() === _m._id.toString())[0])));
+            connection.write(encode(FRAME.CONNECT, unsent.map(id => this.state.messages().filter(m => m._id.toString() === id)[0])));
         }
         return connection;
     }

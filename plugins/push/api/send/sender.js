@@ -1,8 +1,10 @@
 const { State } = require('../jobs/util/state'),
     { Batcher } = require('../jobs/util/batcher'),
-    { Resultor } = require('../jobs//util/resultor'),
-    { Connector } = require('../jobs//util/connector'),
+    { Resultor } = require('../jobs/util/resultor'),
+    { StreamWrapper } = require('../jobs/util/stream_wrapper'),
+    { Connector } = require('../jobs/util/connector'),
     { PushError, ERROR, dbext, pools } = require('./index'),
+    { Message } = require("./data/message"),
     common = require('../../../../api/utils/common');
 
 /**
@@ -48,7 +50,7 @@ class Sender {
         // last date this job sends notifications for
         this.last = Date.now() + cfg.sendAhead;
 
-        let plugins = await common.db.collection('plugins').findOne({_id: "plugins"});
+        let plugins = await common.db.collection('plugins').findOne({});
         if (!plugins) {
             throw new PushError('No plugins configuration', ERROR.DATA_COUNTLY);
         }
@@ -119,6 +121,14 @@ class Sender {
                     auth: !(plugins.push.proxyunauthorized || false),
                 };
             }
+            if (plugins.push.message_timeout) {
+                if (typeof plugins.push.message_timeout === "number") {
+                    cfg.message_timeout = plugins.push.message_timeout;
+                }
+                else {
+                    common.log(`push:send`).w('Invalid message timeout configuration: %j', plugins.push.message_timeout);
+                }
+            }
         }
 
         return cfg;
@@ -129,7 +139,10 @@ class Sender {
      */
     async watch() {
         let oid = dbext.oidBlankWithDate(new Date()),
-            count = await common.db.collection('push').count({_id: {$lte: oid}});
+            count = await common.db.collection('push').count({
+                _id: {$lte: oid},
+                m: { $in: await Message.findStreamableMessageIds() }
+            });
         return count > 0;
     }
     // /**
@@ -171,60 +184,31 @@ class Sender {
 
         try {
             // await db.collection('messages').updateMany({_id: {$in: Object.keys(this.msgs)}}, {$set: {state: State.Streaming, status: Status.Sending}});
-
             // stream the pushes
-            let pushes = common.db.collection('push').find({_id: {$lte: dbext.oidBlankWithDate(new Date(Date.now() + state.cfg.sendAhead))}}).stream(),
+            let wrapper = new StreamWrapper(
+                    common.db.collection('push'),
+                    { m: { $in: await Message.findStreamableMessageIds() } },
+                    state.cfg.sendAhead,
+                    30000,
+                    20
+                ),
                 resolve, reject,
                 promise = new Promise((res, rej) => {
                     resolve = res;
                     reject = rej;
-                }),
-                last = Date.now(),
-                finalTimeout,
-                /**
-                 * Periodic check to ensure mongo stream is closed once no more data is sent
-                 */
-                check = () => {
-                    if (last === null) {
-                        // do nothing, already unpiped
-                    }
-                    else if (last + 120000 < Date.now()) {
-                        this.log.w('Streaming timeout, ignoring the rest');
-                        last = null;
-                        pushes.unpipe(connector);
-                        connector.end();
-                        finalTimeout = setTimeout(() => {
-                            try {
-                                if (connector) {
-                                    connector.destroy(new PushError('Streaming timeout'));
-                                }
-                                finalTimeout = setTimeout(() => resolve(), 10000);
-                            }
-                            catch (e) {
-                                this.log.e('Streaming timeout: connection destruction error', e);
-                            }
-                        }, 5 * 60 * 1000);
-                    }
-                    else {
-                        setTimeout(check, 10000);
-                    }
-                };
+                });
 
-            pushes.on('close', () => {
-                last = null;
-                this.log.w('pushes close');
+            wrapper.on('close', () => {
+                this.log.w('wrapper close');
             });
-            pushes.on('unpipe', () => {
-                last = null;
-                this.log.w('pushes unpipe');
+            wrapper.on('unpipe', () => {
+                this.log.w('wrapper unpipe');
             });
-            pushes.on('data', () => last = Date.now());
-            setTimeout(check, 10000);
 
             connector.on('close', () => this.log.w('connector close'));
             connector.on('unpipe', () => this.log.w('connector unpipe'));
 
-            pushes
+            wrapper
                 .pipe(connector)
                 .pipe(batcher)
                 .pipe(resultor, {end: false});
@@ -242,7 +226,7 @@ class Sender {
                 pools.exit();
                 resolve();
             });
-            pushes.on('error', err => {
+            wrapper.on('error', err => {
                 this.log.e('Streaming error', err);
                 reject(err);
             });
@@ -260,8 +244,6 @@ class Sender {
             });
 
             await promise;
-
-            clearTimeout(finalTimeout);
 
             this.log.i('<<<<<<<<<< done sending');
         }

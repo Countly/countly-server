@@ -56,37 +56,101 @@ class ScheduleJob extends J.Job {
         else if (this.message.is(State.Error)) {
             error = 'Message is in Error state';
         }
-        else if (!this.message.triggerPlain()) {
-            error = 'No plain trigger in the message';
-        }
         else {
-            let res = await this.message.updateAtomically({_id: this.message._id, state: this.message.state}, {$set: {state: State.Created | State.Streamable, status: Status.Scheduled}});
-            if (!res) {
-                error = 'Failed to update message';
+            let plain = this.message.triggerPlain(),
+                resch = this.message.triggerRescheduleable();
+            if (!plain && !resch) {
+                error = 'No plain or rescheduleable trigger in the message';
             }
+            else {
+                if (plain) {
+                    let res = await this.message.updateAtomically(
+                        { _id: this.message._id },
+                        {
+                            $set: {
+                                state: State.Created | State.Scheduling,
+                                status: Status.Scheduled
+                            }
+                        }
+                    );
 
-            let trigger = this.message.triggerPlain(),
-                result = await this.audience.push(trigger).setStart(this.data.start).run(); // this.data.start is supposed to be undefined for now
-
-            if (result.total === 0) {
-                update = {
-                    $set: {
-                        'result.total': 0,
-                        'result.processed': 0,
-                        'state': State.Created | State.Done | State.Error,
-                        status: Status.Failed,
-                        'result.error': 'NoAudience'
-                    },
-                    $unset: {
-                        'result.next': 1
+                    if (!res) {
+                        error = 'Failed to update message';
                     }
-                };
-            }
-        }
 
-        if (update) {
-            await this.message.update(update, () => {});
-            log.i('Scheduled message %s: %j / %j / %j', this.message.id, this.message.state, this.message.status, this.message.result.json);
+                    let result = await this.audience.push(plain).setStart(this.data.start).run(); // this.data.start is supposed to be undefined for now
+
+                    if (result.total === 0) {
+                        update = {
+                            $set: {
+                                'result.total': 0,
+                                'result.processed': 0,
+                                'state': State.Created | State.Done | State.Error,
+                                status: Status.Failed,
+                                'result.error': 'NoAudience'
+                            },
+                            $unset: {
+                                'result.next': 1
+                            }
+                        };
+                    }
+
+                    if (update) {
+                        await this.message.update(update, () => {});
+                        log.i('Scheduled message %s: %j / %j / %j', this.message.id, this.message.state, this.message.status, this.message.result.json);
+                    }
+                    await this.message.updateAtomically(
+                        { _id: this.message._id },
+                        {
+                            $bit: {
+                                state: {
+                                    and: ~State.Scheduling,
+                                    or: State.Streamable
+                                }
+                            }
+                        }
+                    );
+                }
+
+                if (resch) {
+                    let res = await this.message.updateAtomically(
+                        { _id: this.message._id },
+                        {
+                            $bit: {
+                                state: {
+                                    and: ~State.Streamable,
+                                    or: State.Scheduling
+                                }
+                            },
+                            $set: {
+                                status: Status.Scheduled
+                            }
+                        }
+                    );
+                    if (!res) {
+                        error = 'Failed to update message';
+                    }
+
+                    let now = new Date(this.data.reference),
+                        result = await this.audience.push(resch).setStart(now).run();
+
+                    log.i('Rescheduleable message %s scheduling result for %s: %j, full result %j', this.message.id, now, result, this.message.result.json);
+
+                    await this.message.updateAtomically(
+                        { _id: this.message._id },
+                        {
+                            $bit: {
+                                state: {
+                                    and: ~State.Scheduling,
+                                    or: State.Streamable
+                                }
+                            }
+                        }
+                    );
+
+                    await this.message.schedule(log);
+                }
+            }
         }
 
         if (error) {

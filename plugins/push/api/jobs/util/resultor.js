@@ -1,23 +1,6 @@
 const { FRAME, FRAME_NAME } = require('../../send/proto'),
     { DoFinish } = require('./do_finish'),
     { ERROR, TriggerKind, State, Status, PushError, Result } = require('../../send/data');
-/**
- * @typedef {import("mongodb").ObjectId} ObjectId
- */
-
-/**
- * PushStat object (collection: push_stats)
- * @typedef  {Object}    PushStat
- * @property {ObjectId}  a - application id
- * @property {ObjectId}  m - message id from "messages" collection
- * @property {string}    u - uid from app_users{appId}
- * @property {string}    t - token from "push_{appId}" collection
- * @property {string=}   r - id returned from provider
- * @property {Date}      d - date this message sent to this user
- * @property {string=}   e - error message
- * @property {string}    p - platform: "a" for android, "i" for ios and "h" for huawei
- * @property {string}    f - token type: "p" for production
- */
 
 /**
  * Stream responsible for handling sending results:
@@ -51,10 +34,7 @@ class Resultor extends DoFinish {
         this.fatalErrors = {}; // {mid: []}
         this.toDelete = []; // [push id, push id, ...]
         this.count = 0; // number of results cached
-        this.last = null; // time of last data from
-
-        /** @type {PushStat[]} */
-        this.pushStats = [];
+        this.last = null; // time of last data from 
 
         this.data.on('app', app => {
             this.changed[app._id] = {};
@@ -138,16 +118,10 @@ class Resultor extends DoFinish {
                         if (id < 0) {
                             return;
                         }
-                        const p = this.data.pushes[id];
-                        let {p: platform, m, pr} = p,
+                        let {p, m, pr} = this.data.pushes[id],
                             msg = this.data.message(m),
                             result,
                             rp, rl;
-
-                        // additional fields to keep this in push_stats
-                        if (msg && msg.saveStats) {
-                            this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: null, e: results.toString() });
-                        }
 
                         if (msg) {
                             result = msg.result;
@@ -157,7 +131,7 @@ class Resultor extends DoFinish {
                         else {
                             result = this.noMessage[m] || (this.noMessage[m] = new Result());
                         }
-                        rp = result.sub(platform, undefined, PLATFORM[platform].parent);
+                        rp = result.sub(p, undefined, PLATFORM[p].parent);
                         rl = rp.sub(pr.la || 'default');
 
                         result.processed++;
@@ -167,8 +141,8 @@ class Resultor extends DoFinish {
                         rl.recordError(results.message, 1);
                         rl.processed++;
 
-                        if (PLATFORM[platform].parent) {
-                            rp = result.sub(PLATFORM[platform].parent),
+                        if (PLATFORM[p].parent) {
+                            rp = result.sub(PLATFORM[p].parent),
                             rl = rp.sub(pr.la || 'default');
                             rp.recordError(results.message, 1);
                             rp.processed++;
@@ -185,20 +159,15 @@ class Resultor extends DoFinish {
             }
             else {
                 results.forEach(res => {
-                    let id, resultId, token;
-
-                    if (Array.isArray(res)) {
+                    let id, token;
+                    if (typeof res === 'string') {
+                        // this.log.d('Ok for %s', id);
+                        id = res;
+                    }
+                    else {
                         this.log.d('New token for %s', id);
                         id = res[0];
                         token = res[1];
-                    }
-                    else {
-                        id = res;
-                    }
-
-                    if (typeof id !== "string") {
-                        resultId = id.r;
-                        id = id.p;
                     }
 
                     let p = this.data.pushes[id];
@@ -206,18 +175,13 @@ class Resultor extends DoFinish {
                         return;
                     }
 
-                    let msg = this.data.message(p.m),
-                        result, rp, rl;
-
-                    // additional fields to keep this in push_stats
-                    if (msg && msg.saveStats) {
-                        this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: resultId, e: null });
-                    }
-
                     this.data.decSending(p.m);
 
-                    if (msg) {
-                        result = msg.result;
+                    let m = this.data.message(p.m),
+                        result, rp, rl;
+
+                    if (m) {
+                        result = m.result;
                         result.lastRun.processed++;
                     }
                     else {
@@ -269,20 +233,13 @@ class Resultor extends DoFinish {
                         return;
                     }
                     this.log.d('Error %d %s for %s', results.type, results.name, id);
-                    const p = this.data.pushes[id];
-                    let {m, p: platform, pr} = p,
+                    let {m, p, pr} = this.data.pushes[id],
                         result, rp, rl;
-                    let msg = this.data.message(m);
-
-                    // additional fields to keep this in push_stats
-                    if (msg && msg.saveStats) {
-                        this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: null, e: results.toString() });
-                    }
-
                     mids[m] = (mids[m] || 0) + 1;
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
 
+                    let msg = this.data.message(m);
                     if (msg) {
                         result = msg.result;
                     }
@@ -290,17 +247,24 @@ class Resultor extends DoFinish {
                         result = this.noMessage[m] || (this.noMessage[m] = new Result());
                     }
 
-                    rp = result.sub(platform, undefined, PLATFORM[platform].parent);
+                    result.processed++;
+                    result.recordError(results.message, 1);
+
+                    rp = result.sub(p, undefined, PLATFORM[p].parent);
                     rl = rp.sub(pr.la || 'default');
 
                     rp.processed++;
+                    rp.recordError(results.message, 1);
                     rl.processed++;
+                    rl.recordError(results.message, 1);
 
-                    if (PLATFORM[platform].parent) {
-                        rp = result.sub(PLATFORM[platform].parent),
+                    if (PLATFORM[p].parent) {
+                        rp = result.sub(PLATFORM[p].parent),
                         rl = rp.sub(pr.la || 'default');
                         rp.processed++;
+                        rp.recordError(results.message, 1);
                         rl.processed++;
+                        rl.recordError(results.message, 1);
                     }
                 });
 
@@ -316,7 +280,6 @@ class Resultor extends DoFinish {
                 else {
                     result = this.noMessage[mid] || (this.noMessage[mid] = new Result());
                 }
-                result.processed += mids[mid];
 
                 let run = result.lastRun;
                 if (run) {
@@ -325,7 +288,7 @@ class Resultor extends DoFinish {
                 }
 
                 result.pushError(error);
-                this.data.decSending(mid);
+                this.data.decSending(mid, mids[mid]);
             }
         }
 
@@ -350,6 +313,7 @@ class Resultor extends DoFinish {
             promises = this.data.messages().map(m => {
                 m.result.lastRun.ended = new Date();
 
+                // if (await Message.hasPushRecords(m.id)) {
                 if (this.data.isSending(m.id)) {
                     this.log.d('message %s is still in processing (%d out of %d)', m.id, m.result.processed, m.result.total);
                     return m.save();
@@ -365,6 +329,35 @@ class Resultor extends DoFinish {
                     else {
                         state = m.state & ~State.Streaming;
                         status = Status.Scheduled;
+                    }
+                }
+                else if (m.triggerRescheduleable()) {
+                    let resch = m.triggerRescheduleable();
+                    if (m.result.total === m.result.errored) {
+                        state = State.Created | State.Error | State.Done;
+                        status = Status.Stopped;
+                        error = 'Failed to send all notifications';
+                    }
+                    else if (m.result.total === m.result.processed) {
+                        if (!resch.nextReference(resch.last)) { // TODO: this will probably result in skipping last reference if it's scheduled before last message in queue is sent
+                            state = State.Created | State.Done;
+                            status = Status.Sent;
+                        }
+                        else {
+                            state = m.state & ~State.Streaming;
+                            status = Status.Scheduled;
+                        }
+                    }
+                    else { // shouldn't happen, but possible in some weird cases
+                        state = m.state & ~State.Streaming;
+                        status = Status.Scheduled;
+                        // TODO: We're already scheduling the next message on jobs/schedule.js after creating push records.
+                        // It shouldn't matter if all of the queue processed or not.
+                        // m.schedule(this.log).then(() => {
+                        //     this.log.i('Rescheduled %s from resultor', m.id);
+                        // }, e => {
+                        //     this.log.e('Rescheduling error for %s from resultor', m.id, e);
+                        // });
                     }
                 }
                 else {
@@ -405,7 +398,7 @@ class Resultor extends DoFinish {
 
                 let count = this.noMessage[mid].processed;
                 delete this.noMessage[mid];
-                return this.db.updateOne({_id: this.db.ObjectID(mid)}, {$inc: {errored: count, processed: count, 'errors.NoMessage': count}});
+                return this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, {$inc: {errored: count, processed: count, 'errors.NoMessage': count}});
             }));
 
         if (this.toDelete.length) {
@@ -516,6 +509,7 @@ class Resultor extends DoFinish {
 
                         this.log.d('Recording %d [CLY]_push_sent\'s: %j', sent, params);
                         require('../../../../../api/parts/data/events').processEvents(params);
+                        //plugins.dispatch("/plugins/drill", {params: params, dbAppUser: params.app_user, events: params.qstring.events});
 
                         try {
                             this.log.d('Recording %d data points', sent);
@@ -547,11 +541,6 @@ class Resultor extends DoFinish {
                 this.log.d('Running batch of %d updates for %s', updates[c].length, c);
                 promises.push(this.db.collection(c).bulkWrite(updates[c]));
             }
-        }
-
-        if (this.pushStats.length) {
-            promises.push(this.db.collection("push_stats").insertMany(this.pushStats));
-            this.pushStats = [];
         }
 
         Promise.all(promises).then(() => {

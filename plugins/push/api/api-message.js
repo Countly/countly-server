@@ -1,10 +1,13 @@
-const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES } = require('./send'),
-    { DEFAULTS } = require('./send/data/const'),
+const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES, Template, PLATFORM } = require('./send'),
+    crypto = require("crypto"),
+    { DEFAULTS, RecurringType } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api:message'),
     moment = require('moment-timezone'),
-    { request } = require('./proxy');
+    { request } = require('./proxy'),
+    {ObjectId} = require("mongodb");
 
+const countlyFetch = require("../../../api/parts/data/fetch.js");
 
 const { buildResultObject } = require("./new/lib/result.js");
 const { scheduleMessage } = require("./new/scheduler.js");
@@ -32,6 +35,7 @@ async function validate(args, draft = false) {
             },
             triggers: {
                 type: Trigger.scheme,
+                discriminator: Trigger.discriminator.bind(Trigger),
                 array: true,
                 'min-length': 1
             },
@@ -65,6 +69,15 @@ async function validate(args, draft = false) {
         }
     }
 
+    for (let trigger of msg.triggers) {
+        if (trigger.kind === TriggerKind.Plain && trigger._data.tz === false && typeof trigger._data.sctz === 'number') {
+            throw new ValidationError('Please remove tz parameter from trigger definition');
+        }
+        if (trigger.kind === TriggerKind.Recurring && (trigger.bucket === RecurringType.Monthly || trigger.bucket === RecurringType.Weekly) && !trigger.on) {
+            throw new ValidationError('"on" is required for monthly and weekly recurring triggers');
+        }
+    }
+
     let app = await common.db.collection('apps').findOne(msg.app);
     if (app) {
         msg.info.appName = app.name;
@@ -76,8 +89,13 @@ async function validate(args, draft = false) {
                     throw new ValidationError(`No push credentials for ${PLATFORMS_TITLES[p]} platform`);
                 }
             }
-
-            let creds = await common.db.collection(Creds.collection).find({_id: {$in: msg.platforms.map(p => common.dot(app, `plugins.push.${p}._id`))}}).toArray();
+            let creds = await common.db.collection(Creds.collection).find({
+                _id: {
+                    $in: msg.platforms
+                        .map(p => common.dot(app, `plugins.push.${p}._id`))
+                        .map(oid => ObjectId(oid.toString())) // cast to ObjectId (it gets broken after an update in app settings page)
+                }
+            }).toArray();
             if (creds.length !== msg.platforms.length) {
                 throw new ValidationError('No push credentials in db');
             }
@@ -137,7 +155,7 @@ async function validate(args, draft = false) {
  * @param {object} params params object
  *
  * @api {POST} i/push/message/test Message / test
- * @apiName message/test
+ * @apiName message test
  * @apiDescription Send push notification to test users specified in application plugin configuration
  * @apiGroup Push Notifications
  *
@@ -244,7 +262,7 @@ module.exports.test = async params => {
  * @param {object} params params object
  *
  * @api {POST} i/push/message/create Message / create
- * @apiName message/create
+ * @apiName message create
  * @apiDescription Create push notification.
  * Set status to "draft" to create a draft, leave it unspecified otherwise.
  * @apiGroup Push Notifications
@@ -262,9 +280,9 @@ module.exports.create = async params => {
     msg.info.created = msg.info.updated = new Date();
     msg.info.createdBy = msg.info.updatedBy = params.member._id;
     msg.info.createdByName = msg.info.updatedByName = params.member.full_name;
-
     if (demo) {
         msg.info.demo = true;
+        msg.info.title = params.qstring.args && params.qstring.args.info && params.qstring.args.info.title ? params.qstring.args.info.title : "";
     }
 
     if (params.qstring.status === Status.Draft) {
@@ -284,7 +302,6 @@ module.exports.create = async params => {
         log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
     }
-
     if (demo && demo !== 'no-data') {
         await generateDemoData(msg, demo);
     }
@@ -298,7 +315,7 @@ module.exports.create = async params => {
  * @param {object} params params object
  *
  * @api {POST} i/push/message/update Message / update
- * @apiName message/update
+ * @apiName message update
  * @apiDescription Update push notification
  * @apiGroup Push Notifications
  *
@@ -355,7 +372,7 @@ module.exports.update = async params => {
         }
         else {
             await msg.save();
-            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable))) {
+            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable) || msg.is(State.Created))) {
                 await msg.schedule(log, params);
             }
             common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
@@ -373,7 +390,7 @@ module.exports.update = async params => {
  * @param {object} params params object
  *
  * @api {POST} i/push/message/remove Message / remove
- * @apiName message/remove
+ * @apiName message remove
  * @apiDescription Remove message by marking it as deleted (it stays in the database for consistency)
  * @apiGroup Push Notifications
  *
@@ -431,7 +448,7 @@ module.exports.remove = async params => {
  * @param {object} params params object
  *
  * @api {POST} i/push/message/toggle Message / API or Automated / toggle
- * @apiName message/toggle
+ * @apiName message toggle
  * @apiDescription Stop active or start inactive API or automated message
  * @apiGroup Push Notifications
  *
@@ -484,8 +501,8 @@ module.exports.toggle = async params => {
         return true;
     }
 
-    if (!msg.triggerAutoOrApi()) {
-        throw new ValidationError(`The message doesn't have Cohort or Event trigger`);
+    if (!msg.triggerAutoOrApi() && !msg.triggerRescheduleable()) {
+        throw new ValidationError(`The message doesn't have Cohort, Event, Multi or Recurring trigger`);
     }
 
     if (data.active && msg.is(State.Streamable)) {
@@ -515,7 +532,7 @@ module.exports.toggle = async params => {
  * @param {object} params params object
  *
  * @api {POST} o/push/message/estimate Message / estimate audience
- * @apiName message/estimate
+ * @apiName message estimate
  * @apiDescription Estimate message audience
  * @apiGroup Push Notifications
  *
@@ -558,7 +575,6 @@ module.exports.estimate = async params => {
             required: false
         }
     }, true);
-
     if (data.result) {
         data = data.obj;
         if (!data.filter) {
@@ -615,7 +631,7 @@ module.exports.estimate = async params => {
  * @param {object} params params object
  *
  * @api {GET} o/push/message/mime Message / attachment MIME
- * @apiName message/mime
+ * @apiName message mime
  * @apiDescription Get MIME information of the URL specified by sending HEAD request and then GET if HEAD doesn't work. Respects proxy setting, follows redirects and returns end URL along with content type & length.
  * @apiGroup Push Notifications
  *
@@ -682,7 +698,7 @@ module.exports.mime = async params => {
  * @param {object} params params object
  *
  * @api {GET} o/push/message/GET Message / GET
- * @apiName message/GET
+ * @apiName message
  * @apiDescription Get message by ID
  * @apiGroup Push Notifications
  *
@@ -1127,15 +1143,16 @@ module.exports.notificationsForUser = async params => {
  * @returns {Promise} resolves to true
  *
  * @api {GET} o/push/message/all Message / find
- * @apiName message/all
+ * @apiName message all
  * @apiDescription Get messages
  * Returns one of three groups: one time messages (neither auto, nor api params set or set to false), automated messages (auto = "true"), API messages (api = "true")
  * @apiGroup Push Notifications
  *
  * @apiQuery {String} app_id Application ID
- * @apiQuery {Boolean} auto Whether to return only automated messages
- * @apiQuery {Boolean} api Whether to return only API messages
- * @apiQuery {Boolean} removed Whether to return removed messages (set to true to return removed messages)
+ * @apiQuery {Boolean} auto *Deprecated.* Whether to return only automated messages
+ * @apiQuery {Boolean} api *Deprecated.* Whether to return only API messages
+ * @apiQuery {String[]} kind Required. Array of message kinds (Trigger kinds) to return, overrides *auto* & *api* if set.
+ * @apiQuery {Boolean} removed Whether to return removed messages (set it to true to return removed messages)
  * @apiQuery {String} [sSearch] A search term to look for in title or message of content objects
  * @apiQuery {Number} [iDisplayStart] Skip this much messages
  * @apiQuery {Number} [iDisplayLength] Return this much messages at most
@@ -1151,10 +1168,15 @@ module.exports.notificationsForUser = async params => {
  * @apiUse PushValidationError
  */
 module.exports.all = async params => {
+    const platformTypes = require('./send/platforms').platforms;
     let data = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
+        platform: {type: 'String', required: false, in: () => platformTypes},
         auto: {type: 'BooleanString', required: false},
         api: {type: 'BooleanString', required: false},
+        multi: {type: 'BooleanString', required: false},
+        rec: {type: 'BooleanString', required: false},
+        kind: {type: 'String[]', required: false, in: Object.values(TriggerKind)}, // not required for backwards compatibility only
         removed: {type: 'BooleanString', required: false},
         sSearch: {type: 'RegExp', required: false, mods: 'gi'},
         iDisplayStart: {type: 'IntegerString', required: false},
@@ -1164,6 +1186,26 @@ module.exports.all = async params => {
         sEcho: {type: 'String', required: false},
         status: {type: 'String', required: false}
     }, true);
+    // backwards compatibility
+    if (!data.kind) {
+        data.kind = [];
+        if (data.api) {
+            data.kind.push(TriggerKind.API);
+        }
+        else if (data.auto) {
+            data.kind.push(TriggerKind.Event);
+            data.kind.push(TriggerKind.Cohort);
+        }
+        else if (data.multi) {
+            data.kind.push(TriggerKind.Multi);
+        }
+        else if (data.rec) {
+            data.kind.push(TriggerKind.Recurring);
+        }
+        else {
+            data.kind = Object.values(TriggerKind);
+        }
+    }
 
     if (data.result) {
         data = data.obj;
@@ -1171,20 +1213,15 @@ module.exports.all = async params => {
         let query = {
             app: data.app_id,
             state: {$bitsAllClear: State.Deleted},
+            'triggers.kind': {$in: data.kind}
         };
+
+        if (data.platform && data.platform.length) {
+            query.platforms = data.platform; //{$in: [data.platforms]};
+        }
 
         if (data.removed) {
             delete query.state;
-        }
-
-        if (data.auto) {
-            query['triggers.kind'] = {$in: [TriggerKind.Event, TriggerKind.Cohort]};
-        }
-        else if (data.api) {
-            query['triggers.kind'] = TriggerKind.API;
-        }
-        else {
-            query['triggers.kind'] = TriggerKind.Plain;
         }
 
         if (data.sSearch) {
@@ -1224,8 +1261,14 @@ module.exports.all = async params => {
                 else if (data.api) {
                     dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
                 }
+                else if (data.multi) {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Multi]}, as: "item"}}}}});
+                }
+                else if (data.rec) {
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Recurring]}, as: "item"}}}}});
+                }
                 else {
-                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
+                    dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", Object.values(TriggerKind)]}, as: "item"}}}}});
                 }
 
                 dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}, "info.isDraft": {"$cond": [{"$eq": ["$status", "draft"]}, 1, 0]}}});
@@ -1255,38 +1298,60 @@ module.exports.all = async params => {
             else if (data.api) {
                 dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.API]}, as: "item"}}}}});
             }
+            else if (data.multi) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Multi]}, as: "item"}}}}});
+            }
+            else if (data.rec) {
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Recurring]}, as: "item"}}}}});
+            }
             else {
-                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$eq": ["$$item.kind", TriggerKind.Plain]}, as: "item"}}}}});
+                dataPipeline.push({"$addFields": {"triggerObject": {"$first": {"$filter": {"input": "$triggers", "cond": {"$in": ["$$item.kind", Object.values(TriggerKind)]}, as: "item"}}}}});
             }
             dataPipeline.push({"$addFields": {"info.lastDate": {"$ifNull": ["$info.finished", "$triggerObject.start"]}}});
         }
 
         pipeline.push({"$facet": {"total": totalPipeline, "data": dataPipeline}});
-        common.db.collection(Message.collection).aggregate(pipeline, function(err, res) {
-            res = res || [];
-            res = res[0] || {};
 
-            var items = res.data || [];
-            var total = 0;
-            if (res.total && res.total[0] && res.total[0].cn) {
-                total = res.total[0].cn;
-            }
 
-            common.returnOutput(params, {
-                sEcho: data.sEcho,
-                iTotalRecords: total || items.length,
-                iTotalDisplayRecords: total || items.length,
-                aaData: items || []
-            }, true);
-
-        });
-
+        let res = (await common.db.collection(Message.collection).aggregate(pipeline).toArray() || [])[0] || {},
+            items = res.data || [],
+            total = res.total && res.total[0] && res.total[0].cn || 0;
+        common.returnOutput(params, {
+            sEcho: data.sEcho,
+            iTotalRecords: total || items.length,
+            iTotalDisplayRecords: total || items.length,
+            aaData: items
+        }, true);
     }
     else {
         common.returnMessage(params, 400, {errors: data.errors}, null, true);
-        return true;
     }
+
+    return true;
 };
+
+/**
+ * Returns the starting days of the given period between the given start and end dates.
+ * @param   {Date}   start    Start date
+ * @param   {Date}   end      End date
+ * @param   {String} timezone End date
+ * @param   {String} period   Period interval: day|month|week|year
+ * @returns {Date[]}          Array of dates in between start and end (both start and end included)
+ */
+function periodicDateRange(start, end, timezone, period = "day") {
+    const startFrom = period === "week" ? "isoWeek" : period;
+    const startObj = moment(start).tz(timezone).startOf("day").startOf(startFrom);
+    const endObj = moment(end).tz(timezone).startOf("day").startOf(startFrom);
+    const result = [];
+    if (startObj.isAfter(endObj)) {
+        return [];
+    }
+    while (startObj.isSameOrBefore(endObj, period)) {
+        result.push(startObj.toDate());
+        startObj.add(1, period);
+    }
+    return result;
+}
 
 /**
  * Generate demo data for populator
@@ -1502,7 +1567,7 @@ function mimeInfo(url, method = 'HEAD') {
     return new Promise((resolve, reject) => {
         let req = request(url.toString(), method, conf);
 
-        req.once('response', res => {
+        req.on('response', res => {
             let status = res.statusCode,
                 headers = res.headers,
                 data = 0;
