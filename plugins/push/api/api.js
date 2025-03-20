@@ -141,7 +141,9 @@ plugins.register('/master', async function() {
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
     PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
     setTimeout(() => {
-        require('../../../api/parts/jobs').job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
+        const jobManager = require('../../../api/parts/jobs');
+        jobManager.job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
+        jobManager.job("push:clear-stats").replace().schedule("at 3:00 am every 7 days");
     }, 10000);
     queueInitializer(common.db, true);
 });
@@ -426,6 +428,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiDefine PushMessageBody
  *
  * @apiBody {ObjectID} app Application ID
+ * @apiBody {Boolean} saveStats Store each individual push records into push_stats for debugging
  * @apiBody {String[]} platforms Array of platforms to send to
  * @apiBody {String="draft"} [status] Message status, only set to draft when creating or editing a draft message, don't set otherwise
  * @apiBody {Object} filter={} User profile filter to limit recipients of this message
@@ -475,6 +478,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  *
  * @apiSuccess {ObjectID} _id Message ID
  * @apiSuccess {ObjectID} app Application ID
+ * @apiSuccess {Boolean} saveStats Store each individual push records into push_stats for debugging
  * @apiSuccess {String[]} platforms Array of platforms to send to
  * @apiSuccess {Number} state Message state, for internal use
  * @apiSuccess {String="created", "inactive", "draft", "scheduled", "sending", "sent", "stopped", "failed"} [status] Message status: "created" is for messages yet to be scheduled (put into queue), "inactive" - cannot be scheduled (approval required for push approver plugin), "draft", "scheduled", "sending", "sent", "stopped" - automated message has been stopped, "failed" - failed to send all notifications

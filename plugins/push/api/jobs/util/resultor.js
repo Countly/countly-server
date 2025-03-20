@@ -1,6 +1,23 @@
 const { FRAME, FRAME_NAME } = require('../../send/proto'),
     { DoFinish } = require('./do_finish'),
     { ERROR, TriggerKind, State, Status, PushError, Result } = require('../../send/data');
+/**
+ * @typedef {import("mongodb").ObjectId} ObjectId
+ */
+
+/**
+ * PushStat object (collection: push_stats)
+ * @typedef  {Object}    PushStat
+ * @property {ObjectId}  a - application id
+ * @property {ObjectId}  m - message id from "messages" collection
+ * @property {string}    u - uid from app_users{appId}
+ * @property {string}    t - token from "push_{appId}" collection
+ * @property {string=}   r - id returned from provider
+ * @property {Date}      d - date this message sent to this user
+ * @property {string=}   e - error message
+ * @property {string}    p - platform: "a" for android, "i" for ios and "h" for huawei
+ * @property {string}    f - token type: "p" for production
+ */
 
 /**
  * Stream responsible for handling sending results:
@@ -10,7 +27,7 @@ const { FRAME, FRAME_NAME } = require('../../send/proto'),
 class Resultor extends DoFinish {
     /**
      * Constructor
-     * 
+     *
      * @param {Log} log logger
      * @param {MongoClient} db mongo client
      * @param {object} data map of {_id: {a, m, u, t, f}} (app id, uid, token, field) of the messages currently being sent
@@ -34,7 +51,10 @@ class Resultor extends DoFinish {
         this.fatalErrors = {}; // {mid: []}
         this.toDelete = []; // [push id, push id, ...]
         this.count = 0; // number of results cached
-        this.last = null; // time of last data from 
+        this.last = null; // time of last data from
+
+        /** @type {PushStat[]} */
+        this.pushStats = [];
 
         this.data.on('app', app => {
             this.changed[app._id] = {};
@@ -78,7 +98,7 @@ class Resultor extends DoFinish {
 
     /**
      * Transform's transform impementation
-     * 
+     *
      * @param {object[]} chunk array of results [push id|[push id, new token]]
      * @param {string} encoding ignored
      * @param {function} callback callback
@@ -118,10 +138,16 @@ class Resultor extends DoFinish {
                         if (id < 0) {
                             return;
                         }
-                        let {p, m, pr} = this.data.pushes[id],
+                        const p = this.data.pushes[id];
+                        let {p: platform, m, pr} = p,
                             msg = this.data.message(m),
                             result,
                             rp, rl;
+
+                        // additional fields to keep this in push_stats
+                        if (msg && msg.saveStats) {
+                            this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: undefined, e: results.toString() });
+                        }
 
                         if (msg) {
                             result = msg.result;
@@ -131,7 +157,7 @@ class Resultor extends DoFinish {
                         else {
                             result = this.noMessage[m] || (this.noMessage[m] = new Result());
                         }
-                        rp = result.sub(p, undefined, PLATFORM[p].parent);
+                        rp = result.sub(platform, undefined, PLATFORM[platform].parent);
                         rl = rp.sub(pr.la || 'default');
 
                         result.processed++;
@@ -141,8 +167,8 @@ class Resultor extends DoFinish {
                         rl.recordError(results.message, 1);
                         rl.processed++;
 
-                        if (PLATFORM[p].parent) {
-                            rp = result.sub(PLATFORM[p].parent),
+                        if (PLATFORM[platform].parent) {
+                            rp = result.sub(PLATFORM[platform].parent),
                             rl = rp.sub(pr.la || 'default');
                             rp.recordError(results.message, 1);
                             rp.processed++;
@@ -159,15 +185,20 @@ class Resultor extends DoFinish {
             }
             else {
                 results.forEach(res => {
-                    let id, token;
-                    if (typeof res === 'string') {
-                        // this.log.d('Ok for %s', id);
-                        id = res;
-                    }
-                    else {
+                    let id, resultId, token;
+
+                    if (Array.isArray(res)) {
                         this.log.d('New token for %s', id);
                         id = res[0];
                         token = res[1];
+                    }
+                    else {
+                        id = res;
+                    }
+
+                    if (typeof id !== "string") {
+                        resultId = id.r;
+                        id = id.p;
                     }
 
                     let p = this.data.pushes[id];
@@ -175,13 +206,17 @@ class Resultor extends DoFinish {
                         return;
                     }
 
+                    let msg = this.data.message(p.m),
+                        result, rp, rl;
+                    // additional fields to keep this in push_stats
+                    if (msg && msg.saveStats) {
+                        this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: resultId, e: null });
+                    }
+
                     this.data.decSending(p.m);
 
-                    let m = this.data.message(p.m),
-                        result, rp, rl;
-
-                    if (m) {
-                        result = m.result;
+                    if (msg) {
+                        result = msg.result;
                         result.lastRun.processed++;
                     }
                     else {
@@ -233,8 +268,16 @@ class Resultor extends DoFinish {
                         return;
                     }
                     this.log.d('Error %d %s for %s', results.type, results.name, id);
-                    let {m, p, pr} = this.data.pushes[id],
+                    const p = this.data.pushes[id];
+                    let {m, p: platform, pr} = p,
                         result, rp, rl;
+                    let msg = this.data.message(m);
+
+                    // additional fields to keep this in push_stats
+                    if (msg && msg.saveStats) {
+                        this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: null, e: results.toString() });
+                    }
+
                     mids[m] = (mids[m] || 0) + 1;
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
@@ -250,7 +293,7 @@ class Resultor extends DoFinish {
                     result.processed++;
                     result.recordError(results.message, 1);
 
-                    rp = result.sub(p, undefined, PLATFORM[p].parent);
+                    rp = result.sub(platform, undefined, PLATFORM[platform].parent);
                     rl = rp.sub(pr.la || 'default');
 
                     rp.processed++;
@@ -258,8 +301,8 @@ class Resultor extends DoFinish {
                     rl.processed++;
                     rl.recordError(results.message, 1);
 
-                    if (PLATFORM[p].parent) {
-                        rp = result.sub(PLATFORM[p].parent),
+                    if (PLATFORM[platform].parent) {
+                        rp = result.sub(PLATFORM[platform].parent),
                         rl = rp.sub(pr.la || 'default');
                         rp.processed++;
                         rp.recordError(results.message, 1);
@@ -302,7 +345,7 @@ class Resultor extends DoFinish {
 
     /**
      * Actual flush function
-     * 
+     *
      * @param {function} callback callback
      */
     do_flush(callback) {
@@ -521,18 +564,6 @@ class Resultor extends DoFinish {
                         this.sentUsers[aid][mid][p] = 0;
                     }
                 });
-                // this.sentUsers[aid][mid].forEach(uid => {
-                //     updates[collection].push({
-                //         updateOne: {
-                //             filter: {_id: uid},
-                //             update: {
-                //                 $set: {
-                //                     ['msgs.' + mid]: now
-                //                 }
-                //             }
-                //         }
-                //     });
-                // });
             }
         }
 
@@ -541,6 +572,11 @@ class Resultor extends DoFinish {
                 this.log.d('Running batch of %d updates for %s', updates[c].length, c);
                 promises.push(this.db.collection(c).bulkWrite(updates[c]));
             }
+        }
+
+        if (this.pushStats.length) {
+            promises.push(this.db.collection("push_stats").insertMany(this.pushStats));
+            this.pushStats = [];
         }
 
         Promise.all(promises).then(() => {
@@ -554,268 +590,12 @@ class Resultor extends DoFinish {
 
     /**
      * Flush & release resources
-     * 
+     *
      * @param {function} callback callback function
      */
     do_final(callback) {
         callback();
     }
-
-
-    // /**
-    //  * Actual flush function
-    //  * 
-    //  * @param {function} callback callback
-    //  */
-    // do_flush(callback) {
-    //     this.log.d('Flushing');
-    //     this.count = 0;
-
-    //     let updates = {},
-    //         promises = [];
-
-    //     // changed tokens - set new ones
-    //     for (let aid in this.changed) {
-    //         let collection = 'push_' + aid;
-    //         if (!updates[collection]) {
-    //             updates[collection] = [];
-    //         }
-    //         for (let field in this.changed[aid]) {
-    //             for (let uid in this.changed[aid][field]) {
-    //                 updates[collection].push({
-    //                     updateOne: {
-    //                         filter: {_id: uid},
-    //                         update: {
-    //                             $set: {
-    //                                 ['tk.' + field]: this.changed[aid][field][uid]
-    //                             }
-    //                         }
-    //                     }
-    //                 });
-    //             }
-    //             this.changed[aid][field] = {};
-    //         }
-    //     }
-
-    //     // expired tokens - unset
-    //     for (let aid in this.removeTokens) {
-    //         let collection = 'push_' + aid;
-    //         if (!updates[collection]) {
-    //             updates[collection] = [];
-    //         }
-    //         for (let field in this.removeTokens[aid]) {
-    //             if (this.removeTokens[aid][field].length) {
-    //                 updates[collection].push({
-    //                     updateMany: {
-    //                         filter: {_id: {$in: this.removeTokens[aid][field]}},
-    //                         update: {
-    //                             $unset: {
-    //                                 ['tk.' + field]: 1
-    //                             }
-    //                         }
-    //                     }
-    //                 });
-    //                 this.removeTokens[aid][field] = [];
-    //             }
-    //         }
-    //     }
-
-    //     // sent & processed counters
-    //     for (let mid in this.processed) {
-    //         if (this.processed[mid]) {
-    //             promises.push(this.messages[mid].updateAtomically({
-    //                 $inc: {
-    //                     'result.processed': this.processed[mid],
-    //                     'result.sent': this.sent[mid],
-    //                 }
-    //             }));
-    //             this.processed[mid] = 0;
-    //             this.sent[mid] = 0;
-    //         }
-    //     }
-
-    //     // error details
-    //     for (let mid in this.errors) {
-    //         let inc = {};
-    //         for (let p in this.errors[mid]) {
-    //             for (let k in this.errors[mid][p]) {
-    //                 inc[`result.errors.${p}+${k.replace(/\./g, ' ')}`] = this.errors[mid][p][k];
-    //             }
-    //             this.errors[mid][p] = {};
-    //         }
-    //         // eslint-disable-next-line no-unused-vars
-    //         for (let _ignoered in inc) {
-    //             promises.push(this.messages[mid].updateAtomically({
-    //                 $inc: inc
-    //             }));
-    //             break;
-    //         }
-    //     }
-
-    //     this.fatalErrors = {}; // {mid: []}
-    //     for (let mid in this.fatalErrors) {
-    //         this.fatalErrors[mid].forEach(e => {
-    //             this.messages[mid].result.pushError(e.messageError());
-    //         });
-    //     }
-
-    //     let now = Date.now();
-    //     for (let aid in this.sentUsers) {
-    //         let collection = 'push_' + aid;
-    //         if (!updates[collection]) {
-    //             updates[collection] = [];
-    //         }
-    //         for (let mid in this.sentUsers[aid]) {
-    //             this.sentUsers[aid][mid].forEach(uid => {
-    //                 updates[collection].push({
-    //                     updateOne: {
-    //                         filter: {_id: uid},
-    //                         update: {
-    //                             $set: {
-    //                                 ['msgs.' + mid]: now
-    //                             }
-    //                         }
-    //                     }
-    //                 });
-    //             });
-    //             this.sentUsers[aid][mid] = [];
-    //         }
-    //     }
-
-    //     for (let c in updates) {
-    //         if (updates[c].length) {
-    //             this.log.d('Running batch of %d updates for %s', updates[c].length, c);
-    //             promises.push(this.db.collection(c).bulkWrite(updates[c]));
-    //         }
-    //     }
-
-    //     if (this.toDelete.length) {
-    //         promises.push(this.db.collection('push').deleteMany({_id: {$in: this.toDelete.map(this.db.ObjectID)}}));
-    //         this.toDelete = [];
-    //     }
-
-    //     if (promises.length) {
-    //         Promise.all(promises).then(() => {
-    //             this.log.d('Done flushing');
-    //             callback && callback();
-    //         }, err => {
-    //             this.log.e('Error while flushing', err);
-    //             throw PushError.deserialize(err);
-    //         });
-    //     }
-    //     else {
-    //         this.log.d('Nothing to flush');
-    //         callback && callback();
-    //     }
-    // }
-
-    // /**
-    //  * Transform's transform impementation
-    //  * 
-    //  * @param {object[]} chunk array of results [push id|[push id, new token]]
-    //  * @param {string} encoding ignored
-    //  * @param {function} callback callback
-    //  */
-    // _transform(chunk, encoding, callback) {
-    //     let {frame, payload: results} = chunk;
-    //     if (frame & FRAME.CMD) {
-    //         if (frame & FRAME.FLUSH) {
-    //             this.do_flush(() => {
-    //                 this.push(results);
-    //                 callback();
-    //             });
-    //         }
-    //         else {
-    //             callback();
-    //         }
-    //     }
-    //     else if (frame & FRAME.RESULTS) {
-    //         if (frame & FRAME.ERROR) {
-    //             [results.affected, results.left].forEach(arr => {
-    //                 if (results.type & (ERROR.DATA_TOKEN_EXPIRED | ERROR.DATA_TOKEN_INVALID)) {
-    //                     arr.forEach(id => {
-    //                         let {a, p, f} = this.data.pushes[id];
-    //                         this.removeTokens[a][p + f].push(id);
-    //                     });
-    //                 }
-    //                 arr.forEach(id => {
-    //                     let {p, m} = this.data.pushes[id];
-    //                     this.processed[m]++;
-    //                     this.errors[m][p][results.message] = (this.errors[m][p][results.message] || 0) + 1;
-    //                     delete this.data.pushes[id];
-    //                     this.toDelete.push(id);
-    //                 });
-    //                 this.count += arr.length;
-    //             });
-
-    //             if (this.count > this.limit) {
-    //                 this.do_flush(callback);
-    //             }
-    //             else {
-    //                 callback();
-    //             }
-    //         }
-    //         else {
-    //             this.log.d('Processing %d results', results.length);
-    //             results.forEach(res => {
-    //                 let id, token;
-    //                 if (typeof res === 'string') {
-    //                     id = res;
-    //                 }
-    //                 else {
-    //                     id = res[0];
-    //                     token = res[1];
-    //                 }
-
-    //                 let p = this.data.pushes[id];
-    //                 if (!p) { // 2 or more resultors on one pool
-    //                     return;
-    //                 }
-
-    //                 this.toDelete.push(id);
-    //                 delete this.data.pushes[id];
-
-    //                 this.sent[p.m] += 1;
-    //                 this.processed[p.m] += 1;
-    //                 this.sentUsers[p.a] = true;
-
-    //                 if (token) {
-    //                     this.changed[p.a][p.p + p.f][p.uid] = token;
-    //                 }
-    //             });
-
-    //             if (++this.count > this.limit) {
-    //                 this.do_flush(callback);
-    //             }
-    //             else {
-    //                 this.log.d('Done processing %d results', results.length);
-    //                 callback();
-    //             }
-    //         }
-
-    //         // // in case no more data is expected, we can safely close the stream
-    //         // if (this.check()) {
-    //         //     for (let _ in this.state.pushes) {
-    //         //         return;
-    //         //     }
-    //         //     this.do_flush(() => this.end());
-    //         // }
-    //     }
-    //     else if (frame & FRAME.ERROR) {
-    //         [results.affected, results.left].forEach(arr => {
-    //             let error = results.messageError();
-    //             arr.forEach(id => {
-    //                 let {p, m} = this.data.pushes[id];
-    //                 this.processed[m]++;
-    //                 this.errors[m][p][results.message] = (this.errors[m][p][results.message] || 0) + 1;
-    //                 this.fatalErrors[m].push(error);
-    //                 delete this.data.pushes[id];
-    //                 this.toDelete.push(id);
-    //             });
-    //             this.count += arr.length;
-    //         });
-    //     }
-    // }
 }
 
 module.exports = { Resultor };

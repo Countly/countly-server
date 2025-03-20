@@ -14,7 +14,7 @@ const { State, Status, STATUSES, Mongoable, S, S_REGEXP, Time } = require('./con
 class Message extends Mongoable {
     /**
      * Construct new Message
-     * 
+     *
      * @param {object|udnefined}    data            message data
      * @param {string|ObjectID}     data._id        message id
      * @param {ObjectID}            data.app        app id
@@ -33,13 +33,14 @@ class Message extends Mongoable {
 
     /**
      * Validation scheme of this class
-     * 
+     *
      * @returns {object} validateArgs scheme
      */
     static get scheme() {
         return {
             _id: { required: false, type: 'ObjectID' },
             app: { required: true, type: 'ObjectID' },
+            saveStats: { required: false, type: 'Boolean' },
             platforms: { required: true, type: 'String[]', in: () => require('../platforms').platforms },
             state: { type: 'Number' },
             status: { type: 'String', in: Object.values(Status) },
@@ -72,7 +73,7 @@ class Message extends Mongoable {
 
     /**
      * Set data doing any decoding / transformations along the way
-     * 
+     *
      * @param {object} data data to set
      */
     setData(data) {
@@ -99,7 +100,7 @@ class Message extends Mongoable {
 
     /**
      * Get query of messages active at data
-     * 
+     *
      * @param {Date} date date
      * @param {int} play period in ms to the left and right from the date
      * @param {State} state state, streamable by default
@@ -135,7 +136,7 @@ class Message extends Mongoable {
 
     /**
      * Getter for app
-     * 
+     *
      * @returns {ObjectID|string|undefined} app id
      */
     get app() {
@@ -144,7 +145,7 @@ class Message extends Mongoable {
 
     /**
      * Setter for app
-     * 
+     *
      * @param {ObjectID|string|undefined} app app id
      */
     set app(app) {
@@ -157,8 +158,31 @@ class Message extends Mongoable {
     }
 
     /**
+     * Getter for message.saveStats
+     *
+     * @returns {boolean} saveStats
+     */
+    get saveStats() {
+        return this._data.saveStats;
+    }
+
+    /**
+     * Setter for message.saveStats
+     *
+     * @param {boolean} value value to set
+     */
+    set saveStats(value) {
+        if (typeof value !== "boolean") {
+            this._data.saveStats = false;
+        }
+        else {
+            this._data.saveStats = value;
+        }
+    }
+
+    /**
      * Getter for platforms
-     * 
+     *
      * @returns {string[]|undefined} platforms array
      */
     get platforms() {
@@ -167,7 +191,7 @@ class Message extends Mongoable {
 
     /**
      * Setter for platforms
-     * 
+     *
      * @param {string[]|undefined} arr platforms array
      */
     set platforms(arr) {
@@ -181,7 +205,7 @@ class Message extends Mongoable {
 
     /**
      * Getter for state
-     * 
+     *
      * @returns {number|BigInt} internal message state
      */
     get state() {
@@ -190,7 +214,7 @@ class Message extends Mongoable {
 
     /**
      * Setter for state
-     * 
+     *
      * @param {number|BigInt} state internal message state
      */
     set state(state) {
@@ -204,7 +228,7 @@ class Message extends Mongoable {
 
     /**
      * Handy method to check message state
-     * 
+     *
      * @param {Number} inState state to check against
      * @returns {boolean} true if the message is in this state
      */
@@ -214,7 +238,7 @@ class Message extends Mongoable {
 
     /**
      * Getter for status
-     * 
+     *
      * @returns {string} Message status (user-facing one)
      */
     get status() {
@@ -223,7 +247,7 @@ class Message extends Mongoable {
 
     /**
      * Setter for status
-     * 
+     *
      * @param {string} status Message status (user-facing one)
      */
     set status(status) {
@@ -237,7 +261,7 @@ class Message extends Mongoable {
 
     /**
      * Getter for filter
-     * 
+     *
      * @returns {Filter} Filter instance
      */
     get filter() {
@@ -246,7 +270,7 @@ class Message extends Mongoable {
 
     /**
      * Setter for filter
-     * 
+     *
      * @param {Filter} filter Filter instance
      */
     set filter(filter) {
@@ -260,7 +284,7 @@ class Message extends Mongoable {
 
     /**
      * Getter for triggers
-     * 
+     *
      * @returns {Trigger[]} trigger array
      */
     get triggers() {
@@ -269,7 +293,7 @@ class Message extends Mongoable {
 
     /**
      * Setter for triggers
-     * 
+     *
      * @param {Trigger[]} triggers trigger array
      */
     set triggers(triggers) {
@@ -283,7 +307,7 @@ class Message extends Mongoable {
 
     /**
      * Get trigger by kind
-     * 
+     *
      * @param {TriggerKind|function} kind trigger kind to search for or test function
      * @returns {Trigger} trigger if such trigger exists
      */
@@ -293,7 +317,7 @@ class Message extends Mongoable {
 
     /**
      * Search for auto/tx trigger
-     * 
+     *
      * @returns {Trigger|undefined} auto/tx trigger if message has it
      */
     triggerAutoOrApi() {
@@ -302,7 +326,7 @@ class Message extends Mongoable {
 
     /**
      * Search for cohort or event trigger
-     * 
+     *
      * @returns {Trigger|undefined} plain trigger if message has it
      */
     triggerAuto() {
@@ -311,7 +335,7 @@ class Message extends Mongoable {
 
     /**
      * Search for plain trigger
-     * 
+     *
      * @returns {Trigger|undefined} plain trigger if message has it
      */
     triggerPlain() {
@@ -320,7 +344,7 @@ class Message extends Mongoable {
 
     /**
      * Search for rescheduleable trigger
-     * 
+     *
      * @returns {ReschedulingTrigger|undefined} multi or recurring trigger if message has it
      */
     triggerRescheduleable() {
@@ -329,7 +353,7 @@ class Message extends Mongoable {
 
     /**
      * Getter for contents
-     * 
+     *
      * @returns {Content[]} array of Contents instances
      */
     get contents() {
@@ -338,7 +362,7 @@ class Message extends Mongoable {
 
     /**
      * Setter for contents
-     * 
+     *
      * @param {Content[]} contents array of Contents instances
      */
     set contents(contents) {
@@ -352,7 +376,7 @@ class Message extends Mongoable {
 
     /**
      * Push another Content into contents array
-     * 
+     *
      * @param {Content[]} content Contents instance to push
      */
     pushContent(content) {
@@ -364,7 +388,7 @@ class Message extends Mongoable {
 
     /**
      * Filter contents for given lang-platform combination
-     * 
+     *
      * @param {string} p platform key
      * @param {string} la language key
      * @returns {Content[]} array of contents which are applicable for this p/l case
@@ -375,7 +399,7 @@ class Message extends Mongoable {
 
     /**
      * Filter contents for given lang-platform combination
-     * 
+     *
      * @param {Content[]|object[]} contents array of contents to filter
      * @param {string} p platform key
      * @param {string} la language key
@@ -387,7 +411,7 @@ class Message extends Mongoable {
 
     /**
      * Get Content instance by p & l given. `content()` returns default content.
-     * 
+     *
      * @param {string} p platform key
      * @param {string} la language key
      * @returns {Content|undefined} Content instance if one with given p & l exists or undefined
@@ -401,7 +425,7 @@ class Message extends Mongoable {
      * - if l is given, then p & undefined l;
      * - if p & l is given, then undefined p and given l;
      * - default content otherwise.
-     * 
+     *
      * @param {string} p platform key
      * @param {string} la language key
      * @returns {Content|undefined} Content instance if one with given p & l exists or undefined
@@ -415,7 +439,7 @@ class Message extends Mongoable {
 
     /**
      * Get array of app_user field names which might be needed for this message to be sent to a particular user
-     * 
+     *
      * @returns {string[]} array of app user field names
      */
     get userFields() {
@@ -424,7 +448,7 @@ class Message extends Mongoable {
 
     /**
      * Get user fields used in a Content
-     * 
+     *
      * @param {Content[]} contents array of Content instances
      * @param {boolean} deup remove leading 'up.'
      * @returns {string[]} array of app user field names
@@ -456,7 +480,7 @@ class Message extends Mongoable {
 
     /**
      * Returns the ids of messages that has at least one record in "push" collection
-     * 
+     *
      * @returns {string[]} ids of the messages
      */
     static async findStreamableMessageIds() {
@@ -480,7 +504,7 @@ class Message extends Mongoable {
 
     /**
      * Encode field key so it could be stored in mongo (replace dots with S - Separator)
-     * 
+     *
      * @param {string} key field name
      * @returns {string} key with dots replaced by separator
      */
@@ -490,7 +514,7 @@ class Message extends Mongoable {
 
     /**
      * Decode field key so it could be stored in mongo (replace dots with S - Separator)
-     * 
+     *
      * @param {string} key with dots replaced by separator
      * @returns {string} original field name
      */
@@ -500,7 +524,7 @@ class Message extends Mongoable {
 
     /**
      * Getter for result
-     * 
+     *
      * @returns {Result} Result object
      */
     get result() {
@@ -509,7 +533,7 @@ class Message extends Mongoable {
 
     /**
      * Setter for result
-     * 
+     *
      * @param {Result} result Result object
      */
     set result(result) {
@@ -523,7 +547,7 @@ class Message extends Mongoable {
 
     /**
      * Getter for info
-     * 
+     *
      * @returns {Info|undefined} info object
      */
     get info() {
@@ -532,7 +556,7 @@ class Message extends Mongoable {
 
     /**
      * Setter for info
-     * 
+     *
      * @param {Info|undefined} info info object
      */
     set info(info) {
@@ -554,7 +578,7 @@ class Message extends Mongoable {
 
     /**
      * Backwards-compatibility conversion of Note to Message
-     * 
+     *
      * @deprecated
      * @param {object} note Note object
      * @returns {Message} Message instance
@@ -633,8 +657,8 @@ class Message extends Mongoable {
 
     /**
      * Generate test message with default content
-     * 
-     * @returns {Message} test message 
+     *
+     * @returns {Message} test message
      */
     static test() {
         return new Message({
@@ -653,7 +677,7 @@ class Message extends Mongoable {
 
     /**
      * Create schedule job if needed for plain messages, put auto/api into streamable
-     * 
+     *
      * @param {log} log logger
      */
     async schedule(log) {
@@ -704,7 +728,7 @@ class Message extends Mongoable {
 
     /**
      * Remove job, clear queue and put message into inactive state
-     * 
+     *
      * @param {log} log logger
      */
     async stop(log) {
