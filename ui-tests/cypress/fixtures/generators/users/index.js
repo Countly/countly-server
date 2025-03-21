@@ -24,16 +24,12 @@ const generator = () => {
     const userName = faker.lorem.words({ min: 1, max: 1 });
     const password = generateComplexPassword();
     const email = faker.internet.email().toLowerCase();
-    // TODO: SER-2348
-    // const logoPath = '/testFiles/lowSizeTestImage.jpg';
 
     return {
         fullName,
         userName,
         password,
         email,
-        // TODO: SER-2348
-        //logoPath
     };
 };
 
