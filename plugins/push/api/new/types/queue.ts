@@ -19,6 +19,7 @@ export interface PushEvent {
     uid: string;
     token: string;
     message: any;
+    saveResult: boolean;
     platform: PlatformKeys;
     env: PlatformEnvKeys;
     language: string;

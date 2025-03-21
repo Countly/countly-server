@@ -145,7 +145,7 @@ class Resultor extends DoFinish {
                             rp, rl;
 
                         // additional fields to keep this in push_stats
-                        if (msg && msg.saveStats) {
+                        if (msg && msg.saveResults) {
                             this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: undefined, e: results.toString() });
                         }
 
@@ -209,7 +209,7 @@ class Resultor extends DoFinish {
                     let msg = this.data.message(p.m),
                         result, rp, rl;
                     // additional fields to keep this in push_stats
-                    if (msg && msg.saveStats) {
+                    if (msg && msg.saveResults) {
                         this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: resultId, e: null });
                     }
 
@@ -274,7 +274,7 @@ class Resultor extends DoFinish {
                     let msg = this.data.message(m);
 
                     // additional fields to keep this in push_stats
-                    if (msg && msg.saveStats) {
+                    if (msg && msg.saveResults) {
                         this.pushStats.push({ a: p.a, m: p.m, p: p.p, f: p.f, u: p.u, t: p.t, d: new Date, r: null, e: results.toString() });
                     }
 

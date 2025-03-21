@@ -46,8 +46,8 @@ async function saveResults(db, results) {
         await updateScheduleResults(db, new ObjectId(scheduleId), resultObject);
     }
 
-    // TODO: make it configurable from settings like it is for push_stats right now
-    await db.collection("message_results").insertMany(results);
+    await db.collection("message_results")
+        .insertMany(results.filter(result => result.saveResult));
 }
 
 

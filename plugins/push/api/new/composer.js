@@ -107,6 +107,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
                 appId: scheduleEvent.appId,
                 messageId: scheduleEvent.messageId,
                 scheduleId: scheduleEvent.scheduleId,
+                saveResult: message.saveResults,
                 token,
                 uid: user.uid,
                 platform,

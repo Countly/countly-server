@@ -256,7 +256,7 @@
                 isCohorts: typeof countlyCohorts !== 'undefined',
                 _id: null,
                 demo: false,
-                saveStats: false,
+                saveResults: false,
                 name: (dto && dto.name ? dto.name : ""),
                 platforms: [],
                 message: {
@@ -1532,7 +1532,7 @@
                 return {
                     _id: dto._id || null,
                     demo: this.mapDemo(dto),
-                    saveStats: dto.saveStats || false,
+                    saveResults: dto.saveResults || false,
                     status: this.mapStatus(dto),
                     createdAt: dto.info && dto.info.created ? moment(dto.info.created).format("dddd, Do MMMM YYYY h:mm") : null,
                     name: dto.info && countlyCommon.unescapeHtml(dto.info.title),
@@ -2231,7 +2231,7 @@
             mapModelToBaseDto: function(pushNotificationModel, options) {
                 var resultDto = {
                     app: countlyCommon.ACTIVE_APP_ID,
-                    saveStats: pushNotificationModel.saveStats || false,
+                    saveResults: pushNotificationModel.saveResults || false,
                     platforms: this.mapPlatforms(pushNotificationModel.platforms),
                 };
                 if (pushNotificationModel._id) {

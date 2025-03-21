@@ -40,7 +40,7 @@ class Message extends Mongoable {
         return {
             _id: { required: false, type: 'ObjectID' },
             app: { required: true, type: 'ObjectID' },
-            saveStats: { required: false, type: 'Boolean' },
+            saveResults: { required: false, type: 'Boolean' },
             platforms: { required: true, type: 'String[]', in: () => require('../platforms').platforms },
             state: { type: 'Number' },
             status: { type: 'String', in: Object.values(Status) },
@@ -158,25 +158,25 @@ class Message extends Mongoable {
     }
 
     /**
-     * Getter for message.saveStats
+     * Getter for message.saveResults
      *
-     * @returns {boolean} saveStats
+     * @returns {boolean} saveResults
      */
-    get saveStats() {
-        return this._data.saveStats;
+    get saveResults() {
+        return this._data.saveResults;
     }
 
     /**
-     * Setter for message.saveStats
+     * Setter for message.saveResults
      *
      * @param {boolean} value value to set
      */
-    set saveStats(value) {
+    set saveResults(value) {
         if (typeof value !== "boolean") {
-            this._data.saveStats = false;
+            this._data.saveResults = false;
         }
         else {
-            this._data.saveStats = value;
+            this._data.saveResults = value;
         }
     }
 

@@ -186,6 +186,7 @@ export interface Info {
 export interface Message {
     _id: ObjectId;
     app: ObjectId;
+    saveResults: boolean;
     platforms: PlatformKeys[];
     state: number;
     status: MessageStatus;
