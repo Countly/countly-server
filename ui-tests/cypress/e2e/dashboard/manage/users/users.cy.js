@@ -2,7 +2,6 @@ import user from '../../../../fixtures/user.json';
 const navigationHelpers = require('../../../../support/navigations');
 const loginHelpers = require('../../../../lib/login/login');
 const usersHelper = require('../../../../lib/dashboard/manage/users/users');
-const { faker } = require('@faker-js/faker');
 const { generateUsersFixture } = require('../../../../fixtures/generators/users');
 const { USER_TYPE } = require('../../../../support/constants');
 
