@@ -1,3 +1,6 @@
+## Version 25.03.XX
+- [user-management] Fixed issue with uploading member icon
+
 ## Version 25.03.2
 Fixes:
 - [user-management] Prevent global admin from self-revoke and self-delete
