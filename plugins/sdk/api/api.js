@@ -123,7 +123,7 @@ plugins.register("/permissions/features", function(ob) {
                             return resolve();
                         }
                     }
-                    
+
                     if (!uploadConfig || typeof uploadConfig !== "object") {
                         common.returnMessage(params, 400, 'Config must be a valid object');
                         return resolve();
@@ -160,9 +160,9 @@ plugins.register("/permissions/features", function(ob) {
                     }
 
                     common.outDb.collection('sdk_configs').updateOne(
-                        {_id: params.qstring.app_id + ""}, 
-                        {$set: {config: configToSave}}, 
-                        {upsert: true}, 
+                        {_id: params.qstring.app_id + ""},
+                        {$set: {config: configToSave}},
+                        {upsert: true},
                         function(err) {
                             if (err) {
                                 common.returnMessage(params, 500, 'Error saving config to database');
