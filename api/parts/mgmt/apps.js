@@ -836,6 +836,8 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     common.db.collection('cities').remove({'_id': {$regex: "^" + appId + ".*"}}, function() {});
     common.db.collection('top_events').remove({'app_id': common.db.ObjectID(appId)}, function() {});
     common.db.collection('app_user_merges').remove({'_id': {$regex: "^" + appId + "_.*"}}, function() {});
+
+    common.drillDb.collection("drill_events").remove({"a": appId}, function() {});
     deleteAppLongTasks(appId);
     /**
     * Deletes all app's events
@@ -945,6 +947,7 @@ function deletePeriodAppData(appId, fromAppDelete, params, app) {
     common.db.collection('device_details').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: skip}}]}, function() {});
     common.db.collection('cities').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: skip}}]}, function() {});
 
+    common.drillDb.collection("drill_events").remove({"a": appId, "ts": {$lt: (oldestTimestampWanted * 1000)}}, function() {});
     common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
         if (!err && events && events.list) {
             common.arrayAddUniq(events.list, plugins.internalEvents);

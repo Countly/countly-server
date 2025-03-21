@@ -98,9 +98,15 @@ plugins.connectToAllDatabases(true).then(function() {
                 {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
                 {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}},
             ],
+            pipeline_process: [{
+                "$match": {"e": {"$in": ["[CLY]_session"]}}
+            }],
             "name": "session-ingestion"
         }, (token, next) => {
-            var currEvent = next.fullDocument;
+            if (next.fullDocument) {
+                next = next.fullDocument;
+            }
+            var currEvent = next;
             if (currEvent && currEvent.a) {
                 //Record in session data
                 common.readBatcher.getOne("apps", common.db.ObjectID(currEvent.a), function(err, app) {
