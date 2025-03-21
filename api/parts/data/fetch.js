@@ -43,6 +43,10 @@ fetch.fetchFromGranuralData = async function(queryData, callback) {
         data = await common.drillQueryRunner.aggregatedSessionData(queryData);
         callback(null, data);
     }
+    else if (queryData.queryName === "segmentValuesForPeriod") {
+        data = await common.drillQueryRunner.segmentValuesForPeriod(queryData);
+        callback(null, data);
+    }
     else {
         callback("Invalid query name", null);
     }
@@ -59,14 +63,18 @@ fetch.fetchFromGranuralData = async function(queryData, callback) {
     }*/
 };
 /**
-* Prefetch event data, either by provided key or first event in the list and output result to browser
+* Prefetch event data, either by provided key or first event all events
 * @param {string} collection - event key
 * @param {params} params - params object
 **/
 fetch.prefetchEventData = function(collection, params) {
     if (!params.qstring.event) {
         common.readBatcher.getOne("events", { '_id': params.app_id }, (err, result) => {
+            var events = [];
             if (result && result.list) {
+                events = result.list.filter((event) => {
+                    return event.indexOf("[CLY]") !== 0;
+                });
                 if (result.order && result.order.length) {
                     for (let i = 0; i < result.order.length; i++) {
                         if (result.order[i].indexOf("[CLY]") !== 0) {
@@ -85,8 +93,9 @@ fetch.prefetchEventData = function(collection, params) {
                     }
                 }
 
-                var collectionName = crypto.createHash('sha1').update(collection + params.app_id).digest('hex');
-                fetch.fetchTimeObj("events_data", params, true, {'id_prefix': params.app_id + "_" + collectionName + '_'});
+                fetch.getMergedEventData(params, events, {'id_prefix': params.app_id + "_" + collectionName + '_'}, function(result3) {
+                    common.returnOutput(params, result3);
+                });
             }
             else {
                 common.returnOutput(params, {});
@@ -1150,11 +1159,6 @@ fetch.fetchMetric = function(params) {
         common.returnMessage(params, 400, 'Must provide metric');
     }
     else {
-        //Fetch metric from drill
-        //params.qstring.byval = fetch.metricToProperty(params.qstring.metric);
-
-        // fetch.getDataFromDrill(params);
-
         var metrics = fetch.metricToCollection(params.qstring.metric);
         if (metrics[0]) {
             fetch.getMetric(params, metrics[0], metrics[1], output);
@@ -1162,7 +1166,6 @@ fetch.fetchMetric = function(params) {
         else {
             common.returnOutput(params, []);
         }
-
     }
 };
 
@@ -1396,17 +1399,12 @@ fetch.fetchEvents = function(params) {
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 */
 fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
-    /* if(isCustomEvent){
-        //Fetch model from granural data
-    }
-    else {*/
     fetchTimeObj(collection, params, isCustomEvent, options, function(output) {
         if (params.qstring?.event) {
             output.eventName = params.qstring.event;
         }
         common.returnOutput(params, output);
     });
-    //}
 };
 
 /**
@@ -1673,8 +1671,15 @@ fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
     return tmpObj;
 };
 
+/**
+ * Caluclates model data from granural data
+ * @param {string} collection - collection name 
+ * @param {object} params  - request parameters
+ * @param {boolean} isCustomEvent  - is Custom event
+ * @param {object} options  - options of query
+ * @param {funtyion} callback  - callback function with result
+ */
 async function fetchFromGranural(collection, params, isCustomEvent, options, callback) {
-
     if (params.qstring.segmentation) {
         if (params.qstring.segmentation === "key") {
             params.qstring.segmentation = "n";
@@ -1684,36 +1689,43 @@ async function fetchFromGranural(collection, params, isCustomEvent, options, cal
         }
     }
 
+    if (params.qstring.refresh) {
+        params.qstring.period = "hour";
+    }
+
     var queryObject = {
         "appID": params.app_id,
-        "event": "[CLY]_custom",
-        "name": params.qstring.event,
         "timezone": params.appTimezone,
         "period": params.qstring.period,
         "segmentation": params.qstring.segmentation,
         "graphData": true
+    };
+    if (params.qstring.event !== "[CLY]_star_rating") {
+        queryObject.event = "[CLY]_custom";
+        queryObject.name = params.qstring.event;
     }
-    if(collection === "users"){
+    if (collection === "users") {
         queryObject.event = "[CLY]_session";
     }
 
     var data = await common.drillQueryRunner.getAggregatedData(queryObject);
     var modelData = common.convertArrayToModel(data, params.qstring.segmentation);
+    modelData.lu = Date.now();
     var pp = options.id_prefix.split("_");
-        try {
-            var meta = await common.drillReadBatcher.getOne("drill_meta", {"_id": pp[0] + "_meta_" + pp[1]});
-            if (meta && meta.sg) {
-                modelData.meta = modelData.meta || {};
-                modelData.meta.segments = [];
-                for (var val in meta.sg) {
-                    modelData.meta.segments.push(val);
-                }
+    try {
+        var meta = await common.drillReadBatcher.getOne("drill_meta", {"_id": pp[0] + "_meta_" + pp[1]});
+        if (meta && meta.sg) {
+            modelData.meta = modelData.meta || {};
+            modelData.meta.segments = [];
+            for (var val in meta.sg) {
+                modelData.meta.segments.push(val);
             }
         }
-        catch (e) {
-            console.log(e);
-        }
-        callback(modelData);
+    }
+    catch (e) {
+        console.log(e);
+    }
+    callback(modelData);
 }
 
 /**
@@ -1731,7 +1743,7 @@ async function fetchFromGranural(collection, params, isCustomEvent, options, cal
 * @param {function} callback - to call when fetch done
 **/
 function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
-    if(params && params.qstring && params.qstring.fetchFromGranural){
+    if (params && params.qstring && params.qstring.fetchFromGranural) {
         fetchFromGranural(collection, params, isCustomEvent, options, callback);
         return;
     }
@@ -1771,7 +1783,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     if (typeof options.levels.monthly === "undefined") {
         options.levels.monthly = [];
     }
-    
+
     if (params.qstring.fullRange) {
         options.db.collection(collection).find({ '_id': { $regex: "^" + (options.id_prefix || "") + options.id + ".*" + (options.id_postfix || "") } }).toArray(function(err1, data) {
             callback(getMergedObj(data, true, options.levels, params.truncateEventValuesList));
@@ -1888,10 +1900,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                 }
             }
         }
-        console.log(JSON.stringify(documents));
-        console.log(collection);
         options.db.collection(collection).find({ '_id': { $in: documents } }, {}).toArray(function(err, dataObjects) {
-            console.log(JSON.stringify(dataObjects));
             if (err) {
                 console.log(err);
             }

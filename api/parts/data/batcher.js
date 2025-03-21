@@ -321,6 +321,9 @@ class WriteBatcher {
                 promises.push(this.flush(db, collection));
             }
         }
+        if (this.flushCallbacks["*"] && this._token) {
+            this.flushCallbacks["*"](this._token);
+        }
         return Promise.all(promises).finally(() => {
             this.schedule();
         });
@@ -365,15 +368,15 @@ class WriteBatcher {
         options = options || {};
         if (!this.shared || cluster.isMaster) {
             if (!this.data[db][collection]) {
+                this._token = options.token;
                 this.data[db][collection] = {data: {}, "t": options.token, "upsert": options.upsert};
             }
             else {
                 if (options.token) {
+                    this._token = options.token;
                     this.data[db][collection].t = options.token;
                 }
-                if (typeof options.upsert !== "undefined") {
-                    this.data[db][collection].upsert = options.upsert;
-                }
+
             }
 
             if (id) {
@@ -383,6 +386,10 @@ class WriteBatcher {
                 }
                 else {
                     this.data[db][collection].data[id].value = common.mergeQuery(this.data[db][collection].data[id].value, operation);
+                }
+
+                if (typeof options.upsert !== "undefined" && this.data[db][collection].data[id]) {
+                    this.data[db][collection].data[id].upsert = options.upsert;
                 }
                 if (!this.process) {
                     this.flush(db, collection);

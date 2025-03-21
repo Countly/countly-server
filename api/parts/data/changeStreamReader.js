@@ -16,7 +16,7 @@ class changeStreamReader {
         this.pipeline = options.pipeline || [];
         this.lastToken = null;
         this.name = options.name || "";
-        this.collection = options.collection;
+        this.collection = options.collection || "drill_events";
         this.options = options.options;
         this.onClose = options.onClose;
         this.firstDocAfterReset = null;

@@ -12,6 +12,7 @@ var ejs = require("ejs"),
     fs = require('fs'),
     path = require('path'),
     reportUtils = require('../../reports/api/utils.js');
+var calculatedDataManager = require('../../../api/utils/calculatedDataManager.js');
 
 var cohortsEnabled = plugins.getPlugins().indexOf('cohorts') > -1;
 var surveysEnabled = plugins.getPlugins().indexOf('surveys') > -1;
@@ -1046,7 +1047,7 @@ function uploadFile(myfile, id, callback) {
      * }
      */
     plugins.register('/o/feedback/data', function(ob) {
-        var params = ob.params;
+        /*var params = ob.params;
         var app = params.qstring.app_id;
         var collectionName = 'feedback' + app;
         var query = {};
@@ -1113,8 +1114,80 @@ function uploadFile(myfile, id, callback) {
                 }
             });
         });
+        return true;*/
+
+        var params = ob.params;
+        var app = params.qstring.app_id;
+        var collectionName = "drill_events";
+        var query = {"a": app, "e": "[CLY]_star_rating"};
+        var skip = parseInt(params.qstring.iDisplayStart || 0);
+        var limit = parseInt(params.qstring.iDisplayLength || 0);
+        var colNames = ['sg.rating', 'sg.comment', 'sg.email', 'ts'];
+
+        if (params.qstring.widget_id) {
+            query.n = params.qstring.widget_id;
+        }
+        if (params.qstring.rating) {
+            query.sg.rating = parseInt(params.qstring.rating);
+        }
+        if (params.qstring.version) {
+            query.sg.app_version = params.qstring.version;
+        }
+        if (params.qstring.platform) {
+            query.sg.platform = params.qstring.platform;
+        }
+        if (params.qstring.device_id) {
+            query.did = params.qstring.device_id;
+        }
+        if (params.qstring.sSearch && params.qstring.sSearch !== "") {
+            query.$text = { $search: params.qstring.sSearch };
+        }
+
+        if (params.qstring.iSortCol_0) {
+            try {
+                var colIndex = parseInt(params.qstring.iSortCol_0);
+                var colName = colNames[colIndex];
+                var sortType = params.qstring.sSortDir_0 === 'asc' ? 1 : -1;
+                var sort = {};
+                sort[colName] = sortType;
+            }
+            catch (e) {
+                common.returnMessage(params, 400, 'Invalid column index for sorting');
+                return true;
+            }
+        }
+        if (params.qstring.uid) {
+            query.uid = params.qstring.uid;
+        }
+
+        validateRead(params, FEATURE_NAME, function() {
+            query.ts = countlyCommon.getTimestampRangeQuery(params, false);
+            var cursor = common.drillDb.collection(collectionName).find(query, {_id: 1, comment: "$sg.comment", email: "$sg.email", rating: "$sg.rating", cd: 1, uid: 1});
+            cursor.count(function(err, total) {
+                if (!err) {
+                    if (sort) {
+                        cursor.sort(sort);
+                    }
+                    cursor.skip(skip);
+                    cursor.limit(limit);
+                    cursor.toArray(function(cursorErr, res) {
+                        if (!cursorErr) {
+                            common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, "aaData": res});
+                        }
+                        else {
+                            common.returnMessage(params, 500, cursorErr);
+                        }
+                    });
+                }
+                else {
+                    common.returnMessage(params, 500, err);
+                }
+            });
+        });
         return true;
     });
+
+
     /*
      * @apiName: GetMultipleWidgetsById (deprecated)
      * @apiDescription: Get feedback widgets with or without filters 
@@ -1401,46 +1474,86 @@ function uploadFile(myfile, id, callback) {
             }
             countlyCommon.setPeriod(params.qstring.period, true);
             var periodObj = countlyCommon.periodObj;
-            var collectionName = crypto.createHash('sha1').update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
-            var id_prefix = params.qstring.app_id + "_" + collectionName + "_";
-            var documents = [];
-            for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
-                documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i]);
-                for (var m = 0; m < common.base64.length; m++) {
-                    documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
-                }
+
+            if (params.qstring.fetchFromGranural && common.drillDb) {
+                calculatedDataManager.longtask({
+                    db: common.db,
+                    threshold: plugins.getConfig("api").request_threshold / 2,
+                    app_id: params.qstring.app_id,
+                    query_data: {
+                        "appID": params.qstring.app_id,
+                        "period": params.qstring.period,
+                        "event": "[CLY]_star_rating",
+                        "periodOffset": params.qstring.periodOffset || 0,
+                        "queryName": "segmentValuesForPeriod",
+                        "field": "sg.platform_version_rate",
+                        "limit": 1000
+                    },
+                    outputData: function(err, data2) {
+                        if (err) {
+                            log.e(err);
+                        }
+                        var result = {};
+                        if (data2 && data2.data) {
+                            for (var z = 0; z < data2.data.length; z++) {
+                                var data = data2.data[z]._id.split('**');
+                                if (result[data[0]] === undefined) {
+                                    result[data[0]] = [];
+                                }
+                                if (result[data[0]].indexOf(data[1]) === -1) {
+                                    data[1] = data[1].replace(/\./g, ":");
+                                    result[data[0]].push(data[1]);
+                                }
+                            }
+
+                        }
+                        common.returnOutput(params, result);
+
+                    }
+                });
             }
-            common.db.collection("events_data").find({
-                '_id': {
-                    $in: documents
+            else {
+                var collectionName = crypto.createHash('sha1').update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
+                var id_prefix = params.qstring.app_id + "_" + collectionName + "_";
+                var documents = [];
+                for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
+                    documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i]);
+                    for (var m = 0; m < common.base64.length; m++) {
+                        documents.push(id_prefix + "no-segment_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
+                    }
                 }
-            }).toArray(function(err, docs) {
-                if (!err) {
-                    var result = {};
-                    docs.forEach(function(doc) {
-                        if (!doc.meta) {
-                            doc.meta = {};
-                        }
-                        if (!doc.meta.platform_version_rate) {
-                            doc.meta.platform_version_rate = [];
-                        }
-                        if (doc.meta_v2 && doc.meta_v2.platform_version_rate) {
-                            common.arrayAddUniq(doc.meta.platform_version_rate, Object.keys(doc.meta_v2.platform_version_rate));
-                        }
-                        doc.meta.platform_version_rate.forEach(function(item) {
-                            var data = item.split('**');
-                            if (result[data[0]] === undefined) {
-                                result[data[0]] = [];
+                common.db.collection("events_data").find({
+                    '_id': {
+                        $in: documents
+                    }
+                }).toArray(function(err, docs) {
+                    if (!err) {
+                        var result = {};
+                        docs.forEach(function(doc) {
+                            if (!doc.meta) {
+                                doc.meta = {};
                             }
-                            if (result[data[0]].indexOf(data[1]) === -1) {
-                                result[data[0]].push(data[1]);
+                            if (!doc.meta.platform_version_rate) {
+                                doc.meta.platform_version_rate = [];
                             }
+                            if (doc.meta_v2 && doc.meta_v2.platform_version_rate) {
+                                common.arrayAddUniq(doc.meta.platform_version_rate, Object.keys(doc.meta_v2.platform_version_rate));
+                            }
+                            doc.meta.platform_version_rate.forEach(function(item) {
+                                var data = item.split('**');
+                                if (result[data[0]] === undefined) {
+                                    result[data[0]] = [];
+                                }
+                                if (result[data[0]].indexOf(data[1]) === -1) {
+                                    result[data[0]].push(data[1]);
+                                }
+                            });
                         });
-                    });
-                    common.returnOutput(params, result);
-                    return true;
-                }
-            });
+                        common.returnOutput(params, result);
+                        return true;
+                    }
+                });
+            }
             return true;
         }
         return false;
