@@ -329,3 +329,9 @@ module.exports.TRIGGER_VARIABLE = {
     DECREASED: 'decreased',
     MORE: 'more'
 };
+
+module.exports.USER_TYPE = {
+    USER: 'User',
+    ADMIN: 'Admin',
+    GLOBAL_USER: 'Global Admin',
+};
