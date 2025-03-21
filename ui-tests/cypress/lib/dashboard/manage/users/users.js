@@ -187,7 +187,6 @@ module.exports = {
     clickGlobalAdministratorButton,
     verifyserSavedNotification,
     searchUserOnDataTable,
-    verifyUsersDataFromTable,
     selectAppForAdmin,
     // TODO: SER-2348
     //uploadImage
