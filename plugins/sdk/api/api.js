@@ -12,6 +12,48 @@ plugins.register("/permissions/features", function(ob) {
 
 (function() {
 
+    /**
+     * @api {get} /o/sdk?method=sc Get SDK config
+     * @apiName GetSDKConfig
+     * @apiGroup SDK Config
+     * @apiPermission app
+     * @apiDescription Get SDK configuration for this SDK and this user
+     *
+     * @apiQuery {String} app_key Application key
+     *
+     * @apiSuccess {Object} v - version 
+     * @apiSuccess {Object} t - timestamp
+     * @apiSuccess {Object} c - sdk config
+     *
+     * @apiSuccessExample {json} Success-Response:
+     * {
+        "v":1,
+        "t":1682328445330,
+        "c":{
+            "tracking":true,
+            "networking":true,
+            "crt":true,
+            "vt":true,
+            "st":true,
+            "cet":true,
+            "ecz":true,
+            "cr":true,
+            "sui":true,
+            "eqs":true,
+            "rqs":true,
+            "czi":true,
+            "dort":true,
+            "scui":true,
+            "lkl":true,
+            "lvs":true,
+            "lsv":true,
+            "lbc":true,
+            "ltlpt":true,
+            "ltl":true,
+            "lt":true
+        }
+     * }
+     */
     plugins.register("/o/sdk", function(ob) {
         var params = ob.params;
         if (params.qstring.method !== "sc") {
@@ -36,36 +78,24 @@ plugins.register("/permissions/features", function(ob) {
     });
 
     /**
-     * @api {get} /o?method=sc Get SDK config
-     * @apiName GetSDKConfig
+     * @api {get} /o?method=config-upload Save SDK config
+     * @apiName SaveSDKConfig
      * @apiGroup SDK Config
-     * @apiPermission app
-     * @apiDescription Get SDK configuration for this SDK and this user
-     *
-     * @apiQuery {String} app_key Application key
-     *
-     * @apiSuccess {Object} v - version 
-     * @apiSuccess {Object} t - timestamp
-     * @apiSuccess {Object} c - sdk config
-     *
-     * @apiSuccessExample {json} Success-Response:
+     * @apiPermission admin
+     * @apiDescription Save SDK configuration for the given app
+     * 
+     * @apiQuery {String} app_id Application ID
+     * @apiQuery {String} config SDK config object
+     * 
+     * @apiSuccess {json} Success-Response:
      * {
-        "v":1,
-        "t":1682328445330,
-        "c":{
-            "tracking":false,
-            "networking":false,
-            "crashes":false,
-            "views":false,
-            "heartbeat":61,
-            "event_queue":11,
-            "request_queue":1001
-        }
+     *     "result": "Success"
      * }
      */
     plugins.register("/o", function(ob) {
         var params = ob.params;
 
+        // returns server config for the given app
         if (params.qstring.method === "sdk-config") {
             validateRead(params, FEATURE_NAME, function() {
                 getSDKConfig(params).then(function(res) {
@@ -78,6 +108,76 @@ plugins.register("/permissions/features", function(ob) {
 
             return true;
         }
+
+        // saves the given server configuration for the given app
+        if (params.qstring.method === "config-upload") {
+            return new Promise(function(resolve) {
+                validateUpdate(params, FEATURE_NAME, function() {
+                    var uploadConfig = params.qstring.config;
+                    if (uploadConfig && typeof uploadConfig === "string") {
+                        try {
+                            uploadConfig = JSON.parse(uploadConfig);
+                        }
+                        catch (ex) {
+                            common.returnMessage(params, 400, 'Invalid config format');
+                            return resolve();
+                        }
+                    }
+                    
+                    if (!uploadConfig || typeof uploadConfig !== "object") {
+                        common.returnMessage(params, 400, 'Config must be a valid object');
+                        return resolve();
+                    }
+
+                    var configToSave = uploadConfig.c || uploadConfig; // incase they provide the config object directly
+                    var validOptions = [
+                        "tracking",
+                        "networking",
+                        "crt",
+                        "vt",
+                        "st",
+                        "cet",
+                        "ecz",
+                        "cr",
+                        "sui",
+                        "eqs",
+                        "rqs",
+                        "czi",
+                        "dort",
+                        "scui",
+                        "lkl",
+                        "lvs",
+                        "lsv",
+                        "lbc",
+                        "ltlpt",
+                        "ltl",
+                        "lt"
+                    ];
+                    for (var key in configToSave) {
+                        if (validOptions.indexOf(key) === -1) {
+                            delete configToSave[key];
+                        }
+                    }
+
+                    common.outDb.collection('sdk_configs').updateOne(
+                        {_id: params.qstring.app_id + ""}, 
+                        {$set: {config: configToSave}}, 
+                        {upsert: true}, 
+                        function(err) {
+                            if (err) {
+                                common.returnMessage(params, 500, 'Error saving config to database');
+                            }
+                            else {
+                                common.returnOutput(params, {result: 'Success'});
+                            }
+                            resolve();
+                        }
+                    );
+                });
+            });
+        }
+
+        return false;
     });
 
     plugins.register("/i/sdk-config", function(ob) {
@@ -359,7 +459,7 @@ plugins.register("/permissions/features", function(ob) {
     });
 
     /**
-     * Updated SDK config
+     * Updates SDK config (used internally when configuration is changed in the dashboard)
      * @param {params} params - request params
      * @returns {void}
      */
