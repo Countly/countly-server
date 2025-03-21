@@ -27,6 +27,7 @@
       <component
         :is="mainComponent"
         v-bind="computedAttrs"
+        v-loading="isUploadInput && loading"
         v-model="componentValue"
         v-tooltip.left="tooltip"
         class="cly-vue-content-builder-sidebar-input__component"

@@ -428,9 +428,15 @@
                 default: 'cly-io cly-io-question-mark-circle',
                 type: String
             },
+
             labelTooltip: {
                 default: null,
                 type: String
+            },
+
+            loading: {
+                default: false,
+                type: Boolean
             },
 
             options: {
