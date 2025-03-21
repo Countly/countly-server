@@ -8,13 +8,13 @@ const { USER_TYPE } = require('../../../../support/constants');
 
 
 describe('Create users wit different types such as User, Admin and Global Admin ', () => {
-    beforeEach(function () {
+    beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
         navigationHelpers.goToUserManagementPage();
     });
 
-    it('Create a User', function () {
+    it('Create a User', function() {
         const users = generateUsersFixture();
         let application = "";
 
@@ -31,22 +31,22 @@ describe('Create users wit different types such as User, Admin and Global Admin 
             usersHelper.clickCreateUserButton();
             usersHelper.verifyserSavedNotification();
 
-            usersHelper.searchUserOnDataTable(users.fullName)
+            usersHelper.searchUserOnDataTable(users.fullName);
             usersHelper.verifyUsersDataFromTable({
                 user: users.fullName,
                 role: USER_TYPE.USER,
                 email: users.email,
                 lastLogin: 'Not logged in yet'
-            })
+            });
         });
     });
 
-    it('Create an Admin user', function () {
+    it('Create an Admin user', function() {
         const users = generateUsersFixture();
         let application = "";
 
         navigationHelpers.getAppNameFromSidebar().then((appName) => {
-            application = appName
+            application = appName;
             usersHelper.clickCreateNewUserButton();
             usersHelper.typeFullName(users.fullName);
             usersHelper.typeUserName(users.userName);
@@ -62,17 +62,17 @@ describe('Create users wit different types such as User, Admin and Global Admin 
                 role: USER_TYPE.ADMIN,
                 email: users.email,
                 lastLogin: 'Not logged in yet'
-            })
+            });
         });
     });
 
-    it('Create a Global Admin user', function () {
+    it('Create a Global Admin user', function() {
         const users = generateUsersFixture();
 
         usersHelper.clickCreateNewUserButton();
         usersHelper.typeFullName(users.fullName);
         usersHelper.typeUserName(users.userName);
-        usersHelper.clickGeneratePasswordButton()
+        usersHelper.clickGeneratePasswordButton();
         usersHelper.typeEmail(users.email);
         usersHelper.clickGlobalAdministratorButton();
         usersHelper.clickCreateUserButton();
@@ -84,6 +84,6 @@ describe('Create users wit different types such as User, Admin and Global Admin 
             role: USER_TYPE.GLOBAL_USER,
             email: users.email,
             lastLogin: 'Not logged in yet'
-        })
+        });
     });
 });

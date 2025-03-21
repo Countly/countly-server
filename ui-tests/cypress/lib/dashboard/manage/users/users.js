@@ -116,8 +116,8 @@ const verifyUsersDataFromTable = ({
 };
 
 const clickCreateNewUserButton = () =>{
-    cy.clickElement(usersPageElements.CREATE_USER_BUTTON)
-}
+    cy.clickElement(usersPageElements.CREATE_USER_BUTTON);
+};
 
 const typeFullName = (fullName) => {
     cy.typeInput(usersCreationPageElements().FULL_NAME_INPUT, fullName);
@@ -128,8 +128,8 @@ const typeUserName = (userName) => {
 };
 
 const clickGeneratePasswordButton = () =>{
-    cy.clickElement(usersCreationPageElements().GENERATE_PASSWORD_BUTTON)
-}
+    cy.clickElement(usersCreationPageElements().GENERATE_PASSWORD_BUTTON);
+};
 
 const typePassword = (password) => {
     cy.typeInput(usersCreationPageElements().PASSWORD_INPUT, password);
@@ -140,12 +140,12 @@ const typeEmail = (email) => {
 };
 
 const clickCreateUserButton = () =>{
-    cy.clickElement(usersCreationPageElements().DRAWER_CREATE_BUTTON,true)
-}
+    cy.clickElement(usersCreationPageElements().DRAWER_CREATE_BUTTON, true);
+};
 
 const clickGlobalAdministratorButton = () =>{
-    cy.clickElement(usersCreationPageElements().GLOBAL_ADMINISTRATOR_CHECKBOX_LABEL)
-}
+    cy.clickElement(usersCreationPageElements().GLOBAL_ADMINISTRATOR_CHECKBOX_LABEL);
+};
 
 const verifyserSavedNotification = () => {
     cy.verifyElement({
@@ -159,14 +159,14 @@ const searchUserOnDataTable = (userName) => {
 };
 
 const selectAppForUser = (application) => {
-    cy.clickElement(usersCreationPageElements().GRANT_USER_ACCESS_TO_APP_DROPDOWN)
-    cy.clickElement(usersCreationPageElements(helper.toSlug(application)).USER_ACCESS_TO_APP_DROPDOWN)
-}
+    cy.clickElement(usersCreationPageElements().GRANT_USER_ACCESS_TO_APP_DROPDOWN);
+    cy.clickElement(usersCreationPageElements(helper.toSlug(application)).USER_ACCESS_TO_APP_DROPDOWN);
+};
 
 const selectAppForAdmin = (application) => {
-    cy.clickElement(usersCreationPageElements().GRANT_ADMIN_ACCESS_TO_APP_DROPDOWN)
-    cy.clickElement(usersCreationPageElements(helper.toSlug(application)).ADMIN_ACCESS_TO_APP_DROPDOWN)
-}
+    cy.clickElement(usersCreationPageElements().GRANT_ADMIN_ACCESS_TO_APP_DROPDOWN);
+    cy.clickElement(usersCreationPageElements(helper.toSlug(application)).ADMIN_ACCESS_TO_APP_DROPDOWN);
+};
 
 // TODO: SER-2348
 // const uploadImage = (uploadImage) => {
