@@ -1,6 +1,7 @@
 ## Version 25.03.2
 Fixes:
 - [user-management] Prevent global admin from self-revoke and self-delete
+- [user-management] Fixed issue with uploading member icon
 
 Enterprise fixes:
 - [cohorts] Fixed issue with combining multiple cohorts
