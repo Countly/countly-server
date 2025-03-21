@@ -102,5 +102,6 @@ export default {
     calculatePercentageRatings,
     getCurrentDate,
     getCurrentMonth,
-    addData,generateComplexPassword
+    addData,
+    generateComplexPassword
 };
