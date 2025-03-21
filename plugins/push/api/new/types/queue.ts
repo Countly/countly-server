@@ -55,6 +55,6 @@ export interface PushQueue {
         isMaster: Boolean,
     ): Promise<void>;
     sendScheduleEvent(scheduleEvent: ScheduleEvent): Promise<void>;
-    sendPushEvent(pushEvent: PushEvent): Promise<void>;
+    sendPushEvents(pushEvents: PushEvent[]): Promise<void>;
     sendResultEvents(resultEvents: ResultEvent[]): Promise<void>;
 }

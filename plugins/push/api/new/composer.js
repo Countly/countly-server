@@ -21,6 +21,7 @@ const PLATFORM_KEYMAP = require("./constants/platform-keymap.json");
 const { buildResultObject, increaseResultStat, updateScheduleResults} = require("./lib/result.js");
 /** @type {LogObject} */
 const log = require('../../../../api/utils/common').log('push:composer');
+const QUEUE_WRITE_BATCH_SIZE = 100;
 
 /**
  *
@@ -87,6 +88,8 @@ async function composeScheduledPushes(db, scheduleEvent) {
         }
     }
 
+    /** @type {PushEvent[]} */
+    let events = [];
     const result = buildResultObject();
     for await (let user of stream) {
         let tokenObj = user?.tk?.[0]?.tk;
@@ -118,11 +121,18 @@ async function composeScheduledPushes(db, scheduleEvent) {
                 proxy,
             };
 
-            await queue.sendPushEvent(push);
-
+            events.push(push);
+            if (events.length === QUEUE_WRITE_BATCH_SIZE) {
+                await queue.sendPushEvents(events);
+                events = [];
+            }
             // update results
             increaseResultStat(result, platform, language, "total");
         }
+    }
+    // write the remaining pushes in the buffer
+    if (events && events.length) {
+        await queue.sendPushEvents(events);
     }
 
     // update the message document

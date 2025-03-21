@@ -133,17 +133,15 @@ async function sendScheduleEvent(scheduleEvent) {
 
 /**
  *
- * @param {PushEvent} push
+ * @param {PushEvent[]} pushes
  */
-async function sendPushEvent(push) {
+async function sendPushEvents(pushes) {
     if (!_producer) {
         throw new Error("Producer is not initialized");
     }
     await _producer.send({
         topic: config.topics.SEND.name,
-        messages: [{
-            value : JSON.stringify(push)
-        }]
+        messages: pushes.map(p => ({ value: JSON.stringify(p) }))
     });
 }
 
@@ -156,9 +154,7 @@ async function sendResultEvents(results) {
     }
     await _producer.send({
         topic: config.topics.RESULT.name,
-        messages: results.map(result => ({
-            value: JSON.stringify(result)
-        }))
+        messages: results.map(r => ({ value: JSON.stringify(r) }))
     });
 }
 
@@ -196,7 +192,7 @@ async function createTopics() {
 }
 
 module.exports = /** @type {PushQueue} */({
-    sendPushEvent,
+    sendPushEvents,
     sendScheduleEvent,
     sendResultEvents,
     init,
