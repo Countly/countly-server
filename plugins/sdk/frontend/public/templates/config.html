@@ -1,8 +1,14 @@
 <div v-bind:class="[componentId]" class="configurations">
     <cly-header
         title="SDK Configuration (Experimental)"
-        :tooltip="{description}"
-    >
+        :tooltip="{description}">
+        <template v-slot:header-right>
+            <div class="bu-level-item">
+                <el-button @click="downloadConfig" type="default" size="small" icon="cly-icon-btn cly-icon-download">
+                    Download Config
+                </el-button>
+            </div>
+        </template>
     </cly-header>
     <cly-main>
         <div v-if="!isTableLoading" class="bu-columns bu-is-gapless">

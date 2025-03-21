@@ -1,8 +1,10 @@
-const job = require('../parts/jobs/job.js'),
-    plugins = require('../../plugins/pluginManager.js'),
-    log = require('../utils/log.js')('job:userMerge');
-var Promise = require("bluebird");
-var usersApi = require('../parts/mgmt/app_users.js');
+
+// const job = require('../parts/jobs/job.js');
+const Job = require("../../jobServer/Job");
+const plugins = require('../../plugins/pluginManager.js');
+const log = require('../utils/log.js')('job:userMerge');
+const Promise = require("bluebird");
+const usersApi = require('../parts/mgmt/app_users.js');
 
 
 var getMergeDoc = function(data) {
@@ -226,7 +228,19 @@ var handleMerges = function(db, callback) {
     });
 };
 /** Class for the user mergind job **/
-class UserMergeJob extends job.Job {
+class UserMergeJob extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "*/5 * * * *" // Every 5 minutes
+        };
+    }
+
     /**
      * Run the job
      * @param {Db} db connection

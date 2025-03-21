@@ -1,15 +1,34 @@
-'use strict';
-
-const job = require('../parts/jobs/job.js'),
-    async = require('async'),
-    plugins = require('../../plugins/pluginManager.js'),
-    log = require('../utils/log.js')('job:appExpire'),
-    common = require('../utils/common.js'),
-    crypto = require('crypto');
+const async = require('async');
+const plugins = require('../../plugins/pluginManager.js');
+const log = require('../utils/log.js')('job:appExpire');
+const common = require('../utils/common.js');
+const crypto = require('crypto');
+const {Job} = require("../../jobServer");
 
 
 /** Class for the user mergind job **/
-class AppExpireJob extends job.Job {
+class AppExpireJob extends Job {
+
+    /**
+     * Determines if the job should be enabled when created
+     * @public
+     * @returns {boolean} True if job should be enabled by default, false otherwise
+     */
+    getEnabled() {
+        return false;
+    }
+
+    /**
+     * Get schedule for the job
+     * @returns {GetScheduleConfig} Schedule configuration object
+     */
+    getSchedule() {
+        return {
+            type: 'schedule',
+            value: '15 4 * * *' // every day at 4:15 AM
+        };
+    }
+
     /**
      * Run the job
      * @param {Db} database connection

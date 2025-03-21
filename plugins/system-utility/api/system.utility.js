@@ -1,11 +1,15 @@
+/**
+ * @typedef {import('stream').Writable} Writable
+ */
 var common = require('../../../api/utils/common.js');
 const inspector = require('inspector');
-const countlyFs = require('../../../api/utils/countlyFs.js');
 var exec = require('child_process').exec;
 const tar = require("tar-stream");
 const session = new inspector.Session();
+const path = require("path");
+const fs = require("fs/promises");
 
-const PROFILER_DIR = "nodeprofile";
+const PROFILER_DIR = path.join(__dirname, "../../../log/nodeprofile");
 
 var _id = null;
 
@@ -424,23 +428,19 @@ function sessionPost(cmd) {
 }
 
 /**
- * Saves the result to gridfs
- * @param {string} filename file name with extension
- * @param {object} result result object returned by the profiler
- * @returns {Promise<string>} filename
+ * Takes a snapshot and writes its content to the passed stream.
+ * IMPORTANT: it will call the "end" for the passed stream object when it's done
+ * @param {Writable} stream Writable stream to write snapshot content to
  */
-function saveProfilerResult(filename, result) {
-    return new Promise((res, rej) => {
-        countlyFs.gridfs.saveData(
-            PROFILER_DIR, filename, JSON.stringify(result),
-            { writeMode: "overwrite" },
-            function(err) {
-                if (err) {
-                    return rej(err);
-                }
-                res(filename);
-            }
-        );
+function takeHeapSnapshot(stream) {
+    session.connect();
+    session.on("HeapProfiler.addHeapSnapshotChunk", m => stream.write(m.params.chunk));
+    session.post("HeapProfiler.takeHeapSnapshot", null, (err) => {
+        session.disconnect();
+        stream.end();
+        if (err) {
+            console.error(err);
+        }
     });
 }
 
@@ -465,25 +465,27 @@ async function startProfiler() {
  *  - process-name.cpuprofile
  *  - process-name.heapprofile
  *  - process-name.coverage
- * @param {string} processName process or worker and process id
+ * @param {string} processName process id
  */
 async function stopProfiler(processName) {
     const errors = [];
 
-    // clear old files
-    await new Promise(
-        (res, rej) => countlyFs.gridfs.deleteAll(
-            PROFILER_DIR,
-            null,
-            err => err ? rej(err) : res()
-        )
-    );
+    try {
+        await fs.rm(PROFILER_DIR, { force: true, recursive: true }); // clear old files
+        await fs.mkdir(PROFILER_DIR, { recursive: true });
+    }
+    catch (err) {
+        errors.push(err);
+    }
 
     // coverage
     try {
         const coverage = await sessionPost("Profiler.takePreciseCoverage");
-        await saveProfilerResult(processName + ".coverage", coverage?.result);
         await sessionPost("Profiler.stopPreciseCoverage");
+        await fs.writeFile(
+            path.join(PROFILER_DIR, processName + ".coverage"),
+            JSON.stringify(coverage?.result)
+        );
     }
     catch (err) {
         errors.push(err);
@@ -492,8 +494,11 @@ async function stopProfiler(processName) {
     // cpu profiler
     try {
         const cpuProfile = await sessionPost("Profiler.stop");
-        await saveProfilerResult(processName + ".cpuprofile", cpuProfile?.profile);
         await sessionPost("Profiler.disable");
+        await fs.writeFile(
+            path.join(PROFILER_DIR, processName + ".cpuprofile"),
+            JSON.stringify(cpuProfile?.profile)
+        );
     }
     catch (err) {
         errors.push(err);
@@ -502,8 +507,11 @@ async function stopProfiler(processName) {
     // heap profiler
     try {
         const heapProfile = await sessionPost("HeapProfiler.stopSampling");
-        await saveProfilerResult(processName + ".heapprofile", heapProfile?.profile);
         await sessionPost("HeapProfiler.disable");
+        await fs.writeFile(
+            path.join(PROFILER_DIR, processName + ".heapprofile"),
+            JSON.stringify(heapProfile?.profile)
+        );
     }
     catch (err) {
         errors.push(err);
@@ -517,38 +525,23 @@ async function stopProfiler(processName) {
 }
 
 /**
- * Returns the data of a file in PROFILER_DIR collection
- * @param {string} filename file name with extension
- * @returns {Promise<{data:string, filename:string}>} file object with name and content
- */
-function downloadProfilerFile(filename) {
-    return new Promise((resolve, reject) => {
-        countlyFs.gridfs.getData(PROFILER_DIR, filename, {}, (err, data) => {
-            if (err) {
-                return reject("File not found");
-            }
-            resolve({ data, filename });
-        });
-    });
-}
-/**
  * Returns the names, creation dates and size of all files in the PROFILER_DIR collection
- * @returns {Promise<Array<{createdOn: Date, filename: string, size: number }>>} file info
+ * @returns {Promise<Array<{createdOn: Date, filename: string, size: number, path: string }>>} file info
  */
-function listProfilerFiles() {
-    return new Promise((resolve, reject) => {
-        countlyFs.gridfs.listFiles(PROFILER_DIR, (err, files) => {
-            if (err) {
-                return reject(err);
-            }
-            resolve(files);
-        });
-    });
+async function listProfilerFiles() {
+    const files = await fs.readdir(PROFILER_DIR);
+    return Promise.all(
+        files.map(async(filename) => {
+            const fullPath = path.join(PROFILER_DIR, filename);
+            const { birthtime, size } = await fs.stat(fullPath);
+            return { createdOn: birthtime, size, filename, path: fullPath };
+        })
+    );
 }
 
 /**
  * Returns the tarball read stream for all profiler files
- * @returns {tar.Pack} tar stream
+ * @returns {Promise<tar.Pack>} tar stream
  */
 async function profilerFilesTarStream() {
     const files = await listProfilerFiles();
@@ -559,14 +552,8 @@ async function profilerFilesTarStream() {
     const pack = tar.pack();
     for (let i = 0; i < files.length; i++) {
         const entry = pack.entry({ name: files[i].filename, size: files[i].size });
-        const stream = await new Promise((res, rej) => {
-            countlyFs.gridfs.getStream(
-                PROFILER_DIR,
-                files[i].filename,
-                {},
-                (err, fileStream) => err ? rej(err) : res(fileStream)
-            );
-        });
+        const handle = await fs.open(files[i].path);
+        const stream = handle.createReadStream();
         stream.pipe(entry);
         stream.on("end", () => {
             entry.end();
@@ -580,9 +567,7 @@ async function profilerFilesTarStream() {
 }
 
 /**
- * Opens inspector. Running inspector.open on master process triggers workers to
- * open their inspector also. But this is not the case for closing the inspectors.
- * Each worker needs to be closed manually.
+ * Opens inspector. Running inspector.open on master process only.
  * @returns {void}
  */
 function startInspector() {
@@ -597,8 +582,7 @@ function startInspector() {
 }
 
 /**
- * Closes inspector. Running inspector.close on master doesn't trigger workers to
- * close their inspector. Each worker needs to be closed manually.
+ * Closes inspector for the main process.
  * @returns {void}
  */
 function stopInspector() {
@@ -612,9 +596,9 @@ function stopInspector() {
     });
 }
 
+exports.takeHeapSnapshot = takeHeapSnapshot;
 exports.startProfiler = startProfiler;
 exports.stopProfiler = stopProfiler;
-exports.downloadProfilerFile = downloadProfilerFile;
 exports.listProfilerFiles = listProfilerFiles;
 exports.startInspector = startInspector;
 exports.stopInspector = stopInspector;

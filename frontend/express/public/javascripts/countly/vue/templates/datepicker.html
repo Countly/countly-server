@@ -207,7 +207,7 @@
                         <span class="text-medium">{{i18n('common.time')}}</span>
                     </div>
                     <div>
-                        <cly-time-picker align="right" :width="100" v-model="minTime"></cly-time-picker>
+                        <cly-time-picker align="right" :width="100" v-model="minTime" :min-date-value="minDate" :is-future="isFuture"></cly-time-picker>
                     </div>
                 </div>
             </div>

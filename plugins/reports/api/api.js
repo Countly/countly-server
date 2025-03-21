@@ -14,13 +14,6 @@ const FEATURE_NAME = 'reports';
         ob.features.push(FEATURE_NAME);
     });
 
-    plugins.register("/master", function() {
-        // Allow configs to load & scanner to find all jobs classes
-        setTimeout(() => {
-            require('../../../api/parts/jobs').job('reports:send').replace().schedule("every 1 hour starting on the 0 min");
-        }, 10000);
-    });
-
     /**
      * @api {get} /o/reports/all Get reports data 
      * @apiName  getData

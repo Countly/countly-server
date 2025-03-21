@@ -24,7 +24,14 @@ const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request')(plugins.getConfig("security"));
-const Handle = require('../../api/parts/jobs/index.js');
+
+try {
+    require('../../jobServer/api');
+    log.i('Job api loaded');
+}
+catch (ex) {
+    log.e('Job api not available');
+}
 
 var loaded_configs_time = 0;
 
@@ -2676,104 +2683,6 @@ const processRequest = (params) => {
                 }
 
                 switch (params.qstring.method) {
-                case 'jobs':
-                    /**
-                     * @api {get} /o?method=jobs Get Jobs Table Information
-                     * @apiName GetJobsTableInfo
-                     * @apiGroup Jobs
-                     * 
-                     * @apiDescription Get jobs information in the jobs table
-                     * @apiQuery {String} method which kind jobs requested, it should be 'jobs'
-                     * 
-                     * @apiSuccess {Number} iTotalRecords Total number of jobs
-                     * @apiSuccess {Number} iTotalDisplayRecords Total number of jobs by filtering
-                     * @apiSuccess {Objects[]} aaData Job details
-                     * @apiSuccess {Number} sEcho DataTable's internal counter
-                     * 
-                     * @apiSuccessExample {json} Success-Response:
-                     * HTTP/1.1 200 OK
-                     * {
-                     *   "sEcho": "0",
-                     *   "iTotalRecords": 14,
-                     *   "iTotalDisplayRecords": 14,
-                     *   "aaData": [{
-                     *     "_id": "server-stats:stats",
-                     *     "name": "server-stats:stats",
-                     *     "status": "SCHEDULED",
-                     *     "schedule": "every 1 day",
-                     *     "next": 1650326400000,
-                     *     "finished": 1650240007917,
-                     *     "total": 1
-                     *   }]
-                     * }
-                     */
-
-                    /**
-                    * @api {get} /o?method=jobs/name Get Job Details Table Information
-                    * @apiName GetJobDetailsTableInfo
-                    * @apiGroup Jobs
-                    * 
-                    * @apiDescription Get the information of the filtered job in the table
-                    * @apiQuery {String} method Which kind jobs requested, it should be 'jobs'
-                    * @apiQuery {String} name The job name is required to redirect to the selected job
-                    * 
-                    * @apiSuccess {Number} iTotalRecords Total number of jobs
-                    * @apiSuccess {Number} iTotalDisplayRecords Total number of jobs by filtering
-                    * @apiSuccess {Objects[]} aaData Job details
-                    * @apiSuccess {Number} sEcho DataTable's internal counter
-                    * 
-                    * @apiSuccessExample {json} Success-Response:
-                    * HTTP/1.1 200 OK
-                    * {
-                    *   "sEcho": "0",
-                    *   "iTotalRecords": 1,
-                    *   "iTotalDisplayRecords": 1,
-                    *   "aaData": [{
-                    *     "_id": "62596cd41307dc89c269b5a8",
-                    *     "name": "api:ping",
-                    *     "created": 1650027732240,
-                    *     "status": "SCHEDULED",
-                    *     "started": 1650240000865,
-                    *     "finished": 1650240000891,
-                    *     "duration": 30,
-                    *     "data": {},
-                    *     "schedule": "every 1 day",
-                    *     "next": 1650326400000,
-                    *     "modified": 1650240000895,
-                    *     "error": null
-                    *   }]
-                    * }
-                    */
-
-                    validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs, 'jobs');
-                    break;
-                case 'suspend_job': {
-                    /**
-                     * @api {get} /o?method=suspend_job Suspend Job
-                     * @apiName SuspendJob
-                     * @apiGroup Jobs
-                     *  
-                     * @apiDescription Suspend the selected job
-                     * * 
-                     * @apiSuccessExample {json} Success-Response:
-                     * HTTP/1.1 200 OK
-                     * {
-                     *  "result": true,
-                     *  "message": "Job suspended successfully"
-                     * }
-                     * 
-                     * @apiErrorExample {json} Error-Response:
-                     * HTTP/1.1 400 Bad Request
-                     * {
-                     *  "result": "Updating job status failed" 
-                     * }
-                     * 
-                    */
-                    validateUserForGlobalAdmin(params, async() => {
-                        await Handle.suspendJob(params);
-                    });
-                    break;
-                }
                 case 'total_users':
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                     break;
@@ -3295,6 +3204,80 @@ const processFetchRequest = (params, app, done) => {
         }, () => { });
 
         return done ? done() : false;
+    });
+};
+
+/**
+ * Process Bulk Request
+ * @param {number} i - request number in bulk
+ * @param {array} requests - array of requests to process
+ * @param {params} params - params object
+ * @returns {void} void
+ */
+const processBulkRequest = (i, requests, params) => {
+    const appKey = params.qstring.app_key;
+    if (i === requests.length) {
+        common.unblockResponses(params);
+        if ((params.qstring.safe_api_response || plugins.getConfig("api", params.app && params.app.plugins, true).safe) && !params.res.finished) {
+            common.returnMessage(params, 200, 'Success');
+        }
+        return;
+    }
+
+    if (!requests[i] || (!requests[i].app_key && !appKey)) {
+        return processBulkRequest(i + 1, requests, params);
+    }
+    if (params.qstring.safe_api_response) {
+        requests[i].safe_api_response = true;
+    }
+    params.req.body = JSON.stringify(requests[i]);
+    const tmpParams = {
+        'app_id': '',
+        'app_cc': '',
+        'ip_address': requests[i].ip_address || common.getIpAddress(params.req),
+        'user': {
+            'country': requests[i].country_code || 'Unknown',
+            'city': requests[i].city || 'Unknown'
+        },
+        'qstring': requests[i],
+        'href': "/i",
+        'res': params.res,
+        'req': params.req,
+        'promises': [],
+        'bulk': true,
+        'populator': params.qstring.populator,
+        'blockResponses': true
+    };
+
+    tmpParams.qstring.app_key = (requests[i].app_key || appKey) + "";
+
+    if (!tmpParams.qstring.device_id) {
+        return processBulkRequest(i + 1, requests, params);
+    }
+    else {
+        //make sure device_id is string
+        tmpParams.qstring.device_id += "";
+        tmpParams.app_user_id = common.crypto.createHash('sha1')
+            .update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "")
+            .digest('hex');
+    }
+
+    return validateAppForWriteAPI(tmpParams, () => {
+        /**
+        * Dispatches /sdk/end event upon finishing processing request
+        **/
+        function resolver() {
+            plugins.dispatch("/sdk/end", {params: tmpParams}, () => {
+                processBulkRequest(i + 1, requests, params);
+            });
+        }
+
+        Promise.all(tmpParams.promises)
+            .then(resolver)
+            .catch((error) => {
+                console.log(error);
+                resolver();
+            });
     });
 };
 

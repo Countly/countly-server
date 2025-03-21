@@ -13,7 +13,6 @@ var tracker = {},
     countlyConfig = require("../../../frontend/express/config.js"),
     versionInfo = require('../../../frontend/express/version.info'),
     ip = require('./ip.js'),
-    cluster = require('cluster'),
     os = require('os'),
     fs = require('fs'),
     asyncjs = require('async'),
@@ -107,20 +106,19 @@ tracker.enable = function() {
     if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
         Countly.track_errors();
     }
-    if (cluster.isMaster) {
-        setTimeout(function() {
-            if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
-                Countly.begin_session(true);
-                setTimeout(function() {
-                    collectServerStats();
-                    collectServerData();
-                }, 20000);
-            }
-        }, 1000);
-        //report app start trace
-        if (Countly.report_app_start) {
-            Countly.report_app_start();
+
+    setTimeout(function() {
+        if (countlyConfig.web.track !== "none" && countlyConfig.web.server_track !== "none") {
+            Countly.begin_session(true);
+            setTimeout(function() {
+                collectServerStats();
+                collectServerData();
+            }, 20000);
         }
+    }, 1000);
+    //report app start trace
+    if (Countly.report_app_start) {
+        Countly.report_app_start();
     }
 };
 
