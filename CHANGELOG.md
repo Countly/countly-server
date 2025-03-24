@@ -1,5 +1,6 @@
 ## Version 25.03.2
 Fixes:
+- [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
 - [user-management] Prevent global admin from self-revoke and self-delete
 
 Enterprise fixes:
@@ -4635,4 +4636,3 @@ This version provides several features and bugfixes to both server and SDKs. The
     A user of an application can only view analytics for that application 
     and cannot edit its settings.
   * Added csfr protection to all methods provided through app.js.
-
