@@ -6,7 +6,7 @@ const { generateUsersFixture } = require('../../../../fixtures/generators/users'
 const { USER_TYPE } = require('../../../../support/constants');
 
 
-describe('Create users wit different types such as User, Admin and Global Admin ', () => {
+describe('Create users with different types such as User, Admin and Global Admin ', () => {
     beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
@@ -28,7 +28,7 @@ describe('Create users wit different types such as User, Admin and Global Admin 
             usersHelper.typeEmail(users.email);
             usersHelper.selectAppForUser(application);
             usersHelper.clickCreateUserButton();
-            usersHelper.verifyserSavedNotification();
+            usersHelper.verifySavedNotification();
 
             usersHelper.searchUserOnDataTable(users.fullName);
             usersHelper.verifyUsersDataFromTable({
@@ -53,7 +53,7 @@ describe('Create users wit different types such as User, Admin and Global Admin 
             usersHelper.typeEmail(users.email);
             usersHelper.selectAppForAdmin(application);
             usersHelper.clickCreateUserButton();
-            usersHelper.verifyserSavedNotification();
+            usersHelper.verifySavedNotification();
 
             usersHelper.searchUserOnDataTable(users.fullName);
             usersHelper.verifyUsersDataFromTable({
@@ -75,7 +75,7 @@ describe('Create users wit different types such as User, Admin and Global Admin 
         usersHelper.typeEmail(users.email);
         usersHelper.clickGlobalAdministratorButton();
         usersHelper.clickCreateUserButton();
-        usersHelper.verifyserSavedNotification();
+        usersHelper.verifySavedNotification();
 
         usersHelper.searchUserOnDataTable(users.fullName);
         usersHelper.verifyUsersDataFromTable({

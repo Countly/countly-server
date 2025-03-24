@@ -147,7 +147,7 @@ const clickGlobalAdministratorButton = () =>{
     cy.clickElement(usersCreationPageElements().GLOBAL_ADMINISTRATOR_CHECKBOX_LABEL);
 };
 
-const verifyserSavedNotification = () => {
+const verifySavedNotification = () => {
     cy.verifyElement({
         labelElement: usersCreationPageElements().NOTIFICATION_USER_SAVED_MESSAGE,
         labelText: "User created successfully!"
@@ -185,7 +185,7 @@ module.exports = {
     selectAppForUser,
     clickCreateUserButton,
     clickGlobalAdministratorButton,
-    verifyserSavedNotification,
+    verifySavedNotification,
     searchUserOnDataTable,
     selectAppForAdmin,
     // TODO: SER-2348
