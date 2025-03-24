@@ -1,8 +1,8 @@
 import moment from 'moment';
-const addDataApi = require('../api/addData');
-const { faker } = require('@faker-js/faker');
-const getApiKey = require('../api/getApiKey');
-const getApps = require('../api/getApps');
+import addDataApi from '../api/addData';
+import { faker } from '@faker-js/faker';
+import getApiKey from '../api/getApiKey';
+import getApps from '../api/getApps';
 
 function capitalize(text) {
     text = text.toLowerCase();
