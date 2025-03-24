@@ -25,7 +25,7 @@ catch (ex) {
 }
 
 const redis = require('redis');
-const redisClient = redis.createClient({ host: 'localhost', port: 6379, database: 7 });
+const redisClient = redis.createClient({ host: process.env.REDIS_HOST || 'redis-service', port: 6379, database: 7 });
 
 (async() => {
     await redisClient.connect();
