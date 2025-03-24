@@ -77,5 +77,6 @@ function resultEventDTOToObject(resultEvent) {
 module.exports = {
     scheduleEventDTOToObject,
     pushEventDTOToObject,
-    resultEventDTOToObject
+    resultEventDTOToObject,
+    credentialsDTOToObject
 }

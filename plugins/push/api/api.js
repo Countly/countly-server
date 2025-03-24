@@ -92,7 +92,7 @@ async function queueInitializer(db, isMaster = false) {
         await initQueue(
             async function(pushes) {
                 try {
-                    console.log(JSON.stringify(pushes, null, 2));
+                    // console.log(JSON.stringify(pushes, null, 2));
                     await sendAllPushes(pushes);
                 }
                 catch (err) {
@@ -102,7 +102,7 @@ async function queueInitializer(db, isMaster = false) {
             },
             async function(schedules) {
                 try {
-                    console.log(JSON.stringify(schedules, null, 2));
+                    // console.log(JSON.stringify(schedules, null, 2));
                     await composeAllScheduledPushes(db, schedules);
                 }
                 catch (err) {
@@ -112,7 +112,7 @@ async function queueInitializer(db, isMaster = false) {
             },
             async function(results) {
                 try {
-                    console.log(JSON.stringify(results, null, 2));
+                    // console.log(JSON.stringify(results, null, 2));
                     await saveResults(db, results);
                 }
                 catch(err) {

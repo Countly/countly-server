@@ -29,6 +29,7 @@ async function sendAllPushes(pushes) {
             promises.push(androidSend(pushes[i]));
             break;
         case "h":
+            // TODO: IMPLEMENT HUAWEI
             console.log("HUAWEI IS NOT IMPLEMENTED");
             break;
         }

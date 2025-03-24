@@ -128,7 +128,7 @@ async function send(pushEvent) {
         agent: getProxyAgent(pushEvent.proxy)
     };
     if (credentials.type === "apn_token") {
-        headers.authorization = getAuthToken(credentials);
+        headers.authorization = "Bearer " + getAuthToken(credentials);
     }
     else if (credentials.type === "apn_universal") {
         const keyPair = getTlsKeyPair(credentials);
@@ -156,18 +156,28 @@ async function send(pushEvent) {
                 }
 
                 // Error:
-                if (response.headers["content-type"] !== "application/json"
-                    || !status) {
-                    return reject(new InvalidResponse("Invalid response", raw));
+                if (!status) {
+                    return reject(new InvalidResponse(
+                        "APNs response doesn't have a valid status code",
+                        raw
+                    ));
                 }
-                const parsed = JSON.parse(data);
-                if (parsed.reason && parsed.reason in APNSErrors) {
-                    const { message, mapsTo } = APNSErrors[parsed.reason];
-                    const combined = parsed.reason + ": " + message;
-                    if (mapsTo) {
-                        return reject(new mapsTo(combined, raw));
+                try {
+                    const parsed = JSON.parse(data);
+                    if (parsed.reason && parsed.reason in APNSErrors) {
+                        const { message, mapsTo } = APNSErrors[parsed.reason];
+                        const combined = parsed.reason + ": " + message;
+                        if (mapsTo) {
+                            return reject(new mapsTo(combined, raw));
+                        }
+                        return reject(new SendError(combined, raw));
                     }
-                    return reject(new SendError(combined, raw));
+                }
+                catch(error) {
+                    return reject(new InvalidResponse(
+                        "APNs response body couldn't be parsed",
+                        raw
+                    ));
                 }
                 return reject(
                     new InvalidResponse("Invalid response", raw)

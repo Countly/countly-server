@@ -282,7 +282,6 @@ class Resultor extends DoFinish {
                     delete this.data.pushes[id];
                     this.toDelete.push(id);
 
-                    let msg = this.data.message(m);
                     if (msg) {
                         result = msg.result;
                     }
