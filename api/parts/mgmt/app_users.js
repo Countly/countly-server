@@ -24,6 +24,14 @@ catch (ex) {
     cohorts = null;
 }
 
+const redis = require('redis');
+const redisClient = redis.createClient({ host: 'localhost', port: 6379, database: 7 });
+
+(async() => {
+    await redisClient.connect();
+    redisClient.on('error', err => console.log('Redis Client Error', err));
+})();
+
 /**
 * Create new app_user document. Creates uid if one is not provided
 * @param {string} app_id - _id of the app
@@ -365,20 +373,15 @@ usersApi.count = function(app_id, query, callback) {
 * @param {function} callback - called when finished providing error (if any) as first param and new uid as second
 */
 usersApi.getUid = function(app_id, callback) {
-    common.db.collection('apps').findAndModify({_id: common.db.ObjectID(app_id)}, {}, {$inc: {seq: 1}}, {
-        new: true,
-        upsert: true
-    }, function(err, result) {
-        result = result && result.ok ? result.value : null;
-        if (result && result.seq) {
-            if (callback) {
-                callback(err, common.parseSequence(result.seq));
-            }
-        }
-        else if (callback) {
+    const redisKey = `app:${app_id}:seq`;
+    redisClient.incr(redisKey)
+        .then((seq) => {
+            callback(null, common.parseSequence(seq));
+        })
+        .catch((err) => {
+            console.log("Error getting sequence", err);
             callback(err);
-        }
-    });
+        });
 };
 
 
