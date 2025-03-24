@@ -30,7 +30,7 @@ const writeJson = (filePath, data) => {
     writeJson('/widgets/widget.json', generateWidgetFixture());
     writeJson('/widgetsRates/widgetsRate.json', generateWidgetsRatesFixture());
     writeJson('/alerts/alert.json', generateAlertFixture());
-    writeJson('/users/user.json', generateAlertFixture());
+    writeJson('/users/user.json', generateUsersFixture());
 })();
 
 // node ./cypress/fixtures/generators/generateFixtures.js
