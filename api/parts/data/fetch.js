@@ -46,8 +46,13 @@ fetch.fetchFromGranuralData = async function(queryData, callback) {
         data = await common.drillQueryRunner.segmentValuesForPeriod(queryData);
         callback(null, data);
     }
+    else if (common.drillQueryRunner[queryData.queryName] && typeof common.drillQueryRunner[queryData.queryName] === "function") {
+        data = await common.drillQueryRunner[queryData.queryName](queryData);
+        callback(null, data);
+    }
     else {
-        callback("Invalid query name", null);
+
+        callback("Invalid query name - " + queryData.queryName, null);
     }
     /*else {
         try {
@@ -69,6 +74,9 @@ fetch.fetchFromGranuralData = async function(queryData, callback) {
 fetch.prefetchEventData = function(collection, params) {
     if (!params.qstring.event) {
         common.readBatcher.getOne("events", { '_id': params.app_id }, (err, result) => {
+            if (err) {
+                console.log(err);
+            }
             var events = [];
             if (result && result.list) {
                 events = result.list.filter((event) => {
@@ -91,7 +99,7 @@ fetch.prefetchEventData = function(collection, params) {
                         }
                     }
                 }
-
+                var collectionName = crypto.createHash('sha1').update(collection + params.app_id).digest('hex');
                 fetch.getMergedEventData(params, events, {'id_prefix': params.app_id + "_" + collectionName + '_'}, function(result3) {
                     common.returnOutput(params, result3);
                 });
@@ -1674,11 +1682,10 @@ fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
  * Caluclates model data from granural data
  * @param {string} collection - collection name 
  * @param {object} params  - request parameters
- * @param {boolean} isCustomEvent  - is Custom event
  * @param {object} options  - options of query
  * @param {funtyion} callback  - callback function with result
  */
-async function fetchFromGranural(collection, params, isCustomEvent, options, callback) {
+async function fetchFromGranural(collection, params, options, callback) {
     if (params.qstring.segmentation) {
         if (params.qstring.segmentation === "key") {
             params.qstring.segmentation = "n";
@@ -1743,7 +1750,7 @@ async function fetchFromGranural(collection, params, isCustomEvent, options, cal
 **/
 function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     if (params && params.qstring && params.qstring.fetchFromGranural) {
-        fetchFromGranural(collection, params, isCustomEvent, options, callback);
+        fetchFromGranural(collection, params, options, callback);
         return;
     }
     if (typeof options === "function") {
@@ -1783,12 +1790,12 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         options.levels.monthly = [];
     }
 
-    if (params.qstring.fullRange) {
+    if (params && params.qstring && params.qstring.fullRange) {
         options.db.collection(collection).find({ '_id': { $regex: "^" + (options.id_prefix || "") + options.id + ".*" + (options.id_postfix || "") } }).toArray(function(err1, data) {
             callback(getMergedObj(data, true, options.levels, params.truncateEventValuesList));
         });
     }
-    else if (params.qstring.action === "refresh") {
+    else if (params && params.qstiring && params.qstring.action === "refresh") {
         var dbDateIds = common.getDateIds(params),
             fetchFromZero = {},
             fetchFromMonth = {};
