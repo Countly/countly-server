@@ -10,7 +10,7 @@ let APP_KEY = testUtils.get('APP_KEY');
 let APP_ID = testUtils.get("APP_ID");
 const config_ver = 1;
 
-describe('SDK Plugin', function () {
+describe('SDK Plugin', function() {
     //==================================================================================================================
     // method=sc tests
     //==================================================================================================================
@@ -18,7 +18,7 @@ describe('SDK Plugin', function () {
         it('1. should get SDK config', function(done) {
             request
                 .get('/o/sdk')
-                .query({ method: 'sc', app_key: APP_KEY , device_id: 'test' })
+                .query({ method: 'sc', app_key: APP_KEY, device_id: 'test' })
                 .expect(200)
                 .end(function(err, res) {
                     should.not.exist(err);
@@ -59,22 +59,22 @@ describe('SDK Plugin', function () {
                 networking: true,
                 crt: true
             };
-            
+
             request
-            .post('/i/sdk-config/update-parameter')
-            .send({
-                api_key: API_KEY_ADMIN,
-                app_id: APP_ID,
-                parameter: JSON.stringify(parameter)
-            })
-            .expect(200)
-            .end(function(err, res) {
-                should.not.exist(err);
-                res.body.should.have.property('result', 'Success');
-                done();
-            });
+                .post('/i/sdk-config/update-parameter')
+                .send({
+                    api_key: API_KEY_ADMIN,
+                    app_id: APP_ID,
+                    parameter: JSON.stringify(parameter)
+                })
+                .expect(200)
+                .end(function(err, res) {
+                    should.not.exist(err);
+                    res.body.should.have.property('result', 'Success');
+                    done();
+                });
         });
-        
+
         // TODO: This seems to only need app_id and not api_key (so tests 5 and 6 fails), check if that is fine (disabling them for now)
         checkBadCredentials('/i/sdk-config/update-parameter', 'sdk-config', false, true);
 
@@ -157,7 +157,7 @@ describe('SDK Plugin', function () {
                         .get('/o/sdk')
                         .query({ method: 'sc', app_key: APP_KEY, device_id: 'test' })
                         .expect(200)
-                        .end(function (err, res) {
+                        .end(function(err, res) {
                             should.not.exist(err);
                             checkCommonConfigParam(res);
                             res.body.c.lt.should.be.exactly(500);
@@ -166,19 +166,19 @@ describe('SDK Plugin', function () {
                 });
         });
 
-        it('9. should omit invalid config parameter', function (done) {
+        it('9. should omit invalid config parameter', function(done) {
             request
                 .get('/o')
                 .query({ method: 'config-upload', api_key: API_KEY_ADMIN, app_id: APP_ID, config: JSON.stringify({ garbage: 500 }) })
                 .expect(200)
-                .end(function (err, res) {
+                .end(function(err, res) {
                     should.not.exist(err);
                     res.body.should.have.property('result', 'Success');
                     request
                         .get('/o/sdk')
                         .query({ method: 'sc', app_key: APP_KEY, device_id: 'test' })
                         .expect(200)
-                        .end(function (err, res) {
+                        .end(function(err, res) {
                             should.not.exist(err);
                             checkCommonConfigParam(res);
                             res.body.c.should.not.have.property('garbage');
@@ -202,7 +202,7 @@ function checkCommonConfigParam(res) {
     res.body.t.toString().length.should.be.exactly(13);
     res.body.should.have.property('c');
     res.body.c.should.be.an.Object();
-}    
+}
 
 /**
  * Check bad credentials for a given endpoint and method (for api_key and app_id requiring endpoints)
@@ -228,7 +228,7 @@ function checkBadCredentials(endpoint, method, userType, usePost) {
         {method: method}
     ];
     var responses = ['User does not exist', 'Missing parameter "api_key" or "auth_token"', 'Invalid parameter "app_id"', 'Missing parameter "app_id"', 'Missing parameter "app_id"'];
-    
+
     // for app_key and device_id requiring endpoints
     if (userType) {
         titles = ['2. should require valid app_key', '3. should require app_key', '4. should require device_id', '5. should require app_key and device_id'];
@@ -243,11 +243,11 @@ function checkBadCredentials(endpoint, method, userType, usePost) {
 
     // looping through all the test cases
     for (var i = 0; i < titles.length; i++) {
-        (function (index) {
-            it(titles[index], function (done) {
+        (function(index) {
+            it(titles[index], function(done) {
                 let req = request
-                            .get(endpoint)
-                            .query(queries[index]);
+                    .get(endpoint)
+                    .query(queries[index]);
                 if (usePost) {
                     if (index === 3 || index === 4) {
                         return done();
@@ -257,11 +257,11 @@ function checkBadCredentials(endpoint, method, userType, usePost) {
                         .send(queries[index]);
                 }
                 req.expect(responses[index] === 'User does not exist' ? 401 : 400)
-                   .end(function (err, res) {
+                    .end(function(err, res) {
                         should.not.exist(err);
                         res.body.result.should.be.exactly(responses[index]);
                         done();
-                   });
+                    });
             });
         })(i);
     }
