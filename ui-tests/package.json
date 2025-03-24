@@ -4,11 +4,8 @@
   "description": "e2e testing",
   "author": "Countly, Inc.",
   "scripts": {
-    "cy:open": "cypress open",
-    "cy:run:dashboard": "CYPRESS_NO_COMMAND_LOG=1 cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/dashboard/**/*.cy.js --headless --no-runner-ui --browser chrome",
-    "cy:run:onboarding": "CYPRESS_NO_COMMAND_LOG=1 cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/onboarding/**/*.cy.js --headless --no-runner-ui --browser chrome",
-    "cy:run:login": "cypress run --spec **/login.cy.js --browser chrome",
-    "cy:run:userActivity": "cypress run --spec **/analytics/loyalty/userActivity.cy.js --browser chrome"
+    "cy:run:dashboard": "node ./cypress/fixtures/generators/generateFixtures.js && cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/dashboard/**/*.cy.js --headless --no-runner-ui --browser chrome",
+    "cy:run:onboarding": "cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/onboarding/**/*.cy.js --headless --no-runner-ui --browser chrome",
   },
   "license": "ISC",
   "dependencies": {
