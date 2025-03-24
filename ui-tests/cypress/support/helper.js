@@ -1,4 +1,4 @@
-import moment from 'moment';
+const moment = require('moment');
 const addDataApi = require('../api/addData');
 const { faker } = require('@faker-js/faker');
 const getApiKey = require('../api/getApiKey');
@@ -95,7 +95,7 @@ function generateComplexPassword(length = 12) {
     return faker.helpers.shuffle(password.split('')).join('');
 }
 
-export default {
+module.exports = {
     capitalize,
     toSlug,
     hexToRgb,
