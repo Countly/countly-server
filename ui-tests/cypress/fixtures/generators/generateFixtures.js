@@ -4,7 +4,7 @@ const path = require('path');
 const { generateWidgetFixture } = require('./widgets');
 const { generateWidgetsRatesFixture } = require('./widgetsRates');
 const { generateAlertFixture } = require('./alerts');
-const { generateUserFixture } = require('./users');
+const { generateUsersFixture } = require('./users');
 
 const BASE_DIR = path.join(__dirname, '../generated');
 
