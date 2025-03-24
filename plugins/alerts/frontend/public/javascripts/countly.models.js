@@ -503,6 +503,7 @@
                                 enabled: alertsList[i].enabled || false,
                                 createdByUser:
                                     alertsList[i].createdByUser || "",
+                                createdAt: alertsList[i].createdAt || "",
                                 _canUpdate: countlyAuth.validateUpdate(
                                     FEATURE_NAME,
                                     countlyGlobal.member,
