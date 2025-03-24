@@ -77,6 +77,24 @@ const addData = ({
         });
 };
 
+function generateComplexPassword(length = 12) {
+    if (length < 8) {
+        length = 8;
+    }
+
+    const uppercase = faker.string.alpha({ casing: 'upper', length: 2 });
+    const lowercase = faker.string.alpha({ casing: 'lower', length: 2 });
+    const numbers = faker.string.numeric(2);
+    const specialChars = "!@#$%^&*()_+[]{}|;:,.<>?/".split('');
+    const special = Array.from({ length: 2 }, () => faker.helpers.arrayElement(specialChars)).join('');
+
+    const remainingLength = length - (uppercase.length + lowercase.length + numbers.length + special.length);
+    const remaining = faker.string.alphanumeric(remainingLength);
+
+    const password = uppercase + lowercase + numbers + special + remaining;
+    return faker.helpers.shuffle(password.split('')).join('');
+}
+
 export default {
     capitalize,
     toSlug,
@@ -84,5 +102,6 @@ export default {
     calculatePercentageRatings,
     getCurrentDate,
     getCurrentMonth,
-    addData
+    addData,
+    generateComplexPassword
 };
