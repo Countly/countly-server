@@ -171,14 +171,14 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 }
                             });
                         });
-                    }).then(function() {
-                        common.returnOutput(params, {result: true});
-                        resolve();
-                    }).catch(function(rejection) {
+                    }
+                    common.returnOutput(params, {result: true});
+                    resolve();
+                    /* }).catch(function(rejection) {
                         log.e(rejection);
                         resolve();
                         common.returnOutput(params, {result: false});
-                    });
+                    });*/
                 });
             }
             else if (ob.params.qstring.method === "omit_segments") {
