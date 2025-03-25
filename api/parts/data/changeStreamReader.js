@@ -65,7 +65,6 @@ class changeStreamReader {
      * @param {date} cd  - start time
      */
     async processNextDateRange(cd) {
-        log.e(this.name + " trigger processNextDateRange");
         if (this.fallback) {
             var cd2 = cd.valueOf() + 60000;
             var now = Date.now().valueOf();
@@ -76,7 +75,7 @@ class changeStreamReader {
             var match = this.fallback.match || {};
             match.cd = {$gte: new Date(cd), $lt: cd2};
             pipeline.unshift({"$match": match});
-            console.log(this.name + " Processing fallback pipeline for range: " + JSON.stringify(match));
+            //console.log(this.name + " Processing fallback pipeline for range: " + JSON.stringify(match));
             var cursor = this.db.collection(this.collection).aggregate(pipeline);
 
             while (await cursor.hasNext()) {

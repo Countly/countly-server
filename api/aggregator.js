@@ -86,7 +86,6 @@ plugins.connectToAllDatabases(true).then(function() {
             "name": "event-ingestion"
         }, (token, currEvent) => {
             if (currEvent && currEvent.a && currEvent.e) {
-                log.e("Processing event from stream:", JSON.stringify(currEvent));
                 usage.processEventFromStream(token, currEvent);
             }
             // process next document
