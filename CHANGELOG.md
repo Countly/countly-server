@@ -1,31 +1,35 @@
+## Version 25.03.3
+Fixes:
+- [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
+  
 ## Version 25.03.2
 Fixes:
-- [alerts] alerts table default order should be by creation time newest at the top
-- [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
 - [user-management] Prevent global admin from self-revoke and self-delete
 
-## Version 24.12.x
+Enterprise fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+- [drill] Fixed issue with column naming in export according to event
+- [drill] Fixed an issue with incorrect date range in report manager
 
+## Version 25.03.1
 Fixes:
-- [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
-- [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
+- [crashes] Remove memory addresses from stack trace grouping
+- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
 
-Features:
-- [user-management] Global admins can now disable 2FA for individual users
-
-Fixes:
-- [gridfs] fixes for moving to Promises
+Enterprise Fixes:
+- [ab-testing] Fixed bug with variant user filtering
+- [license] Fixed issue with handling invalid date periods
 
 Dependencies:
-- Bump express from 4.21.1 to 4.21.2
-- Bump mocha from 10.2.0 to 10.8.2
-- Bump sass from 1.81.0 to 1.83.1
+- Bump axios from 1.7.4 to 1.8.2 in /plugins/hooks
 - Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
-- Bump countly-sdk-web from 24.11.2 to 24.11.3
-- Bump express-rate-limit from 7.4.1 to 7.5.0
-- Bump puppeteer from 23.10.4 to 23.11.1
+- Bump countly-sdk-web from 24.11.4 to 25.1.0
+- Bump form-data from 4.0.1 to 4.0.2
+- Bump moment-timezone from 0.5.46 to 0.5.47
+- Bump mongodb from 6.11.0 to 6.14.2
+- Bump sass from 1.83.4 to 1.85.1
 
-## Version 24.12
+## Version 25.03
 Features:
 - [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
 - [core] Ability to mark reports as 'dirty' to make sure they are regenerated in full
