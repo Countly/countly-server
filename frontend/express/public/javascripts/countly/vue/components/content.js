@@ -288,20 +288,26 @@
                 required: true,
                 default: 'primary',
                 validator: function(value) {
-                    return ['primary', 'secondary'].includes(value);
+                    return ['primary', 'secondary', 'info'].includes(value);
                 }
             },
             label: {
                 type: String,
                 required: false,
                 default: 'Status'
+            },
+            showIcon: {
+                type: Boolean,
+                required: false,
+                default: true
             }
         },
         data: function() {
             return {
                 modeConfig: {
                     primary: { background: '#E2E4E8', color: '#81868D', icon: 'cly-is cly-is-status' },
-                    secondary: { background: '#EBFAEE', color: '#12AF51', icon: 'cly-is cly-is-status' }
+                    secondary: { background: '#EBFAEE', color: '#12AF51', icon: 'cly-is cly-is-status' },
+                    info: { background: '#E1EFFF', color: '#0166D6', icon: 'cly-is cly-is-status' },
                     // Add more modes here if needed
                 }
             };
@@ -336,7 +342,7 @@
         },
         template: `
             <div :style="badgeStyles">
-                <i :class="currentConfig.icon" :style="iconStyles"></i>
+                <i v-if="showIcon" :class="currentConfig.icon" :style="iconStyles"></i>
                 <span class="text-small" :style="fontStyles">{{ label }}</span>
             </div>
         `,
