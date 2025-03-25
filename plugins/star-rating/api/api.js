@@ -1134,7 +1134,7 @@ function uploadFile(myfile, id, callback) {
             query.n = params.qstring.widget_id;
         }
         if (params.qstring.rating) {
-            query.sg.rating = parseInt(params.qstring.rating);
+            query.sg.rating = parseInt(params.qstring.rating, 10);
         }
         if (params.qstring.version) {
             query.sg.app_version = params.qstring.version;

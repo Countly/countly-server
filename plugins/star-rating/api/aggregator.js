@@ -15,9 +15,11 @@ const usage = require('../../../api/aggregator/usage.js');
                 {"$match": {"operationType": "insert", "fullDocument.e": {"$in": ["[CLY]_star_rating"]}}},
                 {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}}
             ],
-            pipeline_process: [{
-                "$match": {"e": {"$in": ["[CLY]_star_rating"]}}
-            }],
+            fallback: {
+                pipeline: [{
+                    "$match": {"e": {"$in": ["[CLY]_star_rating"]}}
+                }]
+            },
             "name": "star-rating",
             "collection": "drill_events",
             "onClose": async function(callback) {

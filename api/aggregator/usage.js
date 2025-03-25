@@ -212,7 +212,7 @@ usage.processEventFromStream = function(token, currEvent, writeBatcher) {
                 var tmpEventObj = {};
                 var tmpEventColl = {};
                 var tmpTotalObj = {};
-                var pluginsGetConfig = plugins.getConfig("api", app && app.plugins, true);
+                var pluginsGetConfig = plugins.getConfig("api", app.plugins, true);
 
                 var time = common.initTimeObj(app.timezone, currEvent.ts);
                 var params = {time: time, app_id: currEvent.a, app: app, appTimezone: app.timezone || "UTC"};
