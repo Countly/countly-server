@@ -544,7 +544,7 @@
     Vue.component("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
-        template: '<cly-dropdown class="cly-vue-more-options" ref="dropdown" :widthSameAsTrigger="widthSameAsTrigger" :placement="placement" :disabled="disabled" @hide="toggleArrowState" @show="toggleArrowState" v-on="$listeners">\
+        template: '<cly-dropdown :pop-class="popClass" class="cly-vue-more-options" ref="dropdown" :widthSameAsTrigger="widthSameAsTrigger" :placement="placement" :disabled="disabled" @hide="toggleArrowState" @show="toggleArrowState" v-on="$listeners">\
                         <template v-slot:trigger>\
                             <slot name="trigger">\
                                 <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type" :disabled="disabledButton">\
@@ -586,6 +586,10 @@
             placement: {
                 type: String,
                 default: 'bottom-end'
+            },
+            popClass: {
+                type: String,
+                default: ''
             },
             testId: {
                 type: String,

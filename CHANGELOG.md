@@ -1,5 +1,15 @@
-##Version 25.03.XX
+## Version 25.03.3
+Fixes:
+- [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
+- [content_builder] Fixed content block layout type select visibility
+- [user-management] Fixed issue with uploading member icon
+
+## Version 25.03.2
+Fixes:
+- [user-management] Prevent global admin from self-revoke and self-delete
+
 Enterprise fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
 - [drill] Fixed issue with column naming in export according to event
 - [drill] Fixed an issue with incorrect date range in report manager
 
@@ -8,7 +18,7 @@ Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
 - [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
 
-Enterprise fixes:
+Enterprise Fixes:
 - [ab-testing] Fixed bug with variant user filtering
 - [license] Fixed issue with handling invalid date periods
 
@@ -4631,4 +4641,3 @@ This version provides several features and bugfixes to both server and SDKs. The
     A user of an application can only view analytics for that application 
     and cannot edit its settings.
   * Added csfr protection to all methods provided through app.js.
-

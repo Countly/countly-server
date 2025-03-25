@@ -5,6 +5,7 @@
     <div class="cly-vue-content-builder-header__left">
         <div
             class="cly-vue-content-builder-header__close-button"
+            data-test-id="close-icon"
             @click="onCloseIconClick"
         >
             <i
@@ -17,18 +18,21 @@
             v-tooltip.right="toggleTooltip"
             v-model="toggleLocalValue"
             class="cly-vue-content-builder-header__toggle"
+            test-id="journey-publish"
             :disabled="isToggleDisabled"
         />
         <div class="cly-vue-content-builder-header__info">
             <div
                 v-tooltip="inputTooltip"
                 class="cly-vue-content-builder-header__input-container"
+                data-test-id="content-header-input-container"
                 @click="onInputContainerClick"
             >
                 <el-input
                     v-model="localValue"
                     class="cly-vue-content-builder-header__input"
                     :class="{ 'cly-vue-content-builder-header__input--editing': !isReadonlyInput }"
+                    test-id="content-header-input"
                     :maxlength="valueMaxLength"
                     :readonly="isReadonlyInput"
                     @blur="onInputBlur"
@@ -38,11 +42,12 @@
             <div class="cly-vue-content-builder-header__info-meta">
                 <div
                     v-if="version"
-                    class="cly-vue-content-builder-header__version"
+                    @click="$emit('version-click')"
+                    class="cly-vue-content-builder-header__version cursor-pointer"
                 >
                     {{ version }}
                 </div>
-                <div class="cly-vue-content-builder-header__created-by">
+                <div class="cly-vue-content-builder-header__created-by" data-test-id="created-by-label">
                     {{ createdBy }}
                 </div>
             </div>
@@ -60,12 +65,14 @@
         <cly-status-badge
             v-if="status.show"
             class="cly-vue-content-builder-header__badge"
+            data-test-id="content-header-status-badge"
             :label="status.label"
             :mode="status.mode"
         />
         <el-button
             v-if="!hideSaveButton"
             class="cly-vue-content-builder-header__save-button"
+            data-test-id="content-header-save-button"
             :disabled="disableSaveButton"
             size="small"
             type="success"
@@ -76,15 +83,17 @@
         <cly-more-options
             v-if="isOptionsButtonVisible"
             class="cly-vue-content-builder-header__options-button"
+            test-id="content-header"
             size="small"
             @command="onCommand"
         >
-            <el-dropdown-item
-                v-for="(option, idx) in options"
-                :key="`cly-vue-content-builder-header-option-${idx}`"
-                class="cly-vue-content-builder-header__option"
-                :command="option.value"
-                :disabled="option.disabled"
+          <el-dropdown-item
+              v-for="(option, idx) in options"
+              :key="`cly-vue-content-builder-header-option-${idx}`"
+              class="cly-vue-content-builder-header__option"
+              :data-test-id="'more-button-option-' + option.value"
+              :command="option.value"
+              :disabled="option.disabled"
             >
                 <span class="cly-vue-content-builder-header__option-label">
                     {{ option.label }}
