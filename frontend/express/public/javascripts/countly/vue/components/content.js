@@ -396,6 +396,7 @@
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER = 'swapper';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH = 'switch';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB = 'tab';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_UPLOAD = 'upload';
 
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE = {
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER]: 'cly-colorpicker',
@@ -405,15 +406,14 @@
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER]: 'el-slider',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER]: 'cly-option-swapper',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH]: 'el-switch',
-        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB]: 'div'
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB]: 'div',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_UPLOAD]: 'el-upload'
     };
 
     const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_HORIZONTAL = 'horizontal';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_VERTICAL = 'vertical';
 
     Vue.component("cly-content-builder-sidebar-input", countlyVue.components.create({
-        template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html'),
-
         props: {
             componentTooltip: {
                 default: null,
@@ -434,13 +434,19 @@
                 default: 'cly-io cly-io-question-mark-circle',
                 type: String
             },
+
             labelTooltip: {
                 default: null,
                 type: String
             },
 
+            loading: {
+                default: false,
+                type: Boolean
+            },
+
             options: {
-                default: () => [],
+                default: () => null,
                 type: Array
             },
 
@@ -491,6 +497,8 @@
         },
 
         emits: [
+            'add-asset',
+            'delete-asset',
             'input'
         ],
 
@@ -514,6 +522,20 @@
                 set(newValue) {
                     this.$emit('input', newValue);
                 }
+            },
+
+            computedAttrs() {
+                if (this.isUploadInput) {
+                    return {
+                        action: '',
+                        drag: true,
+                        multiple: false,
+                        showFileList: false,
+                        ...this.$attrs
+                    };
+                }
+
+                return this.$attrs;
             },
 
             controlsProp() {
@@ -547,6 +569,10 @@
                 return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER;
             },
 
+            isUploadInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_UPLOAD;
+            },
+
             isVerticalInput() {
                 return this.position === COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_VERTICAL;
             },
@@ -561,7 +587,19 @@
                 }
                 return null;
             }
-        }
+        },
+
+        methods: {
+            onUploadAddButtonClick() {
+                this.$emit('add-asset');
+            },
+
+            onUploadDeleteButtonClick() {
+                this.$emit('delete-asset');
+            }
+        },
+
+        template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html')
     }));
 
     Vue.component("cly-option-swapper", countlyVue.components.create({

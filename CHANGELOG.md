@@ -1,6 +1,8 @@
-## Version 25.x.x
-Features:
+## Version 25.03.2
+Fixes:
 - [alerts] alerts table default order should be by creation time newest at the top
+- [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
+- [user-management] Prevent global admin from self-revoke and self-delete
 
 ## Version 24.12.x
 
