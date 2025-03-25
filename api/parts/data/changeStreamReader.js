@@ -75,6 +75,7 @@ class changeStreamReader {
             var match = this.fallback.match || {};
             match.cd = {$gte: new Date(cd), $lt: cd2};
             pipeline.unshift({"$match": match});
+            console.log(this.name + " Processing fallback pipeline for range: " + JSON.stringify(match));
             var cursor = this.db.collection(this.collection).aggregate(pipeline);
 
             while (await cursor.hasNext()) {

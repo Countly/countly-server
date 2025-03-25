@@ -29,7 +29,6 @@ tableResponse["30days"] = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaDat
 tableResponse["7days"] = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "scr-calc": 0, "scr": 0}]};
 tableResponse.month = {"iTotalRecords": 0, "iTotalDisplayRecords": 0, "aaData": [{"u": 0, "t": 0, "s": 0, "b": 0, "e": 0, "d-calc": 0, "d": 0, "scr-calc": 0, "scr": 0}]}; //this year
 
-var userHistory = {};
 
 graphResponse.hour = {};
 graphResponse.yesterday = {};
@@ -372,13 +371,7 @@ describe('Testing views plugin', function() {
             if (days_this_year > 1) {
                 tableResponse.month.iTotalRecords = 1;
                 tableResponse.month.iTotalDisplayRecords = 1;
-                if (userHistory["user1"]["month"]) {
-                    pushValues("month", 0, {"t": 1, "s": 1});
-                }
-                else {
-                    pushValues("month", 0, {"u": 1, "uvalue": 1, "t": 1, "s": 1, "view": "testview0"});
-                    userHistory["user1"]["month"] = true;
-                }
+                pushValues("month", 0, {"t": 1, "s": 1});
                 //tableResponse["month"]['aaData'][0]['n']=1;
             }
 
@@ -547,7 +540,6 @@ describe('Testing views plugin', function() {
 
     describe('checking limit for segment values', function() {
         it('Adding a lot of segment values', function(done) {
-
             for (var i = 0; i < 20; i++) {
                 dataSegments.push({"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "testSegment": "testValue" + i + "", "visit": 1, "start": 1}});
                 if (i < 10) {
@@ -571,7 +563,6 @@ describe('Testing views plugin', function() {
         it('Adding segment', function(done) {
             dataSegments = [{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testview0", "test.My.Segment": "testValue", "visit": 1, "start": 1}}];
             myList.segments["testMySegment"] = ["testValue"];
-
             request
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user0" + '&timestamp=' + (myTime) + '&events=' + JSON.stringify(dataSegments))
                 .expect(200)
