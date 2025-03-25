@@ -65,6 +65,7 @@ class changeStreamReader {
      * @param {date} cd  - start time
      */
     async processNextDateRange(cd) {
+        log.e(this.name + " trigger processNextDateRange");
         if (this.fallback) {
             var cd2 = cd.valueOf() + 60000;
             var now = Date.now().valueOf();
@@ -210,6 +211,12 @@ class changeStreamReader {
                     else if (err.code === 40573) { //change stream is not supported
                         console.log("Change stream is not supported. Keeping streams closed");
                         this.keep_closed = true;
+                        var newCD = Date.now();
+                        if (token && token.cd) {
+                            await this.processBadRange({name: this.name, cd1: token.cd, cd2: newCD}, token);
+                        }
+
+                        this.processNextDateRange(newCD);
                     }
                     else {
                         log.e("Error on change stream", err);
