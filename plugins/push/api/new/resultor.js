@@ -5,9 +5,11 @@
  * @typedef {import("mongodb").Db} MongoDb
  * @typedef {import("mongodb").AnyBulkWriteOperation} AnyBulkWriteOperation
  * @typedef {import("mongodb").BulkWriteResult} BulkWriteResult
+ * @typedef {import("mongodb").SetFields<{[key: string]: any}>} SetFields
  * @typedef {import('./types/utils.ts').LogObject} LogObject
  * @typedef {import('./types/message.js').PlatformEnvKeys} PlatformEnvKeys
  * @typedef {import('./types/message.js').PlatformKeys} PlatformKeys
+ * @typedef {import('./types/message.js').AutoTrigger} AutoTrigger
  */
 
 const { updateScheduleResults, buildResultObject, increaseResultStat } = require("../../api/new/lib/result.js");
@@ -61,7 +63,8 @@ async function saveResults(db, results) {
                 .insertMany(resultsToKeep);
         }
 
-        // clean up the relevant information of invalid tokens in app_users{appId} and push_{appId}
+        // clean up the relevant information of invalid tokens inside
+        // app_users{appId} and push_{appId}
         const tokenError = new InvalidDeviceToken("Adhoc error");
         const invalidTokens = results
             .filter(r => r.error?.name === tokenError.name)
@@ -78,8 +81,7 @@ async function saveResults(db, results) {
         const sentResults = results.filter(({ error }) => !error);
         await recordSentDates(db, sentResults);
 
-        // record [CLY]_push_sent events into drill
-        await sendResultsToDrill(db, results);
+        // TODO: record [CLY]_push_sent events
     }
     catch (error) {
         log.e("Error while updating meta results", error);
@@ -87,6 +89,11 @@ async function saveResults(db, results) {
 }
 
 /**
+ * Clears all tokens from push_{appId} collection filtered by its app id,
+ * user id, platform and environment. Also unsets the token property
+ * (eg: "tkap" for an android production token) from app_users{appId} collection.
+ * This should be ran after receving an InvalidDeviceToken error from the
+ * provider during PushEvent processing.
  * @param {MongoDb} db
  * @param {{appId: string; uid: string; platformAndEnv: string;}[]} invalidTokens
  * @returns {Promise<BulkWriteResult[]|undefined>}
@@ -97,8 +104,8 @@ async function clearInvalidTokens(db, invalidTokens) {
     /** @type {{[collection: string]: AnyBulkWriteOperation[]}} */
     const bulkWrites = {};
 
-    for (const invalidToken of invalidTokens) {
-        const { appId, uid, platformAndEnv } = invalidToken;
+    for (let i = 0; i < invalidTokens.length; i++) {
+        const { appId, uid, platformAndEnv } = invalidTokens[i];
         if (!(appId in mappedUserIds)) {
             mappedUserIds[appId] = {};
         }
@@ -151,21 +158,68 @@ async function clearInvalidTokens(db, invalidTokens) {
 }
 
 /**
+ * Records sent dates for the given PushEvents into push_{appId}
+ * collection (msg property).
+ * example document from push_{appId}:
+ * {
+ *   _id: "123",
+ *   msg: {
+ *     "67bc694e4f89382bb2dcea5c": [1740400976395]
+ *     "67bcd5736cb172aa14cfdea0": [1740428661597, 1740400976395]
+ *   },
+ *   tk: {
+ *     id: "ios development token"
+ *   }
+ * }
  * @param {MongoDb} db
- * @param {ResultEvent[]} results
+ * @param {ResultEvent[]} sentPushEvents
+ * @returns {Promise<BulkWriteResult[]|undefined>}
  */
-async function recordSentDates(db, results) {
-    const sentMessages = results.filter(result => !result.error);
+async function recordSentDates(db, sentPushEvents, date = Date.now()) {
     /** @type {{[appId: string]: { [messageId: string]: string[] }}} */
     const mappedUserIds = {};
-}
+    /** @type {{[collection: string]: AnyBulkWriteOperation[]}} */
+    const bulkWrites = {};
 
-/**
- * @param {MongoDb} db
- * @param {ResultEvent[]} results
- */
-async function sendResultsToDrill(db, results) {
+    for (let i = 0; i < sentPushEvents.length; i++) {
+        const { appId: _appId, messageId: _messageId, uid } = sentPushEvents[i];
+        const appId = _appId.toString();
+        const messageId = _messageId.toString();
+        if (!(appId in mappedUserIds)) {
+            mappedUserIds[appId] = {};
+        }
+        if (!(messageId in mappedUserIds[appId])) {
+            mappedUserIds[appId][messageId] = [];
+        }
+        mappedUserIds[appId][messageId].push(uid);
+    }
 
+    for (const appId in mappedUserIds) {
+        const collectionName = "push_" + appId;
+        if (!(collectionName in bulkWrites)) {
+            bulkWrites[collectionName] = [];
+        }
+        for (const messageId in mappedUserIds) {
+            bulkWrites[collectionName].push({
+                updateMany: {
+                    filter: { _id: { $in: mappedUserIds[appId][messageId] } },
+                    update: {
+                        $addToSet: /** @type {SetFields} */({
+                            ['msgs.' + messageId]: date
+                        })
+                    }
+                }
+            });
+        }
+    }
+
+    const promises = [];
+    for (const collectionName in bulkWrites) {
+        promises.push(
+            db.collection(collectionName).bulkWrite(bulkWrites[collectionName])
+        );
+    }
+    return Promise.all(promises);
 }
 
 module.exports = {
