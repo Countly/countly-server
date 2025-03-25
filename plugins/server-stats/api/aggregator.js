@@ -12,8 +12,8 @@ const { changeStreamReader } = require('../../../api/parts/data/changeStreamRead
             ],
             "name": "server-stats",
             "collection": "drill_events",
-            "fallback":{
-                "pipeline":[]
+            "fallback": {
+                "pipeline": []
             },
             "onClose": async function(callback) {
                 await common.writeBatcher.flush("countly", "server_stats_data_points");

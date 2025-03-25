@@ -81,11 +81,12 @@ plugins.connectToAllDatabases(true).then(function() {
             fallback: {
                 pipeline: [{
                     "$match": {"e": {"$in": ["[CLY]_custom"]}}
-                }, {"$project": {"_id": "$__iid", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "ts": "$ts", "sg": "$sg", "c": "$c", "s": "$s", "dur": "$dur"}}],
+                }, {"$project": {"__id": "$_id", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "ts": "$ts", "sg": "$sg", "c": "$c", "s": "$s", "dur": "$dur"}}],
             },
             "name": "event-ingestion"
         }, (token, currEvent) => {
             if (currEvent && currEvent.a && currEvent.e) {
+                log.e("Processing event from stream:", JSON.stringify(currEvent));
                 usage.processEventFromStream(token, currEvent);
             }
             // process next document

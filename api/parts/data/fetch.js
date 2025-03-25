@@ -1749,10 +1749,7 @@ async function fetchFromGranural(collection, params, options, callback) {
 * @param {function} callback - to call when fetch done
 **/
 function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
-    if (params && params.qstring && params.qstring.fetchFromGranural) {
-        fetchFromGranural(collection, params, options, callback);
-        return;
-    }
+
     if (typeof options === "function") {
         callback = options;
         options = {};
@@ -1764,6 +1761,14 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
     if (typeof options.db === "undefined") {
         options.db = common.db;
+    }
+
+    if (!params || !params.app_id || !params.qstring) {
+        return callback({});
+    }
+    if (params.qstring.fetchFromGranural) {
+        fetchFromGranural(collection, params, options, callback);
+        return;
     }
 
     if (typeof options.unique === "undefined") {
@@ -1790,12 +1795,12 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         options.levels.monthly = [];
     }
 
-    if (params && params.qstring && params.qstring.fullRange) {
+    if (params.qstring.fullRange) {
         options.db.collection(collection).find({ '_id': { $regex: "^" + (options.id_prefix || "") + options.id + ".*" + (options.id_postfix || "") } }).toArray(function(err1, data) {
             callback(getMergedObj(data, true, options.levels, params.truncateEventValuesList));
         });
     }
-    else if (params && params.qstiring && params.qstring.action === "refresh") {
+    else if (params.qstring.action === "refresh") {
         var dbDateIds = common.getDateIds(params),
             fetchFromZero = {},
             fetchFromMonth = {};
