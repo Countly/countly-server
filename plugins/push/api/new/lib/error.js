@@ -21,13 +21,11 @@ class SendError extends PushError {
     }
 }
 /**
- * Generic error when we cannot make any sense for the response
- * of the provider.
+ * Generic unexpected error when we cannot make any sense for the response of the provider.
  */
 class InvalidResponse extends SendError {}
 /**
- * This error indicates that the device token needs to be cleaned
- * up from database.
+ * This error indicates that the device token needs to be cleaned up from database.
  */
 class InvalidDeviceToken extends SendError {}
 
@@ -92,6 +90,28 @@ const FCMErrors = {
     'messaging/unknown-error':                     { libraryKey: "UNKNOWN_ERROR", message: 'An unknown server error was returned.' },
 }
 
+/**
+ * @type {{[code: string]: { message: string; mapsTo?: typeof InvalidDeviceToken; }}}
+ */
+const HMSErrors = {
+    "80000000": { message: "Success." },
+    "80100000": { mapsTo: InvalidDeviceToken, message: "The message is successfully sent to some tokens" },
+    "80100001": { message: "Some request parameters are incorrect" },
+    "80100003": { message: "Incorrect message structure." },
+    "80100004": { message: "The message expiration time is earlier than the current time." },
+    "80100013": { message: "The collapse_key message field is invalid." },
+    "80100017": { message: "A maximum of 100 topic-based messages can be sent at the same time." },
+    "80200001": { message: "OAuth authentication error." },
+    "80200003": { message: "OAuth token expired." },
+    "80300002": { message: "The current app does not have the permission to send messages." },
+    "80300007": { mapsTo: InvalidDeviceToken, message: "All tokens are invalid." },
+    "80300008": { message: "The message body size (excluding the token) exceeds the default value (4096 bytes)." },
+    "80300010": { message: "The number of tokens in the message body exceeds the default value." },
+    "80300013": { message: "Invalid receipt URL." },
+    "80600003": { message: "Failed to request the OAuth service." },
+    "81000001": { message: "An internal error of the system occurs." },
+}
+
 module.exports = {
     SendError,
     InvalidResponse,
@@ -99,4 +119,5 @@ module.exports = {
 
     APNSErrors,
     FCMErrors,
+    HMSErrors,
 }
