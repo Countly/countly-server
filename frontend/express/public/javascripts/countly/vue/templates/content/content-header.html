@@ -87,13 +87,14 @@
             size="small"
             @command="onCommand"
         >
-          <el-dropdown-item
-              v-for="(option, idx) in options"
-              :key="`cly-vue-content-builder-header-option-${idx}`"
-              class="cly-vue-content-builder-header__option"
-              :data-test-id="'more-button-option-' + option.value"
-              :command="option.value"
-              :disabled="option.disabled"
+
+            <el-dropdown-item
+                v-for="(option, idx) in options"
+                :key="`cly-vue-content-builder-header-option-${idx}`"
+                class="cly-vue-content-builder-header__option"
+                :data-test-id="'more-button-option-' + option.value"
+                :command="option.value"
+                :disabled="option.disabled"
             >
                 <span class="cly-vue-content-builder-header__option-label">
                     {{ option.label }}

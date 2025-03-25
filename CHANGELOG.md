@@ -1,3 +1,12 @@
+## Version 25.03.x
+Features:
+- [alerts] alerts table default order should be by creation time newest at the top
+- [core] allow tracking Countly dashboard usage with Countly
+- [sdk] Improved and added new Server Config options
+
+Enterprise Features:
+- [journey_engine] Editing/Deleting/Duplication of blocks and version management
+
 ## Version 25.03.3
 Fixes:
 - [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
