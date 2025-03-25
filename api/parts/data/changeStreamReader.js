@@ -28,6 +28,10 @@ class changeStreamReader {
         this.waitingForAcknowledgement = false;
         this.fallback = options.fallback;
 
+        if (this.fallback && !this.fallback.inteval) {
+            this.fallback.interval = 1000;
+        }
+
         //I give data
         //Processor function processes. Sends last processed tken from time to time.
         //Update last processed token to database
@@ -79,7 +83,7 @@ class changeStreamReader {
             }
             setTimeout(() => {
                 this.processNextDateRange(cd2);
-            }, 10000);
+            }, this.fallback.interval || 10000);
         }
     }
 
@@ -104,13 +108,13 @@ class changeStreamReader {
         if (doc && doc.cd > tokenInfo.cd) {
             tokenInfo.cd = doc.cd;
             tokenInfo._id = doc._id;
-            console.log("Process:" + JSON.stringify(doc));
+            console.log(this.name + " Process:" + JSON.stringify(doc));
             this.onData(tokenInfo, doc);
         }
 
         while (await cursor.hasNext()) {
             doc = await cursor.next();
-            console.log("Process:" + JSON.stringify(doc));
+            console.log(this.name + " Process:" + JSON.stringify(doc));
             tokenInfo.cd = doc.cd;
             tokenInfo._id = doc._id;
             this.onData(tokenInfo, doc);

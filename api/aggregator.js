@@ -78,6 +78,11 @@ plugins.connectToAllDatabases(true).then(function() {
                 {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_custom"}},
                 {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "c": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
             ],
+            fallback: {
+                pipeline: [{
+                    "$match": {"e": {"$in": ["[CLY]_custom"]}}
+                }, {"$project": {"_id": "$__iid", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "ts": "$ts", "sg": "$sg", "c": "$c", "s": "$s", "dur": "$dur"}}],
+            },
             "name": "event-ingestion"
         }, (token, currEvent) => {
             if (currEvent && currEvent.a && currEvent.e) {
@@ -98,9 +103,11 @@ plugins.connectToAllDatabases(true).then(function() {
                 {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
                 {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}},
             ],
-            pipeline_process: [{
-                "$match": {"e": {"$in": ["[CLY]_session"]}}
-            }],
+            fallback: {
+                pipeline: [{
+                    "$match": {"e": {"$in": ["[CLY]_session"]}}
+                }]
+            },
             "name": "session-ingestion"
         }, (token, next) => {
             if (next.fullDocument) {

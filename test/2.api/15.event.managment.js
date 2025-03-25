@@ -4,7 +4,7 @@ var testUtils = require("../testUtils");
 request = request(testUtils.url);
 
 var plugins = require("../../plugins/pluginManager");
-var dbdrill;
+var db;
 var crypto = require('crypto');
 var API_KEY_ADMIN = "";
 var API_KEY_USER = "";
@@ -41,7 +41,7 @@ describe('Testing event settings', function() {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
             APP_ID = testUtils.get("APP_ID");
             APP_KEY = testUtils.get("APP_KEY");
-            dbdrill = testUtils.client.db("countly_drill");
+            db = testUtils.client.db("countly_drill");
             var params = [
                 {"key": "test1", "count": 1},
                 {"key": "test2", "count": 1, "sum": 5, "dur": 10}];
@@ -57,6 +57,22 @@ describe('Testing event settings', function() {
                     setTimeout(done, 1000 * testUtils.testScalingFactor * 2);
                 });
         });
+
+        it("making sure event is recorded in granural gata", function(done) {
+            console.log(JSON.stringify({"a": APP_ID, "e": "test1", "did": DEVICE_ID}));
+            db.collection("drill_events").findOne({"a": APP_ID, "e": "[CLY]_custom", "n": "test1", "did": DEVICE_ID}, function(err, res) {
+                if (err) {
+                    done(err);
+                }
+                else if (!res) {
+                    done("Missing document");
+                }
+                else {
+                    done();
+                }
+            });
+        });
+
     });
 
     describe('setting new order', function() {

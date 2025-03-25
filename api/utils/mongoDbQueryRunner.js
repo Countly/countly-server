@@ -626,6 +626,26 @@ class MongoDbQueryRunner {
         var data = await cursor.toArray();
         return {data: data || [], total: total || 0};
     }
+
+
+    async timesOfDay(options) {
+        var match = options.match || {};
+        if (options.appID) {
+            match.a = options.appID + "";
+        }
+
+        if (options.event) {
+            match.e = options.event;
+        }
+
+        var pipeline = [
+            {"$match": match},
+            {"$group": {"_id": {"d": "$up.dow", "h": "$up.hour"}, "c": {"$sum": 1}}}
+        ];
+
+        var data = await this.db.collection("drill_events").aggregate(pipeline).toArray();
+        return data || [];
+    }
 }
 
 module.exports = {MongoDbQueryRunner};
