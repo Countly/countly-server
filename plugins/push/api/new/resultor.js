@@ -199,7 +199,7 @@ async function recordSentDates(db, sentPushEvents, date = Date.now()) {
         if (!(collectionName in bulkWrites)) {
             bulkWrites[collectionName] = [];
         }
-        for (const messageId in mappedUserIds) {
+        for (const messageId in mappedUserIds[appId]) {
             bulkWrites[collectionName].push({
                 updateMany: {
                     filter: { _id: { $in: mappedUserIds[appId][messageId] } },
