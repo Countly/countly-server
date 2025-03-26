@@ -351,20 +351,20 @@ var processToDrill = async function(params, drill_updates, callback) {
             if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalDrillEvents.indexOf(currEvent.key) === -1)) {
                 continue;
             }
-
+            /*
             if (currEvent.key === "[CLY]_session" && !plugins.getConfig("drill", params.app && params.app.plugins, true).record_sessions) {
                 continue;
             }
 
             if (currEvent.key === "[CLY]_view" && !plugins.getConfig("drill", params.app && params.app.plugins, true).record_views) {
                 continue;
-            }
+            }*/
 
             if (currEvent.key === "[CLY]_view" && !(currEvent.segmentation && currEvent.segmentation.visit)) {
                 continue;
             }
 
-
+            /*
             if (currEvent.key === "[CLY]_action" && !plugins.getConfig("drill", params.app && params.app.plugins, true).record_actions) {
                 continue;
             }
@@ -391,7 +391,7 @@ var processToDrill = async function(params, drill_updates, callback) {
 
             if ((currEvent.key === "[CLY]_consent") && !plugins.getConfig("drill", params.app && params.app.plugins, true).record_consent) {
                 continue;
-            }
+            }*/
 
 
             var dbEventObject = {
