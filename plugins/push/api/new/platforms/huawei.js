@@ -126,7 +126,7 @@ async function send(pushEvent) {
         });
     }
 
-    pushEvent.message.message.token = pushEvent.token;
+    pushEvent.message.message.token = [pushEvent.token];
     const payload = JSON.stringify(pushEvent.message);
     delete pushEvent.message.message.token;
 
@@ -144,7 +144,7 @@ async function send(pushEvent) {
             },
         }, (response) => {
             let data = "";
-            response.on("data", chunk => data + chunk);
+            response.on("data", chunk => data += chunk);
             response.on("end", () => {
                 // raw response to attach to error
                 const raw = Object.entries(response.headers)
