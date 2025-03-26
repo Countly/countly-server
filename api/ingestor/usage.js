@@ -328,6 +328,7 @@ usage.processSession = function(ob) {
                         drill_updates.custom = JSON.parse(JSON.stringify(params.app_user.custom));
                     }
                     drill_updates["sg.ended"] = "true";
+                    drill_updates.lu = Date.now();
                     //if (drill_updates.dur || drill_updates.custom) {
                     ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates}}});
                     //}

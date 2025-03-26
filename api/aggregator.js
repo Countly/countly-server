@@ -135,12 +135,15 @@ plugins.connectToAllDatabases(true).then(function() {
 
     plugins.register("/aggregator", function() {
         var writeBatcher = new WriteBatcher(common.db);
-
         var changeStream = new changeStreamReader(common.drillDb, {
             pipeline: [
                 {"$match": {"operationType": "update"}},
                 {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}}
             ],
+            fallback: {
+                pipeline: [{"$match": {"e": {"$in": ["[CLY]_session"]}}}],
+                "timefield": "lu"
+            },
             "options": {fullDocument: "updateLookup"},
             "name": "session-updates",
             "collection": "drill_events",
@@ -151,7 +154,12 @@ plugins.connectToAllDatabases(true).then(function() {
                 }
             }
         }, (token, fullDoc) => {
-            var next = fullDoc.fullDocument;
+            var fallback_processing = true;
+            var next = fullDoc;
+            if (next.fullDocument) {
+                fallback_processing = false;
+                next = fullDoc.fullDocument;
+            }
             if (next && next.a && next.e && next.e === "[CLY]_session" && next.n && next.ts) {
                 common.readBatcher.getOne("apps", common.db.ObjectID(next.a), function(err, app) {
                     //record event totals in aggregated data
@@ -160,8 +168,13 @@ plugins.connectToAllDatabases(true).then(function() {
                         return;
                     }
                     if (app) {
-                        var dur = (fullDoc && fullDoc.updateDescription && fullDoc.updateDescription.updatedFields && fullDoc.updateDescription.updatedFields.dur) || 0;
-                        //if(dur){
+                        var dur = 0;
+                        if (fallback_processing) {
+                            dur = next.dur || 0;
+                        }
+                        else {
+                            dur = (fullDoc && fullDoc.updateDescription && fullDoc.updateDescription.updatedFields && fullDoc.updateDescription.updatedFields.dur) || 0;
+                        }//if(dur){
                         usage.processSessionDurationRange(writeBatcher, token, dur, next.did, {"app_id": next.a, "app": app, "time": common.initTimeObj(app.timezone, next.ts), "appTimezone": (app.timezone || "UTC")});
                         //}
                     }

@@ -322,7 +322,7 @@ usage.processEventFromStream = function(token, currEvent, writeBatcher) {
                         meta.meta_v2[seg].push(tmpSegVal);
                         updates.push({
                             id: currEvent.a + "_" + eventCollectionName + "_no-segment_" + common.getDateIds(params).zero + "_" + postfix_seg,
-                            update: {"$set": {["meta_v2." + seg + "." + tmpSegVal]: true, "s": "no-segment", "e": shortEventName, "m": common.getDateIds(params).zero, "a": params.app_id + ""}}
+                            update: {"$set": {["meta_v2." + seg + "." + tmpSegVal]: true, ["meta_v2.segments." + seg]: true, "s": "no-segment", "e": shortEventName, "m": common.getDateIds(params).zero, "a": params.app_id + ""}}
                         });
                     }
                     //record data
