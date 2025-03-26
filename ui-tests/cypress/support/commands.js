@@ -59,7 +59,7 @@ Cypress.Commands.add("selectCheckboxOption", (element, ...options) => {
 });
 
 Cypress.Commands.add("clickOption", (element, option) => {
-    cy.getElement(element).contains(new RegExp("^" + option + "$", "g")).click();
+    cy.getElement(element).contains(new RegExp("^" + option + "$", "g")).click({force: true});
 });
 
 Cypress.Commands.add("selectValue", (element, valueText) => {
