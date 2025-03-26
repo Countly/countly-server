@@ -49,9 +49,11 @@ const crypto = require('crypto');
                 {"$match": {"operationType": "insert", "fullDocument.e": {"$in": ["[CLY]_view", "[CLY]_action"]}}},
                 {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}}
             ],
-            pipeline_process: [{
-                "$match": {"e": {"$in": ["[CLY]_view", "[CLY]_action"]}}
-            }],
+            fallback: {
+                pipeline: [{
+                    "$match": {"e": {"$in": ["[CLY]_view", "[CLY]_action"]}}
+                }]
+            },
             "name": "views",
             "collection": "drill_events",
             "onClose": async function(callback) {
