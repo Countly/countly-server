@@ -10,7 +10,6 @@ The script deletes data for specific segments in aggregated data. It also can se
 
 var crypto = require('crypto');
 var pluginManager = require('./../../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 
 var app_list = []; //leave empty to process all apps or add specific app ids to the array.
 var DRY_RUN = false; //set to true to see what will be deleted without actually deleting anything
@@ -18,7 +17,7 @@ var save_list_in_database = true; //If omitting is successful, should list be sa
 
 var omit = ["Cats", "Dogs"];//list with segments to omit
 
-Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) {
+Promise.all([pluginManager.dbConnection("countly")]).then(function([countlyDb]) {
     if (!Array.isArray(omit) || omit.length === 0) {
         console.log("No segments to omit");
         countlyDb.close();
@@ -26,74 +25,77 @@ Promise.all([pluginManager.dbConnection("countly")]).spread(function(countlyDb) 
     }
     else {
         console.log("Validating app list: ");
-        getAppList({db: countlyDb}, function(err, apps) {
+        getAppList({db: countlyDb}, async function(err, apps) {
             if (apps && apps.length > 0) {
                 console.log(apps.length + " apps found");
-                Promise.each(apps, function(app) {
-                    return new Promise(function(resolve) {
-                        console.log("processing app:" + app.name);
-                        var promises = [];
-                        var errCn = 0;
-                        for (var z = 0; z < omit.length; z++) {
-                            var colName = "app_viewdata" + crypto.createHash('sha1').update(omit[z] + (app._id + "")).digest('hex');
-                            promises.push(new Promise(function(resolve2) {
-                                if (DRY_RUN) {
-                                    console.log("DRY RUN: collection we would try to delete: " + colName);
-                                    resolve2();
-                                }
-                                else {
-                                    console.log(colName);
-                                    countlyDb.collection(colName).drop(function(err) {
-                                        if (err && err.code !== 26) {
-                                            console.log(JSON.stringify(err));
-                                            errCn++;
-                                        }
+                for (var z = 0; z < apps.length; z++) {
+                    var app = apps[z];
+                    try {
+                        await new Promise(function(resolve) {
+                            console.log("processing app:" + app.name);
+                            var promises = [];
+                            var errCn = 0;
+                            for (var z = 0; z < omit.length; z++) {
+                                var colName = "app_viewdata" + crypto.createHash('sha1').update(omit[z] + (app._id + "")).digest('hex');
+                                promises.push(new Promise(function(resolve2) {
+                                    if (DRY_RUN) {
+                                        console.log("DRY RUN: collection we would try to delete: " + colName);
                                         resolve2();
-                                    });
-                                }
-                            }));
-                        }
-                        Promise.all(promises).then(function() {
-                            console.log("Segments omittion compleated  for:" + JSON.stringify(omit));
-                            if (errCn > 0) {
-                                console.log("Some errors occured while deleting collections");
-                                resolve();
-                            }
-                            else {
-                                if (save_list_in_database && !DRY_RUN) {
-                                    console.log("adding segments to omit list in view document. Only if upgraded to lates version this list will be taken in account on incoming data.");
-
-                                    var unset = {};
-                                    for (var z = 0; z < omit.length; z++) {
-                                        unset["segments." + omit[z]] = "";
                                     }
-
-                                    countlyDb.collection("views").update({_id: app._id}, {$set: {"omit": omit}, "$unset": unset}, function(err) {
-                                        if (err) {
-                                            console.log(err);
-                                        }
-                                        resolve();
-                                    });
-                                }
-                                else {
+                                    else {
+                                        console.log(colName);
+                                        countlyDb.collection(colName).drop(function(err) {
+                                            if (err && err.code !== 26) {
+                                                console.log(JSON.stringify(err));
+                                                errCn++;
+                                            }
+                                            resolve2();
+                                        });
+                                    }
+                                }));
+                            }
+                            Promise.all(promises).then(function() {
+                                console.log("Segments omittion compleated  for:" + JSON.stringify(omit));
+                                if (errCn > 0) {
+                                    console.log("Some errors occured while deleting collections");
                                     resolve();
                                 }
+                                else {
+                                    if (save_list_in_database && !DRY_RUN) {
+                                        console.log("adding segments to omit list in view document. Only if upgraded to lates version this list will be taken in account on incoming data.");
 
-                            }
+                                        var unset = {};
+                                        for (var z = 0; z < omit.length; z++) {
+                                            unset["segments." + omit[z]] = "";
+                                        }
 
+                                        countlyDb.collection("views").update({_id: app._id}, {$set: {"omit": omit}, "$unset": unset}, function(err) {
+                                            if (err) {
+                                                console.log(err);
+                                            }
+                                            resolve();
+                                        });
+                                    }
+                                    else {
+                                        resolve();
+                                    }
+
+                                }
+
+                            });
                         });
-                    });
-                }).then(function() {
-                    console.log("completed");
-                    countlyDb.close();
-                    return;
+                    }
+                    catch (err) {
+                        console.log("Error:", err);
+                        countlyDb.close();
+                        return;
+                    }
+                }
 
-                }).catch(function(rejection) {
-                    console.log("Error");
-                    console.log("Error:", rejection);
-                    countlyDb.close();
-                    return;
-                });
+                console.log("completed");
+                countlyDb.close();
+                return;
+
             }
             else {
                 console.log("exiting as there are no apps to process.");

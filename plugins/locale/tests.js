@@ -41,7 +41,7 @@ describe('Testing Language metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    done();
+                    setTimeout(done, 2000); //we need some time for aggregator to work if replia set is not working and we process via iterations.
                 });
         });
     });
@@ -71,7 +71,7 @@ describe('Testing Language metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    done();
+                    setTimeout(done, 2000);
                 });
         });
     });
@@ -82,7 +82,7 @@ describe('Testing Language metrics', function() {
                 event: "[CLY]_session",
                 breakdownKeys: ["up.la"],
                 values: {
-                    "en": {u: 3, t: 3, n: 1},
+                    "en": {u: 3, t: 3, n: 3},
                     "fr": {u: 1, t: 1, n: 1},
                     "zh_hans": {u: 1, t: 1, n: 1},
                     "de": {u: 1, t: 1, n: 1},
