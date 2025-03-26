@@ -7,6 +7,7 @@
 
 const { send: androidSend } = require("./platforms/android.js");
 const { send: iosSend } = require("./platforms/ios.js");
+const { send: huaweiSend } = require("./platforms/huawei.js");
 const { sendResultEvents } = require("./lib/kafka.js");
 const { SendError } = require("./lib/error.js");
 
@@ -29,8 +30,7 @@ async function sendAllPushes(pushes) {
             promises.push(androidSend(pushes[i]));
             break;
         case "h":
-            // TODO: IMPLEMENT HUAWEI
-            console.log("HUAWEI IS NOT IMPLEMENTED");
+            promises.push(huaweiSend(pushes[i]));
             break;
         }
     }
