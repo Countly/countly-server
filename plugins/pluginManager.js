@@ -350,8 +350,10 @@ var pluginManager = function pluginManager() {
             pluginConfig = res.plugins || {}; //currently enabled plugins
 
             var diff = getObjectDiff(res, defaultConfigs);
+            console.log("Diff: " + JSON.stringify(diff));
             if (Object.keys(diff).length > 0) {
-                var res2 = await db.collection("plugins").findOneAndUpdate({_id: "plugins"}, {}, {$set: flattenObject(diff)}, {upsert: true, new: true});
+                console.log("JSON.stringify(diff): " + JSON.stringify(flattenObject(diff)));
+                var res2 = await db.collection("plugins").findOneAndUpdate({_id: "plugins"}, {$set: flattenObject(diff)}, {upsert: true, new: true});
                 console.log(JSON.stringify(res2));
                 if (res2) {
                     for (var i in diff) {

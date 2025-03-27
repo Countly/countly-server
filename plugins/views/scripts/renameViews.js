@@ -6,7 +6,6 @@ After this script there is need to run fixViews.js to merge views.(In case renam
 **/
 var pluginManager = require('../../pluginManager.js'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
     countlyDb,
     countly_drill,
     drillCommon = require('../../drill/api/common.js');
@@ -48,68 +47,69 @@ async function merge_drill_data(viewdata, callback) {
     events.push({key: "meta_up", segment: "up.lv", oldvalue: viewdata.view, newvalue: setO['sg.name'] });
 
     try {
-    for (var i = 0; i < events.length; i++) {
-        var eventdata = events[i];
-        await new Promise(function(resolveSub/*, rejectSub*/) {
-            console.log("Updating meta information for event: " + eventdata.key);
-            var eventHash = crypto.createHash('sha1').update(eventdata.key + appId).digest('hex');
-            var collectionMeta = "drill_meta" + appId;
-            if (eventdata.key === "meta_up") {
-                eventHash = "up";
-            }
-            countly_drill.collection(collectionMeta).findOne({"_id": "meta_" + eventHash}, function(err3, meta_event) {
-                if (err3) {
-                    console.log(err3);
-                }
-                var type = "";
+        for (var i = 0; i < events.length; i++) {
+            var eventdata = events[i];
+            await new Promise(function(resolveSub/*, rejectSub*/) {
+                console.log("Updating meta information for event: " + eventdata.key);
+                var eventHash = crypto.createHash('sha1').update(eventdata.key + appId).digest('hex');
+                var collectionMeta = "drill_meta" + appId;
                 if (eventdata.key === "meta_up") {
-                    if (meta_event && meta_event.up && meta_event.up.lv) {
-                        type = meta_event.up.lv.type;
+                    eventHash = "up";
+                }
+                countly_drill.collection(collectionMeta).findOne({"_id": "meta_" + eventHash}, function(err3, meta_event) {
+                    if (err3) {
+                        console.log(err3);
                     }
-                }
-                else {
-                    if (meta_event && meta_event.sg && meta_event.sg[eventdata.segment]) {
-                        type = meta_event.sg[eventdata.segment].type;
+                    var type = "";
+                    if (eventdata.key === "meta_up") {
+                        if (meta_event && meta_event.up && meta_event.up.lv) {
+                            type = meta_event.up.lv.type;
+                        }
                     }
-                }
-                var keyold;
-                var keynew;
-                var updateObj = {$set: {}, $unset: {}};
-                if (type === 'l') {
-                    keyold = [eventdata.segment] + ".values." + countlyDb.encode(eventdata.oldvalue);
-                    keynew = [eventdata.segment] + ".values." + countlyDb.encode(eventdata.newvalue);
-                    updateObj["$set"][keynew] = true;
-                    updateObj["$unset"][keyold] = true;
-                    countly_drill.collection(collectionMeta).update({"_id": "meta_" + eventHash}, updateObj, function(err4) {
-                        if (err4) {
-                            console.log(err4);
+                    else {
+                        if (meta_event && meta_event.sg && meta_event.sg[eventdata.segment]) {
+                            type = meta_event.sg[eventdata.segment].type;
                         }
+                    }
+                    var keyold;
+                    var keynew;
+                    var updateObj = {$set: {}, $unset: {}};
+                    if (type === 'l') {
+                        keyold = [eventdata.segment] + ".values." + countlyDb.encode(eventdata.oldvalue);
+                        keynew = [eventdata.segment] + ".values." + countlyDb.encode(eventdata.newvalue);
+                        updateObj["$set"][keynew] = true;
+                        updateObj["$unset"][keyold] = true;
+                        countly_drill.collection(collectionMeta).update({"_id": "meta_" + eventHash}, updateObj, function(err4) {
+                            if (err4) {
+                                console.log(err4);
+                            }
+                            resolveSub();
+                        });
+                    }
+                    else if (type === 'bl' && eventdata.key === "meta_up") { //because for sg we go to string when limit reached
+                        keyold = "values." + countlyDb.encode(eventdata.oldvalue);
+                        keynew = "values." + countlyDb.encode(eventdata.newvalue);
+                        updateObj["$set"][keynew] = true;
+                        updateObj["$unset"][keyold] = true;
+                        countly_drill.collection(collectionMeta).update({"_id": "meta_" + eventHash + "_up.lv"}, updateObj, function(err5) {
+                            if (err5) {
+                                console.log(err5);
+                            }
+                            resolveSub();
+                        });
+                    }
+                    else {
                         resolveSub();
-                    });
-                }
-                else if (type === 'bl' && eventdata.key === "meta_up") { //because for sg we go to string when limit reached
-                    keyold = "values." + countlyDb.encode(eventdata.oldvalue);
-                    keynew = "values." + countlyDb.encode(eventdata.newvalue);
-                    updateObj["$set"][keynew] = true;
-                    updateObj["$unset"][keyold] = true;
-                    countly_drill.collection(collectionMeta).update({"_id": "meta_" + eventHash + "_up.lv"}, updateObj, function(err5) {
-                        if (err5) {
-                            console.log(err5);
-                        }
-                        resolveSub();
-                    });
-                }
-                else {
-                    resolveSub();
-                }
+                    }
+                });
             });
-        });
+        }
+        callback();
     }
-    callback();
-} catch(ee){
-    console.log(ee);
-    callback(ee);
-}
+    catch (ee) {
+        console.log(ee);
+        callback(ee);
+    }
 
 }
 
