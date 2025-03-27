@@ -404,6 +404,8 @@ usage.processEventFromStream = function(token, currEvent, writeBatcher) {
 
 
 usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params) {
+
+    console.log("Processing session metrics from stream");
     /**
          * 
          * @param {string} id - document id 
@@ -429,7 +431,9 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
 
     var dateIds = common.getDateIds(params);
     var metaToFetch = {};
+    console.log("matric limit:" + plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit);
     if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit > 0) {
+        console.log(JSON.stringify(predefinedMetrics));
         var postfix;
         for (let i = 0; i < predefinedMetrics.length; i++) {
             for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {
