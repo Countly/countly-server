@@ -2223,6 +2223,8 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
     common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate, props.value);
 }
 
+common.collectMetric = recordMetric;
+
 /**
 * Record specific metric segment
 * @param {params} params - params object
@@ -3858,7 +3860,7 @@ common.convertModelToArray = function(model, segmented) {
  * @returns {object} model data
  */
 common.convertArrayToModel = function(arr, segmented, props) {
-    props = props || {"c": true, "sum": true, "dur": true};
+    props = props || {"c": true, "s": true, "dur": true};
     /**
      * Creates empty object with all property values set to 0
      * @param {object} my_props  - all properies
@@ -3875,6 +3877,7 @@ common.convertArrayToModel = function(arr, segmented, props) {
     var iid;
     var z;
     if (segmented) {
+        segmented = segmented.replace("sg.", "");
         model.meta = {};
         var values = {};
         for (z = 0;z < arr.length;z++) {

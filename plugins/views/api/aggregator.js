@@ -49,9 +49,11 @@ const crypto = require('crypto');
                 {"$match": {"operationType": "insert", "fullDocument.e": {"$in": ["[CLY]_view", "[CLY]_action"]}}},
                 {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}}
             ],
-            pipeline_process: [{
-                "$match": {"e": {"$in": ["[CLY]_view", "[CLY]_action"]}}
-            }],
+            fallback: {
+                pipeline: [{
+                    "$match": {"e": {"$in": ["[CLY]_view", "[CLY]_action"]}}
+                }]
+            },
             "name": "views",
             "collection": "drill_events",
             "onClose": async function(callback) {
@@ -60,8 +62,10 @@ const crypto = require('crypto');
                     callback();
                 }
             }
-        }, (token, fullDoc) => {
-            var next = fullDoc.fullDocument;
+        }, (token, next) => {
+            if (next.fullDocument) { //Coming from stream
+                next = next.fullDocument;
+            }
             var meta_update = {};
             var update_doc = {};
             if ((next.e === "[CLY]_action" || (next.e === "[CLY]_view" && next.a && next.n)) && next.ts) {
@@ -237,7 +241,10 @@ const crypto = require('crypto');
                 }
             }
         }, (token, fullDoc) => {
-            var next = fullDoc.fullDocument;
+            var next = fullDoc;
+            if (fullDoc.fullDocument) { //Coming from stream
+                next = fullDoc.fullDocument;
+            }
             if (next && next.a && next.e && next.e === "[CLY]_view" && next.n && next.ts) {
                 common.readBatcher.getOne("apps", common.db.ObjectID(next.a), {projection: {timezone: 1}}, function(err, app) {
                     if (err) {

@@ -426,7 +426,6 @@ describe("Testing data migration plugin", function() {
         after(function(done) {
             //checking statuss and seeing if it moves to end
             counter = 0;
-            this.timeout(0);
             setTimeout(function() {
                 validate_result(done, 200, "finished", "failed", {test_export_id: test_export_id});
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);
@@ -554,7 +553,6 @@ describe("Testing data migration plugin", function() {
         after(function(done) {
             //checking statuss and seeing if it moves to end
             counter = 0;
-            this.timeout(0);
             setTimeout(function() {
                 done();
             }, TIMEOUT_FOR_DATA_MIGRATION_TEST);

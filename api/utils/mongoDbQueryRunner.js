@@ -200,6 +200,35 @@ class MongoDbQueryRunner {
     }
 
     /**
+     * Fetches list of most popular segment values for a given period
+     * @param {object} options  - query options
+     * @returns {object} - fetched data
+     */
+    async segmentValuesForPeriod(options) {
+        var match = options.dbFilter || {};
+        if (options.appID) {
+            match.a = options.appID + "";
+        }
+        if (options.event) {
+            match.e = options.event;
+        }
+        if (options.name) {
+            match.n = options.name;
+        }
+        if (options.period) {
+            match.ts = this.getPeriodRange(options.period, "UTC", options.periodOffset);
+        }
+
+        var pipeline = [];
+        pipeline.push({"$match": match});
+        pipeline.push({"$group": {"_id": "$" + options.field, "c": {"$sum": 1}}});
+        pipeline.push({"$sort": {"c": -1}});
+        pipeline.push({"$limit": options.limit || 1000});
+        var data = await this.db.collection("drill_events").aggregate(pipeline).toArray();
+        return data;
+    }
+
+    /**
    * Gets aggregated data chosen timezone.If not set - returns in UTC timezone.
    * @param {object} options  - options
    * options.appID - application id
@@ -224,7 +253,12 @@ class MongoDbQueryRunner {
             }
         }
         if (options.name) {
-            match.n = options.name;
+            if (Array.isArray(options.event)) {
+                match.n = {"$in": options.name};
+            }
+            else {
+                match.n = options.name;
+            }
         }
         if (options.period) {
             match.ts = this.getPeriodRange(options.period, options.timezone, options.periodOffset);
@@ -241,12 +275,12 @@ class MongoDbQueryRunner {
             }
             else {*/
             pipeline.push({"$unwind": ("$" + options.segmentation)});
-            pipeline.push({"$group": {"_id": {"d": "$d", "sg": "$" + options.segmentation}, "c": {"$sum": "$c"}, "dur": {"$sum": "$dur"}, "sum": {"$sum": "$sum"}}});
-            pipeline.push({"$project": { "_id": "$_id.d", "sg": "$_id.sg", "c": 1, "dur": 1, "sum": 1}});
+            pipeline.push({"$group": {"_id": {"d": "$d", "sg": "$" + options.segmentation}, "c": {"$sum": "$c"}, "dur": {"$sum": "$dur"}, "s": {"$sum": "$s"}}});
+            pipeline.push({"$project": { "_id": "$_id.d", "sg": "$_id.sg", "c": 1, "dur": 1, "s": 1}});
             //}
         }
         else {
-            pipeline.push({"$group": {"_id": "$d", "c": {"$sum": "$c"}, "dur": {"$sum": "$dur"}, "sum": {"$sum": "$sum"}}});
+            pipeline.push({"$group": {"_id": "$d", "c": {"$sum": "$c"}, "dur": {"$sum": "$dur"}, "s": {"$sum": "$s"}}});
         }
         try {
             var data = await this.db.collection("drill_events").aggregate(pipeline).toArray();
@@ -591,6 +625,30 @@ class MongoDbQueryRunner {
 
         var data = await cursor.toArray();
         return {data: data || [], total: total || 0};
+    }
+
+    /**
+ * Fetches data for times of day plugin from granural
+ * @param {object} options options
+* @returns {object} table data
+ */
+    async timesOfDay(options) {
+        var match = options.match || {};
+        if (options.appID) {
+            match.a = options.appID + "";
+        }
+
+        if (options.event) {
+            match.e = options.event;
+        }
+
+        var pipeline = [
+            {"$match": match},
+            {"$group": {"_id": {"d": "$up.dow", "h": "$up.hour"}, "c": {"$sum": 1}}}
+        ];
+
+        var data = await this.db.collection("drill_events").aggregate(pipeline).toArray();
+        return data || [];
     }
 }
 

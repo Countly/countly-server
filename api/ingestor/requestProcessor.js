@@ -351,20 +351,20 @@ var processToDrill = async function(params, drill_updates, callback) {
             if (!currEvent.key || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalDrillEvents.indexOf(currEvent.key) === -1)) {
                 continue;
             }
-
+            /*
             if (currEvent.key === "[CLY]_session" && !plugins.getConfig("drill", params.app && params.app.plugins, true).record_sessions) {
                 continue;
             }
 
             if (currEvent.key === "[CLY]_view" && !plugins.getConfig("drill", params.app && params.app.plugins, true).record_views) {
                 continue;
-            }
+            }*/
 
             if (currEvent.key === "[CLY]_view" && !(currEvent.segmentation && currEvent.segmentation.visit)) {
                 continue;
             }
 
-
+            /*
             if (currEvent.key === "[CLY]_action" && !plugins.getConfig("drill", params.app && params.app.plugins, true).record_actions) {
                 continue;
             }
@@ -391,7 +391,7 @@ var processToDrill = async function(params, drill_updates, callback) {
 
             if ((currEvent.key === "[CLY]_consent") && !plugins.getConfig("drill", params.app && params.app.plugins, true).record_consent) {
                 continue;
-            }
+            }*/
 
 
             var dbEventObject = {
@@ -784,7 +784,7 @@ const validateAppForWriteAPI = (params, done) => {
         }
         if (!validateRedirect({params: params, app: app})) {
             if (!params.res.finished && !params.waitForResponse) {
-                common.returnOutput(params, {result: 'Success', info: 'Request regirected: ' + params.cancelRequest});
+                common.returnOutput(params, {result: 'Success', info: 'Request redirected: ' + params.cancelRequest});
             }
             done();
             return;
@@ -841,7 +841,7 @@ const validateAppForWriteAPI = (params, done) => {
             params.collectedMetrics = {};
 
             let payload = params.href.substr(3) || "";
-            if (params.req.method.toLowerCase() === 'post') {
+            if (params.req && params.req.method && params.req.method.toLowerCase() === 'post') {
                 payload += "&" + params.req.body;
             }
             //remove dynamic parameters
@@ -1116,8 +1116,17 @@ const processRequest = (params) => {
         break;
     }
     default:
-        common.returnMessage(params, 400, 'Invalid path');
-        break;
+        if (!plugins.dispatch(apiPath, {
+            params: params,
+            paths: paths
+        })) {
+            if (!plugins.dispatch(params.fullPath, {
+                params: params,
+                paths: paths
+            })) {
+                common.returnMessage(params, 400, 'Invalid path');
+            }
+        }
     }
 
 };

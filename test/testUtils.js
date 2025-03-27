@@ -170,6 +170,21 @@ var testUtils = function testUtils() {
         props[key] = val;
     };
 
+    this.triggerJobToRun = function(jobName, callback) {
+        this.db.collection("jobs").updateOne({status: 0, name: jobName}, {$set: {next: 0}}, function(err, res) {
+            if (err) {
+                callback(err);
+            }
+            else {
+                if (res.result.nModified === 0) {
+                    callback("Job not found");
+                }
+                else {
+                    callback();
+                }
+            }
+        });
+    };
     this.validateBreakdownTotalsInDrillData = function(db, options, callback) {
         var match = options.query || {};
         if (options.app_id) {

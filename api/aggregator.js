@@ -78,6 +78,11 @@ plugins.connectToAllDatabases(true).then(function() {
                 {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_custom"}},
                 {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "c": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
             ],
+            fallback: {
+                pipeline: [{
+                    "$match": {"e": {"$in": ["[CLY]_custom"]}}
+                }, {"$project": {"__id": "$_id", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "ts": "$ts", "sg": "$sg", "c": "$c", "s": "$s", "dur": "$dur"}}],
+            },
             "name": "event-ingestion"
         }, (token, currEvent) => {
             if (currEvent && currEvent.a && currEvent.e) {
@@ -98,9 +103,17 @@ plugins.connectToAllDatabases(true).then(function() {
                 {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
                 {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}},
             ],
+            fallback: {
+                pipeline: [{
+                    "$match": {"e": {"$in": ["[CLY]_session"]}}
+                }]
+            },
             "name": "session-ingestion"
         }, (token, next) => {
-            var currEvent = next.fullDocument;
+            if (next.fullDocument) {
+                next = next.fullDocument;
+            }
+            var currEvent = next;
             if (currEvent && currEvent.a) {
                 //Record in session data
                 common.readBatcher.getOne("apps", common.db.ObjectID(currEvent.a), function(err, app) {
@@ -122,12 +135,15 @@ plugins.connectToAllDatabases(true).then(function() {
 
     plugins.register("/aggregator", function() {
         var writeBatcher = new WriteBatcher(common.db);
-
         var changeStream = new changeStreamReader(common.drillDb, {
             pipeline: [
                 {"$match": {"operationType": "update"}},
                 {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}}
             ],
+            fallback: {
+                pipeline: [{"$match": {"e": {"$in": ["[CLY]_session"]}}}],
+                "timefield": "lu"
+            },
             "options": {fullDocument: "updateLookup"},
             "name": "session-updates",
             "collection": "drill_events",
@@ -138,7 +154,12 @@ plugins.connectToAllDatabases(true).then(function() {
                 }
             }
         }, (token, fullDoc) => {
-            var next = fullDoc.fullDocument;
+            var fallback_processing = true;
+            var next = fullDoc;
+            if (next.fullDocument) {
+                fallback_processing = false;
+                next = fullDoc.fullDocument;
+            }
             if (next && next.a && next.e && next.e === "[CLY]_session" && next.n && next.ts) {
                 common.readBatcher.getOne("apps", common.db.ObjectID(next.a), function(err, app) {
                     //record event totals in aggregated data
@@ -147,8 +168,13 @@ plugins.connectToAllDatabases(true).then(function() {
                         return;
                     }
                     if (app) {
-                        var dur = (fullDoc && fullDoc.updateDescription && fullDoc.updateDescription.updatedFields && fullDoc.updateDescription.updatedFields.dur) || 0;
-                        //if(dur){
+                        var dur = 0;
+                        if (fallback_processing) {
+                            dur = next.dur || 0;
+                        }
+                        else {
+                            dur = (fullDoc && fullDoc.updateDescription && fullDoc.updateDescription.updatedFields && fullDoc.updateDescription.updatedFields.dur) || 0;
+                        }//if(dur){
                         usage.processSessionDurationRange(writeBatcher, token, dur, next.did, {"app_id": next.a, "app": app, "time": common.initTimeObj(app.timezone, next.ts), "appTimezone": (app.timezone || "UTC")});
                         //}
                     }

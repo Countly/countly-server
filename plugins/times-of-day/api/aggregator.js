@@ -7,10 +7,17 @@ var log = common.log('times-of-day:aggregator');
     plugins.register("/aggregator", function() {
         var changeStream = new changeStreamReader(common.drillDb, {
             pipeline: [
-                {"$match": {"fullDocument.e": {"$in": ["[CLY]_custom", "[CLY]_session"]}, "operationType": "insert"}},
+                {"$match": {"fullDocument.e": {"$in": ["[CLY]_session", "[CLY]_custom"]}, "operationType": "insert"}},
                 {"$project": {"__id": "$fullDocument._id", "ts": "$fullDocument.ts", "cd": "$fullDocument.cd", "n": "$fullDocument.n", "a": "$fullDocument.a", "e": "$fullDocument.e", "dow": "$fullDocument.up.dow", "hour": "$fullDocument.up.hour"}}
             ],
             "name": "times-of-day",
+            fallback: {
+                pipeline: [{
+                    "$match": {"e": {"$in": ["[CLY]_session", "[CLY]_custom"]}}
+                },
+                {"$project": {"__id": "$_id", "ts": "$ts", "cd": "$cd", "n": "$n", "a": "$a", "e": "$e", "dow": "$up.dow", "hour": "$up.hour"}}
+                ]
+            },
             "collection": "drill_events",
             "onClose": async function(callback) {
                 await common.writeBatcher.flush("countly", "times_of_day");

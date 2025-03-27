@@ -14,7 +14,6 @@ var batchLimit = 1000;
 
 
 var asyncjs = require("async");
-var Promise = require("bluebird");
 var common = require('../../../../api/utils/common.js');
 var app_users = require('../../../../api/parts/mgmt/app_users.js');
 var pluginManager = require("../../../../plugins/pluginManager");
@@ -43,7 +42,7 @@ csv()
         if (batch.length > 0) {
             batches.push(batch);
         }
-        Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).spread(function(db, drill) {
+        Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(function([db, drill]) {
             common.db = db;
             common.drillDb = drill;
             asyncjs.eachOfSeries(batches, function(batch, num, done) {

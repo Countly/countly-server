@@ -6,7 +6,6 @@ After this script there is need to run fixViews.js to merge views.(In case renam
 **/
 var pluginManager = require('../../pluginManager.js'),
     crypto = require('crypto'),
-    Promise = require("bluebird"),
     countlyDb,
     countly_drill,
     drillCommon = require('../../drill/api/common.js');
@@ -17,10 +16,9 @@ var fromValue = /&#46;/g; //take this value
 var toValue = '.'; //and replace to this value
 
 console.log("Getting all views we need to update");
-function merge_drill_data(viewdata, callback) {
+async function merge_drill_data(viewdata, callback) {
     var setO = {};
     var events = [];
-    var updateEvents = [];
 
     if (!viewdata.view) {
         callback();
@@ -28,34 +26,30 @@ function merge_drill_data(viewdata, callback) {
     }
     if (viewdata.view.indexOf(fromValue) > -1) {
         setO['sg.name'] = viewdata.view.replace(fromValue, toValue);
-        updateEvents.push({"collection": drillCommon.getCollectionName('[CLY]_view', appId), "updateO": {"sg.name": viewdata.view}, "setO": {"sg.name": setO['sg.name']}});
-        updateEvents.push({"collection": drillCommon.getCollectionName('[CLY]_view', appId), "updateO": {"up.lv": viewdata.view}, "setO": {"up.lv": setO['sg.name']}});
+        await countly_drill.collection(drillCommon.getCollectionName('[CLY]_view', appId)).update({"sg.name": viewdata.view}, {"$set": {"sg.name": setO['sg.name']}}, {multi: true});
+        //updateEvents.push({"collection": drillCommon.getCollectionName('[CLY]_view', appId), "updateO": {"sg.name": viewdata.view}, "setO": {"sg.name": setO['sg.name']}});
+        await countly_drill.collection(drillCommon.getCollectionName('[CLY]_view', appId)).update({"up.lv": viewdata.view}, {"$set": {"up.lv": setO['sg.name']}}, {multi: true});
+        //updateEvents.push({"collection": drillCommon.getCollectionName('[CLY]_view', appId), "updateO": {"up.lv": viewdata.view}, "setO": {"up.lv": setO['sg.name']}});
     }
 
     if (viewdata.url && viewdata.url.indexOf(fromValue) > -1) {
         setO['sg.view'] = viewdata.url.replace(fromValue, toValue);
-        updateEvents.push({"collection": drillCommon.getCollectionName('[CLY]_action', appId), "updateO": {"sg.view": viewdata.url}, "setO": {"sg.view": setO['sg.view']}});
-        updateEvents.push({"collection": drillCommon.getCollectionName('[CLY]_action', appId), "updateO": {"up.lv": viewdata.url}, "setO": {"up.lv": setO['sg.name']}});
-
+        await countly_drill.collection(drillCommon.getCollectionName('[CLY]_action', appId)).update({"sg.view": viewdata.url}, {"$set": {"sg.view": setO['sg.view']}}, {multi: true});
+        //updateEvents.push({"collection": drillCommon.getCollectionName('[CLY]_action', appId), "updateO": {"sg.view": viewdata.url}, "setO": {"sg.view": setO['sg.view']}});
+        await countly_drill.collection(drillCommon.getCollectionName('[CLY]_action', appId)).update({"up.lv": viewdata.url}, {"$set": {"up.lv": setO['sg.name']}}, {multi: true});
+        //updateEvents.push({"collection": drillCommon.getCollectionName('[CLY]_action', appId), "updateO": {"up.lv": viewdata.url}, "setO": {"up.lv": setO['sg.name']}});
     }
+
+
 
     events.push({key: "[CLY]_view", segment: "sg.name", oldvalue: viewdata.view, newvalue: setO['sg.name'] });
     events.push({key: "[CLY]_action", segment: "sg.view", oldvalue: viewdata.url, newvalue: setO['sg.view'] });
     events.push({key: "meta_up", segment: "up.lv", oldvalue: viewdata.view, newvalue: setO['sg.name'] });
 
-    Promise.each(updateEvents, function(eventdata) {
-        return new Promise(function(resolveSub/*, rejectSub*/) {
-            console.log("Updating events in " + eventdata.collection + " : " + JSON.stringify(eventdata.setO));
-            countly_drill.collection(eventdata.collection).update(eventdata.updateO, {"$set": eventdata.setO}, {multi: true}, function(errEvents) {
-                if (errEvents) {
-                    console.log(errEvents);
-                }
-                resolveSub();
-            });
-        });
-    }).then(function() {
-        Promise.each(events, function(eventdata) {
-            return new Promise(function(resolveSub/*, rejectSub*/) {
+    try {
+        for (var i = 0; i < events.length; i++) {
+            var eventdata = events[i];
+            await new Promise(function(resolveSub/*, rejectSub*/) {
                 console.log("Updating meta information for event: " + eventdata.key);
                 var eventHash = crypto.createHash('sha1').update(eventdata.key + appId).digest('hex');
                 var collectionMeta = "drill_meta" + appId;
@@ -107,15 +101,16 @@ function merge_drill_data(viewdata, callback) {
                     else {
                         resolveSub();
                     }
-
-
                 });
             });
-        }).then(function() {
-            callback();
+        }
+        callback();
+    }
+    catch (ee) {
+        console.log(ee);
+        callback(ee);
+    }
 
-        });
-    });
 }
 
 function check_renames(done) {
@@ -143,7 +138,7 @@ function check_renames(done) {
     });
 }
 
-Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).spread(function(db, db_drill) {
+Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(function([db, db_drill]) {
     countlyDb = db;
     countly_drill = db_drill;
     check_renames(function() {

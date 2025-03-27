@@ -224,7 +224,6 @@ function processEvents(appEvents, appSegments, appSgValues, params, omitted_segm
     }
 
     for (let i = 0; i < params.qstring?.events.length; i++) {
-
         var currEvent = params.qstring.events[i];
         tmpEventObj = {};
         tmpEventColl = {};

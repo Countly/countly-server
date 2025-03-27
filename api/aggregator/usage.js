@@ -194,7 +194,8 @@ usage.processSessionFromStream = function(token, currEvent, params) {
 };
 
 
-usage.processEventFromStream = function(token, currEvent) {
+usage.processEventFromStream = function(token, currEvent, writeBatcher) {
+    writeBatcher = writeBatcher || common.writeBatcher;
     var forbiddenSegValues = [];
     for (let i = 1; i < 32; i++) {
         forbiddenSegValues.push(i + "");
@@ -207,10 +208,15 @@ usage.processEventFromStream = function(token, currEvent) {
             return;
         }
         else {
-            common.readBatcher.getOne("events", common.db.ObjectID(currEvent.a), {"transformation": "event_object"}, function(err2, eventColl) {
+            common.readBatcher.getOne("events", common.db.ObjectID(currEvent.a), {"transformation": "event_object"}, async function(err2, eventColl) {
                 var tmpEventObj = {};
                 var tmpEventColl = {};
                 var tmpTotalObj = {};
+                var pluginsGetConfig = plugins.getConfig("api", app.plugins, true);
+
+                var time = common.initTimeObj(app.timezone, currEvent.ts);
+                var params = {time: time, app_id: currEvent.a, app: app, appTimezone: app.timezone || "UTC"};
+
                 var shortEventName = currEvent.n;
                 if (currEvent.e !== "[CLY]_custom") {
                     shortEventName = currEvent.e;
@@ -230,6 +236,32 @@ usage.processEventFromStream = function(token, currEvent) {
                     }
                 }
                 eventColl._segments = eventColl._segments || {};
+                var eventCollectionName = crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
+                var updates = [];
+
+                if (currEvent.s && common.isNumber(currEvent.s)) {
+                    common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.sum, currEvent.s);
+                    common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.sum, currEvent.s);
+                }
+                else {
+                    currEvent.s = 0;
+                }
+
+                if (currEvent.dur && common.isNumber(currEvent.dur)) {
+                    common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.dur, currEvent.dur);
+                    common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.dur, currEvent.dur);
+                }
+                else {
+                    currEvent.dur = 0;
+                }
+                currEvent.c = currEvent.c || 1;
+                if (currEvent.c && common.isNumber(currEvent.c)) {
+                    currEvent.count = parseInt(currEvent.c, 10);
+                }
+
+                common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.count, currEvent.count);
+                common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.count, currEvent.count);
+
 
                 for (var seg in currEvent.sg) {
                     if (forbiddenSegValues.indexOf(currEvent.sg[seg] + "") !== -1) {
@@ -239,16 +271,17 @@ usage.processEventFromStream = function(token, currEvent) {
                         if (eventColl._omitted_segments[shortEventName][seg]) {
                             continue;
                         }
-
                     }
                     if (eventColl._whitelisted_segments && eventColl._whitelisted_segments[shortEventName]) {
                         if (!eventColl._whitelisted_segments[shortEventName][seg]) {
                             continue;
                         }
                     }
+                    if (Array.isArray(currEvent.sg[seg])) {
+                        continue; //Skipping arrays 
+                    }
 
-
-
+                    //Segment is not registred in meta.
                     if (!eventColl._segments[shortEventName] || !eventColl._segments[shortEventName]._list[seg]) {
                         eventColl._segments[shortEventName] = eventColl._segments[shortEventName] || {_list: {}, _list_length: 0};
                         eventColl._segments[shortEventName]._list[seg] = true;
@@ -265,38 +298,67 @@ usage.processEventFromStream = function(token, currEvent) {
                             rootUpdate.$addToSet["segments." + shortEventName] = seg;
                         }
                     }
-                }
 
-                var time = common.initTimeObj(app.timezone, currEvent.ts);
-                var params = {time: time, app_id: currEvent.a, app: app, appTimezone: app.timezone || "UTC"};
+                    //load meta for this segment in cacher. Add new value if needed
 
-                if (currEvent.s && common.isNumber(currEvent.s)) {
-                    common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.sum, currEvent.s);
-                    common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.sum, currEvent.s);
-                }
+                    var tmpSegVal = currEvent.sg[seg] + "";
+                    tmpSegVal = tmpSegVal.replace(/^\$+/, "").replace(/\./g, ":");
+                    tmpSegVal = common.encodeCharacters(tmpSegVal);
 
-                if (currEvent.dur && common.isNumber(currEvent.dur)) {
-                    common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.dur, currEvent.dur);
-                    common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.dur, currEvent.dur);
-                }
-                currEvent.c = currEvent.c || 1;
-                if (currEvent.c && common.isNumber(currEvent.count)) {
-                    currEvent.count = parseInt(currEvent.count, 10);
-                }
+                    if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                        tmpSegVal = "[CLY]" + tmpSegVal;
+                    }
 
-                common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap.count, currEvent.count);
-                common.fillTimeObjectMonth(params, tmpTotalObj, shortEventName + '.' + common.dbMap.count, currEvent.count);
+                    var postfix_seg = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
+                    var meta = await common.readBatcher.getOne("events_meta", {"_id": eventCollectionName + "no-segment_" + common.getDateIds(params).zero + "_" + postfix_seg});
+
+                    if (pluginsGetConfig.event_segmentation_value_limit && meta.meta_v2 &&
+                        meta.meta_v2[seg] &&
+                        meta.meta_v2[seg].indexOf(tmpSegVal) === -1 &&
+                        meta.meta_v2[seg].length >= pluginsGetConfig.event_segmentation_value_limit) {
+                        continue;
+                    }
+
+                    if (!meta.meta_v2 || !meta.meta_v2[seg] || meta.meta_v2[seg].indexOf(tmpSegVal) === -1) {
+                        meta.meta_v2 = meta.meta_v2 || {};
+                        meta.meta_v2[seg] = meta.meta_v2[seg] || [];
+                        meta.meta_v2[seg].push(tmpSegVal);
+                        updates.push({
+                            id: currEvent.a + "_" + eventCollectionName + "_no-segment_" + common.getDateIds(params).zero + "_" + postfix_seg,
+                            update: {"$set": {["meta_v2." + seg + "." + tmpSegVal]: true, ["meta_v2.segments." + seg]: true, "s": "no-segment", "e": shortEventName, "m": common.getDateIds(params).zero, "a": params.app_id + ""}}
+                        });
+                    }
+                    //record data
+                    var tmpObj = {};
+
+                    if (currEvent.s) {
+                        common.fillTimeObjectMonth(params, tmpObj, tmpSegVal + '.' + common.dbMap.sum, currEvent.s);
+                    }
+
+                    if (currEvent.dur) {
+                        common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap.dur, currEvent.dur);
+                    }
+
+                    common.fillTimeObjectMonth(params, tmpObj, tmpSegVal + '.' + common.dbMap.count, currEvent.c);
+                    updates.push({
+                        id: currEvent.a + "_" + eventCollectionName + "_" + seg + "_" + common.getDateIds(params).month + "_" + postfix_seg,
+                        update: {$inc: tmpObj, $set: {"s": seg, "e": shortEventName, m: common.getDateIds(params).month, a: params.app_id + ""}}
+                    });
+                }
 
                 var dateIds = common.getDateIds(params);
                 var postfix2 = common.crypto.createHash("md5").update(shortEventName).digest('base64')[0];
 
                 tmpEventColl["no-segment" + "." + dateIds.month] = tmpEventObj;
 
+                for (var z = 0; z < updates.length; z++) {
+                    writeBatcher.add("events_data", updates[z].id, updates[z].update, "countly", {token: token});
+                }
                 //ID is - appID_hash_no-segment_month
-                var eventCollectionName = crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
+
                 var _id = currEvent.a + "_" + eventCollectionName + "_no-segment_" + dateIds.month;
                 //Current event
-                common.writeBatcher.add("events_data", _id, {
+                writeBatcher.add("events_data", _id, {
                     "$set": {
                         "m": dateIds.month,
                         "s": "no-segment",
@@ -308,16 +370,30 @@ usage.processEventFromStream = function(token, currEvent) {
                 {token: token});
 
                 //Total event
-                common.writeBatcher.add("events_data", currEvent.a + "_all_key_" + dateIds.month + "_" + postfix2, {
+                writeBatcher.add("events_data", currEvent.a + "_all_key_" + dateIds.month + "_" + postfix2, {
                     "$set": {
                         "m": dateIds.month,
                         "s": "key",
                         "a": params.app_id + "",
                         "e": "all"
                     },
-                    "$inc": tmpEventObj
-                });
+                    "$inc": tmpTotalObj
+                }, "countly",
+                {token: token});
 
+                //Meta document for all events:
+                writeBatcher.add("events_data", params.app_id + "_all_" + "no-segment_" + dateIds.zero + "_" + postfix2, {
+                    $set: {
+                        m: dateIds.zero,
+                        s: "no-segment",
+                        a: params.app_id + "",
+                        e: "all",
+                        ["meta_v2.key." + shortEventName]: true,
+                        "meta_v2.segments.key": true
+
+                    }
+                }, "countly",
+                {token: token});
                 //Total event meta data
 
                 if (Object.keys(rootUpdate).length) {
@@ -331,7 +407,6 @@ usage.processEventFromStream = function(token, currEvent) {
 
 
 usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params) {
-
     /**
          * 
          * @param {string} id - document id 
@@ -357,7 +432,8 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
 
     var dateIds = common.getDateIds(params);
     var metaToFetch = {};
-    if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit > 0) {
+
+    if ((plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit || 1000) > 0) {
         var postfix;
         for (let i = 0; i < predefinedMetrics.length; i++) {
             for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {

@@ -4,7 +4,6 @@ Script will delete documents matching selected event.
 Do not run on real event data, as it will delete it.
 */
 const pluginManager = require('../../plugins/pluginManager.js');
-var Promise = require("bluebird");
 
 //Change these values to correct ones.
 var collectionName = 'fe55f384d642312c76f6164a4f8ea40ffcc80795';
@@ -16,7 +15,7 @@ Promise.all(
     [
         pluginManager.dbConnection("countly")
     ])
-    .spread(async function(countlyDB) {
+    .then(async function([countlyDB]) {
         //insert some documents in collection
         await countlyDB.collection("events" + collectionName).drop();//cleanup in case
         await countlyDB.collection("events_data").deleteMany({'_id': {"$regex": "^" + app_ID + "_" + collectionName + "_.*"}});
@@ -226,10 +225,8 @@ Promise.all(
                         if (!compareObjects(coppied, mapped[coppied._id], "", true)) {
                             console.log("Document not same as original: " + coppied._id);
                         }
-
                     }
                 }
-
                 //delete all records from selected databases
                 //await countlyDB.collection("events"+collectionName).drop();
                 // await countlyDB.collection("events_data").deleteMany({'_id':{"$regex":"^"+app_ID+"_"+collectionName+"_.*"}});

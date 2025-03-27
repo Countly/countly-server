@@ -265,11 +265,15 @@ describe('Testing Simple database operations', function() {
         });
 
         it("Insert again and check result(callback)", async function(done) {
-            var rr = await db.collection("testCommands3").insertMany([{"_id": 4}, { "_id": 5}, { "_id": 6}]);
-
+            await db.collection("testCommands3").insertMany([{"_id": 4}, { "_id": 5}, { "_id": 6}]);
             db.collection("testCommands3").insertMany([{"_id": 4}, { "_id": 5}, { "_id": 6}], function(err, res) {
                 db.collection("testCommands3").find().toArray(function(err, res) {
-                    res.should.have.property.length(6);
+                    if (!res || res.length !== 6) {
+                        done("Error: " + JSON.stringify(res));
+                    }
+                    else {
+                        done();
+                    }
                 });
             });
         });
@@ -279,7 +283,12 @@ describe('Testing Simple database operations', function() {
 
             var cursor = db.collection("testCommands3").find();
             var res = await cursor.toArray();
-            res.should.have.property.length(8);
+            if (!res || res.length !== 8) {
+                done("Error: " + JSON.stringify(res));
+            }
+            else {
+                done();
+            }
         });
 
     });
