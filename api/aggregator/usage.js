@@ -431,9 +431,12 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
 
     var dateIds = common.getDateIds(params);
     var metaToFetch = {};
-    console.log("matric limit:" + plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit);
-    if (plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit > 0) {
-        console.log(JSON.stringify(predefinedMetrics));
+
+    console.log("getting config");
+    console.log(JSON.stringify(params.app && params.app.plugins));
+    console.log(JSON.stringify(plugins.getConfig("api", params.app && params.app.plugins, true)));
+
+    if ((plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit || 1000) > 0) {
         var postfix;
         for (let i = 0; i < predefinedMetrics.length; i++) {
             for (let j = 0; j < predefinedMetrics[i].metrics.length; j++) {

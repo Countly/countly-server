@@ -423,9 +423,6 @@ var pluginManager = function pluginManager() {
     * @returns {object} copy of configs for provided namespace
     **/
     this.getConfig = function(namespace, userSettings, override) {
-        console.log("getting config:"+namespace);
-        console.log(JSON.stringify(configs[namespace]));
-        console.log(JSON.stringify(defaultConfigs[namespace]));
         var ob = {};
         if (configs[namespace]) {
             for (let i in configs[namespace]) {
