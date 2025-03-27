@@ -2,6 +2,7 @@
 
 Dependencies:
 - Bump moment-timezone from 0.5.47 to 0.5.48
+- Bump supertest from 7.0.0 to 7.1.0
 
 ## Version 25.03.3
 Fixes:
