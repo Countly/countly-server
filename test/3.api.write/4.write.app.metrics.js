@@ -143,7 +143,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor+2000);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
             });
         });
