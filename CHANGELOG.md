@@ -1,3 +1,8 @@
+## Version 25.03.x
+
+Dependencies:
+- Bump moment-timezone from 0.5.47 to 0.5.48
+
 ## Version 25.03.3
 Fixes:
 - [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
