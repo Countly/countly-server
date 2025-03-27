@@ -277,6 +277,9 @@ usage.processEventFromStream = function(token, currEvent, writeBatcher) {
                             continue;
                         }
                     }
+                    if (Array.isArray(currEvent.sg[seg])) {
+                        continue; //Skipping arrays 
+                    }
 
                     //Segment is not registred in meta.
                     if (!eventColl._segments[shortEventName] || !eventColl._segments[shortEventName]._list[seg]) {
@@ -404,8 +407,6 @@ usage.processEventFromStream = function(token, currEvent, writeBatcher) {
 
 
 usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params) {
-
-    console.log("Processing session metrics from stream");
     /**
          * 
          * @param {string} id - document id 
@@ -431,10 +432,6 @@ usage.processSessionMetricsFromStream = function(currEvent, uniqueLevelsZero, un
 
     var dateIds = common.getDateIds(params);
     var metaToFetch = {};
-
-    console.log("getting config");
-    console.log(JSON.stringify(params.app && params.app.plugins));
-    console.log(JSON.stringify(plugins.getConfig("api", params.app && params.app.plugins, true)));
 
     if ((plugins.getConfig("api", params.app && params.app.plugins, true).metric_limit || 1000) > 0) {
         var postfix;

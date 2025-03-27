@@ -308,6 +308,9 @@ usage.processSession = function(ob) {
         }
 
         if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
+            console.log("Skipping because of cooldown");
+            console.log(params.time.timestamp - lastEndSession);
+            console.log(plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown);
             delete params.qstring.begin_session;//do not start a new session.
         }
         else {
