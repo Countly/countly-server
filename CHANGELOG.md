@@ -1,5 +1,10 @@
 ## Version 25.03.x
 
+Enterprise Features:
+- Update locking conditions for expired license and over limit usage
+- Enable force locking with remote config
+- Update dashboard lock with redirection to home page for non admin user
+
 Dependencies:
 - Bump moment-timezone from 0.5.47 to 0.5.48
 - Bump supertest from 7.0.0 to 7.1.0
