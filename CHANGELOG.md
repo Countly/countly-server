@@ -1,3 +1,8 @@
+## Version 25.03.x
+
+Dependencies:
+- Bump moment-timezone from 0.5.47 to 0.5.48
+
 ## Version 25.03.2
 Fixes:
 - [user-management] Prevent global admin from self-revoke and self-delete
