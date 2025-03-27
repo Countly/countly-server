@@ -225,9 +225,9 @@ const FEATURE_NAME = 'times_of_day';
                             data2 = data2.data || [];
                             for (var z = 0; z < data2.length; z++) {
                                 if (data2[z]._id && data2[z]._id.h && data2[z]._id.d) {
-                                    var hh = parseInt(data2[z]._id.h);
+                                    var hh = parseInt(data2[z]._id.h, 10);
 
-                                    var dd = parseInt(data2[z]._id.d);
+                                    var dd = parseInt(data2[z]._id.d, 10);
                                     if (dd === 7) {
                                         dd = 0;
                                     }

@@ -78,7 +78,6 @@ class changeStreamReader {
                 match[this.fallback.timefield] = {$gte: new Date(cd), $lt: cd2};
             }
             else {
-                
                 match.cd = {$gte: new Date(cd), $lt: cd2};
             }
             pipeline.unshift({"$match": match});

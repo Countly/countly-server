@@ -627,7 +627,11 @@ class MongoDbQueryRunner {
         return {data: data || [], total: total || 0};
     }
 
-
+    /**
+ * Fetches data for times of day plugin from granural
+ * @param {object} options options
+* @returns {object} table data
+ */
     async timesOfDay(options) {
         var match = options.match || {};
         if (options.appID) {
