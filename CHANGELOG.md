@@ -1,6 +1,8 @@
-## Version 25.x.x
-Features:
+## Version 25.03.2
+Fixes:
 - [alerts] alerts table default order should be by creation time newest at the top
+- [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
+- [user-management] Prevent global admin from self-revoke and self-delete
 
 ## Version 24.12.x
 
@@ -52,6 +54,7 @@ Enterprise Features:
 - [core] Adding support For SingleStore Kai
 - [flows] Adding UX improvements to the editor
 - [journey_engine] Adding "Journey Engine" feature
+- [ldap] Fixed issues that would lead to configuration options not being picked up
 - [remote-config] Moving enable/disable functionality to the dropdown
 - [surveys] "Select one" text in the widget can be edited now
 - [surveys] Removed unnecessary limitation with using cohorts for targeting
@@ -69,6 +72,18 @@ Dependencies:
 - Bump puppeteer from 23.10.4 to 23.11.1
 - Bump sass from 1.81.0 to 1.83.3
 - Bump tslib from 2.7.0 to 2.8.1
+
+## Version 24.10.8
+Fixes:
+- [app-management] Unescaping HTML for created/updated application names
+- [countly-edge] Add import from Countly Edge Server
+- [languages] Calculated  total users percentage correctly
+
+Features:
+- [hooks] Support sending header information for HTTP actions
+
+Enterprise fixes:
+- [ab-testing] Mismatching user counts between ab-testing and user profiles
 
 ## Version 24.10.7
 Fixes:

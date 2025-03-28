@@ -145,7 +145,7 @@ const verifySettingsPageElements = ({
 
     cy.verifyElement({
         labelElement: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_LABEL,
-        labelText: "surveys.drawer.consent", //TODO:Updated after SER-2121 fixed 
+        labelText: "Add user consent",
         element: feedbackRatingWidgetAddUserConsentElements().ADD_USER_CONSENT_CHECKBOX,
         isChecked: isCheckedAddConsent
     });
