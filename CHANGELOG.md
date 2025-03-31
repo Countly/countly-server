@@ -7,6 +7,7 @@ Fixes:
 Enterprise Fixes:
 - [ab-testing] Fixed bug with variant user filtering
 - [cohorts] Fixed issue with combining multiple cohorts
+- [drill] Do not recheck old collections on app_user data deletion if querying from old collections is disabled
 - [license] Fixed issue with handling invalid date periods
 
 ## Version 24.10.8
