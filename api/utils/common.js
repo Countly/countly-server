@@ -1609,7 +1609,7 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
             headers[i] = heads[i];
         }
     }
-    if (params.app && params.app.plugins && params.app.plugins.allow_access_control_origin && params.req.headers && params.req.headers.origin) {
+    if (params && params.app && params.app.plugins && params.app.plugins.allow_access_control_origin && params.req.headers && params.req.headers.origin) {
         var cors_headers = (params.app.plugins.allow_access_control_origin || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
         if (cors_headers.includes(params.req.headers.origin)) {
             headers['Access-Control-Allow-Origin'] = params.req.headers.origin;
@@ -1685,7 +1685,7 @@ common.returnOutput = function(params, output, noescape, heads) {
         }
     }
 
-    if (params.app && params.app.plugins && params.app.plugins.allow_access_control_origin && params.req.headers && params.req.headers.origin) {
+    if (params && params.app && params.app.plugins && params.app.plugins.allow_access_control_origin && params.req.headers && params.req.headers.origin) {
         var cors_headers = (params.app.plugins.allow_access_control_origin || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
         if (cors_headers.includes(params.req.headers.origin)) {
             headers['Access-Control-Allow-Origin'] = params.req.headers.origin;
