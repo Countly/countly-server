@@ -1701,7 +1701,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             try {
                 // This is to check that the uploaded image is a real image
                 // If jimp cannot read it then it is not a real image
-                const image = await jimp.read(tmp_path);
+                const image = await jimp.Jimp.read(tmp_path);
 
                 if (!image) {
                     fs.unlink(tmp_path, function() {});

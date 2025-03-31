@@ -44,8 +44,17 @@
                 class="cly-vue-alerts-table"
                 :tracked-fields="localTableTrackedFields"
                 :rows="tableRows"
-                :resizable="false">
+                :resizable="false"
+                :default-sort="{prop: 'createdAt', order: 'descending'}"
+            >
                 <template v-slot:header-left="scope">
+                    <div class="bu-mr-2">
+                        <el-radio-group :plain="true" v-model="tableFilterStatus">
+                            <el-radio-button label="all">{{i18n('alerts.status-all')}}</el-radio-button>
+                            <el-radio-button label="enabled">{{i18n('alerts.status-enabled')}}</el-radio-button>
+                            <el-radio-button label="disabled">{{i18n('alerts.status-disabled')}}</el-radio-button> 
+                        </el-radio-group>
+                    </div>
                     <div class="alerts-table-app-selector">
                         <cly-select-x
                            :placeholder="i18n('alert.all-applications')"
