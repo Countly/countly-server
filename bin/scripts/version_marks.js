@@ -1,7 +1,40 @@
 const fs = require('fs'),
-    pluginManager = require('../../plugins/pluginManager.js');
+    mail = require('../../api/parts/mgmt/mail'),
+    localize = require('../../api/utils/localization.js'),
+    common = require('../../api/utils/common'),
+    pluginManager = require('../../plugins/pluginManager.js'),
+    Promise = require("bluebird");
 
 const fsMarkedVersionPath = __dirname + "/../../countly_marked_version.json";
+
+function sendEmailToGlobalAdmins(oldVersion, newVersion) {
+    Promise.all([pluginManager.dbConnection("countly")]).spread(async function(countlyDb) {
+        pluginManager.loadConfigs(countlyDb, async function() {
+            let conf = pluginManager.getConfig('api'),
+                serverLink = conf && conf.domain ? `<a href="${conf.domain}">${conf.domain}</a>` : 'Countly Server',
+                admins = await countlyDb.collection('members').find({global_admin: true}).toArray();
+
+            try {
+                await Promise.all(
+                    admins.map((admin) => {
+                        localize.getProperties(admin.lang, function(err2, properties) {
+                            var subject = localize.format(properties["mail.server-upgrade-to-global-admins-subject"], oldVersion, newVersion);
+                            var message = localize.format(properties["mail.server-upgrade-to-global-admins"], oldVersion, newVersion, serverLink);
+                            mail.sendMessage(admin.email, subject, message);
+                        });
+                    })
+                );
+            }
+            catch (e) {
+                common.log('core:mark_version').e('Error while sending update emails', e);
+                return 0;
+            }
+            finally {
+                countlyDb.close();
+            }
+        });
+    });
+}
 
 function writeMsg(type, msg) {
     process.stdout.write(JSON.stringify(msg));
@@ -99,6 +132,7 @@ function writeFsVersion(targetVersion) {
         try {
             fs.writeFileSync(fsMarkedVersionPath, JSON.stringify(olderVersions));
             writeMsg("info", 1);
+            sendEmailToGlobalAdmins(olderVersions[olderVersions.length - 1].version, targetVersion);
         }
         catch (error) {
             writeMsg("error", error);
@@ -106,6 +140,7 @@ function writeFsVersion(targetVersion) {
     }
     else {
         writeMsg("info", 0);
+        sendEmailToGlobalAdmins(olderVersions[olderVersions.length - 1].version, targetVersion);
     }
 }
 
