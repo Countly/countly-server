@@ -1,5 +1,10 @@
 ## Version 25.03.x
 
+Enterprise Features:
+- Update locking conditions for expired license and over limit usage
+- Enable force locking with remote config
+- Update dashboard lock with redirection to home page for non admin user
+
 Dependencies:
 - Bump body-parser from 1.20.3 to 2.2.0
 - Bump moment-timezone from 0.5.47 to 0.5.48
