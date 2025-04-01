@@ -488,8 +488,8 @@ common.zeroFill = function(number, width) {
 
 /**
 * Add item or array to existing array only if values are not already in original array
-* @param {array} arr - original array where to add unique elements
-* @param {string|number|array} item - item to add or array to merge
+* @param {Array<string|number>} arr - original array where to add unique elements
+* @param {string|number|Array<string|number>} item - item to add or array to merge
 */
 common.arrayAddUniq = function(arr, item) {
     if (!arr) {
@@ -1896,10 +1896,10 @@ common.fillTimeObjectMonth = function(params, object, property, increment, force
 * @param {params} params - {@link params} object
 * @param {string} collection - name of the collections where to store data
 * @param {string} id - id to prefix document ids, like app_id or segment id, etc
-* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
+* @param {Array<string>} metrics - array of metrics to record, as ["u","t", "n"]
 * @param {number=} value - value to increment all metrics for, default 1
 * @param {object} segments - object with segments to record data, key segment name and value segment value
-* @param {array} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
+* @param {Array<string>} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
 * @param {number} lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
 * @example
 * //recording attribution
@@ -1961,10 +1961,10 @@ common.recordCustomMetric = function(params, collection, id, metrics, value, seg
 * @param {params} params - {@link params} object
 * @param {string} collection - name of the collections where to store data
 * @param {string} id - id to prefix document ids, like app_id or segment id, etc
-* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
+* @param {Array<string>} metrics - array of metrics to record, as ["u","t", "n"]
 * @param {number=} value - value to increment all metrics for, default 1
 * @param {object} segments - object with segments to record data, key segment name and value segment value
-* @param {array} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
+* @param {Array<string>} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
 * @param {number} lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
 * @example
 * //recording attribution
@@ -2025,7 +2025,7 @@ common.setCustomMetric = function(params, collection, id, metrics, value, segmen
 * @param {params} params - {@link params} object
 * @param {string} collection - name of the collections where to store data
 * @param {string} id - id to prefix document ids, like app_id or segment id, etc
-* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
+* @param {Array<string>} metrics - array of metrics to record, as ["u","t", "n"]
 * @param {number=} value - value to increment all metrics for, default 1
 * @param {object} segments - object with segments to record data, key segment name and value segment value
 * @example
@@ -2105,7 +2105,7 @@ common.recordCustomMeasurement = function(params, collection, id, metrics, value
 * @param {object} props.metrics[].segments - object with segments to record data, key segment name and value segment value or array of segment values
 * @param {boolean} props.metrics[].unique - if metric should be treated as unique, and stored in 0 docs and be estimated on output
 * @param {number} props.metrics[].lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
-* @param {array} props.metrics[].hourlySegments - array of segments that should have hourly data too (by default hourly data not recorded for segments)
+* @param {Array<string>} props.metrics[].hourlySegments - array of segments that should have hourly data too (by default hourly data not recorded for segments)
 * @example
 * //recording attribution
 * common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
@@ -2229,8 +2229,8 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 * @param {object} tmpSet - object with already set meta properties
 * @param {object} updateUsersZero - object with already set update for zero docs
 * @param {object} updateUsersMonth - object with already set update for months docs
-* @param {array} zeroObjUpdate - segments to fill for for zero docs
-* @param {array} monthObjUpdate - segments to fill for months docs
+* @param {Array<string>} zeroObjUpdate - segments to fill for for zero docs
+* @param {Array<string>} monthObjUpdate - segments to fill for months docs
 **/
 function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate) {
     var escapedMetricKey = name.replace(/^\$/, "").replace(/\./g, ":");
@@ -2511,7 +2511,7 @@ common.o = function() {
 
 /**
 * Return index of array with objects where property = value
-* @param {array} array - array where to search value
+* @param {Array<string>} array - array where to search value
 * @param {string} property - property where to look for value
 * @param {any} value - value you are searching for
 * @returns {number} index of the array
@@ -3500,11 +3500,11 @@ class DataTable {
      * DataTable compatible object ("full"). However, some consumers of the API may require simple, array-like 
      * results too ("rows"). In order to allow consumers to specify expected output, the field can be used.
      * @param {object} options Wraps options
-     * @param {Array} options.columnOrder If there are sortable columns in the table, then you need to 
+     * @param {Array<string>} options.columnOrder If there are sortable columns in the table, then you need to 
      * specify a column list in order to make it work (e.g. ["name", "status"]). 
      * @param {object} options.defaultSorting When there is no sorting provided in query string, sorting 
      * falls back to this object, if you provide any (e.g. {"name": "asc"}). 
-     * @param {Array} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
+     * @param {Array<string>} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
      * @param {('regex'|'hard')} options.searchStrategy Specify searching method. If "regex", then a regex
      * search is performed on searchableFields. Other values will be considered as hard match.
      * @param {object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
@@ -3604,13 +3604,13 @@ class DataTable {
      * if provided any. Data flow between stages are not checked, so please do check manually.
      * 
      * @param {object} options Wraps options
-     * @param {Array} options.initialPipeline If you need to select a subset, to add new fields or 
+     * @param {Array<string>} options.initialPipeline If you need to select a subset, to add new fields or 
      * anything else involving aggregation stages, you can pass an array of stages using options.initialPipeline.
      * Initial pipeline is basically used for counting the total number of documents without pagination and search.
      * 
      * # of output rows = total number of docs.
      * 
-     * @param {Array} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
+     * @param {Array<string>} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
      * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no 
      * query, then this will be another stage after initialPipeline. Paging and sorting are added after filteredPipeline.
      * 
@@ -3681,7 +3681,7 @@ class DataTable {
      * @param {Function} processFn A callback function that has a single argument 'rows'.
      * As the name implies, it is an array of returned rows. The function can be used as
      * a final stage to do modifications to fetched items before completing the response. 
-     * @returns {object|Array} Returns the final response
+     * @returns {object|Array<string>} Returns the final response
      */
     getProcessedResult(queryResult, processFn) {
         var fullTotal = 0,
