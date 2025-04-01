@@ -7,9 +7,14 @@
  * typedef {import('../../node_modules/moment/moment').Moment} Moment
  * typedef {import('../../node_modules/moment-timezone/index.d.ts').MomentTimezone} MomentTimezone
  * @typedef {import('./index').Utils.Params} Params
+ * @typedef {import('./index').Utils.TimeObject} TimeObject
+ * @typedef {import('./index').Utils.Common} Common
 */
 
 /** @lends module:api/utils/common **/
+/**
+ * @type {Common}
+ */
 var common = {};
 /** 
  * Reference to momentjs
@@ -564,7 +569,7 @@ common.md5Hash = function(str) {
 /**
 * Modifies provided object in the format object["2012.7.20.property"] = increment. 
 * Usualy used when filling up Countly metric model data
-* @param {Params} params - {@link params} object
+* @param {Params} params - {@link Params} object
 * @param {object} object - object to fill
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
@@ -613,7 +618,7 @@ common.fillTimeObject = function(params, object, property, increment) {
 * Creates a time object from request's milisecond or second timestamp in provided app's timezone
 * @param {string} appTimezone - app's timezone
 * @param {number} reqTimestamp - timestamp in the request
-* @returns {timeObject} Time object for current request
+* @returns {TimeObject} Time object for current request
 */
 common.initTimeObj = function(appTimezone, reqTimestamp) {
     var currTimestamp,
@@ -645,24 +650,6 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
         tmpMoment.tz(appTimezone);
     }
 
-    /**
-   * @typedef timeObject
-   * @type {object} 
-   * @global
-   * @property {moment} now - momentjs instance for request's time in app's timezone
-   * @property {moment} nowUTC - momentjs instance for request's time in UTC
-   * @property {moment} nowWithoutTimestamp - momentjs instance for current time in app's timezone
-   * @property {number} timestamp -  request's seconds timestamp
-   * @property {number} mstimestamp -  request's miliseconds timestamp
-   * @property {string} yearly -  year of request time in app's timezone in YYYY format
-   * @property {string} monthly -  month of request time in app's timezone in YYYY.M format
-   * @property {string} daily -  date of request time in app's timezone in YYYY.M.D format
-   * @property {string} hourly -  hour of request time in app's timezone in YYYY.M.D.H format
-   * @property {number} weekly -  week of request time in app's timezone as result day of the year, divided by 7
-   * @property {string} month -  month of request time in app's timezone in format M
-   * @property {string} day -  day of request time in app's timezone in format D
-   * @property {string} hour -  hour of request time in app's timezone in format H
-   */
     return {
         now: tmpMoment,
         nowUTC: tmpMoment.clone().utc(),
