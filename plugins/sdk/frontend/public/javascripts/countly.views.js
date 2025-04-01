@@ -3,9 +3,9 @@
     var SC_VER = 1; // check/update sdk/api/api.js for this
     var v0_android = "22.09.4";
     var v0_ios = "23.02.2";
-    var v1_android = "25.3.0";
-    var v1_ios = "25.3.0";
-    var v1_web = "25.3.0";
+    var v1_android = "25.4.0";
+    var v1_ios = "25.4.0";
+    var v1_web = "25.4.0";
     // Supporting SDK Versions for the SC options
     var supportedSDKVersion = {
         tracking: { android: v0_android, ios: v0_ios, web: v1_web },
@@ -359,8 +359,47 @@
                 }
             },
             semverToNumber: function(version) {
-                const parts = version.split('.').map(Number);
-                return parts[0] * 1_000_000 + parts[1] * 1_000 + parts[2];
+                if (typeof version !== 'string') {
+                    return -1;
+                }
+                
+                version = version.split("-")[0];
+                var letterIndex = version.search(/[a-zA-Z]/);
+                if (letterIndex !== -1) {
+                    version = version.substring(0, letterIndex);
+                }
+
+                const semverRegex = /^(\d+)\.(\d+)\.(\d+)$/;
+                const match = version.match(semverRegex);
+                
+                if (!match) {
+                    return -1;
+                }
+                
+                const major = parseInt(match[1]);
+                const minor = parseInt(match[2]);
+                const patch = parseInt(match[3]);
+                
+                return major * 1_000_000 + minor * 1_000 + patch;
+            },
+            compareVersions: function(context, a, b, text) {
+                if (!a) {
+                    return;
+                }
+                
+                const aValue = this.semverToNumber(a);
+                const bValue = this.semverToNumber(b);
+                
+                if (aValue === -1 || bValue === -1) {
+                    context.unsupportedList.push(text);
+                    return;
+                }
+                
+                if (aValue >= bValue) {
+                    context.supportLevel += 1;
+                } else {
+                    context.unsupportedList.push(text);
+                }
             },
             checkSdkSupport: function() {
                 for (var key in this.configs) {
@@ -385,8 +424,24 @@
                         return acc;
                     }
                     acc[sdk.label] = sdk.data[0].sdk_version;
+                    for (var i = 1; i < sdk.data.length; i++) {
+                        if (this.semverToNumber(acc[sdk.label]) < this.semverToNumber(sdk.data[i].sdk_version)) {
+                            acc[sdk.label] = sdk.data[i].sdk_version;
+                        }
+                    }
                     return acc;
                 }, {});
+
+                var viableSDKCount = 0;
+                if (latestVersions["javascript_native_web"]) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["java-native-android"]) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["objc-native-ios"]) {
+                    viableSDKCount++;
+                }
 
                 const configKeyList = Object.keys(this.configs);
                 configKeyList.forEach(configKey => {
@@ -395,40 +450,17 @@
                         return;
                     }
 
-                    var supportLevel = 0;
-                    var unsupportedList = [];
-                    if (latestVersions["javascript_native_web"]) {
-                        if (this.semverToNumber(latestVersions["javascript_native_web"]) >= this.semverToNumber(configSupportedVersions.web)) {
-                            supportLevel++;
-                        } else {
-                            unsupportedList.push("Web SDK");
-                        }
-                    }
+                    var context = { supportLevel: 0, unsupportedList: [] };
+                    this.compareVersions(context, latestVersions["javascript_native_web"], configSupportedVersions.web, "Web SDK");
+                    this.compareVersions(context, latestVersions["java-native-android"], configSupportedVersions.android, "Android SDK");
+                    this.compareVersions(context, latestVersions["objc-native-ios"], configSupportedVersions.ios, "iOS SDK");
 
-                    if (latestVersions["java-native-android"]) {
-                        if (this.semverToNumber(latestVersions["java-native-android"]) >= this.semverToNumber(configSupportedVersions.android)) {
-                            supportLevel++;
-                        } else {
-                            unsupportedList.push("Android SDK");
-                        }
-                    }
-
-                    if (latestVersions["objc-native-ios"]) {
-
-                        if (this.semverToNumber(latestVersions["objc-native-ios"]) >= this.semverToNumber(configSupportedVersions.ios)) {
-                            supportLevel++;
-                        } else {
-                            unsupportedList.push("iOS SDK");
-                        }
-                    }
-
-                    if (supportLevel === Object.keys(latestVersions).length) { // all correct version
+                    if (viableSDKCount > 0 && context.supportLevel === viableSDKCount) { // all correct version
                         this.configs[configKey].tooltipMessage = 'You are using SDKs that support this option.';
                         this.configs[configKey].tooltipClass = 'tooltip-success';
-                    } else if (unsupportedList.length > 0) { // some/all wrong version
-                        this.configs[configKey].tooltipMessage = 'Some SDKs you use do not support this option: ' + unsupportedList.join(', ') + '. Try upgrading to the latest version.';
+                    } else if (context.unsupportedList.length > 0) { // some/all wrong version
+                        this.configs[configKey].tooltipMessage = 'Some SDKs you use do not support this option: ' + context.unsupportedList.join(', ') + '. Try upgrading to the latest version.';
                         this.configs[configKey].tooltipClass = 'tooltip-warning';
-
                     } else { // none supported
                         this.configs[configKey].tooltipMessage = 'None of the SDKs you use support this option. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this Server Config option.';
                         this.configs[configKey].tooltipClass = 'tooltip-danger';
