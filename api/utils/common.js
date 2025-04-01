@@ -5,7 +5,8 @@
 
 /**
  * typedef {import('../../node_modules/moment/moment').Moment} Moment
- * ypedef {import('../../node_modules/moment-timezone/index.d.ts').MomentTimezone} MomentTimezone
+ * typedef {import('../../node_modules/moment-timezone/index.d.ts').MomentTimezone} MomentTimezone
+ * @typedef {import('./index').Utils.Params} Params
 */
 
 /** @lends module:api/utils/common **/
@@ -563,7 +564,7 @@ common.md5Hash = function(str) {
 /**
 * Modifies provided object in the format object["2012.7.20.property"] = increment. 
 * Usualy used when filling up Countly metric model data
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {object} object - object to fill
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
@@ -1500,7 +1501,7 @@ common.fixEventKey = function(eventKey) {
 
 /**
 * Block {@link module:api/utils/common.returnMessage} and {@link module:api/utils/common.returnOutput} from ouputting anything
-* @param {params} params - params object
+* @param {Params} params - params object
 */
 common.blockResponses = function(params) {
     params.blockResponses = true;
@@ -1508,7 +1509,7 @@ common.blockResponses = function(params) {
 
 /**
 * Unblock/allow {@link module:api/utils/common.returnMessage} and {@link module:api/utils/common.returnOutput} ouputting anything
-* @param {params} params - params object
+* @param {Params} params - params object
 */
 common.unblockResponses = function(params) {
     params.blockResponses = false;
@@ -1526,12 +1527,12 @@ common.unblockResponses = function(params) {
 * @param {string} responseMessage - what API returns
 * @param {object} headers - what API would have returned to HTTP request
 * @param {number} returnCode - HTTP code, what API would have returned to HTTP request
-* @param {params} params - request context that was passed to requestProcessor, modified during request processing
+* @param {Params} params - request context that was passed to requestProcessor, modified during request processing
 */
 
 /**
 * Return raw headers and body
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {number} returnCode - http code to use
 * @param {string} body - raw data to output
 * @param {object} heads - headers to add to the output
@@ -1577,7 +1578,7 @@ common.returnRaw = function(params, returnCode, body, heads) {
 
 /**
 * Output message as request response with provided http code
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {number} returnCode - http code to use
 * @param {string|object} message - Message to output, will be encapsulated in JSON object under result property
 * @param {object} heads - headers to add to the output
@@ -1640,7 +1641,7 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
 
 /**
 * Output message as request response with provided http code
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {output} output - object to stringify and output
 * @param {string} noescape - prevent escaping HTML entities
 * @param {object} heads - headers to add to the output
@@ -1793,7 +1794,7 @@ function stripPort(ip) {
 /**
 * Modifies provided object filling properties used in zero documents in the format object["2012.7.20.property"] = increment. 
 * Usualy used when filling up Countly metric model zero document
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {object} object - object to fill
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
@@ -1853,7 +1854,7 @@ common.fillTimeObjectZero = function(params, object, property, increment, isUniq
 /**
 * Modifies provided object filling properties used in monthly documents in the format object["2012.7.20.property"] = increment. 
 * Usualy used when filling up Countly metric model monthly document
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {object} object - object to fill
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
@@ -1902,7 +1903,7 @@ common.fillTimeObjectMonth = function(params, object, property, increment, force
 /**
 * Record data in Countly standard metric model
 * Can be used by plugins to record data, similar to sessions and users, with optional segments
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} collection - name of the collections where to store data
 * @param {string} id - id to prefix document ids, like app_id or segment id, etc
 * @param {Array<string>} metrics - array of metrics to record, as ["u","t", "n"]
@@ -1967,7 +1968,7 @@ common.recordCustomMetric = function(params, collection, id, metrics, value, seg
 /**
 * Sets passed value in standart model. If there is any value for that date - it gets replaced with new value.
 * Can be used by plugins to record data, similar to sessions and users, with optional segments
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} collection - name of the collections where to store data
 * @param {string} id - id to prefix document ids, like app_id or segment id, etc
 * @param {Array<string>} metrics - array of metrics to record, as ["u","t", "n"]
@@ -2031,7 +2032,7 @@ common.setCustomMetric = function(params, collection, id, metrics, value, segmen
 * Record measurement in Countly standard metric model
 * Can be used by plugins to record measurements, similar to temperature, it will record min/max/avg values
 * Does not support unique values like users
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} collection - name of the collections where to store data
 * @param {string} id - id to prefix document ids, like app_id or segment id, etc
 * @param {Array<string>} metrics - array of metrics to record, as ["u","t", "n"]
@@ -2105,7 +2106,7 @@ common.recordCustomMeasurement = function(params, collection, id, metrics, value
 /**
 * Record data in Countly standard metric model
 * Can be used by plugins to record data, similar to sessions and users, with optional segments
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {object} props - object defining what to record
 * @param {string} props.collection - name of the collections where to store data
 * @param {string} props.id - id to prefix document ids, like app_id or segment id, etc
@@ -2162,7 +2163,7 @@ common.recordMetric = function(params, props) {
 
 /**
 * Record specific metric
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {string} metric - metric to record
 * @param {object} props - properties of a metric defining how to record it
 * @param {object} tmpSet - object with already set meta properties
@@ -2230,7 +2231,7 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 
 /**
 * Record specific metric segment
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {string} metric - metric to record
 * @param {string} name - name of the segment to record
 * @param {string} val - value of the segment to record
@@ -2298,7 +2299,7 @@ function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUse
 
 /**
 * Get object of date ids that should be used in fetching standard metric model documents
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @returns {object} with date ids, as {zero:"2017:0", month:"2017:2"}
 */
 common.getDateIds = function(params) {
@@ -2633,7 +2634,7 @@ common.clearClashingQueryOperations = function(query) {
 };
 /**
 * Single method to update app_users document for specific user for SDK requests
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} update - update query for mongodb, should contain operators on highest level, as $set or $unset
 * @param {boolean} no_meta - if true, won't update some auto meta data, like first api call, last api call, etc.
 * @param {function} callback - function to run when update is done or failes, passing error and result as arguments

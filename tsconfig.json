@@ -7,7 +7,8 @@
     "include": [
         //"plugins/push/**/*.ts",
         //"plugins/push/**/*.js"
-        "api/utils/common.js"
+        "api/utils/common.js",
+        "api/utils/requestProcessor.js"
     ],
     "exclude": [
         "node_modules"
