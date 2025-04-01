@@ -24,7 +24,7 @@ describe('SDK Tooltips Tests', () => {
         email: 'a@a.com',
         password: '111111111aA/'
     };
-    beforeEach(function () {
+    beforeEach(function() {
         cy.dropMongoDatabase(); // true in local tests
         navigationHelpers.goToLoginPage();
         setupHelpers.completeOnboardingSetup({
@@ -48,7 +48,7 @@ describe('SDK Tooltips Tests', () => {
         navigationHelpers.isNavigatedToDashboard();
     });
 
-    afterEach(function () {
+    afterEach(function() {
         // cy.dropMongoDatabase(true);
     });
 
@@ -56,16 +56,16 @@ describe('SDK Tooltips Tests', () => {
         goToConfigTab();
         checkTooltipAppears('neutral');
     });
-    it('2-Warning for old Web SDK version', function () {
+    it('2-Warning for old Web SDK version', function() {
         cy.request('GET', createRequest('javascript_native_web', '19.12.1'))
             .then((response) => {
                 expect(response.status).to.eq(200);
                 expect(response.body).to.have.property('result', 'Success');
                 goToConfigTab();
                 checkTooltipAppears('warning');
-            })
+            });
     });
-    it('3-Success for latest Web SDK version', function () {
+    it('3-Success for latest Web SDK version', function() {
         cy.request('GET', createRequest('javascript_native_web', '25.12.1'))
             .then((response) => {
                 expect(response.status).to.eq(200);
@@ -74,7 +74,7 @@ describe('SDK Tooltips Tests', () => {
                 checkTooltipAppears('success');
             })
     });
-    it('4-Mixed for old Android SDK version', function () {
+    it('4-Mixed for old Android SDK version', function() {
         cy.request('GET', createRequest('java-native-android', '23.12.1'))
             .then((response) => {
                 expect(response.status).to.eq(200);
@@ -84,7 +84,7 @@ describe('SDK Tooltips Tests', () => {
                 checkTooltipAppears('warning', 19, true);
             })
     });
-    it('5-Mixed for old iOS SDK version', function () {
+    it('5-Mixed for old iOS SDK version', function() {
         cy.request('GET', createRequest('objc-native-ios', '24.12.1'))
             .then((response) => {
                 expect(response.status).to.eq(200);
@@ -94,7 +94,7 @@ describe('SDK Tooltips Tests', () => {
                 checkTooltipAppears('warning', 19, true);
             })
     });
-    it('6-Unsupported SDK should display warning', function () {
+    it('6-Unsupported SDK should display warning', function() {
         cy.request('GET', createRequest('unity', '25.12.1'))
             .then((response) => {
                 expect(response.status).to.eq(200);
@@ -103,7 +103,7 @@ describe('SDK Tooltips Tests', () => {
                 checkTooltipAppears('danger');
             })
     });
-    it('7-Success for latest Android SDK version', function () {
+    it('7-Success for latest Android SDK version', function() {
         cy.request('GET', createRequest('java-native-android', '25.12.1'))
             .then((response) => {
                 expect(response.status).to.eq(200);
@@ -112,7 +112,7 @@ describe('SDK Tooltips Tests', () => {
                 checkTooltipAppears('success');
             })
     });
-    it('8-Success for latest iOS SDK version', function () {
+    it('8-Success for latest iOS SDK version', function() {
         cy.request('GET', createRequest('objc-native-ios', '25.12.1'))
             .then((response) => {
                 expect(response.status).to.eq(200);
@@ -121,10 +121,10 @@ describe('SDK Tooltips Tests', () => {
                 checkTooltipAppears('success');
             })
     });
-    it('9-Multi SDK versions', function () {
+    it('9-Multi SDK versions', function() {
         cy.request('GET', createRequest('a', '26.12.1'))
-        cy.request('GET', createRequest('javascript_native_web', '25.12.1v2'))
-        cy.request('GET', createRequest('java-native-android', '22.12.1'))
+        cy.request('GET', createRequest('javascript_native_web', '25.12.1v2'));
+        cy.request('GET', createRequest('java-native-android', '22.12.1'));
         cy.request('GET', createRequest('objc-native-ios-rc2', '24.12.1'))
             .then((response) => {
                 expect(response.status).to.eq(200);
