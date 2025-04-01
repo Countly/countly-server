@@ -4,7 +4,7 @@
             <div class="cly-vue-content-builder__layout-main__body__left-sidebar__header">
                 <div class="cly-vue-content-builder__layout-main__body__left-sidebar__header__title">
                     <h4>Screens</h4>
-                    <cly-tooltip-icon class="bu-ml-1" tooltip="Screens"></cly-tooltip-icon>
+                    <cly-tooltip-icon class="bu-ml-1" :tooltip="toolTipLeft"></cly-tooltip-icon>
                 </div>
                 <div v-if="collapsible" class="cly-vue-content-builder__layout-main__body__collapse-button" @click="collapseBar('left')">
                     <div class="cly-vue-content-builder__layout-main__body__collapse-button__icon color-warm-gray-80">
