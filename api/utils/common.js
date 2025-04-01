@@ -3,10 +3,20 @@
 * @module api/utils/common
 */
 
-/** @lends module:api/utils/common */
-var common = {},
-    moment = require('moment-timezone'),
-    crypto = require('crypto'),
+/**
+ * typedef {import('../../node_modules/moment/moment').Moment} Moment
+ * ypedef {import('../../node_modules/moment-timezone/index.d.ts').MomentTimezone} MomentTimezone
+*/
+
+/** @lends module:api/utils/common **/
+var common = {};
+/** 
+ * Reference to momentjs
+ * type {Moment|MomentTimezone} moment
+ * @type {any} moment
+*/
+var moment = require('moment-timezone');
+var crypto = require('crypto'),
     logger = require('./log.js'),
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
@@ -267,7 +277,7 @@ common.config = countlyConfig;
 
 /**
 * Reference to momentjs
-* @type {object} 
+* @type {moment}
 */
 common.moment = moment;
 
@@ -535,7 +545,7 @@ common.sha512Hash = function(str, addSalt) {
 /**
 * Create argon2 hash string
 * @param {string} str - string to hash
-* @returns {promise} hash promise
+* @returns {Promise<string>} hash promise
 **/
 common.argon2Hash = function(str) {
     return argon2.hash(str);
@@ -638,9 +648,9 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
    * @typedef timeObject
    * @type {object} 
    * @global
-   * @property {momentjs} now - momentjs instance for request's time in app's timezone
-   * @property {momentjs} nowUTC - momentjs instance for request's time in UTC
-   * @property {momentjs} nowWithoutTimestamp - momentjs instance for current time in app's timezone
+   * @property {moment} now - momentjs instance for request's time in app's timezone
+   * @property {moment} nowUTC - momentjs instance for request's time in UTC
+   * @property {moment} nowWithoutTimestamp - momentjs instance for current time in app's timezone
    * @property {number} timestamp -  request's seconds timestamp
    * @property {number} mstimestamp -  request's miliseconds timestamp
    * @property {string} yearly -  year of request time in app's timezone in YYYY format
@@ -1510,7 +1520,6 @@ common.unblockResponses = function(params) {
 /**
 * Custom API response handler callback
 * @typedef APICallback
-* @callback APICallback
 * @type {function} 
 * @global
 * @param {boolean} error - true if there was problem processing request, and false if request was processed successfully 
