@@ -3440,21 +3440,21 @@ common.dbext = {
     },
 
     /**
-     * Decode string to ObjectID if needed
+     * Decode string to ObjectId if needed
      * 
-     * @param {string|ObjectID|null|undefined} id string or object id, empty string is invalid input
-     * @returns {ObjectID} id
+     * @param {string|ObjectId|null|undefined} id string or object id, empty string is invalid input
+     * @returns {ObjectId} id
      */
     oid: function(id) {
         return !id ? id : id instanceof mongodb.ObjectId ? id : new mongodb.ObjectId(id);
     },
 
     /**
-     * Create ObjectID with given timestamp. Uses current ObjectID random/server parts, meaning the 
+     * Create ObjectId with given timestamp. Uses current ObjectId random/server parts, meaning the 
      * object id returned still has same uniquness guarantees as random ones.
      * 
      * @param {Date|number} date Date object or timestamp in seconds, current date by default
-     * @returns {ObjectID} with given timestamp
+     * @returns {ObjectId} with given timestamp
      */
     oidWithDate: function(date = new Date()) {
         let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16),
@@ -3463,11 +3463,11 @@ common.dbext = {
     },
 
     /**
-     * Create blank ObjectID with given timestamp. Everything except for date part is zeroed.
+     * Create blank ObjectId with given timestamp. Everything except for date part is zeroed.
      * For use in queries like {_id: {$gt: oidBlankWithDate()}}
      * 
      * @param {Date|number} date Date object or timestamp in seconds, current date by default
-     * @returns {ObjectID} with given timestamp and zeroes in the rest of the bytes
+     * @returns {ObjectId} with given timestamp and zeroes in the rest of the bytes
      */
     oidBlankWithDate: function(date = new Date()) {
         let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16);
