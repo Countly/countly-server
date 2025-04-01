@@ -124,6 +124,7 @@ export namespace Utils {
     }
 
     export interface Common {
+        plugins: any;
         escape_html: (string: string, more: boolean) => string;
         encodeCharacters: (str: string) => string;
         decode_html: (string: string) => string;
