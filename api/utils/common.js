@@ -115,9 +115,9 @@ common.decode_html = function(string) {
 /**
 * Escape special characters in the given value, may be nested object
 * @param  {string} key - key of the value
-* @param  {vary} value - value to escape
+* @param  {any} value - value to escape
 * @param  {boolean} more - if false, escapes only tags, if true escapes also quotes and ampersands
-* @returns {vary} escaped value
+* @returns {any} escaped value
 **/
 function escape_html_entities(key, value, more) {
     if (typeof value === 'object' && value && (value.constructor === Object || value.constructor === Array)) {
@@ -402,7 +402,7 @@ common.isNumber = function(n) {
 * dealing with numbers as strings and too long numbers
 * @param {any} value - value to convert to usable type
 * @param {boolean} preventParsingToNumber - do not change value to number (e.g. "1", ["1"]);
-* @returns {varies} converted value
+* @returns {any} converted value
 * @example
 * common.convertToType(1) //outputs 1
 * common.convertToType("2") //outputs 2
@@ -2432,8 +2432,8 @@ common.adjustTimestampByTimezone = function(ts, tz) {
 * Getter/setter for dot notatons:
 * @param {object} obj - object to use
 * @param {string} is - path of properties to get
-* @param {varies} value - value to set
-* @returns {varies} value at provided path
+* @param {any} value - value to set
+* @returns {any} value at provided path
 * @example
 * common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 'string'
 * common.dot({a: {b: {c: 'string'}}}, ['a', 'b', 'c']) === 'string'
@@ -2462,8 +2462,8 @@ common.dot = function(obj, is, value) {
 /**
 * Not deep object and primitive type comparison function
 * 
-* @param  {Any} a object to compare
-* @param  {Any} b object to compare
+* @param  {any} a object to compare
+* @param  {any} b object to compare
 * @param  {boolean} checkFromA true if check should be performed agains keys of a, resulting in true even if b has more keys
 * @return {boolean} true if objects are equal, false if different types or not equal
 */
@@ -2498,7 +2498,7 @@ common.equal = function(a, b, checkFromA) {
 
 /**
 * Returns plain object with key set to value
-* @param {varies} arguments - every odd value will be used as key and every event value as value for odd key
+* @param {any} arguments - every odd value will be used as key and every event value as value for odd key
 * @returns {object} new object with set key/value properties
 */
 common.o = function() {
@@ -2513,7 +2513,7 @@ common.o = function() {
 * Return index of array with objects where property = value
 * @param {array} array - array where to search value
 * @param {string} property - property where to look for value
-* @param {varies} value - value you are searching for
+* @param {any} value - value you are searching for
 * @returns {number} index of the array
 */
 common.indexOf = function(array, property, value) {
@@ -2530,7 +2530,7 @@ common.indexOf = function(array, property, value) {
 * @param {string} module - module name
 * @param {object} options - additional opeitons
 * @param {boolean} options.rethrow - throw exception if there is some other error
-* @param {varies} value - value you are searching for
+* @param {any} value - value you are searching for
 * @returns {number} index of the array
 */
 common.optional = function(module, options) {
@@ -2884,8 +2884,8 @@ common.p = f => {
 /**
 * Revive json encoded data, as for example, regular expressions
 * @param {string} key - key of json object
-* @param {vary} value - value of json object
-* @returns {vary} modified value, if it had revivable data
+* @param {any} value - value of json object
+* @returns {any} modified value, if it had revivable data
 */
 common.reviver = (key, value) => {
     if (value === null) {
