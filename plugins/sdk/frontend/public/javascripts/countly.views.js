@@ -376,9 +376,9 @@
                     return -1;
                 }
                 
-                const major = parseInt(match[1]);
-                const minor = parseInt(match[2]);
-                const patch = parseInt(match[3]);
+                const major = parseInt(match[1], 10);
+                const minor = parseInt(match[2], 10);
+                const patch = parseInt(match[3], 10);
                 
                 return major * 1_000_000 + minor * 1_000 + patch;
             },

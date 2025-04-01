@@ -52,7 +52,7 @@ describe('SDK Tooltips Tests', () => {
         // cy.dropMongoDatabase(true);
     });
 
-    it('1-Should display neutral tooltips with no data', function () {
+    it('1-Should display neutral tooltips with no data', function() {
         goToConfigTab();
         checkTooltipAppears('neutral');
     });
@@ -72,7 +72,7 @@ describe('SDK Tooltips Tests', () => {
                 expect(response.body).to.have.property('result', 'Success');
                 goToConfigTab();
                 checkTooltipAppears('success');
-            })
+            });
     });
     it('4-Mixed for old Android SDK version', function() {
         cy.request('GET', createRequest('java-native-android', '23.12.1'))
@@ -122,7 +122,7 @@ describe('SDK Tooltips Tests', () => {
             })
     });
     it('9-Multi SDK versions', function() {
-        cy.request('GET', createRequest('a', '26.12.1'))
+        cy.request('GET', createRequest('a', '26.12.1'));
         cy.request('GET', createRequest('javascript_native_web', '25.12.1v2'));
         cy.request('GET', createRequest('java-native-android', '22.12.1'));
         cy.request('GET', createRequest('objc-native-ios-rc2', '24.12.1'))
