@@ -6,7 +6,6 @@
 /**
  * @typedef {import('./index').Utils.Params} Params
  * @typedef {import('./index').Utils.TimeObject} TimeObject
- * @typedef {import('./index').Utils.Common} Common
 */
 
 const Promise = require('bluebird');

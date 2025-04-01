@@ -8,13 +8,9 @@
  * typedef {import('../../node_modules/moment-timezone/index.d.ts').MomentTimezone} MomentTimezone
  * @typedef {import('./index').Utils.Params} Params
  * @typedef {import('./index').Utils.TimeObject} TimeObject
- * @typedef {import('./index').Utils.Common} Common
 */
 
 /** @lends module:api/utils/common **/
-/**
- * @type {Common}
- */
 var common = {};
 /** 
  * Reference to momentjs
