@@ -3493,21 +3493,21 @@ class DataTable {
 
     /**
      * Constructor
-     * @param {Object} queryString This object should contain the datatable arguments like iDisplayStart,
+     * @param {object} queryString This object should contain the datatable arguments like iDisplayStart,
      * iDisplayEnd, etc. These are added to request by DataTables automatically. If you have a different 
      * use-case, please make sure that the object has necessary fields.
      * @param {('full'|'rows')} queryString.outputFormat The default output of getProcessedResult is a 
      * DataTable compatible object ("full"). However, some consumers of the API may require simple, array-like 
      * results too ("rows"). In order to allow consumers to specify expected output, the field can be used.
-     * @param {Object} options Wraps options
+     * @param {object} options Wraps options
      * @param {Array} options.columnOrder If there are sortable columns in the table, then you need to 
      * specify a column list in order to make it work (e.g. ["name", "status"]). 
-     * @param {Object} options.defaultSorting When there is no sorting provided in query string, sorting 
+     * @param {object} options.defaultSorting When there is no sorting provided in query string, sorting 
      * falls back to this object, if you provide any (e.g. {"name": "asc"}). 
      * @param {Array} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
      * @param {('regex'|'hard')} options.searchStrategy Specify searching method. If "regex", then a regex
      * search is performed on searchableFields. Other values will be considered as hard match.
-     * @param {Object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
+     * @param {object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
      * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat. 
      * @param {string} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
      * is the default identifier of MongoDB docs. Please make sure that this key is in the output of initial pipeline.
@@ -3590,7 +3590,7 @@ class DataTable {
 
     /**
      * Returns the search field for. Only for internal use.
-     * @returns {Object|string} Regex object or search term itself
+     * @returns {object|string} Regex object or search term itself
      */
     _getSearchField() {
         if (this.searchStrategy === "regex") {
@@ -3603,7 +3603,7 @@ class DataTable {
      * Creates an aggregation pipeline based on the query string and additional stages/facets
      * if provided any. Data flow between stages are not checked, so please do check manually.
      * 
-     * @param {Object} options Wraps options
+     * @param {object} options Wraps options
      * @param {Array} options.initialPipeline If you need to select a subset, to add new fields or 
      * anything else involving aggregation stages, you can pass an array of stages using options.initialPipeline.
      * Initial pipeline is basically used for counting the total number of documents without pagination and search.
@@ -3616,13 +3616,13 @@ class DataTable {
      * 
      * # of output rows = filtered number of docs.
      * 
-     * @param {Object} options.customFacets You can add facets to your results using option.customFacets. 
+     * @param {object} options.customFacets You can add facets to your results using option.customFacets. 
      * Custom facets will use initial pipeline's output as its input. If the documents you're 
      * looking for are included by initial pipeline's output, you can use this to avoid extra db calls.
      * You can obtain outputs of your custom facets via getProcessedResult. Please note that custom facets will only be 
      * available when the output format is "full".
      * 
-     * @returns {Object} Pipeline object
+     * @returns {object} Pipeline object
      */
     getAggregationPipeline({
         initialPipeline = [],
@@ -3677,11 +3677,11 @@ class DataTable {
 
     /**
      * Processes the aggregation result and returns a ready-to-use response.
-     * @param {Object} queryResult Aggregation result returned by the MongoDB.
+     * @param {object} queryResult Aggregation result returned by the MongoDB.
      * @param {Function} processFn A callback function that has a single argument 'rows'.
      * As the name implies, it is an array of returned rows. The function can be used as
      * a final stage to do modifications to fetched items before completing the response. 
-     * @returns {Object|Array} Returns the final response
+     * @returns {object|Array} Returns the final response
      */
     getProcessedResult(queryResult, processFn) {
         var fullTotal = 0,
