@@ -3442,7 +3442,7 @@ common.dbext = {
     /**
      * Decode string to ObjectID if needed
      * 
-     * @param {String|ObjectID|null|undefined} id string or object id, empty string is invalid input
+     * @param {string|ObjectID|null|undefined} id string or object id, empty string is invalid input
      * @returns {ObjectID} id
      */
     oid: function(id) {
@@ -3509,7 +3509,7 @@ class DataTable {
      * search is performed on searchableFields. Other values will be considered as hard match.
      * @param {Object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
      * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat. 
-     * @param {String} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
+     * @param {string} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
      * is the default identifier of MongoDB docs. Please make sure that this key is in the output of initial pipeline.
      * @param {boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
      * injected to the sorting expression, in order to mitigate possible duplicate records in pages. This is
@@ -3590,7 +3590,7 @@ class DataTable {
 
     /**
      * Returns the search field for. Only for internal use.
-     * @returns {Object|String} Regex object or search term itself
+     * @returns {Object|string} Regex object or search term itself
      */
     _getSearchField() {
         if (this.searchStrategy === "regex") {
