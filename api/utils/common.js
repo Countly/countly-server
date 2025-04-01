@@ -27,7 +27,7 @@ common.plugins = plugins;
 /**
 * Escape special characters in the given string of html.
 * @param  {string} string - The string to escape for inserting into HTML
-* @param  {bool} more - if false, escapes only tags, if true escapes also quotes and ampersands
+* @param  {boolean} more - if false, escapes only tags, if true escapes also quotes and ampersands
 * @returns {string} escaped string
 **/
 common.escape_html = function(string, more) {
@@ -116,7 +116,7 @@ common.decode_html = function(string) {
 * Escape special characters in the given value, may be nested object
 * @param  {string} key - key of the value
 * @param  {vary} value - value to escape
-* @param  {bool} more - if false, escapes only tags, if true escapes also quotes and ampersands
+* @param  {boolean} more - if false, escapes only tags, if true escapes also quotes and ampersands
 * @returns {vary} escaped value
 **/
 function escape_html_entities(key, value, more) {
@@ -1513,7 +1513,7 @@ common.unblockResponses = function(params) {
 * @callback APICallback
 * @type {function} 
 * @global
-* @param {bool} error - true if there was problem processing request, and false if request was processed successfully 
+* @param {boolean} error - true if there was problem processing request, and false if request was processed successfully 
 * @param {string} responseMessage - what API returns
 * @param {object} headers - what API would have returned to HTTP request
 * @param {number} returnCode - HTTP code, what API would have returned to HTTP request
@@ -2464,8 +2464,8 @@ common.dot = function(obj, is, value) {
 * 
 * @param  {Any} a object to compare
 * @param  {Any} b object to compare
-* @param  {Boolean} checkFromA true if check should be performed agains keys of a, resulting in true even if b has more keys
-* @return {Boolean} true if objects are equal, false if different types or not equal
+* @param  {boolean} checkFromA true if check should be performed agains keys of a, resulting in true even if b has more keys
+* @return {boolean} true if objects are equal, false if different types or not equal
 */
 common.equal = function(a, b, checkFromA) {
     if (a === b) {
@@ -3511,7 +3511,7 @@ class DataTable {
      * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat. 
      * @param {String} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
      * is the default identifier of MongoDB docs. Please make sure that this key is in the output of initial pipeline.
-     * @param {Boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
+     * @param {boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
      * injected to the sorting expression, in order to mitigate possible duplicate records in pages. This is
      * a protection for cases when the sorting is done based on non-unique fields. Injection is enabled by default.
      * If you want to disable this feature, pass true.
