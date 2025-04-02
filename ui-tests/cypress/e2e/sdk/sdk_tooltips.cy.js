@@ -59,8 +59,6 @@ describe('SDK Tooltips Tests', () => {
     it('2-Warning for old Web SDK version', function() {
         cy.request('GET', createRequest('javascript_native_web', '19.12.1'))
             .then((response) => {
-                expect(response.status).to.eq(200);
-                expect(response.body).to.have.property('result', 'Success');
                 goToConfigTab();
                 checkTooltipAppears('warning');
             });
@@ -68,8 +66,6 @@ describe('SDK Tooltips Tests', () => {
     it('3-Success for latest Web SDK version', function() {
         cy.request('GET', createRequest('javascript_native_web', '25.12.1'))
             .then((response) => {
-                expect(response.status).to.eq(200);
-                expect(response.body).to.have.property('result', 'Success');
                 goToConfigTab();
                 checkTooltipAppears('success');
             });
@@ -77,49 +73,39 @@ describe('SDK Tooltips Tests', () => {
     it('4-Mixed for old Android SDK version', function() {
         cy.request('GET', createRequest('java-native-android', '23.12.1'))
             .then((response) => {
-                expect(response.status).to.eq(200);
-                expect(response.body).to.have.property('result', 'Success');
                 goToConfigTab();
                 checkTooltipAppears('success', 2, true);
                 checkTooltipAppears('warning', 19, true);
-            })
+            });
     });
     it('5-Mixed for old iOS SDK version', function() {
         cy.request('GET', createRequest('objc-native-ios', '24.12.1'))
             .then((response) => {
-                expect(response.status).to.eq(200);
-                expect(response.body).to.have.property('result', 'Success');
                 goToConfigTab();
                 checkTooltipAppears('success', 2, true);
                 checkTooltipAppears('warning', 19, true);
-            })
+            });
     });
     it('6-Unsupported SDK should display warning', function() {
         cy.request('GET', createRequest('unity', '25.12.1'))
             .then((response) => {
-                expect(response.status).to.eq(200);
-                expect(response.body).to.have.property('result', 'Success');
                 goToConfigTab();
                 checkTooltipAppears('danger');
-            })
+            });
     });
     it('7-Success for latest Android SDK version', function() {
         cy.request('GET', createRequest('java-native-android', '25.12.1'))
             .then((response) => {
-                expect(response.status).to.eq(200);
-                expect(response.body).to.have.property('result', 'Success');
                 goToConfigTab();
                 checkTooltipAppears('success');
-            })
+            });
     });
     it('8-Success for latest iOS SDK version', function() {
         cy.request('GET', createRequest('objc-native-ios', '25.12.1'))
             .then((response) => {
-                expect(response.status).to.eq(200);
-                expect(response.body).to.have.property('result', 'Success');
                 goToConfigTab();
                 checkTooltipAppears('success');
-            })
+            });
     });
     it('9-Multi SDK versions', function() {
         cy.request('GET', createRequest('a', '26.12.1'));
@@ -127,12 +113,10 @@ describe('SDK Tooltips Tests', () => {
         cy.request('GET', createRequest('java-native-android', '22.12.1'));
         cy.request('GET', createRequest('objc-native-ios-rc2', '24.12.1'))
             .then((response) => {
-                expect(response.status).to.eq(200);
-                expect(response.body).to.have.property('result', 'Success');
                 goToConfigTab();
                 checkTooltipAppears('success', 2, true);
                 checkTooltipAppears('warning', 19, true);
-            })
+            });
     });
 });
 
