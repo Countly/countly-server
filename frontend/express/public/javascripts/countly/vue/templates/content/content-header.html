@@ -25,7 +25,7 @@
             <div
                 v-tooltip="inputTooltip"
                 class="cly-vue-content-builder-header__input-container"
-                data-test-id="content-header-input-container"       
+                data-test-id="content-header-input-container"
                 @click="onInputContainerClick"
             >
                 <el-input
@@ -42,7 +42,8 @@
             <div class="cly-vue-content-builder-header__info-meta">
                 <div
                     v-if="version"
-                    class="cly-vue-content-builder-header__version"
+                    @click="$emit('version-click')"
+                    class="cly-vue-content-builder-header__version cursor-pointer"
                 >
                     {{ version }}
                 </div>
@@ -86,6 +87,7 @@
             size="small"
             @command="onCommand"
         >
+
             <el-dropdown-item
                 v-for="(option, idx) in options"
                 :key="`cly-vue-content-builder-header-option-${idx}`"
