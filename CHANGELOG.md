@@ -6,6 +6,13 @@ Features:
 
 Enterprise Features:
 - [journey_engine] Editing/Deleting/Duplication of blocks and version management
+- [cohorts] [funnels] [ai-assistants] Add cohorts and funnels assistant
+
+## Version 25.03.3
+Fixes:
+- [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
+- [content_builder] Fixed content block layout type select visibility
+- [user-management] Fixed issue with uploading member icon
 
 ## Version 25.03.2
 Fixes:
@@ -21,7 +28,7 @@ Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
 - [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
 
-Enterprise fixes:
+Enterprise Fixes:
 - [ab-testing] Fixed bug with variant user filtering
 - [license] Fixed issue with handling invalid date periods
 
