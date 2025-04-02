@@ -380,7 +380,7 @@
                 const minor = parseInt(match[2], 10);
                 const patch = parseInt(match[3], 10);
                 
-                return major * 1_000_000 + minor * 1_000 + patch;
+                return major * 1000000 + minor * 1000 + patch;
             },
             compareVersions: function(context, a, b, text) {
                 if (!a) {
