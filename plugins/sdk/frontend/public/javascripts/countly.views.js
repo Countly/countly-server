@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlySDK, CV, countlyCommon*/
+/*global app, countlyVue, countlySDK, CV, countlyCommon, CountlyHelpers*/
 (function() {
     var SC_VER = 1; // check/update sdk/api/api.js for this
     var v0_android = "22.09.4";
