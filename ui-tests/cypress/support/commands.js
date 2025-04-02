@@ -322,8 +322,8 @@ Cypress.Commands.add('verifyElement', ({
     }
 });
 
-Cypress.Commands.add('dropMongoDatabase', () => {
-    cy.exec("mongosh mongodb/countly --eval 'db.dropDatabase()'");
+Cypress.Commands.add('dropMongoDatabase', ({local}) => {
+    cy.exec(`mongosh ${local ? 'mongodb':'localhost'}/countly --eval 'db.dropDatabase()'`);
 });
 
 Cypress.Commands.add('getElement', (selector, parent = null) => {

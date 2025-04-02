@@ -1,6 +1,6 @@
 <div v-bind:class="[componentId]" class="configurations">
     <cly-header
-        title="SDK Configuration (Experimental)"
+        title="SDK Configuration"
         :tooltip="{description}">
         <template v-slot:header-right>
             <div class="bu-level-item">
@@ -30,7 +30,14 @@
                                     v-for="key in group.list" :key="key"
                                     class="bu-columns bu-is-vcentered bu-p-5 config-section">
                                     <div class="bu-column bu-is-7">
-                                        <p class="bu-has-text-weight-medium" :data-test-id="getData[key].name.toLowerCase().replaceAll(' ', '-') + '-title-label'">{{getData[key].name}}</p>
+                                        <p class="bu-has-text-weight-medium" :data-test-id="getData[key].name.toLowerCase().replaceAll(' ', '-') + '-title-label'">
+                                            {{getData[key].name}}
+                                            <cly-tooltip-icon 
+                                                :tooltip="getData[key].tooltipMessage" 
+                                                placement="right" 
+                                                :tooltip-class="getData[key].tooltipClass">
+                                            </cly-tooltip-icon>
+                                        </p>
                                         <p class="bu-has-text-weight-normal bu-mt-2" :data-test-id="getData[key].name.toLowerCase().replaceAll(' ', '-') + '-description-label'" v-html="getData[key].description" v-if="getData[key].description"></p>
                                     </div>
                                     <div class="bu-column bu-is-2"></div>
