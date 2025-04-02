@@ -6,6 +6,7 @@
   "scripts": {
     "cy:run:dashboard": "node ./cypress/fixtures/generators/generateFixtures.js && cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/dashboard/**/*.cy.js --headless --no-runner-ui --browser chrome",
     "cy:run:onboarding": "cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/onboarding/**/*.cy.js --headless --no-runner-ui --browser chrome"
+    "cy:run:sdk": "cypress run --record --key 00000000-0000-0000-0000-000000000000 --spec **/sdk/**/*.cy.js --headless --no-runner-ui --browser chrome"
   },
   "license": "ISC",
   "dependencies": {
