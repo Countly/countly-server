@@ -1,7 +1,7 @@
 /**
- * This module defines default model to handle users collection data
- * @module "api/lib/countly.common"
- */
+* This module defines default model to handle users collection data
+* @module "api/lib/countly.common"
+*/
 
 /**
  * @typedef {import('moment-timezone')} MomentTimezone
