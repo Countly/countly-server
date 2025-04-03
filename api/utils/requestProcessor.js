@@ -187,7 +187,7 @@ const processRequest = (params) => {
      * @property {Object} [member.permission.d[app_id].allowed] - Object containing allowed delete permissions for the app
      * @property {Object} member.eventList - Object containing event collections with replaced app names
      * @property {Object} member.viewList - Object containing view collections with replaced app names
-     * @property {timeObject} time - Time object for the request
+     * @property {TimeObject} time - Time object for the request
      * @property {string} request_hash - Hash of the request data
      * @property {string} [previous_session] - ID of the user's previous session
      * @property {number} [previous_session_start] - Start timestamp of the user's previous session

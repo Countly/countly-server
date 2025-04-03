@@ -1,5 +1,6 @@
 import { ServerResponse, IncomingMessage } from "http";
 import { ObjectId } from "mongodb";
+import { TimeObject } from "./common";
 
 /** Main request processing object containing all information shared through all the parts of the same request */
 export interface Params {
@@ -169,30 +170,7 @@ export interface Params {
         viewList: Record<string, any>;
     };
     /** Time object for the request */
-    time: {
-        /** Request timestamp in milliseconds */
-        mstimestamp: number;
-        /** Request timestamp in seconds */
-        timestamp: number;
-        /** Year in YYYY format */
-        yearly: string;
-        /** Month in YYYY.M format */
-        monthly: string;
-        /** Day in YYYY.M.D format */
-        daily: string;
-        /** Hour in YYYY.M.D.H format */
-        hourly: string;
-        /** Week of the year */
-        weekly: number;
-        /** ISO week of the year */
-        weeklyISO: number;
-        /** Month in M format */
-        month: string;
-        /** Day in D format */
-        day: string;
-        /** Hour in H format */
-        hour: string;
-    };
+    time: TimeObject;
     /** Hash of the request data */
     request_hash: string;
     /** ID of the user's previous session */
