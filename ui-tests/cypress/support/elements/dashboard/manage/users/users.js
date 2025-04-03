@@ -4,6 +4,29 @@ export const usersPageElements = {
     FILTER_USER_TYPE_SELECT: 'cly-input-dropdown-trigger-pseudo-input-label',
 };
 
+const usersCreationPageElements = (appName) => ({
+    FULL_NAME_LABEL: 'full-name-label',
+    FULL_NAME_INPUT: 'full-name-input',
+    USER_NAME_LABEL: 'user-name-label',
+    USER_NAME_INPUT: 'user-name-input',
+    PASSWORD_LABEL: 'password-label',
+    PASSWORD_INPUT: 'password-input',
+    GENERATE_PASSWORD_BUTTON: 'generate-password-button',
+    EMAIL_LABEL: 'email-label',
+    EMAIL_INPUT: 'email-input',
+    GRANT_ADMIN_ACCESS_TO_APP_DROPDOWN: 'admin-access-to-app-dropdown',
+    GRANT_USER_ACCESS_TO_APP_DROPDOWN: 'user-access-to-app-dropdown',
+    ADMIN_ACCESS_TO_APP_DROPDOWN: 'admin-access-to-app-dropdown-checklistbox-' + appName + '-el-checkbox-label',
+    USER_ACCESS_TO_APP_DROPDOWN: 'user-access-to-app-dropdown-checklistbox-' + appName + '-el-checkbox-label',
+    DRAWER_CREATE_BUTTON: 'user-drawer-save-button',
+    DRAWER_CANCEL_BUTTON: 'user-drawer-cancel-button',
+    GLOBAL_ADMINISTRATOR_CHECKBOX_LABEL: 'global-administrator-el-checkbox-label',
+    GLOBAL_ADMINISTRATOR_CHECKBOX_INPUT: 'global-administrator-el-checkbox-input',
+    NOTIFICATION_USER_SAVED_MESSAGE: 'cly-notification-text',
+    TABLE_SEARCH_INPUT: 'datatable-users-datatable-search-input',
+    UPLOAD_IMAGE_DROPZONE: 'user-profile-picture-dropzone'
+});
+
 const usersDataTableElements = (index = 0) => ({
     EDIT_COLUMNS_BUTTON: 'datatable-users-edit-columns-button',
     EXPORT_AS_BUTTON: 'datatable-users-export-as-button',
@@ -40,5 +63,6 @@ const usersDataTableElements = (index = 0) => ({
 
 module.exports = {
     usersPageElements,
-    usersDataTableElements
+    usersDataTableElements,
+    usersCreationPageElements
 };

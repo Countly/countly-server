@@ -724,7 +724,8 @@ const verifyPageElements = () => {
     });
 
     cy.verifyElement({
-        element: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.API_ADDITIONAL_HEADERS }).SELECTED_SUBFEATURE_TEXTAREA
+        element: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.API_ADDITIONAL_HEADERS }).SELECTED_SUBFEATURE_TEXTAREA,
+        value: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
     });
 
     cy.verifyElement({
@@ -739,6 +740,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         element: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.DASHBOARD_ADDITIONAL_HEADERS }).SELECTED_SUBFEATURE_TEXTAREA,
+        value: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff"
     });
 
     cy.verifyElement({

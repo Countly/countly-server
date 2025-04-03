@@ -1,3 +1,19 @@
+## Version 25.03.x
+
+Features:
+- Add ability to allow multiple CORS per app for web apps
+
+Dependencies:
+- Bump body-parser from 1.20.3 to 2.2.0
+- Bump moment-timezone from 0.5.47 to 0.5.48
+- Bump supertest from 7.0.0 to 7.1.0
+
+## Version 25.03.3
+Fixes:
+- [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
+- [content_builder] Fixed content block layout type select visibility
+- [user-management] Fixed issue with uploading member icon
+
 ## Version 25.03.2
 Fixes:
 - [user-management] Prevent global admin from self-revoke and self-delete
@@ -4635,4 +4651,3 @@ This version provides several features and bugfixes to both server and SDKs. The
     A user of an application can only view analytics for that application 
     and cannot edit its settings.
   * Added csfr protection to all methods provided through app.js.
-
