@@ -106,7 +106,7 @@ const processRequest = (params) => {
     const urlParts = url.parse(params.req.url, true),
         queryString = urlParts.query,
         paths = urlParts.pathname.split("/");
-     /**
+    /**
      * Main request processing object containing all information shared through all the parts of the same request
      * typedef params
      * type {object}
