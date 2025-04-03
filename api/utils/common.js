@@ -6,9 +6,12 @@
 /**
  * typedef {import('../../node_modules/moment/moment').Moment} Moment
  * typedef {import('../../node_modules/moment-timezone/index.d.ts').MomentTimezone} MomentTimezone
- * @typedef {import('./index').Utils.TimeObject} TimeObject
- * @typedef {import('./requestProcessor').Params} Params
-*/
+ */
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ * @typedef {import('../../types/common').TimeObject} TimeObject
+ * @typedef {import('mongodb').ObjectId} ObjectId
+ */
 
 /** @lends module:api/utils/common **/
 

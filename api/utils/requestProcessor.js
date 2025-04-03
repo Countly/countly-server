@@ -4,9 +4,9 @@
 */
 
 /**
- * @typedef {import('./index').Utils.Params} Params
- * @typedef {import('./index').Utils.TimeObject} TimeObject
-*/
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ * @typedef {import('../../types/common').TimeObject} TimeObject
+ */
 
 const Promise = require('bluebird');
 const url = require('url');
@@ -108,9 +108,9 @@ const processRequest = (params) => {
         paths = urlParts.pathname.split("/");
      /**
      * Main request processing object containing all information shared through all the parts of the same request
-     * @typedef params
-     * @type {object}
-     * @global
+     * typedef params
+     * type {object}
+     * global
      * @property {string} href - full URL href
      * @property {http.ServerResponse} res - The HTTP response object
      * @property {http.IncomingMessage} req - The HTTP request object
