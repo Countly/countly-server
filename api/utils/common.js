@@ -4,13 +4,10 @@
 */
 
 /**
- * typedef {import('../../node_modules/moment/moment').Moment} Moment
- * typedef {import('../../node_modules/moment-timezone/index.d.ts').MomentTimezone} MomentTimezone
- */
-/**
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
  * @typedef {import('mongodb').ObjectId} ObjectId
+ * @typedef {import('moment-timezone')} MomentTimezone
  */
 
 /** @lends module:api/utils/common **/
@@ -18,8 +15,7 @@
 var common = {};
 /** 
  * Reference to momentjs
- * type {Moment|MomentTimezone} moment
- * @type {any} moment
+ * @type {MomentTimezone} moment
 */
 var moment = require('moment-timezone');
 var crypto = require('crypto'),
@@ -282,8 +278,8 @@ common.dbEventMap = {
 common.config = countlyConfig;
 
 /**
-* Reference to momentjs
-* @type {moment}
+* Reference to moment-timezone which combines moment.js with timezone support
+* @type {MomentTimezone}
 */
 common.moment = moment;
 
