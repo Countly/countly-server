@@ -4,16 +4,6 @@ export type PlatformKeys = "a"|"i"|"h"; // android|ios|huawei
 export type PlatformEnvKeys = "p"|"d"|"a"; // production|debug|adhoc
 export type PlatformCombinedKeys = "ap"|"hp"|"ip"|"id"|"ia";
 
-export type MessageStatus =
-    'created'   | // [Created] Created, haven't beeing scheduled yet or Stopped for automated/tx (sending is forbidden)
-    'inactive'  | // [Inactive] Second Created (waiting for approval)
-    'draft'     | // [Inactive] Cannot be sent, can only be duplicated
-    'scheduled' | // [Streamable] Will be sent when appropriate
-    'sending'   | // [Streaming, Paused] Sending right now
-    'sent'      | // [Done] Sent, no further actions
-    'stopped'   | // [Done] Stopped sending (one time from UI)
-    'failed';     // [Done] Removed from queue, no further actions
-
 export interface MessageAudienceFilter {
     // TODO: user: { type: 'JSON', required: false, nonempty: true, custom: Filter.filterQueryValidator },
     user?: string;
@@ -34,7 +24,7 @@ export interface BaseTrigger {
     start: Date;
 }
 
-export interface AutoTrigger extends BaseTrigger {
+export interface BaseAutoTrigger extends BaseTrigger {
     kind: "event"|"api"|"cohort";
     end?: Date;
     actuals?: boolean;
@@ -58,21 +48,23 @@ export interface PlainTrigger extends BaseTrigger {
     delayed?: boolean;
 }
 
-export interface EventTrigger extends AutoTrigger {
+export interface EventTrigger extends BaseAutoTrigger {
     kind: "event";
     events: string[];
 }
 
-export interface CohortTrigger extends AutoTrigger {
+export interface CohortTrigger extends BaseAutoTrigger {
     kind: "cohort";
     cohorts: string[];
     entry?: boolean;
     cancels?: boolean;
 }
 
-export interface APITrigger extends AutoTrigger {
+export interface APITrigger extends BaseAutoTrigger {
     kind: "api";
 }
+
+export type AutoTrigger = EventTrigger|CohortTrigger|APITrigger;
 
 export interface RecurringTrigger extends ReschedulingTrigger {
     kind: "rec";
@@ -137,7 +129,7 @@ export interface MessageRun {
 }
 
 // TODO: Update this accordingly to the new results
-export interface Result {
+export interface BaseResult {
     total: number;
     // processed: number;
     sent: number;
@@ -148,9 +140,13 @@ export interface Result {
     lastErrors?: any; // this is PushError[] most of the time
     lastRuns?: MessageRun[];
     next?: Date;
-    subs: { [key: string]: Result };
+    // subs: { [key: string]: BaseResult };
     errors: { [key: string]: number };
 }
+// To avoid circular referencing:
+export type SubSubResult = BaseResult;
+export type SubResult = BaseResult & { subs: { [key: string]: SubSubResult } };
+export type Result = BaseResult & { subs: { [key: string]: SubResult } };
 
 export interface Info {
     title?: string;
@@ -189,7 +185,14 @@ export interface Message {
     saveResults: boolean;
     platforms: PlatformKeys[];
     state: number;
-    status: MessageStatus;
+    status: 'created' | // [Created] Created, haven't beeing scheduled yet or Stopped for automated/tx (sending is forbidden)
+        'inactive'    | // [Inactive] Second Created (waiting for approval)
+        'draft'       | // [Inactive] Cannot be sent, can only be duplicated
+        'scheduled'   | // [Streamable] Will be sent when appropriate
+        'sending'     | // [Streaming, Paused] Sending right now
+        'sent'        | // [Done] Sent, no further actions
+        'stopped'     | // [Done] Stopped sending (one time from UI)
+        'failed';       // [Done] Removed from queue, no further actions
     filter?: MessageAudienceFilter;
     triggers: MessageTrigger[];
     contents: Content[];

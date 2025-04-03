@@ -63,6 +63,15 @@ describe("IOS sender", () => {
         const result = await send(pushEvent);
         console.log(result);
     });
+    it("should send multiple messages", async () => {
+        const result = await Promise.all([
+            send(pushEvent),
+            send(pushEvent),
+            send(pushEvent),
+            send(pushEvent),
+        ]);
+        console.log(result);
+    }).timeout(20000);
     it("should send the message successfully through a proxy server", async () => {
         // console.time("sequential");
         // for (let i = 0; i < 50; i++) {

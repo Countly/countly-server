@@ -9,7 +9,6 @@
  * @typedef {import('./types/utils.ts').LogObject} LogObject
  * @typedef {import('./types/message.js').PlatformEnvKeys} PlatformEnvKeys
  * @typedef {import('./types/message.js').PlatformKeys} PlatformKeys
- * @typedef {import('./types/message.js').AutoTrigger} AutoTrigger
  */
 
 const { updateScheduleResults, buildResultObject, increaseResultStat } = require("../../api/new/lib/result.js");

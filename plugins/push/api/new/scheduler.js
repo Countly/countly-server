@@ -1,32 +1,48 @@
 /**
  * @typedef {import('./types/message.ts').Message} Message
+ * @typedef {import('./types/message.ts').MessageTrigger} MessageTrigger
  * @typedef {import('./types/message.ts').RecurringTrigger} RecurringTrigger
  * @typedef {import('./types/message.ts').MultiTrigger} MultiTrigger
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
+ * @typedef {import('./types/schedule.ts').AudienceFilters} AudienceFilters
  * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
- * @typedef {import("mongodb").Db} Db
+ * @typedef {import('./types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
+ * @typedef {import('./types/queue.ts').CohortTriggerEvent} CohortTriggerEvent
+ * @typedef {import('./types/queue.ts').EventTriggerEvent} EventTriggerEvent
+ * @typedef {import("mongodb").Db} MongoDb
+ * @typedef {import("mongodb").Collection<Message>} MessageCollection
+ * @typedef {import("mongodb").Filter<MessageTrigger>} MessageTriggerFilter
  * @typedef {import('./types/utils.ts').LogObject} LogObject
+ * @typedef {{ [eventName: string]: Set<string> }} AutoTriggerEventMap
+ * @typedef {{ [cohortId: string]: { enter: Set<string>, exit: Set<string> } }} AutoTriggerCohortMap
+ * @typedef {{ [appId: string]: { event: AutoTriggerEventMap; cohort: AutoTriggerCohortMap; } }} AutoTriggerAppMap
  */
 
 const { ObjectId } = require('mongodb');
-const queue = require("./lib/kafka.js"); // do not import by destructuring; it's being mocked in the tests
+const queue = require("./lib/kafka.js");
 const moment = require("moment");
 const allTZOffsets = require("./constants/all-tz-offsets.json");
 const { buildResultObject } = require('./lib/result.js');
-const schedulableTriggers = ["plain", "rec", "multi"];
 /** @type {LogObject} */
 const log = require('../../../../api/utils/common').log('push:scheduler');
+
+/** @type {Message["status"][]} */
+const INACTIVE_MESSAGE_STATUSES = ["inactive", "draft", "sent", "stopped", "failed"];
+/** @type {MessageTrigger["kind"][]} */
+const SCHEDULE_BY_DATE_TRIGGERS = ["plain", "rec", "multi"];
+// /** @type {MessageTrigger["kind"][]} */
+// const AUTO_TRIGGERS = ["cohort", "event", "api"];
 
 /**
  * Schedules the provided message to be sent on the next calculated date,
  * determined by the message's triggering properties
- * @param   {Db}                 db      - mongodb database object
- * @param   {Message}            message - message document from messages collection
+ * @param   {MongoDb} db      - mongodb database object
+ * @param   {Message} message - message document from messages collection
  * @returns {Promise<Schedule|undefined>} the created Schedule document from message_schedules collection
  */
-async function scheduleMessage(db, message) {
+async function scheduleMessageByDate(db, message) {
     const trigger = message.triggers
-        .find(trigger => schedulableTriggers.includes(trigger.kind));
+        .find(trigger => SCHEDULE_BY_DATE_TRIGGERS.includes(trigger.kind));
     if (!trigger) {
         throw new Error(
             "Cannot find a schedulable trigger for the message " + message._id
@@ -47,16 +63,10 @@ async function scheduleMessage(db, message) {
         }
         break;
     case "rec":
-        scheduleTo = findNextMatchForRecurring(
-            /** @type {RecurringTrigger} */(trigger),
-            startFrom
-        );
+        scheduleTo = findNextMatchForRecurring(trigger, startFrom);
         break;
     case "multi":
-        scheduleTo = findNextMatchForMulti(
-            /** @type {MultiTrigger} */(trigger),
-            startFrom
-        );
+        scheduleTo = findNextMatchForMulti(trigger, startFrom);
         break;
     }
 
@@ -75,14 +85,92 @@ async function scheduleMessage(db, message) {
         "sctz" in trigger ? trigger.sctz : undefined
     );
 }
+
+/**
+ * @param {MongoDb} db
+ * @param {AutoTriggerEvent[]} autoTriggerEvents
+ * @returns {Promise<Schedule[]>}
+ */
+async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
+    const appMap = mergeAutoTriggerEvents(autoTriggerEvents);
+
+    /** @type {{appId: ObjectId; triggerFilter: MessageTriggerFilter; uids: string[];}[]} */
+    const messageFilters = [];
+    for (const appId in appMap) {
+        const map = appMap[appId];
+        // Events:
+        for (const eventName in map.event) {
+            messageFilters.push({
+                appId: new ObjectId(appId),
+                triggerFilter: {
+                    kind: "event",
+                    events: eventName,
+                },
+                uids: Array.from(map.event[eventName])
+            });
+        }
+
+        for (const cohortId in map.cohort) {
+            for (const _direction in map.cohort[cohortId]) {
+                const direction = /** @type {CohortTriggerEvent["direction"]} */(_direction);
+                messageFilters.push({
+                    appId: new ObjectId(appId),
+                    triggerFilter: {
+                        kind: "cohort",
+                        cohorts: cohortId,
+                        entry: direction === "enter",
+                    },
+                    uids: Array.from(map.cohort[cohortId][direction])
+                });
+            }
+        }
+    }
+
+    /** @type {MessageCollection} */
+    const col = db.collection("messages");
+    const now = Date.now();
+    const promises = messageFilters.map(async ({ appId, triggerFilter, uids }) => {
+        let messages = await col.find({
+            app: appId,
+            status: { $nin: INACTIVE_MESSAGE_STATUSES },
+            triggers: {
+                $elemMatch: {
+                    ...triggerFilter,
+                    start: { $lt: now },
+                    $or: [
+                        { end: { $exists: false } },
+                        { end: { $gt: now } }
+                    ]
+                }
+            }
+        }).toArray();
+        return Promise.allSettled(messages.map(message => createSchedule(
+            db, appId, message._id, new Date, false, undefined, {uids}
+        )));
+    });
+
+    const results = (await Promise.all(promises)).flat();
+
+    for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        if (result.status === "rejected") {
+            log.e("Failed to schedule auto triggered message", result.reason);
+        }
+    }
+
+    return results.filter(result => result.status === "fulfilled")
+        .map(result => result.value);
+}
+
 /**
  *
- * @param {Db}       db                - mongodb database object
- * @param {ObjectId} appId             - ObjectId of the app
- * @param {ObjectId} messageId         - ObjectId of the message
- * @param {Date}     scheduledTo       - Date to schedule this message to. UTC user's schedule date when timezone aware
- * @param {Boolean}  timezoneAware     - set true if this is going to be scheduled for each timezone
- * @param {Number=}  schedulerTimezone - timezone of the scheduler
+ * @param {MongoDb}          db                - mongodb database object
+ * @param {ObjectId}         appId             - ObjectId of the app
+ * @param {ObjectId}         messageId         - ObjectId of the message
+ * @param {Date}             scheduledTo       - Date to schedule this message to. UTC user's schedule date when timezone aware
+ * @param {Boolean}          timezoneAware     - set true if this is going to be scheduled for each timezone
+ * @param {Number=}          schedulerTimezone - timezone of the scheduler
+ * @param {AudienceFilters=} audienceFilters    - user ids from app_users{appId} collection
  * @returns {Promise<Schedule>} created Schedule document from message_schedules collection
  */
 async function createSchedule(
@@ -91,7 +179,8 @@ async function createSchedule(
     messageId,
     scheduledTo,
     timezoneAware,
-    schedulerTimezone
+    schedulerTimezone,
+    audienceFilters,
 ) {
     if (timezoneAware && typeof schedulerTimezone !== "number") {
         throw new Error("Scheduler timezone is required when a "
@@ -106,12 +195,14 @@ async function createSchedule(
         status: "scheduled",
         timezoneAware,
         schedulerTimezone,
+        audienceFilters,
         result: buildResultObject()
     };
     await db.collection("message_schedules").insertOne(messageSchedule);
     await createScheduleEvents(messageSchedule);
     return messageSchedule;
 }
+
 /**
  *
  * @param {Schedule} messageSchedule
@@ -119,8 +210,15 @@ async function createSchedule(
  */
 async function createScheduleEvents(messageSchedule) {
     /** @type {ScheduleEvent[]} */
-    const events = [];
+    let events = [{
+        appId: messageSchedule.appId,
+        messageId: messageSchedule.messageId,
+        scheduleId: messageSchedule._id,
+        scheduledTo: messageSchedule.scheduledTo,
+    }];
     if (messageSchedule.timezoneAware) {
+        const baseEvent = events[0];
+        events = [];
         if (typeof messageSchedule.schedulerTimezone !== "number") {
             throw new Error("Scheduler timezone is required when a "
                 + "message schedule is timezone aware");
@@ -136,26 +234,17 @@ async function createScheduleEvents(messageSchedule) {
                 utcTime.getTime() + offset * minute
             );
             events.push({
-                appId: messageSchedule.appId,
-                messageId: messageSchedule.messageId,
-                scheduleId: messageSchedule._id,
+                ...baseEvent,
                 scheduledTo: tzAdjustedScheduleDate,
                 timezone: String(offset),
             });
         }
     }
-    else {
-        events.push({
-            appId: messageSchedule.appId,
-            messageId: messageSchedule.messageId,
-            scheduleId: messageSchedule._id,
-            scheduledTo: messageSchedule.scheduledTo,
-        });
-    }
     // schedule all events
     await Promise.all(events.map(queue.sendScheduleEvent));
     return events;
 }
+
 /**
  *
  * @param {Date} date
@@ -173,7 +262,7 @@ function tzOffsetAdjustedTime(date, offset, time) {
 }
 
 /**
- * @param {Db} db
+ * @param {MongoDb} db
  * @param {ObjectId} messageId
  * @param {string} triggerKind
  * @returns {Promise<Date>}
@@ -317,12 +406,48 @@ function findNextMatchForMulti(trigger, after = new Date) {
     }
 }
 
+/**
+ * @param {AutoTriggerEvent[]} autoTriggerEvents
+ * @returns {AutoTriggerAppMap}
+ */
+function mergeAutoTriggerEvents(autoTriggerEvents) {
+    /** @type {AutoTriggerAppMap} */
+    const appMap = {};
+    for (let i = 0; i < autoTriggerEvents.length; i++) {
+        const event = autoTriggerEvents[i];
+        if (!(event.appId.toString() in appMap)) {
+            appMap[event.appId.toString()] = { event: {}, cohort: {} };
+        }
+        const map = appMap[event.appId.toString()];
+        switch (event.kind) {
+        case "cohort":
+            const id = event.cohortId.toString();
+            if (!(id in map)) {
+                map.cohort[id] = { enter: new Set, exit: new Set };
+            }
+            event.uids.forEach(map.cohort[id][event.direction].add);
+            break;
+        case "event":
+            if (!(event.name in map.event)) {
+                map.event[event.name] = new Set;
+            }
+            map.event[event.name].add(event.uid);
+            break;
+        }
+    }
+    return appMap;
+}
+
 module.exports = {
-    scheduleMessage,
+    SCHEDULE_BY_DATE_TRIGGERS,
+    INACTIVE_MESSAGE_STATUSES,
+    scheduleMessageByDate,
+    scheduleMessageByAutoTriggers,
     createScheduleEvents,
     createSchedule,
     tzOffsetAdjustedTime,
     findNextMatchForRecurring,
     findNextMatchForMulti,
     findWhereToStartSearchFrom,
+    mergeAutoTriggerEvents,
 };

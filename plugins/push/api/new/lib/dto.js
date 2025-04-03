@@ -22,6 +22,12 @@ function scheduleEventDTOToObject(scheduleEventDTO) {
         messageId: new ObjectId(scheduleEventDTO.messageId),
         scheduleId: new ObjectId(scheduleEventDTO.scheduleId),
         scheduledTo: new Date(scheduleEventDTO.scheduledTo),
+        startedAt: scheduleEventDTO.startedAt
+            ? new Date(scheduleEventDTO.startedAt)
+            : undefined,
+        finishedAt: scheduleEventDTO.finishedAt
+            ? new Date(scheduleEventDTO.finishedAt)
+            : undefined
     }
 }
 

@@ -1,6 +1,7 @@
 /**
  * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('./types/queue.ts').PushEvent} PushEvent
+ * @typedef {import('./types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
  * @typedef {import('./types/message.ts').Message} Message
  * @typedef {import('./types/message.ts').PlatformKeys} PlatformKeys
  * @typedef {import('./types/message.ts').PlatformEnvKeys} PlatformEnvKeys
@@ -9,6 +10,7 @@
  * @typedef {import('./types/proxy.ts').ProxyConfiguration} ProxyConfiguration
  * @typedef {import("mongodb").Db} MongoDb
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
+ * @typedef {import('./types/schedule.ts').AudienceFilters} AudienceFilters
  * @typedef {import('./types/user.ts').User} User
  * @typedef {import('stream').Readable} Readable
  * @typedef {import('./types/utils.ts').LogObject} LogObject
@@ -74,8 +76,12 @@ async function composeScheduledPushes(db, scheduleEvent) {
         return 0;
     }
 
-    // TODO: other filters to aggregation pipeline (check PusherPopper.steps)
-    const stream = getUserStream(db, message, scheduleEvent.timezone);
+    const stream = getUserStream(
+        db,
+        message,
+        scheduleEvent.timezone,
+        scheduleDoc.audienceFilters
+    );
     const compileTemplate = createTemplate(message);
     const proxy = await loadProxyConfiguration(db);
     const creds = await loadCredentials(db, scheduleEvent.appId);
@@ -158,10 +164,12 @@ function userPropsProjection(message) {
  * @param {MongoDb} db
  * @param {Message} message
  * @param {string=} timezone
+ * @param {AudienceFilters=} filters
  * @returns {Readable & AsyncIterable<User>}
  */
-function getUserStream(db, message, timezone) {
+function getUserStream(db, message, timezone, filters) {
     const appId = message.app.toString();
+    /** @type {{ [key: string]: any }} */
     const $match = {};
     const $project = { uid: 1, tk: 1, la: 1, ...userPropsProjection(message) };
     const $lookup = {
@@ -170,7 +178,8 @@ function getUserStream(db, message, timezone) {
         foreignField: '_id',
         as: "tk"
     };
-    // TODO: find out what different ios token types do here (FIELDS: production, debug, adhoc)
+
+    // Platforms:
     const platformFilters = [];
     for (let pKey of message.platforms) {
         const pfKeys = PLATFORM_KEYMAP[pKey].pf;
@@ -181,9 +190,25 @@ function getUserStream(db, message, timezone) {
     if (platformFilters.length) {
         $match.$or = platformFilters;
     }
+    // Timezone:
     if (timezone) {
         $match.tz = timezone;
     }
+    // User ids:
+    if (Array.isArray(filters?.uids)) {
+        $match.uid = { $in: filters?.uids };
+    }
+    // Cohorts:
+    if (Array.isArray(filters?.cohorts)) {
+        for (let i = 0; i < filters.cohorts.length; i++) {
+            $match["chr." + filters.cohorts[i] + ".in"] = "true";
+        }
+    }
+
+    // TODO: filters.drill
+    // TODO: filters.geos
+    // TODO: filters.user
+
     return db
         .collection("app_users" + appId)
         .aggregate(

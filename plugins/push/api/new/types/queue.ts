@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { SomeCredential } from "./credentials";
 import { ProxyConfiguration } from "./proxy";
+import { AutoTrigger } from "./message";
 import { PlatformKeys, PlatformEnvKeys } from "./message";
 
 export interface ScheduleEvent {
@@ -37,7 +38,46 @@ export interface ResultError {
     stack?: string;
 }
 
-type DTO<T> = { [P in keyof T]: T[P] extends ObjectId|Date ? string : T[P] }
+export interface BaseTriggerEvent {
+    appId: ObjectId;
+    kind: AutoTrigger["kind"];
+}
+
+export interface CohortTriggerEvent extends BaseTriggerEvent {
+    kind: "cohort";
+    direction: "enter"|"exit";
+    cohortId: ObjectId;
+    uids: string[];
+}
+
+export interface EventTriggerEvent extends BaseTriggerEvent {
+    kind: "event";
+    name: string;
+    uid: string;
+}
+
+export interface ApiTriggerEvent extends BaseTriggerEvent {
+    kind: "api";
+    messageId: ObjectId;
+}
+
+export type AutoTriggerEvent = CohortTriggerEvent|EventTriggerEvent|ApiTriggerEvent;
+
+type Optional<T> = T|undefined;
+type DTO<T> = {
+    [P in keyof T]: T[P] extends ObjectId|Date
+        ? string
+        : (
+            T[P] extends Optional<ObjectId>|Optional<Date>
+                ? Optional<string>
+                : (
+                    T[P] extends ObjectId[]|Date[]
+                        ? string[]
+                        : T[P]
+                )
+        )
+}
+
 export type ScheduleEventDTO = DTO<ScheduleEvent>;
 export type CredentialsDTO = DTO<SomeCredential>;
 export type PushEventDTO = Omit<DTO<PushEvent>,"credentials"> & { credentials: CredentialsDTO };
@@ -46,15 +86,18 @@ export type ResultEventDTO = Omit<DTO<ResultEvent>,"credentials"> & { credential
 export type PushEventHandler = (pushes: PushEvent[]) => Promise<void>;
 export type ScheduleEventHandler = (schedules: ScheduleEvent[]) => Promise<void>;
 export type ResultEventHandler = (results: ResultEvent[]) => Promise<void>;
+export type AutoTriggerEventHandler = (autoTrigger: AutoTriggerEvent) => Promise<void>;
 
-export interface PushQueue {
-    init(
-        onPushMessage: PushEventHandler,
-        onMessageSchedule: ScheduleEventHandler,
-        onMessageResults: ResultEventHandler,
-        isMaster: Boolean,
-    ): Promise<void>;
-    sendScheduleEvent(scheduleEvent: ScheduleEvent): Promise<void>;
-    sendPushEvents(pushEvents: PushEvent[]): Promise<void>;
-    sendResultEvents(resultEvents: ResultEvent[]): Promise<void>;
-}
+// export interface PushQueue {
+//     init(
+//         onPushMessage: PushEventHandler,
+//         onMessageSchedule: ScheduleEventHandler,
+//         onMessageResults: ResultEventHandler,
+//         onMessageCacheUpdate: MessageCacheUpdateHandler,
+//         isMaster: Boolean,
+//     ): Promise<void>;
+//     sendScheduleEvent(scheduleEvent: ScheduleEvent): Promise<void>;
+//     sendPushEvents(pushEvents: PushEvent[]): Promise<void>;
+//     sendResultEvents(resultEvents: ResultEvent[]): Promise<void>;
+//     sendMessageCacheUpdate(messageCacheUpdate: MessageCacheUpdate): Promise<void>;
+// }

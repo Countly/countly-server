@@ -1,4 +1,9 @@
-/** @typedef {import("mongodb").Db} MongoDb */
+/**
+ * @typedef {import("mongodb").Db} MongoDb
+ * @typedef {import("./new/types/queue.ts").PushEventHandler} PushEventHandler
+ * @typedef {import("./new/types/queue.ts").ScheduleEventHandler} ScheduleEventHandler
+ * @typedef {import("./new/types/queue.ts").ResultEventHandler} ResultEventHandler
+ */
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api'),
@@ -14,7 +19,7 @@ const plugins = require('../../pluginManager'),
     { legacyApis } = require('./legacy'),
     Sender = require('./send/sender'),
     FEATURE_NAME = 'push',
-    PUSH_CACHE_GROUP = 'P',
+    // PUSH_CACHE_GROUP = 'P',
     PUSH = {
         FEATURE_NAME
     },
@@ -46,8 +51,8 @@ const plugins = require('../../pluginManager'),
         }
     };
 
-const { init: initQueue } = require("./new/lib/kafka.js");
-const { composeAllScheduledPushes } = require('./new/composer.js');
+const { initPushQueue } = require("./new/lib/kafka.js");
+const { composeAllScheduledPushes, scheduleByAutoTrigger } = require('./new/composer.js');
 const { sendAllPushes } = require('./new/sender.js');
 const { saveResults } = require("./new/resultor.js");
 
@@ -82,14 +87,13 @@ plugins.internalEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_sent');
 
-
 /**
  * @param {MongoDb} db
  * @param {boolean} isMaster
  */
 async function queueInitializer(db, isMaster = false) {
     try {
-        await initQueue(
+        await initPushQueue(
             async function(pushes) {
                 try {
                     // console.log(JSON.stringify(pushes, null, 2));
@@ -97,7 +101,6 @@ async function queueInitializer(db, isMaster = false) {
                 }
                 catch (err) {
                     console.error("ERROR ON QUEUE PUSH HANDLER", err);
-                    // TODO: log the error
                 }
             },
             async function(schedules) {
@@ -107,7 +110,6 @@ async function queueInitializer(db, isMaster = false) {
                 }
                 catch (err) {
                     console.error("ERROR ON QUEUE JOB HANDLER", err);
-                    // TODO: log the error
                 }
             },
             async function(results) {
@@ -119,7 +121,14 @@ async function queueInitializer(db, isMaster = false) {
                     console.error("ERROR ON QUEUE RESULT HANDLER", err);
                 }
             },
-            isMaster
+            async function(autoTriggerEvent) {
+                try {
+                    await scheduleByAutoTrigger(db, autoTriggerEvent);
+                }
+                catch (err) {
+                    console.error("ERROR ON QUEUE AUTO TRIGGER HANDLER");
+                }
+            }
         );
     }
     catch(err) {
@@ -132,14 +141,14 @@ async function queueInitializer(db, isMaster = false) {
 plugins.register('/worker', async function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
-    PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
+    // PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
     queueInitializer(common.db, false);
 });
 
 plugins.register('/master', async function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
-    PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
+    // PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
     setTimeout(() => {
         const jobManager = require('../../../api/parts/jobs');
         jobManager.job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
@@ -170,35 +179,35 @@ plugins.register('/master/runners', runners => {
     });
 });
 
-plugins.register('/cache/init', function() {
-    common.cache.init(PUSH_CACHE_GROUP, {
-        init: async() => {
-            let msgs = await Message.findMany({
-                state: {$bitsAllClear: State.Deleted | State.Done, $bitsAnySet: State.Streamable | State.Streaming | State.Paused},
-                'triggers.kind': {$in: [TriggerKind.API, TriggerKind.Cohort, TriggerKind.Event]}
-            });
-            log.d('cache: initialized with %d msgs: %j', msgs.length, msgs.map(m => m._id));
-            return msgs.map(m => [m.id, m]);
-        },
-        Cls: ['plugins/push/api/send', 'Message'],
-        read: k => {
-            log.d('cache: read', k);
-            return Message.findOne(k);
-        },
-        write: async(k, data) => {
-            log.d('cache: writing', k, data);
-            if (data && !(data instanceof Message)) {
-                data._id = data._id || k;
-                data = new Message(data);
-            }
-            return data;
-        },
-        remove: async(/*k, data*/) => true,
-        update: async(/*k, data*/) => {
-            throw new Error('We don\'t update cached messages');
-        }
-    });
-});
+// plugins.register('/cache/init', function() {
+//     common.cache.init(PUSH_CACHE_GROUP, {
+//         init: async() => {
+//             let msgs = await Message.findMany({
+//                 state: {$bitsAllClear: State.Deleted | State.Done, $bitsAnySet: State.Streamable | State.Streaming | State.Paused},
+//                 'triggers.kind': {$in: [TriggerKind.API, TriggerKind.Cohort, TriggerKind.Event]}
+//             });
+//             log.d('cache: initialized with %d msgs: %j', msgs.length, msgs.map(m => m._id));
+//             return msgs.map(m => [m.id, m]);
+//         },
+//         Cls: ['plugins/push/api/send', 'Message'],
+//         read: k => {
+//             log.d('cache: read', k);
+//             return Message.findOne(k);
+//         },
+//         write: async(k, data) => {
+//             log.d('cache: writing', k, data);
+//             if (data && !(data instanceof Message)) {
+//                 data._id = data._id || k;
+//                 data = new Message(data);
+//             }
+//             return data;
+//         },
+//         remove: async(/*k, data*/) => true,
+//         update: async(/*k, data*/) => {
+//             throw new Error('We don\'t update cached messages');
+//         }
+//     });
+// });
 
 
 plugins.register('/i', async ob => {

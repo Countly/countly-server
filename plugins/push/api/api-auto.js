@@ -5,15 +5,78 @@ const { Audience, TriggerKind, Message, State } = require('./send'),
     logCohorts = log.sub('cohorts'),
     logEvents = log.sub('events');
 
+const { INACTIVE_MESSAGE_STATUSES } = require("./new/scheduler");
+
+/** @type {any} */
+let AUTO_TRIGGERS;
+async function loadAutoTriggers() {
+    const now = new Date;
+    const messages = await common.db.collection("messages")
+        .find({
+            status: { $nin: INACTIVE_MESSAGE_STATUSES },
+            triggers: {
+                $elemMatch: {
+                    kind: { $in: ["cohort", "event"] },
+                    start: { $lt: now },
+                    $or: [
+                        { end: { $exists: false } },
+                        { end: { $gt: now } },
+                    ],
+                }
+            }
+        })
+        .limit(1000)
+        .toArray();
+
+    AUTO_TRIGGERS = { event: {}, cohort: {} };
+    for (let i = 0; i < messages.length; i++) {
+        try {
+            const trigger = messages[i].triggers[0];
+            const cache = AUTO_TRIGGERS[trigger.kind];
+            if (trigger.kind === "cohort") {
+                for (let j = 0; j < trigger.cohorts.length; j++) {
+                    const direction = trigger.entry ? "enter" : "exit";
+                    const cohortId = trigger.cohorts[j];
+                    if (!(cohortId in cache)) {
+                        cache[cohortId] = { enter: [], exit: [] };
+                    }
+                    cache[cohortId][direction].push(messages[i]._id);
+                }
+            }
+            else if (trigger.kind === "event") {
+                for (let j = 0; j < trigger.events.length; j++) {
+                    const event = trigger.events[j];
+                    if (!(event in cache)) {
+                        cache[event] = [];
+                    }
+                    cache[event].push(messages[i]._id);
+                }
+            }
+        }
+        catch (err) {
+            log.e("Malformed message", err);
+            // do nothing...
+        }
+    }
+    // console.log(JSON.stringify(AUTO_TRIGGERS, null, 2));
+}
+// setInterval(loadAutoTriggers, 5 * 60 * 1000);
+setInterval(loadAutoTriggers, 1000);
+
 /**
  * Handler function for /cohort/enter (/cohort/exit) hooks
- * 
+ *
  * @param {boolean} entry true if it's cohort enter, false for exit
  * @param {object} cohort cohort object
  * @param {string[]} uids uids array
  */
 module.exports.autoOnCohort = function(entry, cohort, uids) {
-    log.d('processing cohort %s (%s) %s for %d uids', cohort._id, cohort.name, entry ? 'entry' : 'exit', uids.length);
+    log.d('processing cohort %s (%s) %s for %d uids', cohort._id, cohort.name, entry ? 'enter' : 'exit', uids.length);
+    const cohortId = cohort._id.toString();
+    const direction = entry ? "enter" : "exit";
+    const numberOfMessages = AUTO_TRIGGERS?.cohort?.[cohortId]?.[direction]?.length ?? 0;
+    if (numberOfMessages > 0) {
+    }
 
     let now = Date.now(),
         aid = cohort.app_id.toString(),
@@ -138,7 +201,7 @@ module.exports.autoOnCohort = function(entry, cohort, uids) {
 
 /**
  * Stop related auto messages or count them on cohort deletion
- * 
+ *
  * @param {string} _id cohort id
  * @param {boolean} ack true if stop, false if count
  */
@@ -163,7 +226,7 @@ module.exports.autoOnCohortDeletion = async function(_id, ack) {
 
 /**
  * Handler function for /cohort/enter (/cohort/exit) hooks
- * 
+ *
  * @param {ObjectID} appId app id
  * @param {string} uid user uid
  * @param {string[]} keys unique event keys
