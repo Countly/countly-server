@@ -5,7 +5,7 @@ const initialSetupHelpers = require('../../lib/onboarding/initialSetup');
 const initialConsentHelpers = require('../../lib/onboarding/initialConsent');
 const quickstartPopoeverHelpers = require('../../support/components/quickstartPopover');
 
-const wait_L = 2000;
+const wait_L = 1000;
 const user = {
     username: 'test',
     email: 'a@a.com',
@@ -49,18 +49,20 @@ const goToConfigTab = () => {
     });
     cy.wait(wait_L);
     cy.reload(true);
+    cy.wait(wait_L);
     quickstartPopoeverHelpers.closeQuickStartPopover();
     navigationHelpers.goToSdkManagerPage();
+    cy.get('.white-bg > :nth-child(4)').click();
+    cy.get('.white-bg > :nth-child(1) > a > span').click();
+    cy.wait(wait_L);
     cy.get('.white-bg > :nth-child(4)').click();
 };
 
 const createRequest = (sdkName, sdkVersion) => {
     return 'http://localhost:3001/i?app_key=1&device_id=1&begin_session=1&sdk_name=' + sdkName + '&sdk_version=' + sdkVersion;
-
 };
 
 const checkTooltipAppears = (tooltip, count, early) => {
-    cy.wait(500);
     cy.get('.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-' + tooltip).should('have.length', count ? count : 21);
 
     if (early) {
