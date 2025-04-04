@@ -2991,7 +2991,7 @@ const processRequest = (params) => {
 
 /**
  * Process Request Data
- * @param {params} params - params object
+ * @param {Params} params - params object
  * @param {object} app - app document
  * @param {function} done - callbck when processing done
  */
@@ -3096,8 +3096,8 @@ const processFetchRequest = (params, app, done) => {
 /**
  * Process Bulk Request
  * @param {number} i - request number in bulk
- * @param {array} requests - array of requests to process
- * @param {params} params - params object
+ * @param {Array<object>} requests - array of requests to process
+ * @param {Params} params - params object
  * @returns {void} void
  */
 const processBulkRequest = (i, requests, params) => {
@@ -3307,7 +3307,7 @@ function validateRedirect(ob) {
  * Validate App for Write API
  * Checks app_key from the http request against "apps" collection.
  * This is the first step of every write request to API.
- * @param {params} params - params object
+ * @param {Params} params - params object
  * @param {function} done - callback when processing done
  * @param {number} try_times - how many times request was retried
  * @returns {void} void
@@ -3526,7 +3526,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
 
 /**
  * Restart Request
- * @param {params} params - params object
+ * @param {Params} params - params object
  * @param {function} initiator - function which initiated request
  * @param {function} done - callback when processing done
  * @param {number} try_times - how many times request was retried

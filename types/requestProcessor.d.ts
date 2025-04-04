@@ -3,8 +3,10 @@ import { ObjectId } from "mongodb";
 import { TimeObject } from "./common";
 /** Application user interface representing a document from the app_users collection */
 export interface AppUser {
+    /** MongoDB document ID */
+    _id?: string;
     /** Application user ID */
-    uid: ObjectId;
+    uid: string;
     /** Device ID */
     did: string;
     /** User's country */
@@ -17,6 +19,8 @@ export interface AppUser {
     custom?: Record<string, any>;
     /** Last session timestamp of the app user */
     ls?: object;
+    /** Last session ID */
+    lsid?: string;
     /** Flag indicating if the user has an ongoing session */
     has_ongoing_session?: boolean;
     /** Timestamp of the user's last request */
@@ -78,13 +82,13 @@ export interface Params {
         };
     };
     /** Used for skipping SDK requests, if contains true, then request should be ignored and not processed. Can be set at any time by any plugin, but API only checks for it in beggining after / and /sdk events, so that is when plugins should set it if needed. Should contain reason for request cancelation */
-    cancelRequest: string;
+    cancelRequest?: string;
     /** [blockResponses=false] Flag to block responses from being sent */
     blockResponses?: boolean;
     /** [forceProcessingRequestTimeout=false] Flag to force processing request timeout */
     forceProcessingRequestTimeout?: boolean;
     /** True if this SDK request is processed from the bulk method */
-    bulk: boolean;
+    bulk?: boolean;
     /** Array of the promises by different events. When all promises are fulfilled, request counts as processed */
     promises: Array<Promise<any>>;
     /** IP address of the device submitted request, exists in all SDK requests */
@@ -101,7 +105,7 @@ export interface Params {
     /** Document from the app_users collection for current user, exists in all SDK requests after validation */
     app_user: AppUser;
     /** ID of app_users document for the user, exists in all SDK requests after validation */
-    app_user_id: object;
+    app_user_id: string;
     /** Document for the app sending request, exists in all SDK requests after validation and after validateUserForDataReadAPI validation */
     app: {
         /** ID of the app document */
