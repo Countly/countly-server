@@ -3656,7 +3656,7 @@ const fetchAppUser = (params) => {
 
 /**
  * Add devices to ignore them
- * @param  {params} params - params object
+ * @param  {Params} params - params object
  * @param  {function} done - callback when processing done
  * @returns {function} done
  */
