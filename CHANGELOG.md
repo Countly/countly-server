@@ -1,4 +1,6 @@
 ## Version 25.03.x
+Fixes:
+- [push] Fixed push notifications title and content text and variables combination
 
 Features:
 - Add ability to allow multiple CORS per app for web apps
