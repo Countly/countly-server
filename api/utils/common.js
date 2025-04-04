@@ -7,16 +7,12 @@
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
  * @typedef {import('mongodb').ObjectId} ObjectId
- * @typedef {import('moment-timezone')} MomentTimezone
+ * @typedef {import('moment-timezone').Moment} MomentTimezone
  */
 
 /** @lends module:api/utils/common **/
 
 var common = {};
-/** 
- * Reference to momentjs
- * @type {MomentTimezone} moment
-*/
 var moment = require('moment-timezone');
 var crypto = require('crypto'),
     logger = require('./log.js'),
@@ -279,7 +275,6 @@ common.config = countlyConfig;
 
 /**
 * Reference to moment-timezone which combines moment.js with timezone support
-* @type {MomentTimezone}
 */
 common.moment = moment;
 
@@ -668,7 +663,7 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
 * Creates a Date object from provided seconds timestamp in provided timezone
 * @param {number} timestamp - unix timestamp in seconds
 * @param {string} timezone - name of the timezone
-* @returns {moment} moment object for provided time
+* @returns {MomentTimezone} moment object for provided time
 */
 common.getDate = function(timestamp, timezone) {
     var tmpDate = (timestamp) ? moment.unix(timestamp) : moment();
@@ -2314,8 +2309,8 @@ common.getDateIds = function(params) {
 
 /**
 * Get diference between 2 momentjs instances in specific measurement
-* @param {moment} moment1 - momentjs with start date
-* @param {moment} moment2 - momentjs with end date
+* @param {MomentTimezone} moment1 - momentjs with start date
+* @param {MomentTimezone} moment2 - momentjs with end date
 * @param {string} measure - units of difference, can be minutes, hours, days, weeks
 * @returns {number} difference in provided units
 */

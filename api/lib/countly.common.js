@@ -4,14 +4,13 @@
 */
 
 /**
- * @typedef {import('moment-timezone')} MomentTimezone
+ * @typedef {import('moment-timezone').Moment} MomentTimezone
  */
 
 /** @lends module:api/lib/countly.common */
 var countlyCommon = {},
     /**
      * Reference to momentjs
-     * @type {MomentTimezone} moment
      */
     moment = require('moment-timezone'),
     underscore = require('underscore');
@@ -22,58 +21,6 @@ var _period = "hour",
     _currMoment = moment();
 
 // Private Methods
-
-/**
-* Returns array with unique ticks for period
-* @param {MomentTimezone} startTimestamp - start of period
-* @param {MomentTimezone} endTimestamp - end of period
-* @returns {array} unique array ticks for period
-**/
-/*function getTicksBetween(startTimestamp, endTimestamp) {
-    var dayIt = startTimestamp.clone(),
-        ticks = [];
-
-    while (dayIt < endTimestamp) {
-        let daysLeft = Math.round(moment.duration(endTimestamp - dayIt).asDays());
-        if (daysLeft >= dayIt.daysInMonth() && dayIt.date() === 1) {
-            ticks.push(dayIt.format("YYYY.M"));
-            dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
-        }
-        else if (daysLeft >= (7 - dayIt.day()) && dayIt.day() === 1) {
-            ticks.push(dayIt.format("YYYY.[w]W"));
-            dayIt.add(8 - dayIt.day(), "days");
-        }
-        else {
-            ticks.push(dayIt.format("YYYY.M.D"));
-            dayIt.add(1, "day");
-        }
-    }
-
-    return ticks;
-}*/
-
-/**
-* Returns array with more generalized unique ticks for period
-* @param {MomentTimezone} startTimestamp - start of period
-* @param {MomentTimezone} endTimestamp - end of period
-* @returns {array} unique array ticks for period
-**/
-/*function getTicksCheckBetween(startTimestamp, endTimestamp) {
-    var dayIt = startTimestamp.clone(),
-        ticks = [];
-    while (dayIt < endTimestamp) {
-        let daysLeft = Math.round(moment.duration(endTimestamp - dayIt).asDays());
-        if (daysLeft >= (dayIt.daysInMonth() * 0.5 - dayIt.date())) {
-            ticks.push(dayIt.format("YYYY.M"));
-            dayIt.add(1 + dayIt.daysInMonth() - dayIt.date(), "days");
-        }
-        else {
-            ticks.push(dayIt.format("YYYY.[w]W"));
-            dayIt.add(8 - dayIt.day(), "days");
-        }
-    }
-    return ticks;
-}*/
 
 countlyCommon.calculateUniqueFromMap = function(dbObj, uniqueMap) {
     var u = 0;
@@ -113,13 +60,13 @@ countlyCommon.calculateUniqueFromMap = function(dbObj, uniqueMap) {
 };
 
 /** returns unique period check array
-        * @param {array} weeksArray_pd - weeks array
-        * @param {array} weekCounts_pd -  week counts
-        * @param {array} monthsArray_pd - months array
-        * @param {array} monthCounts_pd - months counts
-        * @param {array} periodArr_pd - period array
-        * @returns {array} periods
-        */
+* @param {array} weeksArray_pd - weeks array
+* @param {array} weekCounts_pd -  week counts
+* @param {array} monthsArray_pd - months array
+* @param {array} monthCounts_pd - months counts
+* @param {array} periodArr_pd - period array
+* @returns {array} periods
+*/
 function getUniqArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_pd, periodArr_pd) {
 
     if (_period === "month" || _period === "day" || _period === "yesterday" || _period === "hour") {
@@ -363,7 +310,7 @@ function fixTimestampToMilliseconds(ts) {
 
 /**
 * Returns a period object used by all time related data calculation functions
-* @param {MomentTimezone} prmPeriod period to be calculated (optional)
+* @param {string|any} prmPeriod period to be calculated (optional) todo:figure this type out
 * @param {string} bucket  - daily or monthly. If bucket is set, period will be modified to fit full months or days
 * @returns {timeObject} time object
 **/
