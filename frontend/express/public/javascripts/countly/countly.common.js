@@ -1,4 +1,4 @@
-/*global store, CountlyHelpers, countlyGlobal, _, d3, moment, countlyTotalUsers, jQuery, filterXSS, mergeWith*/
+/*global store, CountlyHelpers, countlyGlobal, _, moment, countlyTotalUsers, jQuery, filterXSS, mergeWith*/
 (function(window, $) {
     /**
      * Object with common functions to be used for multiple purposes

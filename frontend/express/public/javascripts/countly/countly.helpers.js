@@ -1,4 +1,4 @@
-/* global _, countlyGlobal, countlyCommon, _JSONEditor, app, TableTools, countlyDeviceDetails, moment, jQuery, $, store, countlyTaskManager, countlyVue*/
+/* global _, countlyGlobal, countlyCommon, app, countlyDeviceDetails, jQuery, countlyVue*/
 /*
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.

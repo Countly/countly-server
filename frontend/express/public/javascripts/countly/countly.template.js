@@ -1,4 +1,4 @@
-/* global Backbone, countlyAuth, Handlebars, countlyEvent, countlyCommon, countlyGlobal, countlyView, CountlyHelpers, countlySession, moment, Drop, _, store, countlyLocation, jQuery, $, T, countlyVue*/
+/* global Backbone, countlyAuth, countlyCommon, countlyGlobal, CountlyHelpers, moment, _, store, jQuery, $, countlyVue*/
 
 //redefine contains selector for jquery to be case insensitive
 $.expr[":"].contains = $.expr.createPseudo(function(arg) {
