@@ -608,7 +608,7 @@ common.fillTimeObject = function(params, object, property, increment) {
 /**
 * Creates a time object from request's milisecond or second timestamp in provided app's timezone
 * @param {string} appTimezone - app's timezone
-* @param {number} reqTimestamp - timestamp in the request
+* @param {string} reqTimestamp - timestamp in the request
 * @returns {TimeObject} Time object for current request
 */
 common.initTimeObj = function(appTimezone, reqTimestamp) {
@@ -1790,7 +1790,7 @@ function stripPort(ip) {
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
 * @param {boolean=} isUnique - if property is unique
-* @returns {void} void
+* @returns {boolean} void
 * @example
 * var obj = {};
 * common.fillTimeObjectZero(params, obj, "u", 1);
@@ -1850,7 +1850,7 @@ common.fillTimeObjectZero = function(params, object, property, increment, isUniq
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
 * @param {boolean=} forceHour - force recording hour information too, dfault is false
-* @returns {void} void
+* @returns {boolean}
 * @example
 * var obj = {};
 * common.fillTimeObjectMonth(params, obj, "u", 1);

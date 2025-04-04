@@ -22,6 +22,12 @@ var _period = "hour",
 
 // Private Methods
 
+/**
+ * Calculates unique values from a hierarchical map structure
+ * @param {Object} dbObj - Database object containing hierarchical data (years, months, weeks, days)
+ * @param {Object} uniqueMap - Map with hierarchical structure (years, months, weeks, days) used to calculate unique values
+ * @returns {number} - Count of unique items
+ */
 countlyCommon.calculateUniqueFromMap = function(dbObj, uniqueMap) {
     var u = 0;
     for (var year in uniqueMap) {
@@ -60,12 +66,12 @@ countlyCommon.calculateUniqueFromMap = function(dbObj, uniqueMap) {
 };
 
 /** returns unique period check array
-* @param {array} weeksArray_pd - weeks array
-* @param {array} weekCounts_pd -  week counts
-* @param {array} monthsArray_pd - months array
-* @param {array} monthCounts_pd - months counts
-* @param {array} periodArr_pd - period array
-* @returns {array} periods
+* @param {Array<string>} weeksArray_pd - weeks array
+* @param {Array<string>} weekCounts_pd -  week counts
+* @param {Array<string>} monthsArray_pd - months array
+* @param {Array<string>} monthCounts_pd - months counts
+* @param {Array<string>} periodArr_pd - period array
+* @returns {Array<string>} periods
 */
 function getUniqArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_pd, periodArr_pd) {
 
@@ -185,12 +191,12 @@ function getUniqArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_
     return uniquePeriods;
 }
 /** returns unique period check array
-        * @param {array} weeksArray_pd - weeks array
-        * @param {array} weekCounts_pd -  week counts
-        * @param {array} monthsArray_pd - months array
-        * @param {array} monthCounts_pd - months counts
-        * @returns {array} periods
-        */
+* @param {Array<string>} weeksArray_pd - weeks array
+* @param {Array<string>} weekCounts_pd -  week counts
+* @param {Array<string>} monthsArray_pd - months array
+* @param {Array<string>} monthCounts_pd - months counts
+* @returns {Array<string>} periods
+*/
 function getUniqCheckArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCounts_pd) {
 
     if (_period === "month" || _period === "day" || _period === "yesterday" || _period === "hour") {
@@ -261,9 +267,9 @@ function getUniqCheckArray(weeksArray_pd, weekCounts_pd, monthsArray_pd, monthCo
 }
 
 /** Function to clone object
-        * @param {object} obj - object to clone
-        * @returns {object} cloned object
-        */
+* @param {object} obj - object to clone
+* @returns {object|undefined|string|Array<string>|Date} cloned object
+*/
 function clone(obj) {
     if (null === obj || "object" !== typeof obj) {
         return obj;
@@ -297,8 +303,8 @@ function clone(obj) {
 
 /**
 * Returns number for timestamp making sure it is 13 digits
-* @param {integer}ts -  number we need to se as timestamp
-* @returns {integer} timestamp in ms
+* @param {number} ts - number we need to se as timestamp
+* @returns {number} timestamp in ms
 **/
 function fixTimestampToMilliseconds(ts) {
     if ((ts + "").length > 13) {
