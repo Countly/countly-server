@@ -3610,13 +3610,13 @@ class DataTable {
      * if provided any. Data flow between stages are not checked, so please do check manually.
      * 
      * @param {object} options Wraps options
-     * @param {Array<string>} options.initialPipeline If you need to select a subset, to add new fields or 
+     * @param {Array<object>} options.initialPipeline If you need to select a subset, to add new fields or 
      * anything else involving aggregation stages, you can pass an array of stages using options.initialPipeline.
      * Initial pipeline is basically used for counting the total number of documents without pagination and search.
      * 
      * # of output rows = total number of docs.
      * 
-     * @param {Array<string>} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
+     * @param {Array<object>} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
      * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no 
      * query, then this will be another stage after initialPipeline. Paging and sorting are added after filteredPipeline.
      * 
