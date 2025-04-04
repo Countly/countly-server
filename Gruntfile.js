@@ -16,8 +16,6 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/dom/jquery/jquery.js',
                     'frontend/express/public/javascripts/dom/gridstack/gridstack-h5.js',
                     'frontend/express/public/javascripts/dom/pace/pace.min.js',
-                    'frontend/express/public/javascripts/dom/drop/tether.min.js',
-                    'frontend/express/public/javascripts/dom/drop/drop.min.js'
                 ],
                 dest: 'frontend/express/public/javascripts/min/countly.dom.concat.js'
             },
@@ -120,7 +118,6 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/countly/vue/components/sidebar.js',
                     'frontend/express/public/javascripts/countly/vue/components/progress.js',
                     'frontend/express/public/javascripts/countly/vue/directives/scroll-shadow.js',
-                    'frontend/express/public/javascripts/countly/vue/legacy.js',
                     'frontend/express/public/javascripts/countly/countly.vue.legacy.js',
                     'frontend/express/public/javascripts/countly/countly.token.manager.js',
                     'frontend/express/public/javascripts/countly/countly.version.history.js',
@@ -195,7 +192,6 @@ module.exports = function(grunt) {
                         'frontend/express/public/stylesheets/jsoneditor/codemirror.css',
                         'frontend/express/public/javascripts/dom/gridstack/gridstack.css',
                         'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',
-                        'frontend/express/public/javascripts/dom/drop/drop-theme-countly.min.css',
                         'frontend/express/public/stylesheets/bulma/bulma-custom.css',
                         'frontend/express/public/stylesheets/styles/manifest2.css',
                         'frontend/express/public/stylesheets/vue/element-tiptap.css',
