@@ -55,7 +55,7 @@ export interface Params {
     /** Document from the app_users collection for current user, exists in all SDK requests after validation */
     app_user: {
         /** Application user ID */
-        uid: string;
+        uid: ObjectId;
         /** Device ID */
         did: string;
         /** User's country */
