@@ -3752,7 +3752,7 @@ function processUser(params, initiator, done, try_times) {
 /**
  * Function to fetch app user from db
  * @param  {object} params - params object
- * @returns {promise} - user
+ * @returns {Promise} - user
  */
 const fetchAppUser = (params) => {
     return new Promise((resolve) => {
