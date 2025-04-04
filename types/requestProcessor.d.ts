@@ -1,6 +1,56 @@
 import { ServerResponse, IncomingMessage } from "http";
 import { ObjectId } from "mongodb";
 import { TimeObject } from "./common";
+/** Application user interface representing a document from the app_users collection */
+export interface AppUser {
+    /** MongoDB document ID */
+    _id?: string;
+    /** Application user ID */
+    uid: string;
+    /** Device ID */
+    did: string;
+    /** User's country */
+    country: string;
+    /** User's city */
+    city: string;
+    /** User's timezone offset (in minutes) */
+    tz: number;
+    /** Custom properties for the application user */
+    custom?: Record<string, any>;
+    /** Last session timestamp of the app user */
+    ls?: object;
+    /** Last session ID */
+    lsid?: string;
+    /** Flag indicating if the user has an ongoing session */
+    has_ongoing_session?: boolean;
+    /** Timestamp of the user's last request */
+    last_req?: number;
+    /** Last GET request URL */
+    last_req_get?: string;
+    /** Last POST request body */
+    last_req_post?: string;
+    /** First access timestamp */
+    fac?: number;
+    /** First seen timestamp */
+    fs?: number;
+    /** Last access timestamp */
+    lac?: number;
+    /** SDK information */
+    sdk?: {
+        /** SDK name */
+        name?: string;
+        /** SDK version */
+        version?: string;
+    };
+    /** Request count */
+    req_count?: number;
+    /** Type or token identifier */
+    t?: string | number;
+    /** Flag indicating if the user has information */
+    hasInfo?: boolean;
+    /** Information about merged users */
+    merges?: any;
+}
 
 /** Main request processing object containing all information shared through all the parts of the same request */
 export interface Params {
@@ -32,13 +82,13 @@ export interface Params {
         };
     };
     /** Used for skipping SDK requests, if contains true, then request should be ignored and not processed. Can be set at any time by any plugin, but API only checks for it in beggining after / and /sdk events, so that is when plugins should set it if needed. Should contain reason for request cancelation */
-    cancelRequest: string;
+    cancelRequest?: string;
     /** [blockResponses=false] Flag to block responses from being sent */
     blockResponses?: boolean;
     /** [forceProcessingRequestTimeout=false] Flag to force processing request timeout */
     forceProcessingRequestTimeout?: boolean;
     /** True if this SDK request is processed from the bulk method */
-    bulk: boolean;
+    bulk?: boolean;
     /** Array of the promises by different events. When all promises are fulfilled, request counts as processed */
     promises: Array<Promise<any>>;
     /** IP address of the device submitted request, exists in all SDK requests */
@@ -53,53 +103,9 @@ export interface Params {
         tz?: number;
     };
     /** Document from the app_users collection for current user, exists in all SDK requests after validation */
-    app_user: {
-        /** Application user ID */
-        uid: ObjectId;
-        /** Device ID */
-        did: string;
-        /** User's country */
-        country: string;
-        /** User's city */
-        city: string;
-        /** User's timezone offset (in minutes) */
-        tz: number;
-        /** Custom properties for the application user */
-        custom?: Record<string, any>;
-        /** Last session timestamp of the app user */
-        ls?: object;
-        /** Flag indicating if the user has an ongoing session */
-        has_ongoing_session?: boolean;
-        /** Timestamp of the user's last request */
-        last_req?: number;
-        /** Last GET request URL */
-        last_req_get?: string;
-        /** Last POST request body */
-        last_req_post?: string;
-        /** First access timestamp */
-        fac?: number;
-        /** First seen timestamp */
-        fs?: number;
-        /** Last access timestamp */
-        lac?: number;
-        /** SDK information */
-        sdk?: {
-            /** SDK name */
-            name?: string;
-            /** SDK version */
-            version?: string;
-        };
-        /** Request count */
-        req_count?: number;
-        /** Type or token identifier */
-        t?: string | number;
-        /** Flag indicating if the user has information */
-        hasInfo?: boolean;
-        /** Information about merged users */
-        merges?: any;
-    };
+    app_user: AppUser;
     /** ID of app_users document for the user, exists in all SDK requests after validation */
-    app_user_id: object;
+    app_user_id: string;
     /** Document for the app sending request, exists in all SDK requests after validation and after validateUserForDataReadAPI validation */
     app: {
         /** ID of the app document */
