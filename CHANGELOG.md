@@ -1,5 +1,8 @@
 ## Version 25.03.x
 
+Features:
+- Add ability to allow multiple CORS per app for web apps
+
 Dependencies:
 - Bump body-parser from 1.20.3 to 2.2.0
 - Bump moment-timezone from 0.5.47 to 0.5.48
