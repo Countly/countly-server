@@ -201,7 +201,7 @@ common.log = logger;
 
 /**
 * Mapping some common property names from longer understandable to shorter representation stored in database
-* @type {object} 
+* @type {import('../../types/common').DbMap} 
 */
 common.dbMap = {
     'events': 'e',
@@ -219,7 +219,7 @@ common.dbMap = {
 
 /**
 * Mapping some common user property names from longer understandable to shorter representation stored in database
-* @type {object} 
+* @type {import('../../types/common').DbUserMap} 
 */
 common.dbUserMap = {
     'device_id': 'did',
@@ -255,7 +255,7 @@ common.dbUniqueMap = {
 
 /**
 * Mapping some common event property names from longer understandable to shorter representation stored in database
-* @type {object} 
+* @type {import('../../types/common').DbEventMap} 
 */
 common.dbEventMap = {
     'user_properties': 'up',
@@ -332,7 +332,7 @@ common.os_mapping = {
 
 /**
 * Whole base64 alphabet for fetching splitted documents
-* @type {object} 
+* @type {Array<string>} 
 */
 common.base64 = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "+", "/"];
 
