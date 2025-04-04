@@ -14,8 +14,6 @@ module.exports = function(grunt) {
             dom: {
                 src: [
                     'frontend/express/public/javascripts/dom/jquery/jquery.js',
-                    'frontend/express/public/javascripts/dom/jqueryui/jquery-ui.js',
-                    'frontend/express/public/javascripts/dom/jqueryui/jquery-ui-i18n.js',
                     'frontend/express/public/javascripts/dom/gridstack/gridstack-h5.js',
                     'frontend/express/public/javascripts/dom/pace/pace.min.js',
                     'frontend/express/public/javascripts/dom/drop/tether.min.js',
