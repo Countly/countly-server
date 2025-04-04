@@ -1615,3 +1615,142 @@
     };
 
 }(window.CountlyHelpers = window.CountlyHelpers || {}));
+
+
+var Template = function() {
+    this.cached = {};
+    this.raw = {};
+};
+
+/**
+* Template loader for loading static resources over jquery
+* @name T
+* @global
+* @namespace T
+* @example <caption>Get Handlebar compiled HTML</caption>
+*$.when(T.render('/density/templates/density.html', function(src){
+*    self.template = src;
+*})).then(function () {});
+*
+* @example <caption>Get raw resources</caption>
+*$.when(T.get('/density/templates/density.html', function(src){
+*    self.template = Handlebar.compile(src);
+*})).then(function () {});
+*/
+var T = new Template();
+
+$.extend(Template.prototype, {
+    /**
+     *  Process and return fetched template
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @param {function} callback - when done
+     *  @returns {Promise} ajax promise
+     */
+    render: function(name, callback) {
+        if (T.isCached(name)) {
+            if (typeof callback === "function") {
+                callback(T.cached[name]);
+            }
+            return T.cached[name];
+        }
+        else {
+            return $.get(T.urlFor(name), function(raw) {
+                T.store(name, raw);
+                T.render(name, callback);
+            });
+        }
+    },
+    /**
+     *  Fetch and return raw template
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @param {function} callback - when done
+     *  @returns {Promise} ajax promise
+     */
+    get: function(name, callback) {
+        if (T.isCached(name)) {
+            if (typeof callback === "function") {
+                callback(T.raw[name]);
+            }
+            return T.raw[name];
+        }
+        else {
+            return $.get(T.urlFor(name), function(raw) {
+                T.store(name, raw);
+                T.get(name, callback);
+            });
+        }
+    },
+    /**
+     *  Fetch and return raw template in sync
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @param {function} callback - when done
+     */
+    renderSync: function(name, callback) {
+        if (!T.isCached(name)) {
+            T.fetch(name);
+        }
+        T.render(name, callback);
+    },
+    /**
+     *  Prefetch template
+     *  @memberof T
+     *  @param {string} name - Template path
+     */
+    prefetch: function(name) {
+        $.get(T.urlFor(name), function(raw) {
+            T.store(name, raw);
+        });
+    },
+    /**
+     *  Fetch template in sync request
+     *  @memberof T
+     *  @param {string} name - Template path
+     */
+    fetch: function(name) {
+        // synchronous, for those times when you need it.
+        if (!T.isCached(name)) {
+            var raw = $.ajax({ 'url': T.urlFor(name), 'async': false }).responseText;
+            T.store(name, raw);
+        }
+    },
+    /**
+     *  Check if template is cached
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @returns {boolean} true if template is cached
+     */
+    isCached: function(name) {
+        return !!T.cached[name];
+    },
+    /**
+     *  Store template in cache
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @param {string} raw - Raw template data
+     */
+    store: function(name, raw) {
+        T.raw[name] = raw;
+        try {
+            T.cached[name] = Handlebars.compile(raw);
+        }
+        catch (ex) {
+            T.cached[name] = raw;
+        }
+    },
+    /**
+     *  Generate request URL for template
+     *  @memberof T
+     *  @param {string} name - Template path
+     *  @returns {string} URL where to fetch template
+     */
+    urlFor: function(name) {
+        //return "/resources/templates/"+ name + ".handlebars";
+        if (countlyGlobal.path && countlyGlobal.path.length && name.indexOf(countlyGlobal.path) !== 0) {
+            name = countlyGlobal.path + name;
+        }
+        return name + "?" + countlyGlobal.countlyVersion;
+    }
+});
