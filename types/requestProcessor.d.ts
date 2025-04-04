@@ -1,6 +1,52 @@
 import { ServerResponse, IncomingMessage } from "http";
 import { ObjectId } from "mongodb";
 import { TimeObject } from "./common";
+/** Application user interface representing a document from the app_users collection */
+export interface AppUser {
+    /** Application user ID */
+    uid: ObjectId;
+    /** Device ID */
+    did: string;
+    /** User's country */
+    country: string;
+    /** User's city */
+    city: string;
+    /** User's timezone offset (in minutes) */
+    tz: number;
+    /** Custom properties for the application user */
+    custom?: Record<string, any>;
+    /** Last session timestamp of the app user */
+    ls?: object;
+    /** Flag indicating if the user has an ongoing session */
+    has_ongoing_session?: boolean;
+    /** Timestamp of the user's last request */
+    last_req?: number;
+    /** Last GET request URL */
+    last_req_get?: string;
+    /** Last POST request body */
+    last_req_post?: string;
+    /** First access timestamp */
+    fac?: number;
+    /** First seen timestamp */
+    fs?: number;
+    /** Last access timestamp */
+    lac?: number;
+    /** SDK information */
+    sdk?: {
+        /** SDK name */
+        name?: string;
+        /** SDK version */
+        version?: string;
+    };
+    /** Request count */
+    req_count?: number;
+    /** Type or token identifier */
+    t?: string | number;
+    /** Flag indicating if the user has information */
+    hasInfo?: boolean;
+    /** Information about merged users */
+    merges?: any;
+}
 
 /** Main request processing object containing all information shared through all the parts of the same request */
 export interface Params {
@@ -53,51 +99,7 @@ export interface Params {
         tz?: number;
     };
     /** Document from the app_users collection for current user, exists in all SDK requests after validation */
-    app_user: {
-        /** Application user ID */
-        uid: ObjectId;
-        /** Device ID */
-        did: string;
-        /** User's country */
-        country: string;
-        /** User's city */
-        city: string;
-        /** User's timezone offset (in minutes) */
-        tz: number;
-        /** Custom properties for the application user */
-        custom?: Record<string, any>;
-        /** Last session timestamp of the app user */
-        ls?: object;
-        /** Flag indicating if the user has an ongoing session */
-        has_ongoing_session?: boolean;
-        /** Timestamp of the user's last request */
-        last_req?: number;
-        /** Last GET request URL */
-        last_req_get?: string;
-        /** Last POST request body */
-        last_req_post?: string;
-        /** First access timestamp */
-        fac?: number;
-        /** First seen timestamp */
-        fs?: number;
-        /** Last access timestamp */
-        lac?: number;
-        /** SDK information */
-        sdk?: {
-            /** SDK name */
-            name?: string;
-            /** SDK version */
-            version?: string;
-        };
-        /** Request count */
-        req_count?: number;
-        /** Type or token identifier */
-        t?: string | number;
-        /** Flag indicating if the user has information */
-        hasInfo?: boolean;
-        /** Information about merged users */
-        merges?: any;
-    };
+    app_user: AppUser;
     /** ID of app_users document for the user, exists in all SDK requests after validation */
     app_user_id: object;
     /** Document for the app sending request, exists in all SDK requests after validation and after validateUserForDataReadAPI validation */
