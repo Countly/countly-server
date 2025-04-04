@@ -1,0 +1,23 @@
+// to set it up, you need to add typescript:
+// npm i typescript --save-dev
+//
+// to run the summary check, call:
+// npx tsc
+{
+    "include": [
+        //"plugins/push/**/*.ts",
+        //"plugins/push/**/*.js"
+        "api/utils/common.js",
+        "api/utils/requestProcessor.js"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+    "compilerOptions": {
+        "outDir": "dist", // we're not building the app. but still necessary for, reasons...
+        "allowJs": true,
+        "checkJs": true,
+        "resolveJsonModule": true,
+        "strict": true
+    }
+}

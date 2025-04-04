@@ -4,6 +4,7 @@ Fixes:
 
 Features:
 - Add ability to allow multiple CORS per app for web apps
+- Add app id and name as view segment for self-tracking
 
 Dependencies:
 - Bump body-parser from 1.20.3 to 2.2.0

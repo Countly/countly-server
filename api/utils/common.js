@@ -3,10 +3,22 @@
 * @module api/utils/common
 */
 
-/** @lends module:api/utils/common */
-var common = {},
-    moment = require('moment-timezone'),
-    crypto = require('crypto'),
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ * @typedef {import('../../types/common').TimeObject} TimeObject
+ * @typedef {import('mongodb').ObjectId} ObjectId
+ * @typedef {import('moment-timezone')} MomentTimezone
+ */
+
+/** @lends module:api/utils/common **/
+
+var common = {};
+/** 
+ * Reference to momentjs
+ * @type {MomentTimezone} moment
+*/
+var moment = require('moment-timezone');
+var crypto = require('crypto'),
     logger = require('./log.js'),
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
@@ -27,7 +39,7 @@ common.plugins = plugins;
 /**
 * Escape special characters in the given string of html.
 * @param  {string} string - The string to escape for inserting into HTML
-* @param  {bool} more - if false, escapes only tags, if true escapes also quotes and ampersands
+* @param  {boolean} more - if false, escapes only tags, if true escapes also quotes and ampersands
 * @returns {string} escaped string
 **/
 common.escape_html = function(string, more) {
@@ -115,9 +127,9 @@ common.decode_html = function(string) {
 /**
 * Escape special characters in the given value, may be nested object
 * @param  {string} key - key of the value
-* @param  {vary} value - value to escape
-* @param  {bool} more - if false, escapes only tags, if true escapes also quotes and ampersands
-* @returns {vary} escaped value
+* @param  {any} value - value to escape
+* @param  {boolean} more - if false, escapes only tags, if true escapes also quotes and ampersands
+* @returns {any} escaped value
 **/
 function escape_html_entities(key, value, more) {
     if (typeof value === 'object' && value && (value.constructor === Object || value.constructor === Array)) {
@@ -266,8 +278,8 @@ common.dbEventMap = {
 common.config = countlyConfig;
 
 /**
-* Reference to momentjs
-* @type {object} 
+* Reference to moment-timezone which combines moment.js with timezone support
+* @type {MomentTimezone}
 */
 common.moment = moment;
 
@@ -402,7 +414,7 @@ common.isNumber = function(n) {
 * dealing with numbers as strings and too long numbers
 * @param {any} value - value to convert to usable type
 * @param {boolean} preventParsingToNumber - do not change value to number (e.g. "1", ["1"]);
-* @returns {varies} converted value
+* @returns {any} converted value
 * @example
 * common.convertToType(1) //outputs 1
 * common.convertToType("2") //outputs 2
@@ -488,8 +500,8 @@ common.zeroFill = function(number, width) {
 
 /**
 * Add item or array to existing array only if values are not already in original array
-* @param {array} arr - original array where to add unique elements
-* @param {string|number|array} item - item to add or array to merge
+* @param {Array<string|number>} arr - original array where to add unique elements
+* @param {string|number|Array<string|number>} item - item to add or array to merge
 */
 common.arrayAddUniq = function(arr, item) {
     if (!arr) {
@@ -535,7 +547,7 @@ common.sha512Hash = function(str, addSalt) {
 /**
 * Create argon2 hash string
 * @param {string} str - string to hash
-* @returns {promise} hash promise
+* @returns {Promise<string>} hash promise
 **/
 common.argon2Hash = function(str) {
     return argon2.hash(str);
@@ -553,7 +565,7 @@ common.md5Hash = function(str) {
 /**
 * Modifies provided object in the format object["2012.7.20.property"] = increment. 
 * Usualy used when filling up Countly metric model data
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link Params} object
 * @param {object} object - object to fill
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
@@ -602,7 +614,7 @@ common.fillTimeObject = function(params, object, property, increment) {
 * Creates a time object from request's milisecond or second timestamp in provided app's timezone
 * @param {string} appTimezone - app's timezone
 * @param {number} reqTimestamp - timestamp in the request
-* @returns {timeObject} Time object for current request
+* @returns {TimeObject} Time object for current request
 */
 common.initTimeObj = function(appTimezone, reqTimestamp) {
     var currTimestamp,
@@ -634,24 +646,6 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
         tmpMoment.tz(appTimezone);
     }
 
-    /**
-   * @typedef timeObject
-   * @type {object} 
-   * @global
-   * @property {momentjs} now - momentjs instance for request's time in app's timezone
-   * @property {momentjs} nowUTC - momentjs instance for request's time in UTC
-   * @property {momentjs} nowWithoutTimestamp - momentjs instance for current time in app's timezone
-   * @property {number} timestamp -  request's seconds timestamp
-   * @property {number} mstimestamp -  request's miliseconds timestamp
-   * @property {string} yearly -  year of request time in app's timezone in YYYY format
-   * @property {string} monthly -  month of request time in app's timezone in YYYY.M format
-   * @property {string} daily -  date of request time in app's timezone in YYYY.M.D format
-   * @property {string} hourly -  hour of request time in app's timezone in YYYY.M.D.H format
-   * @property {number} weekly -  week of request time in app's timezone as result day of the year, divided by 7
-   * @property {string} month -  month of request time in app's timezone in format M
-   * @property {string} day -  day of request time in app's timezone in format D
-   * @property {string} hour -  hour of request time in app's timezone in format H
-   */
     return {
         now: tmpMoment,
         nowUTC: tmpMoment.clone().utc(),
@@ -1490,7 +1484,7 @@ common.fixEventKey = function(eventKey) {
 
 /**
 * Block {@link module:api/utils/common.returnMessage} and {@link module:api/utils/common.returnOutput} from ouputting anything
-* @param {params} params - params object
+* @param {Params} params - params object
 */
 common.blockResponses = function(params) {
     params.blockResponses = true;
@@ -1498,7 +1492,7 @@ common.blockResponses = function(params) {
 
 /**
 * Unblock/allow {@link module:api/utils/common.returnMessage} and {@link module:api/utils/common.returnOutput} ouputting anything
-* @param {params} params - params object
+* @param {Params} params - params object
 */
 common.unblockResponses = function(params) {
     params.blockResponses = false;
@@ -1510,19 +1504,18 @@ common.unblockResponses = function(params) {
 /**
 * Custom API response handler callback
 * @typedef APICallback
-* @callback APICallback
 * @type {function} 
 * @global
-* @param {bool} error - true if there was problem processing request, and false if request was processed successfully 
+* @param {boolean} error - true if there was problem processing request, and false if request was processed successfully 
 * @param {string} responseMessage - what API returns
 * @param {object} headers - what API would have returned to HTTP request
 * @param {number} returnCode - HTTP code, what API would have returned to HTTP request
-* @param {params} params - request context that was passed to requestProcessor, modified during request processing
+* @param {Params} params - request context that was passed to requestProcessor, modified during request processing
 */
 
 /**
 * Return raw headers and body
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {number} returnCode - http code to use
 * @param {string} body - raw data to output
 * @param {object} heads - headers to add to the output
@@ -1568,7 +1561,7 @@ common.returnRaw = function(params, returnCode, body, heads) {
 
 /**
 * Output message as request response with provided http code
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {number} returnCode - http code to use
 * @param {string|object} message - Message to output, will be encapsulated in JSON object under result property
 * @param {object} heads - headers to add to the output
@@ -1637,7 +1630,7 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
 
 /**
 * Output message as request response with provided http code
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {output} output - object to stringify and output
 * @param {string} noescape - prevent escaping HTML entities
 * @param {object} heads - headers to add to the output
@@ -1797,7 +1790,7 @@ function stripPort(ip) {
 /**
 * Modifies provided object filling properties used in zero documents in the format object["2012.7.20.property"] = increment. 
 * Usualy used when filling up Countly metric model zero document
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {object} object - object to fill
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
@@ -1857,7 +1850,7 @@ common.fillTimeObjectZero = function(params, object, property, increment, isUniq
 /**
 * Modifies provided object filling properties used in monthly documents in the format object["2012.7.20.property"] = increment. 
 * Usualy used when filling up Countly metric model monthly document
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {object} object - object to fill
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
@@ -1906,13 +1899,13 @@ common.fillTimeObjectMonth = function(params, object, property, increment, force
 /**
 * Record data in Countly standard metric model
 * Can be used by plugins to record data, similar to sessions and users, with optional segments
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} collection - name of the collections where to store data
 * @param {string} id - id to prefix document ids, like app_id or segment id, etc
-* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
+* @param {Array<string>} metrics - array of metrics to record, as ["u","t", "n"]
 * @param {number=} value - value to increment all metrics for, default 1
 * @param {object} segments - object with segments to record data, key segment name and value segment value
-* @param {array} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
+* @param {Array<string>} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
 * @param {number} lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
 * @example
 * //recording attribution
@@ -1971,13 +1964,13 @@ common.recordCustomMetric = function(params, collection, id, metrics, value, seg
 /**
 * Sets passed value in standart model. If there is any value for that date - it gets replaced with new value.
 * Can be used by plugins to record data, similar to sessions and users, with optional segments
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} collection - name of the collections where to store data
 * @param {string} id - id to prefix document ids, like app_id or segment id, etc
-* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
+* @param {Array<string>} metrics - array of metrics to record, as ["u","t", "n"]
 * @param {number=} value - value to increment all metrics for, default 1
 * @param {object} segments - object with segments to record data, key segment name and value segment value
-* @param {array} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
+* @param {Array<string>} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
 * @param {number} lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
 * @example
 * //recording attribution
@@ -2035,10 +2028,10 @@ common.setCustomMetric = function(params, collection, id, metrics, value, segmen
 * Record measurement in Countly standard metric model
 * Can be used by plugins to record measurements, similar to temperature, it will record min/max/avg values
 * Does not support unique values like users
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {string} collection - name of the collections where to store data
 * @param {string} id - id to prefix document ids, like app_id or segment id, etc
-* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
+* @param {Array<string>} metrics - array of metrics to record, as ["u","t", "n"]
 * @param {number=} value - value to increment all metrics for, default 1
 * @param {object} segments - object with segments to record data, key segment name and value segment value
 * @example
@@ -2109,7 +2102,7 @@ common.recordCustomMeasurement = function(params, collection, id, metrics, value
 /**
 * Record data in Countly standard metric model
 * Can be used by plugins to record data, similar to sessions and users, with optional segments
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @param {object} props - object defining what to record
 * @param {string} props.collection - name of the collections where to store data
 * @param {string} props.id - id to prefix document ids, like app_id or segment id, etc
@@ -2118,7 +2111,7 @@ common.recordCustomMeasurement = function(params, collection, id, metrics, value
 * @param {object} props.metrics[].segments - object with segments to record data, key segment name and value segment value or array of segment values
 * @param {boolean} props.metrics[].unique - if metric should be treated as unique, and stored in 0 docs and be estimated on output
 * @param {number} props.metrics[].lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
-* @param {array} props.metrics[].hourlySegments - array of segments that should have hourly data too (by default hourly data not recorded for segments)
+* @param {Array<string>} props.metrics[].hourlySegments - array of segments that should have hourly data too (by default hourly data not recorded for segments)
 * @example
 * //recording attribution
 * common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
@@ -2166,7 +2159,7 @@ common.recordMetric = function(params, props) {
 
 /**
 * Record specific metric
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {string} metric - metric to record
 * @param {object} props - properties of a metric defining how to record it
 * @param {object} tmpSet - object with already set meta properties
@@ -2234,7 +2227,7 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 
 /**
 * Record specific metric segment
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {string} metric - metric to record
 * @param {string} name - name of the segment to record
 * @param {string} val - value of the segment to record
@@ -2242,8 +2235,8 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 * @param {object} tmpSet - object with already set meta properties
 * @param {object} updateUsersZero - object with already set update for zero docs
 * @param {object} updateUsersMonth - object with already set update for months docs
-* @param {array} zeroObjUpdate - segments to fill for for zero docs
-* @param {array} monthObjUpdate - segments to fill for months docs
+* @param {Array<string>} zeroObjUpdate - segments to fill for for zero docs
+* @param {Array<string>} monthObjUpdate - segments to fill for months docs
 **/
 function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate) {
     var escapedMetricKey = name.replace(/^\$/, "").replace(/\./g, ":");
@@ -2302,7 +2295,7 @@ function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUse
 
 /**
 * Get object of date ids that should be used in fetching standard metric model documents
-* @param {params} params - {@link params} object
+* @param {Params} params - {@link params} object
 * @returns {object} with date ids, as {zero:"2017:0", month:"2017:2"}
 */
 common.getDateIds = function(params) {
@@ -2445,8 +2438,8 @@ common.adjustTimestampByTimezone = function(ts, tz) {
 * Getter/setter for dot notatons:
 * @param {object} obj - object to use
 * @param {string} is - path of properties to get
-* @param {varies} value - value to set
-* @returns {varies} value at provided path
+* @param {any} value - value to set
+* @returns {any} value at provided path
 * @example
 * common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 'string'
 * common.dot({a: {b: {c: 'string'}}}, ['a', 'b', 'c']) === 'string'
@@ -2475,10 +2468,10 @@ common.dot = function(obj, is, value) {
 /**
 * Not deep object and primitive type comparison function
 * 
-* @param  {Any} a object to compare
-* @param  {Any} b object to compare
-* @param  {Boolean} checkFromA true if check should be performed agains keys of a, resulting in true even if b has more keys
-* @return {Boolean} true if objects are equal, false if different types or not equal
+* @param  {any} a object to compare
+* @param  {any} b object to compare
+* @param  {boolean} checkFromA true if check should be performed agains keys of a, resulting in true even if b has more keys
+* @return {boolean} true if objects are equal, false if different types or not equal
 */
 common.equal = function(a, b, checkFromA) {
     if (a === b) {
@@ -2511,7 +2504,7 @@ common.equal = function(a, b, checkFromA) {
 
 /**
 * Returns plain object with key set to value
-* @param {varies} arguments - every odd value will be used as key and every event value as value for odd key
+* @param {any} arguments - every odd value will be used as key and every event value as value for odd key
 * @returns {object} new object with set key/value properties
 */
 common.o = function() {
@@ -2524,9 +2517,9 @@ common.o = function() {
 
 /**
 * Return index of array with objects where property = value
-* @param {array} array - array where to search value
+* @param {Array<string>} array - array where to search value
 * @param {string} property - property where to look for value
-* @param {varies} value - value you are searching for
+* @param {any} value - value you are searching for
 * @returns {number} index of the array
 */
 common.indexOf = function(array, property, value) {
@@ -2543,7 +2536,7 @@ common.indexOf = function(array, property, value) {
 * @param {string} module - module name
 * @param {object} options - additional opeitons
 * @param {boolean} options.rethrow - throw exception if there is some other error
-* @param {varies} value - value you are searching for
+* @param {any} value - value you are searching for
 * @returns {number} index of the array
 */
 common.optional = function(module, options) {
@@ -2637,7 +2630,7 @@ common.clearClashingQueryOperations = function(query) {
 };
 /**
 * Single method to update app_users document for specific user for SDK requests
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {object} update - update query for mongodb, should contain operators on highest level, as $set or $unset
 * @param {boolean} no_meta - if true, won't update some auto meta data, like first api call, last api call, etc.
 * @param {function} callback - function to run when update is done or failes, passing error and result as arguments
@@ -2897,8 +2890,8 @@ common.p = f => {
 /**
 * Revive json encoded data, as for example, regular expressions
 * @param {string} key - key of json object
-* @param {vary} value - value of json object
-* @returns {vary} modified value, if it had revivable data
+* @param {any} value - value of json object
+* @returns {any} modified value, if it had revivable data
 */
 common.reviver = (key, value) => {
     if (value === null) {
@@ -3453,21 +3446,21 @@ common.dbext = {
     },
 
     /**
-     * Decode string to ObjectID if needed
+     * Decode string to ObjectId if needed
      * 
-     * @param {String|ObjectID|null|undefined} id string or object id, empty string is invalid input
-     * @returns {ObjectID} id
+     * @param {string|ObjectId|null|undefined} id string or object id, empty string is invalid input
+     * @returns {ObjectId} id
      */
     oid: function(id) {
         return !id ? id : id instanceof mongodb.ObjectId ? id : new mongodb.ObjectId(id);
     },
 
     /**
-     * Create ObjectID with given timestamp. Uses current ObjectID random/server parts, meaning the 
+     * Create ObjectId with given timestamp. Uses current ObjectId random/server parts, meaning the 
      * object id returned still has same uniquness guarantees as random ones.
      * 
      * @param {Date|number} date Date object or timestamp in seconds, current date by default
-     * @returns {ObjectID} with given timestamp
+     * @returns {ObjectId} with given timestamp
      */
     oidWithDate: function(date = new Date()) {
         let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16),
@@ -3476,11 +3469,11 @@ common.dbext = {
     },
 
     /**
-     * Create blank ObjectID with given timestamp. Everything except for date part is zeroed.
+     * Create blank ObjectId with given timestamp. Everything except for date part is zeroed.
      * For use in queries like {_id: {$gt: oidBlankWithDate()}}
      * 
      * @param {Date|number} date Date object or timestamp in seconds, current date by default
-     * @returns {ObjectID} with given timestamp and zeroes in the rest of the bytes
+     * @returns {ObjectId} with given timestamp and zeroes in the rest of the bytes
      */
     oidBlankWithDate: function(date = new Date()) {
         let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16);
@@ -3506,25 +3499,25 @@ class DataTable {
 
     /**
      * Constructor
-     * @param {Object} queryString This object should contain the datatable arguments like iDisplayStart,
+     * @param {object} queryString This object should contain the datatable arguments like iDisplayStart,
      * iDisplayEnd, etc. These are added to request by DataTables automatically. If you have a different 
      * use-case, please make sure that the object has necessary fields.
      * @param {('full'|'rows')} queryString.outputFormat The default output of getProcessedResult is a 
      * DataTable compatible object ("full"). However, some consumers of the API may require simple, array-like 
      * results too ("rows"). In order to allow consumers to specify expected output, the field can be used.
-     * @param {Object} options Wraps options
-     * @param {Array} options.columnOrder If there are sortable columns in the table, then you need to 
+     * @param {object} options Wraps options
+     * @param {Array<string>} options.columnOrder If there are sortable columns in the table, then you need to 
      * specify a column list in order to make it work (e.g. ["name", "status"]). 
-     * @param {Object} options.defaultSorting When there is no sorting provided in query string, sorting 
+     * @param {object} options.defaultSorting When there is no sorting provided in query string, sorting 
      * falls back to this object, if you provide any (e.g. {"name": "asc"}). 
-     * @param {Array} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
+     * @param {Array<string>} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
      * @param {('regex'|'hard')} options.searchStrategy Specify searching method. If "regex", then a regex
      * search is performed on searchableFields. Other values will be considered as hard match.
-     * @param {Object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
+     * @param {object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
      * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat. 
-     * @param {String} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
+     * @param {string} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
      * is the default identifier of MongoDB docs. Please make sure that this key is in the output of initial pipeline.
-     * @param {Boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
+     * @param {boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
      * injected to the sorting expression, in order to mitigate possible duplicate records in pages. This is
      * a protection for cases when the sorting is done based on non-unique fields. Injection is enabled by default.
      * If you want to disable this feature, pass true.
@@ -3603,7 +3596,7 @@ class DataTable {
 
     /**
      * Returns the search field for. Only for internal use.
-     * @returns {Object|String} Regex object or search term itself
+     * @returns {object|string} Regex object or search term itself
      */
     _getSearchField() {
         if (this.searchStrategy === "regex") {
@@ -3616,26 +3609,26 @@ class DataTable {
      * Creates an aggregation pipeline based on the query string and additional stages/facets
      * if provided any. Data flow between stages are not checked, so please do check manually.
      * 
-     * @param {Object} options Wraps options
-     * @param {Array} options.initialPipeline If you need to select a subset, to add new fields or 
+     * @param {object} options Wraps options
+     * @param {Array<string>} options.initialPipeline If you need to select a subset, to add new fields or 
      * anything else involving aggregation stages, you can pass an array of stages using options.initialPipeline.
      * Initial pipeline is basically used for counting the total number of documents without pagination and search.
      * 
      * # of output rows = total number of docs.
      * 
-     * @param {Array} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
+     * @param {Array<string>} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
      * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no 
      * query, then this will be another stage after initialPipeline. Paging and sorting are added after filteredPipeline.
      * 
      * # of output rows = filtered number of docs.
      * 
-     * @param {Object} options.customFacets You can add facets to your results using option.customFacets. 
+     * @param {object} options.customFacets You can add facets to your results using option.customFacets. 
      * Custom facets will use initial pipeline's output as its input. If the documents you're 
      * looking for are included by initial pipeline's output, you can use this to avoid extra db calls.
      * You can obtain outputs of your custom facets via getProcessedResult. Please note that custom facets will only be 
      * available when the output format is "full".
      * 
-     * @returns {Object} Pipeline object
+     * @returns {object} Pipeline object
      */
     getAggregationPipeline({
         initialPipeline = [],
@@ -3690,11 +3683,11 @@ class DataTable {
 
     /**
      * Processes the aggregation result and returns a ready-to-use response.
-     * @param {Object} queryResult Aggregation result returned by the MongoDB.
+     * @param {object} queryResult Aggregation result returned by the MongoDB.
      * @param {Function} processFn A callback function that has a single argument 'rows'.
      * As the name implies, it is an array of returned rows. The function can be used as
      * a final stage to do modifications to fetched items before completing the response. 
-     * @returns {Object|Array} Returns the final response
+     * @returns {object|Array<string>} Returns the final response
      */
     getProcessedResult(queryResult, processFn) {
         var fullTotal = 0,
