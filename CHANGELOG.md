@@ -1,5 +1,7 @@
 ## Version 25.03.x
 Features:
+- Add ability to allow multiple CORS per app for web apps
+- Add app id and name as view segment for self-tracking
 - [alerts] alerts table default order should be by creation time newest at the top
 - [core] allow tracking Countly dashboard usage with Countly
 - [sdk] Improved and added new Server Config options
@@ -7,6 +9,11 @@ Features:
 Enterprise Features:
 - [journey_engine] Editing/Deleting/Duplication of blocks and version management
 - [cohorts] [funnels] [ai-assistants] Add cohorts and funnels assistant
+
+Dependencies:
+- Bump body-parser from 1.20.3 to 2.2.0
+- Bump moment-timezone from 0.5.47 to 0.5.48
+- Bump supertest from 7.0.0 to 7.1.0
 
 ## Version 25.03.3
 Fixes:
