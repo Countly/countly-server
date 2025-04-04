@@ -25,7 +25,8 @@
     "mocha": "10.8.2",
     "nyc": "17.1.0",
     "should": "13.2.3",
-    "supertest": "7.1.0"
+    "supertest": "7.1.0",
+    "typescript": "^5.8.2"
   },
   "scripts": {
     "test": "grunt --verbose"

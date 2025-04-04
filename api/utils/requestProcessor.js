@@ -3,6 +3,11 @@
 * @module api/utils/requestProcessor
 */
 
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ * @typedef {import('../../types/common').TimeObject} TimeObject
+ */
+
 const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
@@ -65,7 +70,7 @@ const reloadConfig = function() {
 /**
  * Default request processing handler, which requires request context to operate. Check tcp_example.js
  * @static
- * @param {params} params - for request context. Minimum needed properties listed
+ * @param {Params} params - for request context. Minimum needed properties listed
  * @param {object} params.req - Request object, should not be empty and should contain listed params
  * @param {string} params.req.url - Endpoint URL that you are calling. May contain query string.
  * @param {object} params.req.body - Parsed JSON object with data (same name params will overwrite query string if anything provided there)
@@ -103,9 +108,9 @@ const processRequest = (params) => {
         paths = urlParts.pathname.split("/");
     /**
      * Main request processing object containing all information shared through all the parts of the same request
-     * @typedef params
-     * @type {object}
-     * @global
+     * typedef params
+     * type {object}
+     * global
      * @property {string} href - full URL href
      * @property {http.ServerResponse} res - The HTTP response object
      * @property {http.IncomingMessage} req - The HTTP request object
@@ -182,7 +187,7 @@ const processRequest = (params) => {
      * @property {Object} [member.permission.d[app_id].allowed] - Object containing allowed delete permissions for the app
      * @property {Object} member.eventList - Object containing event collections with replaced app names
      * @property {Object} member.viewList - Object containing view collections with replaced app names
-     * @property {timeObject} time - Time object for the request
+     * @property {TimeObject} time - Time object for the request
      * @property {string} request_hash - Hash of the request data
      * @property {string} [previous_session] - ID of the user's previous session
      * @property {number} [previous_session_start] - Start timestamp of the user's previous session
@@ -3747,7 +3752,7 @@ function processUser(params, initiator, done, try_times) {
 /**
  * Function to fetch app user from db
  * @param  {object} params - params object
- * @returns {promise} - user
+ * @returns {Promise} - user
  */
 const fetchAppUser = (params) => {
     return new Promise((resolve) => {
