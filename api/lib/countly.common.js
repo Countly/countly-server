@@ -3,8 +3,16 @@
 * @module "api/lib/countly.common"
 */
 
+/**
+ * @typedef {import('moment-timezone')} MomentTimezone
+ */
+
 /** @lends module:api/lib/countly.common */
 var countlyCommon = {},
+    /**
+     * Reference to momentjs
+     * @type {MomentTimezone} moment
+     */
     moment = require('moment-timezone'),
     underscore = require('underscore');
 
@@ -17,8 +25,8 @@ var _period = "hour",
 
 /**
 * Returns array with unique ticks for period
-* @param {moment} startTimestamp - start of period
-* @param {moment} endTimestamp - end of period
+* @param {MomentTimezone} startTimestamp - start of period
+* @param {MomentTimezone} endTimestamp - end of period
 * @returns {array} unique array ticks for period
 **/
 /*function getTicksBetween(startTimestamp, endTimestamp) {
@@ -46,8 +54,8 @@ var _period = "hour",
 
 /**
 * Returns array with more generalized unique ticks for period
-* @param {moment} startTimestamp - start of period
-* @param {moment} endTimestamp - end of period
+* @param {MomentTimezone} startTimestamp - start of period
+* @param {MomentTimezone} endTimestamp - end of period
 * @returns {array} unique array ticks for period
 **/
 /*function getTicksCheckBetween(startTimestamp, endTimestamp) {
@@ -355,7 +363,7 @@ function fixTimestampToMilliseconds(ts) {
 
 /**
 * Returns a period object used by all time related data calculation functions
-* @param {moment} prmPeriod period to be calculated (optional)
+* @param {MomentTimezone} prmPeriod period to be calculated (optional)
 * @param {string} bucket  - daily or monthly. If bucket is set, period will be modified to fit full months or days
 * @returns {timeObject} time object
 **/
