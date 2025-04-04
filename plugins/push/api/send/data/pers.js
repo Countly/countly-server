@@ -22,7 +22,7 @@ module.exports = function personalize(string, personalizations) {
         }
 
         // push the personalization function
-        parts.push(function (data) {
+        parts.push(function(data) {
             let personalization = personalizations[idx];
 
             data = dot(data, personalization.k);
