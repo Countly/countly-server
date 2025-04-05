@@ -33,6 +33,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/initialAvatar.js',
                     'frontend/express/public/javascripts/utils/highlight/highlight.pack.js',
                     'frontend/express/public/javascripts/utils/webfont.js',
+                    'frontend/express/public/javascripts/utils/leaflet.js',
                     'frontend/express/public/javascripts/utils/js-deep-equals.unsorted.min.js',
                     'frontend/express/public/javascripts/utils/polyfill/es6-promise.auto.min.js',
                     'frontend/express/public/javascripts/utils/polyfill/intersection-observer.js',
@@ -182,6 +183,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/stylesheets/main.min.css': [
                         'frontend/express/public/stylesheets/main.css',
                         'frontend/express/public/stylesheets/vue/clyvue.css',
+                        'frontend/express/public/stylesheets/leaflet/leaflet.css',
                         'frontend/express/public/stylesheets/vue/vue-json-pretty.css',
                         'frontend/express/public/javascripts/dom/gridstack/gridstack.css',
                         'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',
