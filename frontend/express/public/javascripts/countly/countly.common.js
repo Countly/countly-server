@@ -450,6 +450,207 @@
         };
 
         /**
+        * Get Date graph ticks
+        * @memberof countlyCommon
+        * @param {string} bucket - time bucket, accepted values, hourly, weekly, monthly
+        * @param {boolean} overrideBucket - override existing bucket logic and simply use current date for generating ticks
+        * @param {boolean} newChart - new chart implementation
+        * @returns {object} object containing tick texts and ticks to use on time graphs
+        * @example <caption>Example output</caption>
+        *{
+        *   "min":0,
+        *   "max":29,
+        *   "tickTexts":["22 Dec, Thursday","23 Dec, Friday","24 Dec, Saturday","25 Dec, Sunday","26 Dec, Monday","27 Dec, Tuesday","28 Dec, Wednesday",
+        *        "29 Dec, Thursday","30 Dec, Friday","31 Dec, Saturday","1 Jan, Sunday","2 Jan, Monday","3 Jan, Tuesday","4 Jan, Wednesday","5 Jan, Thursday",
+        *       "6 Jan, Friday","7 Jan, Saturday","8 Jan, Sunday","9 Jan, Monday","10 Jan, Tuesday","11 Jan, Wednesday","12 Jan, Thursday","13 Jan, Friday",
+        *        "14 Jan, Saturday","15 Jan, Sunday","16 Jan, Monday","17 Jan, Tuesday","18 Jan, Wednesday","19 Jan, Thursday","20 Jan, Friday"],
+        *   "ticks":[[1,"23 Dec"],[4,"26 Dec"],[7,"29 Dec"],[10,"1 Jan"],[13,"4 Jan"],[16,"7 Jan"],[19,"10 Jan"],[22,"13 Jan"],[25,"16 Jan"],[28,"19 Jan"]]
+        *}
+        */
+        countlyCommon.getTickObj = function(bucket, overrideBucket, newChart) {
+            var days = parseInt(countlyCommon.periodObj.numberOfDays, 10),
+                ticks = [],
+                tickTexts = [],
+                skipReduction = false,
+                limitAdjustment = 0;
+
+            if (overrideBucket) {
+                var thisDay;
+                if (countlyCommon.periodObj.activePeriod) {
+                    thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
+                }
+                else {
+                    thisDay = moment(countlyCommon.periodObj.currentPeriodArr[0], "YYYY.M.D");
+                }
+                ticks.push([0, countlyCommon.formatDate(thisDay, "D MMM")]);
+                tickTexts[0] = countlyCommon.formatDate(thisDay, "D MMM, dddd");
+            }
+            else if ((days === 1 && _period !== "month" && _period !== "day") || (days === 1 && bucket === "hourly")) {
+                //When period is an array or string like Xdays, Xweeks
+                for (var z = 0; z < 24; z++) {
+                    ticks.push([z, (z + ":00")]);
+                    tickTexts.push((z + ":00"));
+                }
+                skipReduction = true;
+            }
+            else {
+                var start = moment().subtract(days, 'days');
+                if (Object.prototype.toString.call(countlyCommon.getPeriod()) === '[object Array]') {
+                    start = moment(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1], "YYYY.MM.DD").subtract(days, 'days');
+                }
+                var i = 0;
+                if (bucket === "monthly") {
+                    var allMonths = [];
+
+                    //so we would not start from previous year
+                    start.add(1, 'day');
+
+                    var monthCount = 12;
+
+                    for (i = 0; i < monthCount; i++) {
+                        allMonths.push(start.format(countlyCommon.getDateFormat("MMM YYYY")));
+                        start.add(1, 'months');
+                    }
+
+                    allMonths = _.uniq(allMonths);
+
+                    for (i = 0; i < allMonths.length; i++) {
+                        ticks.push([i, allMonths[i]]);
+                        tickTexts[i] = allMonths[i];
+                    }
+                }
+                else if (bucket === "weekly") {
+                    var allWeeks = [];
+                    for (i = 0; i < days; i++) {
+                        start.add(1, 'days');
+                        if (i === 0 && start.isoWeekday() === 7) {
+                            continue;
+                        }
+                        allWeeks.push(start.isoWeek() + " " + start.isoWeekYear());
+                    }
+
+                    allWeeks = _.uniq(allWeeks);
+
+                    for (i = 0; i < allWeeks.length; i++) {
+                        var parts = allWeeks[i].split(" ");
+                        //iso week falls in the year which has thursday of the week
+                        if (parseInt(parts[1]) === moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).isoWeekday(4).year()) {
+                            ticks.push([i, "W" + allWeeks[i]]);
+
+                            var weekText = countlyCommon.formatDate(moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).isoWeekday(1), ", D MMM YYYY");
+                            tickTexts[i] = "W" + parts[0] + weekText;
+                        }
+                    }
+                }
+                else if (bucket === "hourly") {
+                    for (i = 0; i < days; i++) {
+                        start.add(1, 'days');
+
+                        for (var j = 0; j < 24; j++) {
+                            //if (j === 0) {
+                            ticks.push([((24 * i) + j), countlyCommon.formatDate(start, "D MMM") + " 0:00"]);
+                            //}
+
+                            tickTexts.push(countlyCommon.formatDate(start, "D MMM, ") + j + ":00");
+                        }
+                    }
+                }
+                else {
+                    if (_period === "day") {
+                        start.add(1, 'days');
+                        var now = new Date();
+                        // it will add the count of days of the current month to the x-axis label
+                        var currentMonthCount = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                        for (i = 0; i < currentMonthCount; i++) {
+                            ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
+                            tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            start.add(1, 'days');
+                        }
+                    }
+                    else if (_period === "prevMonth") {
+                        start = moment().subtract(1, "month").startOf("month");
+                        //start.add(1,"days");
+                        let current = new Date();
+                        let prevMonthCount = new Date(current.getFullYear(), current.getMonth(), 0).getDate();
+                        for (i = 0; i < prevMonthCount; i++) {
+                            ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
+                            tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            start.add(1, 'days');
+                        }
+                    }
+                    else {
+                        var startYear = start.year();
+                        var endYear = moment().year();
+                        for (i = 0; i < days; i++) {
+                            start.add(1, 'days');
+                            if (startYear < endYear) {
+                                ticks.push([i, countlyCommon.formatDate(start, "D MMM YYYY")]);
+                                tickTexts[i] = countlyCommon.formatDate(start, "D MMM YYYY, dddd");
+                            }
+                            else {
+                                ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
+                                tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            }
+                        }
+                    }
+                }
+
+                ticks = _.compact(ticks);
+                tickTexts = _.compact(tickTexts);
+            }
+
+            var labelCn = ticks.length;
+            if (!newChart) {
+                if (ticks.length <= 2) {
+                    limitAdjustment = 0.02;
+                    var tmpTicks = [],
+                        tmpTickTexts = [];
+
+                    tmpTickTexts[0] = "";
+                    tmpTicks[0] = [-0.02, ""];
+
+                    for (var m = 0; m < ticks.length; m++) {
+                        tmpTicks[m + 1] = [m, ticks[m][1]];
+                        tmpTickTexts[m + 1] = tickTexts[m];
+                    }
+
+                    tmpTickTexts.push("");
+                    tmpTicks.push([tmpTicks.length - 1 - 0.98, ""]);
+
+                    ticks = tmpTicks;
+                    tickTexts = tmpTickTexts;
+                }
+                else if (!skipReduction && ticks.length > 10) {
+                    var reducedTicks = [],
+                        step = (Math.floor(ticks.length / 10) < 1) ? 1 : Math.floor(ticks.length / 10),
+                        pickStartIndex = (Math.floor(ticks.length / 30) < 1) ? 1 : Math.floor(ticks.length / 30);
+
+                    for (var l = pickStartIndex; l < (ticks.length - 1); l = l + step) {
+                        reducedTicks.push(ticks[l]);
+                    }
+
+                    ticks = reducedTicks;
+                }
+                else {
+                    ticks[0] = null;
+
+                    // Hourly ticks already contain 23 empty slots at the end
+                    if (!(bucket === "hourly" && days !== 1)) {
+                        ticks[ticks.length - 1] = null;
+                    }
+                }
+            }
+
+            return {
+                min: 0 - limitAdjustment,
+                max: (limitAdjustment) ? tickTexts.length - 3 + limitAdjustment : tickTexts.length - 1,
+                tickTexts: tickTexts,
+                ticks: _.compact(ticks),
+                labelCn: labelCn
+            };
+        };
+
+        /**
          *  Checks if current graph type matches the one being drawn
          *  @memberof countlyCommon
          *  @param {string} type - graph type
