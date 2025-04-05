@@ -31,6 +31,7 @@ module.exports = function(grunt) {
                     'frontend/express/public/javascripts/utils/store+json2.min.js',
                     'frontend/express/public/javascripts/utils/jquery.idle-timer.js',
                     'frontend/express/public/javascripts/utils/initialAvatar.js',
+                    'frontend/express/public/javascripts/utils/highlight/highlight.pack.js',
                     'frontend/express/public/javascripts/utils/dropzone.js',
                     'frontend/express/public/javascripts/utils/webfont.js',
                     'frontend/express/public/javascripts/utils/js-deep-equals.unsorted.min.js',
