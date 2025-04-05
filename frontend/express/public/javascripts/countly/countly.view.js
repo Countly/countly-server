@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyEvent, $, Backbone, app, CountlyHelpers, _, Handlebars */
+/* global countlyCommon, countlyEvent, $, Backbone, app, _ */
 
 var initializeOnce = _.once(function() {
     return $.when(countlyEvent.initialize()).then(function() { });
