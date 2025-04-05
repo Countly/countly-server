@@ -500,24 +500,6 @@
         document.getElementsByTagName("head")[0].appendChild(fileref);
     };
 
-    CountlyHelpers.messageText = function(messagePerLocale) {
-        if (!messagePerLocale) {
-            return '';
-        }
-        else if (messagePerLocale.default) {
-            return messagePerLocale.default;
-        }
-        else if (messagePerLocale.en) {
-            return messagePerLocale.en;
-        }
-        else {
-            for (var locale in messagePerLocale) {
-                return messagePerLocale[locale];
-            }
-        }
-        return '';
-    };
-
     /**
     * Create Countly metric model to fetch metric data from server and provide it to views
     * @param {object} countlyMetric - initial metric object if you want to pre provide some methods, etc
@@ -1371,97 +1353,6 @@
             decimalPlaces = 2;
         }
         return parseFloat((Math.round(value * 100)).toFixed(decimalPlaces));
-    };
-
-    /*
-     * Function that returns difference between two arrays
-     * @param {Array} a1 - first array
-     * @param {Array} a2 - second array
-     */
-    CountlyHelpers.arrayDiff = function(a1, a2) {
-        var a = [], diff = [];
-
-        for (var i1 = 0; i1 < a1.length; i1++) {
-            a[a1[i1]] = true;
-        }
-
-        for (var i2 = 0; i2 < a2.length; i2++) {
-            if (a[a2[i2]]) {
-                delete a[a2[i2]];
-            }
-            else {
-                a[a2[i2]] = true;
-            }
-        }
-
-        for (var k in a) {
-            diff.push(k);
-        }
-
-        return diff;
-    };
-
-    /*
-     * Function that returns difference between two arrays
-     * @param {*} item - item
-     * @param {Array} array - array
-     */
-    CountlyHelpers.removeItemFromArray = function(item, array) {
-        var index = array.indexOf(item);
-        if (index > -1) {
-            array.splice(index, 1);
-        }
-        return array;
-    };
-
-    /**
-     * Function that clean duplicates from passed array.
-     * @param {Array} array - array
-     * @return {Array} - array without duplicates
-     */
-    CountlyHelpers.arrayUnique = function(array) {
-        var a = array.concat();
-        for (var i = 0; i < a.length; ++i) {
-            for (var j = i + 1; j < a.length; ++j) {
-                if (a[i] === a[j]) {
-                    a.splice(j--, 1);
-                }
-            }
-        }
-        return a;
-    };
-
-    /**
-     * Function that remove empty values from array.
-     * @param {array} array - array that contain empty values
-     * @return {array} - array without empty values
-     */
-    CountlyHelpers.removeEmptyValues = function(array) {
-        for (var i = array.length - 1; i >= 0; i--) {
-            if (array[i] === "") {
-                array.splice(i, 1);
-            }
-        }
-        return array;
-    };
-
-    /**
-     * Function that creates a shallow copy of an object excluding specified fields.
-     * Warning: If no excluded fields specified, returns the original reference
-     * @param {Object} obj Main object
-     * @param {Array} excluded Array of excluded fields
-     * @returns {Object} Shallow copy (If no excluded fields, the original reference)
-     */
-    CountlyHelpers.objectWithoutProperties = function(obj, excluded) {
-        if (!obj || !excluded || excluded.length === 0) {
-            return obj;
-        }
-        return Object.keys(obj).reduce(function(acc, val) {
-            if (excluded.indexOf(val) === -1) {
-                acc[val] = obj[val];
-            }
-            return acc;
-        }, {});
     };
 
     /** function sha1
