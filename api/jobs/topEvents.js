@@ -138,14 +138,19 @@ class TopEventsJob extends job.Job {
      * The errors of all functions will be caught here.
      */
     async getAllApps() {
+        log.d("Fetching all apps");
         try {
             const getAllApps = await new Promise((res, rej) => common.db.collection("apps").find({}, { _id: 1, timezone: 1 }).toArray((err, apps) => err ? rej(err) : res(apps)));
-            await Promise.all(getAllApps.map((app) => this.getAppEvents(app)));
+            for (var z = 0; z < getAllApps.length; z++) {
+                //Calculating for each app serially.
+                await this.getAppEvents(getAllApps[z]);
+            }
         }
         catch (error) {
             log.e("TopEvents Job has a error: ", error);
             throw error;
         }
+        log.d("Finished processing");
     }
 
     /**
@@ -178,6 +183,7 @@ class TopEventsJob extends job.Job {
      * @param {Object} app - saveAppEvents object
      */
     async getAppEvents(app) {
+        log.d(app._id + ": Fetching app events");
         const getEvents = await new Promise((res, rej) => common.db.collection("events").findOne({ _id: app._id }, (errorEvents, result) => errorEvents ? rej(errorEvents) : res(result)));
         if (getEvents && 'list' in getEvents) {
             const eventMap = this.eventsFilter(getEvents.list);
@@ -199,6 +205,7 @@ class TopEventsJob extends job.Job {
                     let totalDuration = 0;
                     let prevTotalDuration = 0;
                     for (const event of eventMap) {
+                        log.d("    getting event data for event: " + event + " (" + period + ")");
                         const collectionNameEvents = this.eventsCollentions({ event, id: app._id });
                         await this.getEventsCount({ collectionNameEvents, ob, data, event });
                         totalCount += data[event].data.count.total;
@@ -208,10 +215,15 @@ class TopEventsJob extends job.Job {
                         totalDuration += data[event].data.duration.total;
                         prevTotalDuration += data[event].data.duration["prev-total"];
                     }
+                    log.d("    getting session count (" + period + ")");
                     await this.getSessionCount({ ob, sessionData, usersData, usersCollectionName });
+                    log.d("    saving data (" + period + ")");
                     await this.saveAppEvents({ app, data, sessionData, usersData, period, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration });
                 }
             }
+        }
+        else {
+            log.d("    No events found for app");
         }
 
     }
