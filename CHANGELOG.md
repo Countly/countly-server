@@ -1,3 +1,7 @@
+## Version 24.05.X
+Fixes:
+- [reports] Correctly match event for email report if event key contains '.'
+
 ## Version 24.05.28
 Enterprise Fixes:
 - [cohorts] Fixed issue with combining multiple cohorts
