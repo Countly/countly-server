@@ -7,16 +7,12 @@
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
  * @typedef {import('mongodb').ObjectId} ObjectId
- * @typedef {import('moment-timezone')} MomentTimezone
+ * @typedef {import('moment-timezone').Moment} MomentTimezone
  */
 
 /** @lends module:api/utils/common **/
 
 var common = {};
-/** 
- * Reference to momentjs
- * @type {MomentTimezone} moment
-*/
 var moment = require('moment-timezone');
 var crypto = require('crypto'),
     logger = require('./log.js'),
@@ -205,7 +201,7 @@ common.log = logger;
 
 /**
 * Mapping some common property names from longer understandable to shorter representation stored in database
-* @type {object} 
+* @type {import('../../types/common').DbMap} 
 */
 common.dbMap = {
     'events': 'e',
@@ -223,7 +219,7 @@ common.dbMap = {
 
 /**
 * Mapping some common user property names from longer understandable to shorter representation stored in database
-* @type {object} 
+* @type {import('../../types/common').DbUserMap} 
 */
 common.dbUserMap = {
     'device_id': 'did',
@@ -259,7 +255,7 @@ common.dbUniqueMap = {
 
 /**
 * Mapping some common event property names from longer understandable to shorter representation stored in database
-* @type {object} 
+* @type {import('../../types/common').DbEventMap} 
 */
 common.dbEventMap = {
     'user_properties': 'up',
@@ -279,7 +275,6 @@ common.config = countlyConfig;
 
 /**
 * Reference to moment-timezone which combines moment.js with timezone support
-* @type {MomentTimezone}
 */
 common.moment = moment;
 
@@ -337,7 +332,7 @@ common.os_mapping = {
 
 /**
 * Whole base64 alphabet for fetching splitted documents
-* @type {object} 
+* @type {Array<string>} 
 */
 common.base64 = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "+", "/"];
 
@@ -613,7 +608,7 @@ common.fillTimeObject = function(params, object, property, increment) {
 /**
 * Creates a time object from request's milisecond or second timestamp in provided app's timezone
 * @param {string} appTimezone - app's timezone
-* @param {number} reqTimestamp - timestamp in the request
+* @param {string} reqTimestamp - timestamp in the request
 * @returns {TimeObject} Time object for current request
 */
 common.initTimeObj = function(appTimezone, reqTimestamp) {
@@ -668,7 +663,7 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
 * Creates a Date object from provided seconds timestamp in provided timezone
 * @param {number} timestamp - unix timestamp in seconds
 * @param {string} timezone - name of the timezone
-* @returns {moment} moment object for provided time
+* @returns {MomentTimezone} moment object for provided time
 */
 common.getDate = function(timestamp, timezone) {
     var tmpDate = (timestamp) ? moment.unix(timestamp) : moment();
@@ -1795,7 +1790,7 @@ function stripPort(ip) {
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
 * @param {boolean=} isUnique - if property is unique
-* @returns {void} void
+* @returns {boolean} void
 * @example
 * var obj = {};
 * common.fillTimeObjectZero(params, obj, "u", 1);
@@ -1855,7 +1850,7 @@ common.fillTimeObjectZero = function(params, object, property, increment, isUniq
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
 * @param {boolean=} forceHour - force recording hour information too, dfault is false
-* @returns {void} void
+* @returns {boolean} (placeholder description to satisfy jsdoc)
 * @example
 * var obj = {};
 * common.fillTimeObjectMonth(params, obj, "u", 1);
@@ -2314,8 +2309,8 @@ common.getDateIds = function(params) {
 
 /**
 * Get diference between 2 momentjs instances in specific measurement
-* @param {moment} moment1 - momentjs with start date
-* @param {moment} moment2 - momentjs with end date
+* @param {MomentTimezone} moment1 - momentjs with start date
+* @param {MomentTimezone} moment2 - momentjs with end date
 * @param {string} measure - units of difference, can be minutes, hours, days, weeks
 * @returns {number} difference in provided units
 */
@@ -3610,13 +3605,13 @@ class DataTable {
      * if provided any. Data flow between stages are not checked, so please do check manually.
      * 
      * @param {object} options Wraps options
-     * @param {Array<string>} options.initialPipeline If you need to select a subset, to add new fields or 
+     * @param {Array<object>} options.initialPipeline If you need to select a subset, to add new fields or 
      * anything else involving aggregation stages, you can pass an array of stages using options.initialPipeline.
      * Initial pipeline is basically used for counting the total number of documents without pagination and search.
      * 
      * # of output rows = total number of docs.
      * 
-     * @param {Array<string>} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
+     * @param {Array<object>} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
      * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no 
      * query, then this will be another stage after initialPipeline. Paging and sorting are added after filteredPipeline.
      * 
