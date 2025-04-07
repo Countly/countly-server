@@ -9,7 +9,10 @@ describe('3.Success tooltip (latest Web SDK version)', () => {
                 expect(response.status).to.eq(200);
             });
     });
-    it('3.2-Test', function() {
+    it('3.2-Reset', function() {
+        goToConfigTab();
+    });
+    it('3.3-Test', function () {
         goToConfigTab();
         checkTooltipAppears('success');
     });

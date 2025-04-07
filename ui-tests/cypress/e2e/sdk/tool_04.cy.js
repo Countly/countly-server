@@ -9,7 +9,10 @@ describe('4.Mixed tooltip (old Android SDK version)', () => {
                 expect(response.status).to.eq(200);
             });
     });
-    it('4.2-Test', function() {
+    it('4.2-Reset', function() {
+        goToConfigTab();
+    });
+    it('4.3-Test', function() {
         goToConfigTab();
         checkTooltipAppears('success', 2, true);
         checkTooltipAppears('warning', 19, true);

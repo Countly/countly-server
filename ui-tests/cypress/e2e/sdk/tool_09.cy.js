@@ -12,7 +12,10 @@ describe('9.Mixed tooltip (multiple SDK versions)', () => {
                 expect(response.status).to.eq(200);
             });
     });
-    it('9.2-Test', function() {
+    it('9.2-Reset', function() {
+        goToConfigTab();
+    });
+    it('9.3-Test', function () {
         goToConfigTab();
         checkTooltipAppears('success', 2, true);
         checkTooltipAppears('warning', 19, true);

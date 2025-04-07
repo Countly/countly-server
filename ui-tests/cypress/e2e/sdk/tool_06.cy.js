@@ -9,7 +9,10 @@ describe('6.Danger tooltip (unsupported SDK)', () => {
                 expect(response.status).to.eq(200);
             });
     });
-    it('6.2-Test', function() {
+    it('6.2-Reset', function() {
+        goToConfigTab();
+    });
+    it('6.3-Test', function () {
         goToConfigTab();
         checkTooltipAppears('danger');
     });

@@ -9,7 +9,10 @@ describe('5.Mixed tooltip (old iOS SDK version)', () => {
                 expect(response.status).to.eq(200);
             });
     });
-    it('5.2-Test', function() {
+    it('5.2-Reset', function() {
+        goToConfigTab();
+    });
+    it('5.3-Test', function () {
         goToConfigTab();
         checkTooltipAppears('success', 2, true);
         checkTooltipAppears('warning', 19, true);

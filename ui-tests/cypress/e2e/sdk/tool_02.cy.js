@@ -9,7 +9,10 @@ describe('2.Warning tooltip (old Web SDK version)', () => {
                 expect(response.status).to.eq(200);
             });
     });
-    it('2.2-Test', function() {
+    it('2.2-Reset', function() {
+        goToConfigTab();
+    });
+    it('2.3-Test', function () {
         goToConfigTab();
         checkTooltipAppears('warning');
     });

@@ -9,7 +9,10 @@ describe('7.Success tooltip (latest Android SDK version)', () => {
                 expect(response.status).to.eq(200);
             });
     });
-    it('7.2-Test', function() {
+    it('7.2-Reset', function() {
+        goToConfigTab();
+    });
+    it('7.3-Test', function () {
         goToConfigTab();
         checkTooltipAppears('success');
     });
