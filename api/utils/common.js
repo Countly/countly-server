@@ -1850,7 +1850,7 @@ common.fillTimeObjectZero = function(params, object, property, increment, isUniq
 * @param {string} property - meric value or segment or property to fill/increment
 * @param {number=} increment - by how much to increments, default is 1
 * @param {boolean=} forceHour - force recording hour information too, dfault is false
-* @returns {boolean}
+* @returns {boolean} (placeholder description to satisfy jsdoc)
 * @example
 * var obj = {};
 * common.fillTimeObjectMonth(params, obj, "u", 1);
