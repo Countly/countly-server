@@ -2,10 +2,12 @@
  * @typedef {import('../types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('../types/queue.ts').PushEvent} PushEvent
  * @typedef {import('../types/queue.ts').ResultEvent} ResultEvent
+ * @typedef {import('../types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
  * @typedef {import('../types/queue.ts').ScheduleEventDTO} ScheduleEventDTO
  * @typedef {import('../types/queue.ts').PushEventDTO} PushEventDTO
  * @typedef {import('../types/queue.ts').ResultEventDTO} ResultEventDTO
  * @typedef {import('../types/queue.ts').CredentialsDTO} CredentialsDTO
+ * @typedef {import('../types/queue.ts').AutoTriggerEventDTO} AutoTriggerEventDTO
  * @typedef {import('../types/credentials.js').SomeCredential} SomeCredential
  */
 
@@ -79,10 +81,36 @@ function resultEventDTOToObject(resultEvent) {
     }
 }
 
+/**
+ * @param {AutoTriggerEventDTO} autoTriggerEvent
+ * @returns {AutoTriggerEvent}
+ */
+function autoTriggerEventDTOToObject(autoTriggerEvent) {
+    switch (autoTriggerEvent.kind) {
+    case "api":
+        return {
+            ...autoTriggerEvent,
+            appId: new ObjectId(autoTriggerEvent.appId),
+            messageId: new ObjectId(autoTriggerEvent.messageId),
+        }
+    case "cohort":
+        return {
+            ...autoTriggerEvent,
+            appId: new ObjectId(autoTriggerEvent.appId),
+        }
+    case "event":
+        return {
+            ...autoTriggerEvent,
+            appId: new ObjectId(autoTriggerEvent.appId),
+        }
+    }
+}
+
 
 module.exports = {
     scheduleEventDTOToObject,
     pushEventDTOToObject,
     resultEventDTOToObject,
-    credentialsDTOToObject
+    credentialsDTOToObject,
+    autoTriggerEventDTOToObject,
 }

@@ -128,7 +128,7 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
 
     /** @type {MessageCollection} */
     const col = db.collection("messages");
-    const now = Date.now();
+    const now = new Date;
     const promises = messageFilters.map(async ({ appId, triggerFilter, uids }) => {
         let messages = await col.find({
             app: appId,
@@ -145,7 +145,7 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
             }
         }).toArray();
         return Promise.allSettled(messages.map(message => createSchedule(
-            db, appId, message._id, new Date, false, undefined, {uids}
+            db, appId, message._id, now, false, undefined, {uids}
         )));
     });
 
@@ -170,7 +170,7 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
  * @param {Date}             scheduledTo       - Date to schedule this message to. UTC user's schedule date when timezone aware
  * @param {Boolean}          timezoneAware     - set true if this is going to be scheduled for each timezone
  * @param {Number=}          schedulerTimezone - timezone of the scheduler
- * @param {AudienceFilters=} audienceFilters    - user ids from app_users{appId} collection
+ * @param {AudienceFilters=} audienceFilters   - user ids from app_users{appId} collection
  * @returns {Promise<Schedule>} created Schedule document from message_schedules collection
  */
 async function createSchedule(
@@ -422,16 +422,19 @@ function mergeAutoTriggerEvents(autoTriggerEvents) {
         switch (event.kind) {
         case "cohort":
             const id = event.cohortId.toString();
-            if (!(id in map)) {
+            if (!(id in map.cohort)) {
                 map.cohort[id] = { enter: new Set, exit: new Set };
             }
-            event.uids.forEach(map.cohort[id][event.direction].add);
+            event.uids.forEach(uid => map.cohort[id][event.direction].add(uid));
             break;
         case "event":
-            if (!(event.name in map.event)) {
-                map.event[event.name] = new Set;
+            for (let j = 0; j < event.eventKeys.length; j++) {
+                const key = event.eventKeys[j];
+                if (!(key in map.event)) {
+                    map.event[key] = new Set;
+                }
+                map.event[key].add(event.uid);
             }
-            map.event[event.name].add(event.uid);
             break;
         }
     }

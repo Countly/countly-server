@@ -52,9 +52,10 @@ const plugins = require('../../pluginManager'),
     };
 
 const { initPushQueue } = require("./new/lib/kafka.js");
-const { composeAllScheduledPushes, scheduleByAutoTrigger } = require('./new/composer.js');
+const { composeAllScheduledPushes } = require('./new/composer.js');
 const { sendAllPushes } = require('./new/sender.js');
 const { saveResults } = require("./new/resultor.js");
+const { scheduleMessageByAutoTriggers } = require("./new/scheduler.js");
 
 plugins.setConfigs(FEATURE_NAME, {
     proxyhost: '',
@@ -96,7 +97,7 @@ async function queueInitializer(db, isMaster = false) {
         await initPushQueue(
             async function(pushes) {
                 try {
-                    // console.log(JSON.stringify(pushes, null, 2));
+                    console.log(JSON.stringify(pushes, null, 2));
                     await sendAllPushes(pushes);
                 }
                 catch (err) {
@@ -105,7 +106,7 @@ async function queueInitializer(db, isMaster = false) {
             },
             async function(schedules) {
                 try {
-                    // console.log(JSON.stringify(schedules, null, 2));
+                    console.log(JSON.stringify(schedules, null, 2));
                     await composeAllScheduledPushes(db, schedules);
                 }
                 catch (err) {
@@ -114,16 +115,17 @@ async function queueInitializer(db, isMaster = false) {
             },
             async function(results) {
                 try {
-                    // console.log(JSON.stringify(results, null, 2));
+                    console.log(JSON.stringify(results, null, 2));
                     await saveResults(db, results);
                 }
                 catch(err) {
                     console.error("ERROR ON QUEUE RESULT HANDLER", err);
                 }
             },
-            async function(autoTriggerEvent) {
+            async function(autoTriggerEvents) {
                 try {
-                    await scheduleByAutoTrigger(db, autoTriggerEvent);
+                    console.log(JSON.stringify(autoTriggerEvents, null, 2));
+                    await scheduleMessageByAutoTriggers(db, autoTriggerEvents);
                 }
                 catch (err) {
                     console.error("ERROR ON QUEUE AUTO TRIGGER HANDLER");
@@ -376,7 +378,7 @@ plugins.register('/i/pushes', ob => apiCall(legacyApis.i, ob));
 // Cohort hooks for cohorted auto push
 plugins.register('/cohort/enter', ({cohort, uids}) => autoOnCohort(true, cohort, uids));
 plugins.register('/cohort/exit', ({cohort, uids}) => autoOnCohort(false, cohort, uids));
-plugins.register('/cohort/delete', ({_id, ack}) => autoOnCohortDeletion(_id, ack));
+// plugins.register('/cohort/delete', ({_id, ack}) => autoOnCohortDeletion(_id, ack));
 
 // Drill hooks for user profiles
 plugins.register('/drill/add_push_events', drillAddPushEvents);

@@ -1,11 +1,12 @@
 /**
- * @typedef {import("../../api/new/types/message.js").RecurringTrigger} RecurringTrigger
- * @typedef {import("../../api/new/types/message.js").MultiTrigger} MultiTrigger
- * @typedef {import("../../api/new/types/message.js").EventTrigger} EventTrigger
- * @typedef {import("../../api/new/types/schedule.js").Schedule} Schedule
+ * @typedef {import("../../api/new/types/message.ts").RecurringTrigger} RecurringTrigger
+ * @typedef {import("../../api/new/types/message.ts").MultiTrigger} MultiTrigger
+ * @typedef {import("../../api/new/types/message.ts").EventTrigger} EventTrigger
+ * @typedef {import("../../api/new/types/schedule.ts").Schedule} Schedule
  * @typedef {import("mongodb").Collection} Collection
  * @typedef {import("mongodb").Db} Db
  * @typedef {import("mongodb").FindCursor} FindCursor
+ * @typedef {import("../../api/new/types/queue.ts").AutoTriggerEvent} AutoTriggerEvent
  */
 const assert = require("assert");
 const { describe, it } = require("mocha");
@@ -17,8 +18,10 @@ const {
     findNextMatchForMulti,
     createScheduleEvents,
     createSchedule,
-    scheduleMessage,
-    findWhereToStartSearchFrom
+    scheduleMessageByDate,
+    findWhereToStartSearchFrom,
+    mergeAutoTriggerEvents,
+    scheduleMessageByAutoTriggers,
 } = require("../../api/new/scheduler.js");
 const queue = require("../../api/new/lib/kafka.js");
 const { mockMongoDb } = require("./mock/mongo.js");
@@ -336,6 +339,7 @@ describe("Scheduler", () => {
                 status: "scheduled",
                 timezoneAware: false,
                 schedulerTimezone: undefined,
+                audienceFilters: undefined,
                 result: buildResultObject()
             }));
         });
@@ -350,7 +354,114 @@ describe("Scheduler", () => {
                     events: ["lorem", "ipsum"]
                 })
             ];
-            assert.rejects(scheduleMessage(db, mockMessage));
+            assert.rejects(scheduleMessageByDate(db, mockMessage));
+        });
+    });
+
+    describe("Auto trigger message scheduling", () => {
+        it("should merge multiple events and creates a map", () => {
+            const app1 = new ObjectId("67b868f115891e7800e2f563");
+            const app2 = new ObjectId("67b868f115891e7800e2f562");
+            const cohort1 = new ObjectId("67b868f115891e7800e2f564");
+            const cohort2 = new ObjectId("67b868f115891e7800e2f565");
+            /** @type {AutoTriggerEvent[]} */
+            const events = [
+                { "kind": "event", "appId": app1, "eventKeys": [ "test-event" ], "uid": "7" },
+                { "kind": "event", "appId": app1, "eventKeys": [ "test-event" ], "uid": "8" },
+                { "kind": "event", "appId": app2, "eventKeys": [ "test-event-2" ], "uid": "4" },
+                { "kind": "event", "appId": app1, "eventKeys": [ "test-event-3" ], "uid": "3" },
+                { "kind": "cohort", "appId": app1, "direction": "enter", "cohortId": cohort1, "uids": ["1", "2"] },
+                { "kind": "cohort", "appId": app1, "direction": "enter", "cohortId": cohort1, "uids": ["5"] },
+                { "kind": "cohort", "appId": app1, "direction": "enter", "cohortId": cohort2, "uids": ["9"] },
+                { "kind": "cohort", "appId": app1, "direction": "exit", "cohortId": cohort2, "uids": ["6"] },
+                { "kind": "cohort", "appId": app2, "direction": "exit", "cohortId": cohort1, "uids": ["10"] },
+            ];
+            const map = mergeAutoTriggerEvents(events);
+            /** @type {any} */
+            const convertedToArrays = {};
+            for (let appId in map) {
+                convertedToArrays[appId] = { event: {}, cohort: {} };
+                for (let eventKey in map[appId].event) {
+                    convertedToArrays[appId].event[eventKey] = Array.from(map[appId].event[eventKey]);
+                }
+                for (let cohortId in map[appId].cohort) {
+                    convertedToArrays[appId].cohort[cohortId] = {
+                        enter: Array.from(map[appId].cohort[cohortId].enter),
+                        exit: Array.from(map[appId].cohort[cohortId].exit),
+                    };
+                }
+            }
+            assert.deepStrictEqual(convertedToArrays, {
+                "67b868f115891e7800e2f563": {
+                    "event": { "test-event": ["7", "8"], "test-event-3": ["3"] },
+                    "cohort": {
+                        "67b868f115891e7800e2f564": { "enter": ["1", "2", "5"], "exit": [] },
+                        "67b868f115891e7800e2f565": { "enter": ["9"], "exit": ["6"] }
+                    }
+                },
+                "67b868f115891e7800e2f562": {
+                    "event": { "test-event-2": ["4"] },
+                    "cohort": {
+                        "67b868f115891e7800e2f564": { "enter": [], "exit": ["10"] }
+                    }
+                }
+            })
+        });
+
+        it("should ....", async () => {
+            /** @type {AutoTriggerEvent} */
+            const event = {
+                "kind": "event",
+                "appId": new ObjectId("67b868f115891e7800e2f563"),
+                "eventKeys": [
+                    "test-event"
+                ],
+                "uid": "7"
+            };
+            const message = {
+                _id: new ObjectId("67eee6adc2a1c39736eb9803"),
+                app: new ObjectId("67b868f115891e7800e2f563"),
+                contents: [
+                    { title: 'aa', message: 'aa', expiration: 604800000 },
+                    { p: 'a', sound: 'default' },
+                    { p: 'i', sound: 'default' }
+                ],
+                filter: {},
+                info: {
+                    appName: 'test',
+                    silent: false,
+                    scheduled: false,
+                    locales: { default: 0, count: 3 },
+                    created: new Date("2025-04-03T19:51:09.792Z"),
+                    createdBy: new ObjectId("67b868ed0d4ab938cb9389af"),
+                    createdByName: 'Cihad Tekin',
+                    updated: new Date("2025-04-03T19:51:09.792Z"),
+                    updatedBy: new ObjectId("67b868ed0d4ab938cb9389af"),
+                    updatedByName: 'Cihad Tekin'
+                },
+                platforms: [ 'a', 'i' ],
+                result: {
+                    total: 0,
+                    sent: 0,
+                    actioned: 0,
+                    errored: 0,
+                    errors: {},
+                    subs: {}
+                },
+                saveResults: true,
+                state: 0,
+                status: 'created',
+                triggers: [
+                    {
+                        kind: 'event',
+                        start: new Date("2025-04-03T19:50:47.672Z"),
+                        actuals: false,
+                        events: [ 'test-event' ]
+                    }
+                ]
+            }
+            findCursor.toArray.resolves([message]);
+            await scheduleMessageByAutoTriggers(db, [event]);
         });
     });
 });

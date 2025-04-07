@@ -11,6 +11,7 @@
  * @typedef {import('../types/queue.ts').AutoTriggerEventHandler} AutoTriggerEventHandler
  * @typedef {import('../types/utils.ts').LogObject} LogObject
  * @typedef {import('../types/queue.ts').ResultEvent} ResultEvent
+ * @typedef {import('../types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
  * @typedef {import('../types/queue.ts').ResultEventDTO} ResultEventDTO
  */
 const config = require("../constants/kafka-config.json");
@@ -18,7 +19,8 @@ const kafkaJs = require("kafkajs"); // do not import by destructuring; it's bein
 const {
     scheduleEventDTOToObject,
     pushEventDTOToObject,
-    resultEventDTOToObject
+    resultEventDTOToObject,
+    autoTriggerEventDTOToObject,
 } = require("./dto.js");
 /**
  * @type {LogObject}
@@ -33,10 +35,10 @@ let PRODUCER;
  * @param {PushEventHandler} onPushMessages function to call when there's a PushEvent in the PUSH_MESSAGES_TOPIC topic
  * @param {ScheduleEventHandler} onMessageSchedules function to call when there's a
  * @param {ResultEventHandler} onMessageResults
- * @param {AutoTriggerEventHandler} onAutoTrigger
+ * @param {AutoTriggerEventHandler} onAutoTriggerEvents
  * @returns {Promise<void>}
  */
-async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResults, onAutoTrigger) {
+async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResults, onAutoTriggerEvents) {
     const kafka = new kafkaJs.Kafka({
         clientId: config.clientId,
         brokers: config.brokers,
@@ -48,21 +50,14 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
     });
     await PRODUCER.connect();
 
-    const autoTriggerConsumer = kafka.consumer({
-        groupId: String(process.pid) + "-" + String(Math.random()),
-        allowAutoTopicCreation: false,
-    });
-    await autoTriggerConsumer.connect();
-    await autoTriggerConsumer.subscribe({ topics: [config.topics.AUTO_TRIGGER.name] });
-    await autoTriggerConsumer.run({
-        eachMessage: async ({ message }) => {
-
-        }
-    });
-
     const pushConsumer = kafka.consumer({
         groupId: config.consumerGroupId,
         allowAutoTopicCreation: false,
+        // TODO: Test and optimize these to consume in properly sized batches
+        // minBytes: 100_000,
+        // maxWaitTimeInMs: 30_000,
+        // sessionTimeout: 180_000,
+        // heartbeatInterval: 60_000,
     });
     await pushConsumer.connect();
     await pushConsumer.subscribe({
@@ -70,6 +65,7 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
             config.topics.SEND.name,
             config.topics.COMPOSE.name,
             config.topics.RESULT.name,
+            config.topics.AUTO_TRIGGER.name,
         ],
         fromBeginning: true,
     });
@@ -98,6 +94,9 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
                     break;
                 case config.topics.RESULT.name:
                     await onMessageResults(parsed.map(resultEventDTOToObject));
+                    break;
+                case config.topics.AUTO_TRIGGER.name:
+                    await onAutoTriggerEvents(parsed.map(autoTriggerEventDTOToObject));
                     break;
                 }
             } catch(err) {
@@ -165,42 +164,54 @@ async function sendResultEvents(results) {
     });
 }
 
-// async function createTopics() {
-//     if (!_admin) {
-//         throw new Error("Admin is not initialized");
-//     }
-//     for (let item of Object.values(config.topics)) {
-//         const {name, partitions} = item;
-//         try {
-//             const topicMetadata = await _admin.fetchTopicMetadata({
-//                 topics: [name]
-//             });
-//             if (topicMetadata.topics.find(topic => topic.name === name)) {
-//                 // topic is already there: skip
-//                 continue;
-//             }
-//         }
-//         catch(err) {
-//             // TODO: countly way of logging
-//             if (err instanceof kafkaJs.KafkaJSProtocolError
-//                 && err.type ===  "UNKNOWN_TOPIC_OR_PARTITION") {
-//                 // topic not found: create it
-//             }
-//             else {
-//                 console.error("unknown error while creating topic", name, err);
-//                 continue;
-//             }
-//         }
+/**
+ * @param {AutoTriggerEvent[]} autoTriggerEvents
+ */
+async function sendAutoTriggerEvents(autoTriggerEvents) {
+    if (!PRODUCER) {
+        throw new Error("Producer is not initialized");
+    }
+    await PRODUCER.send({
+        topic: config.topics.AUTO_TRIGGER.name,
+        messages: autoTriggerEvents.map(e => ({ value: JSON.stringify(e) })),
+    });
+}
 
-//         await _admin.createTopics({
-//             topics: [{ topic: name, numPartitions: partitions }]
-//         });
-//     }
-// }
+async function purge() {
+    const kafka = new kafkaJs.Kafka({
+        clientId: config.clientId,
+        brokers: config.brokers,
+        logLevel: kafkaJs.logLevel.ERROR
+    });
+    const admin = kafka.admin();
+    const topics = Object.values(config.topics);
+    await admin.connect();
+    try {
+        await admin.deleteTopics({
+            topics: topics.map(({ name }) => name)
+        });
+    } catch(err) {
+        console.error(err);
+        // ignore...
+    }
+    const result = await admin.createTopics({
+        topics: topics.map(
+            ({ name, partitions }) => ({
+                topic: name,
+                numPartitions: partitions
+            })
+        )
+    });
+    console.log("topic creation result", result);
+    await admin.disconnect();
+    return result;
+}
 
 module.exports = ({
     sendPushEvents,
     sendScheduleEvent,
     sendResultEvents,
     initPushQueue,
+    sendAutoTriggerEvents,
+    purge,
 });

@@ -13,6 +13,7 @@ export interface ScheduleEvent {
     finishedAt?: Date;
     timezone?: string;
 }
+
 export interface PushEvent {
     appId: ObjectId;
     messageId: ObjectId;
@@ -27,6 +28,7 @@ export interface PushEvent {
     credentials: SomeCredential;
     proxy?: ProxyConfiguration;
 }
+
 export interface ResultEvent extends PushEvent {
     response?: any;
     error?: ResultError;
@@ -46,13 +48,13 @@ export interface BaseTriggerEvent {
 export interface CohortTriggerEvent extends BaseTriggerEvent {
     kind: "cohort";
     direction: "enter"|"exit";
-    cohortId: ObjectId;
+    cohortId: string;
     uids: string[];
 }
 
 export interface EventTriggerEvent extends BaseTriggerEvent {
     kind: "event";
-    name: string;
+    eventKeys: string[];
     uid: string;
 }
 
@@ -82,22 +84,9 @@ export type ScheduleEventDTO = DTO<ScheduleEvent>;
 export type CredentialsDTO = DTO<SomeCredential>;
 export type PushEventDTO = Omit<DTO<PushEvent>,"credentials"> & { credentials: CredentialsDTO };
 export type ResultEventDTO = Omit<DTO<ResultEvent>,"credentials"> & { credentials: CredentialsDTO };
+export type AutoTriggerEventDTO = DTO<AutoTriggerEvent>;
 
 export type PushEventHandler = (pushes: PushEvent[]) => Promise<void>;
 export type ScheduleEventHandler = (schedules: ScheduleEvent[]) => Promise<void>;
 export type ResultEventHandler = (results: ResultEvent[]) => Promise<void>;
-export type AutoTriggerEventHandler = (autoTrigger: AutoTriggerEvent) => Promise<void>;
-
-// export interface PushQueue {
-//     init(
-//         onPushMessage: PushEventHandler,
-//         onMessageSchedule: ScheduleEventHandler,
-//         onMessageResults: ResultEventHandler,
-//         onMessageCacheUpdate: MessageCacheUpdateHandler,
-//         isMaster: Boolean,
-//     ): Promise<void>;
-//     sendScheduleEvent(scheduleEvent: ScheduleEvent): Promise<void>;
-//     sendPushEvents(pushEvents: PushEvent[]): Promise<void>;
-//     sendResultEvents(resultEvents: ResultEvent[]): Promise<void>;
-//     sendMessageCacheUpdate(messageCacheUpdate: MessageCacheUpdate): Promise<void>;
-// }
+export type AutoTriggerEventHandler = (autoTriggers: AutoTriggerEvent[]) => Promise<void>;

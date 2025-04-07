@@ -1,17 +1,23 @@
-const { Audience, TriggerKind, Message, State } = require('./send'),
-    plugins = require('../../pluginManager'),
-    common = require('../../../api/utils/common'),
+/**
+ * @typedef {import("./new/types/queue.ts").EventTriggerEvent} EventTriggerEvent
+ * @typedef {import("mongodb").Db} MongoDb
+ */
+const common = require('../../../api/utils/common'),
     log = common.log('push:api:auto'),
     logCohorts = log.sub('cohorts'),
     logEvents = log.sub('events');
 
-const { INACTIVE_MESSAGE_STATUSES } = require("./new/scheduler");
 
-/** @type {any} */
-let AUTO_TRIGGERS;
+const { sendAutoTriggerEvents } = require("./new/lib/kafka.js");
+const { INACTIVE_MESSAGE_STATUSES } = require("./new/scheduler.js");
+const { ObjectId } = require("mongodb");
+
+/** @type {{[appId: string]: { event: { [eventKey: string]: string[] }; cohort: { [cohortId: string]: { enter: string[]; exit: string[]; } } }}} */
+let AUTO_TRIGGERS = {};
 async function loadAutoTriggers() {
+    const db = /** @type {MongoDb} */(common.db);
     const now = new Date;
-    const messages = await common.db.collection("messages")
+    const messages = await db.collection("messages")
         .find({
             status: { $nin: INACTIVE_MESSAGE_STATUSES },
             triggers: {
@@ -28,28 +34,33 @@ async function loadAutoTriggers() {
         .limit(1000)
         .toArray();
 
-    AUTO_TRIGGERS = { event: {}, cohort: {} };
+    AUTO_TRIGGERS = {};
     for (let i = 0; i < messages.length; i++) {
+        const appId = messages[i].app.toString();
+        if (!(appId in AUTO_TRIGGERS)) {
+            AUTO_TRIGGERS[appId] = {event: {}, cohort: {}};
+        }
         try {
             const trigger = messages[i].triggers[0];
-            const cache = AUTO_TRIGGERS[trigger.kind];
             if (trigger.kind === "cohort") {
+                const cache = AUTO_TRIGGERS[appId][/** @type {"cohort"} */(trigger.kind)];
                 for (let j = 0; j < trigger.cohorts.length; j++) {
                     const direction = trigger.entry ? "enter" : "exit";
                     const cohortId = trigger.cohorts[j];
                     if (!(cohortId in cache)) {
                         cache[cohortId] = { enter: [], exit: [] };
                     }
-                    cache[cohortId][direction].push(messages[i]._id);
+                    cache[cohortId][direction].push(messages[i]._id.toString());
                 }
             }
             else if (trigger.kind === "event") {
+                const cache = AUTO_TRIGGERS[appId][/** @type {"event"} */(trigger.kind)];
                 for (let j = 0; j < trigger.events.length; j++) {
-                    const event = trigger.events[j];
-                    if (!(event in cache)) {
-                        cache[event] = [];
+                    const eventKey = trigger.events[j];
+                    if (!(eventKey in cache)) {
+                        cache[eventKey] = [];
                     }
-                    cache[event].push(messages[i]._id);
+                    cache[eventKey].push(messages[i]._id.toString());
                 }
             }
         }
@@ -60,99 +71,111 @@ async function loadAutoTriggers() {
     }
     // console.log(JSON.stringify(AUTO_TRIGGERS, null, 2));
 }
-// setInterval(loadAutoTriggers, 5 * 60 * 1000);
-setInterval(loadAutoTriggers, 1000);
+setInterval(loadAutoTriggers, 5 * 60 * 1000);
+// setInterval(loadAutoTriggers, 3000);
 
 /**
  * Handler function for /cohort/enter (/cohort/exit) hooks
- *
  * @param {boolean} entry true if it's cohort enter, false for exit
- * @param {object} cohort cohort object
+ * @param {{ app_id: ObjectId; _id: string; name: string; }} cohort cohort object
  * @param {string[]} uids uids array
  */
-module.exports.autoOnCohort = function(entry, cohort, uids) {
-    log.d('processing cohort %s (%s) %s for %d uids', cohort._id, cohort.name, entry ? 'enter' : 'exit', uids.length);
-    const cohortId = cohort._id.toString();
+module.exports.autoOnCohort = async function(entry, cohort, uids) {
+    logCohorts.d("processing cohort %s (%s) %s for %d uids",
+        cohort._id, cohort.name, entry ? 'enter' : 'exit', uids.length);
     const direction = entry ? "enter" : "exit";
-    const numberOfMessages = AUTO_TRIGGERS?.cohort?.[cohortId]?.[direction]?.length ?? 0;
+    const numberOfMessages = AUTO_TRIGGERS
+        ?.[cohort.app_id.toString()]
+        ?.cohort
+        ?.[cohort._id.toString()]
+        ?.[direction]?.length ?? 0;
     if (numberOfMessages > 0) {
+        await sendAutoTriggerEvents([{
+            kind: "cohort",
+            appId: cohort.app_id,
+            uids,
+            cohortId: cohort._id,
+            direction: entry ? "enter" : "exit",
+        }]);
+        logCohorts.d("Cohort auto triggers sent", cohort.app_id,
+            cohort._id, uids);
     }
 
-    let now = Date.now(),
-        aid = cohort.app_id.toString(),
-        // query = {
-        //     app: app._id,
-        //     state: {$bitsAllSet: State.Streamable, $bitsAllClear: State.Deleted},
-        //     triggers: {
-        //         $elemMatch: {
-        //             kind: TriggerKind.Cohort,
-        //             cohorts: cohort._id,
-        //             entry,
-        //             start: {$lt: now},
-        //             $or: [
-        //                 {end: {$exists: false}},
-        //                 {end: {$gt: now}}
-        //             ],
-        //         }
-        //     },
-        // },
-        typ = entry ? 'enter' : 'exit';
+    // let now = Date.now(),
+    //     aid = cohort.app_id.toString(),
+    //     // query = {
+    //     //     app: app._id,
+    //     //     state: {$bitsAllSet: State.Streamable, $bitsAllClear: State.Deleted},
+    //     //     triggers: {
+    //     //         $elemMatch: {
+    //     //             kind: TriggerKind.Cohort,
+    //     //             cohorts: cohort._id,
+    //     //             entry,
+    //     //             start: {$lt: now},
+    //     //             $or: [
+    //     //                 {end: {$exists: false}},
+    //     //                 {end: {$gt: now}}
+    //     //             ],
+    //     //         }
+    //     //     },
+    //     // },
+    //     typ = entry ? 'enter' : 'exit';
 
-    plugins.getPluginsApis().push.cache.iterate((k, msg) => {
-        if (msg.app.toString() === aid) {
-            let trigger = msg.triggerFind(t =>
-                    t.kind === TriggerKind.Cohort &&
-                    t.cohorts.indexOf(cohort._id) !== -1 &&
-                    t.entry === entry &&
-                    t.start.getTime() < now &&
-                    (!t.end || t.end.getTime() > now)),
-                audience = new Audience(logCohorts, msg);
+    // plugins.getPluginsApis().push.cache.iterate((k, msg) => {
+    //     if (msg.app.toString() === aid) {
+    //         let trigger = msg.triggerFind(t =>
+    //                 t.kind === TriggerKind.Cohort &&
+    //                 t.cohorts.indexOf(cohort._id) !== -1 &&
+    //                 t.entry === entry &&
+    //                 t.start.getTime() < now &&
+    //                 (!t.end || t.end.getTime() > now)),
+    //             audience = new Audience(logCohorts, msg);
 
-            // adding messages to queue
-            if (trigger) {
-                logCohorts.d('processing %s %s', typ, msg._id);
-                audience.getApp().then(() => {
-                    audience.push(trigger).setUIDs(uids).setStart(new Date()).run().then(result => {
-                        logCohorts.d('processing %s %s, result: %j', typ, msg._id, result);
-                        if (result.total) {
-                            return msg.update({$inc: {'result.total': result.total}}, () => {
-                                msg.result.total += result.total;
-                            });
-                        }
-                    }).then(() => {
-                        logCohorts.d('done processing %s %s', typ, msg._id);
-                    }).catch(error => {
-                        logCohorts.e('Error while pushing users to cohorted message queue %s %s', typ, msg._id, error);
-                    });
-                }).catch(error => {
-                    logCohorts.e('Failed to load app %s for message %s', aid, msg._id, error);
-                });
-            }
+    //         // adding messages to queue
+    //         if (trigger) {
+    //             logCohorts.d('processing %s %s', typ, msg._id);
+    //             audience.getApp().then(() => {
+    //                 audience.push(trigger).setUIDs(uids).setStart(new Date()).run().then(result => {
+    //                     logCohorts.d('processing %s %s, result: %j', typ, msg._id, result);
+    //                     if (result.total) {
+    //                         return msg.update({$inc: {'result.total': result.total}}, () => {
+    //                             msg.result.total += result.total;
+    //                         });
+    //                     }
+    //                 }).then(() => {
+    //                     logCohorts.d('done processing %s %s', typ, msg._id);
+    //                 }).catch(error => {
+    //                     logCohorts.e('Error while pushing users to cohorted message queue %s %s', typ, msg._id, error);
+    //                 });
+    //             }).catch(error => {
+    //                 logCohorts.e('Failed to load app %s for message %s', aid, msg._id, error);
+    //             });
+    //         }
 
-            // removing messages from queue on reverse trigger
-            let triggerOpposite = msg.triggerFind(t =>
-                t.kind === TriggerKind.Cohort &&
-                t.cohorts.indexOf(cohort._id) !== -1 &&
-                t.entry === !entry &&
-                t.cancels &&
-                t.start.getTime() < now &&
-                (!t.end || t.end.getTime() > now));
+    //         // removing messages from queue on reverse trigger
+    //         let triggerOpposite = msg.triggerFind(t =>
+    //             t.kind === TriggerKind.Cohort &&
+    //             t.cohorts.indexOf(cohort._id) !== -1 &&
+    //             t.entry === !entry &&
+    //             t.cancels &&
+    //             t.start.getTime() < now &&
+    //             (!t.end || t.end.getTime() > now));
 
-            if (triggerOpposite) {
-                logCohorts.d('processing cancellation %s %s', typ, msg._id);
+    //         if (triggerOpposite) {
+    //             logCohorts.d('processing cancellation %s %s', typ, msg._id);
 
-                audience.getApp().then(() => {
-                    audience.pop(triggerOpposite).setUIDs(uids).run().then(result => {
-                        logCohorts.d('done processing cancellation %s %s', typ, msg._id, result);
-                    }).catch(error => {
-                        logCohorts.e('Error while processing cancellation %s %s', typ, msg._id, error);
-                    });
-                }).catch(error => {
-                    logCohorts.e('Failed to load app %s for message %s', aid, msg._id, error);
-                });
-            }
-        }
-    });
+    //             audience.getApp().then(() => {
+    //                 audience.pop(triggerOpposite).setUIDs(uids).run().then(result => {
+    //                     logCohorts.d('done processing cancellation %s %s', typ, msg._id, result);
+    //                 }).catch(error => {
+    //                     logCohorts.e('Error while processing cancellation %s %s', typ, msg._id, error);
+    //                 });
+    //             }).catch(error => {
+    //                 logCohorts.e('Failed to load app %s for message %s', aid, msg._id, error);
+    //             });
+    //         }
+    //     }
+    // });
 
 
     // // adding messages to queue
@@ -204,7 +227,6 @@ module.exports.autoOnCohort = function(entry, cohort, uids) {
  *
  * @param {string} _id cohort id
  * @param {boolean} ack true if stop, false if count
- */
 module.exports.autoOnCohortDeletion = async function(_id, ack) {
     if (ack) {
         let msgs = await Message.findMany({'triggers.cohorts': _id, state: {$bitsAnySet: State.Streamable | State.Streaming | State.Paused | State.Scheduling}});
@@ -224,64 +246,81 @@ module.exports.autoOnCohortDeletion = async function(_id, ack) {
 
 };
 
+*/
 /**
  * Handler function for /cohort/enter (/cohort/exit) hooks
  *
- * @param {ObjectID} appId app id
+ * @param {ObjectId} appId app id
  * @param {string} uid user uid
  * @param {string[]} keys unique event keys
- * @param {object[]} events event objects
+ * @param {{key: string; timestamp?: number;}[]} events event objects
  */
-module.exports.autoOnEvent = function(appId, uid, keys, events) {
-    let now = Date.now(),
-        aid = appId.toString();
-
-    keys = keys.filter((k, i) => keys.indexOf(k) === i);
-
-    if (!keys.length) {
-        return;
-    }
-
-    logEvents.d('Checking event keys %j', keys);
-
-    plugins.getPluginsApis().push.cache.iterate((k, msg) => {
-        logEvents.d('Checking message %s (triggers %j)', k, msg.triggers.map(t => t.kind));
-        if (msg.app.toString() === aid) {
-            let trigger = msg.triggerFind(t =>
-                    t.kind === TriggerKind.Event &&
-                    t.events.filter(key => keys.indexOf(key) !== -1).length &&
-                    t.start.getTime() < now &&
-                    (!t.end || t.end.getTime() > now)),
-                event = trigger && events.filter(e => trigger.events.indexOf(e.key) !== -1)[0],
-                date;
-
-            if (event && event.timestamp) {
-                date = Math.floor(parseInt(event.timestamp));
-                if (date > 1000000000) {
-                    date = new Date(date);
-                }
-                else {
-                    date = new Date(date * 1000);
-                }
-            }
-            else {
-                date = new Date();
-            }
-
-            if (trigger) {
-                logEvents.d('Pushing %s to %s', uid, k);
-                let audience = new Audience(logEvents, msg);
-                audience.getApp().then(() => {
-                    audience.push(trigger).setUIDs([uid]).setStart(trigger.actuals && date || new Date()).run().catch(e => {
-                        logEvents.e('Error while pushing %s to %s on %j', uid, k, keys, e);
-                    });
-                }).catch(error => {
-                    logCohorts.e('Failed to load app %s for message %s', aid, msg._id, error);
-                });
-            }
-            else {
-                logEvents.d('Message %s doesn\'t have event trigger', k);
-            }
+module.exports.autoOnEvent = async function(appId, uid, keys, events) {
+    logEvents.d('Checking event keys', keys);
+    const keySet = Array.from(new Set(keys));
+    const filteredKeys = keySet.filter(
+        key => AUTO_TRIGGERS?.[appId.toString()]?.event?.[key]?.length
+    );
+    if (filteredKeys.length) {
+        try {
+            await sendAutoTriggerEvents([{
+                kind: "event",
+                appId,
+                eventKeys: filteredKeys,
+                uid,
+            }]);
+            logEvents.d("Event auto triggers sent", appId, filteredKeys, uid);
         }
-    });
+        catch (err) {
+            logEvents.e("Error while sending auto trigger events", err);
+        }
+    }
+    // let now = Date.now(),
+    //     aid = appId.toString();
+    // keys = keys.filter((k, i) => keys.indexOf(k) === i);
+
+    // if (!keys.length) {
+    //     return;
+    // }
+
+    // plugins.getPluginsApis().push.cache.iterate((k, msg) => {
+    //     logEvents.d('Checking message %s (triggers %j)', k, msg.triggers.map(t => t.kind));
+    //     if (msg.app.toString() === aid) {
+    //         let trigger = msg.triggerFind(t =>
+    //                 t.kind === TriggerKind.Event &&
+    //                 t.events.filter(key => keys.indexOf(key) !== -1).length &&
+    //                 t.start.getTime() < now &&
+    //                 (!t.end || t.end.getTime() > now)),
+    //             event = trigger && events.filter(e => trigger.events.indexOf(e.key) !== -1)[0],
+    //             date;
+
+    //         if (event && event.timestamp) {
+    //             date = Math.floor(parseInt(event.timestamp));
+    //             if (date > 1000000000) {
+    //                 date = new Date(date);
+    //             }
+    //             else {
+    //                 date = new Date(date * 1000);
+    //             }
+    //         }
+    //         else {
+    //             date = new Date();
+    //         }
+
+    //         if (trigger) {
+    //             logEvents.d('Pushing %s to %s', uid, k);
+    //             let audience = new Audience(logEvents, msg);
+    //             audience.getApp().then(() => {
+    //                 audience.push(trigger).setUIDs([uid]).setStart(trigger.actuals && date || new Date()).run().catch(e => {
+    //                     logEvents.e('Error while pushing %s to %s on %j', uid, k, keys, e);
+    //                 });
+    //             }).catch(error => {
+    //                 logCohorts.e('Failed to load app %s for message %s', aid, msg._id, error);
+    //             });
+    //         }
+    //         else {
+    //             logEvents.d('Message %s doesn\'t have event trigger', k);
+    //         }
+    //     }
+    // });
 };

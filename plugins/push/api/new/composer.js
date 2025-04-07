@@ -1,7 +1,6 @@
 /**
  * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('./types/queue.ts').PushEvent} PushEvent
- * @typedef {import('./types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
  * @typedef {import('./types/message.ts').Message} Message
  * @typedef {import('./types/message.ts').PlatformKeys} PlatformKeys
  * @typedef {import('./types/message.ts').PlatformEnvKeys} PlatformEnvKeys
@@ -40,6 +39,7 @@ async function composeAllScheduledPushes(db, scheduleEvents) {
             totalNumberOfPushes += result;
         }
         catch(err) {
+            log.e("Error while composing scheduleEvents", err);
             // TODO: handle error as result
         }
     }
@@ -88,9 +88,11 @@ async function composeScheduledPushes(db, scheduleEvent) {
 
     // check if there's a missing credential
     for (let i = 0; i < message.platforms.length; i++) {
-        if (!creds[message.platforms[i]]) {
-            // TODO: throw a proper error
-            throw new Error("Missing platform configuration");
+        const p = message.platforms[i];
+        if (!creds[p]) {
+            const title = PLATFORM_KEYMAP[p]?.title ?? "unknown ("+ p +")";
+            log.e("Missing ", title,
+                "configuration for message", message._id.toString());
         }
     }
 
@@ -103,8 +105,10 @@ async function composeScheduledPushes(db, scheduleEvent) {
             continue;
         }
         for (let pf in tokenObj) {
-            // casts...
             const platform = /** @type {PlatformKeys} */(pf[0]);
+            if (!(platform in creds)) {
+                continue;
+            }
             const env = /** @type {PlatformEnvKeys} */(pf[1]);
             const token = /** @type {string} */(
                 tokenObj[/** @type {PlatformCombinedKeys} */(pf)]
