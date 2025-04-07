@@ -12,8 +12,8 @@ describe('7.Success tooltip (latest Android SDK version)', () => {
     it('7.2-Reset', function() {
         goToConfigTab();
     });
-    it('7.3-Test', function () {
-        goToConfigTab();
+    it('7.3-Test', function() {
+        goToConfigTab(true);
         checkTooltipAppears('success');
     });
 });

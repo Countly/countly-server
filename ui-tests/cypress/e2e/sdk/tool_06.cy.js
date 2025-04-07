@@ -12,8 +12,8 @@ describe('6.Danger tooltip (unsupported SDK)', () => {
     it('6.2-Reset', function() {
         goToConfigTab();
     });
-    it('6.3-Test', function () {
-        goToConfigTab();
+    it('6.3-Test', function() {
+        goToConfigTab(true);
         checkTooltipAppears('danger');
     });
 });

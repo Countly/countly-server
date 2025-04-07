@@ -36,7 +36,7 @@ const setupTest = () => {
     navigationHelpers.isNavigatedToDashboard();
 };
 
-const goToConfigTab = () => {
+const goToConfigTab = (nopop) => {
     cy.visit('/login');
     cy.get(':nth-child(3) > input').type(user.email);
     cy.get(':nth-child(4) > input').type(user.password);
@@ -50,7 +50,9 @@ const goToConfigTab = () => {
     cy.wait(wait_L);
     cy.reload(true);
     cy.wait(wait_L);
-    quickstartPopoeverHelpers.closeQuickStartPopover();
+    if (!nopop) {
+        quickstartPopoeverHelpers.closeQuickStartPopover();
+    }
     navigationHelpers.goToSdkManagerPage();
     cy.get('.white-bg > :nth-child(4)').click();
     cy.get('.white-bg > :nth-child(1) > a > span').click();

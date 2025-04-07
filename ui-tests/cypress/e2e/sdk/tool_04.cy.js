@@ -13,7 +13,7 @@ describe('4.Mixed tooltip (old Android SDK version)', () => {
         goToConfigTab();
     });
     it('4.3-Test', function() {
-        goToConfigTab();
+        goToConfigTab(true);
         checkTooltipAppears('success', 2, true);
         checkTooltipAppears('warning', 19, true);
     });
