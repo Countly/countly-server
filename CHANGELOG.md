@@ -1,6 +1,31 @@
 ## Version 24.10.X
 Fixes:
 - [push] Fixed push notifications title and content text and variables combination
+- [crashes] Remove memory addresses from stack trace grouping
+- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+- [user-management] Prevent global admin from self-revoke and self-delete
+
+Enterprise Fixes:
+- [ab-testing] Fixed bug with variant user filtering
+- [cohorts] Fixed issue with combining multiple cohorts
+- [drill] Do not recheck old collections on app_user data deletion if querying from old collections is disabled
+- [license] Fixed issue with handling invalid date periods
+
+## Version 24.10.8
+Fixes:
+- [app-management] Unescaping HTML for created/updated application names
+- [countly-edge] Add import from Countly Edge Server
+- [languages] Calculated  total users percentage correctly
+
+Features:
+- [hooks] Support sending header information for HTTP actions
+
+Enterprise fixes:
+- [ab-testing] Mismatching user counts between ab-testing and user profiles
+- [ldap] Fixed issues that would lead to configuration options not being picked up
+
+## Version 24.10.7
+Fixes:
 - [data-manager] Modifying existing values when segment values want to be updated in the Data Manager
 - [drill] Fix for UI error when push plugin is not enabled
 
