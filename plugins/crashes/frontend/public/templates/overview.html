@@ -7,14 +7,14 @@
                 :tooltip="{description: i18n('crashes.help-crash-group')}"
             >
                 <template v-slot:header-right>
-                    <cly-auto-refresh-toggle ref="crashesAutoRefreshToggle" feature="crashes" :default-value="true" test-id="crash-groups"></cly-auto-refresh-toggle>
+                    <cly-auto-refresh-toggle ref="crashesAutoRefreshToggle" feature="crashes" :default-value="true" test-id="crash-groups" data-test-id="crash-groups-auto-refresh-toggle"></cly-auto-refresh-toggle>
                 </template>
             </cly-header>
             <cly-main>
-                <cly-qb-bar v-if="hasDrillPermission" feature="crashes" class="bu-mb-5" v-model="crashgroupsFilter" :property-source-config="{drill: false}" queryStore="crashgroups" :additionalProperties="crashgroupsFilterProperties" :additionalRules="crashgroupsFilterRules" format="crashgroups"></cly-qb-bar>
-                <cly-datatable-n test-id="crash-groups" :data-source="remoteTableDataSource" @selection-change="handleSelectionChange" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" ref="dataTable" class="bu-mb-6">
+                <cly-qb-bar v-if="hasDrillPermission" feature="crashes" class="bu-mb-5" v-model="crashgroupsFilter" :property-source-config="{drill: false}" queryStore="crashgroups" :additionalProperties="crashgroupsFilterProperties" :additionalRules="crashgroupsFilterRules" format="crashgroups" data-test-id="cly-qb-bar"></cly-qb-bar>
+                <cly-datatable-n test-id="crash-groups" data-test-id="crash-groups" :data-source="remoteTableDataSource" @selection-change="handleSelectionChange" :available-dynamic-cols="tableDynamicCols" :persist-key="tablePersistKey" ref="dataTable" class="bu-mb-6">
                     <template v-slot="scope">
-                        <el-table-column type="selection" reserve-selection width="65" fixed="left"></el-table-column>
+                        <el-table-column type="selection" reserve-selection width="65" fixed="left" data-test-id="datatable-crash-groups-checkbox"></el-table-column>
                         <el-table-column :label="errorColumnLabel" min-width="415" fixed="left">
                             <template slot-scope="col">
                                 <div class="bu-is-flex bu-is-flex-direction-column">
@@ -63,27 +63,27 @@
                         <cly-diff-helper v-if="(canUserDelete || canUserUpdate)" :diff="selectedCrashgroups" @discard="scope.unpatch()" :isModal=true>
                             <template v-slot:main>
                                 <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
-                                    <span class="selected-count-blue bu-pl-1 text-medium">
+                                    <span class="selected-count-blue bu-pl-1 text-medium" data-test-id="crash-groups-selected-count">
                                         <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{selectedCrashgroups.length}}</span><span class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{i18n('common.selected')}}</span>
                                     </span>
                                     <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
-                                    <cly-more-options v-if="canUserUpdate" class="bu-mr-3" size="small" text="Change Status" type="default" icon="cly-io cly-io-refresh bu-mr-2" :showArrows=true @command="setSelectedAs($event)" >
-                                        <el-dropdown-item command="resolved" icon="cly-io cly-io-check-circle">{{ i18n('crashes.action-resolved') }}</el-dropdown-item>
-                                        <el-dropdown-item command="resolving" icon="cly-io cly-io-clock">{{ i18n('crashes.action-resolving') }}</el-dropdown-item>
-                                        <el-dropdown-item command="unresolved" icon="cly-io cly-io-x-circle">{{ i18n('crashes.action-unresolved') }}</el-dropdown-item>
+                                    <cly-more-options v-if="canUserUpdate" class="bu-mr-3" size="small" text="Change Status" type="default" icon="cly-io cly-io-refresh bu-mr-2" :showArrows=true @command="setSelectedAs($event)" data-test-id="crash-groups-change-status-dropdown">
+                                        <el-dropdown-item command="resolved" icon="cly-io cly-io-check-circle" data-test-id="crash-groups-change-status-resolved">{{ i18n('crashes.action-resolved') }}</el-dropdown-item>
+                                        <el-dropdown-item command="resolving" icon="cly-io cly-io-clock" data-test-id="crash-groups-change-status-resolving">{{ i18n('crashes.action-resolving') }}</el-dropdown-item>
+                                        <el-dropdown-item command="unresolved" icon="cly-io cly-io-x-circle" data-test-id="crash-groups-change-status-unresolved">{{ i18n('crashes.action-unresolved') }}</el-dropdown-item>
                                     </cly-more-options>
-                                    <cly-more-options v-if="canUserUpdate" size="small" :text=" i18n('data-manager.change-visibility') " :widthSameAsTrigger="true" type="default" icon="cly-io cly-io-eye bu-mr-2" :showArrows=true @command="setSelectedAs($event)">
-                                        <el-dropdown-item command="show"><i class="cly-io cly-io-eye"></i>{{ i18n('crashes.action-view') }}</el-dropdown-item>
-                                        <el-dropdown-item command="hide"><i class="cly-io cly-io-eye-off"></i>{{ i18n('crashes.action-hide') }}</el-dropdown-item>
+                                    <cly-more-options v-if="canUserUpdate" size="small" :text=" i18n('data-manager.change-visibility') " :widthSameAsTrigger="true" type="default" icon="cly-io cly-io-eye bu-mr-2" :showArrows=true @command="setSelectedAs($event)" data-test-id="crash-groups-change-visibility-dropdown">
+                                        <el-dropdown-item command="show" data-test-id="crash-groups-change-visibility-show"><i class="cly-io cly-io-eye"></i>{{ i18n('crashes.action-view') }}</el-dropdown-item>
+                                        <el-dropdown-item command="hide" data-test-id="crash-groups-change-visibility-hide"><i class="cly-io cly-io-eye-off"></i>{{ i18n('crashes.action-hide') }}</el-dropdown-item>
                                     </cly-more-options>
                                     <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
-                                    <el-button v-if="canUserDelete" class="bu-mr-3" size="small" type="default" @click="showDeleteForm">
+                                    <el-button v-if="canUserDelete" class="bu-mr-3" size="small" type="default" @click="showDeleteForm" data-test-id="crash-groups-delete-button">
                                         <i class="cly-io-16 cly-io cly-io-trash" style="color:red"></i>
                                         <span class="ml-1" style="color: red">
                                             {{ i18n('crashes.action-delete') }}
                                         </span>
                                     </el-button>
-                                    <el-button class="x-button" @click="unpatchSelectedGroups">
+                                    <el-button class="x-button" @click="unpatchSelectedGroups" data-test-id="crash-groups-cancel-selection-button">
                                         <i class="cly-io-16 cly-io cly-io-x color-cool-gray-50"></i>
                                     </el-button>
                                 </div>
@@ -181,7 +181,7 @@
                 <div class="bu-is-flex bu-is-align-items-center bu-mt-5 bu-mb-4" style="margin-top: 32px !important;">
                     <cly-date-picker-g></cly-date-picker-g>
                     <div class="text-small text-uppercase bu-mx-3" style="color: #969FAD;" data-test-id="crashes-crash-filters-label">{{i18n("crashes.crash-filters")}}</div>
-                    <cly-multi-select v-model="activeFilter" :fields="activeFilterFields"></cly-multi-select>
+                    <cly-multi-select v-model="activeFilter" :fields="activeFilterFields" data-test-id="crashes-crash-filters-dropdown"></cly-multi-select>
                 </div>
                 <div class="crashes-statistics-graph" v-loading="loading">
                     <el-tabs v-model="statisticsGraphTab" type="card" stretch>

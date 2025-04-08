@@ -6,18 +6,18 @@
         <template v-slot:header-left>
             <div class="bu-is-flex bu-is-flex-direction-column">
                 <div class="bu-is-flex bu-is-align-items-center">
-                    <h2 class="bu-mr-2">Binary Images</h2>
+                    <h2 class="bu-mr-2" data-test-id="binary-images-header-title">Binary Images</h2>
                     <cly-guide></cly-guide>
                 </div>
-                <div class="text-big font-weight-bold bu-mt-4" v-html="crash.name"></div>
+                <div class="text-big font-weight-bold bu-mt-4" v-html="crash.name" data-test-id="binary-images-crash-name"></div>
                 <div class="bu-mt-2">
-                    <span class="text-small bu-mr-4" v-if="'app_build' in crash">
+                    <span class="text-small bu-mr-4" v-if="'app_build' in crash" data-test-id="binary-images-app-build">
                         App Build Number: {{crash.app_build}}
                     </span>
-                    <span class="text-small bu-mr-4" v-if="'app_version' in crash">
+                    <span class="text-small bu-mr-4" v-if="'app_version' in crash" data-test-id="binary-images-app-version">
                         App Version: {{crash.app_version}}
                     </span>
-                    <span class="text-small" v-if="'os_version' in crash">
+                    <span class="text-small" v-if="'os_version' in crash" data-test-id="binary-images-platform-version">
                         Platform Version: {{crash.os_version}}
                     </span>
                 </div>
@@ -25,14 +25,26 @@
         </template>
     </cly-header>
     <cly-main>
-        <cly-datatable-n :rows="binaryImages" ref="tableData">
+        <cly-datatable-n :rows="binaryImages" ref="tableData" data-test-id="binary-images-table">
             <template v-slot="scope">
-                <el-table-column prop="name" width="210" sortable></el-table-column>
-                <el-table-column prop="uuid" label="Build UUID" width="400"></el-table-column>
-                <el-table-column prop="loadAddress" label="Load Address"></el-table-column>
+                <el-table-column prop="name" width="210" sortable>
+                    <template slot-scope="col">
+                        <span :data-test-id="'binary-images-name-' + col.$index">{{col.row.name}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="uuid" label="Build UUID" width="400">
+                    <template slot-scope="col">
+                        <span :data-test-id="'binary-images-uuid-' + col.$index">{{col.row.uuid}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="loadAddress" label="Load Address">
+                    <template slot-scope="col">
+                        <span :data-test-id="'binary-images-load-address-' + col.$index">{{col.row.loadAddress}}</span>
+                    </template>
+                </el-table-column>
                 <el-table-column width="120" fixed="right" v-if="symbolicationEnabled">
                     <template slot-scope="col">
-                        <el-button type="text" @click="openDrawer('crashSymbol', { build: col.row.uuid, platform: crash.os })" v-if="!hasSymbol(col.row.uuid)">Add Symbol</el-button>
+                        <el-button type="text" @click="openDrawer('crashSymbol', { build: col.row.uuid, platform: crash.os })" v-if="!hasSymbol(col.row.uuid)" :data-test-id="'binary-images-add-symbol-button-' + col.$index">Add Symbol</el-button>
                     </template>
                 </el-table-column>
             </template>
