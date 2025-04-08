@@ -5,7 +5,7 @@ const initialSetupHelpers = require('../../lib/onboarding/initialSetup');
 const initialConsentHelpers = require('../../lib/onboarding/initialConsent');
 const quickstartPopoeverHelpers = require('../../support/components/quickstartPopover');
 
-const wait_L = 1000;
+const wait_L = 2000;
 const user = {
     username: 'test',
     email: 'a@a.com',
