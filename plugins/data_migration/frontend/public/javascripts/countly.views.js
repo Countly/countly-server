@@ -196,7 +196,7 @@
                     createImageThumbnails: false,
                     autoProcessQueue: false,
                     addRemoveLinks: true,
-                    acceptedFiles: 'application/x-gzip',
+                    acceptedFiles: 'application/gzip,application/x-gzip',
                     dictDefaultMessage: this.i18n('feedback.drop-message'),
                     dictRemoveFile: this.i18n('feedback.remove-file'),
                     url: "/i/datamigration/import",
@@ -220,7 +220,7 @@
                                 message: CV.i18n('data-migration.generated-token')
                             });
                             self.importDrawerCancelButtonLabel = CV.i18n('data-migration.close');
-                            self.importDrawerSaveButtonLabel = false;
+                            self.importDrawerSaveButtonLabel = "";
                         }
                         else {
                             CountlyHelpers.notify({

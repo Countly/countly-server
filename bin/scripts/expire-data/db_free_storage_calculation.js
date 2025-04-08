@@ -75,8 +75,32 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
                     done();
                 });
             }, function() {
-                console.log(result);
-                close();
+                //checking aggregated data collection:
+                drill.collection("drill_events").stats({scale: SCALE}, function(err, stats) {
+                    if (stats.count > 0) {
+                        var avg = stats.storageSize / stats.count;
+                        result.available_for_reuse += stats.freeStorageSize || 0;
+                        drill.collection("drill_events").find({cd: {$lt: new Date(Date.now() - (DATA_RETENTION_IN_SECONDS * 1000))}}).count(function(err, count) {
+                            if (err) {
+                                console.log(err);
+                            }
+                            if (count > 0) {
+                                result.count += count;
+                                result.total_will_be_free += Math.round(avg * count);
+                                result.drill_events = {};
+                                result.drill_events.available_for_reuse = stats.freeStorageSize || 0;
+                                result.drill_events.total_will_be_free = Math.round(avg * count);
+                                result.drill_events.count = count;
+                            }
+                            console.log("Result: ", result);
+                            close();
+                        });
+                    }
+                    else {
+                        console.log(result);
+                        close();
+                    }
+                });
             });
         });
     });

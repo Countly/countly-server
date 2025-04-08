@@ -1,5 +1,7 @@
 import 'cypress-file-upload';
 const helper = require('./helper');
+const chai = require('chai');
+const expect = chai.expect;
 
 Cypress.Commands.add("typeInput", (element, tag) => {
     cy.getElement(element).clear().type(tag);
@@ -133,7 +135,9 @@ Cypress.Commands.add("shouldBeEqual", (element, text) => {
 });
 
 Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
-    cy.getElement(element).should('not.equal', text);
+    cy.getElement(element).invoke('text').then((actualText) => {
+        expect(actualText.trim()).not.to.equal(text.trim());
+    });
 });
 
 Cypress.Commands.add("shouldPlaceholderContainText", (element, text) => {
@@ -208,6 +212,14 @@ Cypress.Commands.add("scrollPageToTop", (element = '.main-view', index = 0) => {
 
 Cypress.Commands.add("scrollPageToCenter", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('center', { ensureScrollable: false });
+});
+
+Cypress.Commands.add("scrollDataTableToRight", (element = '.el-table__body-wrapper', index = 0) => {
+    cy.get(element).eq(index).scrollTo('right', { ensureScrollable: false });
+});
+
+Cypress.Commands.add("scrollDataTableToLeft", (element = '.el-table__body-wrapper', index = 0) => {
+    cy.get(element).eq(index).scrollTo('left', { ensureScrollable: false });
 });
 
 Cypress.Commands.add('verifyElement', ({

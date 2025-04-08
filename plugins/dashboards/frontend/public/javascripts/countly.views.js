@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlyDashboards, countlyAuth, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull, countlyCommon */
+/*global app, countlyVue, countlyDashboards, countlyGlobal, CV, _, groupsModel, Backbone, GridStack, CountlyHelpers, $, screenfull, countlyCommon */
 
 (function() {
     var AUTHENTIC_GLOBAL_ADMIN = (countlyGlobal.member.global_admin && ((countlyGlobal.member.restrict || []).indexOf("#/manage/configurations") < 0));
@@ -29,11 +29,7 @@
     var WidgetsMixin = {
         computed: {
             __widgets: function() {
-                var w = countlyVue.container.dataMixin({
-                    widgets: "/custom/dashboards/widget"
-                });
-
-                w = w.data().widgets;
+                var w = (countlyVue.container.dict && countlyVue.container.dict["/custom/dashboards/widget"] && countlyVue.container.dict["/custom/dashboards/widget"].data) || [];
 
                 w = w.reduce(function(acc, component) {
                     if (!acc[component.type]) {
@@ -53,13 +49,6 @@
                     if (!featureName) {
                         allowed = false;
                         countlyDashboards.factory.log("Feature name is mandatory!");
-                    }
-
-                    if (!countlyAuth.validateRead(featureName)) {
-                        allowed = false;
-                        countlyDashboards.factory.log(featureName + " feature is not allowed to this user.");
-                        countlyDashboards.factory.log("Therefore he cannot edit, delete or create a widget of this type.");
-                        countlyDashboards.factory.log("The user can only view the widget in the dashboard grid.");
                     }
 
                     component.isAllowed = allowed;

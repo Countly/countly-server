@@ -20,37 +20,75 @@
                                 <div class="bu-is-flex bu-is-flex-direction-column">
                                     <a
                                         class="crash-group-title has-ellipsis"
+                                        :data-test-id="'datatable-crash-groups-group-title-' + col.$index"
                                         :href="'#/crashes/' + col.row._id"
                                         v-html="col.row.name">
                                     </a>
                                     <div class="bu-mt-2 bu-is-flex">
-                                        <crash-badge :type="badge.type" v-html="badge.content" v-for="badge in badgesFor(col.row)"></crash-badge>
+                                        <crash-badge :type="badge.type" v-html="badge.content" v-for="(badge, badgeIndex) in badgesFor(col.row)" :data-test-id="'datatable-crash-groups-badge-type-' + badgeIndex + '-col-' + col.$index"></crash-badge>
                                     </div>
                                 </div>
                             </template>
                         </el-table-column>
                         <template v-for="(col,idx) in scope.dynamicCols">
-                            <el-table-column v-if="col.value === 'os'" :key="idx" prop="os" :label="i18n('crashes.platform')" width="120" show-overflow-tooltip sortable></el-table-column>
-                            <el-table-column v-if="col.value === 'reports'" :key="idx" prop="reports" :label="i18n('crashes.reports')" width="150" sortable :sort-method="occurrenceSort">
+                            <el-table-column v-if="col.value === 'os'" :key="idx" prop="os" :label="i18n('crashes.platform')" width="120" show-overflow-tooltip sortable>
                                 <template slot-scope="rowScope">
-                                    <span v-if="singleAppVersionFilter.length">{{rowScope.row.app_version[singleAppVersionFilter.replace(/\./g, ':')]}}</span>
-                                    <span v-else>{{rowScope.row.reports}}</span>
+                                    <span :data-test-id="'datatable-crash-groups-platform-' + rowScope.$index">{{rowScope.row.os}}</span>
                                 </template>
                             </el-table-column>
-                            <el-table-column v-if="col.value === 'lastTs'" :key="idx" prop="lastTs" :label="i18n('crashes.last_time')" :formatter="formatDate" width="180" sortable></el-table-column>
-                            <el-table-column v-if="col.value === 'users'" :key="idx" prop="users" :label="i18n('crashes.affected-users')" width="170" sortable></el-table-column>
-                            <el-table-column v-if="col.value === 'latest_version'" :key="idx" prop="latest_version" :label="i18n('crashes.latest_app')" width="190" sortable :sort-method="appVersionSort"></el-table-column>
+                            <el-table-column v-if="col.value === 'reports'" :key="idx" prop="reports" :label="i18n('crashes.reports')" width="150" sortable :sort-method="occurrenceSort">
+                                <template slot-scope="rowScope">
+                                    <span v-if="singleAppVersionFilter.length" :data-test-id="'datatable-crash-groups-occurences-' + rowScope.$index">{{rowScope.row.app_version[singleAppVersionFilter.replace(/\./g, ':')]}}</span>
+                                    <span v-else :data-test-id="'datatable-crash-groups-occurences-' + rowScope.$index">{{rowScope.row.reports}}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column v-if="col.value === 'lastTs'" :key="idx" prop="lastTs" :label="i18n('crashes.last_time')" :formatter="formatDate" width="180" sortable>
+                                <template slot-scope="rowScope">
+                                    <div :data-test-id="'datatable-crash-groups-last-occurrence-' + rowScope.$index">{{formatDate(null,null,rowScope.row.lastTs)}}</div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column v-if="col.value === 'users'" :key="idx" prop="users" :label="i18n('crashes.affected-users')" width="170" sortable>
+                                <template slot-scope="rowScope">
+                                    <span :data-test-id="'datatable-crash-groups-affected-users-' + rowScope.$index">{{rowScope.row.users}}</span>
+                                </template>
+                            </el-table-column>
+                            <el-table-column v-if="col.value === 'latest_version'" :key="idx" prop="latest_version" :label="i18n('crashes.latest_app')" width="190" sortable :sort-method="appVersionSort">
+                                <template slot-scope="rowScope">
+                                    <span :data-test-id="'datatable-crash-groups-latest-app-version-' + rowScope.$index">{{rowScope.row.latest_version}}</span>
+                                </template>
+                            </el-table-column>
                         </template>
                     </template>
                     <template v-slot:bottomline="scope">
-                        <div class="crashes-action-bar" v-if="selectedCrashgroups.length > 0 && (canUserDelete || canUserUpdate)">
-                            <el-button v-if="canUserUpdate"  @click="setSelectedAs('unresolved')" icon="fas fa-circle crash-icon-color-orange"> {{i18n("crashes.action-unresolved")}}</el-button>
-                            <el-button v-if="canUserDelete" @click="setSelectedAs('delete')" icon="el-icon-delete">{{i18n("crashes.action-delete")}}</el-button>
-                            <el-button v-if="canUserUpdate" @click="setSelectedAs('hide')" icon="fas fa-eye-slash crash-icon-color-gray"> {{i18n("crashes.action-hide")}}</el-button>
-                            <el-button v-if="canUserUpdate" @click="setSelectedAs('show')" icon="fas fa-eye crash-icon-color-gray"> {{i18n("crashes.action-view")}}</el-button>
-                            <el-button v-if="canUserUpdate" @click="setSelectedAs('resolved')" icon="fas fa-circle crash-icon-color-green"> {{i18n("crashes.action-resolved")}}</el-button>
-                            <el-button v-if="canUserUpdate" @click="setSelectedAs('resolving')" icon="fas fa-circle crash-icon-color-blue"> {{i18n("crashes.action-resolving")}}</el-button>
-                        </div>
+                        <cly-diff-helper v-if="(canUserDelete || canUserUpdate)" :diff="selectedCrashgroups" @discard="scope.unpatch()" :isModal=true>
+                            <template v-slot:main>
+                                <div class="bu-mr-0 bu-is-flex bu-is-justify-content-flex-end bu-is-align-items-center cly-vue-user-selected" style="height: 100%;">
+                                    <span class="selected-count-blue bu-pl-1 text-medium">
+                                        <span style="background-color:#0166D6; color:white; padding:3px 7px; border-radius:4px;">{{selectedCrashgroups.length}}</span><span class="bu-is-lowercase text-medium color-cool-gray-50 bu-pl-1">{{i18n('common.selected')}}</span>
+                                    </span>
+                                    <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
+                                    <cly-more-options v-if="canUserUpdate" class="bu-mr-3" size="small" text="Change Status" type="default" icon="cly-io cly-io-refresh bu-mr-2" :showArrows=true @command="setSelectedAs($event)" >
+                                        <el-dropdown-item command="resolved" icon="cly-io cly-io-check-circle">{{ i18n('crashes.action-resolved') }}</el-dropdown-item>
+                                        <el-dropdown-item command="resolving" icon="cly-io cly-io-clock">{{ i18n('crashes.action-resolving') }}</el-dropdown-item>
+                                        <el-dropdown-item command="unresolved" icon="cly-io cly-io-x-circle">{{ i18n('crashes.action-unresolved') }}</el-dropdown-item>
+                                    </cly-more-options>
+                                    <cly-more-options v-if="canUserUpdate" size="small" :text=" i18n('data-manager.change-visibility') " :widthSameAsTrigger="true" type="default" icon="cly-io cly-io-eye bu-mr-2" :showArrows=true @command="setSelectedAs($event)">
+                                        <el-dropdown-item command="show"><i class="cly-io cly-io-eye"></i>{{ i18n('crashes.action-view') }}</el-dropdown-item>
+                                        <el-dropdown-item command="hide"><i class="cly-io cly-io-eye-off"></i>{{ i18n('crashes.action-hide') }}</el-dropdown-item>
+                                    </cly-more-options>
+                                    <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
+                                    <el-button v-if="canUserDelete" class="bu-mr-3" size="small" type="default" @click="setSelectedAs('delete')">
+                                        <i class="cly-io-16 cly-io cly-io-trash" style="color:red"></i>
+                                        <span class="ml-1" style="color: red">
+                                            {{ i18n('crashes.action-delete') }}
+                                        </span>
+                                    </el-button>
+                                    <el-button class="x-button" @click="unpatchSelectedGroups">
+                                        <i class="cly-io-16 cly-io cly-io-x color-cool-gray-50"></i>
+                                    </el-button>
+                                </div>
+                            </template>
+                        </cly-diff-helper>
                     </template>
                 </cly-datatable-n>
             </cly-main>
@@ -95,14 +133,14 @@
                                     <div data-test-id="crash-statistics-top-platforms-label">{{i18n("crashes.top-platforms")}}</div>
                                     <div class="bu-ml-1"><cly-tooltip-icon data-test-id="crash-statistics-top-platforms-tooltip" icon="ion ion-help-circled" :tooltip="i18n('crashes.help-platforms')"></cly-tooltip-icon></div>
                                 </div>
-                                <div class="bu-column bu-pt-0" v-for="platform in statistics.topPlatformsOrder">
+                                <div class="bu-column bu-pt-0" v-for="(platform, platformIndex) in statistics.topPlatformsOrder">
                                     <div class="bu-columns bu-is-gapless bu-is-mobile text-medium color-gray-100 bu-mb-1">
-                                        <div class="bu-column">{{platform}}</div>
-                                        <div class="bu-column bu-has-text-right">
+                                        <div class="bu-column" :data-test-id="'crash-statistics-top-platforms-platform-' + platformIndex">{{platform}}</div>
+                                        <div class="bu-column bu-has-text-right" :data-test-id="'crash-statistics-top-platforms-platform-users-percentage-' + platformIndex">
                                             {{statistics.topPlatforms[platform].count}} Users ({{statistics.topPlatforms[platform].percent.toFixed(1)}}%)
                                         </div>
                                     </div>
-                                    <cly-progress-bar :percentage="statistics.topPlatforms[platform].percent" color="#F96300" backgroundColor="#ECECEC" :height="8">
+                                    <cly-progress-bar :test-id="'crash-statistics-top-platforms-platform-' + platformIndex" :percentage="statistics.topPlatforms[platform].percent" color="#F96300" backgroundColor="#ECECEC" :height="8">
                                     </cly-progress-bar>
                                 </div>
                             </div>

@@ -66,80 +66,6 @@ taskmanager.longtask = function(options) {
     var start = new Date().getTime();
     var timeout;
 
-    var saveOpId = async function(comment_id, retryCount) {
-        common.db.admin().command({ currentOp: 1 }, async function(error, result) {
-            if (error) {
-                log.d(error);
-                return;
-            }
-            else {
-                if (result && result.inprog) {
-                    for (var i = 0; i < result.inprog.length; i++) {
-                        let op = result.inprog[i];
-                        if (!('$truncated' in op.command) && (i !== result.inprog.length - 1)) {
-                            continue;
-                        }
-                        if (!('$truncated' in op.command) && (i === result.inprog.length - 1)) {
-                            if (retryCount < 3) {
-                                setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
-                                return;
-                            }
-                            else {
-                                log.d(`operation not found for task:${options.id} comment: ${comment_id}`);
-                                break;
-                            }
-                        }
-
-                        let comment_position = op.command.$truncated.indexOf('$comment');
-                        if (comment_position === -1) {
-                            continue;
-                        }
-
-                        let substr = op.command.$truncated.substring(comment_position, op.command.$truncated.length) || "";
-                        var comment_val = "";
-                        substr = substr.match(/"(.*?)"/);
-                        if (substr && Array.isArray(substr)) {
-                            comment_val = substr[1];
-                        }
-
-                        if (comment_val === comment_id) {
-                            var task_id = options.id;
-                            var op_id = op.opid;
-                            await common.db.collection("long_tasks").findOneAndUpdate({ _id: common.db.ObjectID(task_id) }, { $set: { op_id: op_id } });
-                            log.d(`Operation found task: ${task_id} op:${op_id} comment: ${comment_id}`);
-                            break;
-                        }
-                        else if ((comment_val !== comment_id) && (i === (result.inprog.length - 1))) {
-                            if (retryCount < 3) {
-                                setTimeout(() => saveOpId(comment_id, (++retryCount)), 500);
-                                break;
-                            }
-                            else {
-                                log.d(`operation not found for task:${options.id} comment: ${comment_id}`);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    };
-
-    if (options.comment_id) {
-        var retryCount = 0;
-        try {
-            saveOpId(options.comment_id, retryCount);
-        }
-        catch (err) {
-            if (retryCount < 3) {
-                setTimeout(() =>saveOpId(options.comment_id, ++retryCount), 500);
-            }
-            else {
-                console.log(err);
-            }
-        }
-    }
-
     /** switching to long task */
     function switchToLongTask() {
         timeout = null;
@@ -607,6 +533,7 @@ taskmanager.checkResult = function(options, callback) {
 * @param {funciton} callback - callback for the result
 */
 taskmanager.checkIfRunning = function(options, callback) {
+    options = options || {};
     options.db = options.db || common.db;
     var query = {};
     if (options.id) {
@@ -982,6 +909,7 @@ taskmanager.rerunTask = function(options, callback) {
                 reqData = {};
             }
             if (reqData.uri) {
+                reqData.json = reqData.json || {};
                 reqData.json.task_id = options.id;
                 reqData.strictSSL = false;
                 if (reqData.json && reqData.json.period && Array.isArray(reqData.json.period)) {
@@ -1028,47 +956,7 @@ taskmanager.rerunTask = function(options, callback) {
 };
 
 taskmanager.stopTask = function(options, callback) {
-    options.db = options.db || common.db;
-
-    /**
-    * Stop task
-    * @param {object} op_id - operation id for mongo process
-    * @param {object} options1.db - database connection
-    * @param {string} options1.id - id of the task result
-    * @param {object} reqData  -  request data
-    * @param {funciton} callback1 - callback for the result
-    */
-    function stopTask(op_id) {
-        common.db.admin().command({ killOp: 1, op: Number.parseInt(op_id) }, function(error, result) {
-            if (result.ok === 1) {
-                callback(null, "Success");
-            }
-            else {
-                callback(null, "Operation could not be stopped");
-            }
-        });
-    }
-
-    options.db.collection("long_tasks").findOne({ _id: options.id }, function(err, res) {
-        if (res) {
-            if (res.creator) {
-                options.db.collection("members").findOne({ _id: common.db.ObjectID(res.creator) }, function(err1, member) {
-                    if (member) {
-                        stopTask(res.op_id);
-                    }
-                    else {
-                        callback(null, "No permission to stop this task");
-                    }
-                });
-            }
-            else {
-                stopTask(res.op_id);
-            }
-        }
-        else {
-            callback(null, "Task does not exist");
-        }
-    });
+    callback(null, "Operation could not be stopped");
 };
 
 /**

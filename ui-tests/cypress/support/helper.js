@@ -46,6 +46,10 @@ function getCurrentDate() {
     return moment().format('ddd, D MMM YYYY');
 }
 
+function getCurrentMonth() {
+    return moment().format('MMM');
+}
+
 const addData = ({
     username,
     password,
@@ -79,5 +83,6 @@ export default {
     hexToRgb,
     calculatePercentageRatings,
     getCurrentDate,
+    getCurrentMonth,
     addData
 };

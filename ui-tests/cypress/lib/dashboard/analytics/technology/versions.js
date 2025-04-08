@@ -1,64 +1,68 @@
-import analyticsTechnologyAppVersionsPageElements from "../../../../support/elements/dashboard/analytics/technology/versions";
+import {
+    versionsPageElements,
+    versionsEGraphElements,
+    versionsDataTableElements
+} from "../../../../support/elements/dashboard/analytics/technology/versions";
 
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
-        labelElement: analyticsTechnologyAppVersionsPageElements.PAGE_TITLE,
+        labelElement: versionsPageElements.PAGE_TITLE,
         labelText: "App Versions",
-        tooltipElement: analyticsTechnologyAppVersionsPageElements.PAGE_TITLE_TOOLTIP,
+        tooltipElement: versionsPageElements.PAGE_TITLE_TOOLTIP,
         tooltipText: "Detailed information on the application versions of your application accessed by your users, in the selected time period."
     });
 
     cy.verifyElement({
-        element: analyticsTechnologyAppVersionsPageElements.FILTER_DATE_PICKER,
+        element: versionsPageElements.FILTER_DATE_PICKER,
     });
 
     cy.verifyElement({
-        labelElement: analyticsTechnologyAppVersionsPageElements.APP_VERSIONS_FOR_LABEL,
+        labelElement: versionsPageElements.APP_VERSIONS_FOR_LABEL,
         labelText: "App versions for",
     });
 
     cy.verifyElement({
-        element: analyticsTechnologyAppVersionsPageElements.APP_VERSIONS_FOR_COMBOBOX,
+        element: versionsPageElements.APP_VERSIONS_FOR_COMBOBOX,
     });
 
     cy.verifyElement({
-        labelElement: analyticsTechnologyAppVersionsPageElements.AS_LABEL,
+        labelElement: versionsPageElements.AS_LABEL,
         labelText: "as",
     });
 
     cy.verifyElement({
-        element: analyticsTechnologyAppVersionsPageElements.AS_VALUE_COMBOBOX,
+        element: versionsPageElements.AS_VALUE_COMBOBOX,
     });
 
     cy.scrollPageToTop();
 
     cy.verifyElement({
-        element: analyticsTechnologyAppVersionsPageElements.TAB_PLATFORMS,
+        element: versionsPageElements.TAB_PLATFORMS,
         elementText: "Platforms",
     });
 
     cy.verifyElement({
-        element: analyticsTechnologyAppVersionsPageElements.TAB_DEVICES_AND_TYPES,
+        element: versionsPageElements.TAB_DEVICES_AND_TYPES,
         elementText: "Devices and Types",
     });
 
     cy.verifyElement({
-        element: analyticsTechnologyAppVersionsPageElements.TAB_RESOLUTIONS,
+        element: versionsPageElements.TAB_RESOLUTIONS,
         elementText: "Resolutions",
     });
 
     cy.verifyElement({
-        element: analyticsTechnologyAppVersionsPageElements.TAB_APP_VERSIONS,
+        element: versionsPageElements.TAB_APP_VERSIONS,
         elementText: "App Versions",
     });
 
     cy.verifyElement({
-        element: analyticsTechnologyAppVersionsPageElements.TAB_CARRIERS,
+        element: versionsPageElements.TAB_CARRIERS,
         elementText: "Carriers",
     });
 
     cy.verifyElement({
-        element: analyticsTechnologyAppVersionsPageElements.TAB_DENSITIES,
+        element: versionsPageElements.TAB_DENSITIES,
         elementText: "Densities",
     });
 };
@@ -67,71 +71,158 @@ const verifyEmptyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
+    verifyVersionsEGraph({
+        isEmpty: true,
+    });
+
+    verifyVersionsDataFromTable({
+        isEmpty: true,
+    });
+};
+
+const verifyFullDataPageElements = () => {
+
+    verifyStaticElementsOfPage();
+
+    verifyVersionsEGraph({
+        isEmpty: false,
+    });
+
+    verifyVersionsDataFromTable({
+        isEmpty: false,
+    });
+};
+
+const verifyVersionsEGraph = ({
+    index = 0,
+    isEmpty = false
+}) => {
+
+    if (isEmpty) {
+
+        cy.verifyElement({
+            element: versionsEGraphElements().EMPTY_EGRAPH_ICON,
+        });
+
+        cy.verifyElement({
+            labelElement: versionsEGraphElements().EMPTY_EGRAPH_TITLE,
+            labelText: "...hmm, seems empty here",
+        });
+
+        cy.verifyElement({
+            labelElement: versionsEGraphElements().EMPTY_EGRAPH_SUBTITLE,
+            labelText: "No data found",
+        });
+
+        return;
+    }
+
     cy.verifyElement({
-        element: analyticsTechnologyAppVersionsPageElements.EMPTY_CHART_PAGE_ICON,
+        element: versionsEGraphElements().ECHARTS,
     });
 
     cy.verifyElement({
-        labelElement: analyticsTechnologyAppVersionsPageElements.EMPTY_CHART_PAGE_TITLE,
-        labelText: "...hmm, seems empty here",
+        element: versionsEGraphElements().VERSIONS_NAMES,
     });
 
     cy.verifyElement({
-        labelElement: analyticsTechnologyAppVersionsPageElements.EMPTY_CHART_PAGE_SUBTITLE,
-        labelText: "No data found",
+        element: versionsEGraphElements().VERSIONS_ICONS,
+    });
+};
+
+const verifyVersionsDataFromTable = ({
+    index = 0,
+    isEmpty = false,
+    appVersion = null,
+    totalSessions = null,
+    totalUsers = null,
+    newUsers = null,
+}) => {
+
+    cy.scrollPageToBottom();
+
+    if (isEmpty) {
+
+        cy.verifyElement({
+            element: versionsDataTableElements().EMPTY_TABLE_ICON,
+        });
+
+        cy.verifyElement({
+            labelElement: versionsDataTableElements().EMPTY_TABLE_TITLE,
+            labelText: "...hmm, seems empty here",
+        });
+
+        cy.verifyElement({
+            labelElement: versionsDataTableElements().EMPTY_TABLE_SUBTITLE,
+            labelText: "No data found",
+        });
+        return;
+    }
+
+    cy.verifyElement({
+        shouldNot: !isEmpty,
+        element: versionsDataTableElements(index).APP_VERSION,
+        elementText: appVersion
     });
 
     cy.verifyElement({
-        element: analyticsTechnologyAppVersionsPageElements.EMPTY_TABLE_ICON,
+        shouldNot: !isEmpty,
+        element: versionsDataTableElements(index).TOTAL_SESSIONS,
+        elementText: totalSessions
     });
 
     cy.verifyElement({
-        labelElement: analyticsTechnologyAppVersionsPageElements.EMPTY_TABLE_TITLE,
-        labelText: "...hmm, seems empty here",
+        shouldNot: !isEmpty,
+        element: versionsDataTableElements(index).TOTAL_USERS,
+        elementText: totalUsers
     });
 
     cy.verifyElement({
-        labelElement: analyticsTechnologyAppVersionsPageElements.EMPTY_TABLE_SUBTITLE,
-        labelText: "No data found",
+        shouldNot: !isEmpty,
+        element: versionsDataTableElements(index).NEW_USERS,
+        elementText: newUsers
     });
 };
 
 const clickPlatformsTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(analyticsTechnologyAppVersionsPageElements.TAB_PLATFORMS);
+    cy.clickElement(versionsPageElements.TAB_PLATFORMS);
 };
 
 const clickDevicesAndTypesTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(analyticsTechnologyAppVersionsPageElements.TAB_DEVICES_AND_TYPES);
+    cy.clickElement(versionsPageElements.TAB_DEVICES_AND_TYPES);
 };
 
 const clickResolutionsTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(analyticsTechnologyAppVersionsPageElements.TAB_RESOLUTIONS);
+    cy.clickElement(versionsPageElements.TAB_RESOLUTIONS);
 };
 
 const clickAppVersionsTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(analyticsTechnologyAppVersionsPageElements.TAB_APP_VERSIONS);
+    cy.clickElement(versionsPageElements.TAB_APP_VERSIONS);
 };
 
 const clickCarriersTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(analyticsTechnologyAppVersionsPageElements.TAB_CARRIERS);
+    cy.clickElement(versionsPageElements.TAB_CARRIERS);
 };
 
 const clickDensitiesTab = () => {
     cy.scrollPageToTop();
-    cy.clickElement(analyticsTechnologyAppVersionsPageElements.TAB_DENSITIES);
+    cy.clickElement(versionsPageElements.TAB_DENSITIES);
 };
 
 module.exports = {
     verifyEmptyPageElements,
+    verifyFullDataPageElements,
     clickPlatformsTab,
     clickDevicesAndTypesTab,
     clickResolutionsTab,
     clickAppVersionsTab,
     clickCarriersTab,
-    clickDensitiesTab
+    clickDensitiesTab,
+    verifyVersionsEGraph,
+    verifyVersionsDataFromTable
 };

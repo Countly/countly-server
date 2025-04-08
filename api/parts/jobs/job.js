@@ -1068,9 +1068,16 @@ class IPCFaçadeJob extends ResourcefulJob {
             this.ipcChannel.remove();
         }, (error) => {
             this.ipcChannel.remove();
-            log.e('[%s] Error in IPCFaçadeJob %s: %j / %j', this.job.channel, this.resourceFaçade._id, error, error.stack);
+            if (error) {
+                log.e('[%s] Error in IPCFaçadeJob %s: %j / %j', this.job.channel, this.resourceFaçade._id, error, error.stack);
+            }
+            else {
+                log.e('[%s] Error in IPCFaçadeJob %s: Unknown error', this.job.channel, this.resourceFaçade._id);
+            }
             this.job._finish(error || 'Aborted').catch(()=>{});
-            throw error;
+            if (error) {
+                throw error;
+            }
         });
     }
 
