@@ -86,10 +86,15 @@ async function send(pushEvent) {
         return messageId;
     }
     catch (error) {
+        // if ("code" in  && error.code in FCMErrors) {
         if ("code" in /** @type {Error} */(error)) {
-            const { libraryKey, message, mapsTo } = FCMErrors[
+            const firebaseError = FCMErrors[
                 /** @type {import("firebase-admin").FirebaseError} */(error).code
             ];
+            if (!firebaseError) {
+                throw error;
+            }
+            const { libraryKey, message, mapsTo } = firebaseError;
             const combinedMessage = libraryKey + ": " + message;
             if (mapsTo) {
                 throw new mapsTo(combinedMessage);

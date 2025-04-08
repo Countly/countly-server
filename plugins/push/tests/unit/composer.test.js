@@ -224,7 +224,7 @@ describe("Push composer", async () => {
         let mongoSandbox;
 
         beforeEach(() => {
-            mockSendPushEvent = sinon.stub(queue, "sendPushEvent");
+            mockSendPushEvent = sinon.stub(queue, "sendPushEvents");
             ({ db, mongoSandbox, createMockedCollection } = mockMongoDb());
         });
         afterEach(() => {
@@ -321,6 +321,7 @@ describe("Push composer", async () => {
                 messageId,
                 scheduleId,
                 token: "",
+                saveResult: false,
                 uid: "",
                 platform: "a",
                 env: "p",

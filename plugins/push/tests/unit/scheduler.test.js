@@ -354,7 +354,8 @@ describe("Scheduler", () => {
                     events: ["lorem", "ipsum"]
                 })
             ];
-            assert.rejects(scheduleMessageByDate(db, mockMessage));
+            collection.findOne.resolves(mockMessage);
+            assert.rejects(scheduleMessageByDate(db, mockMessage._id));
         });
     });
 
@@ -362,8 +363,8 @@ describe("Scheduler", () => {
         it("should merge multiple events and creates a map", () => {
             const app1 = new ObjectId("67b868f115891e7800e2f563");
             const app2 = new ObjectId("67b868f115891e7800e2f562");
-            const cohort1 = new ObjectId("67b868f115891e7800e2f564");
-            const cohort2 = new ObjectId("67b868f115891e7800e2f565");
+            const cohort1 = "67b868f115891e7800e2f564";
+            const cohort2 = "67b868f115891e7800e2f565";
             /** @type {AutoTriggerEvent[]} */
             const events = [
                 { "kind": "event", "appId": app1, "eventKeys": [ "test-event" ], "uid": "7" },

@@ -183,7 +183,7 @@ class Message extends Mongoable {
     /**
      * Getter for platforms
      *
-     * @returns {string[]|undefined} platforms array
+     * @returns {PlatformKeys} platforms array
      */
     get platforms() {
         return this._data.platforms;

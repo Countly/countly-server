@@ -29,20 +29,28 @@ const log = require('../../../../api/utils/common').log('push:scheduler');
 /** @type {Message["status"][]} */
 const INACTIVE_MESSAGE_STATUSES = ["inactive", "draft", "sent", "stopped", "failed"];
 /** @type {MessageTrigger["kind"][]} */
-const SCHEDULE_BY_DATE_TRIGGERS = ["plain", "rec", "multi"];
+const DATE_TRIGGERS = ["plain", "rec", "multi"];
 // /** @type {MessageTrigger["kind"][]} */
 // const AUTO_TRIGGERS = ["cohort", "event", "api"];
 
 /**
  * Schedules the provided message to be sent on the next calculated date,
  * determined by the message's triggering properties
- * @param   {MongoDb} db      - mongodb database object
- * @param   {Message} message - message document from messages collection
+ * @param   {MongoDb}  db        - mongodb database object
+ * @param   {ObjectId} messageId - message document from messages collection
  * @returns {Promise<Schedule|undefined>} the created Schedule document from message_schedules collection
  */
-async function scheduleMessageByDate(db, message) {
+async function scheduleMessageByDate(db, messageId) {
+    /** @type {MessageCollection} */
+    const col = db.collection("messages");
+    const message = await col.findOne({ _id: messageId });
+    if (!message) {
+        throw new Error("Message with ID " + messageId.toString()
+            + " couldn't be found");
+    }
+
     const trigger = message.triggers
-        .find(trigger => SCHEDULE_BY_DATE_TRIGGERS.includes(trigger.kind));
+        .find(trigger => DATE_TRIGGERS.includes(trigger.kind));
     if (!trigger) {
         throw new Error(
             "Cannot find a schedulable trigger for the message " + message._id
@@ -82,7 +90,8 @@ async function scheduleMessageByDate(db, message) {
         message._id,
         scheduleTo,
         "tz" in trigger && trigger.tz ? trigger.tz : false,
-        "sctz" in trigger ? trigger.sctz : undefined
+        "sctz" in trigger ? trigger.sctz : undefined,
+        message.filter,
     );
 }
 
@@ -442,7 +451,7 @@ function mergeAutoTriggerEvents(autoTriggerEvents) {
 }
 
 module.exports = {
-    SCHEDULE_BY_DATE_TRIGGERS,
+    DATE_TRIGGERS,
     INACTIVE_MESSAGE_STATUSES,
     scheduleMessageByDate,
     scheduleMessageByAutoTriggers,

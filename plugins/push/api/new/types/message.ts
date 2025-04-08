@@ -144,7 +144,7 @@ export interface BaseResult {
     errors: { [key: string]: number };
 }
 // To avoid circular referencing:
-export type SubSubResult = BaseResult;
+export type SubSubResult = BaseResult & { subs: { [key: string]: any } }; // "sub" in here is not being used
 export type SubResult = BaseResult & { subs: { [key: string]: SubSubResult } };
 export type Result = BaseResult & { subs: { [key: string]: SubResult } };
 

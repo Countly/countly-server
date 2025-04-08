@@ -109,7 +109,7 @@ async function updateScheduleResults(db, scheduleId, resultObject) {
         /** @type {{result: Result}} */(schedule),
         resultObject
     );
-    await db.collection("messages_schedules").updateOne(
+    await db.collection("message_schedules").updateOne(
         { _id: schedule._id },
         { $set: { result: schedule.result } }
     );

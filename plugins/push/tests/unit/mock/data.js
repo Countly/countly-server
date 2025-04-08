@@ -150,6 +150,7 @@ module.exports = {
             platforms: ["a"],
             state: 1,
             status: "created",
+            saveResults: true,
             triggers: [
                 {
                     kind: 'plain',

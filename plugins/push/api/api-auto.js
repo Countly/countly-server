@@ -71,8 +71,13 @@ async function loadAutoTriggers() {
     }
     // console.log(JSON.stringify(AUTO_TRIGGERS, null, 2));
 }
-setInterval(loadAutoTriggers, 5 * 60 * 1000);
-// setInterval(loadAutoTriggers, 3000);
+
+setInterval(
+    loadAutoTriggers,
+    process.env.AUTO_TRIGGER_CACHE_INTERVAL
+        ? Number(process.env.AUTO_TRIGGER_CACHE_INTERVAL)
+        : 5 * 60 * 1000
+);
 
 /**
  * Handler function for /cohort/enter (/cohort/exit) hooks
