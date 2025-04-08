@@ -1,6 +1,10 @@
-## Version 24.10.X
+## Version 24.10.9
 Fixes:
+- [core] Allow downloading data also from other databases in dbviewer
+- [crash_symbolication] Symbolication server api end point test fix
 - [crashes] Remove memory addresses from stack trace grouping
+- [push] Fixed push notifications title and content text and variables combination
+- [reports] Correctly match event for email report if event key contains '.'
 - [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
 - [user-management] Prevent global admin from self-revoke and self-delete
 
@@ -4518,4 +4522,3 @@ This version provides several features and bugfixes to both server and SDKs. The
     A user of an application can only view analytics for that application 
     and cannot edit its settings.
   * Added csfr protection to all methods provided through app.js.
-
