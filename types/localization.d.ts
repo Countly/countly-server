@@ -1,5 +1,5 @@
 /**
- * Interface for the localization module
+ * Module for server side localization. Uses minimized localization files at frontend/express/public/localization/min/
  * @interface Locale
  */
 export interface Locale {
