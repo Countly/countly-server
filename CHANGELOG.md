@@ -1,5 +1,6 @@
 ## Version 24.05.X
 Fixes:
+- [push] Fixed push notifications title and content text and variables combination
 - [reports] Correctly match event for email report if event key contains '.'
 
 ## Version 24.05.28
@@ -4503,4 +4504,3 @@ This version provides several features and bugfixes to both server and SDKs. The
     A user of an application can only view analytics for that application 
     and cannot edit its settings.
   * Added csfr protection to all methods provided through app.js.
-
