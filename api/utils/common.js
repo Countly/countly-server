@@ -105,6 +105,25 @@ common.decode_html = function(string) {
 };
 
 /**
+ * Check if string is a valid json
+ * @param {string} val - string that might be json encoded
+ * @returns {object} with property data for parsed data and property valid to check if it was valid json encoded string or not
+ **/
+function getJSON(val) {
+    var ret = {valid: false};
+    try {
+        ret.data = JSON.parse(val);
+        if (ret.data && typeof ret.data === "object") {
+            ret.valid = true;
+        }
+    }
+    catch (ex) {
+        //silent error
+    }
+    return ret;
+}
+
+/**
 * Escape special characters in the given value, may be nested object
 * @param  {string} key - key of the value
 * @param  {any} value - value to escape
@@ -155,19 +174,6 @@ function escape_html_entities(key, value, more) {
     return value;
 }
 common.getJSON = getJSON;
-function getJSON(val) {
-    var ret = {valid: false};
-    try {
-        ret.data = JSON.parse(val);
-        if (ret.data && typeof ret.data === "object") {
-            ret.valid = true;
-        }
-    }
-    catch (ex) {
-        //silent error
-    }
-    return ret;
-}
 
 common.log = logger;
 
