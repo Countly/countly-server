@@ -1,6 +1,6 @@
 /**
 * Module for server side localization. Uses minimized localization files at frontend/express/public/localization/min/
-* module api/utils/localization
+* @module api/utils/localization
 */
 
 /** @type(import('../../types/localization').Locale) */
