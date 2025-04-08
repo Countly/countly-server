@@ -13,6 +13,7 @@
  * @typedef {import('./types/user.ts').User} User
  * @typedef {import('stream').Readable} Readable
  * @typedef {import('./types/utils.ts').LogObject} LogObject
+ * @typedef {import("mongodb").Collection<{ radius: number; unit: "mi"|"km"; geo: { coordinates: [number, number]; } }>} GeosCollection
  */
 
 const { ObjectId } = require('mongodb');
@@ -76,7 +77,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
         return 0;
     }
 
-    const stream = getUserStream(
+    const stream = await getUserStream(
         db,
         message,
         scheduleEvent.timezone,
@@ -169,12 +170,12 @@ function userPropsProjection(message) {
  * @param {Message} message
  * @param {string=} timezone
  * @param {AudienceFilters=} filters
- * @returns {Readable & AsyncIterable<User>}
+ * @returns {Promise<Readable & AsyncIterable<User>>}
  */
-function getUserStream(db, message, timezone, filters) {
+async function getUserStream(db, message, timezone, filters) {
     const appId = message.app.toString();
     /** @type {{ [key: string]: any }} */
-    const $match = {};
+    const $match = { $and: [] };
     const $project = { uid: 1, tk: 1, la: 1, ...userPropsProjection(message) };
     const $lookup = {
         from: "push_" + appId,
@@ -182,7 +183,6 @@ function getUserStream(db, message, timezone, filters) {
         foreignField: '_id',
         as: "tk"
     };
-
     // Platforms:
     const platformFilters = [];
     for (let pKey of message.platforms) {
@@ -192,7 +192,7 @@ function getUserStream(db, message, timezone, filters) {
         }
     }
     if (platformFilters.length) {
-        $match.$or = platformFilters;
+        $match.$and.push({ $or: platformFilters });
     }
     // Timezone:
     if (timezone) {
@@ -208,10 +208,41 @@ function getUserStream(db, message, timezone, filters) {
             $match["chr." + filters.cohorts[i] + ".in"] = "true";
         }
     }
-
+    // Geos:
+    if (Array.isArray(filters?.geos)) {
+        /** @type {GeosCollection} */
+        const col = db.collection("geos");
+        const geoDocs = await col.find({
+            "geo.type": "Point",
+            unit: { $in: ["mi", "km"] },
+            _id: { $in: filters.geos }
+        }).toArray();
+        if (!geoDocs.length) {
+            $match.$and.push({ $or: [{ "loc.geo": "no such geo" }] });
+        }
+        else {
+            $match.$and.push({
+                $or: geoDocs.map(({ geo, radius, unit }) => ({
+                    "loc.geo": {
+                        $geoWithin: {
+                            $centerSphere: [
+                                geo.coordinates,
+                                radius / (unit === "km" ? 6378.1 : 3963.2)
+                            ]
+                        }
+                    }
+                }))
+            });
+        }
+    }
+    console.log(JSON.stringify($match, null, 2));
     // TODO: filters.drill
-    // TODO: filters.geos
     // TODO: filters.user
+
+    // fix for the empty "$and" in "$match":
+    if (!$match.$and.length) {
+        delete $match.$and;
+    }
 
     return db
         .collection("app_users" + appId)
