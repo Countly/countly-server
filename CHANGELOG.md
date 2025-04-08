@@ -1,5 +1,7 @@
-## Version 24.05.X
+## Version 24.05.29
 Fixes:
+- [core] Allow downloading data also from other databases in dbviewer
+- [crash_symbolication] Symbolication server api end point test fix
 - [push] Fixed push notifications title and content text and variables combination
 - [reports] Correctly match event for email report if event key contains '.'
 
