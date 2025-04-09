@@ -624,6 +624,11 @@
             value: {
                 default: null,
                 type: [String, Number]
+            },
+            testId: {
+                type: String,
+                default: 'cly-option-swapper-test-id',
+                required: false
             }
         },
 
