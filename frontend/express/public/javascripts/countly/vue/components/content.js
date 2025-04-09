@@ -378,7 +378,7 @@
                     </el-collapse>  
                 </div>
                 <div v-else>
-                    <div class="cly-vue-content-builder__layout-steps__header text-medium font-weight-bold">{{ header }}</div>
+                    <div class="cly-vue-content-builder__layout-steps__header text-medium font-weight-bold" :data-test-id="'content-drawer-sidebar-step-' + header.toLowerCase().replaceAll(' ', '-')">{{ header }}</div>
                     <slot name="content-builder-layout-steps"></slot>
                 </div>
             </div>
@@ -624,6 +624,11 @@
             value: {
                 default: null,
                 type: [String, Number]
+            },
+            testId: {
+                type: String,
+                default: 'cly-option-swapper-test-id',
+                required: false
             }
         },
 
