@@ -15,9 +15,11 @@ describe('9.Mixed tooltip (multiple SDK versions)', () => {
     it('9.2-Reset', function() {
         goToConfigTab();
     });
+});
+describe('9.Mixed tooltip (multiple SDK versions)', () => {
     it('9.3-Test', function() {
         goToConfigTab(true);
         checkTooltipAppears('success', 2, true);
         checkTooltipAppears('warning', 19, true);
     });
-});
+ });

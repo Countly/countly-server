@@ -5,7 +5,7 @@ const initialSetupHelpers = require('../../lib/onboarding/initialSetup');
 const initialConsentHelpers = require('../../lib/onboarding/initialConsent');
 const quickstartPopoeverHelpers = require('../../support/components/quickstartPopover');
 
-const wait_L = 2000;
+const wait_L = 1000;
 const user = {
     username: 'test',
     email: 'a@a.com',
@@ -58,6 +58,7 @@ const goToConfigTab = (nopop) => {
     cy.get('.white-bg > :nth-child(1) > a > span').click();
     cy.wait(wait_L);
     cy.get('.white-bg > :nth-child(4)').click();
+    cy.wait(wait_L);
 };
 
 const createRequest = (sdkName, sdkVersion) => {
