@@ -1,12 +1,17 @@
 import { ObjectId } from "mongodb";
-import { Result } from "./message";
+import { Result, Content } from "./message";
 
 export interface AudienceFilters {
     uids?: string[];
-    user?: string;//{ type: 'JSON', required: false, nonempty: true, custom: Filter.filterQueryValidator },
-    drill?: string; //{ type: 'JSON', required: false, nonempty: true, custom: Filter.filterQueryValidator },
-    geos?: ObjectId[];//{ type: 'ObjectID[]', required: false, 'min-length': 1 },
-    cohorts?: string[];//{ type: 'String[]', required: false, 'min-length': 1 },
+    user?: string; // JSON
+    drill?: string; // JSON
+    geos?: ObjectId[];
+    cohorts?: string[];
+}
+
+export interface MessageOverrides {
+    contents: Content[];
+    variables: { [key: string]: any; };
 }
 
 export interface Schedule {
@@ -19,6 +24,7 @@ export interface Schedule {
     timezoneAware: boolean;
     schedulerTimezone?: number;
     audienceFilters?: AudienceFilters;
+    messageOverrides?: MessageOverrides;
     uids?: string[]; // user ids from app_users{appId} collection sent by cohort or event AutoTrigger
     status: "scheduled"|"started"|"finished"|"canceled";
     result: Result;

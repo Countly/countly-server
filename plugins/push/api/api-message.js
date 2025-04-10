@@ -10,7 +10,7 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
 const countlyFetch = require("../../../api/parts/data/fetch.js");
 
 const { buildResultObject } = require("./new/lib/result.js");
-const { scheduleMessageByDate, DATE_TRIGGERS } = require("./new/scheduler.js");
+const { scheduleMessageByDateTrigger, DATE_TRIGGERS } = require("./new/scheduler.js");
 
 /**
  * Validate data & construct message out of it, throw in case of error
@@ -297,7 +297,7 @@ module.exports.create = async params => {
         await msg.save();
         if (!demo) {
             if (msg.triggers.find(t => DATE_TRIGGERS.includes(t.kind))) {
-                await scheduleMessageByDate(common.db, msg._id);
+                await scheduleMessageByDateTrigger(common.db, msg._id);
             }
             // await msg.schedule(log, params);
         }

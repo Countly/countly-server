@@ -87,12 +87,6 @@ function resultEventDTOToObject(resultEvent) {
  */
 function autoTriggerEventDTOToObject(autoTriggerEvent) {
     switch (autoTriggerEvent.kind) {
-    case "api":
-        return {
-            ...autoTriggerEvent,
-            appId: new ObjectId(autoTriggerEvent.appId),
-            messageId: new ObjectId(autoTriggerEvent.messageId),
-        }
     case "cohort":
         return {
             ...autoTriggerEvent,

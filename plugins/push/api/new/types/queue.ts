@@ -58,12 +58,7 @@ export interface EventTriggerEvent extends BaseTriggerEvent {
     uid: string;
 }
 
-export interface ApiTriggerEvent extends BaseTriggerEvent {
-    kind: "api";
-    messageId: ObjectId;
-}
-
-export type AutoTriggerEvent = CohortTriggerEvent|EventTriggerEvent|ApiTriggerEvent;
+export type AutoTriggerEvent = CohortTriggerEvent|EventTriggerEvent;
 
 type Optional<T> = T|undefined;
 type DTO<T> = {

@@ -77,7 +77,7 @@ module.exports.drillAddPushEvents = ({uid, params, events, event}) => {
  * {$in: [mid1, mid2]},
  * {$nin: [mid1, mid2]},
  * {mid1: 1, mid2: 1},
- * 
+ *
  * @param {object|String[]} message query
  * @returns {object|undefined} mongo query
  */
@@ -97,7 +97,7 @@ function messageQuery(message) {
 
 /**
  * Find messages using particular query and return ids
- * 
+ *
  * @param {object} q message collection query
  * @returns {String[]} array of message ids
  */
@@ -148,20 +148,6 @@ module.exports.drillPreprocessQuery = async function({query, params}) {
         if (query['sg.i'] && query['sg.i'].$in && !query['sg.i'].$in.length) {
             query['sg.i'].$in = ['nope'];
         }
-        // if (query.push) {
-        //     if (query.push.$nin) {
-        //         query.$and = query.push.$nin.map(tk => {
-        //             return {$or: [{[tk]: false}, {[tk]: {$exists: false}}]};
-        //         });
-        //     }
-        //     if (query.push.$in) {
-        //         let q = query.push.$in.map(tk => {
-        //             return {[tk]: true};
-        //         });
-        //         query.$or = q;
-        //     }
-        //     delete query.push;
-        // }
     }
     else if (query && params) {
         if (query.message) {
@@ -225,56 +211,6 @@ module.exports.drillPreprocessQuery = async function({query, params}) {
         }
     }
 };
-
-// module.exports.drillPreprocessQuery = ({query, params}) => {
-//     if (query) {
-//         if (query.push) {
-//             if (query.push.$nin) {
-//                 query.$and = query.push.$nin.map(tk => {
-//                     return {$or: [{[tk]: false}, {[tk]: {$exists: false}}]};
-//                 });
-//             }
-//             if (query.push.$in) {
-//                 let q = query.push.$in.map(tk => {
-//                     return {[tk]: true};
-//                 });
-//                 query.$or = q;
-//             }
-//             delete query.push;
-//         }
-
-//         if (query.message) {
-//             let q = messageQuery(query.message);
-
-//             if (!q) {
-//                 return;
-//             }
-
-//             log.d(`removing message ${JSON.stringify(query.message)} from queryObject`);
-//             delete query.message;
-
-//             return new Promise((res, rej) => {
-//                 try {
-//                     common.db.collection(`push_${params.app_id}`).find(q, {projection: {_id: 1}}).toArray((err, ids) => {
-//                         if (err) {
-//                             rej(err);
-//                         }
-//                         else {
-//                             ids = (ids || []).map(id => id._id);
-//                             query.uid = {$in: ids};
-//                             log.d(`filtered by message: uids out of ${ids.length}`);
-//                             res();
-//                         }
-//                     });
-//                 }
-//                 catch (e) {
-//                     log.e(e);
-//                     rej(e);
-//                 }
-//             });
-//         }
-//     }
-// };
 
 module.exports.drillPostprocessUids = ({uids, params}) => new Promise((res, rej) => {
     let message = params && params.initialQueryObject && params.initialQueryObject.message;

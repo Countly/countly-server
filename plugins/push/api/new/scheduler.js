@@ -5,6 +5,7 @@
  * @typedef {import('./types/message.ts').MultiTrigger} MultiTrigger
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
  * @typedef {import('./types/schedule.ts').AudienceFilters} AudienceFilters
+ * @typedef {import('./types/schedule.ts').MessageOverrides} MessageOverrides
  * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('./types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
  * @typedef {import('./types/queue.ts').CohortTriggerEvent} CohortTriggerEvent
@@ -40,7 +41,7 @@ const DATE_TRIGGERS = ["plain", "rec", "multi"];
  * @param   {ObjectId} messageId - message document from messages collection
  * @returns {Promise<Schedule|undefined>} the created Schedule document from message_schedules collection
  */
-async function scheduleMessageByDate(db, messageId) {
+async function scheduleMessageByDateTrigger(db, messageId) {
     /** @type {MessageCollection} */
     const col = db.collection("messages");
     const message = await col.findOne({ _id: messageId });
@@ -103,6 +104,7 @@ async function scheduleMessageByDate(db, messageId) {
 async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
     const appMap = mergeAutoTriggerEvents(autoTriggerEvents);
 
+    // group messages together by their appId to reduce the number of mongo queries:
     /** @type {{appId: ObjectId; triggerFilter: MessageTriggerFilter; uids: string[];}[]} */
     const messageFilters = [];
     for (const appId in appMap) {
@@ -135,6 +137,8 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
         }
     }
 
+    // find if there are messages for the created "triggerFilter". then load the
+    // message, and then create a schedule for it.
     /** @type {MessageCollection} */
     const col = db.collection("messages");
     const now = new Date;
@@ -173,13 +177,14 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
 
 /**
  *
- * @param {MongoDb}          db                - mongodb database object
- * @param {ObjectId}         appId             - ObjectId of the app
- * @param {ObjectId}         messageId         - ObjectId of the message
- * @param {Date}             scheduledTo       - Date to schedule this message to. UTC user's schedule date when timezone aware
- * @param {Boolean}          timezoneAware     - set true if this is going to be scheduled for each timezone
- * @param {Number=}          schedulerTimezone - timezone of the scheduler
- * @param {AudienceFilters=} audienceFilters   - user ids from app_users{appId} collection
+ * @param {MongoDb}           db                - mongodb database object
+ * @param {ObjectId}          appId             - ObjectId of the app
+ * @param {ObjectId}          messageId         - ObjectId of the message
+ * @param {Date}              scheduledTo       - Date to schedule this message to. UTC user's schedule date when timezone aware
+ * @param {Boolean}           timezoneAware     - set true if this is going to be scheduled for each timezone
+ * @param {Number=}           schedulerTimezone - timezone of the scheduler
+ * @param {AudienceFilters=}  audienceFilters   - user ids from app_users{appId} collection
+ * @param {MessageOverrides=} messageOverrides  - user ids from app_users{appId} collection
  * @returns {Promise<Schedule>} created Schedule document from message_schedules collection
  */
 async function createSchedule(
@@ -190,6 +195,7 @@ async function createSchedule(
     timezoneAware,
     schedulerTimezone,
     audienceFilters,
+    messageOverrides,
 ) {
     if (timezoneAware && typeof schedulerTimezone !== "number") {
         throw new Error("Scheduler timezone is required when a "
@@ -205,7 +211,8 @@ async function createSchedule(
         timezoneAware,
         schedulerTimezone,
         audienceFilters,
-        result: buildResultObject()
+        messageOverrides,
+        result: buildResultObject(),
     };
     await db.collection("message_schedules").insertOne(messageSchedule);
     await createScheduleEvents(messageSchedule);
@@ -453,7 +460,7 @@ function mergeAutoTriggerEvents(autoTriggerEvents) {
 module.exports = {
     DATE_TRIGGERS,
     INACTIVE_MESSAGE_STATUSES,
-    scheduleMessageByDate,
+    scheduleMessageByDateTrigger,
     scheduleMessageByAutoTriggers,
     createScheduleEvents,
     createSchedule,

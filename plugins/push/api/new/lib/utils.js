@@ -3,6 +3,7 @@
  * @typedef {import("../types/proxy").ProxyConfigurationKey} ProxyConfigurationKey
  * @typedef {import("../types/credentials").APNP12Credentials} APNP12Credentials
  * @typedef {import("../types/credentials").TLSKeyPair} TLSKeyPair
+ * @typedef {import("mongodb").Db} MongoDb
  */
 
 const { URL } = require("url");
@@ -59,8 +60,28 @@ function parseKeyPair(credentials) {
     };
 }
 
+/**
+ * IGNORE THE LSP ERRORS
+ * TODO: GET RID OF THIS
+ * @returns {{ fetchUsers: (params: any, cb: (err: Error, uids: string[]) => void, db: MongoDb) => void }}
+ */
+function loadDrillAPI() {
+    if (typeof global.it === "function") {
+        try {
+            return require("../../../../drill/api").drill;
+        }
+        catch (err) {
+            return undefined;
+        }
+    }
+    else {
+        return require("../../../../pluginManager").getPluginsApis().drill.drill;
+    }
+}
+
 module.exports = {
     buildProxyUrl,
     serializeProxyConfig,
-    parseKeyPair
+    parseKeyPair,
+    loadDrillAPI
 }

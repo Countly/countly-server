@@ -10,13 +10,12 @@ const plugins = require('../../pluginManager'),
     { Message, State, TriggerKind, fields, platforms, ValidationError, PushError, DBMAP, guess } = require('./send'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
     { onTokenSession, onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push'),
-    { autoOnCohort, autoOnCohortDeletion, autoOnEvent } = require('./api-auto'),
-    { apiPop, apiPush } = require('./api-tx'),
+    { autoOnCohort, /*autoOnCohortDeletion,*/ autoOnEvent } = require('./api-auto'),
+    { /*apiPop,*/ apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
     { estimate, test, create, update, toggle, remove, all, one, mime, user, notificationsForUser, periodicStats } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
-    { legacyApis } = require('./legacy'),
     Sender = require('./send/sender'),
     FEATURE_NAME = 'push',
     // PUSH_CACHE_GROUP = 'P',
@@ -44,7 +43,7 @@ const plugins = require('../../pluginManager'),
                 toggle: [validateUpdate, toggle],
                 remove: [validateDelete, remove],
                 push: [validateUpdate, apiPush],
-                pop: [validateDelete, apiPop],
+                // pop: [validateDelete, apiPop],
                 // PUT: [validateCreate, create],
                 // POST: [validateUpdate, update, '_id'],
             }
@@ -371,9 +370,6 @@ plugins.register('/session/user', onSessionUser);
 plugins.register('/i/push', ob => apiCall(apis.i, ob));
 plugins.register('/o/push', ob => apiCall(apis.o, ob));
 plugins.register('/i/apps/update/plugins/push', onAppPluginsUpdate);
-
-// Legacy API
-plugins.register('/i/pushes', ob => apiCall(legacyApis.i, ob));
 
 // Cohort hooks for cohorted auto push
 plugins.register('/cohort/enter', ({cohort, uids}) => autoOnCohort(true, cohort, uids));
