@@ -22,6 +22,12 @@ plugins.setConfigs("dashboards", {
 
 (function() {
 
+    plugins.register("/master", function() {
+        setTimeout(() => {
+            require('../../../api/parts/jobs').job('dashboards:refreshDashboards').replace().schedule('every 5 minutes');
+        }, 1000);
+    });
+
     /**
      * @api {get} /o/dashboards Get dashboard
      * @apiName GetDashboard
@@ -160,6 +166,11 @@ plugins.setConfigs("dashboards", {
                                 else {
                                     dashboard.share_with = "none";
                                 }
+                            }
+
+                            if (dashboard.refreshRate) {
+                                dashboard.refreshRate = dashboard.refreshRate / 60; //Convert to minutes
+                                dashboard.use_refresh_rate = true;
                             }
 
                             if (canSeeDashboardShares(params.member, dashboard)) {
@@ -597,6 +608,19 @@ plugins.setConfigs("dashboards", {
                 shareWith = params.qstring.share_with || "",
                 copyDashId = params.qstring.copy_dash_id;
 
+            var refreshRate = 0;
+            if (params.qstring.use_refresh_rate && params.qstring.use_refresh_rate !== "false" && params.qstring.refreshRate > 0) {
+                try {
+                    refreshRate = parseInt(params.qstring.refreshRate, 10);
+                    refreshRate = refreshRate * 60; //Convert to seconds
+                }
+                catch (ex) {
+                    refreshRate = 0;
+                    log.e("passed unexpected refresh rate");
+                }
+
+            }
+
             try {
                 sharedEmailEdit = JSON.parse(sharedEmailEdit);
             }
@@ -711,6 +735,9 @@ plugins.setConfigs("dashboards", {
                     theme: theme,
                     created_at: new Date().getTime()
                 };
+                if (refreshRate > 0) {
+                    dashData.refreshRate = refreshRate;
+                }
 
                 var widgets = dataObj.newWidgetIds;
                 if (widgets && widgets.length) {
@@ -846,6 +873,19 @@ plugins.setConfigs("dashboards", {
                 send_email_invitation = params.qstring.send_email_invitation,
                 memberId = params.member._id + "";
 
+            var refreshRate = 0;
+            if (params.qstring.use_refresh_rate && params.qstring.use_refresh_rate !== "false" && params.qstring.refreshRate > 0) {
+                try {
+                    refreshRate = parseInt(params.qstring.refreshRate, 10);
+                    refreshRate = refreshRate * 60; //Convert to seconds
+                }
+                catch (ex) {
+                    refreshRate = 0;
+                    log.e("passed unexpected refresh rate");
+                }
+            }
+
+
             if (!dashboardId || dashboardId.length !== 24) {
                 common.returnMessage(params, 400, 'Invalid parameter: dashboard_id');
                 return true;
@@ -972,12 +1012,19 @@ plugins.setConfigs("dashboards", {
                                 changedFields.shared_user_groups_view = sharedUserGroupView;
                             }
                         }
+                        var unset = {shared_with_view: "", shared_with_edit: ""};
+                        if (refreshRate && refreshRate > 0 && refreshRate !== dashboard.refreshRate) {
+                            changedFields.refreshRate = refreshRate;
+                        }
+                        else if (refreshRate === 0) {
+                            unset.refreshRate = ""; //unset refresh rate for dashboard
+                        }
 
                         common.db.collection("dashboards").update(
                             filterCond,
                             {
                                 $set: changedFields,
-                                $unset: {shared_with_view: "", shared_with_edit: ""}
+                                $unset: unset
                             },
                             async function(e, res) {
                                 if (!e && res) {
