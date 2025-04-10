@@ -972,12 +972,12 @@ taskmanager.rerunTask = function(options, callback) {
         });
     }
 
-    var qq = {_id: options.id}
-    if(options.additionalQuery){
+    var qq = {_id: options.id};
+    if (options.additionalQuery) {
         qq = options.additionalQuery;
         qq._id = options.id;
     }
-    log.d("Fetching from long_tasks to rerun: "+ JSON.stringify(qq));
+    log.d("Fetching from long_tasks to rerun: " + JSON.stringify(qq));
     options.db.collection("long_tasks").findOne(qq, function(err, res) {
         if (!err && res && res.request) {
             var reqData = {};
