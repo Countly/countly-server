@@ -47,8 +47,10 @@ class RefreshDashboardsJob extends job.Job {
             try {
                 var dashboards = await countlyDb.collection('dashboards').find({}).toArray();
                 for (var z = 0; z < dashboards.length; z++) {
-
                     if (dashboards[z].refreshRate && dashboards[z].refreshRate > 0) {
+                        if (dashboards[z].refreshRate < 300) {
+                            dashboards[z].refreshRate = 300;
+                        }
                         log.d('Refreshing dashboard: ' + dashboards[z]._id);
                         await customDashboards.refreshDashboard(countlyDb, dashboards[z]);
                     }

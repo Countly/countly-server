@@ -612,7 +612,7 @@ plugins.setConfigs("dashboards", {
             if (params.qstring.use_refresh_rate && params.qstring.use_refresh_rate !== "false" && params.qstring.refreshRate > 0) {
                 try {
                     refreshRate = parseInt(params.qstring.refreshRate, 10);
-                    refreshRate = refreshRate * 60; //Convert to seconds
+                    refreshRate = Math.max(5, refreshRate) * 60; //Convert to seconds
                 }
                 catch (ex) {
                     refreshRate = 0;
@@ -877,7 +877,7 @@ plugins.setConfigs("dashboards", {
             if (params.qstring.use_refresh_rate && params.qstring.use_refresh_rate !== "false" && params.qstring.refreshRate > 0) {
                 try {
                     refreshRate = parseInt(params.qstring.refreshRate, 10);
-                    refreshRate = refreshRate * 60; //Convert to seconds
+                    refreshRate = Math.max(5, refreshRate) * 60; //Convert to seconds
                 }
                 catch (ex) {
                     refreshRate = 0;
