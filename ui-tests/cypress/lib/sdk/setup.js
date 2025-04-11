@@ -5,7 +5,7 @@ const initialSetupHelpers = require('../../lib/onboarding/initialSetup');
 const initialConsentHelpers = require('../../lib/onboarding/initialConsent');
 const quickstartPopoeverHelpers = require('../../support/components/quickstartPopover');
 
-const wait_L = 1000;
+const wait_L = 4000;
 const user = {
     username: 'test',
     email: 'a@a.com',
@@ -41,6 +41,7 @@ const goToConfigTab = (nopop) => {
     cy.get(':nth-child(3) > input').type(user.email);
     cy.get(':nth-child(4) > input').type(user.password);
     cy.get('#login-button').click();
+    cy.wait(wait_L);
     cy.url().then(url => {
         if (url.includes('not-responded-consent')) {
             cy.get('[data-test-id="dont-enable-tracking-el-radio-wrapper"] > .el-radio__input > .el-radio__inner').click();
@@ -54,11 +55,12 @@ const goToConfigTab = (nopop) => {
         quickstartPopoeverHelpers.closeQuickStartPopover();
     }
     navigationHelpers.goToSdkManagerPage();
-    cy.get('.white-bg > :nth-child(4)').click();
-    cy.get('.white-bg > :nth-child(1) > a > span').click();
-    cy.wait(wait_L);
-    cy.get('.white-bg > :nth-child(4)').click();
-    cy.wait(wait_L);
+    cy.get('.white-bg > :nth-child(4)').click({force: true});
+    cy.wait(2000);
+    cy.get('.white-bg > :nth-child(1) > a > span').click({force: true});
+    cy.wait(2000);
+    cy.get('.white-bg > :nth-child(4)').click({force: true});
+    cy.wait(2000);
 };
 
 const createRequest = (sdkName, sdkVersion) => {
