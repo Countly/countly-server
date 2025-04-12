@@ -8,7 +8,6 @@ var plugin = {},
     Duplex = require('stream').Duplex,
     Promise = require("bluebird"),
     trace = require("./parts/stacktrace.js"),
-    versionUtils = require('./parts/version.js'),
     { DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('./parts/custom_field.js'),
     plugins = require('../../pluginManager.js'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
@@ -468,6 +467,17 @@ plugins.setConfigs("crashes", {
                     if ('app_version' in report && typeof report.app_version !== 'string') {
                         report.app_version += '';
                     }
+
+                    // Parse app_version into separate major, minor, patch version fields
+                    if ('app_version' in report) {
+                        const versionComponents = common.parseAppVersion(report.app_version);
+
+                        // Store the components as separate fields
+                        report.app_version_major = versionComponents.major;
+                        report.app_version_minor = versionComponents.minor;
+                        report.app_version_patch = versionComponents.patch;
+                    }
+
                     let updateData = {$inc: {}};
 
                     updateData.$inc["data.crashes"] = 1;
@@ -511,6 +521,9 @@ plugins.setConfigs("crashes", {
                                     { name: "muted", type: "l" },
                                     { name: "background", type: "l" },
                                     { name: "app_version", type: "l" },
+                                    { name: "app_version_major", type: "n" },
+                                    { name: "app_version_minor", type: "n" },
+                                    { name: "app_version_patch", type: "n" },
                                     { name: "ram_current", type: "n" },
                                     { name: "ram_total", type: "n" },
                                     { name: "disk_current", type: "n" },
@@ -600,7 +613,7 @@ plugins.setConfigs("crashes", {
                                     groupInsert.is_resolved = false;
                                     groupInsert.startTs = report.ts;
                                     groupInsert.latest_version = report.app_version;
-                                    groupInsert.latest_version_for_sort = versionUtils.transformAppVersion(report.app_version);
+                                    groupInsert.latest_version_for_sort = common.transformAppVersion(report.app_version);
                                     groupInsert.error = report.error;
                                     groupInsert.lrid = report._id + "";
 
@@ -722,7 +735,7 @@ plugins.setConfigs("crashes", {
                                         if (!isNew && crashGroup) {
                                             if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0) {
                                                 group.latest_version = report.app_version;
-                                                group.latest_version_for_sort = versionUtils.transformAppVersion(report.app_version);
+                                                group.latest_version_for_sort = common.transformAppVersion(report.app_version);
                                             }
                                             if (plugins.getConfig('crashes').same_app_version_crash_update) {
                                                 if (crashGroup.latest_version && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) >= 0) {
