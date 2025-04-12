@@ -418,7 +418,7 @@ usage.returnAllProcessedMetrics = function(params) {
                 continue;
             }
 
-            if (recvMetricValue) {
+            if (recvMetricValue !== undefined && recvMetricValue !== null) {
                 var escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
                 processedMetrics[tmpMetric.short_code] = escapedMetricVal;
             }
