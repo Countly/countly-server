@@ -31,11 +31,14 @@ function checkAppVersion(inpVersion) {
 
 module.exports = {
     /**
+     *  @deprecated
      *  Transform a version string so it will be numerically correct when sorted
      *  For example '1.10.2' will be transformed to '100001.100010.100002'
      *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
      *  @param {string} inpVersion - an app version string
      *  @return {string} the transformed app version
+     *  @note
+     *  @module api/utils/common
      */
     transformAppVersion: function(inpVersion) {
         const [execResult, versionScheme] = checkAppVersion(inpVersion);
