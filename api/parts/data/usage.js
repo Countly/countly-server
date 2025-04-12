@@ -238,9 +238,12 @@ usage.getPredefinedMetrics = function(params, userProps) {
         }
         if (params.qstring.metrics._app_version) {
             params.qstring.metrics._app_version += "";
-            if (params.qstring.metrics._app_version.indexOf('.') === -1 && common.isNumber(params.qstring.metrics._app_version)) {
-                params.qstring.metrics._app_version += ".0";
-            }
+            // Parse app_version using the utility
+            const versionComponents = common.parseAppVersion(params.qstring.metrics._app_version);
+            // Store the components as separate fields
+            params.qstring.metrics._app_version_major = versionComponents.major;
+            params.qstring.metrics._app_version_minor = versionComponents.minor;
+            params.qstring.metrics._app_version_patch = versionComponents.patch;
         }
         if (!params.qstring.metrics._device_type && params.qstring.metrics._device) {
             var device = (params.qstring.metrics._device + "");
@@ -316,6 +319,21 @@ usage.getPredefinedMetrics = function(params, userProps) {
                     name: "_app_version",
                     set: "app_versions",
                     short_code: common.dbUserMap.app_version
+                },
+                {
+                    name: "_app_version_major",
+                    set: "app_version_major",
+                    short_code: "av_major"
+                },
+                {
+                    name: "_app_version_minor",
+                    set: "app_version_minor",
+                    short_code: "av_minor"
+                },
+                {
+                    name: "_app_version_patch",
+                    set: "app_version_patch",
+                    short_code: "av_patch"
                 },
                 {
                     name: "_os",
