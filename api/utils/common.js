@@ -2057,10 +2057,11 @@ common.versionCompare = function(v1, v2, options) {
 
     return compareParts;
 };
+
 /**
  * Parse app_version into major, minor, patch components
  * @param {string|number} version - The version to parse
- * @returns {object} Object containing major, minor, patch, and original version
+ * @returns {object} Object containing major, minor, patch, original version, and success flag
  */
 common.parseAppVersion = function(version) {
     try {
@@ -2081,7 +2082,8 @@ common.parseAppVersion = function(version) {
                     major: versionObj.major,
                     minor: versionObj.minor,
                     patch: versionObj.patch,
-                    original: version
+                    original: version,
+                    success: true
                 };
             }
         }
@@ -2091,12 +2093,10 @@ common.parseAppVersion = function(version) {
         // console.error('Error parsing app version:', error);
     }
 
-    // Return default values if parsing fails or throws an exception
+    // Return only original version with success=false if parsing fails or throws an exception
     return {
-        major: 0,
-        minor: 0,
-        patch: 0,
-        original: version
+        original: version,
+        success: false
     };
 };
 

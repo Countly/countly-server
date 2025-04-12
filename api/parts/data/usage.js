@@ -240,10 +240,12 @@ usage.getPredefinedMetrics = function(params, userProps) {
             params.qstring.metrics._app_version += "";
             // Parse app_version using the utility
             const versionComponents = common.parseAppVersion(params.qstring.metrics._app_version);
-            // Store the components as separate fields
-            params.qstring.metrics._app_version_major = versionComponents.major;
-            params.qstring.metrics._app_version_minor = versionComponents.minor;
-            params.qstring.metrics._app_version_patch = versionComponents.patch;
+            // Only store the components as separate fields if parsing was successful
+            if (versionComponents.success) {
+                params.qstring.metrics._app_version_major = versionComponents.major;
+                params.qstring.metrics._app_version_minor = versionComponents.minor;
+                params.qstring.metrics._app_version_patch = versionComponents.patch;
+            }
         }
         if (!params.qstring.metrics._device_type && params.qstring.metrics._device) {
             var device = (params.qstring.metrics._device + "");

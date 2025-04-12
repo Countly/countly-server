@@ -472,10 +472,12 @@ plugins.setConfigs("crashes", {
                     if ('app_version' in report) {
                         const versionComponents = common.parseAppVersion(report.app_version);
 
-                        // Store the components as separate fields
-                        report.app_version_major = versionComponents.major;
-                        report.app_version_minor = versionComponents.minor;
-                        report.app_version_patch = versionComponents.patch;
+                        // Only store the components as separate fields if parsing was successful
+                        if (versionComponents.success) {
+                            report.app_version_major = versionComponents.major;
+                            report.app_version_minor = versionComponents.minor;
+                            report.app_version_patch = versionComponents.patch;
+                        }
                     }
 
                     let updateData = {$inc: {}};
