@@ -372,7 +372,7 @@
             <div class="cly-vue-content-builder__layout-steps">
                 <div v-if="collapse">
                     <el-collapse v-model="activeSection">
-                        <el-collapse-item :title="header" name="section">
+                        <el-collapse-item :title="header" name="section" :test-id="header.toLowerCase().replaceAll(' ', '-')">
                             <slot name="content-builder-layout-steps"></slot>
                         </el-collapse-item>
                     </el-collapse>  
