@@ -144,6 +144,7 @@ describe('Bulk writing', function() {
                 });
         });
     });
+    // meta should also read app_version_[major||minor||patch] when its 0, currently meta ignores 0 version in major||minor||patch
     describe('verify bulk metrics write', function() {
         describe('Verify device_details', function() {
             it('should match metrics tests end result', function(done) {
@@ -151,7 +152,7 @@ describe('Bulk writing', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_details')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateMetrics(err, res, done, {meta: {"os": ["Android", "IOS"], "os_versions": ["4:4", "a4:4", "i7:1"], "resolutions": ["1200x800", "2048x1536"], "app_versions": ["1:0", "1:2"]}, Android: {"n": 2, "t": 2, "u": 2}, "a4:4": {"n": 1, "t": 1, "u": 1}, "4:4": {"n": 1, "t": 1, "u": 1}, "1200x800": {"n": 1, "t": 1, "u": 1}, "1:0": {"n": 1, "t": 1, "u": 1}, "IOS": {"n": 2, "t": 2, "u": 2}, "i7:1": {"n": 2, "t": 2, "u": 2}, "2048x1536": {"n": 2, "t": 2, "u": 2}, "1:2": {"n": 2, "t": 2, "u": 2}});
+                        testUtils.validateMetrics(err, res, done, {meta: {"os": ["Android", "IOS"], "os_versions": ["4:4", "a4:4", "i7:1"], "resolutions": ["1200x800", "2048x1536"], "app_versions": ["1:0", "1:2"], "app_version_major": [1], "app_version_minor": [2]}, Android: {"n": 2, "t": 2, "u": 2}, "a4:4": {"n": 1, "t": 1, "u": 1}, "4:4": {"n": 1, "t": 1, "u": 1}, "1200x800": {"n": 1, "t": 1, "u": 1}, "1:0": {"n": 1, "t": 1, "u": 1}, "IOS": {"n": 2, "t": 2, "u": 2}, "i7:1": {"n": 2, "t": 2, "u": 2}, "2048x1536": {"n": 2, "t": 2, "u": 2}, "1:2": {"n": 2, "t": 2, "u": 2}});
                     });
             });
         });
@@ -175,13 +176,14 @@ describe('Bulk writing', function() {
                     });
             });
         });
+        // meta should also read app_version_[major||minor||patch] when its 0, currently meta ignores 0 version in major||minor||patch
         describe('Verify app_versions', function() {
             it('should match metrics tests end result', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=app_versions')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateMetrics(err, res, done, {meta: {"os": ["Android", "IOS"], "os_versions": ["4:4", "a4:4", "i7:1"], "resolutions": ["1200x800", "2048x1536"], "app_versions": ["1:0", "1:2"]}, Android: {"n": 2, "t": 2, "u": 2}, "a4:4": {"n": 1, "t": 1, "u": 1}, "4:4": {"n": 1, "t": 1, "u": 1}, "1200x800": {"n": 1, "t": 1, "u": 1}, "1:0": {"n": 1, "t": 1, "u": 1}, "IOS": {"n": 2, "t": 2, "u": 2}, "i7:1": {"n": 2, "t": 2, "u": 2}, "2048x1536": {"n": 2, "t": 2, "u": 2}, "1:2": {"n": 2, "t": 2, "u": 2}});
+                        testUtils.validateMetrics(err, res, done, {meta: {"os": ["Android", "IOS"], "os_versions": ["4:4", "a4:4", "i7:1"], "resolutions": ["1200x800", "2048x1536"], "app_versions": ["1:0", "1:2"], "app_version_major": [1], "app_version_minor": [2]}, Android: {"n": 2, "t": 2, "u": 2}, "a4:4": {"n": 1, "t": 1, "u": 1}, "4:4": {"n": 1, "t": 1, "u": 1}, "1200x800": {"n": 1, "t": 1, "u": 1}, "1:0": {"n": 1, "t": 1, "u": 1}, "IOS": {"n": 2, "t": 2, "u": 2}, "i7:1": {"n": 2, "t": 2, "u": 2}, "2048x1536": {"n": 2, "t": 2, "u": 2}, "1:2": {"n": 2, "t": 2, "u": 2}});
                     });
             });
         });
