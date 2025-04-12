@@ -37,8 +37,7 @@ module.exports = {
      *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
      *  @param {string} inpVersion - an app version string
      *  @return {string} the transformed app version
-     *  @note
-     *  @module api/utils/common
+     *  @note These method are now moved to @module api/utils/common
      */
     transformAppVersion: function(inpVersion) {
         const [execResult, versionScheme] = checkAppVersion(inpVersion);

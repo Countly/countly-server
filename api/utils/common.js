@@ -2132,8 +2132,7 @@ common.checkAppVersion = function(inpVersion) {
  *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
  *  @param {string} inpVersion - an app version string
  *  @return {string} the transformed app version
- *  @note
- *  Imported from @module plugins/crashes/api/parts/version
+ *  @note Imported and moved from @module plugins/crashes/api/parts/version (which has now been deprecated)
  */
 common.transformAppVersion = function(inpVersion) {
     const [execResult, versionScheme] = common.checkAppVersion(inpVersion);
