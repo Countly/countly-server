@@ -1,8 +1,7 @@
 /**
-* Module for some common utility functions and references
-* @module api/utils/common
-*/
-
+ * Module for some common utility functions and references
+ * @module api/utils/common
+ */
 /**
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
@@ -12,19 +11,20 @@
 
 /** @lends module:api/utils/common **/
 /** @type(import('../../types/common').Common) */
-var common = {};
+const common = {};
 
 /** @type(import('moment-timezone')) */
-var moment = require('moment-timezone');
-var crypto = require('crypto'),
-    logger = require('./log.js'),
-    mcc_mnc_list = require('mcc-mnc-list'),
-    plugins = require('../../plugins/pluginManager.js'),
-    countlyConfig = require('./../config', 'dont-enclose'),
-    argon2 = require('argon2'),
-    mongodb = require('mongodb'),
-    getRandomValues = require('get-random-values'),
-    _ = require('lodash');
+const moment = require('moment-timezone');
+const crypto = require('crypto');
+const logger = require('./log.js');
+const mcc_mnc_list = require('mcc-mnc-list');
+const plugins = require('../../plugins/pluginManager.js');
+const countlyConfig = require('./../config', 'dont-enclose');
+const argon2 = require('argon2');
+const mongodb = require('mongodb');
+const getRandomValues = require('get-random-values');
+const semver = require('semver');
+const _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
@@ -210,6 +210,9 @@ common.dbUserMap = {
     'platform': 'p',
     'platform_version': 'pv',
     'app_version': 'av',
+    'app_version_major': 'av_major',
+    'app_version_minor': 'av_minor',
+    'app_version_patch': 'av_patch',
     'last_begin_session_timestamp': 'lbst',
     'last_end_session_timestamp': 'lest',
     'has_ongoing_session': 'hos',
@@ -2054,6 +2057,135 @@ common.versionCompare = function(v1, v2, options) {
 
     return compareParts;
 };
+/**
+ * Parse app_version into major, minor, patch components
+ * @param {string|number} version - The version to parse
+ * @returns {object} Object containing major, minor, patch, and original version
+ */
+common.parseAppVersion = function(version) {
+    try {
+        if (typeof version !== 'string') {
+            version = String(version);
+        }
+
+        // Ensure version has at least one decimal point
+        if (version.indexOf('.') === -1) {
+            version += '.0';
+        }
+
+        const parsedVersion = semver.valid(semver.coerce(version));
+        if (parsedVersion) {
+            const versionObj = semver.parse(parsedVersion);
+            if (versionObj) {
+                return {
+                    major: versionObj.major,
+                    minor: versionObj.minor,
+                    patch: versionObj.patch,
+                    original: version
+                };
+            }
+        }
+    }
+    catch (error) {
+        // Silently catch any errors from semver library
+        // console.error('Error parsing app version:', error);
+    }
+
+    // Return default values if parsing fails or throws an exception
+    return {
+        major: 0,
+        minor: 0,
+        patch: 0,
+        original: version
+    };
+};
+
+/**
+ *  Check if a version string follows some kind of scheme (there is only semantic versioning (semver) for now)
+ *  @param {string} inpVersion - an app version string
+ *  @return {array} [regex.exec result, version scheme name]
+ */
+common.checkAppVersion = function(inpVersion) {
+    // Regex is from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+    const semverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+    // Half semver is similar to semver but with only one dot
+    const halfSemverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+
+    let execResult = semverRgx.exec(inpVersion);
+
+    if (execResult) {
+        return [execResult, 'semver'];
+    }
+
+    execResult = halfSemverRgx.exec(inpVersion);
+
+    if (execResult) {
+        return [execResult, 'halfSemver'];
+    }
+
+    return [null, null];
+};
+
+/**
+ *  Transform a version string so it will be numerically correct when sorted
+ *  For example '1.10.2' will be transformed to '100001.100010.100002'
+ *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
+ *  @param {string} inpVersion - an app version string
+ *  @return {string} the transformed app version
+ *  @note
+ *  Imported from @module plugins/crashes/api/parts/version
+ */
+common.transformAppVersion = function(inpVersion) {
+    const [execResult, versionScheme] = common.checkAppVersion(inpVersion);
+
+    if (execResult === null) {
+        // Version string does not follow any scheme, just return it
+        return inpVersion;
+    }
+
+    // Mark version parts based on semver scheme
+    let prefixIdx = 1;
+    let majorIdx = 2;
+    let minorIdx = 3;
+    let patchIdx = 4;
+    let preReleaseIdx = 5;
+    let buildIdx = 6;
+
+    if (versionScheme === 'halfSemver') {
+        patchIdx -= 1;
+        preReleaseIdx -= 1;
+        buildIdx -= 1;
+    }
+
+    let transformed = '';
+    // Rejoin version parts to a new string
+    for (let idx = prefixIdx; idx < buildIdx; idx += 1) {
+        let part = execResult[idx];
+
+        if (part) {
+            if (idx >= majorIdx && idx <= patchIdx) {
+                part = 100000 + parseInt(part, 10);
+            }
+
+            if (idx >= minorIdx && idx <= patchIdx) {
+                part = '.' + part;
+            }
+
+            if (idx === preReleaseIdx) {
+                part = '-' + part;
+            }
+
+            if (idx === buildIdx) {
+                part = '+' + part;
+            }
+
+            transformed += part;
+        }
+    }
+
+    return transformed;
+};
+
 
 common.adjustTimestampByTimezone = function(ts, tz) {
     var d = moment();
