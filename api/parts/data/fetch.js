@@ -1044,6 +1044,12 @@ fetch.metricToCollection = function(metric) {
         return ['users', null, countlySession];
     case 'app_versions':
         return ["device_details", "app_versions", countlyDeviceDetails];
+    case 'app_version_major':
+        return ["device_details", "app_version_major", countlyDeviceDetails];
+    case 'app_version_minor':
+        return ["device_details", "app_version_minor", countlyDeviceDetails];
+    case 'app_version_patch':
+        return ["device_details", "app_version_patch", countlyDeviceDetails];
     case 'os':
     case 'platforms':
         return ["device_details", "os", countlyDeviceDetails];
