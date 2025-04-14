@@ -725,7 +725,7 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
                     continue;
                 }
 
-                if (recvMetricValue) {
+                if (recvMetricValue !== undefined && recvMetricValue !== null) {
                     recvMetricValue = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
                     postfix = common.crypto.createHash("md5").update(recvMetricValue).digest('base64')[0];
                     metaToFetch[predefinedMetrics[i].db + params.app_id + "_" + dateIds.zero + "_" + postfix] = {
@@ -787,7 +787,7 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
                     continue;
                 }
 
-                if (recvMetricValue) {
+                if (recvMetricValue !== undefined && recvMetricValue !== null) {
                     escapedMetricVal = (recvMetricValue + "").replace(/^\$/, "").replace(/\./g, ":");
                     postfix = common.crypto.createHash("md5").update(escapedMetricVal).digest('base64')[0];
 
