@@ -1044,12 +1044,6 @@ fetch.metricToCollection = function(metric) {
         return ['users', null, countlySession];
     case 'app_versions':
         return ["device_details", "app_versions", countlyDeviceDetails];
-    case 'app_version_major':
-        return ["device_details", "app_version_major", countlyDeviceDetails];
-    case 'app_version_minor':
-        return ["device_details", "app_version_minor", countlyDeviceDetails];
-    case 'app_version_patch':
-        return ["device_details", "app_version_patch", countlyDeviceDetails];
     case 'os':
     case 'platforms':
         return ["device_details", "os", countlyDeviceDetails];
@@ -1433,9 +1427,6 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
         "devices": "d",
         "device_type": "dt",
         "app_versions": "av",
-        "app_version_major": "av_major",
-        "app_version_minor": "av_minor",
-        "app_version_patch": "av_patch",
         "os": "p",
         "platforms": "p",
         "os_versions": "pv",

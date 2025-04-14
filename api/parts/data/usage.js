@@ -325,17 +325,20 @@ usage.getPredefinedMetrics = function(params, userProps) {
                 {
                     name: "_app_version_major",
                     set: "app_version_major",
-                    short_code: "av_major"
+                    short_code: "av_major",
+                    is_user_prop: true,
                 },
                 {
                     name: "_app_version_minor",
                     set: "app_version_minor",
-                    short_code: "av_minor"
+                    short_code: "av_minor",
+                    is_user_prop: true,
                 },
                 {
                     name: "_app_version_patch",
                     set: "app_version_patch",
-                    short_code: "av_patch"
+                    short_code: "av_patch",
+                    is_user_prop: true,
                 },
                 {
                     name: "_os",
