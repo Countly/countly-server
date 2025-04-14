@@ -1,6 +1,7 @@
 ## Version 24.05.x
 Features:
 - [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards.
+- [crashed] Fix unescaped SDK logs
 
 ## Version 24.05.29
 Fixes:
