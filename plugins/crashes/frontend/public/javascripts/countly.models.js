@@ -793,6 +793,7 @@ function transformAppVersion(inpVersion) {
                     dataType: "json",
                     success: function(crashgroupJson) {
                         if (crashgroupJson.data && crashgroupJson.data.length > 0) {
+                            console.log({ data: crashgroupJson.data });
                             var userIds = {};
                             var ajaxPromises = [];
 
@@ -808,6 +809,9 @@ function transformAppVersion(inpVersion) {
                             }
 
                             crashgroupJson.data.forEach(function(crash, crashIndex) {
+                                // unescape logs
+                                crashgroupJson.data[crashIndex].logs = countlyCommon.unescapeHtml(crash.logs)
+
                                 if (crash.uid in userIds) {
                                     userIds[crash.uid].push(crashIndex);
                                 }
