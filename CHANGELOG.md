@@ -1,4 +1,6 @@
 ## Version 25.03.x
+Fixes:
+- [crashes] Fixed unescaped SDK logs
 
 Features:
 - Add ability to allow multiple CORS per app for web apps
