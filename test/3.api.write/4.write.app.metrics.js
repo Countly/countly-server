@@ -316,7 +316,6 @@ describe('Writing app metrics', function() {
             });
         });
         //{"2014":{"9":{"17":{"1:0":{"n":1,"t":1,"u":1}},"1:0":{"n":1,"t":1,"u":1}},"1:0":{"n":1,"t":1,"u":1},"w38":{"1:0":{"u":1}}},"_id":"541993cb01f67bb24000008d","meta":{"app_versions":["1:0"]}}
-        // meta should also read app_version_[major||minor||patch] when its 0, currently meta ignores 0 version in major||minor||patch
         describe('Verify app_versions', function() {
             it('should have app version 1.0', function(done) {
                 request
@@ -345,7 +344,6 @@ describe('Writing app metrics', function() {
                     });
             });
         });
-        // meta should also read app_version_[major||minor||patch] when its 0, currently meta ignores 0 version in major||minor||patch
         describe('Verify device_details', function() {
             it('should should have new metrics', function(done) {
                 request
@@ -376,7 +374,6 @@ describe('Writing app metrics', function() {
                     });
             });
         });
-        // meta should also read app_version_[major||minor||patch] when its 0, currently meta ignores 0 version in major||minor||patch
         describe('Verify app_versions', function() {
             it('should have app version 1.2', function(done) {
                 request
@@ -415,7 +412,6 @@ describe('Writing app metrics', function() {
                     });
             });
         });
-        // meta should also read app_version_[major||minor||patch] when its 0, currently meta ignores 0 version in major||minor||patch
         describe('Verify device_details', function() {
             it('should have additional user for new metrics', function(done) {
                 request
@@ -446,7 +442,6 @@ describe('Writing app metrics', function() {
                     });
             });
         });
-        // meta should also read app_version_[major||minor||patch] when its 0, currently meta ignores 0 version in major||minor||patch
         describe('Verify app_versions', function() {
             it('should should have new user for app version 1.2', function(done) {
                 request
