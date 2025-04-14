@@ -808,6 +808,9 @@ function transformAppVersion(inpVersion) {
                             }
 
                             crashgroupJson.data.forEach(function(crash, crashIndex) {
+                                // unescape logs
+                                crashgroupJson.data[crashIndex].logs = countlyCommon.unescapeHtml(crash.logs)
+
                                 if (crash.uid in userIds) {
                                     userIds[crash.uid].push(crashIndex);
                                 }
