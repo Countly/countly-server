@@ -2,6 +2,7 @@
 Features:
 - [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards.
 - [crashed] Fix unescaped SDK logs
+- [ui] Fix alignment of drawers title and close icon
 
 ## Version 24.05.29
 Fixes:
