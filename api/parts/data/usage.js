@@ -238,14 +238,6 @@ usage.getPredefinedMetrics = function(params, userProps) {
         }
         if (params.qstring.metrics._app_version) {
             params.qstring.metrics._app_version += "";
-            // Parse app_version using the utility
-            const versionComponents = common.parseAppVersion(params.qstring.metrics._app_version);
-            // Only store the components as separate fields if parsing was successful
-            if (versionComponents.success) {
-                params.qstring.metrics._app_version_major = versionComponents.major;
-                params.qstring.metrics._app_version_minor = versionComponents.minor;
-                params.qstring.metrics._app_version_patch = versionComponents.patch;
-            }
         }
         if (!params.qstring.metrics._device_type && params.qstring.metrics._device) {
             var device = (params.qstring.metrics._device + "");
@@ -321,24 +313,6 @@ usage.getPredefinedMetrics = function(params, userProps) {
                     name: "_app_version",
                     set: "app_versions",
                     short_code: common.dbUserMap.app_version
-                },
-                {
-                    name: "_app_version_major",
-                    set: "app_version_major",
-                    short_code: "av_major",
-                    is_user_prop: true,
-                },
-                {
-                    name: "_app_version_minor",
-                    set: "app_version_minor",
-                    short_code: "av_minor",
-                    is_user_prop: true,
-                },
-                {
-                    name: "_app_version_patch",
-                    set: "app_version_patch",
-                    short_code: "av_patch",
-                    is_user_prop: true,
                 },
                 {
                     name: "_os",
@@ -1131,6 +1105,15 @@ plugins.register("/sdk/user_properties", async function(ob) {
         if (Object.keys(up).length) {
             for (let key in up) {
                 userProps[key] = up[key];
+            }
+        }
+
+        if (params.qstring.metrics._app_version) {
+            const versionComponents = common.parseAppVersion(params.qstring.metrics._app_version);
+            if (versionComponents.success) {
+                userProps.av_major = versionComponents.major;
+                userProps.av_minor = versionComponents.minor;
+                userProps.av_patch = versionComponents.patch;
             }
         }
     }
