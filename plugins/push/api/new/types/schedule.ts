@@ -26,6 +26,6 @@ export interface Schedule {
     audienceFilters?: AudienceFilters;
     messageOverrides?: MessageOverrides;
     uids?: string[]; // user ids from app_users{appId} collection sent by cohort or event AutoTrigger
-    status: "scheduled"|"started"|"finished"|"canceled";
+    status: "scheduled"|"started"|"sent"|"canceled";
     result: Result;
 }

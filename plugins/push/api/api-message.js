@@ -9,7 +9,7 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
 
 const countlyFetch = require("../../../api/parts/data/fetch.js");
 
-const { buildResultObject } = require("./new/lib/result.js");
+const { buildResultObject } = require("./new/resultor.js");
 const { scheduleMessageByDateTrigger, DATE_TRIGGERS } = require("./new/scheduler.js");
 
 /**

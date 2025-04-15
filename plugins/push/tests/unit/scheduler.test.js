@@ -18,7 +18,7 @@ const {
     findNextMatchForMulti,
     createScheduleEvents,
     createSchedule,
-    scheduleMessageByDate,
+    scheduleMessageByDateTrigger,
     findWhereToStartSearchFrom,
     mergeAutoTriggerEvents,
     scheduleMessageByAutoTriggers,
@@ -27,7 +27,7 @@ const queue = require("../../api/new/lib/kafka.js");
 const { mockMongoDb } = require("./mock/mongo.js");
 const timezones = require("../../api/new/constants/all-tz-offsets.json");
 const mockData = require("./mock/data.js");
-const { buildResultObject } = require("../../api/new/lib/result.js");
+const { buildResultObject } = require("../../api/new/resultor.js");
 
 describe("Scheduler", () => {
     /** @type {sinon.SinonStub} */
@@ -355,7 +355,7 @@ describe("Scheduler", () => {
                 })
             ];
             collection.findOne.resolves(mockMessage);
-            assert.rejects(scheduleMessageByDate(db, mockMessage._id));
+            assert.rejects(scheduleMessageByDateTrigger(db, mockMessage._id));
         });
     });
 

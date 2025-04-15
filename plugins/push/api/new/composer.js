@@ -23,11 +23,12 @@ const { ObjectId } = require('mongodb');
 const queue = require("./lib/kafka.js"); // do not import by destructuring; it's being mocked in the tests
 const { createTemplate, getUserPropertiesUsedInsideMessage } = require("./lib/template.js");
 const PLATFORM_KEYMAP = require("./constants/platform-keymap.json");
-const { buildResultObject, increaseResultStat, updateScheduleResults} = require("./lib/result.js");
+const { buildResultObject, increaseResultStat, applyResultObject } = require("./resultor.js");
 const common = /** @type {CountlyCommon} */(require("../../../../api/utils/common.js"));
 const { loadDrillAPI } = require("./lib/utils.js");
 /** @type {LogObject} */
 const log = require('../../../../api/utils/common').log('push:composer');
+const { RESCHEDULABLE_DATE_TRIGGERS, scheduleMessageByDateTrigger } = require("./scheduler.js");
 const QUEUE_WRITE_BATCH_SIZE = 100;
 
 /**
@@ -108,7 +109,7 @@ async function composeScheduledPushes(db, { appId, scheduleId, messageId, timezo
 
     /** @type {PushEvent[]} */
     let events = [];
-    const result = buildResultObject();
+    const resultObject = buildResultObject();
     for await (let user of stream) {
         let tokenObj = user?.tk?.[0]?.tk;
         if (!tokenObj) {
@@ -147,17 +148,28 @@ async function composeScheduledPushes(db, { appId, scheduleId, messageId, timezo
                 events = [];
             }
             // update results
-            increaseResultStat(result, platform, language, "total");
+            increaseResultStat(resultObject, platform, language, "total");
         }
     }
     // write the remaining pushes in the buffer
     if (events && events.length) {
         await queue.sendPushEvents(events);
     }
-
     // update the message document
-    await updateScheduleResults(db, scheduleId, result);
-    return result.total;
+    await applyResultObject(db, scheduleId, messageId, resultObject);
+
+    // check if we need to re-schedule this message
+    const reschedulableTrigger = messageDoc.triggers
+        .find(trigger => RESCHEDULABLE_DATE_TRIGGERS.includes(trigger.kind))
+    if (reschedulableTrigger) {
+        const schedules = await scheduleMessageByDateTrigger(db, messageId);
+        if (schedules && schedules.length) {
+            log.d("Message", messageId, "is scheduled again to",
+                schedules.map(s => s.scheduledTo));
+        }
+    }
+
+    return resultObject.total;
 }
 
 /**

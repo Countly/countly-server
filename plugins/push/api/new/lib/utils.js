@@ -68,7 +68,7 @@ function parseKeyPair(credentials) {
 function loadDrillAPI() {
     if (typeof global.it === "function") {
         try {
-            return require("../../../../drill/api").drill;
+            return require("../../../../drill/api/api").drill;
         }
         catch (err) {
             return undefined;
