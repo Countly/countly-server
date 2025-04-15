@@ -32,7 +32,7 @@
               <div class="cly-vue-remote-config-conditions-drawer__margin-bottom"
                 :data-test-id="'datatable-remote-config-parameter-' + rowScope.$index"> {{rowScope.row.parameter_key}}
               </div>
-              <div v-if="isDrillEnabled" class="color-cool-gray-40 text-small"><span>
+              <div v-if="isDrillEnabled" class="color-cool-gray-40 text-small"><span :data-test-id="'datatable-remote-config-number-of-condition-' + rowScope.$index">
                   {{getNumberOfConditionsText(rowScope.row.conditions)}} </span></div>
             </div>
           </template>
