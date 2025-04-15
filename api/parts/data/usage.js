@@ -381,6 +381,9 @@ usage.returnAllProcessedMetrics = function(params) {
 
             if (tmpMetric.is_user_prop) {
                 recvMetricValue = params.user[tmpMetric.name];
+                if (recvMetricValue === undefined && params.qstring.metrics && params.qstring.metrics[tmpMetric.name] !== undefined) {
+                    recvMetricValue = params.qstring.metrics[tmpMetric.name];
+                }
             }
             else if (params.qstring.metrics && (tmpMetric.name in params.qstring.metrics)) {
                 recvMetricValue = params.qstring.metrics[tmpMetric.name];
@@ -688,6 +691,9 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
                     postfix = null;
                 if (tmpMetric.is_user_prop) {
                     recvMetricValue = params.user[tmpMetric.name];
+                    if (recvMetricValue === undefined && params.qstring.metrics && params.qstring.metrics[tmpMetric.name] !== undefined) {
+                        recvMetricValue = params.qstring.metrics[tmpMetric.name];
+                    }
                 }
                 else if (params.qstring.metrics && params.qstring.metrics[tmpMetric.name]) {
                     recvMetricValue = params.qstring.metrics[tmpMetric.name];
@@ -750,6 +756,9 @@ function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done)
 
                 if (tmpMetric.is_user_prop) {
                     recvMetricValue = params.user[tmpMetric.name];
+                    if (recvMetricValue === undefined && params.qstring.metrics && params.qstring.metrics[tmpMetric.name] !== undefined) {
+                        recvMetricValue = params.qstring.metrics[tmpMetric.name];
+                    }
                 }
                 else if (params.qstring.metrics && params.qstring.metrics[tmpMetric.name]) {
                     recvMetricValue = params.qstring.metrics[tmpMetric.name];
