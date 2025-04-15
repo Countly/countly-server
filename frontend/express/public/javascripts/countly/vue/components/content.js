@@ -701,21 +701,21 @@
                      @click="selectedDevice = 'mobile'" 
                      :style="{ backgroundColor: selectedDevice === 'mobile' ? selectedBackground : 'transparent' }"
                      :class="[selectedDevice === 'mobile' ? 'color-white' : '']"
-                     class="cly-vue-device-selector__device bu-p-2">
+                     class="cly-vue-device-selector__device bu-p-2" data-test-id="small-devices-button">
                     <i class="cly-io cly-io-device-mobile"></i>
                 </div>
                 <div v-if="showTablet" 
                      @click="selectedDevice = 'tablet'" 
                      :style="{ backgroundColor: selectedDevice === 'tablet' ? selectedBackground : 'transparent' }"
                      :class="[selectedDevice === 'tablet' ? 'color-white' : '']"
-                     class="cly-vue-device-selector__device bu-p-2">
+                     class="cly-vue-device-selector__device bu-p-2" data-test-id="medium-devices-button">
                     <i class="cly-io cly-io-device-tablet"></i>
                 </div>
                 <div v-if="showDesktop" 
                      @click="selectedDevice = 'desktop'" 
                      :style="{ backgroundColor: selectedDevice === 'desktop' ? selectedBackground : 'transparent' }"
                      :class="[selectedDevice === 'desktop' ? 'color-white' : '']"
-                     class="cly-vue-device-selector__device bu-p-2">
+                     class="cly-vue-device-selector__device bu-p-2" data-test-id="large-devices-button">
                     <i class="cly-io cly-io-desktop-computer"></i>
                 </div>
             </div>
