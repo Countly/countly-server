@@ -238,6 +238,9 @@ usage.getPredefinedMetrics = function(params, userProps) {
         }
         if (params.qstring.metrics._app_version) {
             params.qstring.metrics._app_version += "";
+            if (params.qstring.metrics._app_version.indexOf('.') === -1 && common.isNumber(params.qstring.metrics._app_version)) {
+                params.qstring.metrics._app_version += ".0";
+            }
         }
         if (!params.qstring.metrics._device_type && params.qstring.metrics._device) {
             var device = (params.qstring.metrics._device + "");
