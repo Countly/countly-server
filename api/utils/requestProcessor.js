@@ -3,6 +3,11 @@
 * @module api/utils/requestProcessor
 */
 
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ * @typedef {import('../../types/common').TimeObject} TimeObject
+ */
+
 const Promise = require('bluebird');
 const url = require('url');
 const common = require('./common.js');
@@ -65,7 +70,7 @@ const reloadConfig = function() {
 /**
  * Default request processing handler, which requires request context to operate. Check tcp_example.js
  * @static
- * @param {params} params - for request context. Minimum needed properties listed
+ * @param {Params} params - for request context. Minimum needed properties listed
  * @param {object} params.req - Request object, should not be empty and should contain listed params
  * @param {string} params.req.url - Endpoint URL that you are calling. May contain query string.
  * @param {object} params.req.body - Parsed JSON object with data (same name params will overwrite query string if anything provided there)
@@ -101,115 +106,6 @@ const processRequest = (params) => {
     const urlParts = url.parse(params.req.url, true),
         queryString = urlParts.query,
         paths = urlParts.pathname.split("/");
-    /**
-     * Main request processing object containing all information shared through all the parts of the same request
-     * @typedef params
-     * @type {object}
-     * @global
-     * @property {string} href - full URL href
-     * @property {http.ServerResponse} res - The HTTP response object
-     * @property {http.IncomingMessage} req - The HTTP request object
-     * @param {APICallback} params.APICallback - API output handler. Which should handle API response
-     * @property {object} qstring - all the passed fields either through query string in GET requests or body and query string for POST requests
-     * @property {string} apiPath - two top level url path, for example /i/analytics, first two segments from the fullPath
-     * @property {string} fullPath - full url path, for example /i/analytics/dashboards
-     * @property {object} files - object with uploaded files, available in POST requests which upload files
-     * @property {Object} [files.app_image] - Uploaded app image file
-     * @property {string} files.app_image.path - The temporary path of the uploaded app image file
-     * @property {string} files.app_image.name - The original name of the uploaded app image file
-     * @property {string} files.app_image.type - The MIME type of the uploaded app image file
-     * @property {number} files.app_image.size - The size (in bytes) of the uploaded app image file
-     * @property {string} cancelRequest - Used for skipping SDK requests, if contains true, then request should be ignored and not processed. Can be set at any time by any plugin, but API only checks for it in beggining after / and /sdk events, so that is when plugins should set it if needed. Should contain reason for request cancelation
-     * @property {boolean} [blockResponses=false] - Flag to block responses from being sent
-     * @property {boolean} [forceProcessingRequestTimeout=false] - Flag to force processing request timeout
-     * @property {boolean} bulk - True if this SDK request is processed from the bulk method
-     * @property {Array<Promise>} promises - Array of the promises by different events. When all promises are fulfilled, request counts as processed
-     * @property {string} ip_address - IP address of the device submitted request, exists in all SDK requests
-     * @property {object} user - Data with some user info, like country geolocation, etc from the request, exists in all SDK requests
-     * @property {string} user.country - User's country
-     * @property {string} user.city - User's city
-     * @property {number} [user.tz] - User's timezone offset (in minutes)
-     * @property {object} app_user - Document from the app_users collection for current user, exists in all SDK requests after validation
-     * @property {string} app_user.uid - Application user ID
-     * @property {string} app_user.did - Device ID
-     * @property {string} app_user.country - User's country
-     * @property {string} app_user.city - User's city
-     * @property {number} app_user.tz - User's timezone offset (in minutes)
-     * @property {Object} [app_user.custom] - Custom properties for the application user
-     * @property {object} app_user_id - ID of app_users document for the user, exists in all SDK requests after validation
-     * @property {object} app - Document for the app sending request, exists in all SDK requests after validation and after validateUserForDataReadAPI validation
-     * @property {string} app._id - ID of the app document
-     * @property {string} app.name - Name of the app
-     * @property {string} app.country - Country of the app
-     * @property {string} app.category - Category of the app
-     * @property {string} app.timezone - Timezone of the app
-     * @property {string} app.type - Type of the app
-     * @property {boolean} app.locked - Flag indicating if the app is locked
-     * @property {Object} app.plugins - Plugin-specific configuration for the app
-     * @property {ObjectID} app_id - ObjectID of the app document, available after validation
-     * @property {string} app_cc - Selected app country, available after validation
-     * @property {string} appTimezone - Selected app timezone, available after validation
-     * @property {object} member - All data about dashboard user sending the request, exists on all requests containing api_key, after validation through validation methods
-     * @property {string} member._id - ID of the dashboard user
-     * @property {boolean} member.global_admin - Flag indicating if the user has global admin rights
-     * @property {string} member.auth_token - The authentication token for the user
-     * @property {boolean} member.locked - Flag indicating if the user is locked
-     * @property {Array} [member.admin_of] - Array of app IDs the user is an admin of (legacy)
-     * @property {Array} [member.user_of] - Array of app IDs the user has user access to (legacy)
-     * @property {string} member.username - Username of the dashboard user
-     * @property {string} member.email - Email address of the dashboard user
-     * @property {string} member.full_name - Full name of the dashboard user
-     * @property {string} member.api_key - API key of the dashboard user
-     * @property {Object} member.permission - Object containing user's access permissions
-     * @property {Object} member.permission._ - Object containing special permissions
-     * @property {Array} member.permission._.u - Array of arrays containing app IDs the user has user access to
-     * @property {Array} member.permission._.a - Array of app IDs the user has admin access to
-     * @property {Object} [member.permission.c] - Object containing create permissions for specific apps
-     * @property {Object} [member.permission.c[app_id]] - Object containing create permissions for a specific app
-     * @property {boolean} [member.permission.c[app_id].all] - Flag indicating if the user has create access to all features in the app
-     * @property {Object} [member.permission.c[app_id].allowed] - Object containing allowed create permissions for the app
-     * @property {Object} [member.permission.r] - Object containing read permissions for specific apps
-     * @property {Object} [member.permission.r[app_id]] - Object containing read permissions for a specific app
-     * @property {boolean} [member.permission.r[app_id].all] - Flag indicating if the user has read access to all features in the app
-     * @property {Object} [member.permission.r[app_id].allowed] - Object containing allowed read permissions for the app
-     * @property {Object} [member.permission.u] - Object containing update permissions for specific apps
-     * @property {Object} [member.permission.u[app_id]] - Object containing update permissions for a specific app
-     * @property {boolean} [member.permission.u[app_id].all] - Flag indicating if the user has update access to all features in the app
-     * @property {Object} [member.permission.u[app_id].allowed] - Object containing allowed update permissions for the app
-     * @property {Object} [member.permission.d] - Object containing delete permissions for specific apps
-     * @property {Object} [member.permission.d[app_id]] - Object containing delete permissions for a specific app
-     * @property {boolean} [member.permission.d[app_id].all] - Flag indicating if the user has delete access to all features in the app
-     * @property {Object} [member.permission.d[app_id].allowed] - Object containing allowed delete permissions for the app
-     * @property {Object} member.eventList - Object containing event collections with replaced app names
-     * @property {Object} member.viewList - Object containing view collections with replaced app names
-     * @property {timeObject} time - Time object for the request
-     * @property {string} request_hash - Hash of the request data
-     * @property {string} [previous_session] - ID of the user's previous session
-     * @property {number} [previous_session_start] - Start timestamp of the user's previous session
-     * @property {string} request_id - Unique ID for this request
-     * @property {string} [user_id] - ID of the user making the request
-     * @property {string} [formDataUrl] - URL encoded form data
-     * @property {boolean} [retry_request] - Flag indicating if this is a retry of a failed request
-     * @property {boolean} [populator] - Flag indicating if this request is from the populator
-     * @property {Object} urlParts - Parsed URL parts
-     * @property {Object} urlParts.query - Parsed query string as key-value pairs
-     * @property {string} urlParts.pathname - The URL path
-     * @property {string} urlParts.href - The full URL
-     * @property {Array<string>} paths - The URL path split into segments
-     * @property {function} [output] - Callback function to handle the API response
-     * @property {boolean} [waitForResponse] - If false, return immediately and do not wait for plugin chain execution to complete
-     * @property {string} [app_name] - Name of the app
-     * @property {number} time.mstimestamp - Request timestamp in milliseconds
-     * @property {Object} [app_user.ls] - Last session timestamp of the app user
-     * @property {boolean} [truncateEventValuesList=false] - Flag indicating whether to truncate event values list
-     * @property {number} [session_duration] - Total session duration
-     * @property {boolean} [is_os_processed=false] - Flag indicating if OS and OS version have been processed
-     * @property {Object} [processed_metrics] - Processed metrics data
-     * @property {boolean} [app_user.has_ongoing_session] - Flag indicating if the user has an ongoing session
-     * @property {number} [app_user.last_req] - Timestamp of the user's last request
-     * @property {Object} [dbDateIds] - Object with date IDs for different time periods
-     * @property {boolean} [dataTransformed=false] - Flag indicating if the data is already transformed
-     */
     params.href = urlParts.href;
     params.qstring = params.qstring || {};
     params.res = params.res || {};
@@ -828,17 +724,6 @@ const processRequest = (params) => {
                         });
                     });
                     break;
-                case 'stop':
-                    validateUserForWrite(params, () => {
-                        taskmanager.stopTask({
-                            db: common.db,
-                            id: params.qstring.task_id,
-                            op_id: params.qstring.op_id
-                        }, (err, res) => {
-                            common.returnMessage(params, 200, res);
-                        });
-                    });
-                    break;
                 case 'delete':
                     validateUserForWrite(params, () => {
                         taskmanager.deleteResult({
@@ -1011,44 +896,46 @@ const processRequest = (params) => {
                                 catch (SyntaxError) {
                                     update_array.overview = []; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', params.req.url, params.req.body);
                                 }
-                                if (update_array.overview && Array.isArray(update_array.overview) && update_array.overview.length > 12) {
-                                    common.returnMessage(params, 400, "You can't add more than 12 items in overview");
-                                    return;
-                                }
-                                //sanitize overview
-                                var allowedEventKeys = event.list;
-                                var allowedProperties = ['dur', 'sum', 'count'];
-                                var propertyNames = {
-                                    'dur': 'Dur',
-                                    'sum': 'Sum',
-                                    'count': 'Count'
-                                };
-                                for (let i = 0; i < update_array.overview.length; i++) {
-                                    update_array.overview[i].order = i;
-                                    update_array.overview[i].eventKey = update_array.overview[i].eventKey || "";
-                                    update_array.overview[i].eventProperty = update_array.overview[i].eventProperty || "";
-                                    if (allowedEventKeys.indexOf(update_array.overview[i].eventKey) === -1 || allowedProperties.indexOf(update_array.overview[i].eventProperty) === -1) {
-                                        update_array.overview.splice(i, 1);
-                                        i = i - 1;
+                                if (update_array.overview && Array.isArray(update_array.overview)) {
+                                    if (update_array.overview.length > 12) {
+                                        common.returnMessage(params, 400, "You can't add more than 12 items in overview");
+                                        return;
                                     }
-                                    else {
-                                        update_array.overview[i].is_event_group = (typeof update_array.overview[i].is_event_group === 'boolean' && update_array.overview[i].is_event_group) || false;
-                                        update_array.overview[i].eventName = update_array.overview[i].eventName || update_array.overview[i].eventKey;
-                                        update_array.overview[i].propertyName = propertyNames[update_array.overview[i].eventProperty];
+                                    //sanitize overview
+                                    var allowedEventKeys = event.list;
+                                    var allowedProperties = ['dur', 'sum', 'count'];
+                                    var propertyNames = {
+                                        'dur': 'Dur',
+                                        'sum': 'Sum',
+                                        'count': 'Count'
+                                    };
+                                    for (let i = 0; i < update_array.overview.length; i++) {
+                                        update_array.overview[i].order = i;
+                                        update_array.overview[i].eventKey = update_array.overview[i].eventKey || "";
+                                        update_array.overview[i].eventProperty = update_array.overview[i].eventProperty || "";
+                                        if (allowedEventKeys.indexOf(update_array.overview[i].eventKey) === -1 || allowedProperties.indexOf(update_array.overview[i].eventProperty) === -1) {
+                                            update_array.overview.splice(i, 1);
+                                            i = i - 1;
+                                        }
+                                        else {
+                                            update_array.overview[i].is_event_group = (typeof update_array.overview[i].is_event_group === 'boolean' && update_array.overview[i].is_event_group) || false;
+                                            update_array.overview[i].eventName = update_array.overview[i].eventName || update_array.overview[i].eventKey;
+                                            update_array.overview[i].propertyName = propertyNames[update_array.overview[i].eventProperty];
+                                        }
                                     }
-                                }
-                                //check for duplicates
-                                var overview_map = Object.create(null);
-                                for (let p = 0; p < update_array.overview.length; p++) {
-                                    if (!overview_map[update_array.overview[p].eventKey]) {
-                                        overview_map[update_array.overview[p].eventKey] = {};
-                                    }
-                                    if (!overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty]) {
-                                        overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty] = 1;
-                                    }
-                                    else {
-                                        update_array.overview.splice(p, 1);
-                                        p = p - 1;
+                                    //check for duplicates
+                                    var overview_map = Object.create(null);
+                                    for (let p = 0; p < update_array.overview.length; p++) {
+                                        if (!overview_map[update_array.overview[p].eventKey]) {
+                                            overview_map[update_array.overview[p].eventKey] = {};
+                                        }
+                                        if (!overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty]) {
+                                            overview_map[update_array.overview[p].eventKey][update_array.overview[p].eventProperty] = 1;
+                                        }
+                                        else {
+                                            update_array.overview.splice(p, 1);
+                                            p = p - 1;
+                                        }
                                     }
                                 }
                             }
@@ -3104,7 +2991,7 @@ const processRequest = (params) => {
 
 /**
  * Process Request Data
- * @param {params} params - params object
+ * @param {Params} params - params object
  * @param {object} app - app document
  * @param {function} done - callbck when processing done
  */
@@ -3209,8 +3096,8 @@ const processFetchRequest = (params, app, done) => {
 /**
  * Process Bulk Request
  * @param {number} i - request number in bulk
- * @param {array} requests - array of requests to process
- * @param {params} params - params object
+ * @param {Array<object>} requests - array of requests to process
+ * @param {Params} params - params object
  * @returns {void} void
  */
 const processBulkRequest = (i, requests, params) => {
@@ -3420,7 +3307,7 @@ function validateRedirect(ob) {
  * Validate App for Write API
  * Checks app_key from the http request against "apps" collection.
  * This is the first step of every write request to API.
- * @param {params} params - params object
+ * @param {Params} params - params object
  * @param {function} done - callback when processing done
  * @param {number} try_times - how many times request was retried
  * @returns {void} void
@@ -3639,7 +3526,7 @@ const validateAppForFetchAPI = (params, done, try_times) => {
 
 /**
  * Restart Request
- * @param {params} params - params object
+ * @param {Params} params - params object
  * @param {function} initiator - function which initiated request
  * @param {function} done - callback when processing done
  * @param {number} try_times - how many times request was retried
@@ -3674,7 +3561,7 @@ const restartRequest = (params, initiator, done, try_times, fail) => {
  */
 function processUser(params, initiator, done, try_times) {
     return new Promise((resolve) => {
-        if (!params.app_user.uid) {
+        if (params && params.app_user && !params.app_user.uid) {
             //first time we see this user, we need to id him with uid
             countlyApi.mgmt.appUsers.getUid(params.app_id, function(err, uid) {
                 plugins.dispatch("/i/app_users/create", {
@@ -3733,7 +3620,7 @@ function processUser(params, initiator, done, try_times) {
             });
         }
         //check if device id was changed
-        else if (params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
+        else if (params && params.qstring && params.qstring.old_device_id && params.qstring.old_device_id !== params.qstring.device_id) {
             const old_id = common.crypto.createHash('sha1')
                 .update(params.qstring.app_key + params.qstring.old_device_id + "")
                 .digest('hex');
@@ -3756,7 +3643,7 @@ function processUser(params, initiator, done, try_times) {
 /**
  * Function to fetch app user from db
  * @param  {object} params - params object
- * @returns {promise} - user
+ * @returns {Promise} - user
  */
 const fetchAppUser = (params) => {
     return new Promise((resolve) => {
@@ -3769,7 +3656,7 @@ const fetchAppUser = (params) => {
 
 /**
  * Add devices to ignore them
- * @param  {params} params - params object
+ * @param  {Params} params - params object
  * @param  {function} done - callback when processing done
  * @returns {function} done
  */

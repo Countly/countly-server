@@ -44,3 +44,5 @@ log/
 log/supervisord/
 plugins/plugins.json.*
 .sdk
+dump
+dist/

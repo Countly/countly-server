@@ -992,10 +992,10 @@
 
 
                     if (newState.alertBy === "email") {
-                        if (newState?.allGroups?.length) {
+                        if (newState.allGroups?.length) {
                             this.selectedRadioButton = "toGroup";
                         }
-                        if (newState?.alertValues?.length) {
+                        if (newState.alertValues?.length) {
                             this.selectedRadioButton = "specificAddress";
                         }
                     }
@@ -1069,6 +1069,12 @@
         computed: {
             tableRows: function() {
                 var rows = this.$store.getters["countlyAlerts/table/all"];
+                if (this.tableFilterStatus !== "all") {
+                    var enabled = this.tableFilterStatus === "enabled" ? true : false;
+                    rows = rows.filter(function(r) {
+                        return r.enabled === enabled;
+                    });
+                }
                 if (this.filteredApps.length > 0) {
                     var self = this;
                     rows = rows.filter(function(r) {
@@ -1106,6 +1112,7 @@
                 appsSelectorOption: appsSelectorOption,
                 filterStatus: "all",
                 filteredApps: [],
+                tableFilterStatus: "all",
                 tableDynamicCols: [
                     {
                         value: "appNameList",

@@ -7,7 +7,7 @@
 						<div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-space-between">
 							<div>
 								<span class="text-medium">{{item.label}}</span>
-								<span v-if="item.description" class="cly-vue-tooltip-icon ion ion-help-circled bu-pl-2"  v-tooltip.top-center="item.description"></span>
+								<cly-tooltip-icon v-if="item.description" class="bu-pl-2" :tooltip="item.description" placement="top-center"></cly-tooltip-icon>
 							</div>
 						</div>
 						<div class="bu-is-flex bu-is-align-items-baseline number">

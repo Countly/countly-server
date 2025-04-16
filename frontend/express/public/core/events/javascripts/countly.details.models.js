@@ -544,6 +544,10 @@
             if (eventsLength >= limits.event_limit) {
                 eventLimit.message = CV.i18n("events.max-event-key-limit", limits.event_limit);
                 eventLimit.show = true;
+                eventLimit.goTo = {
+                    title: CV.i18n("common.go-to-settings"),
+                    url: "#/manage/configurations/api"
+                };
                 limitAlert.push(eventLimit);
             }
             if (!context.state.selectedEventName.startsWith('[CLY]_group')) {
@@ -1080,7 +1084,7 @@
                                                         .then(function(resp) {
                                                             if (resp) {
                                                                 context.commit("setSelectedEventsOverview", countlyAllEvents.helpers.getSelectedEventsOverview(context, resp) || {});
-                                                                context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context || {}));
+                                                                context.commit("setLegendData", countlyAllEvents.helpers.getLegendData(context));
                                                             }
                                                         });
                                                 }

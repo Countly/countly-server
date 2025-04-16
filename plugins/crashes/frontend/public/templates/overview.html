@@ -77,7 +77,7 @@
                                         <el-dropdown-item command="hide"><i class="cly-io cly-io-eye-off"></i>{{ i18n('crashes.action-hide') }}</el-dropdown-item>
                                     </cly-more-options>
                                     <span class="vertical-divider bu-mr-4 bu-ml-4"></span>
-                                    <el-button v-if="canUserDelete" class="bu-mr-3" size="small" type="default" @click="setSelectedAs('delete')">
+                                    <el-button v-if="canUserDelete" class="bu-mr-3" size="small" type="default" @click="showDeleteForm">
                                         <i class="cly-io-16 cly-io cly-io-trash" style="color:red"></i>
                                         <span class="ml-1" style="color: red">
                                             {{ i18n('crashes.action-delete') }}
@@ -89,6 +89,21 @@
                                 </div>
                             </template>
                         </cly-diff-helper>
+                        <cly-confirm-dialog 
+                        @cancel="closeDeleteForm" 
+                        @confirm="setSelectedAs('delete')" 
+                        :before-close="closeDeleteForm" 
+                        ref="deleteConfirmDialog" 
+                        :visible.sync="showDeleteDialog" 
+                        dialogType="danger" 
+                        :saveButtonLabel="i18n('crashes.yes-delete')" 
+                        :cancelButtonLabel="i18n('common.no-dont-delete')" 
+                        :title=confirmDialogTitle>
+                            <template slot-scope="scope">
+                                {{i18n('crashes.groups-want-to-delete')}}
+                                <cly-list-drawer :list="selectedGroups" :dropdownText="confirmDialogText"></cly-list-drawer>
+                            </template>
+                        </cly-confirm-dialog>
                     </template>
                 </cly-datatable-n>
             </cly-main>

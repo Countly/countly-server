@@ -1,4 +1,4 @@
-/* global jQuery, Vue, ELEMENT, CV */
+/* global jQuery, Vue, ELEMENT, CV, CountlyHelpers */
 
 (function(countlyVue) {
 
@@ -544,7 +544,7 @@
     Vue.component("cly-more-options", countlyBaseComponent.extend({
         componentName: 'ElDropdown',
         mixins: [ELEMENT.utils.Emitter],
-        template: '<cly-dropdown class="cly-vue-more-options" ref="dropdown" :widthSameAsTrigger="widthSameAsTrigger" :placement="placement" :disabled="disabled" @hide="toggleArrowState" @show="toggleArrowState" v-on="$listeners">\
+        template: '<cly-dropdown :pop-class="popClass" class="cly-vue-more-options" ref="dropdown" :widthSameAsTrigger="widthSameAsTrigger" :placement="placement" :disabled="disabled" @hide="toggleArrowState" @show="toggleArrowState" v-on="$listeners">\
                         <template v-slot:trigger>\
                             <slot name="trigger">\
                                 <el-button :data-test-id="testId + \'-more-option-button\'" :size="size" :icon="icon" :type="type" :disabled="disabledButton">\
@@ -587,6 +587,10 @@
                 type: String,
                 default: 'bottom-end'
             },
+            popClass: {
+                type: String,
+                default: ''
+            },
             testId: {
                 type: String,
                 default: 'cly-more-options-test-id'
@@ -612,7 +616,12 @@
         methods: {
             handleMenuItemClick: function(command, instance) {
                 if (!this.disabled) {
-                    this.$emit('command', command, instance);
+                    if (command && command.url) {
+                        CountlyHelpers.goTo({url: command.url, download: !!command.download, isExternalLink: !!command.isExternalLink});
+                    }
+                    else {
+                        this.$emit('command', command, instance);
+                    }
                     this.$refs.dropdown.handleClose();
                 }
             },

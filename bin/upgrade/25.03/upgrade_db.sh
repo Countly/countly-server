@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="24.10"
+VER="25.03"
 
 CONTINUE="$(countly check before upgrade db "$VER")"
 
@@ -22,6 +22,8 @@ then
 
     if [ "$1" != "combined" ]; then
         #upgrade plugins
+        countly plugin enable content;
+        countly plugin enable journey_engine;        
         nodejs "$DIR/scripts/install_plugins.js"
     fi
     
@@ -45,5 +47,5 @@ elif [ "$CONTINUE" == "-1" ]
 then
     echo "Database is upgraded to higher version"
 else
-    echo "Unknown ugprade state: $CONTINUE"
+    echo "Unknown upgrade state: $CONTINUE"
 fi

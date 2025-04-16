@@ -105,7 +105,7 @@ jobs:
       - name: ESLint
         shell: bash
         run: |
-         npm install eslint@8.57.0
+         npm install eslint@8.57.0 eslint-plugin-vue@9.31.0 @stylistic/eslint-plugin@2.11.0
          npx eslint .
 
       - name: NPM install
@@ -302,7 +302,7 @@ jobs:
           cd ui-tests
           npm install
           xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
-          npm run cy:run:dashboard --headless --no-sandbox --disable-gpu --disable-dev-shm-usage
+          npm run cy:run:dashboard
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
@@ -381,7 +381,7 @@ jobs:
           cd ui-tests
           npm install
           xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
-          npm run cy:run:onboarding --headless --no-sandbox --disable-gpu --disable-dev-shm-usage
+          npm run cy:run:onboarding
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}

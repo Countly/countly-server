@@ -52,10 +52,10 @@
               </div>
               <div v-if="drawerScope.editedObject.consent" class="ratings-drawer__consent">
                 <label>
-                  <input type="checkbox"
+                  <input data-test-id="ratings-drawer-ratingspopup-consent-checkbox" type="checkbox"
                   value="consent" checked
                   >
-                  <span v-html="finalTxt(drawerScope.editedObject.links)"></span>
+                  <span v-html="finalTxt(drawerScope.editedObject.links)" data-test-id="ratings-drawer-ratingspopup-consent-text"></span>
                 </label>
               </div>
               <div class="ratings-drawer__rp-action-area">
@@ -373,7 +373,9 @@
                 :show-in-the-last-hours="true"
                 ref="ratingsSegmentation"
                 :property-segmentation="drawerScope.editedObject.targeting.user_segmentation"
-                :behavior-segmentation="drawerScope.editedObject.targeting.steps">
+                :behavior-segmentation="drawerScope.editedObject.targeting.steps"
+                :ignore-existing-cohort="true"
+                >
               </cly-cohort-segmentation>
             </div>
           </div>

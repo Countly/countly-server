@@ -59,7 +59,7 @@ Cypress.Commands.add("selectCheckboxOption", (element, ...options) => {
 });
 
 Cypress.Commands.add("clickOption", (element, option) => {
-    cy.getElement(element).contains(new RegExp("^" + option + "$", "g")).click();
+    cy.getElement(element).contains(new RegExp("^" + option + "$", "g")).click({force: true});
 });
 
 Cypress.Commands.add("selectValue", (element, valueText) => {
@@ -136,7 +136,7 @@ Cypress.Commands.add("shouldBeEqual", (element, text) => {
 
 Cypress.Commands.add("shouldNotBeEqual", (element, text) => {
     cy.getElement(element).invoke('text').then((actualText) => {
-        expect(actualText.trim()).not.to.equal(text.trim());
+        expect(actualText).not.to.equal(text);
     });
 });
 
@@ -312,18 +312,11 @@ Cypress.Commands.add('verifyElement', ({
 
         if (element != null && isElementVisible === true) {
             cy.shouldBeVisible(element);
-        }
-
-        if (elementText != null) {
             cy.shouldNotBeEqual(element, elementText);
-
         }
 
         if (labelElement != null && isElementVisible === true) {
             cy.shouldBeVisible(labelElement);
-        }
-
-        if (labelText != null) {
             cy.shouldNotBeEqual(labelElement, labelText);
         }
     }

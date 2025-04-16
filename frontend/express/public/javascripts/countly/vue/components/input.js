@@ -3,84 +3,117 @@
 (function(countlyVue) {
 
     var _mixins = countlyVue.mixins;
-    var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6})$', 'i');
+    var HEX_COLOR_REGEX = new RegExp('^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$', 'i');
 
-    Vue.component("cly-colorpicker", countlyVue.components.BaseComponent.extend({
-        mixins: [
-            _mixins.i18n
-        ],
-        props: {
-            value: {type: [String, Object], default: "#FFFFFF"},
-            resetValue: { type: [String, Object], default: "#FFFFFF"},
-            placement: {type: String, default: "left"},
-            testId: {type: String, default: "cly-colorpicker-test-id"}
-        },
-        data: function() {
-            return {
-                isOpened: false
-            };
-        },
-        computed: {
-            previewStyle: function() {
-                return {
-                    "background-color": this.value
-                };
-            },
-            localValue: {
-                get: function() {
-                    return this.value.replace("#", "");
-                },
-                set: function(value) {
-                    var colorValue = "#" + value.replace("#", "");
-                    if (colorValue.match(HEX_COLOR_REGEX)) {
-                        this.setColor({hex: colorValue});
-                    }
-                }
-            },
-            alignment: function() {
-                return "picker-body--" + this.placement;
-            },
-        },
-        methods: {
-            setColor: function(color) {
-                this.$emit("input", color.hex);
-            },
-            reset: function() {
-                this.setColor({hex: this.resetValue});
-            },
-            open: function() {
-                this.isOpened = true;
-            },
-            close: function() {
-                this.isOpened = false;
-            },
-            confirm: function(color) {
-                this.$emit('change', color);
-                this.isOpened = false;
-            }
-        },
+    Vue.component("cly-colorpicker", countlyVue.components.create({
+        template: CV.T('/javascripts/countly/vue/templates/UI/color-picker.html'),
+
         components: {
             picker: window.VueColor.Sketch
         },
-        template: '<div class="cly-vue-colorpicker">\n' +
-                        '<div @click.stop="open" :data-test-id="testId" class="preview">\n' +
-                            '<div>\n' +
-                                '<div class="drop bu-mt-auto" :data-test-id="testId + \'-cly-color-picker-img-wrapper\'" :style="previewStyle"></div>\n' +
-                                '<img src="images/icons/blob.svg"/>\n' +
-                            '</div>\n' +
-                            '<input class="color-input" v-model="localValue" type="text"/>\n' +
-                            '<img height="12px" width="10px" class="bu-pt-2" v-if="!isOpened" src="images/icons/arrow_drop_down_.svg"/>\n' +
-                            '<img height="12px" width="10px" class="bu-pt-2" v-if="isOpened" src="images/icons/arrow_drop_up_.svg"/>\n' +
-                        '</div>\n' +
-                        '<div class="picker-body" v-if="isOpened" v-click-outside="close" :class="alignment">\n' +
-                            '<picker :preset-colors="[]" :value="value" @input="setColor"></picker>\n' +
-                            '<div class="button-controls">\n' +
-                                '<cly-button :data-test-id="testId + \'-reset-button\'" :label="i18n(\'common.reset\')" @click="reset" skin="light"></cly-button>\n' +
-                                '<cly-button :data-test-id="testId + \'-cancel-button\'" :label="i18n(\'common.cancel\')" @click="close" skin="light"></cly-button>\n' +
-                                '<cly-button :data-test-id="testId + \'-confirm-button\'" :label="i18n(\'common.confirm\')" @click="confirm(setColor)" skin="green"></cly-button>\n' +
-                            '</div>\n' +
-                        '</div>\n' +
-                      '</div>'
+
+        props: {
+            placement: {
+                default: 'left',
+                type: String
+            },
+
+            resetValue: {
+                default: '#FFFFFF',
+                type: [String, Object]
+            },
+
+            testId: {
+                default: 'cly-colorpicker-test-id',
+                type: String
+            },
+
+            value: {
+                default: '#FFFFFF',
+                type: [String, Object],
+            }
+        },
+
+        emits: [
+            'change',
+            'input'
+        ],
+
+        mixins: [
+            _mixins.i18n
+        ],
+
+        data: function() {
+            return {
+                isOpened: false,
+
+                previousColor: null
+            };
+        },
+
+        computed: {
+            bodyClasses() {
+                return ['cly-vue-color-picker__body--' + this.placement];
+            },
+
+            dropStyles() {
+                return { color: this.localValue };
+            },
+
+            localValue: {
+                get() {
+                    return (this.value || this.resetValue);
+                },
+                set(value) {
+                    let finalValue = value;
+
+                    if (!finalValue.startsWith('#')) {
+                        finalValue = `#${finalValue}`;
+                    }
+
+                    if (finalValue.match(HEX_COLOR_REGEX)) {
+                        this.$emit('input', finalValue);
+                    }
+                }
+            }
+        },
+
+        watch: {
+            isOpened(value) {
+                if (value) {
+                    this.previousColor = JSON.parse(JSON.stringify(this.value));
+                }
+            }
+        },
+
+        methods: {
+            onInputContainerClick() {
+                this.isOpened = true;
+            },
+
+            close() {
+                this.isOpened = false;
+            },
+
+            onCancelClick() {
+                this.localValue = this.previousColor;
+                this.close();
+            },
+
+            onConfirmClick() {
+                this.$emit('change', this.localValue);
+                this.close();
+            },
+
+            onPickerInput(color) {
+                this.localValue = color.hex8 || color.hex;
+            },
+
+            onResetClick() {
+                this.localValue = this.resetValue;
+                this.close();
+            }
+        }
     }));
 
     Vue.component("cly-dropzone", window.vue2Dropzone);

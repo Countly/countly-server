@@ -273,7 +273,6 @@ plugins.register("/permissions/features", function(ob) {
 plugins.register("/i/hook/save", function(ob) {
     let paramsInstance = ob.params;
 
-
     validateCreate(ob.params, FEATURE_NAME, function(params) {
         let hookConfig = params.qstring.hook_config;
         if (!hookConfig) {
@@ -284,50 +283,57 @@ plugins.register("/i/hook/save", function(ob) {
         try {
             hookConfig = JSON.parse(hookConfig);
             hookConfig = sanitizeConfig(hookConfig);
-            if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
-                common.returnMessage(params, 400, 'Not enough args');
-                return true;
-            }
+            if (hookConfig) {
+                // Null check for hookConfig
+                if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
+                    common.returnMessage(params, 400, 'Not enough args');
+                    return true;
+                }
 
-            if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
-                common.returnMessage(params, 400, 'Invalid configuration for effects');
-                return true;
-            }
+                if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
+                    common.returnMessage(params, 400, 'Invalid configuration for effects');
+                    return true;
+                }
 
-            if (hookConfig._id) {
-                const id = hookConfig._id;
-                delete hookConfig._id;
-                return common.db.collection("hooks").findAndModify(
-                    { _id: common.db.ObjectID(id) },
-                    {},
-                    {$set: hookConfig},
-                    {new: true},
-                    function(err, result) {
-                        if (!err) {
-                            // Audit log: Hook updated
-                            if (result && result.value) {
-                                plugins.dispatch("/systemlogs", {
-                                    params: params,
-                                    action: "hook_updated",
-                                    data: {
-                                        updatedHookID: result.value._id,
-                                        updatedBy: params.member._id,
-                                        updatedHookName: result.value.name
-                                    }
-                                });
+                if (hookConfig._id) {
+                    const id = hookConfig._id;
+                    delete hookConfig._id;
+                    return common.db.collection("hooks").findAndModify(
+                        { _id: common.db.ObjectID(id) },
+                        {},
+                        {$set: hookConfig},
+                        {new: true},
+                        function(err, result) {
+                            if (!err) {
+                                // Audit log: Hook updated
+                                if (result && result.value) {
+                                    plugins.dispatch("/systemlogs", {
+                                        params: params,
+                                        action: "hook_updated",
+                                        data: {
+                                            updatedHookID: result.value._id,
+                                            updatedBy: params.member._id,
+                                            updatedHookName: result.value.name
+                                        }
+                                    });
+                                }
+                                else {
+                                    common.returnMessage(params, 500, "No result found");
+                                }
+                                common.returnOutput(params, result && result.value);
                             }
                             else {
-                                common.returnMessage(params, 500, "No result found");
+                                common.returnMessage(params, 500, "Failed to save an hook");
                             }
-                            common.returnOutput(params, result && result.value);
                         }
-                        else {
-                            common.returnMessage(params, 500, "Failed to save an hook");
-                        }
-                    });
+                    );
+                }
+
             }
-            hookConfig.createdBy = params.member._id;
-            hookConfig.created_at = new Date().getTime();
+            if (hookConfig) {
+                hookConfig.createdBy = params.member._id; // Accessing property now with proper check
+                hookConfig.created_at = new Date().getTime();
+            }
             return common.db.collection("hooks").insert(
                 hookConfig,
                 function(err, result) {
@@ -497,8 +503,8 @@ plugins.register("/o/hook/list", function(ob) {
             });
         }
         catch (err) {
-            log.e('get hook list failed');
-            common.returnMessage(params, 500, "Failed to get hook list");
+            log.e('get hook list failed', err);
+            common.returnMessage(params, 500, "Failed to get hook list" + err.message);
         }
     }, paramsInstance);
     return true;
@@ -546,6 +552,9 @@ plugins.register("/i/hook/status", function(ob) {
                 data: { updatedHooksCount: Object.keys(statusList).length, requestedBy: params.member._id }
             });
             common.returnOutput(params, true);
+        }).catch(function(err) {
+            log.e('Failed to update hook statuses: ', err);
+            common.returnMessage(params, 500, "Failed to update hook statuses: " + err.message);
         });
     }, paramsInstance);
     return true;
@@ -594,8 +603,8 @@ plugins.register("/i/hook/delete", function(ob) {
             );
         }
         catch (err) {
-            log.e('delete hook failed', hookID);
-            common.returnMessage(params, 500, "Failed to delete an hook");
+            log.e('delete hook failed', hookID, err);
+            common.returnMessage(params, 500, "Failed to delete an hook" + err.message);
         }
     }, paramsInstance);
     return true;
@@ -609,22 +618,29 @@ plugins.register("/i/hook/test", function(ob) {
         let hookConfig = params.qstring.hook_config;
         if (!hookConfig) {
             common.returnMessage(params, 400, 'Invalid hookConfig');
-            return true;
+            return;
         }
 
         try {
             hookConfig = JSON.parse(hookConfig);
+            if (!hookConfig) {
+                common.returnMessage(params, 400, 'Parsed hookConfig is invalid');
+                return;
+            }
             hookConfig = sanitizeConfig(hookConfig);
             const mockData = JSON.parse(params.qstring.mock_data);
 
             if (!(common.validateArgs(hookConfig, CheckHookProperties(hookConfig)))) {
-                common.returnMessage(params, 403, "hook config invalid");
+                common.returnMessage(params, 403, "hook config invalid" + JSON.stringify(hookConfig));
+                return; // Add return to exit early
             }
 
+            // Null check for effects
             if (hookConfig.effects && !validateEffects(hookConfig.effects)) {
                 common.returnMessage(params, 400, 'Config invalid');
-                return true;
+                return; // Add return to exit early
             }
+
 
             // trigger process            
             log.d(JSON.stringify(hookConfig), "[hook test config]");
@@ -632,20 +648,24 @@ plugins.register("/i/hook/test", function(ob) {
 
             // build mock data
             const trigger = hookConfig.trigger;
+            if (!trigger) {
+                common.returnMessage(params, 400, 'Trigger is missing');
+                return;
+            }
             hookConfig._id = null;
+
             log.d("[hook test mock data]", mockData);
             const obj = {
                 is_mock: true,
                 params: mockData,
                 rule: hookConfig
             };
-
             log.d("[hook test config data]", obj);
             const t = new Triggers[trigger.type]({
                 rules: [hookConfig],
             });
 
-            // out put trigger result
+            // output trigger result
             const triggerResult = await t.process(obj);
             log.d("[hook trigger test result]", triggerResult);
             results.push(JSON.parse(JSON.stringify(triggerResult)));
@@ -676,8 +696,8 @@ plugins.register("/i/hook/test", function(ob) {
             return false;
         }
         catch (e) {
-            log.e("hook test error", e);
-            common.returnMessage(params, 503, "Hook test failed.");
+            log.e("hook test error", e, hookConfig);
+            common.returnMessage(params, 503, "Hook test failed." + e.message);
             return;
         }
     }, paramsInstance);

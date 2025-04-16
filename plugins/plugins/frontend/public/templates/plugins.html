@@ -8,27 +8,33 @@
     </cly-header>
     <cly-main>
 		<cly-section data-test-id="table-plugins">
-			<cly-datatable-n :force-loading="isLoading" :rows="pluginsData" :tracked-fields="localTableTrackedFields" :default-sort="{prop: 'name', order: 'ascending'}" :row-class-name="tableRowClassName">
+			<cly-datatable-n test-id="datatable-features" :force-loading="isLoading" :rows="pluginsData" :tracked-fields="localTableTrackedFields" :default-sort="{prop: 'name', order: 'ascending'}" :row-class-name="tableRowClassName">
                 <template v-slot="scope">
                     <el-table-column type="switch" fixed="left" width="70" prop="enabled">
                         <template v-slot="rowScope">
                             <el-switch :value="rowScope.row.enabled"
-                                @input="onToggle(scope, rowScope.row)">
+                                @input="onToggle(scope, rowScope.row)" :test-id="'datatable-features-toggle-' + rowScope.$index">
                             </el-switch>
                         </template>
                     </el-table-column>
                     <el-table-column sortable prop="name" :label="i18n('plugins.name')" width="200">
                         <template slot-scope="rowScope">
-                            <a :href="rowScope.row.homepage" target="_blank">{{ rowScope.row.name }}</a>
+                            <a :href="rowScope.row.homepage" target="_blank" :data-test-id="'datatable-features-feature-name-' + rowScope.$index">{{ rowScope.row.name }}</a>
                         </template>
                     </el-table-column>
                     <el-table-column prop="desc" column-key="description" :label="i18n('plugins.description')">
                         <template v-slot="rowScope">
-                            <div style="white-space: normal;" v-html="rowScope.row.description"> 
+                            <div style="white-space: normal;" v-html="rowScope.row.description" :data-test-id="'datatable-features-description-' + rowScope.$index"> 
                             </div>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="deps" :label="i18n('plugins.dependents')" width="200"></el-table-column>
+                    <el-table-column prop="deps" :label="i18n('plugins.dependents')" width="200">
+                        <template v-slot="scope">
+                            <div :data-test-id="'datatable-deps-' + scope.$index">
+                              {{ scope.row.deps }}
+                            </div>
+                        </template>
+                    </el-table-column>
                     <!-- <el-table-column prop="version" :label="i18n('plugins.version')" width="100"></el-table-column> -->
                 </template>
                 <template v-slot:header-left>

@@ -410,7 +410,7 @@
         computed: {
             tooltipConf: function() {
                 return {
-                    content: this.tooltip,
+                    content: countlyCommon.unescapeHtml(this.tooltip),
                     placement: this.placement
                 };
             }
@@ -1007,34 +1007,36 @@
                 class="cly-vue-notification__alert-box"
                 :class="dynamicClasses"
             >
-                <div class="bu-is-flex bu-is-justify-content-space-between bu-p-3">
-                    <div class="bu-is-flex">
+                <div class="bu-is-flex bu-is-justify-content-space-between bu-is-align-items-center">
+                    <div class="bu-is-flex" style="width:100%">
                         <img
-                            class="alert-image bu-mr-3"
+                            class="alert-image bu-p-2"
                             data-test-id="cly-notification-img"
                             :src="image"
                         >
-                        <slot>
+                        <div :style="dynamicStyle">
+                            <slot>
+                                <span
+                                    class="alert-text"
+                                    data-test-id="cly-notification-text"
+                                    style="margin-block:auto"
+                                    v-html="innerText"
+                                >
+                                    {{ text }}
+                                </span>
+                            </slot>
                             <span
-                                class="alert-text"
-                                data-test-id="cly-notification-text"
-                                style="margin-block:auto"
-                                v-html="innerText"
+                                v-if="goTo.title"
+                                class="bu-is-flex cursor-pointer"
                             >
-                                {{ text }}
+                                <a
+                                    class="bu-level-item bu-has-text-link bu-has-text-weight-medium"
+                                    @click="goToUrl"
+                                >
+                                    {{ goTo.title }}
+                                </a>
                             </span>
-                        </slot>
-                    </div>
-                    <div
-                        v-if="goTo.title"
-                        class="bu-is-flex bu-ml-auto"
-                    >
-                        <a
-                            class="bu-level-item bu-has-text-link bu-has-text-weight-medium"
-                            @click="goToUrl"
-                        >
-                            {{ goTo.title }}
-                        </a>
+                        </div>
                     </div>
                     <div v-if="closable">
                         <div
@@ -1044,7 +1046,7 @@
                             <slot name="close">
                                 <i
                                     :data-test-id="closeIconDataId"
-                                    class="cly-vue-notification__alert-box__close-icon el-icon-close"
+                                    class="cly-vue-notification__alert-box__close-icon el-icon-close bu-mr-2"
                                 />
                             </slot>
                         </div>
@@ -1072,6 +1074,7 @@
                 type: Object
             },
             customWidth: { default: "", type: String },
+            toast: { default: false, type: Boolean }
         },
         data: function() {
             return {
@@ -1134,6 +1137,20 @@
                     return this.text;
                 }
                 return "";
+            },
+            dynamicStyle: function() {
+                let style = {
+                    "display": "flex",
+                    "flex-direction": this.toast ? "column" : "row",
+                    "width": "100%"
+                };
+                if (this.toast) {
+                    style.gap = "5px";
+                }
+                else {
+                    style["justify-content"] = "space-between";
+                }
+                return style;
             }
         },
         methods: {
@@ -1297,6 +1314,63 @@
                         </component>\
                     </div>'
     });
+
+    Vue.component("cly-list-drawer", countlyBaseComponent.extend({
+        props: {
+            list: {
+                type: Array,
+                required: true,
+            },
+            dropdownText: {
+                type: String,
+                default: 'Listed item(s) will be affected by this action',
+                required: false,
+            },
+        },
+        data: function() {
+            return {
+                isOpen: false,
+                options: {
+                    vuescroll: {
+                        sizeStrategy: 'number',
+                    },
+                    scrollPanel: {
+                        initialScrollX: false,
+                    },
+                    rail: {
+                        gutterOfSide: "4px",
+                        gutterOfEnds: "16px",
+                        keepShow: false,
+                    },
+                    bar: {
+                        background: "#A7AEB8",
+                        size: "6px",
+                        keepShow: false,
+                    }
+                },
+            };
+        },
+        methods: {
+            toggleList: function() {
+                this.isOpen = !this.isOpen;
+            },
+        },
+        template: '<div class="cly-list-drawer">\
+                        <div class="cly-list-drawer__text-clickable bu-pt-4 bu-pb-3 bu-has-text-weight-medium" @click="toggleList">\
+                            {{ dropdownText }}\
+                            <i class="cly-io-16 cly-io cly-io-chevron-down" :class="{ \'rotate-icon\': isOpen }"></i>\
+                        </div>\
+                        <div v-if="isOpen" class="cly-list-drawer__list">\
+                            <vue-scroll :ops="options">\
+                                <div>\
+                                    <ul>\
+                                        <li v-for="ev in list">{{ev}}</li>\
+                                    </ul>\
+                                </div>\
+                            </vue-scroll>\
+                        </div>\
+                    </div>'
+    }));
 
     Vue.component("cly-auto-refresh-toggle", countlyBaseComponent.extend({
         template: "<div class='cly-vue-auto-refresh-toggle'>\
