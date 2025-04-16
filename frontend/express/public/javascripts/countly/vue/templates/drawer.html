@@ -65,7 +65,7 @@
                 </div>
                 <div class="cly-vue-drawer__steps-container" v-scroll-shadow :class="{'is-multi-step':isMultiStep}">
                     <div class="bu-columns bu-is-gapless bu-is-mobile" v-if="currentScreenMode === 'full'">
-                        <div class="bu-column bu-is-12">
+                        <div class="bu-column bu-is-12" :data-test-id="testId + '-header-title'">
                             <h3>{{title}}</h3>
                         </div>
                     </div>

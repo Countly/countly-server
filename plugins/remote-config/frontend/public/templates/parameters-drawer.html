@@ -11,6 +11,7 @@
       <div class="cly-vue-drawer-step__section">
         <cly-form-field name="parameter-key" v-slot="validation" :label="i18n('remote-config.parameter-key')" rules="required|regex:^[a-zA-Z_][a-zA-Z0-9_]*$">
           <el-input
+            test-id="parameter-key-input"
             v-model="drawerScope.editedObject.parameter_key"
             maxlength="256"
             :placeholder="i18n('remote-config.parameter-key.placeholder')">
@@ -47,6 +48,7 @@
               v-model="defaultValue"
               :fetch-suggestions="querySearch"
               :placeholder="i18n('remote-config.default-value.placeholder')"
+              test-id="default-value-input"
               >
               <el-button type="text" slot="suffix" @click="openJsonEditor" class="cly-vue-remote-config-parameters-drawer__autocomplete-button">{ }</el-button>
             </el-autocomplete>
