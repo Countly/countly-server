@@ -25,6 +25,7 @@
           :test-id="'ratings-widgets-data-table-status-' + rowScope.$index"
           :value="rowScope.row.status"
           @change="$emit('set-status', rowScope.row, !rowScope.row.status)"
+          @click.native.stop
           @input="scope.patch(rowScope.row, { status: !rowScope.row.status})"
         />
       </template>
