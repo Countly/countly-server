@@ -2,8 +2,6 @@
 
 name: CI
 
-env: 
-  GITHUB_WORKSPACE: '/opt/'
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
@@ -23,7 +21,10 @@ jobs:
   # This workflow contains a single job called "build"
   install:
     # The type of runner that the job will run on
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: /opt
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
