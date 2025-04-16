@@ -1,7 +1,7 @@
 <div class="bu-py-1 bu-px-4 cly-vue-drawer-step__section-group--filled">
   <div class="cly-vue-drawer-step__section">
-    <div class="text-small text-heading bu-pb-1" data-test-id="ratings-drawer-settings-add-user-consent-text-label">{{i18n('rating.drawer.consent.text')}}</div>
-    <validation-provider name="value.consent" rules="required|max:93" v-slot="v">
+    <div class="text-small text-heading bu-pb-1">{{i18n('rating.drawer.consent.text')}}</div>
+    <validation-provider name="value.consent" rules="required|max:94" v-slot="v">
       <el-input
         test-id="ratings-drawer-settings-add-user-consent-text-input"
         :class="{'is-error': v.errors.length > 0}"

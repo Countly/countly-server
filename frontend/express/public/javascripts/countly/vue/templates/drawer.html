@@ -65,7 +65,7 @@
                 </div>
                 <div class="cly-vue-drawer__steps-container" v-scroll-shadow :class="{'is-multi-step':isMultiStep}">
                     <div class="bu-columns bu-is-gapless bu-is-mobile" v-if="currentScreenMode === 'full'">
-                        <div class="bu-column bu-is-12">
+                        <div class="bu-column bu-is-12" :data-test-id="testId + '-header-title'">
                             <h3>{{title}}</h3>
                         </div>
                     </div>
@@ -89,8 +89,8 @@
                     <div class="cly-vue-drawer__buttons is-multi-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="isMultiStep">
                         <el-button :data-test-id="testId + '-cancel-button'" type="secondary" @click="doClose" size="small" v-if="currentStepIndex === 0 && hasCancelButton" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>
                         <el-button :data-test-id="testId + '-previous-step-button'" type="secondary" @click="prevStep" size="small" v-if="currentStepIndex > 0" :disabled="isSubmitPending">{{i18n('common.drawer.previous-step')}}</el-button>
-                        <el-button :data-test-id="testId + '-next-step-button'" type="success" @click="nextStep" size="small" v-if="!isLastStep" :class="{'is-disabled':!isCurrentStepValid}" :disabled="isSubmitPending">{{i18n('common.drawer.next-step')}}</el-button>
-                        <el-button :data-test-id="testId + '-save-button'" type="success" @click="submit" :loading="isSubmitPending" size="small" v-if="isLastStep" :class="{'is-disabled':!isSubmissionAllowed}" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
+                        <el-button :data-test-id="testId + '-next-step-button'" type="success" :key="isLastStep" @click="nextStep" size="small" v-if="!isLastStep" :class="{'is-disabled':!isCurrentStepValid}" :disabled="isSubmitPending">{{i18n('common.drawer.next-step')}}</el-button>
+                        <el-button :data-test-id="testId + '-save-button'" type="success" :key="isLastStep" @click="submit" :loading="isSubmitPending" size="small" v-if="isLastStep" :class="{'is-disabled':!isSubmissionAllowed}" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
                     </div>
                     <div class="cly-vue-drawer__buttons is-single-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="!isMultiStep">
                         <el-button :data-test-id="testId + '-cancel-button'" type="secondary" @click="doClose" size="small" v-if="hasCancelButton" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>

@@ -1,14 +1,51 @@
-## Version 25.03.X
+## Version 25.03.x
 
+Features:
+- Add ability to allow multiple CORS per app for web apps
+- Add app id and name as view segment for self-tracking
+
+Enterprise Features:
+- [license] Update locking conditions for expired license and over limit usage
+- [license] Enable force locking with remote config
+- [license] Update dashboard lock with redirection to home page for non admin user
+
+Dependencies:
+- Bump body-parser from 1.20.3 to 2.2.0
+- Bump moment-timezone from 0.5.47 to 0.5.48
+- Bump supertest from 7.0.0 to 7.1.0
+
+## Version 25.03.3
 Fixes:
-- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
- 
+- [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
+- [content_builder] Fixed content block layout type select visibility
+- [user-management] Fixed issue with uploading member icon
+
+## Version 25.03.2
+Fixes:
+- [user-management] Prevent global admin from self-revoke and self-delete
+
 Enterprise fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+- [drill] Fixed issue with column naming in export according to event
+- [drill] Fixed an issue with incorrect date range in report manager
+
+## Version 25.03.1
+Fixes:
+- [crashes] Remove memory addresses from stack trace grouping
+- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+
+Enterprise Fixes:
 - [ab-testing] Fixed bug with variant user filtering
 - [license] Fixed issue with handling invalid date periods
 
 Dependencies:
+- Bump axios from 1.7.4 to 1.8.2 in /plugins/hooks
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
+- Bump countly-sdk-web from 24.11.4 to 25.1.0
+- Bump form-data from 4.0.1 to 4.0.2
 - Bump moment-timezone from 0.5.46 to 0.5.47
+- Bump mongodb from 6.11.0 to 6.14.2
+- Bump sass from 1.83.4 to 1.85.1
 
 ## Version 25.03
 Features:
@@ -4620,4 +4657,3 @@ This version provides several features and bugfixes to both server and SDKs. The
     A user of an application can only view analytics for that application 
     and cannot edit its settings.
   * Added csfr protection to all methods provided through app.js.
-

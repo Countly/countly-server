@@ -92,7 +92,7 @@
             }
         },
         template: '<el-dialog destroyOnClose class="cly-vue-confirm-dialog" :custom-class="customClass" v-on="$listeners" v-bind="$attrs" :title="title">\
-                        <template v-slot:title><h3 :data-test-id="testId + \'-cly-confirm-dialog-title-label\'" class="color-cool-gray-100">{{title}}</h3></template>\
+                        <template v-slot:title><h3 :data-test-id="testId + \'-cly-confirm-dialog-title-label\'" class="color-cool-gray-100" style="word-wrap: break-word">{{title}}</h3></template>\
                         <template v-for="(_, name) in forwardedSlots" v-slot:[name]="slotData">\
                             <slot :name="name"/>\
                         </template>\
