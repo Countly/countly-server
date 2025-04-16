@@ -50,7 +50,8 @@ plugins.register("/permissions/features", function(ob) {
             "lbc":true,
             "ltlpt":true,
             "ltl":true,
-            "lt":true
+            "lt":true,
+            "rcz":true
         }
      * }
      */
@@ -151,7 +152,8 @@ plugins.register("/permissions/features", function(ob) {
                         "lbc",
                         "ltlpt",
                         "ltl",
-                        "lt"
+                        "lt",
+                        "rcz"
                     ];
                     for (var key in configToSave) {
                         if (validOptions.indexOf(key) === -1) {

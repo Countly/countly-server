@@ -28,7 +28,8 @@
         lbc: { android: v1_android, ios: v1_ios, web: v1_web },
         ltlpt: { android: v1_android, ios: v1_ios, web: v1_web },
         ltl: { android: v1_android, ios: v1_ios, web: v1_web },
-        lt: { android: v1_android, ios: v1_ios, web: v1_web }
+        lt: { android: v1_android, ios: v1_ios, web: v1_web },
+        rcz: { android: v1_android, ios: v1_ios, web: v1_web }
     };
 
     var FEATURE_NAME = "sdk";
@@ -111,7 +112,7 @@
                     },
                     features: {
                         label: "SDK Features",
-                        list: ["crt", "vt", "st", "cet", "lt", "ecz", "cr"]
+                        list: ["crt", "vt", "st", "cet", "lt", "ecz", "cr", "rcz"]
                     },
                     settings: {
                         label: "SDK Settings",
@@ -133,7 +134,7 @@
                     networking: {
                         type: "switch",
                         name: "Allow Networking",
-                        description: "Enable or disable all networking calls from SDK except SDK config call. Does not effect tracking of data (default: enabled)",
+                        description: "Enable or disable all networking calls from SDK except SDK behavior call. Does not effect tracking of data (default: enabled)",
                         default: true,
                         value: null
                     },
@@ -224,7 +225,7 @@
                     lkl: {
                         type: "number",
                         name: "Max Key Length",
-                        description: "Maximum length of an Event's key (including name) (default: 128)",
+                        description: "Maximum length of Event and segment keys (including name) (default: 128)",
                         default: 128,
                         value: null
                     },
@@ -265,14 +266,21 @@
                     },
                     scui: {
                         type: "number",
-                        name: "Server Config Update Interval",
-                        description: "How often to check for new server config in hours (default: 4)",
+                        name: "SDK Behavior Update Interval",
+                        description: "How often to check for new behavior settings in hours (default: 4)",
                         default: 4,
+                        value: null
+                    },
+                    rcz: {
+                        type: "switch",
+                        name: "Allow Refresh Content Zone",
+                        description: "Enable or disable refreshing Journey content (default: enabled)",
+                        default: true,
                         value: null
                     }
                 },
                 diff: [],
-                description: "This is experimental feature and not all SDKs and SDK versions yet support it. Refer to the SDK documentation for more information"
+                description: "Not all SDKs and SDK versions yet support this feature. Refer to respective SDK documentation for more information"
             };
         },
         mounted: function() {
@@ -318,8 +326,8 @@
                 URL.revokeObjectURL(url);
             },
             resetSDKConfiguration: function() {
-                var helper_msg = "You are about to reset your SDK configuration to default state. Do you want to continue?";
-                var helper_title = "Reset configuration?";
+                var helper_msg = "You are about to reset your SDK behavior to default state. This would override all these settings if set in your SDK. Do you want to continue?";
+                var helper_title = "Reset Behavior?";
                 var self = this;
 
                 CountlyHelpers.confirm(helper_msg, "red", function(result) {
@@ -404,7 +412,7 @@
             },
             checkSdkSupport: function() {
                 for (var key in this.configs) {
-                    this.configs[key].tooltipMessage = "No SDK data present. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this Server Config option.";
+                    this.configs[key].tooltipMessage = "No SDK data present. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this option.";
                     this.configs[key].tooltipClass = 'tooltip-neutral';
                 }
 
@@ -465,7 +473,7 @@
                         this.configs[configKey].tooltipClass = 'tooltip-warning';
                     }
                     else { // none supported
-                        this.configs[configKey].tooltipMessage = 'None of the SDKs you use support this option. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this Server Config option.';
+                        this.configs[configKey].tooltipMessage = 'None of the SDKs you use support this option. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this option.';
                         this.configs[configKey].tooltipClass = 'tooltip-danger';
                     }
 
@@ -478,7 +486,7 @@
         priority: 2,
         route: "#/manage/sdk/configurations",
         component: SDKConfigurationView,
-        title: "SDK Configuration",
+        title: "SDK Behavior Settings",
         name: "configurations",
         permission: FEATURE_NAME,
         vuex: [

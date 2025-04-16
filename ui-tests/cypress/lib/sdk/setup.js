@@ -68,7 +68,7 @@ const createRequest = (sdkName, sdkVersion) => {
 };
 
 const checkTooltipAppears = (tooltip, count, early) => {
-    cy.get('.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-' + tooltip).should('have.length', count ? count : 21);
+    cy.get('.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-' + tooltip).should('have.length', count ? count : 22);
 
     if (early) {
         return;
