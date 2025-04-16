@@ -1523,6 +1523,164 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         });
     }
 
+    /**
+     * @param  {Object} params - Default parameters object
+     * @returns {undefined} Returns nothing
+     */
+    async function getHeatmapNeo(params) {
+        const result = {types: [], data: []};
+
+        let device = {};
+        try {
+            device = JSON.parse(params.qstring.device);
+        }
+        catch (SyntaxError) {
+            log.e('Parse device failed: ', params.qstring.device);
+        }
+
+        const actionType = params.qstring.actionType;
+
+        if (!(device.minWidth >= 0) || !(device.maxWidth >= 0)) {
+            common.returnMessage(params, 400, 'Bad request parameter: device');
+            return false;
+        }
+
+        if (params.qstring.period) {
+            //check if period comes from datapicker
+            if (params.qstring.period.indexOf(',') !== -1) {
+                try {
+                    params.qstring.period = JSON.parse(params.qstring.period);
+                }
+                catch (SyntaxError) {
+                    log.d('Parsing custom period failed!');
+                    common.returnMessage(params, 400, 'Bad request parameter: period');
+                    return false;
+                }
+            }
+            else {
+                switch (params.qstring.period) {
+                case 'month':
+                case 'day':
+                case 'yesterday':
+                case 'hour':
+                    break;
+                default:
+                    if (!/([0-9]+)days/.test(params.qstring.period)) {
+                        common.returnMessage(params, 400, 'Bad request parameter: period');
+                        return false;
+                    }
+                    break;
+                }
+            }
+        }
+        else {
+            common.returnMessage(params, 400, 'Missing request parameter: period');
+            return false;
+        }
+
+        countlyCommon.setTimezone(params.appTimezone);
+        countlyCommon.setPeriod(params.qstring.period);
+
+        const periodObj = countlyCommon.periodObj;
+        const matchQuery = {};
+        const now = params.time.now.toDate();
+
+        //create current period array if it does not exist
+        if (!periodObj.currentPeriodArr) {
+            periodObj.currentPeriodArr = [];
+
+            //create a period array that starts from the beginning of the current year until today
+            if (params.qstring.period === 'month') {
+                for (let i = 0; i < (now.getMonth() + 1); i++) {
+                    const moment1 = moment();
+                    const daysInMonth = moment1.month(i).daysInMonth();
+
+                    for (let j = 0; j < daysInMonth; j++) {
+                        periodObj.currentPeriodArr.push(periodObj.activePeriod + '.' + (i + 1) + '.' + (j + 1));
+
+                        // If current day of current month, just break
+                        if ((i === now.getMonth()) && (j === (now.getDate() - 1))) {
+                            break;
+                        }
+                    }
+                }
+            }
+            //create a period array that starts from the beginning of the current month until today
+            else if (params.qstring.period === 'day') {
+                for (let i = 0; i < now.getDate(); i++) {
+                    periodObj.currentPeriodArr.push(periodObj.activePeriod + '.' + (i + 1));
+                }
+            }
+            //create one day period array
+            else {
+                periodObj.currentPeriodArr.push(periodObj.activePeriod);
+            }
+        }
+
+        //get timestamps of start of days (DD-MM-YYYY-00:00) with respect to apptimezone for both beginning and end of period arrays
+        let tmpArr;
+        const ts = {};
+
+        tmpArr = periodObj.currentPeriodArr[0].split('.');
+        ts.$gte = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2]))));
+        if (params.appTimezone) {
+            ts.$gte.tz(params.appTimezone);
+        }
+        ts.$gte = ts.$gte.valueOf() - ts.$gte.utcOffset() * 60000;
+
+        tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split('.');
+        ts.$lt = moment(new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])))).add(1, 'days');
+        if (params.appTimezone) {
+            ts.$lt.tz(params.appTimezone);
+        }
+        ts.$lt = ts.$lt.valueOf() - ts.$lt.utcOffset() * 60000;
+
+        matchQuery.ts = ts;
+        matchQuery.a = params.qstring.app_id;
+        matchQuery.e = '[CLY]_action';
+        matchQuery['sg.width'] = {};
+        matchQuery['sg.width'].$gt = device.minWidth;
+        matchQuery['sg.width'].$lte = device.maxWidth;
+        matchQuery['sg.type'] = actionType;
+
+        const projectionQuery = {
+            _id: 0,
+            c: 1,
+            'sg.type': 1,
+            'sg.width': 1,
+            'sg.height': 1
+        };
+
+        if (actionType === 'scroll') {
+            projectionQuery['sg.y'] = 1;
+            matchQuery['sg.view'] = params.qstring.view;
+        }
+        else {
+            projectionQuery['sg.x'] = 1;
+            projectionQuery['sg.y'] = 1;
+            matchQuery['up.lv'] = params.qstring.view;
+        }
+
+        if (params.qstring.segment) {
+            matchQuery['sg.segment'] = params.qstring.segment;
+        }
+
+        const aggregateQuery = [
+            { $match: matchQuery },
+            { $project: projectionQuery },
+        ];
+
+        try {
+            const data = await common.drillDb.collection('drill_events').aggregate(aggregateQuery, { allowDiskUse: true }).toArray();
+            result.data = data;
+            common.returnOutput(params, result, true, params.token_headers);
+        }
+        catch (err) {
+            log.e(err);
+            common.returnMessage(params, 500, 'Error fetching drill events');
+        }
+    }
+
     plugins.register("/o/actions", function(ob) {
         var params = ob.params;
 
@@ -1575,7 +1733,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 });
             }
             else {
-                validateRead(params, FEATURE_NAME, getHeatmap);
+                validateRead(params, FEATURE_NAME, getHeatmapNeo);
             }
             return true;
         }
