@@ -33,9 +33,13 @@ jobs:
           # Workaround for https://github.com/actions/runner-images/issues/675#issuecomment-1381389712
           sudo sed -i 's/azure/us/g' /etc/apt/sources.list
 
+      - name: Copy code
+        shell: bash
+        run: cp -rf ./* /opt/countly
+        
       - name: Installing Countly
         shell: bash
-        run: sudo bash ./bin/countly.install.sh
+        run: sudo bash /opt/countly/bin/countly.install.sh
 
       - name: NodeJS version
         shell: bash
