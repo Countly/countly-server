@@ -2,9 +2,6 @@
 
 name: CI
 
-env: 
-  GITHUB_WORKSPACE: '/opt'
- 
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
@@ -24,7 +21,7 @@ jobs:
   # This workflow contains a single job called "build"
   install:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -35,10 +32,6 @@ jobs:
         run: |
           # Workaround for https://github.com/actions/runner-images/issues/675#issuecomment-1381389712
           sudo sed -i 's/azure/us/g' /etc/apt/sources.list
-          
-      - name: Checking the path
-        shell: bash
-        run: echo $GITHUB_WORKSPACE && echo $pwd && ls -alF /opt
         
       - name: Installing Countly
         shell: bash
