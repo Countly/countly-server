@@ -21,20 +21,29 @@ jobs:
   # This workflow contains a single job called "build"
   install:
     # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
+      - name: Copy code
+        shell: bash
+        run: |
+          sudo mkdir -p /opt/countly
+          touch log/countly-dashboard.log
+          touch log/countly-api.log
+          cp -rf ./* /opt/countly
+        
       - name: Github Actions Azure connection fix
         run: |
           # Workaround for https://github.com/actions/runner-images/issues/675#issuecomment-1381389712
           sudo sed -i 's/azure/us/g' /etc/apt/sources.list
-
+        
       - name: Installing Countly
         shell: bash
+        working-directory: /opt/countly
         run: sudo bash ./bin/countly.install.sh
 
       - name: NodeJS version
@@ -50,10 +59,12 @@ jobs:
         run: mongosh --version
 
       - name: Output API Logs
+        working-directory: /opt/countly
         if: ${{ always() }}
         run: cat log/countly-api.log
 
       - name: Output Dashboard Logs
+        working-directory: /opt/countly
         if: ${{ always() }}
         run: cat log/countly-dashboard.log
 
