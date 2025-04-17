@@ -653,6 +653,94 @@ export interface Common {
     versionCompare: (v1: string, v2: string, options: { delimiter: string }) => number;
 
     /**
+     * Parses an application version string into its semantic versioning components.
+     * Uses the semver library to extract major, minor, and patch numbers.
+     *
+     * @param version - The version string or number to parse
+     * @returns Object containing parsed version components and metadata
+     *
+     * @example
+     * // Returns { major: 1, minor: 2, patch: 3, original: "1.2.3", success: true }
+     * parseAppVersion("1.2.3");
+     *
+     * @example
+     * // Returns { major: 2, minor: 0, patch: 0, original: "2", success: true }
+     * parseAppVersion(2);
+     *
+     * @example
+     * // Returns { original: "invalid", success: false }
+     * parseAppVersion("invalid");
+     */
+    parseAppVersion: (version: string | number) => {
+        major?: number;
+        minor?: number;
+        patch?: number;
+        original: string;
+        success: boolean;
+    };
+
+
+    /**
+     * Checks if a version string follows either semantic versioning (semver) or "half semver" schemes.
+     * Semantic versioning follows the pattern: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
+     * Half semver follows the pattern: MAJOR.MINOR[-PRERELEASE][+BUILD]
+     *
+     * @param inpVersion - The version string to check
+     * @returns A tuple containing:
+     *   - RegExp execution result or null if no match
+     *   - String indicating the matched scheme: "semver", "halfSemver", or null if no match
+     *
+     * @example
+     * // Returns [RegExpExecArray, "semver"]
+     * checkAppVersion("1.2.3");
+     *
+     * @example
+     * // Returns [RegExpExecArray, "halfSemver"]
+     * checkAppVersion("1.2");
+     *
+     * @example
+     * // Returns [RegExpExecArray, "semver"]
+     * checkAppVersion("1.2.3-beta.1+build.123");
+     *
+     * @example
+     * // Returns [null, null]
+     * checkAppVersion("not.a.version");
+     */
+    checkAppVersion: (
+        inpVersion: string
+    ) => [RegExpExecArray | null, "semver" | "halfSemver" | null];
+
+    /**
+     * Transforms a version string to ensure correct numerical sorting.
+     * Adds 100000 to each numeric version part to ensure proper string-based comparisons.
+     * For example, "1.10.2" becomes "100001.100010.100002", which will sort correctly after "1.2.0".
+     *
+     * @param inpVersion - An application version string to transform
+     * @returns The transformed version string for correct sorting
+     *
+     * @example
+     * // Returns "100001.100010.100002"
+     * transformAppVersion("1.10.2");
+     *
+     * @example
+     * // Returns "100001.100002.100000"
+     * transformAppVersion("1.2.0");
+     *
+     * @example
+     * // Returns "100002.100000.100000"
+     * transformAppVersion("2.0.0");
+     *
+     * @example
+     * // Returns "100001.100002-beta.1"
+     * transformAppVersion("1.2-beta.1");
+     *
+     * @example
+     * // Returns the input if it doesn't follow a recognized scheme
+     * transformAppVersion("not.a.version");
+     */
+    transformAppVersion: (inpVersion: string) => string;
+
+    /**
      * Adjust timestamp with app's timezone for timestamp queries that should equal bucket results
      * @param {number} ts - miliseconds timestamp
      * @param {string} tz - timezone
