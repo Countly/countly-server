@@ -1,4 +1,26 @@
-## Version 25.03.x
+## Version 25.03.4
+Features:
+- Add ability to allow multiple CORS per app for web apps
+- Add app id and name as view segment for self-tracking
+- [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards
+
+Enterprise Features:
+- [license] Update locking conditions for expired license and over limit usage
+- [license] Enable force locking with remote config
+- [license] Update dashboard lock with redirection to home page for non admin user
+
+Fixes:
+- [core] Allow downloading data also from other databases in dbviewer
+- [crashes] Fix unescaped SDK logs
+- [crash_symbolication] Symbolication server api end point test fix
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [ui] Fix alignment of drawers title and close icon
+- [push] Fixed push notifications title and content text and variables combination
+- [reports] Correctly match event for email report if event key contains '.'
+
+Enterprise Fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+- [drill] Do not recheck old collections on app_user data deletion if querying from old collections is disabled
 
 Dependencies:
 - Bump body-parser from 1.20.3 to 2.2.0

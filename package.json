@@ -25,7 +25,8 @@
     "mocha": "10.8.2",
     "nyc": "17.1.0",
     "should": "13.2.3",
-    "supertest": "7.1.0"
+    "supertest": "7.1.0",
+    "typescript": "^5.8.2"
   },
   "scripts": {
     "test": "grunt --verbose"
@@ -84,6 +85,7 @@
     "properties-parser": "0.6.0",
     "puppeteer": "^23.8.0",
     "sass": "1.86.0",
+    "semver": "^7.7.1",
     "sqlite3": "^5.1.7",
     "tslib": "^2.6.3",
     "uglify-js": "3.19.3",

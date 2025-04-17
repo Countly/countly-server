@@ -403,18 +403,43 @@
         data: function() {
             return {
                 cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
-                persistKey: 'ratingsWidgetsTable_' + countlyCommon.ACTIVE_APP_ID,
-                tableDynamicCols: [
+                persistKey: 'ratingsWidgetsTable_' + countlyCommon.ACTIVE_APP_ID
+            };
+        },
+        computed: {
+            tableDynamicCols() {
+                const columns = [
+                    {
+                        value: 'rating_score',
+                        label: CV.i18n('feedback.rating-score'),
+                        default: true,
+                        required: true
+                    },
+                    {
+                        value: 'responses',
+                        label: CV.i18n('feedback.responses'),
+                        default: true,
+                        required: true
+                    },
                     {
                         value: "target_pages",
                         label: CV.i18n("feedback.pages"),
                         default: true,
                         required: true
                     }
-                ],
-            };
-        },
-        computed: {
+                ];
+
+                if (this.cohortsEnabled) {
+                    columns.unshift({
+                        value: 'targeting',
+                        label: CV.i18n('feedback.targeting'),
+                        default: true,
+                        required: true
+                    });
+                }
+
+                return columns;
+            },
             widgets: function() {
                 for (var i = 0; i < this.rows.length; i++) {
                     var ratingScore = 0;

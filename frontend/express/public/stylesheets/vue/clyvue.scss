@@ -1899,14 +1899,9 @@
             box-sizing: border-box;
         }
 
+        // .cly-vue-drawer__title-container
         &__title-container {
-            width: 100%; 
-            margin-bottom: 24px;
-        }
-
-        &__title-header {
-            margin-top: 24px; 
-            margin-left: 32px;
+            margin: 24px 32px;
         }
 
         &__subtitle {
@@ -1914,16 +1909,19 @@
             margin-bottom: 24px !important;
         }
 
+        // .cly-vue-drawer__close-button
         &__close-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             font-size: 30px;
             color: #81868D;
             transition: color 1s;
             cursor: pointer;
-            //width: 30px;
-            height: 15px;
-            //margin-block: auto;
-            margin-right: 32px;
-            margin-top: 24px;
+            height: 20px;
+
+            // .cly-vue-drawer__close-button:hover
             &:hover {
                 color: #333;
                 transition: color 1s;
