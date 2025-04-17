@@ -1,5 +1,6 @@
 ## Version 24.05.x
 - [feedback] Uniformize drawer internal name input texts
+- [star-rating] Fix rating score and responses table sorting
 
 ## Version 24.05.30
 Features:
