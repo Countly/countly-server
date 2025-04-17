@@ -61,16 +61,12 @@ jobs:
       - name: Output API Logs
         working-directory: /opt/countly
         if: ${{ always() }}
-        run: |
-          touch log/countly-api.log
-          cat log/countly-api.log
+        run: cat log/countly-api.log
 
       - name: Output Dashboard Logs
         working-directory: /opt/countly
         if: ${{ always() }}
-        run: |
-          touch log/countly-dashboard.log
-          cat log/countly-dashboard.log
+        run: cat log/countly-dashboard.log
 
       - name: Output MongoDB Logs
         if: ${{ always() }}
