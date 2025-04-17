@@ -32,6 +32,8 @@ jobs:
         shell: bash
         run: |
           sudo mkdir -p /opt/countly
+          touch log/countly-dashboard.log
+          touch log/countly-api.log
           cp -rf ./* /opt/countly
         
       - name: Github Actions Azure connection fix
@@ -60,14 +62,15 @@ jobs:
         working-directory: /opt/countly
         if: ${{ always() }}
         run: |
-          ls -l
-          ls -l log
+          touch log/countly-api.log
           cat log/countly-api.log
 
       - name: Output Dashboard Logs
         working-directory: /opt/countly
         if: ${{ always() }}
-        run: cat log/countly-dashboard.log
+        run: |
+          touch log/countly-dashboard.log
+          cat log/countly-dashboard.log
 
       - name: Output MongoDB Logs
         if: ${{ always() }}
