@@ -1,3 +1,6 @@
+## Version 24.05.x
+- [feedback] Uniformize drawer internal name input texts
+
 ## Version 24.05.30
 Features:
 - [crashed] Fix unescaped SDK logs
