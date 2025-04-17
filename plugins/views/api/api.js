@@ -1528,7 +1528,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
      * @returns {undefined} Returns nothing
      */
     async function getHeatmapNeo(params) {
-        const result = {types: [], data: []};
+        const result = {types: [], data: [], domains: []};
 
         let device = {};
         try {
@@ -1669,6 +1669,55 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             { $match: matchQuery },
             { $project: projectionQuery },
         ];
+
+        const use_union_with = plugins.getConfig('drill', params.app_id && params.app && params.app.plugins, true).use_union_with;
+
+        if (use_union_with) {
+            const oldCollectionName = 'drill_events' + crypto.createHash('sha1').update('[CLY]_action' + params.qstring.app_id).digest('hex');
+            const eventHash = crypto.createHash('sha1').update('[CLY]_action' + params.qstring.app_id).digest('hex');
+
+            const metaQuery = [
+                {
+                    $facet: {
+                        meta: [
+                            { $match: { _id: 'meta' } },
+                            { $project: { _id: 0, 'sg.type': 1, 'sg.domain': 1 } },
+                            { $limit: 1 },
+                        ],
+                        meta_v2: [
+                            { $match: { _id: 'meta_v2' } },
+                            { $project: { _id: 0, 'sg.type': 1, 'sg.domain': 1 } },
+                            { $limit: 1 },
+                        ],
+                    },
+                },
+            ];
+
+            const metaKeys = ['meta', 'meta_v2'];
+            const metas = await common.drillDb.collection(oldCollectionName).aggregate(metaQuery).toArray();
+            metaKeys.forEach((key) => {
+                if (key in metas[0]) {
+                    const meta = metas[0][key][0];
+
+                    if (meta && meta.sg && meta.sg.type && meta.sg.type.values) {
+                        common.arrayAddUniq(result.types, meta.sg.type.values);
+                    }
+
+                    if (meta && meta.sg && meta.sg.domain && meta.sg.domain.values) {
+                        common.arrayAddUniq(result.domains, meta.sg.domain.values);
+                    }
+                }
+            });
+
+            const moreMeta = await common.drillDb.collection(`drill_meta${params.qstring.app_id}`).findOne(
+                { _id: `meta_${eventHash}` },
+                { _id: 0, 'sg.domain': 1 },
+            );
+
+            if (moreMeta && moreMeta.sg && moreMeta.sg.domain) {
+                common.arrayAddUniq(result.domains, Object.keys(moreMeta.sg.domain.values));
+            }
+        }
 
         try {
             const data = await common.drillDb.collection('drill_events').aggregate(aggregateQuery, { allowDiskUse: true }).toArray();
