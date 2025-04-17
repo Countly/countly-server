@@ -3,6 +3,7 @@
 Dependencies:
 - Bump mongodb from 6.14.2 to 6.15.0
 - Bump sass from 1.86.0 to 1.86.3
+- Bump typescript from 5.8.2 to 5.8.3
 
 ## Version 25.03.4
 Features:
