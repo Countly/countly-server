@@ -22,14 +22,15 @@ jobs:
   install:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: /opt
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
+
+      - name: Copy code
+        shell: bash
+        run: cp -rf ./* /opt
         
       - name: Github Actions Azure connection fix
         run: |
@@ -38,6 +39,7 @@ jobs:
         
       - name: Installing Countly
         shell: bash
+        working-directory: /opt
         run: sudo bash ./bin/countly.install.sh
 
       - name: NodeJS version
@@ -53,10 +55,12 @@ jobs:
         run: mongosh --version
 
       - name: Output API Logs
+        working-directory: /opt
         if: ${{ always() }}
         run: cat log/countly-api.log
 
       - name: Output Dashboard Logs
+        working-directory: /opt
         if: ${{ always() }}
         run: cat log/countly-dashboard.log
 
