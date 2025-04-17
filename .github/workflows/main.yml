@@ -30,7 +30,9 @@ jobs:
 
       - name: Copy code
         shell: bash
-        run: cp -rf ./* /opt/countly
+        run: |
+          sudo mkdir -p /opt/countly
+          cp -rf ./* /opt/countly
         
       - name: Github Actions Azure connection fix
         run: |
