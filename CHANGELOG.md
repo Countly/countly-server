@@ -1,6 +1,9 @@
-## Version 24.05.x
+## Version 24.05.30
 Features:
-- [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards.
+- [crashed] Fix unescaped SDK logs
+- [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [ui] Fix alignment of drawers title and close icon
 
 ## Version 24.05.29
 Fixes:
