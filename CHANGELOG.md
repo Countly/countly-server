@@ -1,3 +1,9 @@
+## Version 25.03.x
+
+Dependencies:
+- Bump mongodb from 6.14.2 to 6.15.0
+- Bump sass from 1.86.0 to 1.86.3
+
 ## Version 25.03.4
 Features:
 - Add ability to allow multiple CORS per app for web apps
