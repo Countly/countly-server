@@ -537,7 +537,7 @@ const verifyAlertsDataFromTable = ({
     cy.verifyElement({
         labelElement: alertDataTableElements().COLUMN_NAME_CREATED_BY_LABEL,
         isElementVisible: false,
-        labelText: "Created by",
+        labelText: "Created By",
     });
 
     cy.verifyElement({

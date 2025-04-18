@@ -84,7 +84,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_LABEL,
         labelText: "Avg. Requests Received",
         tooltipElement: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TOOLTIP,
-        tooltipText: "Number of write API requests Countly Server receives for each session (includes sessions, session extensions, events, etc)"
+        tooltipText: "The number of write API requests the Countly Server receives for each session (includes sessions, session extensions, events, etc.)."
     });
 
     cy.verifyElement({
