@@ -1667,7 +1667,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
         const aggregateQuery = [
             { $match: matchQuery },
-            { $project: projectionQuery },
         ];
 
         const use_union_with = plugins.getConfig('drill', params.app_id && params.app && params.app.plugins, true).use_union_with;
@@ -1717,7 +1716,17 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             if (moreMeta && moreMeta.sg && moreMeta.sg.domain) {
                 common.arrayAddUniq(result.domains, Object.keys(moreMeta.sg.domain.values));
             }
+
+            const matchQueryOld = Object.assign({}, matchQuery);
+            delete matchQueryOld.a;
+            delete matchQueryOld.e;
+
+            aggregateQuery.push({
+                $unionWith: { coll: oldCollectionName, pipeline: [{ $match: matchQueryOld }] },
+            });
         }
+
+        aggregateQuery.push({ $project: projectionQuery });
 
         try {
             const data = await common.drillDb.collection('drill_events').aggregate(aggregateQuery, { allowDiskUse: true }).toArray();
