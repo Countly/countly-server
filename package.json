@@ -83,7 +83,7 @@
     "object-hash": "3.0.0",
     "offline-geocoder": "git+https://github.com/Countly/offline-geocoder.git",
     "properties-parser": "0.6.0",
-    "puppeteer": "^23.8.0",
+    "puppeteer": "^24.6.1",
     "sass": "1.86.3",
     "semver": "^7.7.1",
     "sqlite3": "^5.1.7",
