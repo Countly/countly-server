@@ -180,6 +180,7 @@ for plugin in "${PLUGINS[@]}"; do
     
     # Run the cleanup script on this plugin
     if [ "$DEBUG" = true ]; then
+        # shellcheck disable=SC2145
         echo "DEBUG: Running command: $CLEAN_SCRIPT $plugin ${CLEAN_ARGS[@]}"
     fi
     

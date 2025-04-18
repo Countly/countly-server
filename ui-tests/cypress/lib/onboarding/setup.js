@@ -135,7 +135,7 @@ const verifyDefaultPageElements = () => {
 
     cy.verifyElement({
         labelElement: setupPageElements.EMAIL_ADDRESS_ERROR,
-        labelText: "Please enter a valid email adress.",
+        labelText: "Please enter a valid email address.",
     });
 
     cy.verifyElement({

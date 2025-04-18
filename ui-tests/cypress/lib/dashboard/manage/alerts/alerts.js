@@ -79,7 +79,7 @@ const verifyAlertDrawerPageElements = ({
     if (!isEditPage) {
         cy.verifyElement({
             labelElement: alertDrawerPageElements.DRAWER_PAGE_TITLE,
-            labelText: "Create new alert"
+            labelText: "Create New Alert"
         });
     }
     else {
