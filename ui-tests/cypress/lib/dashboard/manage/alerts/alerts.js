@@ -99,7 +99,7 @@ const verifyAlertDrawerPageElements = ({
         labelText: "Alert Name",
         element: alertDrawerPageElements.DRAWER_ALERT_NAME_INPUT,
         value: alertName,
-        elementPlaceHolder: "Enter alert name"
+        elementPlaceHolder: "Enter Alert Name"
     });
 
     cy.verifyElement({

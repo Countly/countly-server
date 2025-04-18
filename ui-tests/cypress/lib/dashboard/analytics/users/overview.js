@@ -167,7 +167,7 @@ const verifyUsersOverviewChart = ({
         labelElement: usersOverviewEChartElements.CHART_NEW_USERS_LABEL,
         labelText: "New Users",
         tooltipElement: usersOverviewEChartElements.CHART_NEW_USERS_TOOLTIP,
-        tooltipText: "The number of first-time users (unique devices/IDs) in the selected time period.",
+        tooltipText: "The number of first-time users (unique devices/IDs) within the selected time period.",
     });
 
     cy.verifyElement({

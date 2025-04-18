@@ -113,7 +113,7 @@ const verifyDefaultPageElements = (isDemoApp) => {
 
         cy.verifyElement({
             labelElement: initialSetupPageElements.PAGE_SUB_TITLE,
-            labelText: "After adding your first application, you'll be ready to start collecting data"
+            labelText: "After adding your first application, you will be ready to start collecting data."
         });
 
         cy.verifyElement({
