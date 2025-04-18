@@ -159,7 +159,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.TECHNOLOGY().LABEL,
         labelText: "Technology",
         tooltipElement: homePageElements.TECHNOLOGY().TOOLTIP,
-        tooltipText: "Overview details of your app or website traffic by your users’ technology, such as platform, device, resolution, browsers and app version."
+        tooltipText: "Overview details of your app or website traffic based on your users’ technology, such as platform, device, resolution, browsers, and app version."
     });
 
     cy.verifyElement({
