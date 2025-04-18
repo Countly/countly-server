@@ -129,7 +129,7 @@ const verifyDefaultPageElements = (isDemoApp) => {
             element: initialSetupPageElements.APPLICATION_KEY_INPUT,
             elementPlaceHolder: "App Key",
             tooltipElement: initialSetupPageElements.APPLICATION_KEY_TOOLTIP,
-            tooltipText: "You'll need this key for SDK integration"
+            tooltipText: "You will need this key for SDK integration."
         });
 
         cy.verifyElement({

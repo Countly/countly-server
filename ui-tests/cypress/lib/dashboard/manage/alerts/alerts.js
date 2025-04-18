@@ -107,7 +107,7 @@ const verifyAlertDrawerPageElements = ({
         labelText: "Application",
         element: alertDrawerPageElements.DRAWER_APPLICATION_SELECT,
         value: application,
-        elementPlaceHolder: "Select an application"
+        elementPlaceHolder: "Select an Application"
     });
 
     cy.verifyElement({
