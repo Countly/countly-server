@@ -1838,7 +1838,7 @@ var pluginManager = function pluginManager() {
         }
         else {
             console.log("using separate connection pool");
-            databases = await Promise.all(dbs.map(this.dbConnection.bind(this, return_original)));
+            databases = await Promise.all(dbs.map((db) => this.dbConnection(db, return_original)));
         }
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
