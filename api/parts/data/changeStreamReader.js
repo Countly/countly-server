@@ -9,7 +9,7 @@ class changeStreamReader {
     /** 
     * @param {Object} db - Database object
     * @param {Object} options - Options object
-    * @param {function} onData - Finction to call when getting new data from stream
+    * @param {function} onData - Function to call when getting new data from stream
     */
     constructor(db, options, onData,) {
         this.db = db;
@@ -29,8 +29,8 @@ class changeStreamReader {
         this.fallback = options.fallback;
 
         //I give data
-        //Processor function processes. Sends last processed tken from time to time.
-        //Update last processed token to database
+        //Processor function processes. Sends last processed token from time to time.
+        //Update the last processed token to database
         //On startup - read token, resume from that token.
         this.setUp(onData, false);
 
