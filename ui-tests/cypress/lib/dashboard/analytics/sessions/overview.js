@@ -163,7 +163,7 @@ const verifySessionsOverviewChart = ({
         labelElement: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_LABEL,
         labelText: "Total Sessions",
         tooltipElement: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_TOOLTIP,
-        tooltipText: "Number of times your application is opened, by new or returning users, in the selected time period.",
+        tooltipText: "The number of times your application is opened by new or returning users within the selected time period.",
     });
 
     cy.verifyElement({

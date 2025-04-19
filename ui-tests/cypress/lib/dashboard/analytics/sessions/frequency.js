@@ -9,7 +9,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: sessionFrequencyPageElements.PAGE_TITLE,
         labelText: "Session Frequency",
         tooltipElement: sessionFrequencyPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Number of times users open your application, in the selected time period, distributed into frequency ranges."
+        tooltipText: "The number of users using your application for the second or later time within the selected time period, calculated as Total Users minus New Users."
     });
 
     cy.verifyElement({
