@@ -191,7 +191,7 @@ const verifyUsersOverviewChart = ({
         labelElement: usersOverviewEChartElements.CHART_RETURNING_USERS_LABEL,
         labelText: "Returning Users",
         tooltipElement: usersOverviewEChartElements.CHART_RETURNING_USERS_TOOLTIP,
-        tooltipText: "Number of users using your application for the second or later time, in the selected time period, calculated as Total Users (less) New Users.",
+        tooltipText: "The number of users using your application for the second or later time within the selected time period, calculated as Total Users minus New Users.",
     });
 
     cy.verifyElement({
