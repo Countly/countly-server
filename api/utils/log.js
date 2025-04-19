@@ -17,6 +17,17 @@ catch (e) {
 }
 
 /**
+ * Fallback for performance.now() if not available
+ * @returns {number} Current timestamp in milliseconds
+ */
+const getNow = () => {
+    if (typeof performance !== 'undefined' && performance.now) {
+        return performance.now();
+    }
+    return Date.now();
+};
+
+/**
  * Mapping of short level codes to full level names
  * @type {Object.<string, string>}
  */
@@ -154,6 +165,25 @@ const logLevel = function(name) {
 };
 
 /**
+ * Build a transport config: pretty in dev, JSON in prod.
+ * @returns {Object} Transport config
+ */
+function getTransport() {
+    if (process.env.NODE_ENV === 'development') {
+        return {
+            target: 'pino-pretty',
+            options: {
+                colorize: true,
+                translateTime: 'yyyy-mm-dd HH:MM:ss.l',
+                ignore: 'pid,hostname'
+            }
+        };
+    }
+    return undefined;
+}
+
+
+/**
  * Creates a Pino logger instance with the appropriate configuration
  * @param {string} name - The module name
  * @param {string} [level] - The log level
@@ -168,11 +198,14 @@ const createLogger = (name, level) => {
             level: (label) => {
                 return { level: label.toUpperCase() };
             },
-            log: (object) => {
+            log: (obj) => {
                 const traceContext = getTraceContext();
-                return traceContext ? { ...object, ...traceContext } : object;
+                return traceContext ? { ...obj, ...traceContext } : obj;
             }
-        }
+        },
+        sync: false,
+        browser: false,
+        transport: getTransport()
     });
 };
 
@@ -187,7 +220,7 @@ const createLogFunction = (logger, name, level) => {
     return function(...args) {
         const currentLevel = levels[name] || deflt;
         if (ACCEPTABLE[level].indexOf(currentLevel) !== -1) {
-            const startTime = performance.now();
+            const startTime = getNow();
             const message = args[0];
 
             // Create span for this logging operation
@@ -207,7 +240,7 @@ const createLogFunction = (logger, name, level) => {
 
                 // Record duration
                 if (logDurationHistogram) {
-                    const duration = (performance.now() - startTime) / 1000; // Convert to seconds
+                    const duration = (getNow() - startTime) / 1000; // Convert to seconds
                     logDurationHistogram.record(duration, {
                         module: name,
                         level: LEVELS[level]
