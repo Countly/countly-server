@@ -313,7 +313,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.CRASH_STATISTICS.CRASH_FREE_USERS_LABEL,
         labelText: "Crash-free Users",
         tooltipElement: homePageElements.CRASH_STATISTICS.CRASH_FREE_USERS_TOOLTIP,
-        tooltipText: "Number of users who have not experienced a crash for the applied filter in the selected time period, expressed as a percentage of the total number of users within that time period."
+        tooltipText: "The number of users who have not experienced a crash for the applied filter in the selected time period, expressed as a percentage of the total number of users within that time period."
     });
 
     cy.verifyElement({
