@@ -255,7 +255,7 @@ const verifyStaticElementsOfCrashStatisticsPage = () => {
         labelElement: crashStatisticsEChartElements.CRASH_FREE_USERS_LABEL,
         labelText: "Crash-free Users",
         tooltipElement: crashStatisticsEChartElements.CRASH_FREE_USERS_TOOLTIP,
-        tooltipText: "Number of users who have not experienced a crash for the applied filter in the selected time period, expressed as a percentage of the total number of users within that time period."
+        tooltipText: "The number of users who have not experienced a crash for the applied filter in the selected time period, expressed as a percentage of the total number of users within that time period."
     });
 
     cy.verifyElement({

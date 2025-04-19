@@ -79,7 +79,7 @@ const verifyAlertDrawerPageElements = ({
     if (!isEditPage) {
         cy.verifyElement({
             labelElement: alertDrawerPageElements.DRAWER_PAGE_TITLE,
-            labelText: "Create new alert"
+            labelText: "Create New Alert"
         });
     }
     else {
@@ -99,7 +99,7 @@ const verifyAlertDrawerPageElements = ({
         labelText: "Alert Name",
         element: alertDrawerPageElements.DRAWER_ALERT_NAME_INPUT,
         value: alertName,
-        elementPlaceHolder: "Enter alert name"
+        elementPlaceHolder: "Enter Alert Name"
     });
 
     cy.verifyElement({
@@ -107,7 +107,7 @@ const verifyAlertDrawerPageElements = ({
         labelText: "Application",
         element: alertDrawerPageElements.DRAWER_APPLICATION_SELECT,
         value: application,
-        elementPlaceHolder: "Select an application"
+        elementPlaceHolder: "Select an Application"
     });
 
     cy.verifyElement({
@@ -537,7 +537,7 @@ const verifyAlertsDataFromTable = ({
     cy.verifyElement({
         labelElement: alertDataTableElements().COLUMN_NAME_CREATED_BY_LABEL,
         isElementVisible: false,
-        labelText: "Created by",
+        labelText: "Created By",
     });
 
     cy.verifyElement({

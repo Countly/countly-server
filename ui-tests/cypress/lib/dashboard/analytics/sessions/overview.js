@@ -163,7 +163,7 @@ const verifySessionsOverviewChart = ({
         labelElement: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_LABEL,
         labelText: "Total Sessions",
         tooltipElement: analyticsSessionOverviewEChartElements.CHART_TOTAL_SESSIONS_TOOLTIP,
-        tooltipText: "Number of times your application is opened, by new or returning users, in the selected time period.",
+        tooltipText: "The number of times your application is opened by new or returning users within the selected time period.",
     });
 
     cy.verifyElement({
@@ -187,7 +187,7 @@ const verifySessionsOverviewChart = ({
         labelElement: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_LABEL,
         labelText: "New Sessions",
         tooltipElement: analyticsSessionOverviewEChartElements.CHART_NEW_SESSIONS_TOOLTIP,
-        tooltipText: "Number of times your application is opened by a new user, in the selected time period. It is equal to the number of New Users and it only counts the first session the user had.",
+        tooltipText: "The number of times your application is opened by a new user within the selected time period. This is equal to the number of New Users and only counts the user's first session.",
     });
 
     cy.verifyElement({

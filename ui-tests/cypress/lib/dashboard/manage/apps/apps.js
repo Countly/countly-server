@@ -72,7 +72,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: applicationsPageElements.APP_KEY_LABEL,
         labelText: "App Key",
         element: applicationsPageElements.APP_KEY_DESCRIPTION_LABEL,
-        elementText: "You'll need this key for SDK integration",
+        elementText: "You will need this key for SDK integration.",
     });
 
     cy.verifyElement({

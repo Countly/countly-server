@@ -63,7 +63,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.AUDIENCE.NEW_SESSIONS_LABEL,
         labelText: "New Sessions",
         tooltipElement: homePageElements.AUDIENCE.NEW_SESSIONS_TOOLTIP,
-        tooltipText: "The number of first-time users (unique devices/IDs) in the selected time period."
+        tooltipText: "The number of first-time users (unique devices/IDs) within the selected time period."
     });
 
     cy.verifyElement({
@@ -84,7 +84,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_LABEL,
         labelText: "Avg. Requests Received",
         tooltipElement: homePageElements.AUDIENCE.AVG_REQUESTS_RECEIVED_TOOLTIP,
-        tooltipText: "Number of write API requests Countly Server receives for each session (includes sessions, session extensions, events, etc)"
+        tooltipText: "The number of write API requests the Countly Server receives for each session (includes sessions, session extensions, events, etc.)."
     });
 
     cy.verifyElement({
@@ -159,7 +159,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.TECHNOLOGY().LABEL,
         labelText: "Technology",
         tooltipElement: homePageElements.TECHNOLOGY().TOOLTIP,
-        tooltipText: "Overview details of your app or website traffic by your users’ technology, such as platform, device, resolution, browsers and app version."
+        tooltipText: "Overview details of your app or website traffic based on your users’ technology, such as platform, device, resolution, browsers, and app version."
     });
 
     cy.verifyElement({
@@ -176,35 +176,35 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.TECHNOLOGY().TOP_PLATFORMS_LABEL,
         labelText: "Top Platforms",
         tooltipElement: homePageElements.TECHNOLOGY().TOP_PLATFORMS_TOOLTIP,
-        tooltipText: "Top 5 versions of the platforms of your users’ sessions, in the selected time period."
+        tooltipText: "The top 5 platform versions of your users’ sessions within the selected time period."
     });
 
     cy.verifyElement({
         labelElement: homePageElements.TECHNOLOGY().TOP_DEVICES_LABEL,
         labelText: "Top Devices",
         tooltipElement: homePageElements.TECHNOLOGY().TOP_DEVICES_TOOLTIP,
-        tooltipText: "Top 5 devices of your users’ based on their sessions, in the selected time period."
+        tooltipText: "The top 5 devices of your users based on their sessions within the selected time period."
     });
 
     cy.verifyElement({
         labelElement: homePageElements.TECHNOLOGY().TOP_APP_VERSIONS_LABEL,
         labelText: "Top App Versions",
         tooltipElement: homePageElements.TECHNOLOGY().TOP_APP_VERSIONS_TOOLTIP,
-        tooltipText: "Top 5 App versions of your users’ based on their sessions, in the selected time period."
+        tooltipText: "The top 5 app versions of your users based on their sessions within the selected time period."
     });
 
     cy.verifyElement({
         labelElement: homePageElements.TECHNOLOGY().TOP_DEVICE_TYPES_LABEL,
         labelText: "Top Device types",
         tooltipElement: homePageElements.TECHNOLOGY().TOP_DEVICE_TYPES_TOOLTIP,
-        tooltipText: "Top 5 device types of your users’ based on their sessions, in the selected time period."
+        tooltipText: "The top 5 device types of your users based on their sessions within the selected time period."
     });
 
     cy.verifyElement({
         labelElement: homePageElements.COUNTRIES.LABEL,
         labelText: "Countries",
         tooltipElement: homePageElements.COUNTRIES.TOOLTIP,
-        tooltipText: "An overview of the geographical distribution of your users and their sessions in the selected time period."
+        tooltipText: "An overview of the geographical distribution of your users and their sessions within the selected time period."
     });
 
     cy.verifyElement({
@@ -270,7 +270,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.CRASH_STATISTICS.LABEL,
         labelText: "Crash Statistics",
         tooltipElement: homePageElements.CRASH_STATISTICS.TOOLTIP,
-        tooltipText: "See actionable information about crashes and exceptions including which users are impacted"
+        tooltipText: "See actionable information about crashes and exceptions, including which users are impacted."
     });
 
     cy.verifyElement({
@@ -313,7 +313,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.CRASH_STATISTICS.CRASH_FREE_USERS_LABEL,
         labelText: "Crash-free Users",
         tooltipElement: homePageElements.CRASH_STATISTICS.CRASH_FREE_USERS_TOOLTIP,
-        tooltipText: "Number of users who have not experienced a crash for the applied filter in the selected time period, expressed as a percentage of the total number of users within that time period."
+        tooltipText: "The number of users who have not experienced a crash for the applied filter in the selected time period, expressed as a percentage of the total number of users within that time period."
     });
 
     cy.verifyElement({
