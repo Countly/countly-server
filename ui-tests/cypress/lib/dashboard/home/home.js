@@ -270,7 +270,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.CRASH_STATISTICS.LABEL,
         labelText: "Crash Statistics",
         tooltipElement: homePageElements.CRASH_STATISTICS.TOOLTIP,
-        tooltipText: "See actionable information about crashes and exceptions including which users are impacted"
+        tooltipText: "See actionable information about crashes and exceptions, including which users are impacted."
     });
 
     cy.verifyElement({
