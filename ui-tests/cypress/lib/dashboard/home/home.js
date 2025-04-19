@@ -204,7 +204,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.COUNTRIES.LABEL,
         labelText: "Countries",
         tooltipElement: homePageElements.COUNTRIES.TOOLTIP,
-        tooltipText: "An overview of the geographical distribution of your users and their sessions in the selected time period."
+        tooltipText: "An overview of the geographical distribution of your users and their sessions within the selected time period."
     });
 
     cy.verifyElement({
