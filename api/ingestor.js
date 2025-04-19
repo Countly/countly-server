@@ -273,7 +273,7 @@ plugins.connectToAllDatabases(true).then(function() {
             else {
                 common.returnMessage(params, 405, "Method not allowed");
             }
-        }).listen(common.config.ingestor.port, common.config.ingestor.host || '').timeout = common.config.ingestor.timeout || 120000;
+        }).listen(common.config?.ingestor?.port || 3010, common.config?.ingestor?.host || '').timeout = common.config?.ingestor?.timeout || 120000;
     });
 });
 
