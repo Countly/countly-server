@@ -143,7 +143,7 @@ const verifyUsersOverviewChart = ({
         labelElement: usersOverviewEChartElements.CHART_TOTAL_USERS_LABEL,
         labelText: "Total Users",
         tooltipElement: usersOverviewEChartElements.CHART_TOTAL_USERS_TOOLTIP,
-        tooltipText: "The number of users (unique devices/IDs) who have opened your application in the selected time period.",
+        tooltipText: "The number of users (unique devices/IDs) who have opened your application within the selected time period.",
     });
 
     cy.verifyElement({
