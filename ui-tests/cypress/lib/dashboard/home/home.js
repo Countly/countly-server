@@ -183,21 +183,21 @@ const verifyStaticElementsOfPage = () => {
         labelElement: homePageElements.TECHNOLOGY().TOP_DEVICES_LABEL,
         labelText: "Top Devices",
         tooltipElement: homePageElements.TECHNOLOGY().TOP_DEVICES_TOOLTIP,
-        tooltipText: "The top 5 devices of your users’ based on their sessions within the selected time period."
+        tooltipText: "The top 5 devices of your users based on their sessions within the selected time period."
     });
 
     cy.verifyElement({
         labelElement: homePageElements.TECHNOLOGY().TOP_APP_VERSIONS_LABEL,
         labelText: "Top App Versions",
         tooltipElement: homePageElements.TECHNOLOGY().TOP_APP_VERSIONS_TOOLTIP,
-        tooltipText: "The top 5 app versions of your users’ based on their sessions within the selected time period."
+        tooltipText: "The top 5 app versions of your users based on their sessions within the selected time period."
     });
 
     cy.verifyElement({
         labelElement: homePageElements.TECHNOLOGY().TOP_DEVICE_TYPES_LABEL,
         labelText: "Top Device types",
         tooltipElement: homePageElements.TECHNOLOGY().TOP_DEVICE_TYPES_TOOLTIP,
-        tooltipText: "The top 5 device types of your users’ based on their sessions within the selected time period."
+        tooltipText: "The top 5 device types of your users based on their sessions within the selected time period."
     });
 
     cy.verifyElement({
