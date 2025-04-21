@@ -15,7 +15,7 @@ var reportsInstance = {},
     log = require('../../../api/utils/log')('reports:reports'),
     versionInfo = require('../../../frontend/express/version.info'),
     countlyConfig = require('../../../frontend/express/config.js'),
-    countlyApiConfig = require('./../../../api/config', 'dont-enclose'),
+    countlyApiConfig = require('./../../../api/config'),
     pdf = require('../../../api/utils/pdf');
 
 countlyConfig.passwordSecret || "";

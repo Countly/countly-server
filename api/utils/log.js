@@ -51,7 +51,7 @@ const ACCEPTABLE = {
 
 
 // Initialize configuration with defaults
-let prefs = require('../config.js', 'dont-enclose').logging || {};
+let prefs = require('../config.js').logging || {};
 prefs.default = prefs.default || "warn";
 let deflt = (prefs && prefs.default) ? prefs.default : 'error';
 
