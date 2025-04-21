@@ -18,7 +18,13 @@ console.log("Connecting to databases");
 //Overriding function
 plugins.loadConfigs = plugins.loadConfigsIngestor;
 
-plugins.connectToAllDatabases(true).then(function() {
+/**
+ * TODO
+ * temporarily change this false since it fails at
+ * Cannot create uid TypeError: common.db.ObjectID is not a function
+ * at usersApi.getUid (api/parts/mgmt/app_users.js:434:90)
+ */
+plugins.connectToAllDatabases(false).then(function() {
     log.i("Db connections done");
     // common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new Cacher(common.db);

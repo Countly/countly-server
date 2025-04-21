@@ -435,9 +435,13 @@ usersApi.getUid = async function(app_id, callback) {
             returnDocument: 'after',
             upsert: true
         });
-        if (result && result.seq) {
+        /**
+         * TODO
+         * temporarily use .value since thats what the findOneAndUpdate returns
+         */
+        if (result && result.value.seq) {
             if (callback) {
-                callback(null, common.parseSequence(result.seq));
+                callback(null, common.parseSequence(result.value.seq));
             }
         }
         else if (callback) {
