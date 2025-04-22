@@ -421,10 +421,10 @@
             Countly2.track_sessions();
 
             //track pageviews automatically
-            Countly2.track_pageview(Countly.getViewName());
+            Countly2.track_pageview(Countly.getViewName(), null, {app_id:countlyCommon.ACTIVE_APP_ID, app_name:countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]?.name});
 
             $(window).on('hashchange', function() {
-                Countly2.track_pageview(Countly.getViewName());
+                Countly2.track_pageview(Countly.getViewName(), null, {app_id:countlyCommon.ACTIVE_APP_ID, app_name:countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID]?.name});
             });
 
             //display in app messages
