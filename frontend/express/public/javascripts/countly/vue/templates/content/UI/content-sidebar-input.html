@@ -2,6 +2,7 @@
   <div
     v-if="subHeader"
     class="cly-vue-content-builder-sidebar-input__sub-header"
+    :data-test-id="'content-drawer-sidebar-step-' + subHeader.toLowerCase().replaceAll(' ', '-') + '-label'"
   >
     {{ subHeader }}
   </div>
@@ -15,12 +16,14 @@
     <label
       v-if="label"
       class="cly-vue-content-builder-sidebar-input__label"
+      :data-test-id="'content-drawer-sidebar-step-' + $attrs.id + '-' + label.toLowerCase().replaceAll(' ', '-') + '-label'"
     >
       {{ label }}
       <i
         v-if="isLabelTooltipVisible"
         v-tooltip.left="labelTooltip"
         :class="labelIcon"
+        :data-test-id="'content-drawer-sidebar-step-' + $attrs.id + '-' + label.toLowerCase().replaceAll(' ', '-') + '-label-tooltip'"
       />
     </label>
     <slot name="content-builder-layout-step">
@@ -38,6 +41,7 @@
         :controls="controlsProp"
         :disabled="disabled"
         :options="options"
+        :test-id="'content-drawer-sidebar-step-' + $attrs.id"
       >
         <template
           v-if="isSuffixVisible"
@@ -52,6 +56,7 @@
             class="cly-vue-content-builder-sidebar-input__option"
             :label="option.label"
             :value="option.value"
+            :test-id="$attrs.id"
           />
         </template>
         <template v-if="isUploadInput">
