@@ -40,7 +40,7 @@ describe('Testing Browser metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    done();
+                    setTimeout(done, 2000);
                 });
         });
     });
@@ -68,7 +68,7 @@ describe('Testing Browser metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    done();
+                    setTimeout(done, 2000);
                 });
         });
     });
@@ -79,7 +79,7 @@ describe('Testing Browser metrics', function() {
                 event: "[CLY]_session",
                 breakdownKeys: ["up.brw"],
                 values: {
-                    "Chrome": {"n": 1, "t": 2, "u": 2},
+                    "Chrome": {"n": 2, "t": 2, "u": 2},
                     "Opera": {"n": 1, "t": 1, "u": 1},
                     "Safari": {"n": 1, "t": 1, "u": 1},
                     "Firefox": {"n": 1, "t": 1, "u": 1},

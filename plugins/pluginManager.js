@@ -341,13 +341,23 @@ var pluginManager = function pluginManager() {
     };
 
     this.loadConfigsIngestor = async function(db, callback/*, api*/) {
-        console.log("loading configs for ingestor");
         try {
             var res = await db.collection("plugins").findOne({_id: "plugins"}, {"api": true, "plugins": true, "drill": true});
-            if (res) {
-                delete res._id;
-                configs = res || {};
-                pluginConfig = res.plugins || {}; //currently enabled plugins
+            res = res || {};
+            delete res._id;
+            configs = res || {};
+            pluginConfig = res.plugins || {}; //currently enabled plugins
+
+            var diff = getObjectDiff(res, defaultConfigs);
+            if (Object.keys(diff).length > 0) {
+                var res2 = await db.collection("plugins").findOneAndUpdate({_id: "plugins"}, {$set: flattenObject(diff)}, {upsert: true, new: true});
+                if (res2) {
+                    for (var i in diff) {
+                        if (res2[i]) {
+                            configs[i] = res2[i];
+                        }
+                    }
+                }
             }
         }
         catch (err) {

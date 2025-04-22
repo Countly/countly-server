@@ -41,7 +41,7 @@ describe('Testing Density metrics', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    done();
+                    setTimeout(done, 2000);
                 });
         });
     });

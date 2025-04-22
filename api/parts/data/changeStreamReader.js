@@ -16,7 +16,7 @@ class changeStreamReader {
         this.pipeline = options.pipeline || [];
         this.lastToken = null;
         this.name = options.name || "";
-        this.collection = options.collection;
+        this.collection = options.collection || "drill_events";
         this.options = options.options;
         this.onClose = options.onClose;
         this.firstDocAfterReset = null;
@@ -27,6 +27,10 @@ class changeStreamReader {
         this.keep_closed = false;
         this.waitingForAcknowledgement = false;
         this.fallback = options.fallback;
+
+        if (this.fallback && !this.fallback.inteval) {
+            this.fallback.interval = 1000;
+        }
 
         //I give data
         //Processor function processes. Sends last processed tken from time to time.
@@ -69,8 +73,15 @@ class changeStreamReader {
             cd2 = new Date(cd2);
             var pipeline = JSON.parse(JSON.stringify(this.fallback.pipeline)) || [];
             var match = this.fallback.match || {};
-            match.cd = {$gte: new Date(cd), $lt: cd2};
+
+            if (this.fallback.timefield) {
+                match[this.fallback.timefield] = {$gte: new Date(cd), $lt: cd2};
+            }
+            else {
+                match.cd = {$gte: new Date(cd), $lt: cd2};
+            }
             pipeline.unshift({"$match": match});
+            //console.log(this.name + " Processing fallback pipeline for range: " + JSON.stringify(match));
             var cursor = this.db.collection(this.collection).aggregate(pipeline);
 
             while (await cursor.hasNext()) {
@@ -79,7 +90,7 @@ class changeStreamReader {
             }
             setTimeout(() => {
                 this.processNextDateRange(cd2);
-            }, 10000);
+            }, this.fallback.interval || 10000);
         }
     }
 
@@ -104,13 +115,13 @@ class changeStreamReader {
         if (doc && doc.cd > tokenInfo.cd) {
             tokenInfo.cd = doc.cd;
             tokenInfo._id = doc._id;
-            console.log("Process:" + JSON.stringify(doc));
+            console.log(this.name + " Process:" + JSON.stringify(doc));
             this.onData(tokenInfo, doc);
         }
 
         while (await cursor.hasNext()) {
             doc = await cursor.next();
-            console.log("Process:" + JSON.stringify(doc));
+            console.log(this.name + " Process:" + JSON.stringify(doc));
             tokenInfo.cd = doc.cd;
             tokenInfo._id = doc._id;
             this.onData(tokenInfo, doc);
@@ -205,6 +216,12 @@ class changeStreamReader {
                     else if (err.code === 40573) { //change stream is not supported
                         console.log("Change stream is not supported. Keeping streams closed");
                         this.keep_closed = true;
+                        var newCD = Date.now();
+                        if (token && token.cd) {
+                            await this.processBadRange({name: this.name, cd1: token.cd, cd2: newCD}, token);
+                        }
+
+                        this.processNextDateRange(newCD);
                     }
                     else {
                         log.e("Error on change stream", err);
