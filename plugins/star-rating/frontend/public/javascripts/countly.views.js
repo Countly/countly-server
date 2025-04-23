@@ -1354,6 +1354,14 @@
                     timesShown = this.count;
                 }
                 return parseFloat(((this.count / timesShown) * 100).toFixed(2)) || 0;
+            },
+
+            widgetStatusClassModifier() {
+                if (this.isLoading) {
+                    return 'loading';
+                }
+
+                return this.widget.status ? 'active' : 'disabled';
             }
         },
         mounted: function() {

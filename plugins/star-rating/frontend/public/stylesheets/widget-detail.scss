@@ -27,20 +27,30 @@
     display: flex;
   }
 
-  &__widget-status-active {
-    background-color: #EBFAEE !important;
-    color: #12AF51 !important;
+  // .ratings-widget-detail-view__widget-status
+  &__widget-status {
     height: 19px;
     padding: 1px 6px 0px 6px;
     border-radius: 4px;
-  }
 
-  &__widget-status-disabled {
-    background-color: #d9d9d9 !important;
-    color: #81868D !important;
-    padding: 1px 6px 0px 6px;
-    height: 19px;
-    border-radius: 4px;
+    // .ratings-widget-detail-view__widget-status--active
+    &--active {
+      background-color: #EBFAEE;
+      color: #12AF51 !important;
+    }
+
+    // .ratings-widget-detail-view__widget-status--disabled
+    &--disabled {
+      background-color: #d9d9d9;
+      color: #81868D !important;
+    }
+
+    //.ratings-widget-detail-view__widget-status--loading
+    &--loading {
+      background-color: #d9d9d9;
+      min-width: 60px;
+      animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+    }
   }
 
   &__created-at, &__widget-id {
