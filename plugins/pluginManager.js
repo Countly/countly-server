@@ -1843,6 +1843,11 @@ var pluginManager = function pluginManager() {
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
         let common = require('../api/utils/common');
+        try {
+            // TODO: TEMPORARY, should be refactored once in its own lib
+            common.clickhouseClient = require('./drill/api/clickhouse-client');
+        }
+        catch (e) { /*suppress*/ }
         common.db = dbCountly;
         common.outDb = dbOut;
         require('../api/utils/countlyFs').setHandler(dbFs);
