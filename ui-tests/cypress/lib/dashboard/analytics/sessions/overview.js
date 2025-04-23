@@ -211,7 +211,7 @@ const verifySessionsOverviewChart = ({
         labelElement: analyticsSessionOverviewEChartElements.CHART_UNIQUE_SESSIONS_LABEL,
         labelText: "Unique Sessions",
         tooltipElement: analyticsSessionOverviewEChartElements.CHART_UNIQUE_SESSIONS_TOOLTIP,
-        tooltipText: "Number of times your application is opened by a new or returning user from a unique device, in the selected time period. It is equal to the number of Total Users.",
+        tooltipText: "The number of times your application is opened by a new or returning user from a unique device within the selected time period. This is equal to the number of Total Users.",
     });
 
     cy.verifyElement({
