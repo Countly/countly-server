@@ -8,6 +8,8 @@
         //"plugins/push/**/*.ts",
         //"plugins/push/**/*.js"
         "api/utils/common.js",
+        "api/utils/localization.js",
+        "api/lib/countly.common.js",
         "api/utils/requestProcessor.js"
     ],
     "exclude": [

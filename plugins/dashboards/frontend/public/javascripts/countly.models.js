@@ -15,6 +15,8 @@
                     theme: 0,
                     is_owner: true,
                     send_email_invitation: false,
+                    use_refresh_rate: false,
+                    refreshRate: 0,
                 };
             }
         },
@@ -88,6 +90,8 @@
                         "copy_dash_id": settings.copyDashId,
                         "share_with": settings.share_with,
                         "send_email_invitation": settings.send_email_invitation,
+                        "use_refresh_rate": settings.use_refresh_rate,
+                        "refreshRate": settings.refreshRate,
                         "theme": settings.theme
                     },
                     dataType: "json"
@@ -106,7 +110,9 @@
                         "shared_user_groups_view": JSON.stringify(settings.shared_user_groups_view),
                         "share_with": settings.share_with,
                         "send_email_invitation": settings.send_email_invitation,
-                        "theme": settings.theme
+                        "theme": settings.theme,
+                        "use_refresh_rate": settings.use_refresh_rate,
+                        "refreshRate": settings.refreshRate
                     },
                     dataType: "json"
                 }, {disableAutoCatch: true});

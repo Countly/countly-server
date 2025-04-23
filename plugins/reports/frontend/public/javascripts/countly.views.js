@@ -97,8 +97,9 @@
                     });
                     break;
                 case "preview-comment":
-                    var url = '/i/reports/preview?auth_token=' + countlyGlobal.auth_token + '&args=' + JSON.stringify({_id: scope.row._id}) + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
-                    window.open(url, "_blank");
+                    document.forms.previewemailform.action = '/i/reports/preview?args=' + JSON.stringify({_id: scope.row._id}) + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+                    document.forms.previewemailform.querySelectorAll('input[type=hidden]')[0].value = countlyGlobal.auth_token;
+                    document.forms.previewemailform.submit();
                     break;
                 default:
                     return;
