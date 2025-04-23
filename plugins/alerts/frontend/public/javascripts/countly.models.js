@@ -227,6 +227,17 @@
                     ret.segments = eventData.segments;
                 }
             }
+            for (var key in ret.segments) {
+                //Copy all containing : to . This is hotfix for cases when we have '.' in key. Will not distinguish in case there is '.' and ":" in same structure key.
+                if (key.indexOf(":") > -1) {
+                    //replace all : with .
+                    var key2 = key.replace(/:/g, ".");
+                    ret.segments[key2] = [];
+                    for (var k = 0; k < ret.segments[key].length; k++) {
+                        ret.segments[key2].push(ret.segments[key][k]);
+                    }
+                }
+            }
             callback(ret);
         });
     };
