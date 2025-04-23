@@ -1,10 +1,11 @@
 ## Version 25.03.x
 
 Dependencies:
-- Bump mongodb from 6.14.2 to 6.15.0
+- Bump countly-sdk-web from 25.1.0 to 25.4.0
+- Bump mongodb from 6.14.2 to 6.16.0
 - Bump nodemailer from 6.10.0 to 6.10.1
 - Bump puppeteer from 23.10.4 to 24.6.1
-- Bump sass from 1.86.0 to 1.86.3
+- Bump sass from 1.86.0 to 1.87.0
 - Bump typescript from 5.8.2 to 5.8.3
 
 ## Version 25.03.4
