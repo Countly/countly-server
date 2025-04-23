@@ -742,6 +742,9 @@
                 },
                 helpCenterTarget: function() {
                     return this.enableGuides ? '_self' : "_blank";
+                },
+                isCommunityEdition: function() {
+                    return countlyGlobal.countlyTypeCE;
                 }
             },
             methods: {
@@ -893,6 +896,59 @@
                         }
 
                         return menu;
+                    });
+                },
+                getFlexBannerUrl: function() {
+                    let defaultFlexUrl = 'https://flex.countly.com?utm_source=countly_lite_banner'; //fallback
+
+                    return new Promise((resolve) => {
+                        try {
+                            if (!window.Countly) {
+                                CountlyHelpers.notify({
+                                    title: "Error",
+                                    message: "Countly SDK is not available",
+                                    type: "error"
+                                });
+                                return resolve(defaultFlexUrl);
+                            }
+
+                            let CountlySDK;
+                            if (window.Countly.present_feedback_widget) {
+                                CountlySDK = window.Countly;
+                            }
+                            else {
+                                CountlySDK = window.Countly.init({
+                                    app_key: countlyGlobal.frontend_app,
+                                    url: countlyGlobal.frontend_server,
+                                    device_id: window.Countly.device_id || window.location.hostname,
+                                    remote_config: true
+                                });
+                            }
+
+                            if (CountlySDK.fetch_remote_config) {
+                                CountlySDK.fetch_remote_config(function(err, conf) {
+                                    if (err) {
+                                        resolve(defaultFlexUrl);
+                                    }
+                                    else {
+                                        resolve(conf.flex_banner_url || defaultFlexUrl);
+                                    }
+                                });
+                            }
+                            else {
+                                resolve(defaultFlexUrl);
+                            }
+                        }
+                        catch {
+                            resolve(defaultFlexUrl);
+                        }
+                    });
+                },
+                handleButtonClick: async function() {
+                    const flexRedirectUrl = await this.getFlexBannerUrl();
+                    CountlyHelpers.goTo({
+                        url: flexRedirectUrl,
+                        isExternalLink: true
                     });
                 }
             },

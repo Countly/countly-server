@@ -2,7 +2,7 @@
 
 echo "Running filesystem modifications"
 
-VER="24.10"
+VER="25.03"
 
 CONTINUE="$(countly check before upgrade fs "$VER")"
 
@@ -23,6 +23,9 @@ then
     #enable command line
     bash "$DIR/scripts/detect.init.sh"
     
+    countly plugin enable content;
+    countly plugin enable journey_engine;
+
     #upgrade plugins
     nodejs "$DIR/scripts/install_plugins.js"
     
@@ -45,5 +48,5 @@ elif [ "$CONTINUE" == "-1" ]
 then
     echo "Filesystem is upgraded to higher version"
 else
-    echo "Unknown ugprade state: $CONTINUE"
+    echo "Unknown upgrade state: $CONTINUE"
 fi

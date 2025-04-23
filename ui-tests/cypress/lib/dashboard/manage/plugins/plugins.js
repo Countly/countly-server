@@ -1,4 +1,7 @@
-import pluginsPageElements from "../../../../support/elements/dashboard/manage/plugins/plugins";
+import {
+    pluginsPageElements,
+    pluginsDataTableElements
+} from "../../../../support/elements/dashboard/manage/plugins/plugins";
 
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
@@ -22,24 +25,75 @@ const verifyStaticElementsOfPage = () => {
     });
 
     cy.verifyElement({
-        element: pluginsPageElements.TABLE_PLUGINS,
+        element: pluginsDataTableElements().EXPORT_AS_BUTTON,
     });
 
     cy.verifyElement({
-        element: pluginsPageElements.TABLE_EXPORT_BUTTON,
+        element: pluginsDataTableElements().TABLE_SEARCH_INPUT,
     });
 
     cy.verifyElement({
-        element: pluginsPageElements.TABLE_SEARCH_INPUT,
+        labelElement: pluginsDataTableElements().COLUMN_NAME_FEATURE_NAME_LABEL,
+        labelText: "Feature name",
+        element: pluginsDataTableElements().COLUMN_NAME_FEATURE_NAME_SORTABLE_ICON,
+    });
+
+    cy.verifyElement({
+        labelElement: pluginsDataTableElements().COLUMN_NAME_DESCRIPTION_LABEL,
+        labelText: "Description",
+    });
+
+    cy.verifyElement({
+        labelElement: pluginsDataTableElements().COLUMN_NAME_DEPENDENT_FEATURES_LABEL,
+        labelText: "Dependent Features",
     });
 };
 
-const verifyEmptyPageElements = () => {
+const verifyPageElements = () => {
 
     verifyStaticElementsOfPage();
 
+    verifyPluginsDataTable({
+        index: 0,
+        statusIsChecked: true,
+        featureName: "Alerts",
+        description: "Receive email alerts based on metric changes you configure",
+        dependentFeatures: null
+    });
+};
+
+const verifyPluginsDataTable = ({
+    index = 0,
+    statusIsChecked = true,
+    featureName = null,
+    description = null,
+    dependentFeatures = null
+}) => {
+
+    cy.verifyElement({
+        element: pluginsDataTableElements(index).STATUS,
+        isChecked: statusIsChecked
+    });
+
+    cy.verifyElement({
+        labelElement: pluginsDataTableElements(index).FEATURE_NAME,
+        labelText: featureName,
+    });
+
+    cy.verifyElement({
+        labelElement: pluginsDataTableElements(index).DESCRIPTION,
+        labelText: description,
+    });
+
+    if (dependentFeatures !== null) {
+        cy.verifyElement({
+            labelElement: pluginsDataTableElements(index).DEPENDENT_FEATURES,
+            labelText: dependentFeatures,
+        });
+    }
 };
 
 module.exports = {
-    verifyEmptyPageElements
+    verifyPageElements,
+    verifyPluginsDataTable
 };

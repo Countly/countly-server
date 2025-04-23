@@ -74,7 +74,11 @@ var pluginManager = function pluginManager() {
         countly_out: "../api/configs/config.db_out.js",
         countly_fs: "../api/configs/config.db_fs.js"
     };
-
+    /**
+     * TTL collections to clean up periodically
+     * @type {{collection: string, db: mongodb.Db, property: string, expireAfterSeconds: number}[]}
+     */
+    this.ttlCollections = [];
     /**
      *  Custom configuration files for different databases for docker env
      */
@@ -151,7 +155,7 @@ var pluginManager = function pluginManager() {
             }
             db.collection('plugins').updateOne({'_id': 'plugins'}, {'$set': fordb}, function(err1) {
                 if (err1) {
-                    log.e(err1);
+                    console.error(err1);
                 }
                 else {
                     self.dispatch("/systemlogs", {params: params, action: "change_plugins", data: {before: before, update: params.qstring.plugin}});
@@ -820,6 +824,10 @@ var pluginManager = function pluginManager() {
             callback();
         }
         return used;
+    };
+
+    this.returnEventsCopy = function() {
+        return JSON.parse(JSON.stringify(events));
     };
 
     /**
@@ -2391,6 +2399,9 @@ var pluginManager = function pluginManager() {
                 }
                 return function(err, res) {
                     if (res) {
+                        if (!res.value && data && data.name === "findAndModify" && data.args && data.args[3] && data.args[3].remove) {
+                            res = {"value": res};
+                        }
                         if (!res.result) {
                             res.result = {};
                         }
@@ -2671,7 +2682,14 @@ var pluginManager = function pluginManager() {
                     }
                     logDbRead.d(name + " " + collection + " %j %j" + at, query, options);
                     logDbRead.d("From connection %j", countlyDb._cly_debug);
-                    return handlePromiseErrors(this["_" + name](query, options), e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name)));
+                    if (name === "findOneAndDelete" && !options.remove) {
+                        return handlePromiseErrors(this["_" + name](query, options).then(result => ({ value: result })),
+                            e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name))
+                        );
+                    }
+                    else {
+                        return handlePromiseErrors(this["_" + name](query, options), e, copyArguments(arguments, name), logForReads(callback, e, copyArguments(arguments, name)));
+                    }
                 };
             };
 

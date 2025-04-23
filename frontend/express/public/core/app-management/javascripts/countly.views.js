@@ -393,10 +393,10 @@
                                     label: data.name
                                 });
                                 self.$store.dispatch("countlyCommon/addToAllApps", data);
+                                self.$store.dispatch("countlyCommon/updateActiveApp", data._id + "");
                                 if (self.firstApp) {
                                     countlyCommon.ACTIVE_APP_ID = data._id + "";
                                     app.onAppManagementSwitch(data._id + "", data && data.type || "mobile");
-                                    self.$store.dispatch("countlyCommon/updateActiveApp", data._id + "");
                                     app.initSidebar();
                                 }
                                 self.firstApp = self.checkIfFirst();
@@ -851,6 +851,9 @@
                         return countlyGlobal.apps[key].plugins.consolidate.includes(self.selectedApp);
                     }
                 }) || [];
+            },
+            handleCancelForm: function() {
+                CountlyHelpers.goTo({url: "/manage/apps"});
             }
         },
         mounted: function() {

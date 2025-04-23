@@ -1,28 +1,128 @@
 
-## Version 24.10.x
-Features:
-- [crashed] Fix unescaped SDK logs
-- [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards
-- [star-rating] Added missing columns to Rating Widgets table edit
-- [ui] Fix alignment of drawers title and close icon
+## Version 25.03.x
+Fixes:
 - [feedback] Uniformize drawer internal name input texts
+- [star-rating] Added missing columns to Rating Widgets table edit
 - [star-rating] Fix rating score and responses table sorting
+- [ui] Fix alignment of drawers title and close icon
 
-## Version 24.10.9
+Dependencies:
+- Bump countly-sdk-web from 25.1.0 to 25.4.0
+- Bump mongodb from 6.14.2 to 6.16.0
+- Bump nodemailer from 6.10.0 to 6.10.1
+- Bump puppeteer from 23.10.4 to 24.7.0
+- Bump sass from 1.86.0 to 1.87.0
+- Bump typescript from 5.8.2 to 5.8.3
+
+## Version 25.03.4
+Features:
+- Add ability to allow multiple CORS per app for web apps
+- Add app id and name as view segment for self-tracking
+- [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards
+
+Enterprise Features:
+- [license] Update locking conditions for expired license and over limit usage
+- [license] Enable force locking with remote config
+- [license] Update dashboard lock with redirection to home page for non admin user
+
 Fixes:
 - [core] Allow downloading data also from other databases in dbviewer
+- [crashes] Fix unescaped SDK logs
 - [crash_symbolication] Symbolication server api end point test fix
-- [crashes] Remove memory addresses from stack trace grouping
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [ui] Fix alignment of drawers title and close icon
 - [push] Fixed push notifications title and content text and variables combination
 - [reports] Correctly match event for email report if event key contains '.'
-- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+
+Enterprise Fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+- [drill] Do not recheck old collections on app_user data deletion if querying from old collections is disabled
+
+Dependencies:
+- Bump body-parser from 1.20.3 to 2.2.0
+- Bump moment-timezone from 0.5.47 to 0.5.48
+- Bump supertest from 7.0.0 to 7.1.0
+
+## Version 25.03.3
+Fixes:
+- [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
+- [content_builder] Fixed content block layout type select visibility
+- [user-management] Fixed issue with uploading member icon
+
+## Version 25.03.2
+Fixes:
 - [user-management] Prevent global admin from self-revoke and self-delete
+
+Enterprise fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+- [drill] Fixed issue with column naming in export according to event
+- [drill] Fixed an issue with incorrect date range in report manager
+
+## Version 25.03.1
+Fixes:
+- [crashes] Remove memory addresses from stack trace grouping
+- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
 
 Enterprise Fixes:
 - [ab-testing] Fixed bug with variant user filtering
-- [cohorts] Fixed issue with combining multiple cohorts
-- [drill] Do not recheck old collections on app_user data deletion if querying from old collections is disabled
 - [license] Fixed issue with handling invalid date periods
+
+Dependencies:
+- Bump axios from 1.7.4 to 1.8.2 in /plugins/hooks
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
+- Bump countly-sdk-web from 24.11.4 to 25.1.0
+- Bump form-data from 4.0.1 to 4.0.2
+- Bump moment-timezone from 0.5.46 to 0.5.47
+- Bump mongodb from 6.11.0 to 6.14.2
+- Bump sass from 1.83.4 to 1.85.1
+
+## Version 25.03
+Features:
+- [audit-logs] Exported audit logs from UI now would have "BEFORE" and "AFTER" fields
+- [core] Ability to mark reports as 'dirty' to make sure they are regenerated in full
+- [core] Adding a cancel button to "create new app" form
+- [core] Adding a nightly job to delete old data
+- [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
+- [core] Redirecting user to a newly created app
+- [core] Removing HTML from localization files
+- [core] Showing a flex banner on sidebar if the version is Countly Lite
+- [crashes] Adding confirmation for deleting crash groups
+- [dashoards] Fixed the "Add/manage notes" button that did not work for the technology widget
+- [dbviewer] Preventing aggregation of using any stages which might open user to harmful actions (like $merge, $out, $lookup, $uninonWith) for all users except global admin
+- [gridfs] fixes for moving to Promises
+- [nps] Fixing issues with default logo selection
+- [populator] Adding ability to select features to populate and other small improvements
+- [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
+- [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
+- [reports] Fixes report generation failure due to SSL error
+- [star-rating] Removed unnecessary limitation with using cohorts for targeting
+- [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
+- [user-management] Global admins can now disable 2FA for individual users
+
+Enterprise Features:
+- [cohorts] Adding ability to edit cohorts. This deletes historical calculations
+- [content] Adding "Content Builder" feature
+- [core] Adding support For SingleStore Kai
+- [flows] Adding UX improvements to the editor
+- [journey_engine] Adding "Journey Engine" feature
+- [ldap] Fixed issues that would lead to configuration options not being picked up
+- [remote-config] Moving enable/disable functionality to the dropdown
+- [surveys] "Select one" text in the widget can be edited now
+- [surveys] Removed unnecessary limitation with using cohorts for targeting
+
+Dependencies:
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
+- Bump countly-sdk-web from 24.11.2 to 24.11.3
+- Bump express from 4.21.1 to 4.21.2
+- Bump express-rate-limit from 7.4.1 to 7.5.0
+- Bump form-data from 4.0.0 to 4.0.1
+- Bump jimp from 0.22.12 to 1.6.0
+- Bump jsdoc from 4.0.3 to 4.0.4
+- Bump mocha from 10.2.0 to 10.8.2
+- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump puppeteer from 23.10.4 to 23.11.1
+- Bump sass from 1.81.0 to 1.83.3
+- Bump tslib from 2.7.0 to 2.8.1
 
 ## Version 24.10.8
 Fixes:
@@ -35,7 +135,6 @@ Features:
 
 Enterprise fixes:
 - [ab-testing] Mismatching user counts between ab-testing and user profiles
-- [ldap] Fixed issues that would lead to configuration options not being picked up
 
 ## Version 24.10.7
 Fixes:
@@ -72,45 +171,6 @@ Dependencies:
 Enterprise Dependencies:
 - Bump nanoid in /plugins/cognito from 2.1.11 to 3.3.8
 - Bump shortid in /plugins/cognito from 2.2.16 to 2.2.17
-
-## Version 24.10.5
-Fixes:
-- [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
-- [core] Fixed a bug that was causing drill to crash when there's a percentage symbol in the event name
-- [gridfs] fixes for moving to Promises
-- [reports] Fixes report generation failure due to SSL error
-- [surveys] "Select one" text in the widget can be edited now
-- [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
-
-Dependencies:
-- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
-- Bump countly-sdk-web from 24.11.2 to 24.11.4
-- Bump express-rate-limit from 7.4.1 to 7.5.0
-- Bump puppeteer from 23.10.4 to 23.11.1
-- Bump sass from 1.81.0 to 1.83.4
-
-## Version 24.10.4
-Fixes:
-- [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
-- [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
-
-Security:
-- [cohorts] Prevent query injection on cohort creation
-
-Dependencies:
-- Bump countly-sdk-nodejs from 22.6.0 to 24.10.0
-- Bump countly-sdk-web from 24.4.1 to 24.11.0
-- Bump express from 4.21.1 to 4.21.2
-- Bump form-data from 4.0.0 to 4.0.1
-- Bump jimp from 0.22.12 to 1.6.0
-- Bump jsdoc from 4.0.3 to 4.0.4
-- Bump mocha from 10.2.0 to 10.8.2
-- Bump mongodb from 4.9.1 to 4.17.2
-- Bump nodemailer from 6.9.15 to 6.9.16
-- Bump puppeteer from 23.8.0 to 23.9.0
-- Bump tslib from 2.7.0 to 2.8.1
-- Bump express from 4.21.1 to 4.21.2
-- Bump mocha from 10.2.0 to 10.8.2
 
 ## Version 24.10.3
 Fixes:
@@ -165,7 +225,9 @@ Enterprise Features:
 
 ## Version 24.10
 Fixes:
+- [core] Correct aggregated collection cleanup on event omitting
 - [core] Interpreting carrier value of "--" as an unknown value
+- [core] Removed use of commands which needs admin rights from report manager.
 - [crash] Fixed issues with visualisation of Flutter stack traces
 - [dashoards] If a user is given access to a dashboard, they will now be able to see all widgets even if they don't have access to the underlying data
 - [density] UI fixed
@@ -183,7 +245,7 @@ Features:
 - [core] Aggregated events data collections merged together
 - [nps] UI improvements
 - [surveys] UI improvements
-- upgraded mongoDB to version 7
+- upgraded mongoDB to version 8
 - upgraded nodejs to version 20
 
 Enterprise Features:
@@ -196,6 +258,98 @@ Enterprise Features:
 - [users] Crashes in the crashes tab can now be sorted
 - [users] UI improvements
 - [views] Added a quick transition to drill
+
+## Version 24.05.21
+Fixes:
+- [core] Fixed a bug causing events to not being loaded when there's an escaped character in the event name
+- [gridfs] fixes for moving to Promises
+- [reports] Fixes report generation failure due to SSL error
+- [surveys] "Select one" text in the widget can be edited now
+- [system-utility] Fixed: Mongo error (code: 26) in some Countly instances when the profiler gets run for the first time
+
+Dependencies:
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
+- Bump countly-sdk-web from 24.11.2 to 24.11.4
+- Bump express-rate-limit from 7.4.1 to 7.5.0
+- Bump puppeteer from 23.10.4 to 23.11.1
+- Bump sass from 1.81.0 to 1.83.4
+
+## Version 24.05.20
+Fixes:
+- [push] Fixed bug where IOS credentials get mixed up while sending messages from different apps at the same time
+- [push] Fixed bug where it crashes in connection pool growth because of a type mismatch in an if condition
+
+Security:
+- [cohorts] Prevent query injection on cohort creation
+
+Dependencies:
+- Bump countly-sdk-nodejs from 22.6.0 to 24.10.0
+- Bump countly-sdk-web from 24.4.1 to 24.11.0
+- Bump express from 4.21.1 to 4.21.2
+- Bump form-data from 4.0.0 to 4.0.1
+- Bump jimp from 0.22.12 to 1.6.0
+- Bump jsdoc from 4.0.3 to 4.0.4
+- Bump mocha from 10.2.0 to 10.8.2
+- Bump mongodb from 4.9.1 to 4.17.2
+- Bump nodemailer from 6.9.15 to 6.9.16
+- Bump puppeteer from 23.8.0 to 23.9.0
+- Bump tslib from 2.7.0 to 2.8.1
+
+## Version 24.05.19
+Fixes:
+- [dashboards] Fixing issue where dashboard widgets go into single column
+
+Security:
+- Bump puppeteer from 17.1.3 to 23.8.0
+- Bump express from 4.21.0 to 4.21.1 
+- Bump sass from 1.79.4 to 1.81.0
+- Bump express-session from 1.18.0 to 1.18.1
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /ui-tests
+- Bump cross-spawn from 7.0.3 to 7.0.6 in /plugins/hooks
+
+## Version 24.05.18
+Fixes:
+- [core] Fixed bug where changing passwords results in the loss of the "Global Admin" role
+- [core] Fixed bug where exporting incoming data logs could result in "Incorrect parameter \"data\" error
+- [crash] Fixed bug in crash ingestion for scenarios where the "app version" is not a string.
+- [script] Fixing bug with "delete_old_members" script that led to malformed requests
+
+Enterprise fixes:
+- [nps] Fixed bug that showed the wrong nps preview title
+
+## Version 24.05.17
+Fixes:
+- [push] Improved ability to observe push related errors
+
+Enterprise fixes:
+- [cohorts] Fixed issues with nightly cleanup
+- [data-manager] Fixed UI bug where rules were not visible when editing "Merge by regex" transformations
+- [drill] Fixed wrong pie chart label tooltip in dashboard widget
+- [flows] Fixed bug in case of null data in schema
+- [nps] Fixed bug in the editor where the "internal name" field was not mandatory
+- [ratings] Fixed UI bug where "Internal name" was not a mandatory field
+
+Security:
+- Fixing minor vulnerability that would allow for unauthorized file upload
+
+Enterprise Features:
+- [block] Added a way to filter crashes by their error (stacktrace)
+
+## Version 24.05.16
+Fixes:
+- [core] Replaced "Users" with "Sessions" label on technology home widgets
+- [push] Replaced push plugin with an earlier version of the plugin
+
+Enterprise fixes:
+- [license] Fixed bug with MAU type of licenses that would prevent the server from starting
+- [nps] Fixed bug where it was possible to submit empty nps surveys
+- [ratings] Fixed bug with user consent
+
+Security:
+- Bumped cookie-parser from 1.4.6 to 1.4.7
+- Bumped express-rate-limit from 7.4.0 to 7.4.1
+- Bumped moment-timezone from 0.5.45 to 0.5.46
+- Bumped sass from 1.79.3 to 1.79.4
 
 ## Version 24.05.15
 Enterprise fixes:
