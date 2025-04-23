@@ -18,7 +18,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: eventsOverviewPageElements.PAGE_SUB_TITLE,
         labelText: "Event Metrics",
         tooltipElement: eventsOverviewPageElements.PAGE_SUB_TITLE_TOOLTIP,
-        tooltipText: "Overview of the metrics calculated by the identified Events, in the last 30 days."
+        tooltipText: "An overview of the metrics calculated by the identified Events in the last 30 days."
     });
 
     cy.verifyElement({
