@@ -11,7 +11,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: devicesAndTypesPageElements.PAGE_TITLE,
         labelText: "Devices and Types",
         tooltipElement: devicesAndTypesPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Details of the device models and types from which your users access your application, in the selected time period."
+        tooltipText: "Details of the device models and types from which your users access your application within the selected time period."
     });
 
     cy.verifyElement({
