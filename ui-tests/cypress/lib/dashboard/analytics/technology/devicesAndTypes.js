@@ -73,7 +73,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: devicesEGraphElements().TOP_PLATFORMS_VERSIONS_LABEL,
         labelText: "Top Platform Versions",
         tooltipElement: devicesEGraphElements().TOP_PLATFORMS_VERSIONS_TOOLTIP,
-        tooltipText: "The top 3 platform versions of your users’ sessions within the selected time period."
+        tooltipText: "The top 3 platform versions of your users' sessions within the selected time period."
     });
 
     cy.verifyElement({
