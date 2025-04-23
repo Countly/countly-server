@@ -1,36 +1,47 @@
 <div v-bind:class="[componentId]">
-    <cly-header
-        :title="i18n('views-per-session.title')"
-        :tooltip="{description: i18n('views-per-session.description')}"
-    >
+    <cly-header :title="i18n('views-per-session.title')"
+        :tooltip="{description: i18n('views-per-session.description')}">
     </cly-header>
     <cly-main>
         <cly-date-picker-g style="margin-bottom:32px"></cly-date-picker-g>
         <cly-section>
-            <cly-chart-bar :option="viewsPerSessionOptions" :height="400" v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
+            <cly-chart-bar test-id="chart-views-per-session" :option="viewsPerSessionOptions" :height="400"
+                v-loading="isLoading" :force-loading="isLoading"></cly-chart-bar>
         </cly-section>
         <cly-section>
-            <cly-datatable-n  :rows="viewsPerSessionRows" :resizable="true" :force-loading="isLoading">
+            <cly-datatable-n test-id="datatable-views-per-session" :rows="viewsPerSessionRows" :resizable="true"
+                :force-loading="isLoading">
                 <template v-slot="scope">
-                    <el-table-column :sortable="true" prop="viewsBuckets" :label="i18n('views-per-session.table-views-buckets')" :sort-method="sortSessionViewsBuckets">
-                    </el-table-column>
-                    <el-table-column sortable="custom" prop="numberOfSessions" :label="i18n('common.number-of-sessions')">
+                    <el-table-column :sortable="true" prop="viewsBuckets"
+                        :label="i18n('views-per-session.table-views-buckets')" :sort-method="sortSessionViewsBuckets">
                         <template slot-scope="scope">
-                            {{formatNumber(scope.row.numberOfSessions)}}
+                            <div :data-test-id="'datatable-views-per-session-' + scope.$index">
+                                {{scope.row.viewsBuckets}}
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column sortable="custom" prop="numberOfSessions"
+                        :label="i18n('common.number-of-sessions')">
+                        <template slot-scope="scope">
+                            <div
+                                :data-test-id="'datatable-views-per-session-number-of-sessions-' + scope.$index">
+                                {{formatNumber(scope.row.numberOfSessions)}}
+                            </div>
                         </template>
                     </el-table-column>
                     <el-table-column sortable="custom" prop="percentage" :label="i18n('common.percent')">
                         <template slot-scope="scope">
                             <div class="bu-level-left">
-                                <div class="bu-level-item slipping-away-users-table-data-item">
+                                <div class="bu-level-item slipping-away-users-table-data-item" :data-test-id="'datatable-views-per-session-percent-' + scope.$index">
                                     <span>{{scope.row.percentage}}%</span>
                                 </div>
-                                <cly-progress-bar  :percentage="parseInt(scope.row.percentage)" :color="progressBarColor" > </cly-progress-bar>
+                                <cly-progress-bar :data-test-id="'datatable-views-per-session-progress-bar-' + scope.$index" :percentage="parseInt(scope.row.percentage)"
+                                    :color="progressBarColor"> </cly-progress-bar>
                             </div>
                         </template>
                     </el-table-column>
                 </template>
             </cly-datatable-n>
-        </cly-section>       
+        </cly-section>
     </cly-main>
 </div>

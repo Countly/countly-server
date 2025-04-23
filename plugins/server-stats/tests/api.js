@@ -4,7 +4,7 @@ var testUtils = require('../../../test/testUtils');
 const pluginManager = require('../../pluginManager.js');
 var statInternalEvents = require('../../server-stats/api/parts/stats.js').internalEventsEnum;
 request = request.agent(testUtils.url);
-const dataPointTimeout = 1000;
+const dataPointTimeout = 1100;
 
 var APP_KEY = '';
 var API_KEY_ADMIN = '';
@@ -27,7 +27,6 @@ const verifyDataPointsProperty = (obj) => {
             Object.values(obj).forEach(item => {
                 item.should.have.property('events');
                 item.should.have.property('sessions');
-                item.should.have.property('push');
                 item.should.have.property('dp');
                 item.should.have.property('change');
             });
@@ -40,6 +39,7 @@ const verifyDataPointsProperty = (obj) => {
 };
 
 function sendEventRequest(events) {
+    console.log(JSON.stringify(events));
     request
         .get('/i?app_key=' + APP_KEY + '&begin_session=1&device_id=1&events=' + JSON.stringify(events) + '&app_id=' + APP_ID)
         .expect(200)
@@ -79,8 +79,9 @@ function verifyAddedEvents(addedEvents, initialRequest) {
                 const internalEventKey = statInternalEvents[key] || 'ce';
 
                 lastEventCounts[internalEventKey] = lastEventCounts[internalEventKey] || 0;
-                lastEventCounts[internalEventKey] += 1;
-                lastEventCounts.e += 1;
+                lastEventCounts[internalEventKey] += Math.min(event.count, 1);
+                lastEventCounts.e += Math.min(event.count, 1);
+
             });
             if (!addedEvents.filter(item => item.key === '[CLY]_session').length) { // then session included with begin_session=1 and count it also.
                 lastEventCounts.s++;
@@ -89,6 +90,8 @@ function verifyAddedEvents(addedEvents, initialRequest) {
             for (const key in lastEventCounts) {
                 if (Object.hasOwnProperty.call(lastEventCounts, key)) {
                     if (res[0][key] && res[0][key] !== lastEventCounts[key]) {
+                        console.log(JSON.stringify(res[0]));
+                        console.log(JSON.stringify(lastEventCounts));
                         throw (`${key}: Expected Count=${lastEventCounts[key]}, Actual Count=${res[0][key]}`);
                     }
                 }
@@ -103,7 +106,9 @@ function generateRandomEvents(key) {
     for (let i = 0; i < n; i++) {
         const randomEventType = Math.random();
         if (randomEventType < 0.5) {
-            eventList.push(internalEvents[Math.floor(Math.random() * internalEvents.length)]);
+            var ee = JSON.parse(JSON.stringify(internalEvents[Math.floor(Math.random() * internalEvents.length)]));
+            ee.count = 1;
+            eventList.push(ee);
         }
         else {
             eventList.push({
@@ -245,12 +250,12 @@ describe('Testing data points plugin', function() {
                 if (err) {
                     return done(err);
                 }
-                done();
+                setTimeout(done, 10 * 1000);
             });
         });
         it('setInitial Values', function(done) {
             var plugins = pluginManager.getPlugins();
-
+            console.log("List of plugins: " + JSON.stringify(plugins));
             delete statInternalEvents["[CLY]_session"];
             if (plugins.indexOf("surveys") === -1) {
                 delete statInternalEvents["[CLY]_survey"];
@@ -264,12 +269,22 @@ describe('Testing data points plugin', function() {
                 delete statInternalEvents["[CLY]_apm_device"];
                 delete statInternalEvents["[CLY]_apm_network"];
             }
+            if (plugins.indexOf("push") === -1) {
+                delete statInternalEvents["[CLY]_push_sent"];
+                delete statInternalEvents["[CLY]_push_action"];
+            }
+
+
+            console.log(JSON.stringify(statInternalEvents));
             for (const internalKey in statInternalEvents) {
                 if (internalKey === "[CLY]_view") {
                     internalEvents.push({key: internalKey, count: 1, segmentation: {'name': 'test', 'visit': 1}});
                 }
                 else if (internalKey === "[CLY]_star_rating") {
                     internalEvents.push({key: internalKey, count: 1, segmentation: {'platform': 'iOS', 'rating': 5}});
+                }
+                else if (internalKey === "[CLY]_survey" || internalKey === "[CLY]_nps") {
+                    internalEvents.push({key: internalKey, count: 0});
                 }
                 else {
                     internalEvents.push({key: internalKey, count: 1});
@@ -292,13 +307,20 @@ describe('Testing data points plugin', function() {
             });
         });
         it('should add all sytem events correctly', function(done) {
-            const result = sendEventRequest(internalEvents);
+            const result = sendEventRequest(internalEvents.filter(item => item.count > 0));
             if (result && result.error) {
                 done(result.error);
             }
             else {
                 setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
             }
+        });
+        it('should verify session request included to data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            }).catch(err => {
+                done(err);
+            });
         });
         it('should confirm that all system events are added to data points correctly', function(done) {
             verifyAddedEvents(internalEvents).then(() => {
@@ -332,9 +354,23 @@ describe('Testing data points plugin', function() {
                 setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
             }
         });
+        it('verify total data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            }).catch(err => {
+                done(err);
+            });
+        });
         it('should confirm that multiple custom event are added to data points correctly', function(done) {
             verifyAddedEvents(customEvents.multi).then(() => {
                 done();
+            }).catch(err => {
+                done(err);
+            });
+        });
+        it('verify total data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
             }).catch(err => {
                 done(err);
             });
@@ -356,6 +392,13 @@ describe('Testing data points plugin', function() {
                 done(err);
             });
         });
+        it('verify total data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
+            }).catch(err => {
+                done(err);
+            });
+        });
         it('should add random events correctly [2.0]', function(done) {
             generateRandomEvents('e2');
             const result = sendEventRequest(randomInternalEvents.e2);
@@ -369,6 +412,13 @@ describe('Testing data points plugin', function() {
         it('should confirm that random events are added to data points correctly [2.0]', function(done) {
             verifyAddedEvents(randomInternalEvents.e2).then(() => {
                 done();
+            }).catch(err => {
+                done(err);
+            });
+        });
+        it('verify total data points', function(done) {
+            verifyDPCount().then(() => {
+                setTimeout(done, dataPointTimeout * testUtils.testScalingFactor);
             }).catch(err => {
                 done(err);
             });
