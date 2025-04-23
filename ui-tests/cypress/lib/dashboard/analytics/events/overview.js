@@ -337,7 +337,7 @@ const verifyMonitorEventsMetricCard = ({
 
         cy.verifyElement({
             labelElement: eventsOverviewMonitorEventsMetricCardElements().EMPTY_MONITOR_EVENTS_TABLE_TITLE,
-            labelText: "This application doesn't have any custom events",
+            labelText: "This application does not have any custom events.",
         });
 
         cy.verifyElement({
