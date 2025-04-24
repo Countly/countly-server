@@ -1,6 +1,6 @@
 const http = require('http');
 const formidable = require('formidable');
-const countlyConfig = require('./config', 'dont-enclose');
+const countlyConfig = require('./config');
 const plugins = require('../plugins/pluginManager.js');
 const log = require('./utils/log.js')('core:api');
 const common = require('./utils/common.js');

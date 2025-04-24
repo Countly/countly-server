@@ -1,13 +1,13 @@
 var pluginDependencies = require('./pluginDependencies.js'),
     path = require('path'),
-    plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
+    plugins = pluginDependencies.getFixedPluginList(require('./plugins.json'), {
         "discoveryStrategy": "disableChildren",
         "overwrite": path.resolve(__dirname, './plugins.json')
     }),
     pluginsApis = {},
     mongodb = require('mongodb'),
-    countlyConfig = require('../frontend/express/config', 'dont-enclose'),
-    apiCountlyConfig = require('../api/config', 'dont-enclose'),
+    countlyConfig = require('../frontend/express/config'),
+    apiCountlyConfig = require('../api/config'),
     utils = require('../api/utils/utils.js'),
     fs = require('fs'),
     url = require('url'),
@@ -1204,8 +1204,8 @@ var pluginManager = function pluginManager() {
     * Try to reload cached plugins json file
     **/
     this.reloadPlugins = function() {
-        delete require.cache[require.resolve('./plugins.json', 'dont-enclose')];
-        plugins = pluginDependencies.getFixedPluginList(require('./plugins.json', 'dont-enclose'), {
+        delete require.cache[require.resolve('./plugins.json')];
+        plugins = pluginDependencies.getFixedPluginList(require('./plugins.json'), {
             "discoveryStrategy": "disableChildren",
             "overwrite": path.resolve(__dirname, './plugins.json')
         });
@@ -1848,11 +1848,16 @@ var pluginManager = function pluginManager() {
         }
         else {
             console.log("using separate connection pool");
-            databases = await Promise.all(dbs.map(this.dbConnection.bind(this, return_original)));
+            databases = await Promise.all(dbs.map((db) => this.dbConnection(db, return_original)));
         }
         const [dbCountly, dbOut, dbFs, dbDrill] = databases;
 
         let common = require('../api/utils/common');
+        try {
+            // TODO: TEMPORARY, should be refactored once in its own lib
+            common.clickhouseClient = require('./drill/api/clickhouse-client');
+        }
+        catch (e) { /*suppress*/ }
         common.db = dbCountly;
         common.outDb = dbOut;
         require('../api/utils/countlyFs').setHandler(dbFs);
