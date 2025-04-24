@@ -1211,7 +1211,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.HOOKS.REFRESH_RULES_PERIOD }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Refresh rules period",
+        labelText: "Refresh Rules Period",
     });
 
     cy.verifyElement({
