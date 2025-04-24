@@ -1227,7 +1227,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.HOOKS.REQUEST_LIMIT }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Request limit",
+        labelText: "Request Limit",
     });
 
     cy.verifyElement({
