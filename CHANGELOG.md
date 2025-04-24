@@ -1,4 +1,10 @@
+
 ## Version 25.03.x
+Fixes:
+- [feedback] Uniformize drawer internal name input texts
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [star-rating] Fix rating score and responses table sorting
+- [ui] Fix alignment of drawers title and close icon
 
 Fixes:
 - [localization] Fixed grammatical errors
