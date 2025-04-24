@@ -137,7 +137,10 @@ module.exports.apiPush = async params => {
         false,
         undefined,
         data.obj.filter,
-        data.obj.content
+        {
+            contents: data.obj.contents,
+            variables: data.obj.variables
+        }
     );
     common.returnOutput(params, { schedule });
 }

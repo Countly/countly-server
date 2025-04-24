@@ -86,6 +86,13 @@ async function composeScheduledPushes(db, { appId, scheduleId, messageId, timezo
         return 0;
     }
 
+    if (scheduleDoc.messageOverrides?.contents) {
+        messageDoc.contents = [
+            ...messageDoc.contents,
+            ...scheduleDoc.messageOverrides.contents
+        ];
+    }
+
     const stream = await getUserStream(
         db,
         messageDoc,
@@ -125,7 +132,10 @@ async function composeScheduledPushes(db, { appId, scheduleId, messageId, timezo
                 tokenObj[/** @type {PlatformCombinedKeys} */(pf)]
             );
             const language = user.la ?? "default";
-
+            let variables = {
+                ...user,
+                ...(scheduleDoc.messageOverrides?.variables ?? {})
+            };
             /** @type {PushEvent} */
             const push = {
                 appId: appId,
@@ -138,7 +148,7 @@ async function composeScheduledPushes(db, { appId, scheduleId, messageId, timezo
                 env,
                 language,
                 credentials: creds[platform],
-                message: compileTemplate(platform, user),
+                message: compileTemplate(platform, variables),
                 proxy,
             };
 
@@ -264,7 +274,9 @@ async function loadCredentials(db, appId) {
  * @returns {Promise<ProxyConfiguration|undefined>}
  */
 async function loadProxyConfiguration(db) {
-    const plugins = await db.collection('plugins').findOne({ _id: "plugins" });
+    /** @type {import("mongodb").Collection<{ _id: string; push?: { proxyhost: string, proxyport: string; proxyuser: string; proxypass: string; proxyunauthorized: boolean; } }>} */
+    const col = db.collection('plugins');
+    const plugins = await col.findOne({ _id: "plugins" });
     const pushConfig = plugins?.push;
     if (!pushConfig || !pushConfig.proxyhost || !pushConfig.proxyport) {
         return;
@@ -380,7 +392,9 @@ async function buildPipelineFromFilters(db, filters, appIdStr, appTimezone) {
                     qstring: Object.assign({ app_id: appIdStr }, drillQuery),
                     app_id: appIdStr
                 };
-                delete params.qstring.queryObject.chr;
+                if ("queryObject" in params.qstring) {
+                    delete params.qstring.queryObject.chr;
+                }
                 log.d('Drilling: %j', params);
                 let userIdArray = await new Promise(
                     (resolve, reject) => drillAPI.fetchUsers(params, (err, uids) => {

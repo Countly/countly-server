@@ -10,8 +10,8 @@ export interface AudienceFilters {
 }
 
 export interface MessageOverrides {
-    contents: Content[];
-    variables: { [key: string]: any; };
+    contents?: Content[];
+    variables?: { [key: string]: any; };
 }
 
 export interface Schedule {

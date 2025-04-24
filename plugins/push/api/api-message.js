@@ -93,7 +93,7 @@ async function validate(args, draft = false) {
                 _id: {
                     $in: msg.platforms
                         .map(p => common.dot(app, `plugins.push.${p}._id`))
-                        .map(oid => ObjectId(oid.toString())) // cast to ObjectId (it gets broken after an update in app settings page)
+                        .map(oid => new ObjectId(oid.toString())) // cast to ObjectId (it gets broken after an update in app settings page)
                 }
             }).toArray();
             if (creds.length !== msg.platforms.length) {

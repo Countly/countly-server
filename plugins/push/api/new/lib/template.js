@@ -31,10 +31,10 @@ function createTemplate(message) {
     /**
      * Compiles the template for the given user
      * @param {PlatformKeys} platform - key for the platform: "a", "i" or "h"
-     * @param {User} user - app user object with push token populated
+     * @param {User|{[key: string]: string;}} variables - app user object with push token populated and custom variables
      * @returns {string} compiled template
      */
-    return function(platform, user) {
+    return function(platform, variables) {
         // a note (old push document):
         // the ones start with a * is required by the template builder
         // {
@@ -50,9 +50,10 @@ function createTemplate(message) {
         //         "la": "en"                      language (default)
         //     }
         // }
+        console.log(JSON.stringify(variables, null, 2));
         const note = {
             h: String(Math.random()),
-            pr: user
+            pr: variables
         };
         return templates[platform].compile(note);
     }
