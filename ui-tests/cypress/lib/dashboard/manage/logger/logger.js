@@ -13,7 +13,7 @@ const verifyStaticElementsOfPage = (isEnabled) => {
 
     cy.verifyElement({
         labelElement: loggerPageElements.PAGE_SUB_TITLE,
-        labelText: "Only up to last 1000 incoming data logs are stored"
+        labelText: "Only up to the last 1000 incoming data logs are stored"
     });
 
     if (isEnabled) {
