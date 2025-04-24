@@ -15,6 +15,8 @@
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2.11.0",
+    "@types/mocha": "^10.0.10",
+    "@types/underscore": "^1.13.0",
     "docdash": "^2.0.1",
     "eslint-plugin-vue": "^9.31.0",
     "grunt-contrib-watch": "1.1.0",
