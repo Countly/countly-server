@@ -1195,7 +1195,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.HOOKS.ACTION_PIPELINE_INTERVAL }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Action pipeline interval",
+        labelText: "Action Pipeline Interval",
     });
 
     cy.verifyElement({
