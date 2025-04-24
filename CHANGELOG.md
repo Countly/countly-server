@@ -1,19 +1,79 @@
-## Version 25.x.x
+## Version 25.03.x
+Fixes:
+- [feedback] Uniformize drawer internal name input texts
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [star-rating] Fix rating score and responses table sorting
+- [ui] Fix alignment of drawers title and close icon
+
+Dependencies:
+- Bump countly-sdk-web from 25.1.0 to 25.4.0
+- Bump mongodb from 6.14.2 to 6.16.0
+- Bump nodemailer from 6.10.0 to 6.10.1
+- Bump puppeteer from 23.10.4 to 24.7.0
+- Bump sass from 1.86.0 to 1.87.0
+- Bump typescript from 5.8.2 to 5.8.3
+
+## Version 25.03.4
 Features:
-- [alerts] alerts table default order should be by creation time newest at the top
-- [core] allow tracking Countly dashboard usage with Countly
-- [sdk] Improved and added new Server Config options
+- Add ability to allow multiple CORS per app for web apps
+- Add app id and name as view segment for self-tracking
+- [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards
 
 Enterprise Features:
-- [journey_engine] Editing/Deleting/Duplication of blocks and version management
+- [license] Update locking conditions for expired license and over limit usage
+- [license] Enable force locking with remote config
+- [license] Update dashboard lock with redirection to home page for non admin user
 
-## Version 25.03.X
+Fixes:
+- [core] Allow downloading data also from other databases in dbviewer
+- [crashes] Fix unescaped SDK logs
+- [crash_symbolication] Symbolication server api end point test fix
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [ui] Fix alignment of drawers title and close icon
+- [push] Fixed push notifications title and content text and variables combination
+- [reports] Correctly match event for email report if event key contains '.'
+
+Enterprise Fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+- [drill] Do not recheck old collections on app_user data deletion if querying from old collections is disabled
+
+Dependencies:
+- Bump body-parser from 1.20.3 to 2.2.0
+- Bump moment-timezone from 0.5.47 to 0.5.48
+- Bump supertest from 7.0.0 to 7.1.0
+
+## Version 25.03.3
+Fixes:
+- [content_builder] Reformulate asset library and add asset drag and drop upload to builder input
+- [content_builder] Fixed content block layout type select visibility
+- [user-management] Fixed issue with uploading member icon
+
+## Version 25.03.2
+Fixes:
+- [user-management] Prevent global admin from self-revoke and self-delete
+
 Enterprise fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+- [drill] Fixed issue with column naming in export according to event
+- [drill] Fixed an issue with incorrect date range in report manager
+
+## Version 25.03.1
+Fixes:
+- [crashes] Remove memory addresses from stack trace grouping
+- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+
+Enterprise Fixes:
 - [ab-testing] Fixed bug with variant user filtering
 - [license] Fixed issue with handling invalid date periods
 
-Fixes:
-- [script] Refined delete_custom_events.js to clean up faulty/dead events completely.
+Dependencies:
+- Bump axios from 1.7.4 to 1.8.2 in /plugins/hooks
+- Bump countly-sdk-nodejs from 24.10.0 to 24.10.1
+- Bump countly-sdk-web from 24.11.4 to 25.1.0
+- Bump form-data from 4.0.1 to 4.0.2
+- Bump moment-timezone from 0.5.46 to 0.5.47
+- Bump mongodb from 6.11.0 to 6.14.2
+- Bump sass from 1.83.4 to 1.85.1
 
 ## Version 25.03
 Features:

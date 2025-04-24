@@ -1,0 +1,150 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Create Worktrees",
+            "type": "shell",
+            "command": "./.vscode/create_worktrees.sh",
+            "options": {
+                "cwd": "/opt/countly"
+            }
+        },
+        {
+            "label": "Kill Countly Processes",
+            "type": "shell",
+            "command": "sudo kill -9 $(ps aux | grep 'countly' | grep -v 'grep' | awk '{print $2}')",
+            "problemMatcher": [],
+            "group": "none"
+        },
+        {
+            "label": "Grunt: Coverage",
+            "type": "shell",
+            "command": "npx grunt coverage",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build"
+        },
+        {
+            "label": "Grunt: Default (mochaTest)",
+            "type": "shell",
+            "command": "npx grunt default",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build"
+        },
+        {
+            "label": "Grunt: Dist",
+            "type": "shell",
+            "command": "npx grunt dist",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build"
+        },
+        {
+            "label": "Grunt: Plugins",
+            "type": "shell",
+            "command": "npx grunt plugins",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build"
+        },
+        {
+            "label": "Grunt: Locales",
+            "type": "shell",
+            "command": "npx grunt locales",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build"
+        },
+        {
+            "label": "Grunt: Sass",
+            "type": "shell",
+            "command": "npx grunt sass",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build"
+        },
+        {
+            "label": "Grunt: Dist All",
+            "type": "shell",
+            "command": "npx grunt dist-all",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build"
+        },
+        {
+            "label": "Enable Plugin",
+            "type": "shell",
+            "command": "node plugin.js enable ${input:pluginName}",
+            "options": {
+                "env": {
+                    "COUNTLY_CONFIG__SYMLINKED": "true",
+                    "FORCE_NPM_INSTALL": "true"
+                },
+                "cwd": "${workspaceFolder}/bin/commands/scripts"
+            }
+        },
+        {
+            "label": "Disable Plugin",
+            "type": "shell",
+            "command": "node plugin.js disable ${input:pluginName}",
+            "options": {
+                "env": {
+                    "COUNTLY_CONFIG__SYMLINKED": "true"
+                },
+                "cwd": "${workspaceFolder}/bin/commands/scripts"
+            }
+        },
+        {
+            "label": "Disable Multiple Plugins",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "${workspaceFolder}/.vscode/disable_plugins.sh",
+                "${input:pluginNames}"
+            ],
+            "options": {
+                "env": {
+                    "COUNTLY_CONFIG__SYMLINKED": "true"
+                },
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "dirName",
+            "type": "promptString",
+            "description": "Enter the plugin directory name:",
+            "default": "my-countly"
+        },
+        {
+            "type": "promptString",
+            "id": "pluginName",
+            "description": "Enter the PLUGIN_NAME to enable:",
+            "default": "drill"
+        },
+        {
+            "id": "pluginNames",
+            "type": "promptString",
+            "description": "Enter plugin names (comma-separated)",
+            "default": ""
+        }
+    ]
+}

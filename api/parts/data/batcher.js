@@ -456,7 +456,7 @@ class ReadBatcher {
      *  @param {string} id - id of cache
      *  @param {string} query - query for the document
      *  @param {string} projection - which fields to return
-     *  @param {bool} multi - true if multiple documents
+     *  @param {boolean} multi - true if multiple documents
      *  @returns {Promise} promise
      */
     getData = async function(collection, id, query, projection, multi) {
@@ -547,7 +547,7 @@ class ReadBatcher {
      *  @param {string} collection - name of the collection where to update data
      *  @param {object} query - query for the document
      *  @param {object} projection - which fields to return
-     *  @param {bool} multi - true if multiple documents
+     *  @param {boolean} multi - true if multiple documents
      */
     invalidate(collection, query, projection, multi) {
         if (!this.onMaster || cluster.isMaster) {
@@ -569,7 +569,7 @@ class ReadBatcher {
      *  @param {string} collection - name of the collection where to update data
      *  @param {object} query - query for the document
      *  @param {object} projection - which fields to return
-     *  @param {bool} multi - true if multiple documents
+     *  @param {boolean} multi - true if multiple documents
      *  @returns {Promise} promise
      */
     get(collection, query, projection, multi) {
@@ -681,7 +681,7 @@ class ReadBatcher {
      *  @param {string} query - query for the document
      *  @param {string} projection - which fields to return
      *  @param {object} data - data from database
-     *  @param {bool} multi - true if multiple documents
+     *  @param {boolean} multi - true if multiple documents
      */
     cache(collection, id, query, projection, data, multi) {
         if (this.process) {

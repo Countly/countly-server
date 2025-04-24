@@ -1,4 +1,3 @@
-
 <transition :name="toggleTransition" @enter="onViewEntered">
     <div class="cly-vue-drawer" tabindex="0" v-show="isOpened" @keydown.esc="escKeyEvent" ref="rootEl" :id="id"
         :class="rootClasses">
@@ -20,25 +19,35 @@
                 </div>
                 <div class="cly-vue-drawer__header" :class="{ 'is-full-screen': currentScreenMode === 'full'}">
                     <div class="cly-vue-drawer__title">
-                        <div v-if="currentScreenMode !== 'full'">
-                            <div v-if="hasBackLink" class="cly-vue-drawer__title-container bu-is-flex bu-is-justify-content-space-between">
-                                <div class="bu-is-flex bu-is-flex-direction-column bu-is-justify-content-center bu-p-1 bu-ml-5 bu-mt-5">
-                                    <a style="cursor: pointer;" @click="doClose" :data-test-id="testId + '-drawer-back-link'">
-                                        <span class="text-medium bu-is-capitalized"><i class="fas fa-arrow-left bu-pr-3"></i>{{i18n('plugins.back')}}</span>
-                                    </a>
-                                </div>
-                                <div class="bu-is-flex" :style="hasBackLink.style" :class="{ 'bu-is-justify-content-flex-start': hasBackLink, 'bu-is-justify-content-center': !hasBackLink }">
-                                    <h3 :data-test-id="testId + '-header-title'" class="cly-vue-drawer__title-header">{{title}}</h3>
-                                </div>
-                                <span :data-test-id="testId + '-close-button'" class="cly-vue-drawer__close-button bu-p-1 bu-mr-5" v-on:click="doClose">
-                                    <i class="ion-ios-close-empty"></i>
+                        <div
+                            v-if="currentScreenMode !== 'full'"
+                            class="cly-vue-drawer__title-container bu-is-flex bu-is-justify-content-space-between"
+                            :class="{ 'bu-is-align-items-center': !hasBackLink }"
+                        >
+                            <a
+                                v-if="hasBackLink"
+                                :data-test-id="testId + '-drawer-back-link'"
+                                style="cursor: pointer;"
+                                @click="doClose"
+                            >
+                                <span class="text-medium bu-is-capitalized">
+                                    <i class="fas fa-arrow-left bu-pr-3" />
+                                    {{ i18n('plugins.back') }}
                                 </span>
-                            </div>
-                            <div v-else class="cly-vue-drawer__title-container bu-is-flex bu-is-justify-content-space-between">
-                                <h3 :data-test-id="testId + '-header-title'" class="cly-vue-drawer__title-header">{{title}}</h3>
-                                <span :data-test-id="testId + '-close-button'" class="cly-vue-drawer__close-button" v-on:click="doClose">
-                                    <i class="ion-ios-close-empty"></i>
-                                </span>
+                            </a>
+                            <h3
+                                class="cly-vue-drawer__title-header"
+                                :data-test-id="testId + '-header-title'"
+                                :style="hasBackLink.style"
+                            >
+                                {{ title }}
+                            </h3>
+                            <div
+                                class="cly-vue-drawer__close-button"
+                                :data-test-id="testId + '-close-button'"
+                                @click="doClose"
+                            >
+                                <i class="ion-ios-close-empty" />
                             </div>
                         </div>
                         <div v-if="isMultiStep" class="bu-columns bu-is-gapless bu-is-mobile cly-vue-drawer__subtitle">
@@ -51,7 +60,7 @@
                                                     <span class="index text-small" :data-test-id="testId + '-current-step-index-' + (i + 1)" :class="{'color-white': i === currentStepIndex}">{{i + 1}}</span>
                                                     <span class="done-icon text-small color-white bu-pt-0" :data-test-id="testId + '-current-step-index-img-container' + (i + 1)">
                                                         <img :data-test-id="testId + '-step-' + (i + 1)" src="images/icons/check-icon.svg">
-                                                    </span>                                                     
+                                                    </span>
                                                 </div>
                                                 <div :data-test-id="testId + '-' + (currentContent && currentContent.name ? currentContent.name.toLowerCase().replaceAll(/[\s&]+/g, '-') + '-label' : 'content-label')" class="cly-vue-drawer__step-title text-small font-weight-bold color-cool-gray-40">{{currentContent.name}}</div>
                                             </div>
@@ -65,7 +74,7 @@
                 </div>
                 <div class="cly-vue-drawer__steps-container" v-scroll-shadow :class="{'is-multi-step':isMultiStep}">
                     <div class="bu-columns bu-is-gapless bu-is-mobile" v-if="currentScreenMode === 'full'">
-                        <div class="bu-column bu-is-12">
+                        <div class="bu-column bu-is-12" :data-test-id="testId + '-header-title'">
                             <h3>{{title}}</h3>
                         </div>
                     </div>
@@ -89,8 +98,8 @@
                     <div class="cly-vue-drawer__buttons is-multi-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="isMultiStep">
                         <el-button :data-test-id="testId + '-cancel-button'" type="secondary" @click="doClose" size="small" v-if="currentStepIndex === 0 && hasCancelButton" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>
                         <el-button :data-test-id="testId + '-previous-step-button'" type="secondary" @click="prevStep" size="small" v-if="currentStepIndex > 0" :disabled="isSubmitPending">{{i18n('common.drawer.previous-step')}}</el-button>
-                        <el-button :data-test-id="testId + '-next-step-button'" type="success" @click="nextStep" size="small" v-if="!isLastStep" :class="{'is-disabled':!isCurrentStepValid}" :disabled="isSubmitPending">{{i18n('common.drawer.next-step')}}</el-button>
-                        <el-button :data-test-id="testId + '-save-button'" type="success" @click="submit" :loading="isSubmitPending" size="small" v-if="isLastStep" :class="{'is-disabled':!isSubmissionAllowed}" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
+                        <el-button :data-test-id="testId + '-next-step-button'" type="success" :key="isLastStep" @click="nextStep" size="small" v-if="!isLastStep" :class="{'is-disabled':!isCurrentStepValid}" :disabled="isSubmitPending">{{i18n('common.drawer.next-step')}}</el-button>
+                        <el-button :data-test-id="testId + '-save-button'" type="success" :key="isLastStep" @click="submit" :loading="isSubmitPending" size="small" v-if="isLastStep" :class="{'is-disabled':!isSubmissionAllowed}" :disabled="isSubmitPending">{{saveButtonLabel}}</el-button>
                     </div>
                     <div class="cly-vue-drawer__buttons is-single-step is-single-step bu-is-justify-content-flex-end bu-is-flex" v-if="!isMultiStep">
                         <el-button :data-test-id="testId + '-cancel-button'" type="secondary" @click="doClose" size="small" v-if="hasCancelButton" :disabled="isSubmitPending">{{cancelButtonLabel}}</el-button>
@@ -98,6 +107,10 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="cly-vue-drawer__right-sidecar" v-show="hasRightSidecar">
+            <slot name="right-sidecar" v-bind="passedScope">
+            </slot>
         </div>
     </div>
 </transition>

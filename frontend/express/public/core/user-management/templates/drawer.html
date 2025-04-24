@@ -1,5 +1,6 @@
 <div>
   <cly-drawer
+    test-id="user-drawer"
     toggle-transition="stdt-fade"
     ref="userDrawer"
     :title="$props.settings.editMode ? $props.settings.editTitle : $props.settings.createTitle"
@@ -19,33 +20,33 @@
             <div class="bu-column">
               <div class="user-management-drawer-content__input-wrapper">
                 <div class="user-management-drawer-content__label">
-                  <div class="text-small text-heading">{{ i18n('management-users.full-name') }}</div>
+                  <div data-test-id="full-name-label" class="text-small text-heading">{{ i18n('management-users.full-name') }}</div>
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required" v-slot="v">
-                    <el-input v-model="drawerScope.editedObject.full_name" :placeholder="i18n('management-users.enter-full-name')"></el-input>
+                    <el-input test-id="full-name-input" v-model="drawerScope.editedObject.full_name" :placeholder="i18n('management-users.enter-full-name')"></el-input>
                   </validation-provider>
                 </div>
               </div>
               <div class="user-management-drawer-content__input-wrapper bu-mt-5">
                 <div class="user-management-drawer-content__label">
-                  <div class="text-small text-heading">{{ i18n('management-users.username') }}</div>
+                  <div data-test-id="user-name-label" class="text-small text-heading">{{ i18n('management-users.username') }}</div>
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required" v-slot="v">
-                    <el-input v-model="drawerScope.editedObject.username" :placeholder="i18n('management-users.enter-username')"></el-input>
+                    <el-input test-id="user-name-input" v-model="drawerScope.editedObject.username" :placeholder="i18n('management-users.enter-username')"></el-input>
                   </validation-provider>
                 </div>
               </div>
               <div class="user-management-drawer-content__input-wrapper bu-mt-5">
                 <div class="user-management-drawer-content__label">
-                  <div class="text-small text-heading">{{ i18n('management-users.password') }}</div>
+                  <div data-test-id="password-label" class="text-small text-heading">{{ i18n('management-users.password') }}</div>
                 </div>
                 <div v-if="!$props.settings.editMode" class="user-management-drawer-content__input">
                   <validation-provider rules="required" v-slot="v">
-                    <el-input v-model="drawerScope.editedObject.password" :placeholder="i18n('management-users.enter-password')"></el-input>
+                    <el-input test-id="password-input" v-model="drawerScope.editedObject.password" :placeholder="i18n('management-users.enter-password')"></el-input>
                   </validation-provider>
-                  <div @click="generatePassword()" class="user-management-drawer-content__under-input-text bu-mt-1 bu-is-size-7">{{ i18n('management-users.generate-password') }}</div>
+                  <div data-test-id="generate-password-button" @click="generatePassword()" class="user-management-drawer-content__under-input-text bu-mt-1 bu-is-size-7">{{ i18n('management-users.generate-password') }}</div>
                 </div>
                 <div v-if="$props.settings.editMode" class="user-management-drawer-content__input">
                   <validation-provider v-if="changePasswordFlag" rules="required" v-slot="v">
@@ -56,11 +57,11 @@
               </div>
               <div class="user-management-drawer-content__input-wrapper bu-mt-5">
                 <div class="user-management-drawer-content__label">
-                  <div class="text-small text-heading">{{ i18n('management-users.email') }}</div>
+                  <div data-test-id="email-label" class="text-small text-heading">{{ i18n('management-users.email') }}</div>
                 </div>
                 <div class="user-management-drawer-content__input">
                   <validation-provider rules="required|email" v-slot="v">
-                    <el-input v-model="drawerScope.editedObject.email" oninput="this.value = this.value.toLowerCase();" :placeholder="i18n('management-users.enter-email')"></el-input>
+                    <el-input test-id="email-input" v-model="drawerScope.editedObject.email" oninput="this.value = this.value.toLowerCase();" :placeholder="i18n('management-users.enter-email')"></el-input>
                   </validation-provider>
                 </div>
               </div>
@@ -78,6 +79,7 @@
                 </cly-more-options>
               </div>
               <cly-dropzone
+                data-test-id="user-profile-picture-dropzone"
                 v-if="pictureEditMode || !$props.settings.editMode"
                 @vdropzone-removed-file="onFileRemoved"
                 @vdropzone-file-added="onFileAdded"
@@ -107,7 +109,7 @@
                 </div>
               </div>
               <div class="user-management-drawer-content__section-content user-management-drawer-content__role-section">
-                <el-checkbox class="bu-mt-2" v-model="drawerScope.editedObject.global_admin">{{ i18n('management-users.global-administrator') }}</el-checkbox>
+                <el-checkbox test-id="global-administrator" class="bu-mt-2" v-model="drawerScope.editedObject.global_admin">{{ i18n('management-users.global-administrator') }}</el-checkbox>
                 <component v-for="roleInput in rolesInput" :is="roleInput.component" :user="drawerScope.editedObject" @role-change="onRoleChange" key="roleInput.key"></component>
               </div>
             </div>
@@ -128,6 +130,7 @@
                 </div>
                 <div class="input" v-if="drawerScope.editedObject.permission">
                   <cly-select-x
+                    test-id="admin-access-to-app-dropdown"
                     :collapse-tags="false"
                     :placeholder="i18n('token_manager.select-apps')"
                     mode="multi-check"
@@ -156,6 +159,7 @@
                 </div>
                 <div class="user-management-drawer-content__input bu-px-4">
                   <cly-select-x
+                    test-id="user-access-to-app-dropdown"
                     :collapse-tags="false"
                     :placeholder="i18n('token_manager.select-apps')"
                     mode="multi-check"
