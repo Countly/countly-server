@@ -15,6 +15,7 @@ const countlyCommon = require('../lib/countly.common.js');
 const { validateAppAdmin, validateUser, validateRead, validateUserForRead, validateUserForWrite, validateGlobalAdmin, dbUserHasAccessToCollection, validateUpdate, validateDelete, validateCreate, getBaseAppFilter } = require('./rights.js');
 const authorize = require('./authorizer.js');
 const taskmanager = require('./taskmanager.js');
+const calculatedDataManager = require('./calculatedDataManager.js');
 const plugins = require('../../plugins/pluginManager.js');
 const versionInfo = require('../../frontend/express/version.info');
 const packageJson = require('./../../package.json');
@@ -28,7 +29,14 @@ const validateUserForDataWriteAPI = validateUserForWrite;
 const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request')(plugins.getConfig("security"));
-const Handle = require('../../api/parts/jobs/index.js');
+
+try {
+    require('../../jobServer/api');
+    log.i('Job api loaded');
+}
+catch (ex) {
+    log.e('Job api not available');
+}
 
 var loaded_configs_time = 0;
 
@@ -1929,6 +1937,43 @@ const processRequest = (params) => {
                         common.returnOutput(params, plugins.getPlugins());
                     }, params);
                     break;
+                case 'aggregator':
+                    validateUserForMgmtReadAPI(() => {
+                        //fetch current aggregator status
+                        common.db.collection("plugins").findOne({_id: "_changeStreams"}, function(err, pluginsData) {
+                            if (err) {
+                                common.returnMessage(params, 400, 'Error fetching aggregator status');
+                            }
+                            else {
+                                //find biggest cd value in drill database
+                                common.drillDb.collection("drill_events").find({}, {cd: 1}).sort({cd: -1}).limit(1).toArray(function(err2, drillData) {
+                                    var data = [];
+                                    var now = Date.now().valueOf();
+                                    var nowDrill = now;
+                                    if (drillData && drillData.length) {
+                                        nowDrill = new Date(drillData[0].cd).valueOf();
+                                    }
+
+                                    for (var key in pluginsData) {
+                                        if (key !== "_id") {
+                                            var lastAccepted = new Date(pluginsData[key].cd).valueOf();
+                                            data.push({
+                                                name: key,
+                                                last_cd: pluginsData[key].cd,
+                                                drill: drillData && drillData[0] && drillData[0].cd,
+                                                last_id: pluginsData[key]._id,
+                                                diff: (now - lastAccepted) / 1000,
+                                                diffDrill: (nowDrill - lastAccepted) / 1000
+                                            });
+                                        }
+                                    }
+                                    common.returnOutput(params, data);
+                                });
+                            }
+
+                        });
+                    }, params);
+                    break;
                 default:
                     if (!plugins.dispatch(apiPath, {
                         params: params,
@@ -2534,104 +2579,6 @@ const processRequest = (params) => {
                 }
 
                 switch (params.qstring.method) {
-                case 'jobs':
-                    /**
-                     * @api {get} /o?method=jobs Get Jobs Table Information
-                     * @apiName GetJobsTableInfo
-                     * @apiGroup Jobs
-                     * 
-                     * @apiDescription Get jobs information in the jobs table
-                     * @apiQuery {String} method which kind jobs requested, it should be 'jobs'
-                     * 
-                     * @apiSuccess {Number} iTotalRecords Total number of jobs
-                     * @apiSuccess {Number} iTotalDisplayRecords Total number of jobs by filtering
-                     * @apiSuccess {Objects[]} aaData Job details
-                     * @apiSuccess {Number} sEcho DataTable's internal counter
-                     * 
-                     * @apiSuccessExample {json} Success-Response:
-                     * HTTP/1.1 200 OK
-                     * {
-                     *   "sEcho": "0",
-                     *   "iTotalRecords": 14,
-                     *   "iTotalDisplayRecords": 14,
-                     *   "aaData": [{
-                     *     "_id": "server-stats:stats",
-                     *     "name": "server-stats:stats",
-                     *     "status": "SCHEDULED",
-                     *     "schedule": "every 1 day",
-                     *     "next": 1650326400000,
-                     *     "finished": 1650240007917,
-                     *     "total": 1
-                     *   }]
-                     * }
-                     */
-
-                    /**
-                    * @api {get} /o?method=jobs/name Get Job Details Table Information
-                    * @apiName GetJobDetailsTableInfo
-                    * @apiGroup Jobs
-                    * 
-                    * @apiDescription Get the information of the filtered job in the table
-                    * @apiQuery {String} method Which kind jobs requested, it should be 'jobs'
-                    * @apiQuery {String} name The job name is required to redirect to the selected job
-                    * 
-                    * @apiSuccess {Number} iTotalRecords Total number of jobs
-                    * @apiSuccess {Number} iTotalDisplayRecords Total number of jobs by filtering
-                    * @apiSuccess {Objects[]} aaData Job details
-                    * @apiSuccess {Number} sEcho DataTable's internal counter
-                    * 
-                    * @apiSuccessExample {json} Success-Response:
-                    * HTTP/1.1 200 OK
-                    * {
-                    *   "sEcho": "0",
-                    *   "iTotalRecords": 1,
-                    *   "iTotalDisplayRecords": 1,
-                    *   "aaData": [{
-                    *     "_id": "62596cd41307dc89c269b5a8",
-                    *     "name": "api:ping",
-                    *     "created": 1650027732240,
-                    *     "status": "SCHEDULED",
-                    *     "started": 1650240000865,
-                    *     "finished": 1650240000891,
-                    *     "duration": 30,
-                    *     "data": {},
-                    *     "schedule": "every 1 day",
-                    *     "next": 1650326400000,
-                    *     "modified": 1650240000895,
-                    *     "error": null
-                    *   }]
-                    * }
-                    */
-
-                    validateUserForGlobalAdmin(params, countlyApi.data.fetch.fetchJobs, 'jobs');
-                    break;
-                case 'suspend_job': {
-                    /**
-                     * @api {get} /o?method=suspend_job Suspend Job
-                     * @apiName SuspendJob
-                     * @apiGroup Jobs
-                     *  
-                     * @apiDescription Suspend the selected job
-                     * * 
-                     * @apiSuccessExample {json} Success-Response:
-                     * HTTP/1.1 200 OK
-                     * {
-                     *  "result": true,
-                     *  "message": "Job suspended successfully"
-                     * }
-                     * 
-                     * @apiErrorExample {json} Error-Response:
-                     * HTTP/1.1 400 Bad Request
-                     * {
-                     *  "result": "Updating job status failed" 
-                     * }
-                     * 
-                    */
-                    validateUserForGlobalAdmin(params, async() => {
-                        await Handle.suspendJob(params);
-                    });
-                    break;
-                }
                 case 'total_users':
                     validateUserForDataReadAPI(params, 'core', countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                     break;
@@ -2785,6 +2732,69 @@ const processRequest = (params) => {
                     break;
                 }
 
+                break;
+            }
+            case '/o/aggregate': {
+                validateUser(params, () => {
+                    //Long task to run specific drill query. Give back task_id if running, result if done.
+                    if (params.qstring.query) {
+
+                        try {
+                            params.qstring.query = JSON.parse(params.qstring.query);
+                        }
+                        catch (ee) {
+                            log.e(ee);
+                            common.returnMessage(params, 400, 'Invalid query parameter');
+                            return;
+                        }
+
+                        if (params.qstring.query.appID) {
+                            if (Array.isArray(params.qstring.query.appID)) {
+                                //make sure member has access to all apps in this list
+                                for (var i = 0; i < params.qstring.query.appID.length; i++) {
+                                    if (!params.member.global_admin && params.member.user_of && params.member.user_of.indexOf(params.qstring.query.appID[i]) === -1) {
+                                        common.returnMessage(params, 401, 'User does not have access right for this app');
+                                        return;
+                                    }
+                                }
+                            }
+                            else {
+                                if (!params.member.global_admin && params.member.user_of && params.member.user_of.indexOf(params.qstring.query.appID) === -1) {
+                                    common.returnMessage(params, 401, 'User does not have access right for this app');
+                                    return;
+                                }
+                            }
+                        }
+                        else {
+                            params.qstring.query.appID = params.qstring.app_id;
+                        }
+                        if (params.qstring.period) {
+                            params.qstring.query.period = params.qstring.query.period || params.qstring.period || "30days";
+                        }
+                        if (params.qstring.periodOffset) {
+                            params.qstring.query.periodOffset = params.qstrig.query.periodOffset || params.qstring.periodOffset || 0;
+                        }
+
+                        calculatedDataManager.longtask({
+                            db: common.db,
+                            threshold: plugins.getConfig("api").request_threshold,
+                            app_id: params.qstring.query.app_id,
+                            query_data: params.qstring.query,
+                            outputData: function(err, data) {
+                                if (err) {
+                                    common.returnMessage(params, 400, err);
+                                }
+                                else {
+                                    common.returnMessage(params, 200, data);
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        common.returnMessage(params, 400, 'Missing parameter "query"');
+                    }
+
+                });
                 break;
             }
             case '/o/countly_version': {

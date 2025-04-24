@@ -1,7 +1,6 @@
 var common = require('../../../../api/utils/common.js');
 var plugins = require('../../../pluginManager.js');
 var log = common.log('views:api');
-var crypto = require('crypto');
 
 module.exports = {
     ommit_segments: function(options, callback) {
@@ -33,9 +32,9 @@ module.exports = {
                 var promises = [];
                 var errCn = 0;
                 for (var z = 0; z < omit.length; z++) {
-                    var colName = "app_viewdata" + crypto.createHash('sha1').update(omit[z] + appId).digest('hex');
+                    var colName = "app_viewdata";
                     promises.push(new Promise(function(resolve2) {
-                        common.db.collection(colName).drop(function(err) {
+                        common.db.collection(colName).deleteMany({"_id": {"$regex": "^" + appId + "_" + omit + "_.*"}}, function(err) {
                             if (err && err.code !== 26) { //if error is not collection not found.(Because it is possible for it to not exist)
                                 log.e(JSON.stringify(err));
                                 errCn++;

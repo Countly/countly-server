@@ -24,6 +24,7 @@ var countlyConfig = {
         db: "countly",
         port: 27017,
         max_pool_size: 500,
+        replicaName: "rs0",
         //username: test,
         //password: test,
         //mongos: false,
@@ -65,6 +66,23 @@ var countlyConfig = {
     */
     api: {
         port: 3001,
+        host: "localhost",
+        max_sockets: 1024,
+        timeout: 120000,
+        maxUploadFileSize: 200 * 1024 * 1024, // 200MB
+    },
+    /**
+    * Default Ingestor configuration
+    * @type {object} 
+    * @property {number} [port=3010] - api port number to use, default 3010
+    * @property {string} [host=localhost] - host to which to bind connection
+    * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
+    * @property {number} workers - amount of paralel countly processes to run, defaults to cpu/core amount
+    * @property {number} [timeout=120000] - nodejs server request timeout, need to also increase nginx timeout too for longer requests
+    * @property {number} maxUploadFileSize - limit the size of uploaded file
+    */
+    ingestor: {
+        port: 3010,
         host: "localhost",
         max_sockets: 1024,
         timeout: 120000,
