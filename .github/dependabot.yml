@@ -1,318 +1,439 @@
 version: 2
 updates:
-- package-ecosystem: npm
-  directory: "/"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  reviewers:
-  - ar2rsawseen
-  assignees:
-  - ar2rsawseen
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/alerts"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/assistant"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/browser"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/compare"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/compliance-hub"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/consolidate"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/crashes"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/dashboards"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/data_migration"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/data-manager"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/dbviewer"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/density"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/desktop"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/enterpriseinfo"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/errorlogs"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/hooks"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/locale"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/logger"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/mobile"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/onboarding"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/plugin-upload"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  reviewers:
-  - Cookiezaurs
-  assignees:
-  - Cookiezaurs
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/plugins"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/populator"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/push"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  reviewers:
-  - cihadtekin
-  assignees:
-  - cihadtekin
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/recaptcha"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/remote-config"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/reports"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/server-stats"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/slipping-away-users"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/sources"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/star-rating"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/system-utility"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/systemlogs"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/times-of-day"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/two-factor-auth"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/views"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  reviewers:
-  - Cookiezaurs
-  assignees:
-  - Cookiezaurs
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
-- package-ecosystem: npm
-  directory: "/plugins/web"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 10
-  labels:
-  - dependencies
-  versioning-strategy: increase-if-necessary
+  # NPM dependencies
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    reviewers:
+      - ar2rsawseen
+    assignees:
+      - ar2rsawseen
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+    
+  - package-ecosystem: npm
+    directory: "/ui-tests"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  # API utilities
+  - package-ecosystem: npm
+    directory: "/api/utils/countly-request"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/api/utils/countly-root"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  # Scripts
+  - package-ecosystem: npm
+    directory: "/bin/scripts/device_list"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/bin/scripts/timezones"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  # Plugins
+  - package-ecosystem: npm
+    directory: "/plugins/alerts"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/browser"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/compare"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/compliance-hub"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/consolidate"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/crashes"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/dashboards"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/data_migration"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/data-manager"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/dbviewer"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/density"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/desktop"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/enterpriseinfo"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/errorlogs"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/guides"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/hooks"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/ip_store"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/locale"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/logger"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/mobile"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/onboarding"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/plugins"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/populator"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/push"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    reviewers:
+      - cihadtekin
+    assignees:
+      - cihadtekin
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/recaptcha"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/remote-config"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/reports"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/sdk"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/server-stats"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/slipping-away-users"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/sources"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/star-rating"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/system-utility"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/systemlogs"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/times-of-day"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/two-factor-auth"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/views"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    reviewers:
+      - Cookiezaurs
+    assignees:
+      - Cookiezaurs
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: npm
+    directory: "/plugins/web"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    versioning-strategy: increase-if-necessary
+
+  # Keep GitHub Actions up to date
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    reviewers:
+      - "ar2rsawseen"
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  # Keep Docker dependencies up to date
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+    reviewers:
+      - "ar2rsawseen"
