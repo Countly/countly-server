@@ -1,35 +1,36 @@
 /**
-* Module for some common utility functions and references
-* @module api/utils/common
-*/
+ * Module for some common utility functions and references
+ * @module api/utils/common
+ */
+/**
+ * @typedef {import('../../types/requestProcessor').Params} Params
+ * @typedef {import('../../types/common').TimeObject} TimeObject
+ * @typedef {import('mongodb').ObjectId} ObjectId
+ * typedef {import('moment-timezone').Moment} MomentTimezone
+ */
 
-/** @lends module:api/utils/common */
-var common = {},
-    moment = require('moment-timezone'),
-    crypto = require('crypto'),
-    logger = require('./log.js'),
-    mcc_mnc_list = require('mcc-mnc-list'),
-    plugins = require('../../plugins/pluginManager.js'),
-    countlyConfig = require('./../config'),
-    argon2 = require('argon2'),
-    mongodb = require('mongodb'),
-    getRandomValues = require('get-random-values'),
-    _ = require('lodash');
+/** @lends module:api/utils/common **/
+/** @type(import('../../types/common').Common) */
+const common = {};
+
+/** @type(import('moment-timezone')) */
+const moment = require('moment-timezone');
+const crypto = require('crypto');
+const logger = require('./log.js');
+const mcc_mnc_list = require('mcc-mnc-list');
+const plugins = require('../../plugins/pluginManager.js');
+const countlyConfig = require('./../config', 'dont-enclose');
+const argon2 = require('argon2');
+const mongodb = require('mongodb');
+const getRandomValues = require('get-random-values');
+const semver = require('semver');
+const _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
 
-/**
- * Because why requiring both all the time
- */
 common.plugins = plugins;
 
-/**
-* Escape special characters in the given string of html.
-* @param  {string} string - The string to escape for inserting into HTML
-* @param  {bool} more - if false, escapes only tags, if true escapes also quotes and ampersands
-* @returns {string} escaped string
-**/
 common.escape_html = function(string, more) {
     var str = '' + string;
     var match;
@@ -79,11 +80,7 @@ common.escape_html = function(string, more) {
 
     return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
 };
-/**
- * Function to escape unicode characters
- * @param {string} str  - string for which to escape
- * @returns  {string} escaped string
- */
+
 common.encodeCharacters = function(str) {
     try {
         str = str + "";
@@ -117,11 +114,30 @@ common.decode_html = function(string) {
 };
 
 /**
+ * Check if string is a valid json
+ * @param {string} val - string that might be json encoded
+ * @returns {object} with property data for parsed data and property valid to check if it was valid json encoded string or not
+ **/
+function getJSON(val) {
+    var ret = {valid: false};
+    try {
+        ret.data = JSON.parse(val);
+        if (ret.data && typeof ret.data === "object") {
+            ret.valid = true;
+        }
+    }
+    catch (ex) {
+        //silent error
+    }
+    return ret;
+}
+
+/**
 * Escape special characters in the given value, may be nested object
 * @param  {string} key - key of the value
-* @param  {vary} value - value to escape
-* @param  {bool} more - if false, escapes only tags, if true escapes also quotes and ampersands
-* @returns {vary} escaped value
+* @param  {any} value - value to escape
+* @param  {boolean} more - if false, escapes only tags, if true escapes also quotes and ampersands
+* @returns {any} escaped value
 **/
 function escape_html_entities(key, value, more) {
     if (typeof value === 'object' && value && (value.constructor === Object || value.constructor === Array)) {
@@ -167,38 +183,9 @@ function escape_html_entities(key, value, more) {
     return value;
 }
 common.getJSON = getJSON;
-/**
-* Check if string is a valid json
-* @param {string} val - string that might be json encoded
-* @returns {object} with property data for parsed data and property valid to check if it was valid json encoded string or not
-**/
-function getJSON(val) {
-    var ret = {valid: false};
-    try {
-        ret.data = JSON.parse(val);
-        if (ret.data && typeof ret.data === "object") {
-            ret.valid = true;
-        }
-    }
-    catch (ex) {
-        //silent error
-    }
-    return ret;
-}
 
-/**
- * Logger object for creating module-specific logging
- * @type {function(string): Logger}
- * @example
- * const log = common.log('myplugin:api');
- * log.i('myPlugin got a request: %j', params.qstring);
- */
 common.log = logger;
 
-/**
-* Mapping some common property names from longer understandable to shorter representation stored in database
-* @type {object} 
-*/
 common.dbMap = {
     'events': 'e',
     'total': 't',
@@ -213,10 +200,6 @@ common.dbMap = {
     'count': 'c'
 };
 
-/**
-* Mapping some common user property names from longer understandable to shorter representation stored in database
-* @type {object} 
-*/
 common.dbUserMap = {
     'device_id': 'did',
     'user_id': 'uid',
@@ -236,6 +219,9 @@ common.dbUserMap = {
     'platform': 'p',
     'platform_version': 'pv',
     'app_version': 'av',
+    'app_version_major': 'av_major',
+    'app_version_minor': 'av_minor',
+    'app_version_patch': 'av_patch',
     'last_begin_session_timestamp': 'lbst',
     'last_end_session_timestamp': 'lest',
     'has_ongoing_session': 'hos',
@@ -249,10 +235,6 @@ common.dbUniqueMap = {
     users: [common.dbMap.unique, common.dbMap.durations, common.dbMap.frequency, common.dbMap.loyalty]
 };
 
-/**
-* Mapping some common event property names from longer understandable to shorter representation stored in database
-* @type {object} 
-*/
 common.dbEventMap = {
     'user_properties': 'up',
     'timestamp': 'ts',
@@ -263,29 +245,12 @@ common.dbEventMap = {
     'previous_events': 'pe'
 };
 
-/**
-* Default {@link countlyConfig} object for API server
-* @type {object} 
-*/
 common.config = countlyConfig;
 
-/**
-* Reference to momentjs
-* @type {object} 
-*/
 common.moment = moment;
 
-/**
-* Reference to crypto module
-* @type {object} 
-*/
 common.crypto = crypto;
 
-/**
-* Operating syste/platform mappings from what can be passed in metrics to shorter representations 
-* stored in db as prefix to OS segmented values
-* @type {object} 
-*/
 common.os_mapping = {
     "webos": "webos",
     "brew": "brew",
@@ -327,10 +292,6 @@ common.os_mapping = {
     "arch": "l"
 };
 
-/**
-* Whole base64 alphabet for fetching splitted documents
-* @type {object} 
-*/
 common.base64 = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "+", "/"];
 
 common.dbPromise = function() {
@@ -363,15 +324,6 @@ common.dbPromise = function() {
     });
 };
 
-/**
-* Fetches nested property values from an obj.
-* @param {object} obj - standard countly metric object
-* @param {string} desc - dot separate path to fetch from object
-* @returns {object} fetched object from provided path
-* @example
-* //outputs {"u":20,"t":20,"n":5}
-* common.getDescendantProp({"2017":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2");
-*/
 common.getDescendantProp = function(obj, desc) {
     desc = String(desc);
 
@@ -387,32 +339,11 @@ common.getDescendantProp = function(obj, desc) {
     return obj;
 };
 
-/**
-* Checks if provided value could be converted to a number, 
-* even if current type is other, as string, as example value "42"
-* @param {any} n - value to check if it can be converted to number
-* @returns {boolean} true if can be a number, false if can't be a number
-* @example
-* common.isNumber(1) //outputs true
-* common.isNumber("2") //outputs true
-* common.isNumber("test") //outputs false
-*/
+
 common.isNumber = function(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
 };
 
-/**
-* This default Countly behavior of type conversion for storing proeprties accepted through API requests
-* dealing with numbers as strings and too long numbers
-* @param {any} value - value to convert to usable type
-* @param {boolean} preventParsingToNumber - do not change value to number (e.g. "1", ["1"]);
-* @returns {varies} converted value
-* @example
-* common.convertToType(1) //outputs 1
-* common.convertToType("2") //outputs 2
-* common.convertToType("test") //outputs "test"
-* common.convertToType("12345678901234567890") //outputs "12345678901234567890"
-*/
 common.convertToType = function(value, preventParsingToNumber) {
     //handle array values
     if (Array.isArray(value)) {
@@ -453,15 +384,6 @@ common.convertToType = function(value, preventParsingToNumber) {
     }
 };
 
-/**
-* Safe division between numbers providing 0 as result in cases when dividing by 0
-* @param {number} dividend - number which to divide
-* @param {number} divisor - number by which to divide
-* @returns {number} result of division
-* @example
-* //outputs 0
-* common.safeDivision(100, 0);
-*/
 common.safeDivision = function(dividend, divisor) {
     var tmpAvgVal;
     tmpAvgVal = dividend / divisor;
@@ -471,15 +393,6 @@ common.safeDivision = function(dividend, divisor) {
     return tmpAvgVal;
 };
 
-/**
-* Pad number with specified character from left to specified length
-* @param {number} number - number to pad
-* @param {number} width - pad to what length in symbols
-* @returns {string} padded number
-* @example
-* //outputs 0012
-* common.zeroFill(12, 4, "0");
-*/
 common.zeroFill = function(number, width) {
     width -= number.toString().length;
 
@@ -490,11 +403,6 @@ common.zeroFill = function(number, width) {
     return number + ""; // always return a string
 };
 
-/**
-* Add item or array to existing array only if values are not already in original array
-* @param {array} arr - original array where to add unique elements
-* @param {string|number|array} item - item to add or array to merge
-*/
 common.arrayAddUniq = function(arr, item) {
     if (!arr) {
         arr = [];
@@ -514,65 +422,24 @@ common.arrayAddUniq = function(arr, item) {
     }
 };
 
-/**
-* Create HMAC sha1 hash from provided value and optional salt
-* @param {string} str - value to hash
-* @param {string=} addSalt - optional salt, uses ms timestamp by default
-* @returns {string} HMAC sha1 hash
-*/
 common.sha1Hash = function(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : '';
     return crypto.createHmac('sha1', salt + '').update(str + '').digest('hex');
 };
 
-/**
-* Create HMAC sha512 hash from provided value and optional salt
-* @param {string} str - value to hash
-* @param {string=} addSalt - optional salt, uses ms timestamp by default
-* @returns {string} HMAC sha1 hash
-*/
 common.sha512Hash = function(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : '';
     return crypto.createHmac('sha512', salt + '').update(str + '').digest('hex');
 };
 
-/**
-* Create argon2 hash string
-* @param {string} str - string to hash
-* @returns {promise} hash promise
-**/
 common.argon2Hash = function(str) {
     return argon2.hash(str);
 };
 
-/**
-* Create MD5 hash from provided value
-* @param {string} str - value to hash
-* @returns {string} MD5 hash
-*/
 common.md5Hash = function(str) {
     return crypto.createHash('md5').update(str + '').digest('hex');
 };
 
-/**
-* Modifies provided object in the format object["2012.7.20.property"] = increment. 
-* Usualy used when filling up Countly metric model data
-* @param {params} params - {@link params} object
-* @param {object} object - object to fill
-* @param {string} property - meric value or segment or property to fill/increment
-* @param {number=} increment - by how much to increments, default is 1
-* @returns {void} void
-* @example
-* var obj = {};
-* common.fillTimeObject(params, obj, "u", 1);
-* console.log(obj);
-* //outputs
-* { '2017.u': 1,
-*   '2017.2.u': 1,
-*   '2017.2.23.u': 1,
-*   '2017.2.23.8.u': 1,
-*   '2017.w8.u': 1 }
-*/
 common.fillTimeObject = function(params, object, property, increment) {
     increment = (increment) ? increment : 1;
     var timeObj = params.time;
@@ -602,12 +469,6 @@ common.fillTimeObject = function(params, object, property, increment) {
     }
 };
 
-/**
-* Creates a time object from request's milisecond or second timestamp in provided app's timezone
-* @param {string} appTimezone - app's timezone
-* @param {number} reqTimestamp - timestamp in the request
-* @returns {timeObject} Time object for current request
-*/
 common.initTimeObj = function(appTimezone, reqTimestamp) {
     var currTimestamp,
         curMsTimestamp,
@@ -638,24 +499,6 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
         tmpMoment.tz(appTimezone);
     }
 
-    /**
-   * @typedef timeObject
-   * @type {object} 
-   * @global
-   * @property {momentjs} now - momentjs instance for request's time in app's timezone
-   * @property {momentjs} nowUTC - momentjs instance for request's time in UTC
-   * @property {momentjs} nowWithoutTimestamp - momentjs instance for current time in app's timezone
-   * @property {number} timestamp -  request's seconds timestamp
-   * @property {number} mstimestamp -  request's miliseconds timestamp
-   * @property {string} yearly -  year of request time in app's timezone in YYYY format
-   * @property {string} monthly -  month of request time in app's timezone in YYYY.M format
-   * @property {string} daily -  date of request time in app's timezone in YYYY.M.D format
-   * @property {string} hourly -  hour of request time in app's timezone in YYYY.M.D.H format
-   * @property {number} weekly -  week of request time in app's timezone as result day of the year, divided by 7
-   * @property {string} month -  month of request time in app's timezone in format M
-   * @property {string} day -  day of request time in app's timezone in format D
-   * @property {string} hour -  hour of request time in app's timezone in format H
-   */
     return {
         now: tmpMoment,
         nowUTC: tmpMoment.clone().utc(),
@@ -674,12 +517,6 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
     };
 };
 
-/**
-* Creates a Date object from provided seconds timestamp in provided timezone
-* @param {number} timestamp - unix timestamp in seconds
-* @param {string} timezone - name of the timezone
-* @returns {moment} moment object for provided time
-*/
 common.getDate = function(timestamp, timezone) {
     var tmpDate = (timestamp) ? moment.unix(timestamp) : moment();
 
@@ -690,12 +527,6 @@ common.getDate = function(timestamp, timezone) {
     return tmpDate;
 };
 
-/**
-* Returns day of the year from provided seconds timestamp in provided timezone
-* @param {number} timestamp - unix timestamp in seconds
-* @param {string} timezone - name of the timezone
-* @returns {number} current day of the year
-*/
 common.getDOY = function(timestamp, timezone) {
     var endDate;
     if (timestamp && timestamp.toString().length === 13) {
@@ -712,11 +543,6 @@ common.getDOY = function(timestamp, timezone) {
     return endDate.dayOfYear();
 };
 
-/**
-* Returns amount of days in provided year
-* @param {number} year - year to check for days
-* @returns {number} number of days in provided year
-*/
 common.getDaysInYear = function(year) {
     if (new Date(year, 1, 29).getMonth() === 1) {
         return 366;
@@ -726,11 +552,6 @@ common.getDaysInYear = function(year) {
     }
 };
 
-/**
-* Returns amount of iso weeks in provided year
-* @param {number} year - year to check for days
-* @returns {number} number of iso weeks in provided year
-*/
 common.getISOWeeksInYear = function(year) {
     var d = new Date(year, 0, 1),
         isLeap = new Date(year, 1, 29).getMonth() === 1;
@@ -740,24 +561,8 @@ common.getISOWeeksInYear = function(year) {
     return d.getDay() === 4 || isLeap && d.getDay() === 3 ? 53 : 52;
 };
 
-/**
-* Validates provided arguments
-* @param {object} args - arguments to validate
-* @param {object} argProperties - rules for validating each argument
-* @param {boolean} argProperties.required - should property be present in args
-* @param {string} argProperties.type - what type should property be, possible values: String, Array, Number, URL, Boolean, Object, Email
-* @param {string} argProperties.max-length - property should not be longer than provided value
-* @param {string} argProperties.min-length - property should not be shorter than provided value
-* @param {string} argProperties.exclude-from-ret-obj - should property be present in returned validated args object
-* @param {string} argProperties.has-number - should string property has any number in it
-* @param {string} argProperties.has-char - should string property has any latin character in it
-* @param {string} argProperties.has-upchar - should string property has any upper cased latin character in it
-* @param {string} argProperties.has-special - should string property has any none latin character in it
-* @param {boolean} returnErrors - return error details as array or only boolean result
-* @returns {object} validated args in obj property, or false as result property if args do not pass validation and errors array
-*/
-common.validateArgs = function(args, argProperties, returnErrors) {
 
+common.validateArgs = function(args, argProperties, returnErrors) {
     if (arguments.length === 2) {
         returnErrors = false;
     }
@@ -1476,11 +1281,6 @@ common.validateArgs = function(args, argProperties, returnErrors) {
     }
 };
 
-/**
-* Fix event keys before storing in database by removing dots and $ from the string, removing other prefixes and limiting length
-* @param {string} eventKey - key value to fix
-* @returns {string|false} escaped key or false if not possible to use key at all
-*/
 common.fixEventKey = function(eventKey) {
     var shortEventName = eventKey.replace(/system\.|\.\.|\$/g, "");
 
@@ -1492,45 +1292,14 @@ common.fixEventKey = function(eventKey) {
     }
 };
 
-/**
-* Block {@link module:api/utils/common.returnMessage} and {@link module:api/utils/common.returnOutput} from ouputting anything
-* @param {params} params - params object
-*/
 common.blockResponses = function(params) {
     params.blockResponses = true;
 };
 
-/**
-* Unblock/allow {@link module:api/utils/common.returnMessage} and {@link module:api/utils/common.returnOutput} ouputting anything
-* @param {params} params - params object
-*/
 common.unblockResponses = function(params) {
     params.blockResponses = false;
 };
 
-
-
-
-/**
-* Custom API response handler callback
-* @typedef APICallback
-* @callback APICallback
-* @type {function} 
-* @global
-* @param {bool} error - true if there was problem processing request, and false if request was processed successfully 
-* @param {string} responseMessage - what API returns
-* @param {object} headers - what API would have returned to HTTP request
-* @param {number} returnCode - HTTP code, what API would have returned to HTTP request
-* @param {params} params - request context that was passed to requestProcessor, modified during request processing
-*/
-
-/**
-* Return raw headers and body
-* @param {params} params - params object
-* @param {number} returnCode - http code to use
-* @param {string} body - raw data to output
-* @param {object} heads - headers to add to the output
-*/
 common.returnRaw = function(params, returnCode, body, heads) {
     params.response = {
         code: returnCode,
@@ -1570,14 +1339,6 @@ common.returnRaw = function(params, returnCode, body, heads) {
     }
 };
 
-/**
-* Output message as request response with provided http code
-* @param {params} params - params object
-* @param {number} returnCode - http code to use
-* @param {string|object} message - Message to output, will be encapsulated in JSON object under result property
-* @param {object} heads - headers to add to the output
-* @param {boolean} noResult - skip wrapping message object into stupid {result: }
-*/
 common.returnMessage = function(params, returnCode, message, heads, noResult = false) {
     params.response = {
         code: returnCode,
@@ -1613,6 +1374,12 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
             headers[i] = heads[i];
         }
     }
+    if (params && params.app && params.app.plugins && params.app.plugins.allow_access_control_origin && params.req.headers && params.req.headers.origin) {
+        var cors_headers = (params.app.plugins.allow_access_control_origin || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
+        if (cors_headers.includes(params.req.headers.origin)) {
+            headers['Access-Control-Allow-Origin'] = params.req.headers.origin;
+        }
+    }
     if (params && params.res && params.res.writeHead && !params.blockResponses) {
         if (!params.res.finished) {
             params.res.writeHead(returnCode, headers);
@@ -1633,13 +1400,6 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
     }
 };
 
-/**
-* Output message as request response with provided http code
-* @param {params} params - params object
-* @param {output} output - object to stringify and output
-* @param {string} noescape - prevent escaping HTML entities
-* @param {object} heads - headers to add to the output
-*/
 common.returnOutput = function(params, output, noescape, heads) {
     if (params && params.qstring && params.qstring.noescape) {
         noescape = params.qstring.noescape;
@@ -1682,6 +1442,13 @@ common.returnOutput = function(params, output, noescape, heads) {
             headers[i] = heads[i];
         }
     }
+
+    if (params && params.app && params.app.plugins && params.app.plugins.allow_access_control_origin && params.req.headers && params.req.headers.origin) {
+        var cors_headers = (params.app.plugins.allow_access_control_origin || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
+        if (cors_headers.includes(params.req.headers.origin)) {
+            headers['Access-Control-Allow-Origin'] = params.req.headers.origin;
+        }
+    }
     if (params && params.res && params.res.writeHead && !params.blockResponses) {
         if (!params.res.finished) {
             params.res.writeHead(200, headers);
@@ -1703,11 +1470,6 @@ common.returnOutput = function(params, output, noescape, heads) {
 };
 var ipLogger = common.log('ip:api');
 
-/**
-* Get IP address from request object
-* @param {req} req - nodejs request object
-* @returns {string} ip address
-*/
 common.getIpAddress = function(req) {
     var ipAddress = "";
     if (req) {
@@ -1785,22 +1547,6 @@ function stripPort(ip) {
     return (ip + "").trim();
 }
 
-/**
-* Modifies provided object filling properties used in zero documents in the format object["2012.7.20.property"] = increment. 
-* Usualy used when filling up Countly metric model zero document
-* @param {params} params - {@link params} object
-* @param {object} object - object to fill
-* @param {string} property - meric value or segment or property to fill/increment
-* @param {number=} increment - by how much to increments, default is 1
-* @param {boolean=} isUnique - if property is unique
-* @returns {void} void
-* @example
-* var obj = {};
-* common.fillTimeObjectZero(params, obj, "u", 1);
-* console.log(obj);
-* //outputs
-* { 'd.u': 1, 'd.2.u': 1, 'd.w8.u': 1 }
-*/
 common.fillTimeObjectZero = function(params, object, property, increment, isUnique) {
     var tmpIncrement = (increment) ? increment : 1,
         timeObj = params.time;
@@ -1845,22 +1591,6 @@ common.fillTimeObjectZero = function(params, object, property, increment, isUniq
     return true;
 };
 
-/**
-* Modifies provided object filling properties used in monthly documents in the format object["2012.7.20.property"] = increment. 
-* Usualy used when filling up Countly metric model monthly document
-* @param {params} params - {@link params} object
-* @param {object} object - object to fill
-* @param {string} property - meric value or segment or property to fill/increment
-* @param {number=} increment - by how much to increments, default is 1
-* @param {boolean=} forceHour - force recording hour information too, dfault is false
-* @returns {void} void
-* @example
-* var obj = {};
-* common.fillTimeObjectMonth(params, obj, "u", 1);
-* console.log(obj);
-* //outputs
-* { 'd.23.u': 1, 'd.23.12.u': 1 }
-*/
 common.fillTimeObjectMonth = function(params, object, property, increment, forceHour) {
     var tmpIncrement = (increment) ? increment : 1,
         timeObj = params.time;
@@ -1894,21 +1624,6 @@ common.fillTimeObjectMonth = function(params, object, property, increment, force
     return true;
 };
 
-/**
-* Record data in Countly standard metric model
-* Can be used by plugins to record data, similar to sessions and users, with optional segments
-* @param {params} params - {@link params} object
-* @param {string} collection - name of the collections where to store data
-* @param {string} id - id to prefix document ids, like app_id or segment id, etc
-* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
-* @param {number=} value - value to increment all metrics for, default 1
-* @param {object} segments - object with segments to record data, key segment name and value segment value
-* @param {array} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
-* @param {number} lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
-* @example
-* //recording attribution
-* common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
-*/
 common.recordCustomMetric = function(params, collection, id, metrics, value, segments, uniques, lastTimestamp) {
     value = value || 1;
     var updateUsersZero = {},
@@ -1959,21 +1674,6 @@ common.recordCustomMetric = function(params, collection, id, metrics, value, seg
     }
 };
 
-/**
-* Sets passed value in standart model. If there is any value for that date - it gets replaced with new value.
-* Can be used by plugins to record data, similar to sessions and users, with optional segments
-* @param {params} params - {@link params} object
-* @param {string} collection - name of the collections where to store data
-* @param {string} id - id to prefix document ids, like app_id or segment id, etc
-* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
-* @param {number=} value - value to increment all metrics for, default 1
-* @param {object} segments - object with segments to record data, key segment name and value segment value
-* @param {array} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
-* @param {number} lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
-* @example
-* //recording attribution
-* common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
-*/
 common.setCustomMetric = function(params, collection, id, metrics, value, segments, uniques, lastTimestamp) {
     value = value || 0;
     params.defaultValue = value || 0;
@@ -2022,20 +1722,6 @@ common.setCustomMetric = function(params, collection, id, metrics, value, segmen
     }
 };
 
-/**
-* Record measurement in Countly standard metric model
-* Can be used by plugins to record measurements, similar to temperature, it will record min/max/avg values
-* Does not support unique values like users
-* @param {params} params - {@link params} object
-* @param {string} collection - name of the collections where to store data
-* @param {string} id - id to prefix document ids, like app_id or segment id, etc
-* @param {array} metrics - array of metrics to record, as ["u","t", "n"]
-* @param {number=} value - value to increment all metrics for, default 1
-* @param {object} segments - object with segments to record data, key segment name and value segment value
-* @example
-* //recording attribution
-* common.recordCustomMeasurement(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"});
-*/
 common.recordCustomMeasurement = function(params, collection, id, metrics, value, segments) {
     value = value || 1;
     var updateUsersZero = {},
@@ -2097,23 +1783,6 @@ common.recordCustomMeasurement = function(params, collection, id, metrics, value
     }
 };
 
-/**
-* Record data in Countly standard metric model
-* Can be used by plugins to record data, similar to sessions and users, with optional segments
-* @param {params} params - {@link params} object
-* @param {object} props - object defining what to record
-* @param {string} props.collection - name of the collections where to store data
-* @param {string} props.id - id to prefix document ids, like app_id or segment id, etc
-* @param {object} props.metrics - object defining metrics to record, using key as metric name and value object for segmentation, unique, etc
-* @param {number=} props.metrics[].value - value to increment current metric for, default 1
-* @param {object} props.metrics[].segments - object with segments to record data, key segment name and value segment value or array of segment values
-* @param {boolean} props.metrics[].unique - if metric should be treated as unique, and stored in 0 docs and be estimated on output
-* @param {number} props.metrics[].lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
-* @param {array} props.metrics[].hourlySegments - array of segments that should have hourly data too (by default hourly data not recorded for segments)
-* @example
-* //recording attribution
-* common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
-*/
 common.recordMetric = function(params, props) {
     var updateUsersZero = {},
         updateUsersMonth = {},
@@ -2157,7 +1826,7 @@ common.recordMetric = function(params, props) {
 
 /**
 * Record specific metric
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {string} metric - metric to record
 * @param {object} props - properties of a metric defining how to record it
 * @param {object} tmpSet - object with already set meta properties
@@ -2223,9 +1892,11 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
     common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate, props.value);
 }
 
+common.collectMetric = recordMetric;
+
 /**
 * Record specific metric segment
-* @param {params} params - params object
+* @param {Params} params - params object
 * @param {string} metric - metric to record
 * @param {string} name - name of the segment to record
 * @param {string} val - value of the segment to record
@@ -2233,8 +1904,8 @@ function recordMetric(params, metric, props, tmpSet, updateUsersZero, updateUser
 * @param {object} tmpSet - object with already set meta properties
 * @param {object} updateUsersZero - object with already set update for zero docs
 * @param {object} updateUsersMonth - object with already set update for months docs
-* @param {array} zeroObjUpdate - segments to fill for for zero docs
-* @param {array} monthObjUpdate - segments to fill for months docs
+* @param {Array<string>} zeroObjUpdate - segments to fill for for zero docs
+* @param {Array<string>} monthObjUpdate - segments to fill for months docs
 **/
 function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUsersZero, updateUsersMonth, zeroObjUpdate, monthObjUpdate) {
     var escapedMetricKey = name.replace(/^\$/, "").replace(/\./g, ":");
@@ -2291,11 +1962,7 @@ function recordSegmentMetric(params, metric, name, val, props, tmpSet, updateUse
     }
 }
 
-/**
-* Get object of date ids that should be used in fetching standard metric model documents
-* @param {params} params - {@link params} object
-* @returns {object} with date ids, as {zero:"2017:0", month:"2017:2"}
-*/
+
 common.getDateIds = function(params) {
     if (!params || !params.time) {
         return {
@@ -2310,13 +1977,6 @@ common.getDateIds = function(params) {
     };
 };
 
-/**
-* Get diference between 2 momentjs instances in specific measurement
-* @param {moment} moment1 - momentjs with start date
-* @param {moment} moment2 - momentjs with end date
-* @param {string} measure - units of difference, can be minutes, hours, days, weeks
-* @returns {number} difference in provided units
-*/
 common.getDiff = function(moment1, moment2, measure) {
     var divider = 1;
     switch (measure) {
@@ -2336,14 +1996,6 @@ common.getDiff = function(moment1, moment2, measure) {
     return Math.floor((moment1.unix() - moment2.unix()) / divider);
 };
 
-/**
-* Compares two version strings with : as delimiter (which we used to escape dots in app versions)
-* @param {string} v1 - first version
-* @param {string} v2 - second version
-* @param {object} options - providing additional options
-* @param {string} options.delimiter - delimiter between version, subversion, etc, defaults :
-* @returns {number} 0 if they are both the same, 1 if first one is higher and -1 is second one is higher
-*/
 common.versionCompare = function(v1, v2, options) {
     var delimiter = (options && options.delimiter) || ":";
 
@@ -2418,11 +2070,133 @@ common.versionCompare = function(v1, v2, options) {
 };
 
 /**
-* Adjust timestamp with app's timezone for timestamp queries that should equal bucket results
-* @param {number} ts - miliseconds timestamp
-* @param {string} tz - timezone
-* @returns {number} adjusted timestamp for timezone
-*/
+ * Parse app_version into major, minor, patch components
+ * @param {string|number} version - The version to parse
+ * @returns {object} Object containing major, minor, patch, original version, and success flag
+ */
+common.parseAppVersion = function(version) {
+    try {
+        if (typeof version !== 'string') {
+            version = String(version);
+        }
+
+        // Ensure version has at least one decimal point
+        if (version.indexOf('.') === -1) {
+            version += '.0';
+        }
+
+        const parsedVersion = semver.valid(semver.coerce(version));
+        if (parsedVersion) {
+            const versionObj = semver.parse(parsedVersion);
+            if (versionObj) {
+                return {
+                    major: versionObj.major,
+                    minor: versionObj.minor,
+                    patch: versionObj.patch,
+                    original: version,
+                    success: true
+                };
+            }
+        }
+    }
+    catch (error) {
+        // Silently catch any errors from semver library
+        // console.error('Error parsing app version:', error);
+    }
+
+    // Return only original version with success=false if parsing fails or throws an exception
+    return {
+        original: version,
+        success: false
+    };
+};
+
+/**
+ *  Check if a version string follows some kind of scheme (there is only semantic versioning (semver) for now)
+ *  @param {string} inpVersion - an app version string
+ *  @return {array} [regex.exec result, version scheme name]
+ */
+common.checkAppVersion = function(inpVersion) {
+    // Regex is from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+    const semverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+    // Half semver is similar to semver but with only one dot
+    const halfSemverRgx = /(^v?)(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
+
+    let execResult = semverRgx.exec(inpVersion);
+
+    if (execResult) {
+        return [execResult, 'semver'];
+    }
+
+    execResult = halfSemverRgx.exec(inpVersion);
+
+    if (execResult) {
+        return [execResult, 'halfSemver'];
+    }
+
+    return [null, null];
+};
+
+/**
+ *  Transform a version string so it will be numerically correct when sorted
+ *  For example '1.10.2' will be transformed to '100001.100010.100002'
+ *  So when sorted ascending it will come after '1.2.0' ('100001.100002.100000')
+ *  @param {string} inpVersion - an app version string
+ *  @return {string} the transformed app version
+ *  @note Imported and moved from @module plugins/crashes/api/parts/version (which has now been deprecated)
+ */
+common.transformAppVersion = function(inpVersion) {
+    const [execResult, versionScheme] = common.checkAppVersion(inpVersion);
+
+    if (execResult === null) {
+        // Version string does not follow any scheme, just return it
+        return inpVersion;
+    }
+
+    // Mark version parts based on semver scheme
+    let prefixIdx = 1;
+    let majorIdx = 2;
+    let minorIdx = 3;
+    let patchIdx = 4;
+    let preReleaseIdx = 5;
+    let buildIdx = 6;
+
+    if (versionScheme === 'halfSemver') {
+        patchIdx -= 1;
+        preReleaseIdx -= 1;
+        buildIdx -= 1;
+    }
+
+    let transformed = '';
+    // Rejoin version parts to a new string
+    for (let idx = prefixIdx; idx < buildIdx; idx += 1) {
+        let part = execResult[idx];
+
+        if (part) {
+            if (idx >= majorIdx && idx <= patchIdx) {
+                part = 100000 + parseInt(part, 10);
+            }
+
+            if (idx >= minorIdx && idx <= patchIdx) {
+                part = '.' + part;
+            }
+
+            if (idx === preReleaseIdx) {
+                part = '-' + part;
+            }
+
+            if (idx === buildIdx) {
+                part = '+' + part;
+            }
+
+            transformed += part;
+        }
+    }
+
+    return transformed;
+};
+
+
 common.adjustTimestampByTimezone = function(ts, tz) {
     var d = moment();
     if (tz) {
@@ -2431,19 +2205,6 @@ common.adjustTimestampByTimezone = function(ts, tz) {
     return ts + (d.utcOffset() * 60);
 };
 
-
-/**
-* Getter/setter for dot notatons:
-* @param {object} obj - object to use
-* @param {string} is - path of properties to get
-* @param {varies} value - value to set
-* @returns {varies} value at provided path
-* @example
-* common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 'string'
-* common.dot({a: {b: {c: 'string'}}}, ['a', 'b', 'c']) === 'string'
-* common.dot({a: {b: {c: 'string'}}}, 'a.b.c', 5) === 5
-* common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 5
-*/
 common.dot = function(obj, is, value) {
     if (typeof is === 'string') {
         return common.dot(obj, is.split('.'), value);
@@ -2463,14 +2224,6 @@ common.dot = function(obj, is, value) {
     }
 };
 
-/**
-* Not deep object and primitive type comparison function
-* 
-* @param  {Any} a object to compare
-* @param  {Any} b object to compare
-* @param  {Boolean} checkFromA true if check should be performed agains keys of a, resulting in true even if b has more keys
-* @return {Boolean} true if objects are equal, false if different types or not equal
-*/
 common.equal = function(a, b, checkFromA) {
     if (a === b) {
         return true;
@@ -2500,11 +2253,6 @@ common.equal = function(a, b, checkFromA) {
     }
 };
 
-/**
-* Returns plain object with key set to value
-* @param {varies} arguments - every odd value will be used as key and every event value as value for odd key
-* @returns {object} new object with set key/value properties
-*/
 common.o = function() {
     var o = {};
     for (var i = 0; i < arguments.length; i += 2) {
@@ -2513,13 +2261,6 @@ common.o = function() {
     return o;
 };
 
-/**
-* Return index of array with objects where property = value
-* @param {array} array - array where to search value
-* @param {string} property - property where to look for value
-* @param {varies} value - value you are searching for
-* @returns {number} index of the array
-*/
 common.indexOf = function(array, property, value) {
     for (var i = 0; i < array.length; i += 1) {
         if (array[i][property] === value) {
@@ -2529,14 +2270,6 @@ common.indexOf = function(array, property, value) {
     return -1;
 };
 
-/**
-* Optionally load module if it exists
-* @param {string} module - module name
-* @param {object} options - additional opeitons
-* @param {boolean} options.rethrow - throw exception if there is some other error
-* @param {varies} value - value you are searching for
-* @returns {number} index of the array
-*/
 common.optional = function(module, options) {
     try {
         if (module[0] in {'.': 1}) {
@@ -2552,13 +2285,6 @@ common.optional = function(module, options) {
     return null;
 };
 
-/**
-* Create promise for function which result should be checked periodically
-* @param {function} func - function to run when verifying result, should return true if success
-* @param {number} count - how many times to run the func before giving up, if result is always negative
-* @param {number} interval - how often to retest function on negative result in miliseconds
-* @returns {Promise} promise for checking task
-*/
 common.checkPromise = function(func, count, interval) {
     return new Promise((resolve, reject) => {
         /**
@@ -2626,6 +2352,7 @@ common.clearClashingQueryOperations = function(query) {
     return query;
 
 };
+
 /**
 * Single method to update app_users document for specific user for SDK requests
 * @param {params} params - params object
@@ -2634,6 +2361,7 @@ common.clearClashingQueryOperations = function(query) {
 * @param {function} callback - function to run when update is done or failes, passing error and result as arguments
 */
 common.updateAppUser = async function(params, update, no_meta, callback) {
+
     //backwards compatability
     if (typeof no_meta === "function") {
         callback = no_meta;
@@ -2810,10 +2538,6 @@ common.updateAppUser = async function(params, update, no_meta, callback) {
     }
 };
 
-/**
-* Update carrier from metrics to convert mnc/mcc code to carrier name
-* @param {object} metrics - metrics object from SDK request
-*/
 common.processCarrier = function(metrics) {
     // Initialize metrics if undefined
     metrics = metrics || {};
@@ -2851,11 +2575,6 @@ common.processCarrier = function(metrics) {
     metrics._carrier = metrics._carrier ? metrics._carrier : "Unknown";
 };
 
-/**
-* Parse Sequence
-* @param {number} num - sequence number for id
-* @returns {string} converted to base 62 number
-*/
 common.parseSequence = (num) => {
     const valSeq = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
         "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
@@ -2881,11 +2600,6 @@ common.parseSequence = (num) => {
     return result;
 };
 
-/**
-* Promise that tries to catch errors
-* @param  {function} f function which is usually passed to Promise constructor
-* @return {Promise}   Promise with constructor catching errors by rejecting the promise
-*/
 common.p = f => {
     return new Promise((res, rej) => {
         try {
@@ -2897,12 +2611,6 @@ common.p = f => {
     });
 };
 
-/**
-* Revive json encoded data, as for example, regular expressions
-* @param {string} key - key of json object
-* @param {vary} value - value of json object
-* @returns {vary} modified value, if it had revivable data
-*/
 common.reviver = (key, value) => {
     if (value === null) {
         return value;
@@ -2916,11 +2624,6 @@ common.reviver = (key, value) => {
     }
 };
 
-/**
- * Shuffle string using getRandomValues
- * @param {string} text - text to be shuffled
- * @returns {string} shuffled password
- */
 common.shuffleString = function(text) {
     var j, x, i;
     for (i = text.length; i; i--) {
@@ -2933,12 +2636,6 @@ common.shuffleString = function(text) {
     return text.join("");
 };
 
-/**
- * Gets a random string from given character set string with given length
- * @param {string} charSet - charSet string
- * @param {number} length - length of the random string. default 1 
- * @returns {string} random string from charset
- */
 common.getRandomValue = function(charSet, length = 1) {
     const randomValues = getRandomValues(new Uint8Array(charSet.length));
     let randomValue = "";
@@ -2954,15 +2651,6 @@ common.getRandomValue = function(charSet, length = 1) {
     return randomValue;
 };
 
-/**
-    * Generate random password
-    * @param {number} length - length of the password
-    * @param {boolean} no_special - do not include special characters
-    * @returns {string} password
-    * @example
-    * //outputs 4UBHvRBG1v
-    * common.generatePassword(10, true);
-    */
 common.generatePassword = function(length, no_special) {
     var text = [];
     var chars = "abcdefghijklmnopqrstuvwxyz";
@@ -2991,12 +2679,6 @@ common.generatePassword = function(length, no_special) {
     return this.shuffleString(text);
 };
 
-/**
- * Check db host match for both of API and Frontend config
- * @param {object} apiConfig - mongodb object from API config
- * @param {object} frontendConfig - mongodb object from Frontend config
- * @returns {boolean} isMatched - is config correct?  
- */
 common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
     if (typeof apiConfig === typeof frontendConfig) {
         if (typeof apiConfig === "string") {
@@ -3129,12 +2811,6 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
     }
 };
 
-/**
- * Sanitizes a filename to prevent directory traversals and such.
- * @param {string} filename - filename to sanitize
- * @param {string} replacement - string to replace characters to be removed
- * @returns {string} sanitizedFilename - sanitized filename
- */
 common.sanitizeFilename = (filename, replacement = "") => {
     return (filename + "")
         .replace(/[\x00-\x1f\x80-\x9f]+/g, replacement)
@@ -3143,12 +2819,6 @@ common.sanitizeFilename = (filename, replacement = "") => {
         .replace(/^\.+/, replacement);
 };
 
-/**
- * Sanitizes html content by allowing only safe tags
- * @param {string} html - html content to sanitize
- * @param {object} extendedWhitelist - extended whitelist of tags to allow
- * @returns {string} sanitizedHTML - sanitized html content
- */
 common.sanitizeHTML = (html, extendedWhitelist) => {
     const whiteList = {
         a: ["target", "title"],
@@ -3310,15 +2980,6 @@ common.sanitizeHTML = (html, extendedWhitelist) => {
 
 };
 
-
-
-
-/**
- *  Merge 2 mongodb update queries
- *  @param {object} ob1 - existing database update query
- *  @param {object} ob2 - addition to database update query
- *  @returns {object} merged database update query
- */
 common.mergeQuery = function(ob1, ob2) {
     if (ob2) {
         for (let key in ob2) {
@@ -3430,9 +3091,6 @@ common.mergeQuery = function(ob1, ob2) {
     return ob1;
 };
 
-/**
- * DB-related extensions / functions
- */
 common.dbext = {
     ObjectID: function(id) {
         try {
@@ -3456,21 +3114,21 @@ common.dbext = {
     },
 
     /**
-     * Decode string to ObjectID if needed
+     * Decode string to ObjectId if needed
      * 
-     * @param {String|ObjectID|null|undefined} id string or object id, empty string is invalid input
-     * @returns {ObjectID} id
+     * @param {string|ObjectId|null|undefined} id string or object id, empty string is invalid input
+     * @returns {ObjectId} id
      */
     oid: function(id) {
         return !id ? id : id instanceof mongodb.ObjectId ? id : new mongodb.ObjectId(id);
     },
 
     /**
-     * Create ObjectID with given timestamp. Uses current ObjectID random/server parts, meaning the 
+     * Create ObjectId with given timestamp. Uses current ObjectId random/server parts, meaning the 
      * object id returned still has same uniquness guarantees as random ones.
      * 
      * @param {Date|number} date Date object or timestamp in seconds, current date by default
-     * @returns {ObjectID} with given timestamp
+     * @returns {ObjectId} with given timestamp
      */
     oidWithDate: function(date = new Date()) {
         let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16),
@@ -3479,11 +3137,11 @@ common.dbext = {
     },
 
     /**
-     * Create blank ObjectID with given timestamp. Everything except for date part is zeroed.
+     * Create blank ObjectId with given timestamp. Everything except for date part is zeroed.
      * For use in queries like {_id: {$gt: oidBlankWithDate()}}
      * 
      * @param {Date|number} date Date object or timestamp in seconds, current date by default
-     * @returns {ObjectID} with given timestamp and zeroes in the rest of the bytes
+     * @returns {ObjectId} with given timestamp and zeroes in the rest of the bytes
      */
     oidBlankWithDate: function(date = new Date()) {
         let seconds = (typeof date === 'number' ? (date > 9999999999 ? Math.floor(date / 1000) : date) : Math.floor(date.getTime() / 1000)).toString(16);
@@ -3509,25 +3167,25 @@ class DataTable {
 
     /**
      * Constructor
-     * @param {Object} queryString This object should contain the datatable arguments like iDisplayStart,
+     * @param {object} queryString This object should contain the datatable arguments like iDisplayStart,
      * iDisplayEnd, etc. These are added to request by DataTables automatically. If you have a different 
      * use-case, please make sure that the object has necessary fields.
      * @param {('full'|'rows')} queryString.outputFormat The default output of getProcessedResult is a 
      * DataTable compatible object ("full"). However, some consumers of the API may require simple, array-like 
      * results too ("rows"). In order to allow consumers to specify expected output, the field can be used.
-     * @param {Object} options Wraps options
-     * @param {Array} options.columnOrder If there are sortable columns in the table, then you need to 
+     * @param {object} options Wraps options
+     * @param {Array<string>} options.columnOrder If there are sortable columns in the table, then you need to 
      * specify a column list in order to make it work (e.g. ["name", "status"]). 
-     * @param {Object} options.defaultSorting When there is no sorting provided in query string, sorting 
+     * @param {object} options.defaultSorting When there is no sorting provided in query string, sorting 
      * falls back to this object, if you provide any (e.g. {"name": "asc"}). 
-     * @param {Array} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
+     * @param {Array<string>} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
      * @param {('regex'|'hard')} options.searchStrategy Specify searching method. If "regex", then a regex
      * search is performed on searchableFields. Other values will be considered as hard match.
-     * @param {Object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
+     * @param {object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
      * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat. 
-     * @param {String} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
+     * @param {string} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
      * is the default identifier of MongoDB docs. Please make sure that this key is in the output of initial pipeline.
-     * @param {Boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
+     * @param {boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
      * injected to the sorting expression, in order to mitigate possible duplicate records in pages. This is
      * a protection for cases when the sorting is done based on non-unique fields. Injection is enabled by default.
      * If you want to disable this feature, pass true.
@@ -3606,7 +3264,7 @@ class DataTable {
 
     /**
      * Returns the search field for. Only for internal use.
-     * @returns {Object|String} Regex object or search term itself
+     * @returns {object|string} Regex object or search term itself
      */
     _getSearchField() {
         if (this.searchStrategy === "regex") {
@@ -3619,26 +3277,26 @@ class DataTable {
      * Creates an aggregation pipeline based on the query string and additional stages/facets
      * if provided any. Data flow between stages are not checked, so please do check manually.
      * 
-     * @param {Object} options Wraps options
-     * @param {Array} options.initialPipeline If you need to select a subset, to add new fields or 
+     * @param {object} options Wraps options
+     * @param {Array<object>} options.initialPipeline If you need to select a subset, to add new fields or 
      * anything else involving aggregation stages, you can pass an array of stages using options.initialPipeline.
      * Initial pipeline is basically used for counting the total number of documents without pagination and search.
      * 
      * # of output rows = total number of docs.
      * 
-     * @param {Array} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
+     * @param {Array<object>} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
      * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no 
      * query, then this will be another stage after initialPipeline. Paging and sorting are added after filteredPipeline.
      * 
      * # of output rows = filtered number of docs.
      * 
-     * @param {Object} options.customFacets You can add facets to your results using option.customFacets. 
+     * @param {object} options.customFacets You can add facets to your results using option.customFacets. 
      * Custom facets will use initial pipeline's output as its input. If the documents you're 
      * looking for are included by initial pipeline's output, you can use this to avoid extra db calls.
      * You can obtain outputs of your custom facets via getProcessedResult. Please note that custom facets will only be 
      * available when the output format is "full".
      * 
-     * @returns {Object} Pipeline object
+     * @returns {object} Pipeline object
      */
     getAggregationPipeline({
         initialPipeline = [],
@@ -3693,11 +3351,11 @@ class DataTable {
 
     /**
      * Processes the aggregation result and returns a ready-to-use response.
-     * @param {Object} queryResult Aggregation result returned by the MongoDB.
+     * @param {object} queryResult Aggregation result returned by the MongoDB.
      * @param {Function} processFn A callback function that has a single argument 'rows'.
      * As the name implies, it is an array of returned rows. The function can be used as
      * a final stage to do modifications to fetched items before completing the response. 
-     * @returns {Object|Array} Returns the final response
+     * @returns {object|Array<string>} Returns the final response
      */
     getProcessedResult(queryResult, processFn) {
         var fullTotal = 0,
@@ -3751,7 +3409,6 @@ class DataTable {
 }
 
 common.DataTable = DataTable;
-
 
 common.applyUniqueOnModel = function(model, uniqueData, prop) {
     for (var z = 0; z < uniqueData.length; z++) {
@@ -3858,7 +3515,7 @@ common.convertModelToArray = function(model, segmented) {
  * @returns {object} model data
  */
 common.convertArrayToModel = function(arr, segmented, props) {
-    props = props || {"c": true, "sum": true, "dur": true};
+    props = props || {"c": true, "s": true, "dur": true};
     /**
      * Creates empty object with all property values set to 0
      * @param {object} my_props  - all properies
@@ -3875,6 +3532,7 @@ common.convertArrayToModel = function(arr, segmented, props) {
     var iid;
     var z;
     if (segmented) {
+        segmented = segmented.replace("sg.", "");
         model.meta = {};
         var values = {};
         for (z = 0;z < arr.length;z++) {
@@ -4016,16 +3674,6 @@ common.licenseAssign = function(req, check) {
     }
 };
 
-/**
-* Standard number formatter, taken from frontend's countly.common.js
-
-* @memberof countlyCommon
-* @param {number} x - number to format
-* @returns {string} formatted number
-* @example
-* //outputs 1,234,567
-* countlyCommon.formatNumber(1234567);
-*/
 common.formatNumber = function(x) {
     x = parseFloat(parseFloat(x).toFixed(2));
     var parts = x.toString().split(".");
@@ -4033,13 +3681,6 @@ common.formatNumber = function(x) {
     return parts.join(".");
 };
 
-/**
-* Second formatter
-
-* @memberof countlyCommon
-* @param {number} number - number of seconds to format
-* @returns {string} formatted seconds
-*/
 common.formatSecond = function(number) {
     if (number === 0) {
         return '0';
@@ -4071,11 +3712,6 @@ common.formatSecond = function(number) {
     return formattedDuration.trim();
 };
 
-/**
- * Remove spaces, tabs, and newlines from the start and end from all levels of a nested object
- * @param {any} value - Arbitrary value
- * @returns {any} Trimmed value
- */
 common.trimWhitespaceStartEnd = function(value) {
     if (typeof value === 'string') {
         try {
@@ -4101,4 +3737,5 @@ common.trimWhitespaceStartEnd = function(value) {
     return value;
 };
 
+/** @type(import('../../types/common').Common) */
 module.exports = common;

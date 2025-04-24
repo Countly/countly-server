@@ -308,6 +308,9 @@ usage.processSession = function(ob) {
         }
 
         if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
+            console.log("Skipping because of cooldown");
+            console.log(params.time.timestamp - lastEndSession);
+            console.log(plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown);
             delete params.qstring.begin_session;//do not start a new session.
         }
         else {
@@ -328,6 +331,7 @@ usage.processSession = function(ob) {
                         drill_updates.custom = JSON.parse(JSON.stringify(params.app_user.custom));
                     }
                     drill_updates["sg.ended"] = "true";
+                    drill_updates.lu = new Date();
                     //if (drill_updates.dur || drill_updates.custom) {
                     ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates}}});
                     //}
@@ -368,6 +372,7 @@ usage.processSession = function(ob) {
                     drill_updates2.custom = JSON.parse(JSON.stringify(params.app_user.custom));
                 }
                 drill_updates2["sg.ended"] = "true";
+                drill_updates2.lu = new Date();
                 //if (drill_updates2.dur || drill_updates2.custom) {
                 ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
                 //}

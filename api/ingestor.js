@@ -205,6 +205,8 @@ plugins.connectToAllDatabases(false).then(function() {
                 res: res,
                 req: req
             };
+
+            console.log("recieved some data");
             params.tt = Date.now().valueOf();
             if (req.method.toLowerCase() === 'post') {
                 const formidableOptions = {};

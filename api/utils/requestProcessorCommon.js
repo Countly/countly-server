@@ -44,7 +44,6 @@ const validateRedirect = function(ob) {
                 opts.body = params.req.body;
             }
         }
-
         request(opts, function(error, response, body) {
             var code = 400;
             var message = "Redirect error. Tried to redirect to:" + app.redirect_url;

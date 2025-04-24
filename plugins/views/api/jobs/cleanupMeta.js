@@ -52,53 +52,56 @@ class CleanupMetaJob extends Job {
             doneJob();
         };
 
-        countlyDb.collection('apps').find({}).toArray(function(err0, apps) {
+        countlyDb.collection('apps').find({}).toArray(async function(err0, apps) {
             if (err0) {
                 log.e(err0);
             }
             apps = apps || [];
-            Promise.each(apps, function(app) {
-                return new Promise((resolve) => {
-                    countlyDb.collection("views").findOne({_id: app._id}, function(err1, view) {
-                        if (err1) {
-                            log.e("Error while cleaning up views meta", err1);
-                            resolve();
+            try {
+                for (var i = 0; i < apps.length; i++) {
+                    var app = apps[i];
+                    await new Promise((resolve) => {
+                        countlyDb.collection("views").findOne({_id: app._id}, function(err1, view) {
+                            if (err1) {
+                                log.e("Error while cleaning up views meta", err1);
+                                resolve();
 
-                        }
-                        else {
-                            let listToOmit = [];
-
-                            if (view && view.segments) {
-                                var omittedList = view.omit || [];
-                                for (var key in view.segments) {
-                                    //console.log(key+" "+Object.keys(listed[z].segments[key]).length);
-                                    if (omittedList.indexOf(key) !== -1) {
-                                        listToOmit.push(key);
-                                    }
-                                }
-
-                            }
-                            if (listToOmit.length > 0) {
-                                viewsUtils.ommit_segments({extend: true, db: countlyDb, omit: listToOmit, appId: app._id, params: {"qstring": {}, "user": {"_id": "SYSTEM", "username": "SYSTEM"}}}, function(err5) {
-                                    if (err5) {
-                                        log.e(err5);
-                                    }
-                                    resolve();
-                                });
                             }
                             else {
-                                resolve();
-                            }
-                        }
+                                let listToOmit = [];
 
+                                if (view && view.segments) {
+                                    var omittedList = view.omit || [];
+                                    for (var key in view.segments) {
+                                    //console.log(key+" "+Object.keys(listed[z].segments[key]).length);
+                                        if (omittedList.indexOf(key) !== -1) {
+                                            listToOmit.push(key);
+                                        }
+                                    }
+
+                                }
+                                if (listToOmit.length > 0) {
+                                    viewsUtils.ommit_segments({extend: true, db: countlyDb, omit: listToOmit, appId: app._id, params: {"qstring": {}, "user": {"_id": "SYSTEM", "username": "SYSTEM"}}}, function(err5) {
+                                        if (err5) {
+                                            log.e(err5);
+                                        }
+                                        resolve();
+                                    });
+                                }
+                                else {
+                                    resolve();
+                                }
+                            }
+
+                        });
                     });
-                });
-            }).then(() => {
+                }
                 finishItCallback();
-            }).catch((err) => {
+            }
+            catch (err) {
                 log.e('Error while cleaning up views meta', err);
                 finishItCallback();
-            });
+            }
         });
 
     }

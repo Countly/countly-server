@@ -20,6 +20,7 @@
                 saveButtonLabel: {type: String, required: false, default: ""},
                 cancelButtonLabel: {type: String, required: false, default: CV.i18n("common.cancel")},
                 closeFn: {type: Function},
+                hasRightSidecar: { type: Boolean, required: false, default: false },
                 hasCancelButton: {type: Boolean, required: false, default: true},
                 hasBackLink: {
                     type: [Object, Boolean],
@@ -60,8 +61,10 @@
                     var classes = {
                         'is-mounted': this.isMounted,
                         'is-open': this.isOpened,
-                        'has-sidecars': this.hasSidecars
+                        'has-sidecars': this.hasSidecars,
+                        'has-right-sidecar': this.hasRightSidecar,
                     };
+                    // NOTE: currentScreenMode variable seems to be not defined it should be defined or removed
                     classes["cly-vue-drawer--" + this.currentScreenMode + "-screen"] = true;
                     if (this.currentScreenMode === 'half') {
                         classes["cly-vue-drawer--half-screen-" + this.size] = true;

@@ -288,20 +288,26 @@
                 required: true,
                 default: 'primary',
                 validator: function(value) {
-                    return ['primary', 'secondary'].includes(value);
+                    return ['primary', 'secondary', 'info'].includes(value);
                 }
             },
             label: {
                 type: String,
                 required: false,
                 default: 'Status'
+            },
+            showIcon: {
+                type: Boolean,
+                required: false,
+                default: true
             }
         },
         data: function() {
             return {
                 modeConfig: {
                     primary: { background: '#E2E4E8', color: '#81868D', icon: 'cly-is cly-is-status' },
-                    secondary: { background: '#EBFAEE', color: '#12AF51', icon: 'cly-is cly-is-status' }
+                    secondary: { background: '#EBFAEE', color: '#12AF51', icon: 'cly-is cly-is-status' },
+                    info: { background: '#E1EFFF', color: '#0166D6', icon: 'cly-is cly-is-status' },
                     // Add more modes here if needed
                 }
             };
@@ -336,7 +342,7 @@
         },
         template: `
             <div :style="badgeStyles">
-                <i :class="currentConfig.icon" :style="iconStyles"></i>
+                <i v-if="showIcon" :class="currentConfig.icon" :style="iconStyles"></i>
                 <span class="text-small" :style="fontStyles">{{ label }}</span>
             </div>
         `,
@@ -366,13 +372,13 @@
             <div class="cly-vue-content-builder__layout-steps">
                 <div v-if="collapse">
                     <el-collapse v-model="activeSection">
-                        <el-collapse-item :title="header" name="section">
+                        <el-collapse-item :title="header" name="section" :test-id="header.toLowerCase().replaceAll(' ', '-')">
                             <slot name="content-builder-layout-steps"></slot>
                         </el-collapse-item>
                     </el-collapse>  
                 </div>
                 <div v-else>
-                    <div class="cly-vue-content-builder__layout-steps__header text-medium font-weight-bold">{{ header }}</div>
+                    <div class="cly-vue-content-builder__layout-steps__header text-medium font-weight-bold" :data-test-id="'content-drawer-sidebar-step-' + header.toLowerCase().replaceAll(' ', '-')">{{ header }}</div>
                     <slot name="content-builder-layout-steps"></slot>
                 </div>
             </div>
@@ -390,6 +396,7 @@
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER = 'swapper';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH = 'switch';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB = 'tab';
+    const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_UPLOAD = 'upload';
 
     const COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE = {
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER]: 'cly-colorpicker',
@@ -399,15 +406,14 @@
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SLIDER]: 'el-slider',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER]: 'cly-option-swapper',
         [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWITCH]: 'el-switch',
-        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB]: 'div'
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_TAB]: 'div',
+        [COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_UPLOAD]: 'el-upload'
     };
 
     const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_HORIZONTAL = 'horizontal';
     const COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_VERTICAL = 'vertical';
 
     Vue.component("cly-content-builder-sidebar-input", countlyVue.components.create({
-        template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html'),
-
         props: {
             componentTooltip: {
                 default: null,
@@ -428,13 +434,19 @@
                 default: 'cly-io cly-io-question-mark-circle',
                 type: String
             },
+
             labelTooltip: {
                 default: null,
                 type: String
             },
 
+            loading: {
+                default: false,
+                type: Boolean
+            },
+
             options: {
-                default: () => [],
+                default: () => null,
                 type: Array
             },
 
@@ -485,6 +497,8 @@
         },
 
         emits: [
+            'add-asset',
+            'delete-asset',
             'input'
         ],
 
@@ -508,6 +522,20 @@
                 set(newValue) {
                     this.$emit('input', newValue);
                 }
+            },
+
+            computedAttrs() {
+                if (this.isUploadInput) {
+                    return {
+                        action: '',
+                        drag: true,
+                        multiple: false,
+                        showFileList: false,
+                        ...this.$attrs
+                    };
+                }
+
+                return this.$attrs;
             },
 
             controlsProp() {
@@ -541,6 +569,10 @@
                 return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_SWAPPER;
             },
 
+            isUploadInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_UPLOAD;
+            },
+
             isVerticalInput() {
                 return this.position === COUNTLY_CONTENT_SIDEBAR_INPUT_PLACEMENT_VERTICAL;
             },
@@ -555,7 +587,19 @@
                 }
                 return null;
             }
-        }
+        },
+
+        methods: {
+            onUploadAddButtonClick() {
+                this.$emit('add-asset');
+            },
+
+            onUploadDeleteButtonClick() {
+                this.$emit('delete-asset');
+            }
+        },
+
+        template: CV.T('/javascripts/countly/vue/templates/content/UI/content-sidebar-input.html')
     }));
 
     Vue.component("cly-option-swapper", countlyVue.components.create({
@@ -580,6 +624,11 @@
             value: {
                 default: null,
                 type: [String, Number]
+            },
+            testId: {
+                type: String,
+                default: 'cly-option-swapper-test-id',
+                required: false
             }
         },
 
@@ -652,21 +701,21 @@
                      @click="selectedDevice = 'mobile'" 
                      :style="{ backgroundColor: selectedDevice === 'mobile' ? selectedBackground : 'transparent' }"
                      :class="[selectedDevice === 'mobile' ? 'color-white' : '']"
-                     class="cly-vue-device-selector__device bu-p-2">
+                     class="cly-vue-device-selector__device bu-p-2" data-test-id="small-devices-button">
                     <i class="cly-io cly-io-device-mobile"></i>
                 </div>
                 <div v-if="showTablet" 
                      @click="selectedDevice = 'tablet'" 
                      :style="{ backgroundColor: selectedDevice === 'tablet' ? selectedBackground : 'transparent' }"
                      :class="[selectedDevice === 'tablet' ? 'color-white' : '']"
-                     class="cly-vue-device-selector__device bu-p-2">
+                     class="cly-vue-device-selector__device bu-p-2" data-test-id="medium-devices-button">
                     <i class="cly-io cly-io-device-tablet"></i>
                 </div>
                 <div v-if="showDesktop" 
                      @click="selectedDevice = 'desktop'" 
                      :style="{ backgroundColor: selectedDevice === 'desktop' ? selectedBackground : 'transparent' }"
                      :class="[selectedDevice === 'desktop' ? 'color-white' : '']"
-                     class="cly-vue-device-selector__device bu-p-2">
+                     class="cly-vue-device-selector__device bu-p-2" data-test-id="large-devices-button">
                     <i class="cly-io cly-io-desktop-computer"></i>
                 </div>
             </div>
