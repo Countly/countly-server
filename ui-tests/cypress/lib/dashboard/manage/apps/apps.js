@@ -58,7 +58,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: applicationsPageElements.SALT_FOR_CHECKSUM_LABEL,
         labelText: "Salt for checksum",
         element: applicationsPageElements.SALT_FOR_CHECKSUM_DESCRIPTION_LABEL,
-        elementText: "Will only accept requests where checksum is signed with the same salt in SDK",
+        elementText: "Will only accept requests where the checksum is signed with the same salt in the SDK.",
     });
 
     cy.verifyElement({
