@@ -1294,7 +1294,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.INCOMING_DATA_LOGS.DATA_LOGGING_STATE }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "If incoming data logging state is set to \"On\", only the last 1000 requests will be saved. When the state is set to \"Automatic\", requests will continue to be logged until the limit per minute is reached.",
+        labelText: "If the incoming data logging state is set to \"On\", only the last 1000 requests will be saved. When the state is set to \"Automatic\", requests will continue to be logged until the limit per minute is reached.",
     });
 
     cy.verifyElement({
