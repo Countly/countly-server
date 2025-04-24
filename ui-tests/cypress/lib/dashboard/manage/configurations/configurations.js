@@ -1701,7 +1701,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.AUDIT_LOGS.DISABLE_IP_TRACKING }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "Do not record IP address of actions taken by the users",
+        labelText: "Do not record the IP address of actions taken by the users.",
     });
 
     cy.verifyElement({
