@@ -19,6 +19,10 @@ updates:
     schedule:
       interval: daily
     open-pull-requests-limit: 10
+    reviewers:
+      - can-angun
+    assignees:
+      - can-angun
     labels:
       - dependencies
     versioning-strategy: increase-if-necessary
