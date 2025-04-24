@@ -1243,7 +1243,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.HOOKS.TIME_WINDOW_FOR_REQUEST_LIMIT }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Time window for request limit",
+        labelText: "Time Window for Request Limit",
     });
 
     cy.verifyElement({
