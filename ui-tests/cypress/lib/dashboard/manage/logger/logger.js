@@ -8,7 +8,7 @@ const verifyStaticElementsOfPage = (isEnabled) => {
         labelElement: loggerPageElements.PAGE_TITLE,
         labelText: "Incoming Data Logs",
         tooltipElement: loggerPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Log requests made to the write API to review and debug incoming data"
+        tooltipText: "Logs requests made to the write API to review and debug incoming data."
     });
 
     cy.verifyElement({
