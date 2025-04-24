@@ -1179,7 +1179,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.HOOKS.ACTION_BATCH_PROCESING_SIZE }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Action batch procesing size",
+        labelText: "Action Batch Processing Size",
     });
 
     cy.verifyElement({
