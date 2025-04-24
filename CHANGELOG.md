@@ -5,6 +5,7 @@ Fixes:
 - [star-rating] Added missing columns to Rating Widgets table edit
 - [star-rating] Fix rating score and responses table sorting
 - [ui] Fix alignment of drawers title and close icon
+- [heatmaps] Get heatmap data from new drill events collection
 
 Fixes:
 - [localization] Fixed grammatical errors
