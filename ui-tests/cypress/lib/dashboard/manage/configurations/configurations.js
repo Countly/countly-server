@@ -1155,7 +1155,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.DASHBOARD.ALLOW_DASHBOARD_SHARING }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "Enable dashboard sharing for users to share a dashboard with other users. If set to off, a dashboard cannot be shared with others.",
+        labelText: "Enable dashboard sharing for users to share a dashboard with other users. If set to off, dashboards cannot be shared with others.",
     });
 
     cy.verifyElement({
