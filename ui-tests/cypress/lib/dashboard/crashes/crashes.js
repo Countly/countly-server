@@ -233,7 +233,7 @@ const verifyStaticElementsOfCrashStatisticsPage = () => {
         labelElement: crashStatisticsEChartElements.UNIQUE_CRASHES_LABEL,
         labelText: "Unique Crashes",
         tooltipElement: crashStatisticsEChartElements.UNIQUE_CRASHES_TOOLTIP,
-        tooltipText: "Timeline of crash types. Only the first ocurrence of each crash time recorded here."
+        tooltipText: "Timeline of crash types. Only the first occurrence of each crash time is recorded here."
     });
 
     cy.verifyElement({
