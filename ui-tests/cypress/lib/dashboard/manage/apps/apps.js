@@ -84,7 +84,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         labelElement: applicationsPageElements.ADD_UPLOAD_INSRUCTIONS_LABEL,
-        labelText: "Only jpg, png and gif image formats are allowed",
+        labelText: "Only JPG, PNG, and GIF image formats are allowed.",
     });
 };
 
