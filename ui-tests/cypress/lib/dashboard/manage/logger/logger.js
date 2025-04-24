@@ -23,7 +23,7 @@ const verifyStaticElementsOfPage = (isEnabled) => {
             element: loggerPageElements.ENABLED_LABEL,
             elementText: "Enabled",
             tooltipElement: loggerPageElements.AUTO_REFRESH_IS_ENABLED_TOOLTIP,
-            tooltipText: "Automatically refresh can be adjusted through this switch",
+            tooltipText: "Automatic refresh can be adjusted through this switch.",
         });
 
         cy.verifyElement({
@@ -37,7 +37,7 @@ const verifyStaticElementsOfPage = (isEnabled) => {
             labelElement: loggerPageElements.ENABLE_AUTO_REFRESH_LABEL,
             labelText: "Enable Auto-refresh",
             tooltipElement: loggerPageElements.ENABLE_AUTO_REFRESH_TOOLTIP,
-            tooltipText: "Automatically refresh can be adjusted through this switch"
+            tooltipText: "Automatic refresh can be adjusted through this switch."
         });
     }
 

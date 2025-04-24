@@ -33,7 +33,7 @@ const verifyStaticElementsOfCrashGroupsPage = () => {
         labelElement: crashGroupsPageElements.ENABLED_LABEL,
         labelText: "Enabled",
         tooltipElement: crashGroupsPageElements.AUTO_REFRESH_IS_ENABLED_TOOLTIP,
-        tooltipText: "Automatically refresh can be adjusted through this switch"
+        tooltipText: "Automatic refresh can be adjusted through this switch."
     });
 
     cy.verifyElement({
