@@ -23,6 +23,6 @@
   },
   "homepage": "https://count.ly/",
   "dependencies": {
-    "csvtojson": "^1.1.9"
+    "csvtojson": "^2.0.10"
   }
 }
