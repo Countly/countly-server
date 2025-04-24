@@ -222,7 +222,7 @@ const verifyStaticElementsOfCrashStatisticsPage = () => {
         labelElement: crashStatisticsEChartElements.TOTAL_OCCURENCES_LABEL,
         labelText: "Total Occurences",
         tooltipElement: crashStatisticsEChartElements.TOTAL_OCCURENCES_TOOLTIP,
-        tooltipText: "Timeline of all occurrences of all crashes. Same crash may occurred multiple times for same or different users."
+        tooltipText: "Timeline of all occurrences of all crashes. The same crash may have occurred multiple times for the same or different users."
     });
 
     cy.verifyElement({
