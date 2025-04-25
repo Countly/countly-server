@@ -43,8 +43,8 @@ const NUMBER_OF_SCHEDULES_AHEAD_OF_TIME = 5;
  */
 async function scheduleMessageByDateTrigger(db, messageId) {
     /** @type {MessageCollection} */
-    const col = db.collection("messages");
-    const message = await col.findOne({ _id: messageId });
+    const messageCol = db.collection("messages");
+    const message = await messageCol.findOne({ _id: messageId });
     if (!message) {
         throw new Error("Message with ID " + messageId.toString()
             + " couldn't be found");
@@ -123,48 +123,14 @@ async function scheduleMessageByDateTrigger(db, messageId) {
  * @returns {Promise<Schedule[]>}
  */
 async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
-    const appMap = mergeAutoTriggerEvents(autoTriggerEvents);
-
-    // group messages together by their appId to reduce the number of mongo queries:
-    /** @type {{appId: ObjectId; triggerFilter: MessageTriggerFilter; uids: string[];}[]} */
-    const messageFilters = [];
-    for (const appId in appMap) {
-        const map = appMap[appId];
-        // Events:
-        for (const eventName in map.event) {
-            messageFilters.push({
-                appId: new ObjectId(appId),
-                triggerFilter: {
-                    kind: "event",
-                    events: eventName,
-                },
-                uids: Array.from(map.event[eventName])
-            });
-        }
-
-        for (const cohortId in map.cohort) {
-            for (const _direction in map.cohort[cohortId]) {
-                const direction = /** @type {CohortTriggerEvent["direction"]} */(_direction);
-                messageFilters.push({
-                    appId: new ObjectId(appId),
-                    triggerFilter: {
-                        kind: "cohort",
-                        cohorts: cohortId,
-                        entry: direction === "enter",
-                    },
-                    uids: Array.from(map.cohort[cohortId][direction])
-                });
-            }
-        }
-    }
-
+    const messageFilters = mergeAutoTriggerEvents(autoTriggerEvents);
     // find if there are messages for the created "triggerFilter". then load the
     // message, and then create a schedule for it.
     /** @type {MessageCollection} */
-    const col = db.collection("messages");
+    const messageCol = db.collection("messages");
     const now = new Date;
     const promises = messageFilters.map(async ({ appId, triggerFilter, uids }) => {
-        let messages = await col.find({
+        let messages = await messageCol.find({
             app: appId,
             status: { $nin: INACTIVE_MESSAGE_STATUSES },
             triggers: {
@@ -178,20 +144,57 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
                 }
             }
         }).toArray();
-        return Promise.allSettled(messages.map(message => createSchedule(
-            db, appId, message._id, now, false, undefined, {uids}
-        )));
+        return Promise.allSettled(messages.map(message => {
+            /** @type {AudienceFilters} */
+            const audienceFilters = { ...message.filter, uids };
+            const trigger = message.triggers[0];
+            let scheduleTo = now;
+            let timezoneAware = false;
+            let schedulerTimezone;
+            if (trigger.kind === "cohort" || trigger.kind === "event") {
+                if (trigger.cap || trigger.sleep) {
+                    audienceFilters.cap = {
+                        messageId: message._id,
+                    };
+                    if (trigger.cap) {
+                        audienceFilters.cap.maxMessages = trigger.cap;
+                    }
+                    if (trigger.sleep) {
+                        audienceFilters.cap.minTime = trigger.sleep;
+                    }
+                }
+                if (trigger.time) {
+                    timezoneAware = true;
+                    schedulerTimezone = now.getTimezoneOffset();
+                    scheduleTo = tzOffsetAdjustedTime(
+                        now,
+                        schedulerTimezone,
+                        trigger.time
+                    );
+                }
+                else if (trigger.delay) {
+                    scheduleTo = moment(now).add(trigger.delay, "milliseconds")
+                        .toDate();
+                }
+            }
+            return createSchedule(
+                db,
+                appId,
+                message._id,
+                scheduleTo,
+                timezoneAware,
+                schedulerTimezone,
+                audienceFilters
+            );
+        }));
     });
-
     const results = (await Promise.all(promises)).flat();
-
     for (let i = 0; i < results.length; i++) {
         const result = results[i];
         if (result.status === "rejected") {
             log.e("Failed to schedule auto triggered message", result.reason);
         }
     }
-
     return results.filter(result => result.status === "fulfilled")
         .map(result => result.value);
 }
@@ -284,9 +287,9 @@ async function createScheduleEvents(messageSchedule) {
 
 /**
  *
- * @param {Date} date
- * @param {number} offset
- * @param {number} time
+ * @param {Date} date - date to adjust
+ * @param {number} offset - in minutes
+ * @param {number} time - in milliseconds (hours * 60 * 60 + minutes * 60 + seconds) * 1000
  * @returns {Date}
  */
 function tzOffsetAdjustedTime(date, offset, time) {
@@ -444,8 +447,11 @@ function findNextMatchForMulti(trigger, after = new Date) {
 }
 
 /**
- * @param {AutoTriggerEvent[]} autoTriggerEvents
- * @returns {AutoTriggerAppMap}
+ * Combines user ids across received auto trigger events into a set indexed by
+ * their appIds. Events are grouped by their event names and cohorts are grouped
+ * by their cohort IDs.
+ * @param {AutoTriggerEvent[]} autoTriggerEvents - list of auto trigger events
+ * @returns {{appId: ObjectId; triggerFilter: MessageTriggerFilter; uids: string[];}[]} map of appId to event and cohort sets
  */
 function mergeAutoTriggerEvents(autoTriggerEvents) {
     /** @type {AutoTriggerAppMap} */
@@ -475,7 +481,39 @@ function mergeAutoTriggerEvents(autoTriggerEvents) {
             break;
         }
     }
-    return appMap;
+    // group messages together by their appId to reduce the number of mongo queries:
+    /** @type {{appId: ObjectId; triggerFilter: MessageTriggerFilter; uids: string[];}[]} */
+    const messageFilters = [];
+    for (const appId in appMap) {
+        const map = appMap[appId];
+        // Events:
+        for (const eventName in map.event) {
+            messageFilters.push({
+                appId: new ObjectId(appId),
+                triggerFilter: {
+                    kind: "event",
+                    events: eventName,
+                },
+                uids: Array.from(map.event[eventName])
+            });
+        }
+
+        for (const cohortId in map.cohort) {
+            for (const _direction in map.cohort[cohortId]) {
+                const direction = /** @type {CohortTriggerEvent["direction"]} */(_direction);
+                messageFilters.push({
+                    appId: new ObjectId(appId),
+                    triggerFilter: {
+                        kind: "cohort",
+                        cohorts: cohortId,
+                        entry: direction === "enter",
+                    },
+                    uids: Array.from(map.cohort[cohortId][direction])
+                });
+            }
+        }
+    }
+    return messageFilters;
 }
 
 module.exports = {

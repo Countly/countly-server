@@ -413,7 +413,32 @@ async function buildPipelineFromFilters(db, filters, appIdStr, appTimezone) {
             }
         }
     }
-
+    // Cap filter (only for cohort and event trigger).
+    if (filters?.cap) {
+        const field = "msgs." + filters.cap.messageId.toString();
+        // limit the maximum number of push notifications for the given messageId
+        if (typeof filters.cap.maxMessages === "number" && filters.cap.maxMessages > 0) {
+            pipeline.push({
+                $match: {
+                    [field + "." + String(filters.cap.maxMessages)]: {
+                        $exists: false
+                    }
+                }
+            });
+        }
+        // minimum required time to send the same message again
+        if (typeof filters.cap.minTime === "number" && filters.cap.minTime > 0) {
+            pipeline.push({
+                $match: {
+                    [field]: {
+                        $not: {
+                            $gt: Date.now() - filters.cap.minTime
+                        }
+                    }
+                }
+            });
+        }
+    }
     return pipeline;
 }
 

@@ -7,6 +7,11 @@ export interface AudienceFilters {
     drill?: string; // JSON
     geos?: ObjectId[];
     cohorts?: string[];
+    cap?: {
+        maxMessages?: number; // Maximum number of messages per user.
+        minTime?: number; // Minimum time between messages in milliseconds.
+        messageId: ObjectId; // Message ID
+    };
 }
 
 export interface MessageOverrides {

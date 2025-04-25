@@ -5,9 +5,7 @@ export type PlatformEnvKeys = "p"|"d"|"a"; // production|debug|adhoc
 export type PlatformCombinedKeys = "ap"|"hp"|"ip"|"id"|"ia";
 
 export interface MessageAudienceFilter {
-    // TODO: user: { type: 'JSON', required: false, nonempty: true, custom: Filter.filterQueryValidator },
     user?: string;
-    // TODO: drill: { type: 'JSON', required: false, nonempty: true, custom: Filter.filterQueryValidator },
     drill?: string;
     geos?: ObjectId[];
     cohorts?: string[];
@@ -28,11 +26,11 @@ export interface BaseAutoTrigger extends BaseTrigger {
     kind: "event"|"api"|"cohort";
     end?: Date;
     actuals?: boolean;
-    time?: number;
-    reschedule?: boolean;
-    delay?: number;
-    cap?: number;
-    sleep?: number;
+    time?: number; // Delivery time in milliseconds (from clock input)
+    reschedule?: boolean; // THIS IS NOT WORKING. SHOULD BE: What if the user is past the scheduled time? "Do not send the message": true. "Deliver the message next day": false
+    delay?: number; // Delivery method: Delayed in milliseconds (from days and hours inputs)
+    cap?: number; // Capping: Capped: Maximum number of messages per user
+    sleep?: number; // Capping: Capped: Minimum time between messages
 }
 
 export interface ReschedulingTrigger extends BaseTrigger {
@@ -57,7 +55,7 @@ export interface CohortTrigger extends BaseAutoTrigger {
     kind: "cohort";
     cohorts: string[];
     entry?: boolean;
-    cancels?: boolean;
+    cancels?: boolean; // Behavior when trigger condition is no longer met. "Send anyway": false. "Cancel when user exists selected cohort"
 }
 
 export interface APITrigger extends BaseAutoTrigger {

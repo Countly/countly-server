@@ -12,9 +12,9 @@ const { sendAutoTriggerEvents } = require("./new/lib/kafka.js");
 
 /**
  * Handler function for /cohort/enter (/cohort/exit) hooks
- * @param {boolean} entry true if it's cohort enter, false for exit
- * @param {{ app_id: ObjectId; _id: string; name: string; }} cohort cohort object
- * @param {string[]} uids uids array
+ * @param {boolean} entry - true if it's cohort enter, false for exit
+ * @param {{ app_id: ObjectId; _id: string; name: string; }} cohort - cohort object
+ * @param {string[]} uids - array of uids
  */
 module.exports.autoOnCohort = async function(entry, cohort, uids) {
     logCohorts.d("processing cohort %s (%s) %s for %d uids",
@@ -59,9 +59,7 @@ module.exports.autoOnCohortDeletion = async function(_id, ack) {
     else {
         return await Message.count({'triggers.cohorts': _id, state: {$bitsAnySet: State.Streamable | State.Streaming | State.Paused | State.Scheduling}});
     }
-
 };
-
 */
 /**
  * Handler function for /cohort/enter (/cohort/exit) hooks
