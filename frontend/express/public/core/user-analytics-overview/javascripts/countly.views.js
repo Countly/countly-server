@@ -147,7 +147,7 @@ var UserAnalyticsView = countlyVue.views.create({
     ].concat(countlyVue.container.mixins(["/analytics/users"])),
     data: function() {
         return {
-            selectedTab: (this.$route.params && this.$route.params.tab) || "overview"
+            selectedTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "overview"
         };
     },
     computed: {

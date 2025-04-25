@@ -7,7 +7,7 @@ var DataPointsView = countlyVue.views.create({
         var settings = {
             title: CV.i18n('server-stats.data-points'),
             description: CV.i18n('server-stats.data-points-description'),
-            app_id: this.$route.params.appid,
+            app_id: this.$legacyRoute.params.appid,
             subPage: false,
             isLoading: true,
             externalLinks: [],
@@ -22,13 +22,13 @@ var DataPointsView = countlyVue.views.create({
             //We have push plugin
             settings.showPushColumn = true;
         }
-        if (this.$route.params.appid) {
+        if (this.$legacyRoute.params.appid) {
             settings.subPage = true;
-            if (countlyGlobal.apps[this.$route.params.appid]) {
-                settings.title = countlyGlobal.apps[this.$route.params.appid].name;
+            if (countlyGlobal.apps[this.$legacyRoute.params.appid]) {
+                settings.title = countlyGlobal.apps[this.$legacyRoute.params.appid].name;
             }
             else {
-                settings.title = this.$route.params.appid;
+                settings.title = this.$legacyRoute.params.appid;
             }
         }
         return settings;

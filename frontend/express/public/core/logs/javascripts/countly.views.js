@@ -9,7 +9,7 @@
         ].concat(countlyVue.container.mixins(["/manage/logs"])),
         data: function() {
             return {
-                selectedTab: (this.$route.params && this.$route.params.tab)
+                selectedTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab)
             };
         },
         computed: {

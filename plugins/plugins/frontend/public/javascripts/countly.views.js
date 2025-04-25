@@ -295,30 +295,30 @@
         },
         data: function() {
             return {
-                back: this.$route.params.namespace === "search",
+                back: this.$legacyRoute.params.namespace === "search",
                 configsData: {},
                 configsList: [],
                 coreDefaults: ['api', 'frontend', 'logs', 'security'],
                 diff: [],
                 diff_: {},
-                selectedConfig: this.$route.params.namespace || "api",
+                selectedConfig: this.$legacyRoute.params.namespace || "api",
                 searchPlaceholder: CV.i18n("configs.search-settings"),
                 predefinedLabels: app.configurationsView.predefinedLabels,
                 predefinedInputs: app.configurationsView.predefinedInputs,
                 predefinedStructure: app.configurationsView.predefinedStructure,
-                searchQuery: this.$route.params.searchQuery || "",
+                searchQuery: this.$legacyRoute.params.searchQuery || "",
                 searchResultStructure: {},
             };
         },
         beforeCreate: function() {
             var self = this;
-            if (this.$route.params.success) {
+            if (this.$legacyRoute.params.success) {
                 CountlyHelpers.notify({
                     title: jQuery.i18n.map["configs.changed"],
                     message: jQuery.i18n.map["configs.saved"]
                 });
-                this.$route.params.success = false;
-                app.noHistory("#/manage/configurations/" + this.$route.params.namespace || "api");
+                this.$legacyRoute.params.success = false;
+                app.noHistory("#/manage/configurations/" + this.$legacyRoute.params.namespace || "api");
             }
             return $.when(countlyPlugins.initializeConfigs())
                 .then(function() {
@@ -425,8 +425,8 @@
                 });
         },
         updated: function() {
-            if (this.$route.params.section) {
-                this.scrollToSection(this.$route.params.section);
+            if (this.$legacyRoute.params.section) {
+                this.scrollToSection(this.$legacyRoute.params.section);
             }
         },
         methods: {
@@ -700,7 +700,7 @@
                     password: ""
                 },
                 changePassword: {
-                    showDialog: this.$route.params && this.$route.params.reset || false,
+                    showDialog: this.$legacyRoute.params && this.$legacyRoute.params.reset || false,
                     title: CV.i18n("configs.change-password"),
                     saveButtonLabel: CV.i18n("configs.change-password"),
                     cancelButtonLabel: CV.i18n("configs.cancel"),
@@ -708,7 +708,7 @@
                     newPassword: "",
                     confirmPassword: ""
                 },
-                noaccess: this.$route.params && this.$route.params.noaccess || false,
+                noaccess: this.$legacyRoute.params && this.$legacyRoute.params.noaccess || false,
                 components: {},
                 formId: "account-settings-form",
                 userData: countlyGlobal.member,

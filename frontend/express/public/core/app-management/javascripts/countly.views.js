@@ -67,7 +67,7 @@
                     return a.label > b.label && 1 || -1;
                 });
             }
-            var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
+            var app_id = this.$legacyRoute.params.app_id || countlyCommon.ACTIVE_APP_ID;
             return {
                 showFileList: true,
                 firstApp: this.checkIfFirst(),
@@ -129,7 +129,7 @@
             }
         },
         created: function() {
-            var app_id = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
+            var app_id = this.$legacyRoute.params.app_id || countlyCommon.ACTIVE_APP_ID;
             if (!countlyGlobal.apps[app_id]) {
                 this.createNewApp();
             }
@@ -857,7 +857,7 @@
             }
         },
         mounted: function() {
-            var appId = this.$route.params.app_id || countlyCommon.ACTIVE_APP_ID;
+            var appId = this.$legacyRoute.params.app_id || countlyCommon.ACTIVE_APP_ID;
             this.$store.dispatch('countlyAppManagement/setSelectedAppId', appId);
         }
     });

@@ -1,4 +1,5 @@
 /* global app, countlyAuth, countlyVue, countlyPopulator, CountlyHelpers, CV, countlyCommon, countlyGlobal, Vue, moment */
+
 (function() {
     var FEATURE_NAME = 'populator';
 
@@ -501,7 +502,7 @@
                             url: countlyCommon.API_URL + "/o/populator/environment/get",
                             data: {
                                 app_id: countlyCommon.ACTIVE_APP_ID,
-                                template_id: self.$route.params.id,
+                                template_id: self.$legacyRoute.params.id,
                                 environment_id: self.environmentId
                             }
                         };
@@ -525,7 +526,7 @@
             return {
                 environmentInformations: [],
                 templateInformations: {},
-                templateId: this.$route.params.id,
+                templateId: this.$legacyRoute.params.id,
                 customProperties: [],
                 isLoading: false,
                 environmentId: '',
@@ -614,45 +615,156 @@
         }
     });
 
-    var AppLockedView = countlyVue.views.create({
-        template: countlyVue.T("/populator/templates/application-lock.html"),
-        methods: {
-            redirectToAppManager: function() {
-                window.location.href = '#/manage/apps';
-            }
+    // var AppLockedView = countlyVue.views.create({
+    //     template: countlyVue.T("/populator/templates/application-lock.html"),
+    //     methods: {
+    //         refresh: function(force) {
+    //             if (this.isLoading || force) {
+    //                 this.isLoading = false;
+    //                 this.tableStore.dispatch("fetchEnvironmentUsersTable");
+    //             }
+    //         },
+    //         deleteEnvironment: function() {
+    //             this.openDialog();
+    //         },
+    //         closeConfirmDialog: function() {
+    //             this.dialog.showDialog = false;
+    //         },
+    //         submitConfirmDialog: function() {
+    //             var self = this;
+    //             countlyPopulator.removeEnvironment(this.templateId, this.environmentId, function(res) {
+    //                 if (res.result) {
+    //                     CountlyHelpers.notify({type: "ok", title: CV.i18n("common.success"), message: CV.i18n('populator-success-delete-environment'), sticky: true, clearAll: true});
+    //                     self.dialog.showDialog = false;
+    //                     app.navigate("/manage/populate", true);
+    //                 }
+    //                 else {
+    //                     CountlyHelpers.notify({type: "error", title: CV.i18n("common.error"), message: CV.i18n('populator.failed-to-delete-environment', self.environmentId), sticky: false, clearAll: true});
+    //                 }
+    //             });
+    //         },
+    //         openDialog: function() {
+    //             this.dialog = {
+    //                 type: "check",
+    //                 showDialog: true,
+    //                 saveButtonLabel: CV.i18n('common.yes'),
+    //                 cancelButtonLabel: CV.i18n('common.cancel'),
+    //                 title: CV.i18n('populator.environment-delete-warning-title'),
+    //                 text: CV.i18n('populator.environment-delete-warning-description', this.filterByEnvironmentOptions.filter(x => x.value === this.environmentId)[0].label)
+    //             };
+    //         },
+    //         calculateWidth: function(percentage) {
+    //             //added to use the "fixed" prop on the table.
+    //             //fixed only works if width = px, and since the columns are dynamic, we have to make this conversion to fit columns properly
+    //             if (document.querySelector('#populator-environment-table')) {
+    //                 const tableWidth = document.querySelector('#populator-environment-table').offsetWidth;
+    //                 return (tableWidth * percentage) / 100;
+    //             }
+    //             return 300;
+    //         },
+    //         formatTableCell: function(item) {
+    //             return function(row) {
+    //                 return row.custom[item] === null || typeof row.custom[item] === 'undefined' ? '-' : row.custom[item].toString();
+    //             };
+    //         },
+    //         onEnvironmentChange: function() {
+    //             this.refresh(true);
+    //         }
+    //     },
+    //     template: countlyVue.T("/populator/templates/environment_detail.html"),
+    //     created: function() {
+    //         var self = this;
+    //         this.templateId = this.$legacyRoute.params.id;
+    //         countlyPopulator.getEnvironments(function(envs) {
+    //             self.filterByEnvironmentOptions = envs.filter(x => x.templateId === self.templateId)
+    //                 .map(x => ({value: x._id, label: countlyCommon.unescapeHtml(x.name)}));
+    //             self.environmentId = self.filterByEnvironmentOptions[0].value;
+    //             self.refresh(true);
+    //         });
+    //     },
+    //     beforeCreate: function() {
+    //         var self = this;
+    //         countlyPopulator.getTemplate(this.$legacyRoute.params.id, function(template) {
+    //             self.templateInformations.templateName = template.name,
+    //             self.templateInformations.generatedOn = moment(template.generatedOn).format("DD MMM YYYY");
+    //         });
+    //     }
+    // });
+
+    // var AppLockedView = countlyVue.views.create({
+    //     template: countlyVue.T("/populator/templates/application-lock.html"),
+    //     methods: {
+    //         redirectToAppManager: function() {
+    //             window.location.href = '#/manage/apps';
+    //         }
+    //     }
+    // });
+
+    // var getPopulatorView = function() {
+    //     return new countlyVue.views.BackboneWrapper({
+    //         component: PopulatorView
+    //     });
+    // };
+
+
+    // var getAppLockedView = function() {
+    //     return new countlyVue.views.BackboneWrapper({
+    //         component: AppLockedView
+    //     });
+    // };
+
+    window.PopulatorView = PopulatorView;
+
+    // Use the new route manager instead of directly pushing to routes array
+    countlyVue.routeManager.addRoute({
+        path: '/:appId/experimental/manage/populate',
+        component: PopulatorView,
+        name: 'experimental-populator',
+        meta: {
+            plugin: 'populator',
+            requiresAuth: true
         }
     });
 
-    var getPopulatorView = function() {
-        return new countlyVue.views.BackboneWrapper({
-            component: PopulatorView
-        });
-    };
+    // app.route("/manage/populate/environment/:id", "environment-detail", function(id) {
+    //     var view = new countlyVue.views.BackboneWrapper({
+    //         component: EnvironmentDetail
+    //     });
+    //     view.params = {id: id};
+    //     this.renderWhenReady(view);
+    // });
 
-    var getAppLockedView = function() {
-        return new countlyVue.views.BackboneWrapper({
-            component: AppLockedView
-        });
-    };
-    app.route("/manage/populate*state", "populate", function() {
-        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].locked) {
-            this.renderWhenReady(getAppLockedView());
-        }
-        else if (countlyAuth.validateRead("populator")) {
-            this.renderWhenReady(getPopulatorView());
-        }
-        else {
-            app.navigate("/", true);
+    countlyVue.routeManager.addRoute({
+        path: '/:appId/experimental/manage/populate/environment/:id',
+        component: EnvironmentDetail,
+        name: 'experimental-populator-environment-detail',
+        meta: {
+            plugin: 'populator',
+            requiresAuth: true
         }
     });
 
-    app.route("/manage/populate/environment/:id", "environment-detail", function(id) {
-        var view = new countlyVue.views.BackboneWrapper({
-            component: EnvironmentDetail
-        });
-        view.params = {id: id};
-        this.renderWhenReady(view);
-    });
+
+    // // Register traditional Backbone routes
+    // app.route("/manage/populate*state", "populate", function() {
+    //     if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].locked) {
+    //         this.renderWhenReady(getAppLockedView());
+    //     }
+    //     else if (countlyAuth.validateRead("populator")) {
+    //         this.renderWhenReady(getPopulatorView());
+    //     }
+    //     else {
+    //         app.navigate("/", true);
+    //     }
+    // });
+
+    // app.route("/manage/populate/environment/:id", "environment-detail", function(id) {
+    //     var view = new countlyVue.views.BackboneWrapper({
+    //         component: EnvironmentDetail
+    //     });
+    //     view.params = {id: id};
+    //     this.renderWhenReady(view);
+    // });
 
     app.addSubMenu("management", {code: "populate", permission: FEATURE_NAME, url: "#/manage/populate", text: "populator.plugin-title", priority: 30, classes: "populator-menu"});
     countlyVue.container.registerMixin("/manage/export/export-features", {

@@ -329,7 +329,7 @@
         },
         data: function() {
             return {
-                eventGroupId: this.$route.params.eventGroupId,
+                eventGroupId: this.$legacyRoute.params.eventGroupId,
                 showDeleteDialog: false,
                 deleteElement: null,
             };
@@ -953,7 +953,7 @@
             }
             return {
                 isDrill: countlyGlobal.plugins.indexOf("drill") > -1,
-                currentSecondaryTab: (this.$route.params && this.$route.params.secondaryTab) || "events",
+                currentSecondaryTab: (this.$legacyRoute.params && this.$legacyRoute.params.secondaryTab) || "events",
                 importDialogVisible: false,
                 dropzoneOptions: {
                     url: '/',
@@ -1214,7 +1214,7 @@
                 });
             }
             return {
-                currentPrimaryTab: (this.$route.params && this.$route.params.primaryTab) || "events",
+                currentPrimaryTab: (this.$legacyRoute.params && this.$legacyRoute.params.primaryTab) || "events",
                 localTabs
             };
         },
@@ -1239,7 +1239,7 @@
         data: function() {
             return {
                 isDrill: countlyGlobal.plugins.indexOf("drill") > -1,
-                eventId: this.$route.params.eventId,
+                eventId: this.$legacyRoute.params.eventId,
                 showDeleteDialog: false,
                 deleteElement: null,
             };

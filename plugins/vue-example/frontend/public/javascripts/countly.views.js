@@ -1033,7 +1033,7 @@
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
-                dynamicTab: (this.$route.params && this.$route.params.tab) || "tables",
+                dynamicTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "tables",
                 localTabs: [
                     {
                         title: "Tables",

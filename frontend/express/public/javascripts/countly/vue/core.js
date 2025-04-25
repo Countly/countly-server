@@ -617,7 +617,7 @@
 
     var BackboneRouteAdapter = function() {};
 
-    Vue.prototype.$route = new BackboneRouteAdapter();
+    Vue.prototype.$legacyRoute = new BackboneRouteAdapter();
 
     var DummyCompAPI = VueCompositionAPI.defineComponent({
         name: "DummyCompAPI",
@@ -899,7 +899,7 @@
                                 <QuickstartPopover></QuickstartPopover>\
                             </div>',
                 beforeCreate: function() {
-                    this.$route.params = self.params;
+                    this.$legacyRoute.params = self.params;
                 },
                 methods: {
                     handleClyError: function(payload) {
@@ -1062,6 +1062,98 @@
         create: asyncCreate(countlyBaseView)
     };
 
+    // Enhanced route management system
+    var _routeManager = {
+        routes: [],
+
+        /**
+         * Register a new route
+         * @param {Object} route - Route configuration object
+         * @param {String} route.path - Route path
+         * @param {Object|Function} route.component - Vue component
+         * @param {String} [route.name] - Route name (optional)
+         * @param {Object} [route.meta] - Route metadata (optional)
+         * @param {Boolean} [route.replace=false] - Replace existing route if path already exists
+         * @returns {Boolean} - True if route was added successfully
+         */
+        addRoute: function(route) {
+            if (!route || !route.path || !route.component) {
+                console.warn("Invalid route configuration. Path and component are required.", route);
+                return false;
+            }
+
+            // Check if route with same path already exists
+            var existingRouteIndex = this.routes.findIndex(function(r) {
+                return r.path === route.path;
+            });
+
+            if (existingRouteIndex >= 0) {
+                if (route.replace) {
+                    // Replace existing route
+                    this.routes.splice(existingRouteIndex, 1, route);
+                    return true;
+                }
+                console.warn("Route with path '" + route.path + "' already exists. Set replace=true to override.");
+                return false;
+            }
+
+            this.routes.push(route);
+            return true;
+        },
+
+        /**
+         * Register multiple routes at once
+         * @param {Array} routes - Array of route configuration objects
+         * @returns {Number} - Number of routes successfully added
+         */
+        addRoutes: function(routes) {
+            var self = this;
+            var addedCount = 0;
+
+            if (!Array.isArray(routes)) {
+                console.warn("Routes must be an array");
+                return 0;
+            }
+
+            routes.forEach(function(route) {
+                if (self.addRoute(route)) {
+                    addedCount++;
+                }
+            });
+
+            return addedCount;
+        },
+
+        /**
+         * Remove a route by path or name
+         * @param {String} identifier - Route path or name to remove
+         * @returns {Boolean} - True if route was removed
+         */
+        removeRoute: function(identifier) {
+            var initialLength = this.routes.length;
+            this.routes = this.routes.filter(function(route) {
+                return route.path !== identifier && route.name !== identifier;
+            });
+
+            return this.routes.length < initialLength;
+        },
+
+        /**
+         * Get all registered routes
+         * @returns {Array} - Array of route configurations
+         */
+        getRoutes: function() {
+            return this.routes;
+        },
+
+        /**
+         * Clear all routes
+         */
+        clearRoutes: function() {
+            this.routes = [];
+        }
+    };
+
     var rootElements = {
         i18n: _i18n,
         i18nM: _i18nM,
@@ -1071,7 +1163,8 @@
         components: _components,
         vuex: _vuex,
         T: templateUtil.stage,
-        optionalComponent: optionalComponent
+        optionalComponent: optionalComponent,
+        routeManager: _routeManager,
     };
 
     for (var key in rootElements) {

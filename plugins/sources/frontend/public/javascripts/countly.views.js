@@ -256,7 +256,7 @@
         mixins: [],
         data: function() {
             return {
-                tab: (this.$route.params && this.$route.params.tab) || 'sources',
+                tab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || 'sources',
                 isWeb: countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type === "web",
                 appId: countlyCommon.ACTIVE_APP_ID,
                 tabs: [

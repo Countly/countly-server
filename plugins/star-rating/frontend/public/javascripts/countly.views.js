@@ -930,7 +930,7 @@
         data: function() {
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
-                dynamicTab: (this.$route.params && this.$route.params.tab) || "ratings",
+                dynamicTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "ratings",
                 tabs: [
                     {
                         title: CV.i18n('feedback.ratings'),
@@ -971,7 +971,7 @@
                     widget: ""
                 },
                 widget: {},
-                dynamicTab: (this.$route.params && this.$route.params.tab) || "ratings-table",
+                dynamicTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "ratings-table",
                 barOptions: {
                     xAxis: {
                         data: [1, 2, 3, 4, 5]
@@ -1263,9 +1263,9 @@
             },
             fetch: function(force) {
                 var self = this;
-                this.activeFilter.widget = this.$route.params.id;
+                this.activeFilter.widget = this.$legacyRoute.params.id;
 
-                starRatingPlugin.requestSingleWidget(this.$route.params.id, function(widget) {
+                starRatingPlugin.requestSingleWidget(this.$legacyRoute.params.id, function(widget) {
                     self.widget = widget;
                     self.widget.popup_header_text = replaceEscapes(self.widget.popup_header_text);
                     self.widget.created_at = countlyCommon.formatTimeAgoText(self.widget.created_at).text;
@@ -1274,7 +1274,7 @@
                     }
                 });
                 // set widget filter as current one
-                this.activeFilter.widget = this.widget._id || this.$route.params.id;
+                this.activeFilter.widget = this.widget._id || this.$legacyRoute.params.id;
                 if (force) {
                     this.isLoading = true;
                 }
@@ -1427,7 +1427,7 @@
             },
             methods: {},
             created: function() {
-                this.uid = this.$route.params.uid;
+                this.uid = this.$legacyRoute.params.uid;
                 var self = this;
                 this.isLoading = true;
                 starRatingPlugin.requestFeedbackData({uid: this.uid, period: "noperiod"})

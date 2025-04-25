@@ -120,6 +120,7 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfill/es6-promise.auto.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfill/intersection-observer.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-router.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/composition-api.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuex.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/echarts.5.min.js?<%= countlyVersion %>"></script>
@@ -187,8 +188,11 @@
         <div id="cly-vue-sidebar" data-test-id="dashboard-sidebar">
             <div id="sidebar-x"></div>
         </div>
-        <div class="main-view">
+        <div class="main-view main-view-1">
             <div id="content"></div>
+        </div>
+        <div class="main-view main-view-2">
+            <div id="new-content"></div>
         </div>
 	</div>
 
@@ -2076,6 +2080,110 @@
     <% if (typeof inject_template.js != 'undefined') { %>
 	<script><%- inject_template.js %></script>
 	<% } %>
+    <script type="text/javascript">
+        var router = new VueRouter({
+            mode: 'hash',
+            routes: countlyVue.routeManager.getRoutes()
+        });
+
+        function shouldHandleWithVueRouter(route) {
+            var path = window.location.hash.replace('#', '');
+            if (!path.startsWith('/')) {
+                path = '/' + path;
+            }
+            
+            var appIdMatch = path.match(/^\/(\w+)(\/.*)/);
+            var processedPath = path;
+            var appId = null;
+
+            if (appIdMatch) {
+                appId = appIdMatch[1];
+                processedPath = appIdMatch[2] || '/';
+                
+                var strippedPath = '/:appId' + processedPath;
+                
+                // Check if the route is handled by Vue Router
+                var foundRoute = countlyVue.routeManager.getRoutes().find(function(r) {
+                    return r.path === strippedPath || 
+                           (r.path.indexOf(':') > -1 && new RegExp('^' + r.path.replace(/:[^\/]+/g, '[^\/]+') + '$').test(strippedPath));
+                });
+                
+                if (foundRoute) {
+                    console.log('Handled with vue-router', strippedPath);
+                    return true;
+                }
+            }
+
+            var directRoute = countlyVue.routeManager.getRoutes().find(function(r) {
+                return r.path === path || 
+                       (r.path.indexOf(':') > -1 && new RegExp('^' + r.path.replace(/:[^\/]+/g, '[^\/]+') + '$').test(path));
+            });
+            
+            return !!directRoute;
+        }
+
+        router.beforeEach(function(to, from, next) {
+            /* console.log('Route transition started from', from.path, 'to', to.path); */
+            
+            // Check if the route is handled by Vue Router
+            if (to.params && to.params.appId) {
+                console.log('App ID found in URL:', to.params.appId);
+                
+                // Set the active app ID in Countly
+                if (countlyCommon.ACTIVE_APP_ID !== to.params.appId) {
+                    console.log('Setting Active App ID:', to.params.appId);
+                    countlyCommon.setActiveApp(to.params.appId);
+                }
+            }
+            
+            if (to.meta && to.meta.requiresAuth) {
+                const plugin = to.meta.plugin;
+                if (plugin && !countlyAuth.validateRead(plugin)) {
+                    console.log('Access denied to', to.path, 'due to missing permission for', plugin);
+                    next('/');
+                    return;
+                }
+            }
+            
+            next();
+        });
+        
+        var originalNavigate = Backbone.history.navigate;
+        Backbone.history.navigate = function(fragment, options) {
+            if (shouldHandleWithVueRouter(fragment)) {
+                console.log('Vue Router ile yönlendirme yapılıyor:', fragment);
+                router.push({ path: fragment });
+                return;
+            }
+            
+            originalNavigate.apply(this, arguments);
+        };
+        
+        var experimentalMainVue = new Vue({
+            router: router,
+            el: '#new-content',
+            template: `<div><router-view></router-view></div>`,
+            data: {
+                experimental: false
+            },
+            beforeCreate: function() {
+                this.$store = countlyVue.vuex.getGlobalStore();
+            },
+            mounted() {
+                this.experimental = true;
+                console.log('Vue instance initialized, current route:', this.$route);
+                
+                if (this.$route.params && this.$route.params.appId) {
+                    console.log('Initial App ID:', this.$route.params.appId);
+                }
+                
+                if (shouldHandleWithVueRouter(window.location.hash.replace('#', ''))) {
+                    console.log('Initial path is handled by Vue Router');
+                }
+            }
+        });
+    
+    </script>
     <!-- The last countly script to load -->
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.loaded.js?<%= countlyVersion %>"></script>
 </body>

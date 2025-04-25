@@ -135,7 +135,7 @@
         ],
         data: function() {
             return {
-                selectedTab: (this.$route.params && this.$route.params.tab) || "detail"
+                selectedTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "detail"
             };
         },
         computed: {
@@ -450,7 +450,7 @@
             this.$store.dispatch('countlyAllEvents/setTableLoading', true);
             this.$store.dispatch('countlyAllEvents/setChartLoading', true);
             var appId = countlyCommon.ACTIVE_APP_ID;
-            var currEvent = this.$route.params && this.$route.params.eventKey;
+            var currEvent = this.$legacyRoute.params && this.$legacyRoute.params.eventKey;
             if (!currEvent) {
                 var eventKey = localStorage.getItem("eventKey");
                 try {

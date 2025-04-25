@@ -10,7 +10,7 @@
         ].concat(countlyVue.container.mixins(["/manage/sdk"])),
         data: function() {
             return {
-                selectedTab: (this.$route.params && this.$route.params.tab) || "stats"
+                selectedTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "stats"
             };
         },
         computed: {

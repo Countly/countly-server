@@ -153,7 +153,7 @@
                 }
             }));
             return {
-                job_name: this.$route.params.job_name,
+                job_name: this.$legacyRoute.params.job_name,
                 loaded: true,
                 tableStore: tableStore,
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(tableStore, "jobsTable")

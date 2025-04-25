@@ -89,8 +89,8 @@
             },
         },
         mounted: function() {
-            if (this.$route.params && this.$route.params.query) {
-                this.$store.dispatch('countlySlippingAwayUsers/onSetFilters', {query: this.$route.params.query });
+            if (this.$legacyRoute.params && this.$legacyRoute.params.query) {
+                this.$store.dispatch('countlySlippingAwayUsers/onSetFilters', {query: this.$legacyRoute.params.query });
             }
             this.$store.dispatch("countlySlippingAwayUsers/fetchAll", true);
         }

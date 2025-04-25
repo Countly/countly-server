@@ -229,7 +229,7 @@ var TehnologyAnalyticsView = countlyVue.views.create({
     ].concat(countlyVue.container.mixins(["/analytics/technology"])),
     data: function() {
         return {
-            selectedTab: (this.$route.params && this.$route.params.tab) || "platforms"
+            selectedTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "platforms"
         };
     },
     computed: {

@@ -356,7 +356,7 @@
 
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
-                currentTab: (this.$route.params && this.$route.params.tab) || "crash-groups",
+                currentTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "crash-groups",
                 statisticsGraphTab: "total-occurrences",
                 selectedCrashgroups: [],
                 tablePersistKey: 'crashGroupsTable_' + countlyCommon.ACTIVE_APP_ID,
@@ -698,11 +698,11 @@
         beforeCreate: function() {
             var query = {};
             var tmpQuery = {};
-            if (this.$route.params && this.$route.params.query) {
-                tmpQuery = countlyCrashes.modifyQueries(this.$route.params.query.query);
+            if (this.$legacyRoute.params && this.$legacyRoute.params.query) {
+                tmpQuery = countlyCrashes.modifyQueries(this.$legacyRoute.params.query.query);
                 query = countlyCrashes.modifyExistsQueries(tmpQuery);
 
-                this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", this.$route.params.query);
+                this.$store.dispatch("countlyCrashes/overview/setCrashgroupsFilter", this.$legacyRoute.params.query);
                 this.$store.dispatch("countlyCrashes/pasteAndFetchCrashgroups", {query: JSON.stringify(query)});
             }
 
@@ -1425,7 +1425,7 @@
             created: function() {
                 var self = this;
                 self.isLoading = true;
-                this.uid = this.$route.params.uid;
+                this.uid = this.$legacyRoute.params.uid;
                 countlyCrashes.userCrashes(this.uid)
                     .then(function(res) {
                         self.isLoading = false;

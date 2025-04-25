@@ -318,7 +318,7 @@
         },
         data: function() {
             return {
-                currentTab: (this.$route.params && this.$route.params.secondaryTab) || "all",
+                currentTab: (this.$legacyRoute.params && this.$legacyRoute.params.secondaryTab) || "all",
                 walkthroughs: [],
                 tabs: []
             };
@@ -377,7 +377,7 @@
         },
         data: function() {
             return {
-                currentTab: (this.$route.params && this.$route.params.secondaryTab) || "all",
+                currentTab: (this.$legacyRoute.params && this.$legacyRoute.params.secondaryTab) || "all",
                 articles: [],
                 tabs: []
             };
@@ -463,7 +463,7 @@
         template: CV.T('/guides/templates/guides.html'),
         data: function() {
             return {
-                currentTab: (this.$route.params && this.$route.params.primaryTab) || 'overview',
+                currentTab: (this.$legacyRoute.params && this.$legacyRoute.params.primaryTab) || 'overview',
                 searchQuery: '',
                 tabs: [
                     {
@@ -512,7 +512,7 @@
         template: CV.T('/guides/templates/search.html'),
         data: function() {
             return {
-                searchQuery: (this.$route.params && this.$route.params.query) || '',
+                searchQuery: (this.$legacyRoute.params && this.$legacyRoute.params.query) || '',
                 currentSearchQuery: '',
                 currentTab: 'all',
                 results: null

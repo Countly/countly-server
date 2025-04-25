@@ -1399,7 +1399,7 @@
         },
         data: function() {
             return {
-                dashboardId: this.$route.params && this.$route.params.dashboardId,
+                dashboardId: this.$legacyRoute.params && this.$legacyRoute.params.dashboardId,
                 fullscreen: false,
                 preventTimeoutInterval: null
             };

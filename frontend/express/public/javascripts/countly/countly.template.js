@@ -3922,6 +3922,25 @@ Backbone.history.getFragment = function() {
     return fragment;
 };
 Backbone.history.checkUrl = function() {
+    // Check if the URL should be handled by Vue Router
+    if (window.shouldHandleWithVueRouter && window.shouldHandleWithVueRouter(Backbone.history.getFragment())) {
+        if (document.getElementsByClassName("main-view-1")) {
+            document.getElementsByClassName("main-view-1")[0].style.display = "none";
+        }
+        if (document.getElementsByClassName("main-view-2")) {
+            document.getElementsByClassName("main-view-2")[0].style.display = "block";
+        }
+        return true;
+    }
+    else {
+        if (document.getElementsByClassName("main-view-2")) {
+            document.getElementsByClassName("main-view-2")[0].style.display = "none";
+        }
+        if (document.getElementsByClassName("main-view-1")) {
+            document.getElementsByClassName("main-view-1")[0].style.display = "block";
+        }
+    }
+
     store.set("countly_fragment_name", Backbone.history._getFragment());
     var app_id = Backbone.history._getFragment().split("/")[1] || "";
     if (countlyCommon.APP_NAMESPACE !== false && countlyCommon.ACTIVE_APP_ID !== 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1) {

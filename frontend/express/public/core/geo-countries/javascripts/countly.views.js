@@ -8,12 +8,12 @@ var CityView = countlyVue.views.create({
             appId: countlyCommon.ACTIVE_APP_ID,
             description: CV.i18n('countries.city.description'),
             path: countlyGlobal.path,
-            region: this.$route.params.region || "TR",
-            title: countlyLocation.getCountryName(this.$route.params.region || "TR")
+            region: this.$legacyRoute.params.region || "TR",
+            title: countlyLocation.getCountryName(this.$legacyRoute.params.region || "TR")
         };
     },
     mounted: function() {
-        this.$store.dispatch('countlyCities/onSetRegion', this.$route.params.region);
+        this.$store.dispatch('countlyCities/onSetRegion', this.$legacyRoute.params.region);
         this.refresh(true);
     },
     methods: {
@@ -57,7 +57,7 @@ var CityView = countlyVue.views.create({
             var data = {};
             var totals = this.countryTotals;
             var value = totals.t.total || 1;
-            data[this.$route.params.region] = {"value": value};
+            data[this.$legacyRoute.params.region] = {"value": value};
             return data;
         },
         citiesData: function() {
@@ -70,7 +70,7 @@ var CityView = countlyVue.views.create({
                 }
             }
             var retObj = {};
-            retObj[this.$route.params.region] = cityData;
+            retObj[this.$legacyRoute.params.region] = cityData;
             return retObj;
         },
         cityTable: function() {
@@ -244,7 +244,7 @@ var GeoAnalyticsView = countlyVue.views.create({
     ],
     data: function() {
         return {
-            selectedTab: (this.$route.params && this.$route.params.tab) || "countries"
+            selectedTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "countries"
         };
     },
     computed: {

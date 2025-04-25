@@ -72,7 +72,7 @@ var SessionAnalyticsView = countlyVue.views.create({
     ],
     data: function() {
         return {
-            selectedTab: (this.$route.params && this.$route.params.tab) || "overview"
+            selectedTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "overview"
         };
     },
     computed: {

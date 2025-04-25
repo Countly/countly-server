@@ -979,7 +979,7 @@
                 });
             }
             return {
-                dynamicTab: (this.$route.params && this.$route.params.tab) || "parameters",
+                dynamicTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "parameters",
                 tabs: tabs
             };
         },

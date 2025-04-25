@@ -116,8 +116,8 @@
             },
         },
         mounted: function() {
-            if (this.$route.params && this.$route.params.query) {
-                this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', {query: this.$route.params.query });
+            if (this.$legacyRoute.params && this.$legacyRoute.params.query) {
+                this.$store.dispatch('countlyUserActivity/onSetUserActivityFilters', {query: this.$legacyRoute.params.query });
             }
             this.$store.dispatch('countlyUserActivity/fetchAll', true);
         }
@@ -134,7 +134,7 @@
         ],
         data: function() {
             return {
-                selectedTab: (this.$route.params && this.$route.params.tab) || "user-activity"
+                selectedTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "user-activity"
             };
         },
         computed: {

@@ -1965,8 +1965,8 @@
             "push-notification-drawer": PushNotificationDrawer
         },
         mounted: function() {
-            if (this.$route.params.id) {
-                this.$store.dispatch('countlyPushNotificationDetails/fetchById', this.$route.params.id);
+            if (this.$legacyRoute.params.id) {
+                this.$store.dispatch('countlyPushNotificationDetails/fetchById', this.$legacyRoute.params.id);
                 this.$store.dispatch('countlyPushNotificationDashboard/fetchDashboard');
             }
         }

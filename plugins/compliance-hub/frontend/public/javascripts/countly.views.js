@@ -163,7 +163,7 @@
             };
         },
         beforeCreate: function() {
-            this.$store.dispatch("countlyConsentManager/uid", this.$route.params.uid);
+            this.$store.dispatch("countlyConsentManager/uid", this.$legacyRoute.params.uid);
             this.$store.dispatch("countlyConsentManager/fetchConsentHistoryResource");
         },
         computed: {
@@ -616,7 +616,7 @@
             }
             return {
                 appId: countlyCommon.ACTIVE_APP_ID,
-                dynamicTab: (this.$route.params && this.$route.params.tab) || "",
+                dynamicTab: (this.$legacyRoute.params && this.$legacyRoute.params.tab) || "",
                 localTabs: tabs
             };
         },

@@ -923,7 +923,7 @@
             },
         },
         beforeCreate: function() {
-            this.$store.dispatch("countlyHooks/initializeDetail", this.$route.params.id, {root: true});
+            this.$store.dispatch("countlyHooks/initializeDetail", this.$legacyRoute.params.id, {root: true});
         }
     });
 
