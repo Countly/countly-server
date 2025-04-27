@@ -1,0 +1,3196 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Core API",
+    "description": "Core API endpoints for Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i": {
+      "post": {
+        "summary": "Process data",
+        "description": "Process data from SDKs",
+        "tags": [
+          "Data Processing"
+        ],
+        "parameters": [
+          {
+            "name": "app_key",
+            "in": "query",
+            "required": true,
+            "description": "App key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "device_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique device identifier",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "events": {
+                    "type": "array",
+                    "description": "Events to track",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error processing data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_key\" or \"device_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/bulk": {
+      "post": {
+        "summary": "Process bulk requests",
+        "description": "Process multiple requests in a single API call",
+        "tags": [
+          "Core"
+        ],
+        "parameters": [
+          {
+            "name": "app_key",
+            "in": "query",
+            "required": true,
+            "description": "App key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "device_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique device identifier",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "array",
+                    "description": "Array of request objects to process",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "safe_api_response": {
+                    "type": "boolean",
+                    "description": "Whether to wait for all requests to finish before responding"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Requests processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/users/create": {
+      "get": {
+        "summary": "Create new user",
+        "description": "Create a new user in Countly",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "Admin API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "User data as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"full_name\":\"John Doe\",\"username\":\"john\",\"password\":\"password123\",\"email\":\"john@example.com\",\"global_admin\":false}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "full_name": {
+                      "type": "string",
+                      "description": "Full name of the created user"
+                    },
+                    "username": {
+                      "type": "string",
+                      "description": "Username of the created user"
+                    },
+                    "email": {
+                      "type": "string",
+                      "description": "Email of the created user"
+                    },
+                    "global_admin": {
+                      "type": "boolean",
+                      "description": "Whether the user is a global admin"
+                    },
+                    "permission": {
+                      "type": "object",
+                      "description": "Permissions assigned to the user"
+                    },
+                    "password_changed": {
+                      "type": "integer",
+                      "description": "Timestamp of when the password was set"
+                    },
+                    "created_at": {
+                      "type": "integer",
+                      "description": "Timestamp of user creation"
+                    },
+                    "_id": {
+                      "type": "string",
+                      "description": "User ID"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error creating user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/users/update": {
+      "get": {
+        "summary": "Update user",
+        "description": "Update an existing user in Countly",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "Admin API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "User update data as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"user_id\":\"user_id\",\"full_name\":\"John Smith\",\"email\":\"john.smith@example.com\"}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error updating user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/users/delete": {
+      "get": {
+        "summary": "Delete user",
+        "description": "Delete an existing user from Countly",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "Admin API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user_ids",
+            "in": "query",
+            "required": true,
+            "description": "Array of user IDs to delete, as a JSON string",
+            "schema": {
+              "type": "string",
+              "example": "[\"user_id1\",\"user_id2\"]"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User(s) deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error deleting user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/users/deleteOwnAccount": {
+      "get": {
+        "summary": "Delete own user account",
+        "description": "Allows user to delete their own account",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key of the user",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/users/updateHomeSettings": {
+      "get": {
+        "summary": "Update home settings",
+        "description": "Update user's home dashboard settings",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Home settings updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/users/ack": {
+      "get": {
+        "summary": "Acknowledge notification",
+        "description": "Mark notification as acknowledged by the user",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "notif_id",
+            "in": "query",
+            "required": true,
+            "description": "Notification ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification acknowledged successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/login": {
+      "post": {
+        "summary": "Login",
+        "description": "Login to Countly",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "Username or email",
+                    "required": true
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password",
+                    "required": true
+                  },
+                  "remember_me": {
+                    "type": "boolean",
+                    "description": "Whether to remember the login"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    },
+                    "auth_token": {
+                      "type": "string",
+                      "description": "Authentication token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Login failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Invalid username or password"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/logout": {
+      "get": {
+        "summary": "Logout",
+        "description": "Logout from Countly",
+        "tags": [
+          "Authentication"
+        ],
+        "parameters": [
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": true,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/notes/save": {
+      "get": {
+        "summary": "Save note",
+        "description": "Save a note for an application",
+        "tags": [
+          "Notes"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "Note data as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"note\":\"This is a note\",\"app_id\":\"app_id\",\"ts\":1651240780}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Note saved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/notes/delete": {
+      "get": {
+        "summary": "Delete note",
+        "description": "Delete a note from an application",
+        "tags": [
+          "Notes"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "note_id",
+            "in": "query",
+            "required": true,
+            "description": "Note ID to delete",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Note deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/app_users/create": {
+      "post": {
+        "summary": "Create app user",
+        "description": "Create a new app user",
+        "tags": [
+          "App Users"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID (24 character string)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "description": "User data to create"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Details of the created user"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error creating user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/app_users/update": {
+      "post": {
+        "summary": "Update app user",
+        "description": "Update an existing app user",
+        "tags": [
+          "App Users"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID (24 character string)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "object",
+                    "description": "Query to find users to update"
+                  },
+                  "update": {
+                    "type": "object",
+                    "description": "Data to update"
+                  },
+                  "force": {
+                    "type": "boolean",
+                    "description": "Force update if more than one user matches the query"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "User Updated"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error updating user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/app_users/delete": {
+      "post": {
+        "summary": "Delete app user",
+        "description": "Delete an existing app user",
+        "tags": [
+          "App Users"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID (24 character string)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "object",
+                    "description": "Query to find users to delete"
+                  },
+                  "force": {
+                    "type": "boolean",
+                    "description": "Force delete if more than one user matches the query"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "User deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error deleting user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/app_users/export": {
+      "get": {
+        "summary": "Export app user data",
+        "description": "Export all data for app users",
+        "tags": [
+          "App Users"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID (24 character string)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "description": "Query to find users to export, as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"uid\":\"1\"}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "appUser_644658291e95e720503d5087_1.json"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error creating export",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/app_users/deleteExport/{id}": {
+      "get": {
+        "summary": "Delete user export",
+        "description": "Delete a previously created user export",
+        "tags": [
+          "App Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Export ID",
+            "schema": {
+              "type": "string",
+              "example": "appUser_644658291e95e720503d5087_1"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID (24 character string)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Export deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error deleting export",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/apps/create": {
+      "get": {
+        "summary": "Create app",
+        "description": "Create a new app in Countly",
+        "tags": [
+          "App Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key of global admin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "App data as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"name\":\"My App\",\"country\":\"US\",\"timezone\":\"America/New_York\"}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "App created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "App ID"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "App name"
+                    },
+                    "key": {
+                      "type": "string",
+                      "description": "App key for SDK integration"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error creating app",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/apps/update": {
+      "get": {
+        "summary": "Update app",
+        "description": "Update an existing app in Countly",
+        "tags": [
+          "App Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": false,
+            "description": "App ID (required for app admins)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "App data as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"name\":\"Updated App Name\",\"country\":\"US\",\"timezone\":\"America/New_York\"}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "App updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error updating app",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/apps/update/plugins": {
+      "get": {
+        "summary": "Update app plugins",
+        "description": "Update the plugins enabled for an app",
+        "tags": [
+          "App Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "Plugins data as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"plugins\":{\"push\":true,\"crashes\":true}}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "App plugins updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error updating app plugins",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/apps/delete": {
+      "get": {
+        "summary": "Delete app",
+        "description": "Delete an existing app from Countly",
+        "tags": [
+          "App Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key of global admin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "App data as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"app_id\":\"app_id\"}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "App deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error deleting app",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/apps/reset": {
+      "get": {
+        "summary": "Reset app",
+        "description": "Reset all data for an app",
+        "tags": [
+          "App Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key of global admin",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "App data as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"app_id\":\"app_id\"}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "App reset successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error resetting app",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/event_groups/create": {
+      "get": {
+        "summary": "Create event group",
+        "description": "Create a new event group",
+        "tags": [
+          "Event Groups"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "group_id",
+            "in": "query",
+            "required": true,
+            "description": "Group ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "Group name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "events",
+            "in": "query",
+            "required": true,
+            "description": "Events in group",
+            "schema": {
+              "type": "string",
+              "format": "array"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event group created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error creating event group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/event_groups/update": {
+      "get": {
+        "summary": "Update event group",
+        "description": "Update an existing event group",
+        "tags": [
+          "Event Groups"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "group_id",
+            "in": "query",
+            "required": true,
+            "description": "Group ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Group name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "events",
+            "in": "query",
+            "required": false,
+            "description": "Events in group",
+            "schema": {
+              "type": "string",
+              "format": "array"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event group updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error updating event group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/event_groups/delete": {
+      "get": {
+        "summary": "Delete event group",
+        "description": "Delete an existing event group",
+        "tags": [
+          "Event Groups"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "group_id",
+            "in": "query",
+            "required": true,
+            "description": "Group ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event group deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error deleting event group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/tasks/update": {
+      "post": {
+        "summary": "Update task",
+        "description": "Update an existing task",
+        "tags": [
+          "Task Management"
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "query",
+            "required": true,
+            "description": "Task ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error updating task",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"task_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/tasks/delete": {
+      "post": {
+        "summary": "Delete task",
+        "description": "Delete an existing task",
+        "tags": [
+          "Task Management"
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "query",
+            "required": true,
+            "description": "Task ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error deleting task",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"task_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/tasks/name": {
+      "post": {
+        "summary": "Rename task",
+        "description": "Rename an existing task",
+        "tags": [
+          "Task Management"
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "query",
+            "required": true,
+            "description": "Task ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "New task name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task renamed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error renaming task",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"task_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/tasks/edit": {
+      "post": {
+        "summary": "Edit task details",
+        "description": "Edit task details",
+        "tags": [
+          "Task Management"
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "query",
+            "required": true,
+            "description": "Task ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "report_name",
+            "in": "query",
+            "required": false,
+            "description": "Report name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "report_desc",
+            "in": "query",
+            "required": false,
+            "description": "Report description",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "global",
+            "in": "query",
+            "required": false,
+            "description": "Whether the task is global",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "autoRefresh",
+            "in": "query",
+            "required": false,
+            "description": "Whether the task auto refreshes",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period_desc",
+            "in": "query",
+            "required": false,
+            "description": "Period description",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error updating task",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/events/whitelist_segments": {
+      "get": {
+        "summary": "Whitelist event segments",
+        "description": "Set whitelisted segments for events",
+        "tags": [
+          "Events Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "whitelisted_segments",
+            "in": "query",
+            "required": true,
+            "description": "Segments data as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"event1\":[\"segment1\",\"segment2\"]}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Segments whitelisted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error whitelisting segments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/events/edit_map": {
+      "get": {
+        "summary": "Edit event map",
+        "description": "Edit event mapping configuration",
+        "tags": [
+          "Events Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "event_map",
+            "in": "query",
+            "required": false,
+            "description": "Event map as JSON string",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "event_order",
+            "in": "query",
+            "required": false,
+            "description": "Event order as JSON string",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "event_overview",
+            "in": "query",
+            "required": false,
+            "description": "Event overview as JSON string",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "omitted_segments",
+            "in": "query",
+            "required": false,
+            "description": "Omitted segments as JSON string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event map edited successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error editing event map",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/events/delete_events": {
+      "post": {
+        "summary": "Delete events",
+        "description": "Delete one or multiple events",
+        "tags": [
+          "Events Management"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID (24 character string)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "events",
+            "in": "query",
+            "required": true,
+            "description": "JSON array of event keys to delete",
+            "schema": {
+              "type": "string",
+              "example": "[\"event1\",\"event2\"]"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Events deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error deleting events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/events/change_visibility": {
+      "get": {
+        "summary": "Change event visibility",
+        "description": "Change visibility of events",
+        "tags": [
+          "Events Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "events",
+            "in": "query",
+            "required": true,
+            "description": "JSON array of event IDs to update",
+            "schema": {
+              "type": "string",
+              "example": "[\"event1\",\"event2\"]"
+            }
+          },
+          {
+            "name": "set_visibility",
+            "in": "query",
+            "required": true,
+            "description": "Visibility value ('hide' or 'show')",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "hide",
+                "show"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event visibility changed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error changing event visibility",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/token/delete": {
+      "get": {
+        "summary": "Delete token",
+        "description": "Delete an authentication token",
+        "tags": [
+          "Token Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tokenid",
+            "in": "query",
+            "required": true,
+            "description": "Token ID to delete",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "description": "Deletion result object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Token id not provided"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/token/create": {
+      "get": {
+        "summary": "Create token",
+        "description": "Create a new authentication token",
+        "tags": [
+          "Token Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ttl",
+            "in": "query",
+            "required": false,
+            "description": "Time to live in seconds",
+            "schema": {
+              "type": "integer",
+              "default": 1800
+            }
+          },
+          {
+            "name": "multi",
+            "in": "query",
+            "required": false,
+            "description": "Whether the token can be used multiple times",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "apps",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of app IDs",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endpoint",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated list of endpoints",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endpointquery",
+            "in": "query",
+            "required": false,
+            "description": "JSON object with endpoint and params",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "purpose",
+            "in": "query",
+            "required": false,
+            "description": "Purpose description for the token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "The created token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error creating token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Error creating token"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/token/list": {
+      "get": {
+        "summary": "List tokens",
+        "description": "Get a list of all tokens for the current user",
+        "tags": [
+          "Token Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tokens retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "Token ID"
+                      },
+                      "ttl": {
+                        "type": "integer",
+                        "description": "Time to live in seconds"
+                      },
+                      "ends": {
+                        "type": "integer",
+                        "description": "Timestamp when token expires"
+                      },
+                      "multi": {
+                        "type": "boolean",
+                        "description": "Whether the token can be used multiple times"
+                      },
+                      "owner": {
+                        "type": "string",
+                        "description": "User ID of token owner"
+                      },
+                      "app": {
+                        "type": "string",
+                        "description": "App IDs this token is valid for"
+                      },
+                      "purpose": {
+                        "type": "string",
+                        "description": "Purpose description for the token"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error retrieving tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Error retrieving tokens"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/token/check": {
+      "get": {
+        "summary": "Check token",
+        "description": "Check if a token is valid and get remaining time",
+        "tags": [
+          "Token Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "description": "Token to check",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token check result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "valid": {
+                      "type": "boolean",
+                      "description": "Whether the token is valid"
+                    },
+                    "time": {
+                      "type": "integer",
+                      "description": "Time left in seconds"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error checking token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Error checking token"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/analytics/dashboard": {
+      "get": {
+        "summary": "Get dashboard data",
+        "description": "Get aggregated data for dashboard",
+        "tags": [
+          "Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Period for data (e.g., '30days')",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error retrieving dashboard data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/analytics/countries": {
+      "get": {
+        "summary": "Get country data",
+        "description": "Get country distribution data",
+        "tags": [
+          "Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Period for data (e.g., '30days')",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Country data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error retrieving country data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/analytics/sessions": {
+      "get": {
+        "summary": "Get session data",
+        "description": "Get session analytics data",
+        "tags": [
+          "Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Period for data (e.g., '30days')",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucket",
+            "in": "query",
+            "required": false,
+            "description": "Bucket size ('daily' or 'monthly')",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "daily",
+                "monthly"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error retrieving session data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/system/version": {
+      "get": {
+        "summary": "Get system version",
+        "description": "Get the current version of the Countly system",
+        "tags": [
+          "System"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "System version retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "description": "System version number"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error retrieving system version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/system/plugins": {
+      "get": {
+        "summary": "Get system plugins",
+        "description": "Get a list of installed plugins",
+        "tags": [
+          "System"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plugins retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "Plugin name"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error retrieving plugins",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/ping": {
+      "get": {
+        "summary": "Ping server",
+        "description": "Check if the server is responsive",
+        "tags": [
+          "System"
+        ],
+        "responses": {
+          "200": {
+            "description": "Server is responsive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Server is not responsive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "DB Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/countly_version": {
+      "get": {
+        "summary": "Get detailed version info",
+        "description": "Get detailed version information including MongoDB version",
+        "tags": [
+          "System"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version info retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mongo": {
+                      "type": "string",
+                      "description": "MongoDB version"
+                    },
+                    "fs": {
+                      "type": "object",
+                      "description": "Filesystem version marks"
+                    },
+                    "db": {
+                      "type": "object",
+                      "description": "Database version marks"
+                    },
+                    "pkg": {
+                      "type": "string",
+                      "description": "Package version"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error retrieving version info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      },
+      "AppKey": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "app_key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    },
+    {
+      "AppKey": []
+    }
+  ]
+}

@@ -1,0 +1,438 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Sources API",
+    "description": "API for tracking and analyzing traffic sources in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/o/sources": {
+      "get": {
+        "summary": "Get sources data",
+        "description": "Get traffic source attribution data",
+        "tags": [
+          "Traffic Sources"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Time period for the data",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "hour",
+                "day",
+                "week",
+                "month",
+                "30days",
+                "60days",
+                "90days",
+                "yesterday",
+                "7days",
+                "previous_month"
+              ]
+            }
+          },
+          {
+            "name": "source_type",
+            "in": "query",
+            "required": false,
+            "description": "Filter by source type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sources data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sources": {
+                      "type": "array",
+                      "description": "List of source data",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "Source identifier"
+                          },
+                          "t": {
+                            "type": "integer",
+                            "description": "Total sessions/users"
+                          },
+                          "n": {
+                            "type": "integer",
+                            "description": "New users"
+                          },
+                          "u": {
+                            "type": "integer",
+                            "description": "Unique users"
+                          }
+                        }
+                      }
+                    },
+                    "overview": {
+                      "type": "object",
+                      "properties": {
+                        "t": {
+                          "type": "integer",
+                          "description": "Total sessions/users"
+                        },
+                        "n": {
+                          "type": "integer",
+                          "description": "New users"
+                        },
+                        "u": {
+                          "type": "integer",
+                          "description": "Unique users"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/sources/store": {
+      "get": {
+        "summary": "Get app store sources data",
+        "description": "Get traffic source attribution data for app stores",
+        "tags": [
+          "Traffic Sources"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Time period for the data",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "hour",
+                "day",
+                "week",
+                "month",
+                "30days",
+                "60days",
+                "90days",
+                "yesterday",
+                "7days",
+                "previous_month"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "App store sources data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sources": {
+                      "type": "array",
+                      "description": "List of app store source data",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "Store identifier"
+                          },
+                          "t": {
+                            "type": "integer",
+                            "description": "Total installs"
+                          },
+                          "n": {
+                            "type": "integer",
+                            "description": "New users"
+                          },
+                          "u": {
+                            "type": "integer",
+                            "description": "Unique users"
+                          }
+                        }
+                      }
+                    },
+                    "overview": {
+                      "type": "object",
+                      "properties": {
+                        "t": {
+                          "type": "integer",
+                          "description": "Total installations"
+                        },
+                        "n": {
+                          "type": "integer",
+                          "description": "New users"
+                        },
+                        "u": {
+                          "type": "integer",
+                          "description": "Unique users"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/sources/campaign": {
+      "get": {
+        "summary": "Get campaign sources data",
+        "description": "Get traffic source attribution data for campaigns",
+        "tags": [
+          "Traffic Sources"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Time period for the data",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "hour",
+                "day",
+                "week",
+                "month",
+                "30days",
+                "60days",
+                "90days",
+                "yesterday",
+                "7days",
+                "previous_month"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Campaign sources data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sources": {
+                      "type": "array",
+                      "description": "List of campaign source data",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "Campaign identifier"
+                          },
+                          "t": {
+                            "type": "integer",
+                            "description": "Total sessions"
+                          },
+                          "n": {
+                            "type": "integer",
+                            "description": "New users"
+                          },
+                          "u": {
+                            "type": "integer",
+                            "description": "Unique users"
+                          }
+                        }
+                      }
+                    },
+                    "overview": {
+                      "type": "object",
+                      "properties": {
+                        "t": {
+                          "type": "integer",
+                          "description": "Total sessions"
+                        },
+                        "n": {
+                          "type": "integer",
+                          "description": "New users"
+                        },
+                        "u": {
+                          "type": "integer",
+                          "description": "Unique users"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i": {
+      "post": {
+        "summary": "Track source attribution",
+        "description": "Track source attribution data for a user",
+        "tags": [
+          "Traffic Sources"
+        ],
+        "parameters": [
+          {
+            "name": "app_key",
+            "in": "query",
+            "required": true,
+            "description": "App key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "device_id",
+            "in": "query",
+            "required": true,
+            "description": "Device ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "attribution": {
+                    "type": "object",
+                    "description": "Source attribution data",
+                    "properties": {
+                      "utm_source": {
+                        "type": "string",
+                        "description": "UTM source parameter"
+                      },
+                      "utm_medium": {
+                        "type": "string",
+                        "description": "UTM medium parameter"
+                      },
+                      "utm_campaign": {
+                        "type": "string",
+                        "description": "UTM campaign parameter"
+                      },
+                      "utm_term": {
+                        "type": "string",
+                        "description": "UTM term parameter"
+                      },
+                      "utm_content": {
+                        "type": "string",
+                        "description": "UTM content parameter"
+                      },
+                      "store": {
+                        "type": "string",
+                        "description": "App store source"
+                      },
+                      "referrer": {
+                        "type": "string",
+                        "description": "Referrer URL"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Source attribution data tracked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      },
+      "AppKey": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "app_key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    },
+    {
+      "AppKey": []
+    }
+  ]
+}

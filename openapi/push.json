@@ -1,0 +1,596 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Push Notifications API",
+    "description": "API for managing push notifications in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/push/message/create": {
+      "post": {
+        "summary": "Create push notification message",
+        "description": "Create a new push notification message",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "apps": {
+                    "type": "array",
+                    "description": "Array of app IDs to send the message to",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "platforms": {
+                    "type": "array",
+                    "description": "Array of platforms to send to (i, a)",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Type of message",
+                    "enum": [
+                      "message",
+                      "data",
+                      "rich",
+                      "silent"
+                    ]
+                  },
+                  "messagePerLocale": {
+                    "type": "object",
+                    "description": "Message content per locale"
+                  },
+                  "test": {
+                    "type": "boolean",
+                    "description": "Whether this is a test message"
+                  },
+                  "sound": {
+                    "type": "string",
+                    "description": "Sound file to play"
+                  },
+                  "badge": {
+                    "type": "integer",
+                    "description": "Badge number to display"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "URL to open"
+                  },
+                  "buttons": {
+                    "type": "array",
+                    "description": "Array of buttons to display",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "data": {
+                    "type": "object",
+                    "description": "Custom data to send with the message"
+                  },
+                  "content-available": {
+                    "type": "boolean",
+                    "description": "Whether to set content-available flag"
+                  },
+                  "userConditions": {
+                    "type": "object",
+                    "description": "User targeting conditions"
+                  },
+                  "expiry": {
+                    "type": "integer",
+                    "description": "Expiration time in seconds"
+                  },
+                  "userQuery": {
+                    "type": "object",
+                    "description": "Query to target specific users"
+                  }
+                },
+                "required": [
+                  "apps",
+                  "platforms",
+                  "messagePerLocale"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "ID of the created message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error creating message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/push/message/update": {
+      "post": {
+        "summary": "Update push notification message",
+        "description": "Update an existing push notification message",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "_id": {
+                    "type": "string",
+                    "description": "ID of the message to update"
+                  }
+                },
+                "required": [
+                  "_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error updating message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/push/message/remove": {
+      "post": {
+        "summary": "Remove push notification message",
+        "description": "Remove an existing push notification message",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "_id": {
+                    "type": "string",
+                    "description": "ID of the message to remove"
+                  }
+                },
+                "required": [
+                  "_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error removing message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/push/message/test": {
+      "post": {
+        "summary": "Test push notification message",
+        "description": "Send a test push notification message",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "platforms": {
+                    "type": "array",
+                    "description": "Array of platforms to send to (i, a)",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "test": {
+                    "type": "object",
+                    "description": "Test device information",
+                    "properties": {
+                      "tokens": {
+                        "type": "object",
+                        "description": "Tokens for each platform"
+                      },
+                      "uids": {
+                        "type": "array",
+                        "description": "User IDs to test with",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "platforms",
+                  "test"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Test message sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error sending test message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/push/message/all": {
+      "get": {
+        "summary": "Get all push notification messages",
+        "description": "Get a list of all push notification messages",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "apps": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "platforms": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "messagePerLocale": {
+                        "type": "object"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "created": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "sent": {
+                        "type": "object",
+                        "properties": {
+                          "total": {
+                            "type": "integer"
+                          },
+                          "status": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/push/dashboard": {
+      "get": {
+        "summary": "Get push notification dashboard",
+        "description": "Get dashboard statistics for push notifications",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sent": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "weekly": {
+                          "type": "object"
+                        },
+                        "monthly": {
+                          "type": "object"
+                        },
+                        "platforms": {
+                          "type": "object"
+                        }
+                      }
+                    },
+                    "actions": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "weekly": {
+                          "type": "object"
+                        },
+                        "monthly": {
+                          "type": "object"
+                        },
+                        "platforms": {
+                          "type": "object"
+                        }
+                      }
+                    },
+                    "enabled": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "users": {
+                      "type": "integer"
+                    },
+                    "platforms": {
+                      "type": "object"
+                    },
+                    "tokens": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    }
+  ]
+}

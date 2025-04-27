@@ -1,0 +1,356 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Alerts API",
+    "description": "API for managing alerts in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/alert/save": {
+      "get": {
+        "summary": "Create or update an alert",
+        "description": "Creates a new alert or updates an existing alert configuration.",
+        "tags": [
+          "Alerts Management"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID of the alert",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "alert_config",
+            "in": "query",
+            "required": true,
+            "description": "Alert configuration JSON object as a string. If it contains '_id' it will update the related alert in the database.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alert created or updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "ID of the created/updated alert"
+                    },
+                    "alertName": {
+                      "type": "string",
+                      "description": "Name of the alert"
+                    },
+                    "alertDataType": {
+                      "type": "string",
+                      "description": "Data type to monitor"
+                    },
+                    "alertDataSubType": {
+                      "type": "string",
+                      "description": "Sub type of data to monitor"
+                    },
+                    "alertDataSubType2": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Additional sub type data"
+                    },
+                    "compareType": {
+                      "type": "string",
+                      "description": "Comparison type (e.g., 'increased by at least')"
+                    },
+                    "compareValue": {
+                      "type": "string",
+                      "description": "Value to compare against"
+                    },
+                    "selectedApps": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "List of app IDs this alert applies to"
+                    },
+                    "period": {
+                      "type": "string",
+                      "description": "Alert check period"
+                    },
+                    "alertBy": {
+                      "type": "string",
+                      "description": "Alert notification method (e.g., 'email')"
+                    },
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "Whether the alert is enabled"
+                    },
+                    "compareDescribe": {
+                      "type": "string",
+                      "description": "Human-readable description of comparison"
+                    },
+                    "alertValues": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Email addresses to notify"
+                    },
+                    "createdBy": {
+                      "type": "string",
+                      "description": "ID of the user who created the alert"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error creating or updating alert"
+          }
+        }
+      }
+    },
+    "/i/alert/delete": {
+      "get": {
+        "summary": "Delete an alert",
+        "description": "Deletes an alert by alert ID",
+        "tags": [
+          "Alerts Management"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID of the alert",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "alertID",
+            "in": "query",
+            "required": true,
+            "description": "ID of the alert to delete",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alert deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Deleted an alert"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error deleting alert"
+          }
+        }
+      }
+    },
+    "/i/alert/status": {
+      "get": {
+        "summary": "Change alert status",
+        "description": "Change the enabled status of multiple alerts by boolean flag",
+        "tags": [
+          "Alerts Management"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "description": "JSON string of status object for alerts to update, e.g. {\"alertID1\":false, \"alertID2\":true}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alert status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error updating alert status"
+          }
+        }
+      }
+    },
+    "/o/alert/list": {
+      "get": {
+        "summary": "Get alert list",
+        "description": "Get list of alerts that the current user can view",
+        "tags": [
+          "Alerts Management"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of alerts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "alertsList": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "Alert ID"
+                          },
+                          "alertName": {
+                            "type": "string",
+                            "description": "Name of the alert"
+                          },
+                          "alertDataType": {
+                            "type": "string",
+                            "description": "Data type being monitored"
+                          },
+                          "alertDataSubType": {
+                            "type": "string",
+                            "description": "Sub type of data being monitored"
+                          },
+                          "alertDataSubType2": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "Additional sub type data"
+                          },
+                          "compareType": {
+                            "type": "string",
+                            "description": "Comparison type"
+                          },
+                          "compareValue": {
+                            "type": "string",
+                            "description": "Value to compare against"
+                          },
+                          "selectedApps": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "List of app IDs"
+                          },
+                          "period": {
+                            "type": "string",
+                            "description": "Alert check period"
+                          },
+                          "alertBy": {
+                            "type": "string",
+                            "description": "Alert notification method"
+                          },
+                          "enabled": {
+                            "type": "boolean",
+                            "description": "Whether the alert is enabled"
+                          },
+                          "compareDescribe": {
+                            "type": "string",
+                            "description": "Human-readable comparison description"
+                          },
+                          "alertValues": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Email addresses to notify"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "description": "ID of the user who created the alert"
+                          },
+                          "appNameList": {
+                            "type": "string",
+                            "description": "Comma-separated list of app names"
+                          },
+                          "app_id": {
+                            "type": "string",
+                            "description": "App ID"
+                          },
+                          "condtionText": {
+                            "type": "string",
+                            "description": "Human-readable alert condition"
+                          },
+                          "createdByUser": {
+                            "type": "string",
+                            "description": "Name of the user who created the alert"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "Type of alert"
+                          }
+                        }
+                      }
+                    },
+                    "count": {
+                      "type": "object",
+                      "properties": {
+                        "r": {
+                          "type": "integer",
+                          "description": "Number of running/enabled alerts"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error retrieving alert list"
+          }
+        }
+      }
+    }
+  }
+}

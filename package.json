@@ -24,12 +24,18 @@
     "jsdoc": "^4.0.0",
     "mocha": "10.8.2",
     "nyc": "17.1.0",
+    "openapi-merge": "^1.3.3",
     "should": "13.2.3",
     "supertest": "7.1.0",
+    "swagger-merge": "^0.4.0",
+    "swagger-ui-express": "^5.0.1",
     "typescript": "^5.8.2"
   },
   "scripts": {
-    "test": "grunt --verbose"
+    "test": "grunt --verbose",
+    "docs:api": "node ./bin/scripts/generate-api-docs.js",
+    "docs:api:merge": "node ./bin/scripts/merge-openapi.js",
+    "docs:api:swagger": "node ./bin/scripts/generate-swagger-ui.js"
   },
   "dependencies": {
     "all-the-cities": "3.1.0",

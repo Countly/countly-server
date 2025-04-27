@@ -1,0 +1,531 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Dashboards API",
+    "description": "API for managing dashboards in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/dashboards/create": {
+      "post": {
+        "summary": "Create dashboard",
+        "description": "Create a new custom dashboard",
+        "tags": [
+          "Dashboards"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Dashboard name",
+                    "required": true
+                  },
+                  "widgets": {
+                    "type": "array",
+                    "description": "Array of widget configurations",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "widget_id": {
+                          "type": "string",
+                          "description": "Unique widget identifier"
+                        },
+                        "widget_type": {
+                          "type": "string",
+                          "description": "Type of widget"
+                        },
+                        "data_type": {
+                          "type": "string",
+                          "description": "Type of data to display"
+                        },
+                        "apps": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "App IDs to include in widget"
+                        },
+                        "configuration": {
+                          "type": "object",
+                          "description": "Widget-specific configuration"
+                        },
+                        "dimensions": {
+                          "type": "object",
+                          "description": "Size and position of widget"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dashboard created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "ID of the created dashboard"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/dashboards/update": {
+      "post": {
+        "summary": "Update dashboard",
+        "description": "Update an existing dashboard",
+        "tags": [
+          "Dashboards"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dashboard_id": {
+                    "type": "string",
+                    "description": "Dashboard ID to update",
+                    "required": true
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Updated dashboard name"
+                  },
+                  "widgets": {
+                    "type": "array",
+                    "description": "Updated array of widget configurations",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "widget_id": {
+                          "type": "string"
+                        },
+                        "widget_type": {
+                          "type": "string"
+                        },
+                        "data_type": {
+                          "type": "string"
+                        },
+                        "apps": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "configuration": {
+                          "type": "object"
+                        },
+                        "dimensions": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dashboard updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/dashboards/delete": {
+      "post": {
+        "summary": "Delete dashboard",
+        "description": "Delete an existing dashboard",
+        "tags": [
+          "Dashboards"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dashboard_id": {
+                    "type": "string",
+                    "description": "Dashboard ID to delete",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dashboard deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/dashboards/all": {
+      "get": {
+        "summary": "Get all dashboards",
+        "description": "Get a list of all dashboards for the current user",
+        "tags": [
+          "Dashboards"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboards retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "Dashboard ID"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Dashboard name"
+                      },
+                      "widgets": {
+                        "type": "array",
+                        "description": "Array of widget configurations"
+                      },
+                      "owner": {
+                        "type": "string",
+                        "description": "User ID of dashboard owner"
+                      },
+                      "created_at": {
+                        "type": "integer",
+                        "description": "Creation timestamp"
+                      },
+                      "last_modified": {
+                        "type": "integer",
+                        "description": "Last modification timestamp"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/dashboards/data": {
+      "get": {
+        "summary": "Get dashboard data",
+        "description": "Get data for widgets in a dashboard",
+        "tags": [
+          "Dashboards"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dashboard_id",
+            "in": "query",
+            "required": true,
+            "description": "Dashboard ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "widgets": {
+                      "type": "array",
+                      "description": "Array of widgets with data",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "widget_id": {
+                            "type": "string"
+                          },
+                          "data": {
+                            "type": "object",
+                            "description": "Widget data"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/dashboards/widget/create": {
+      "post": {
+        "summary": "Create widget",
+        "description": "Create a new widget in a dashboard",
+        "tags": [
+          "Dashboard Widgets"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dashboard_id": {
+                    "type": "string",
+                    "description": "Dashboard ID",
+                    "required": true
+                  },
+                  "widget": {
+                    "type": "object",
+                    "description": "Widget configuration",
+                    "required": true,
+                    "properties": {
+                      "widget_type": {
+                        "type": "string",
+                        "description": "Type of widget"
+                      },
+                      "data_type": {
+                        "type": "string",
+                        "description": "Type of data to display"
+                      },
+                      "apps": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "App IDs to include in widget"
+                      },
+                      "configuration": {
+                        "type": "object",
+                        "description": "Widget-specific configuration"
+                      },
+                      "dimensions": {
+                        "type": "object",
+                        "description": "Size and position of widget"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Widget created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "widget_id": {
+                      "type": "string",
+                      "description": "ID of the created widget"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    }
+  ]
+}
