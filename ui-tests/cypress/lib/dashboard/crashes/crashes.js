@@ -33,7 +33,7 @@ const verifyStaticElementsOfCrashGroupsPage = () => {
         labelElement: crashGroupsPageElements.ENABLED_LABEL,
         labelText: "Enabled",
         tooltipElement: crashGroupsPageElements.AUTO_REFRESH_IS_ENABLED_TOOLTIP,
-        tooltipText: "Automatically refresh can be adjusted through this switch"
+        tooltipText: "Automatic refresh can be adjusted through this switch."
     });
 
     cy.verifyElement({
@@ -222,7 +222,7 @@ const verifyStaticElementsOfCrashStatisticsPage = () => {
         labelElement: crashStatisticsEChartElements.TOTAL_OCCURENCES_LABEL,
         labelText: "Total Occurences",
         tooltipElement: crashStatisticsEChartElements.TOTAL_OCCURENCES_TOOLTIP,
-        tooltipText: "Timeline of all occurrences of all crashes. Same crash may occurred multiple times for same or different users."
+        tooltipText: "Timeline of all occurrences of all crashes. The same crash may have occurred multiple times for the same or different users."
     });
 
     cy.verifyElement({
@@ -233,7 +233,7 @@ const verifyStaticElementsOfCrashStatisticsPage = () => {
         labelElement: crashStatisticsEChartElements.UNIQUE_CRASHES_LABEL,
         labelText: "Unique Crashes",
         tooltipElement: crashStatisticsEChartElements.UNIQUE_CRASHES_TOOLTIP,
-        tooltipText: "Timeline of crash types. Only the first ocurrence of each crash time recorded here."
+        tooltipText: "Timeline of crash types. Only the first occurrence of each crash time is recorded here."
     });
 
     cy.verifyElement({
@@ -255,7 +255,7 @@ const verifyStaticElementsOfCrashStatisticsPage = () => {
         labelElement: crashStatisticsEChartElements.CRASH_FREE_USERS_LABEL,
         labelText: "Crash-free Users",
         tooltipElement: crashStatisticsEChartElements.CRASH_FREE_USERS_TOOLTIP,
-        tooltipText: "Number of users who have not experienced a crash for the applied filter in the selected time period, expressed as a percentage of the total number of users within that time period."
+        tooltipText: "The number of users who have not experienced a crash for the applied filter in the selected time period, expressed as a percentage of the total number of users within that time period."
     });
 
     cy.verifyElement({

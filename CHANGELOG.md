@@ -6,6 +6,9 @@ Fixes:
 - [star-rating] Fix rating score and responses table sorting
 - [ui] Fix alignment of drawers title and close icon
 
+Fixes:
+- [localization] Fixed grammatical errors
+
 Dependencies:
 - Bump countly-sdk-web from 25.1.0 to 25.4.0
 - Bump mongodb from 6.14.2 to 6.16.0
