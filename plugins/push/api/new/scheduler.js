@@ -153,9 +153,7 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
             let schedulerTimezone;
             if (trigger.kind === "cohort" || trigger.kind === "event") {
                 if (trigger.cap || trigger.sleep) {
-                    audienceFilters.cap = {
-                        messageId: message._id,
-                    };
+                    audienceFilters.cap = { messageId: message._id };
                     if (trigger.cap) {
                         audienceFilters.cap.maxMessages = trigger.cap;
                     }

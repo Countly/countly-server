@@ -1,6 +1,9 @@
 /**
  * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('./types/queue.ts').PushEvent} PushEvent
+ * @typedef {import('./types/queue.ts').IOSConfig} IOSConfig
+ * @typedef {import('./types/queue.ts').AndroidConfig} AndroidConfig
+ * @typedef {import('./types/queue.ts').HuaweiConfig} HuaweiConfig
  * @typedef {import('./types/message.ts').Message} Message
  * @typedef {import('./types/message.ts').PlatformKeys} PlatformKeys
  * @typedef {import('./types/message.ts').PlatformEnvKeys} PlatformEnvKeys
@@ -150,6 +153,7 @@ async function composeScheduledPushes(db, { appId, scheduleId, messageId, timezo
                 credentials: creds[platform],
                 message: compileTemplate(platform, variables),
                 proxy,
+                platformConfiguration: getPlatformConfiguration(platform, messageDoc),
             };
 
             events.push(push);
@@ -284,6 +288,27 @@ async function loadProxyConfiguration(db) {
     const { proxyhost: host, proxyport: port, proxyuser: user,
         proxypass: pass, proxyunauthorized: unauth } = pushConfig;
     return { host, port, auth: !(unauth || false), pass, user }
+}
+
+/**
+ * @param {PlatformKeys} platform - a, i or h
+ * @param {Message} message - Message document
+ * @returns {IOSConfig|AndroidConfig|HuaweiConfig} configuration for the given platform
+ */
+function getPlatformConfiguration(platform, message) {
+    if (platform === "i") {
+        let setContentAvailable = false;
+        const contentItem = message.contents.find(i => Array.isArray(i.specific));
+        if (contentItem && contentItem.specific) {
+            const obj = contentItem.specific.find(i => i.setContentAvailable !== undefined);
+            if (obj && obj.setContentAvailable) {
+                setContentAvailable = true;
+            }
+        }
+        return { setContentAvailable };
+    }
+
+    return {};
 }
 
 /**

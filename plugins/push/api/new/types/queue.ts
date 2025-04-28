@@ -14,6 +14,14 @@ export interface ScheduleEvent {
     timezone?: string;
 }
 
+export interface IOSConfig {
+    setContentAvailable: boolean;
+}
+
+export interface AndroidConfig {}
+
+export interface HuaweiConfig {}
+
 export interface PushEvent {
     appId: ObjectId;
     messageId: ObjectId;
@@ -27,6 +35,7 @@ export interface PushEvent {
     language: string;
     credentials: SomeCredential;
     proxy?: ProxyConfiguration;
+    platformConfiguration: IOSConfig|AndroidConfig|HuaweiConfig;
 }
 
 export interface ResultEvent extends PushEvent {
@@ -61,6 +70,8 @@ export interface EventTriggerEvent extends BaseTriggerEvent {
 export type AutoTriggerEvent = CohortTriggerEvent|EventTriggerEvent;
 
 type Optional<T> = T|undefined;
+
+// converts ObjectId and Date to string
 type DTO<T> = {
     [P in keyof T]: T[P] extends ObjectId|Date
         ? string

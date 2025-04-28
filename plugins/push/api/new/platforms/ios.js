@@ -1,5 +1,6 @@
 /**
  * @typedef {import("../types/queue.ts").PushEvent} PushEvent
+ * @typedef {import("../types/queue.ts").IOSConfig} IOSConfig
  * @typedef {import("../types/credentials.ts").APNCredentials} APNCredentials
  * @typedef {import("../types/credentials.ts").APNP12Credentials} APNP12Credentials
  * @typedef {import("../types/proxy.ts").ProxyConfiguration} ProxyConfiguration
@@ -134,6 +135,10 @@ async function send(pushEvent) {
         const keyPair = getTlsKeyPair(credentials);
         options.key = keyPair.key;
         options.cert = keyPair.cert;
+    }
+    const platformConfig = /** @type {IOSConfig} */(pushEvent.platformConfiguration);
+    if (platformConfig.setContentAvailable) {
+        headers["apns-priority"] = 5;
     }
 
     const request = http2Wrapper.request(url, options);
