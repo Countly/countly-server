@@ -10,18 +10,12 @@
           <h3 class="ratings-widget-detail-view__widget-name" data-test-id="ratings-detail-widget-name-label">{{unescapeHtml(widget.popup_header_text)}}</h3>
         </div>
         <div class="ratings-widget-detail-view__widget-informations bu-mt-4">
-          <div
-            class="ratings-widget-detail-view__widget-status bu-has-text-weight-semibold text-small bu-mt-1"
-            :class="`ratings-widget-detail-view__widget-status--${widgetStatusClassModifier}`"
-          >
-            <template v-if="!isLoading">
-              <span
-                v-if="widget.status"
-                class="blinker"
-              />
-              <span data-test-id="ratings-detail-widget-status">{{ widget.status ? i18n('feedback.active') : i18n('feedback.disabled') }}</span>
-            </template>
-          </div>
+          <cly-status-tag
+            data-test-id="ratings-detail-widget-status"
+            :color="statusColor"
+            :loading="isLoading"
+            :text="statusText"
+          />
           <div class="ratings-widget-detail-view__created-at text-medium bu-p-1 bu-ml-2"> <i class="ion-android-time" data-test-id="ratings-detail-created-at-icon"></i> 
             <span data-test-id="ratings-detail-created-at-label">{{ i18n('feedback.created-at') }}</span>
             <span data-test-id="ratings-detail-created-at-value">{{unescapeHtml(widget.created_at)}}</span></div>

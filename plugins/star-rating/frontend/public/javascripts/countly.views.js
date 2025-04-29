@@ -1356,12 +1356,12 @@
                 return parseFloat(((this.count / timesShown) * 100).toFixed(2)) || 0;
             },
 
-            widgetStatusClassModifier() {
-                if (this.isLoading) {
-                    return 'loading';
-                }
+            statusColor() {
+                return this.widget.status ? 'green' : 'red';
+            },
 
-                return this.widget.status ? 'active' : 'disabled';
+            statusText() {
+                return CV.i18n(`feedback.${this.widget.status ? 'active' : 'disabled'}`);
             }
         },
         mounted: function() {
