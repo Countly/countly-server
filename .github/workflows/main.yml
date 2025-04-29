@@ -358,8 +358,12 @@ jobs:
 
       - name: Copy code
         shell: bash
-        run: cp -rf ./* /opt/countly
-
+        run: |
+          rm -rf /opt/countly/frontend
+          cp -rf ./* /opt/countly
+          cp /opt/countly/frontend/express/config.sample.js /opt/countly/frontend/express/config.js
+          cp /opt/countly/frontend/express/public/javascripts/countly/countly.config.sample.js /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
+          
       - name: Prepare files to use correct MongoDB host
         shell: bash
         run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
