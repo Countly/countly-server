@@ -11,7 +11,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: devicesAndTypesPageElements.PAGE_TITLE,
         labelText: "Devices and Types",
         tooltipElement: devicesAndTypesPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Details of the device models and types from which your users access your application, in the selected time period."
+        tooltipText: "Details of the device models and types from which your users access your application within the selected time period."
     });
 
     cy.verifyElement({
@@ -66,21 +66,21 @@ const verifyStaticElementsOfPage = () => {
         labelElement: devicesEGraphElements().TOP_PLATFORMS_LABEL,
         labelText: "Top Platforms",
         tooltipElement: devicesEGraphElements().TOP_PLATFORMS_TOOLTIP,
-        tooltipText: "Top 5 versions of the platforms of your users’ sessions, in the selected time period."
+        tooltipText: "The top 5 platform versions of your users’ sessions within the selected time period."
     });
 
     cy.verifyElement({
         labelElement: devicesEGraphElements().TOP_PLATFORMS_VERSIONS_LABEL,
         labelText: "Top Platform Versions",
         tooltipElement: devicesEGraphElements().TOP_PLATFORMS_VERSIONS_TOOLTIP,
-        tooltipText: "Top 3 versions of the platforms of your users' sessions, in the selected time period."
+        tooltipText: "The top 3 platform versions of your users' sessions within the selected time period."
     });
 
     cy.verifyElement({
         labelElement: devicesEGraphElements().TOP_RESOLUTIONS_LABEL,
         labelText: "Top Resolutions",
         tooltipElement: devicesEGraphElements().TOP_RESOLUTIONS_TOOLTIP,
-        tooltipText: "Top 5 resolution settings of the devices used your users' sessions, in the selected time period."
+        tooltipText: "The top 5 resolution settings of the devices used in your users' sessions within the selected time period."
     });
 
     cy.verifyElement({
