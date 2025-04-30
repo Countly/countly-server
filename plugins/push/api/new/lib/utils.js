@@ -3,11 +3,14 @@
  * @typedef {import("../types/proxy").ProxyConfigurationKey} ProxyConfigurationKey
  * @typedef {import("../types/credentials").APNP12Credentials} APNP12Credentials
  * @typedef {import("../types/credentials").TLSKeyPair} TLSKeyPair
+ * @typedef {import("../types/message").Message} Message
+ * @typedef {import("../types/schedule").Schedule} Schedule
  * @typedef {import("mongodb").Db} MongoDb
  */
 
 const { URL } = require("url");
 const nodeForge = require("node-forge");
+const { DATE_TRIGGERS } = require("../scheduler");
 
 /**
  *
@@ -79,9 +82,27 @@ function loadDrillAPI() {
     }
 }
 
+/**
+ * @param {Message} message
+ * @param {Schedule=} lastSchedule
+ * @returns {Message["status"]|Schedule["status"]}
+ */
+function getMessageStatus(message, lastSchedule) {
+    const trigger = message.triggers?.[0];
+    const checkMessage = !trigger                // if there's no trigger somehow (this is probably an error)
+        || !DATE_TRIGGERS.includes(trigger.kind) // if the trigger is not a date trigger
+        || message.status !== "active"           // if the message is not active
+        || !lastSchedule;                        // if there's no schedule record yet
+    if (checkMessage) {
+        return message.status;
+    }
+    return lastSchedule.status;
+}
+
 module.exports = {
     buildProxyUrl,
     serializeProxyConfig,
     parseKeyPair,
-    loadDrillAPI
+    loadDrillAPI,
+    getMessageStatus
 }

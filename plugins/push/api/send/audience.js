@@ -10,8 +10,8 @@ const common = require('../../../../api/utils/common'),
 
     /**
      * Get Drill plugin api
-     * 
-     * @returns {object} drill api 
+     *
+     * @returns {object} drill api
      */
     drill = () => {
         if (typeof global.it === 'function') {
@@ -28,8 +28,8 @@ const common = require('../../../../api/utils/common'),
     },
     /**
      * Get Geolocations plugin api
-     * 
-     * @returns {object} geo api 
+     *
+     * @returns {object} geo api
      */
     geo = () => {
         if (typeof global.it === 'function') {
@@ -47,14 +47,14 @@ const common = require('../../../../api/utils/common'),
 
 /**
  * Get current time, to be able to override it in tests
- * 
+ *
  * @returns {Number} current date in ms
  */
 let now = () => Date.now();
 
 /**
  * Set now function, for tests
- * 
+ *
  * @param {function} f now function
  */
 function setNow(f) {
@@ -67,7 +67,7 @@ function setNow(f) {
 class Audience {
     /**
      * Constructor
-     * 
+     *
      * @param {logger} log parent logger
      * @param {Message} message message instance
      * @param {Object|undefined} app app object
@@ -80,7 +80,7 @@ class Audience {
 
     /**
      * Lazy load app from db
-     * 
+     *
      * @returns {object} app object
      */
     async getApp() {
@@ -96,7 +96,7 @@ class Audience {
 
     /**
      * Create new Pusher
-     * 
+     *
      * @param {Trigger} trigger effective trigger
      * @returns {Pusher} pusher instance bound to this audience
      */
@@ -106,7 +106,7 @@ class Audience {
 
     /**
      * Create new Popper
-     * 
+     *
      * @param {Trigger} trigger effective trigger
      * @returns {Popper} popper instance bound to this audience
      */
@@ -116,7 +116,7 @@ class Audience {
 
     /**
      * Add any virtual platforms to the message platforms array
-     * 
+     *
      * @returns {string[]} new array containing all message platforms and their virtual platforms
      */
     platformsWithVirtuals() {
@@ -125,7 +125,7 @@ class Audience {
 
     // /**
     //  * Find users defined by message filter and put corresponding records into queue
-    //  * 
+    //  *
     //  * @param {Message} message message to schedule
     //  */
     // static schedule(message) {
@@ -136,7 +136,7 @@ class Audience {
 
     /**
      * Construct an aggregation query for app_users collection from message Filter
-     * 
+     *
      * @param {object} project app_users projection
      * @returns {object[]} array of aggregation pipeline steps
      */
@@ -163,7 +163,7 @@ class Audience {
 
     /**
      * Add token existence filter to `steps` array
-     * 
+     *
      * @param {Object[]} steps aggregation steps array to add steps to
      */
     async addFields(steps) {
@@ -174,7 +174,7 @@ class Audience {
 
     /**
      * Add projection to `steps` array
-     * 
+     *
      * @param {Object[]} steps aggregation steps array to add steps to
      * @param {string[]|Object} project app_users projection (array of field names or object of {field: 1} form)
      */
@@ -203,7 +203,7 @@ class Audience {
 
     /**
      * Add aggregation steps to `steps` array from filter
-     * 
+     *
      * @param {Object[]} steps aggregation steps array to add steps to
      * @param {Filter} filter filter instance
      */
@@ -318,7 +318,7 @@ class Audience {
 
     /**
      * Construct an aggregation query for app_users collection from message Filter
-     * 
+     *
      * @param {object} project app_users projection
      * @returns {object[]} array of app_users documents
      */
@@ -330,7 +330,7 @@ class Audience {
 
     /**
      * Get uids by message $in
-     * 
+     *
      * @param  {Object} min filter condition: [oid], {$in: [oid]}, {$nin: [oid]}
      * @return {Promise}    resoves to array of uids
      */
@@ -360,13 +360,13 @@ class Audience {
 
 /**
  * Base Mapper
- * 
+ *
  * ... using classes here to quit from lots and lots of conditionals in favor of quite simple hierarchical logic
  */
 class Mapper {
     /**
      * Constructor
-     * 
+     *
      * @param {object} app app
      * @param {Message} message message
      * @param {Trigger} trigger trigger
@@ -386,7 +386,7 @@ class Mapper {
 
     /**
      * Set sending date addition in ms for rate limiting
-     * 
+     *
      * @param {number} addition sending date addition in ms
      * @returns {Mapper} this instance for method chaining
      */
@@ -397,7 +397,7 @@ class Mapper {
 
     /**
      * Map app_user object to message
-     * 
+     *
      * @param {object} user app_user object
      * @param {number} date notification date as ms timestamp
      * @param {object[]} c [Content.json] overrides
@@ -434,7 +434,7 @@ class Mapper {
 class PlainApiMapper extends Mapper {
     /**
      * Map app_user object to message
-     * 
+     *
      * @param {object} user app_user object
      * @param {Date} date notification date
      * @param {object[]} c [Content.json] overrides
@@ -466,7 +466,7 @@ class PlainApiMapper extends Mapper {
 class CohortsEventsMapper extends Mapper {
     /**
      * Map app_user object to message
-     * 
+     *
      * @param {object} user app_user object
      * @param {Date} date reference date (cohort entry date, event date)
      * @param {object[]} c [Content.json] overrides
@@ -532,7 +532,7 @@ class CohortsEventsMapper extends Mapper {
 class MultiRecurringMapper extends Mapper {
     /**
      * Map app_user object to message
-     * 
+     *
      * @param {object} user app_user object
      * @param {Date} date reference date (time of delivery in UTC, only user tz is what's left to add here for tz messages)
      * @param {object[]} c [Content.json] overrides
@@ -591,7 +591,7 @@ class PusherPopper {
 
     /**
      * Get steps from audience and add local filter/uids
-     * 
+     *
      * @returns {object[]} array of aggregation steps
      */
     async steps() {
@@ -638,7 +638,7 @@ class PusherPopper {
 
     /**
      * Set contents overrides
-     * 
+     *
      * @param {Content[]} contents notification data
      * @returns {Pusher} this instance for easy method chaining
      */
@@ -649,7 +649,7 @@ class PusherPopper {
 
     /**
      * Set Filter which would override message filter
-     * 
+     *
      * @param {Filter} filter message filter
      * @returns {Pusher} this instance for easy method chaining
      */
@@ -660,7 +660,7 @@ class PusherPopper {
 
     /**
      * Set custom variables
-     * 
+     *
      * @param {Object} variables notification variables
      * @returns {Pusher} this instance for easy method chaining
      */
@@ -671,7 +671,7 @@ class PusherPopper {
 
     /**
      * Set start
-     * 
+     *
      * @param {Date} start start of the notification
      * @returns {Pusher} this instance for easy method chaining
      */
@@ -682,7 +682,7 @@ class PusherPopper {
 
     /**
      * Set user uids
-     * 
+     *
      * @param {string[]} uids array of uids
      * @returns {Pusher} this instance for easy method chaining
      */
@@ -705,7 +705,7 @@ class PusherPopper {
 class Pusher extends PusherPopper {
     /**
      * Insert records into db
-     * 
+     *
      * @returns {Result} result instance with total & next set (along with platform & locale specific result subs)
      */
     async run() {
@@ -966,7 +966,7 @@ class Popper extends PusherPopper {
 
     /**
      * Remove all message pushes
-     * 
+     *
      * @returns {number} number of records removed
      */
     async clear() {
@@ -980,14 +980,14 @@ class Popper extends PusherPopper {
                 update = {$inc: {}};
             }
             update.$inc['result.processed'] = (update.$inc['result.processed'] || 0) + obj.deleted;
-            update.$inc['result.errored'] = (update.$inc['result.errored'] || 0) + obj.deleted;
+            update.$inc['result.failed'] = (update.$inc['result.failed'] || 0) + obj.deleted;
             update.$inc[`result.errors.${obj.p}.cancelled`] = (update.$inc[`result.errors.${obj.p}.cancelled`] || 0) + obj.deleted;
         }
         if (update) {
             await this.audience.message.update(update, () => {
                 for (let obj of deleted) {
                     this.audience.message.result.processed += obj.deleted;
-                    this.audience.message.result.errored += obj.deleted;
+                    this.audience.message.result.failed += obj.deleted;
                     this.audience.message.result.recordError('cancelled', obj.deleted);
                     this.audience.message.result.sub(obj.p).recordError('cancelled', obj.deleted);
                 }
@@ -998,7 +998,7 @@ class Popper extends PusherPopper {
 
     /**
      * Remove all message pushes and terminate any processing
-     * 
+     *
      * @param {string} msg optional error message
      * @returns {number} number of records removed
      */
@@ -1030,7 +1030,7 @@ class Popper extends PusherPopper {
 
 /**
  * Convert array of objects into a map indexed by given key, they key must be present in all objects
- * 
+ *
  * @param {Object[]} arr array of objects
  * @param {String} key key
  * @returns {Object} resulting object

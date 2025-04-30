@@ -16,13 +16,12 @@ const log = common.log("push:api:cache");
     }
 }} */
 let AUTO_AND_API_MESSAGES = {};
-const { INACTIVE_MESSAGE_STATUSES } = require("../scheduler.js");
 
 async function loadAutoAndAPIMessages() {
     const now = new Date;
     const messages = await common.db.collection("messages")
         .find({
-            status: { $nin: INACTIVE_MESSAGE_STATUSES },
+            status: "active",
             triggers: {
                 $elemMatch: {
                     kind: { $in: ["cohort", "event", "api"] },

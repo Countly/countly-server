@@ -35,17 +35,17 @@ const DEFAULTS = {
  * State machine for regular messages:
  *  null
  *      -> Created [created] on insertion
- * 
+ *
  *  Created [created]
  *      -> Scheduling [created] during schedule job
  *      -> Created | Deleted [created x] on deletion
  *      -> Created [created result.error] | Error on error before scheduling job
- *  
+ *
  *  Scheduling [created]
  *      -> Stremable [scheduled] on schedule job done
  *      -> Scheduling | Error [created result.error] on error during schedule job
  *      -> Done [failed result.error] if no recipients is found during scheduling
- * 
+ *
  *  Streamable [scheduled]
  *      -> Streaming [sending] on send job start
  *      -> Streamable | Deleted [scheduled x] on deletion
@@ -53,62 +53,62 @@ const DEFAULTS = {
  *      -> Done | Error [failed x result.error='terminated'] on termination
  *      -> Done | Streamable | Error [failed x result.error='terminated'] on termination
  *      -> Done | Error [failed result.error='terminated'] on termination
- *  
+ *
  *  Streaming [sending]
  *      -> Done [sent] after send job run
  *      -> Paused [sending result.error] during backoffs
  *      -> ??? Streaming | Error [sending result.error] for recoverable streaming errors
- *      -> Done | Error [failed result.error] after unrecoverable errors or a number of times being Paused 
+ *      -> Done | Error [failed result.error] after unrecoverable errors or a number of times being Paused
  *      -> Done | Error [failed result.error='terminated'] on termination
- * 
+ *
  *  Streaming | Error [sending result.error]
- *      -> ... same as Streaming ... 
- * 
+ *      -> ... same as Streaming ...
+ *
  *  Paused [sending result.error]
  *      -> Streaming [sending result.error] on next backoff
  *      -> Done | Error [failed result.error] on too many attempts
  *      -> Paused | Deleted [failed x result.error] on deletion
- *  
+ *
  *  Done | Error [failed result.error]
  *      -> Streaming [sending] on resume (reset of errors)
  *      -> Done | Error | Deleted [failed x result.error] on deletion
- *      
- * 
- *  
+ *
+ *
+ *
  * State machine for auto/tx messages:
  *  null
  *      -> Streamable [scheduled] for auto/tx
- * 
+ *
  *  Created [created]
  *      -> Streamable [scheduled] on activation
  *      -> Created | Deleted [created x] on deletion
  *      -> Created | Error [created result.error] on error during activation
- *  
+ *
  *  Streamable [scheduled]
  *      -> Streaming [sending] on send job start
  *      -> Streamable | Deleted [scheduled x] on deletion
  *      -> Streamable | Error [scheduled result.error] on error during start of send job, during /push, /toggle or auto hooks
  *      -> Created [created] when auto/tx are toggled to inactive
- *  
+ *
  *  Streaming [sending]
  *      -> Streamable [scheduled] after send job run
  *      -> Paused [sending result.error] during backoffs
  *      -> ??? Streaming | Error [sending result.error] for recoverable streaming errors
- *      -> Done | Error [failed result.error] after unrecoverable errors or a number of times being Paused 
+ *      -> Done | Error [failed result.error] after unrecoverable errors or a number of times being Paused
  *      -> !!! Created when auto/tx are toggled to inactive
- *  
+ *
  *  Streaming | Error [sending result.error]
- *      -> ... same as Streaming ... 
- * 
+ *      -> ... same as Streaming ...
+ *
  *  Paused [sending result.error]
  *      -> Streaming [sending] on next backoff
  *      -> Done | Error [failed result.error] on too many attempts
  *      -> Paused | Deleted [failed x result.error] on deletion
- * 
+ *
  *  Done | Error [failed result.error]
  *      -> Streamable [scheduled] on reactivation / reset of errors
  *      -> Done | Deleted [failed x result.error] on deletion
- * 
+ *
  */
 const State = {
     Created:    0,              // 0  [created]
@@ -128,15 +128,21 @@ const State = {
  * User-facing message statuses.
  */
 const Status = {
-    Created:    'created',      // [Created] Created, haven't beeing scheduled yet or Stopped for automated/tx (sending is forbidden)
+    // Active, can be sent. If this message is an API, Cohort or Event message,
+    // this means it will be sent when appropriate. If its a Plain, Recurring
+    // or Multi message, check its last schedule's status for more details.
+    Active:     'active',
     Inactive:   'inactive',     // [Inactive] Second Created (waiting for approval)
     Draft:      'draft',        // [Inactive] Cannot be sent, can only be duplicated
-    Scheduled:  'scheduled',    // [Streamable] Will be sent when appropriate
-    Sending:    'sending',      // [Streaming, Paused] Sending right now
-    Sent:       'sent',         // [Done] Sent, no further actions
     Stopped:    'stopped',      // [Done] Stopped sending (one time from UI)
-    Failed:     'failed',       // [Done] Removed from queue, no further actions
-    // pretty much all of above have a corresponding "& Error" companion from State which would make result.error be non empty
+
+    // These are being calculated from the last schedule's status when the
+    // message is "active"
+    // Scheduled:  'scheduled',    // [Streamable] Will be sent when appropriate
+    // Sending:    'sending',      // [Streaming, Paused] Sending right now
+    // Sent:       'sent',         // [Done] Sent, no further actions
+    // Canceled:   'canceled',     // Last schedule was canceled
+    // Failed:     'failed',       // [Done] Removed from queue, no further actions
 };
 
 /**
@@ -195,7 +201,7 @@ const PersType = {
 
 /**
  * Convert whatever date we have to Date instance
- * 
+ *
  * @param {number|string|Date|undefined} date date in any format
  * @returns {Date} Date instance
  */

@@ -58,7 +58,7 @@ function proxyAgent(url, proxy, agentConfig = {}) {
                     });
                     socket.on('error', err => {
                         err = err || new Error('ProxySocketError');
-                        log.e('socket errored, rejecting %d promises', rejects.length, err);
+                        log.e('socket failed, rejecting %d promises', rejects.length, err);
                         rejects.forEach(rej => rej(err));
 
                         try {

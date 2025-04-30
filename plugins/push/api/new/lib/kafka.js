@@ -108,32 +108,30 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
 
 /**
  *
- * @param {ScheduleEvent} scheduleEvent message schedule to create job for
+ * @param {ScheduleEvent[]} scheduleEvents - message schedules to send to broker
  */
-async function sendScheduleEvent(scheduleEvent) {
+async function sendScheduleEvents(scheduleEvents) {
     if (!PRODUCER) {
         throw new Error("Producer is not initialized");
     }
-    const scheduleTime = scheduleEvent.scheduledTo.getTime();
-
     await PRODUCER.send({
         topic: config.topics.SCHEDULE.name,
-        messages: [
-            {
-                timestamp: String(Math.round(Date.now() / 1000)),
+        messages: scheduleEvents.map(scheduleEvent => {
+            return {
                 value: JSON.stringify(scheduleEvent),
                 headers: {
-                    "scheduler-epoch": String(Math.round(scheduleTime / 1000)),
                     "scheduler-target-topic": config.topics.COMPOSE.name,
-                    // "scheduler-target-key": "job-key"
+                    "scheduler-epoch": String(
+                        Math.round(scheduleEvent.scheduledTo.getTime() / 1000)
+                    ),
                 },
                 // TODO: find out why this is required. normally it should distribute
                 // to scheduler partitions in a round robin fashion when there's no key.
                 // But here, if we don't pass the "key", scheduler consumer never
-                // receives the ticket.
+                // receives the event.
                 key: String(Math.random()),
             }
-        ]
+        })
     });
 }
 
@@ -209,7 +207,7 @@ async function purge() {
 
 module.exports = ({
     sendPushEvents,
-    sendScheduleEvent,
+    sendScheduleEvents,
     sendResultEvents,
     initPushQueue,
     sendAutoTriggerEvents,

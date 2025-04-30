@@ -1,7 +1,7 @@
 /**
  * @typedef {import('./types/queue.ts').PushEvent} PushEvent
  * @typedef {import('./types/queue.ts').ResultEvent} ResultEvent
- * @typedef {import('./types/queue.ts').ResultError} ResultError
+ * @typedef {import('./types/message.ts').ResultError} ResultError
  * @typedef {import('./types/utils.ts').LogObject} LogObject
  */
 

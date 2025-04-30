@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { Result, Content } from "./message";
+import { ScheduleEvent } from "./queue";
 
 export interface AudienceFilters {
     uids?: string[];
@@ -31,6 +32,10 @@ export interface Schedule {
     audienceFilters?: AudienceFilters;
     messageOverrides?: MessageOverrides;
     uids?: string[]; // user ids from app_users{appId} collection sent by cohort or event AutoTrigger
-    status: "scheduled"|"started"|"sent"|"canceled";
+    status: "scheduled"|"sending"|"sent"|"canceled"|"failed";
     result: Result;
+    events: {
+        scheduled: (Pick<ScheduleEvent,"timezone"|"scheduledTo">&{date: Date})[];
+        composed: (Pick<ScheduleEvent,"timezone"|"scheduledTo">&{date: Date})[];
+    };
 }

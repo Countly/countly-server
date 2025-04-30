@@ -659,12 +659,12 @@ class APN extends Base {
                     session.streamDoneCount--;
                     // self.log.d('streamDone (left %j) %j %j %j %j %j', session.streamDoneCount, oks.length, recoverableErrors, nonRecoverableError && nonRecoverableError.left.length || 0, nonRecoverableError && nonRecoverableError.affected.length || 0, pushes.length);
                     if (oks.length + recoverableErrors + (nonRecoverableError && nonRecoverableError.left.length || 0) + (nonRecoverableError && nonRecoverableError.affected.length || 0) === pushes.length) {
-                        let errored = nonRecoverableError && nonRecoverableError.bytes || 0;
+                        let failed = nonRecoverableError && nonRecoverableError.bytes || 0;
                         if (oks.length) {
-                            self.send_results(oks, bytes - errored);
+                            self.send_results(oks, bytes - failed);
                         }
                         for (let k in errors) {
-                            errored += errors[k].affectedBytes;
+                            failed += errors[k].affectedBytes;
                             self.send_push_error(errors[k]);
                         }
                         if (nonRecoverableError) {

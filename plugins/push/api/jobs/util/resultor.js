@@ -152,7 +152,7 @@ class Resultor extends DoFinish {
                         if (msg) {
                             result = msg.result;
                             result.lastRun.processed++;
-                            result.lastRun.errored++;
+                            result.lastRun.failed++;
                         }
                         else {
                             result = this.noMessage[m] || (this.noMessage[m] = new Result());
@@ -326,7 +326,7 @@ class Resultor extends DoFinish {
                 let run = result.lastRun;
                 if (run) {
                     run.processed += mids[mid];
-                    run.errored += mids[mid];
+                    run.failed += mids[mid];
                 }
 
                 result.pushError(error);
@@ -363,7 +363,7 @@ class Resultor extends DoFinish {
                 this.log.d('message %s is done processing', m.id);
                 let state, status, error;
                 if (m.triggerAutoOrApi()) {
-                    if (m.result.total === m.result.errored) {
+                    if (m.result.total === m.result.failed) {
                         state = State.Created | State.Error | State.Done;
                         status = Status.Stopped;
                         error = 'Failed to send all notifications';
@@ -375,7 +375,7 @@ class Resultor extends DoFinish {
                 }
                 else if (m.triggerRescheduleable()) {
                     let resch = m.triggerRescheduleable();
-                    if (m.result.total === m.result.errored) {
+                    if (m.result.total === m.result.failed) {
                         state = State.Created | State.Error | State.Done;
                         status = Status.Stopped;
                         error = 'Failed to send all notifications';
@@ -403,7 +403,7 @@ class Resultor extends DoFinish {
                     }
                 }
                 else {
-                    if (m.result.total === m.result.errored) {
+                    if (m.result.total === m.result.failed) {
                         state = State.Created | State.Error | State.Done;
                         status = Status.Failed;
                         error = 'Failed to send all notifications';
@@ -440,7 +440,7 @@ class Resultor extends DoFinish {
 
                 let count = this.noMessage[mid].processed;
                 delete this.noMessage[mid];
-                return this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, {$inc: {errored: count, processed: count, 'errors.NoMessage': count}});
+                return this.db.collection('messages').updateOne({_id: this.db.ObjectID(mid)}, {$inc: {failed: count, processed: count, 'errors.NoMessage': count}});
             }));
 
         if (this.toDelete.length) {

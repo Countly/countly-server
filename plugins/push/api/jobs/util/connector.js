@@ -9,7 +9,7 @@ const { DoFinish } = require('./do_finish'),
 class Connector extends DoFinish {
     /**
      * Constructor
-     * 
+     *
      * @param {Log} log logger
      * @param {MongoClient} db mongo client
      * @param {State} state state shared across the streams
@@ -39,7 +39,7 @@ class Connector extends DoFinish {
 
     /**
      * Transform's transform impementation
-     * 
+     *
      * @param {object} push push object
      * @param {string} encoding ignored
      * @param {function} callback callback
@@ -51,7 +51,7 @@ class Connector extends DoFinish {
 
     /**
      * Actual transform logic (it's not allowed to call _transform() directly)
-     * 
+     *
      * @param {object} push push object
      * @param {string} encoding ignored
      * @param {function} callback callback
@@ -214,7 +214,7 @@ class Connector extends DoFinish {
 
     /**
      * Actual flush logic (it's not allowed to call _flush() directly)
-     * 
+     *
      * @param {function|undefined} callback callback
      * @param {boolean} ifNeeded true if we only need to flush `discarded` when it's length is over `limit`
      */
@@ -240,32 +240,32 @@ class Connector extends DoFinish {
 
                     if (inc.processed) {
                         inc.processed++;
-                        inc.errored++;
+                        inc.failed++;
                         inc['result.errors.Rejected']++;
                     }
                     else {
                         inc.processed = 1;
-                        inc.errored = 1;
+                        inc.failed = 1;
                         inc['result.errors.Rejected'] = 1;
                     }
                     if (inc[`result.subs.${push.p}.processed`]) {
                         inc[`result.subs.${push.p}.processed`]++;
-                        inc[`result.subs.${push.p}.errored`]++;
+                        inc[`result.subs.${push.p}.failed`]++;
                         inc[`result.subs.${push.p}.errors.Rejected`]++;
                     }
                     else {
                         inc[`result.subs.${push.p}.processed`] = 1;
-                        inc[`result.subs.${push.p}.errored`] = 1;
+                        inc[`result.subs.${push.p}.failed`] = 1;
                         inc[`result.subs.${push.p}.errors.Rejected`] = 1;
                     }
                     if (inc[`result.subs.${push.p}.subs.${la}.processed`]) {
                         inc[`result.subs.${push.p}.subs.${la}.processed`]++;
-                        inc[`result.subs.${push.p}.subs.${la}.errored`]++;
+                        inc[`result.subs.${push.p}.subs.${la}.failed`]++;
                         inc[`result.subs.${push.p}.subs.${la}.errors.Rejected`]++;
                     }
                     else {
                         inc[`result.subs.${push.p}.subs.${la}.processed`] = 1;
-                        inc[`result.subs.${push.p}.subs.${la}.errored`] = 1;
+                        inc[`result.subs.${push.p}.subs.${la}.failed`] = 1;
                         inc[`result.subs.${push.p}.subs.${la}.errors.Rejected`] = 1;
                     }
                 });
@@ -314,13 +314,13 @@ class Connector extends DoFinish {
         //         la = push.pr.la,
         //         inc = updates[push.m] ? updates[push.m].$inc : (updates[push.m] = {$inc: {}}).$inc;
         //     inc['result.processed'] = (inc['result.processed'] || 0) + 1;
-        //     inc['result.errored'] = (inc['result.errored'] || 0) + 1;
+        //     inc['result.failed'] = (inc['result.failed'] || 0) + 1;
         //     inc['result.errors.NoCredentials'] = (inc['result.errors.NoCredentials'] || 0) + 1;
         //     inc[`result.subs.${p}.processed`] = (inc[`result.subs.${p}.processed`] || 0) + 1;
-        //     inc[`result.subs.${p}.errored`] = (inc[`result.subs.${p}.errored`] || 0) + 1;
+        //     inc[`result.subs.${p}.failed`] = (inc[`result.subs.${p}.failed`] || 0) + 1;
         //     inc[`result.subs.${p}.errors.NoCredentials`] = (inc[`result.subs.${p}.errors.NoCredentials`] || 0) + 1;
         //     inc[`result.subs.${p}.subs.${la}.processed`] = (inc[`result.subs.${p}.subs.${la}.processed`] || 0) + 1;
-        //     inc[`result.subs.${p}.subs.${la}.errored`] = (inc[`result.subs.${p}.subs.${la}.errored`] || 0) + 1;
+        //     inc[`result.subs.${p}.subs.${la}.failed`] = (inc[`result.subs.${p}.subs.${la}.failed`] || 0) + 1;
         //     inc[`result.subs.${p}.subs.${la}.errors.NoCredentials`] = (inc[`result.subs.${p}.subs.${la}.errors.NoCredentials`] || 0) + 1;
         // });
 
@@ -331,13 +331,13 @@ class Connector extends DoFinish {
         //         la = push.pr.la,
         //         inc = updates[push.m] ? updates[push.m].$inc : (updates[push.m] = {$inc: {}}).$inc;
         //     inc['result.processed'] = (inc['result.processed'] || 0) + 1;
-        //     inc['result.errored'] = (inc['result.errored'] || 0) + 1;
+        //     inc['result.failed'] = (inc['result.failed'] || 0) + 1;
         //     inc['result.errors.NoMessage'] = (inc['result.errors.NoMessage'] || 0) + 1;
         //     inc[`result.subs.${p}.processed`] = (inc[`result.subs.${p}.processed`] || 0) + 1;
-        //     inc[`result.subs.${p}.errored`] = (inc[`result.subs.${p}.errored`] || 0) + 1;
+        //     inc[`result.subs.${p}.failed`] = (inc[`result.subs.${p}.failed`] || 0) + 1;
         //     inc[`result.subs.${p}.errors.NoMessage`] = (inc[`result.subs.${p}.errors.NoMessage`] || 0) + 1;
         //     inc[`result.subs.${p}.subs.${la}.processed`] = (inc[`result.subs.${p}.subs.${la}.processed`] || 0) + 1;
-        //     inc[`result.subs.${p}.subs.${la}.errored`] = (inc[`result.subs.${p}.subs.${la}.errored`] || 0) + 1;
+        //     inc[`result.subs.${p}.subs.${la}.failed`] = (inc[`result.subs.${p}.subs.${la}.failed`] || 0) + 1;
         //     inc[`result.subs.${p}.subs.${la}.errors.NoMessage`] = (inc[`result.subs.${p}.subs.${la}.errors.NoMessage`] || 0) + 1;
         // });
 
@@ -363,7 +363,7 @@ class Connector extends DoFinish {
         //             console.log('in connector', m.id, m.result.json);
         //             let state, status, error;
         //             if (m.triggerAutoOrApi()) {
-        //                 if (m.result.total === m.result.errored) {
+        //                 if (m.result.total === m.result.failed) {
         //                     state = State.Error | State.Done;
         //                     status = Status.Stopped;
         //                     error = 'Failed to send all notifications';
@@ -374,7 +374,7 @@ class Connector extends DoFinish {
         //                 }
         //             }
         //             else {
-        //                 if (m.result.total === m.result.errored) {
+        //                 if (m.result.total === m.result.failed) {
         //                     state = State.Error | State.Done;
         //                     status = Status.Failed;
         //                     error = 'Failed to send all notifications';
@@ -402,7 +402,7 @@ class Connector extends DoFinish {
 
     /**
      * Flush & release resources
-     * 
+     *
      * @param {function} callback callback function
      */
     do_final(callback) {

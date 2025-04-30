@@ -1,13 +1,15 @@
 /**
  * @typedef {import('./types/queue.ts').ResultEvent} ResultEvent
+ * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('./types/message.ts').Result} Result
  * @typedef {import("mongodb").Db} MongoDb
  * @typedef {import("mongodb").AnyBulkWriteOperation} AnyBulkWriteOperation
  * @typedef {import("mongodb").BulkWriteResult} BulkWriteResult
  * @typedef {import("mongodb").SetFields<{[key: string]: any}>} SetFields
  * @typedef {import('./types/utils.ts').LogObject} LogObject
- * @typedef {import('./types/message.js').PlatformKeys} PlatformKeys
- * @typedef {"total"|"sent"|"errored"|"actioned"} Stat
+ * @typedef {import('./types/message.ts').PlatformKeys} PlatformKeys
+ * @typedef {import('./types/schedule.ts').Schedule} Schedule
+ * @typedef {"total"|"sent"|"failed"|"actioned"} Stat
  */
 
 const { ObjectId } = require("mongodb");
@@ -17,7 +19,7 @@ const { InvalidDeviceToken } = require('./lib/error.js');
 const log = require('../../../../api/utils/common').log('push:resultor');
 
 /** @type {Stat[]} */
-const STAT_KEYS = ["total", "sent", "errored", "actioned"];
+const STAT_KEYS = ["total", "sent", "failed", "actioned"];
 
 /**
  * @param {MongoDb} db
@@ -35,12 +37,12 @@ async function saveResults(db, results) {
                 messageId: result.messageId
             };
         }
-        /** @type {"total"|"sent"|"errored"|"actioned"} */
+        /** @type {"total"|"sent"|"failed"|"actioned"} */
         let stat = "sent";
         /** @type {string|undefined} */
         let error = undefined;
         if (result.error) {
-            stat = "errored";
+            stat = "failed";
             error = result.error.name + ": " + result.error.message;
         }
         increaseResultStat(
@@ -128,7 +130,13 @@ async function clearInvalidTokens(db, invalidTokens) {
             bulkWrites[pushCollectionName].push({
                 updateMany: {
                     filter: {
-                        _id: { $in: mappedUserIds[appId][platformAndEnv] }
+                        _id: {
+                            // this is actualy an array of strings (user ids are not ObjectId)
+                            // but to overcome the type error, we cast it to ObjectId[]
+                            $in: /** @type {ObjectId[]} */(
+                                /** @type {unknown} */(mappedUserIds[appId][platformAndEnv])
+                            )
+                        }
                     },
                     update: {
                         $unset: { ["tk." + platformAndEnv]: 1 }
@@ -201,7 +209,15 @@ async function recordSentDates(db, sentPushEvents, date = Date.now()) {
         for (const messageId in mappedUserIds[appId]) {
             bulkWrites[collectionName].push({
                 updateMany: {
-                    filter: { _id: { $in: mappedUserIds[appId][messageId] } },
+                    filter: {
+                        _id: {
+                            // this is actualy an array of strings (user ids are not ObjectId)
+                            // but to overcome the type error, we cast it to ObjectId[]
+                            $in: /** @type {ObjectId[]} */(
+                                /** @type {unknown} */(mappedUserIds[appId][messageId])
+                            )
+                        }
+                    },
                     update: {
                         $addToSet: /** @type {SetFields} */({
                             ['msgs.' + messageId]: date
@@ -228,7 +244,7 @@ function buildResultObject() {
     return {
         total: 0,
         sent: 0,
-        errored: 0,
+        failed: 0,
         actioned: 0,
         errors: {},
         subs: {},
@@ -251,8 +267,14 @@ function increaseResultStat(
     error,
     amount = 1
 ) {
+    if (!resultObject.subs) {
+        resultObject.subs = {};
+    }
     if (!(platform in resultObject.subs)) {
         resultObject.subs[platform] = buildResultObject();
+    }
+    if (!resultObject.subs[platform].subs) {
+        resultObject.subs[platform].subs = {};
     }
     if (!(language in resultObject.subs[platform].subs)) {
         resultObject.subs[platform].subs[language] = buildResultObject();
@@ -260,7 +282,7 @@ function increaseResultStat(
     resultObject[stat] += amount;
     resultObject.subs[platform][stat] += amount;
     resultObject.subs[platform].subs[language][stat] += amount;
-    if (stat === "errored" && typeof error === "string") {
+    if (stat === "failed" && typeof error === "string") {
         if (!(error in resultObject.errors)) {
             resultObject.errors[error] = 0;
         }
@@ -305,13 +327,71 @@ function buildUpdateQueryForResult(result, query = {}, path = "result") {
  * @param {ObjectId} scheduleId
  * @param {ObjectId} messageId
  * @param {Result} resultObject
+ * @param {{scheduled?: ScheduleEvent[]; composed?: ScheduleEvent[];}=} events
  */
-async function applyResultObject(db, scheduleId, messageId, resultObject) {
+async function applyResultObject(db, scheduleId, messageId, resultObject, events) {
+    // update the result object
     const $inc = buildUpdateQueryForResult(resultObject);
+
+    // update the events object (only for schedule)
+    /** @type {{[key: string]: any}=} */
+    let $push;
+    if (events) {
+        $push = {};
+        const entries = Object.entries(events);
+        for (const [key, value] of entries) {
+            /** @type {Schedule["events"]["composed"]} */
+            const events = value.map(({ timezone, scheduledTo }) => ({
+                timezone,
+                scheduledTo,
+                date: new Date
+            }))
+            $push["events." + key] = { $each: events };
+        }
+    }
+
     await db.collection("message_schedules")
-        .updateOne({ _id: scheduleId }, { $inc });
+        .updateOne({ _id: scheduleId }, $push ? { $inc, $push } : { $inc });
     await db.collection("messages")
         .updateOne({ _id: messageId }, { $inc });
+
+    // update the status of the schedule if all messages are sent or failed
+    await db.collection("message_schedules").updateOne({
+        _id: scheduleId,
+        "result.total": { $gt: 0 },
+        // all schedules are composed:
+        $expr: {
+            $eq: [
+                { $size: "$events.scheduled" },
+                { $size: "$events.composed" }
+            ]
+        }
+    }, [{
+        $set: { // sum of sent and failed are equal to total
+            status: {
+                $cond: [
+                    {
+                        $eq: [
+                            "$result.total",
+                            { $add: ["$result.sent", "$result.failed"] }
+                        ]
+                    },
+                    "sent",
+                    "$status"
+                ]
+            }
+        }
+    }, {
+        $set: { // failed is equal to total (all messages failed)
+            status: {
+                $cond: [
+                    { $eq: ["$result.total", "$result.failed"] },
+                    "failed",
+                    "$status"
+                ]
+            }
+        }
+    }]);
 }
 
 module.exports = {

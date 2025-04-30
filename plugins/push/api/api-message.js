@@ -11,6 +11,7 @@ const countlyFetch = require("../../../api/parts/data/fetch.js");
 
 const { buildResultObject } = require("./new/resultor.js");
 const { scheduleMessageByDateTrigger, DATE_TRIGGERS } = require("./new/scheduler.js");
+const { getMessageStatus } = require("./new/lib/utils.js");
 
 /**
  * Validate data & construct message out of it, throw in case of error
@@ -28,7 +29,7 @@ async function validate(args, draft = false) {
             _id: { required: false, type: 'ObjectID' },
             app: { required: true, type: 'ObjectID' },
             platforms: { required: true, type: 'String[]', in: () => require('./send/platforms').platforms },
-            state: { type: 'Number' },
+            // state: { type: 'Number' },
             status: { type: 'String', in: Object.values(Status) },
             filter: {
                 type: Filter.scheme,
@@ -164,7 +165,7 @@ async function validate(args, draft = false) {
  * @apiSuccess {Object} result Result of test run
  * @apiSuccess {Number} result.total Total number of notifications scheduled
  * @apiSuccess {Number} result.sent Total number of notifications sent
- * @apiSuccess {Number} result.errored Total number of notification sending errors
+ * @apiSuccess {Number} result.failed Total number of notification sending errors
  * @apiSuccess {Object} result.errors Map of error code to number of notifications with a particular error
  * @apiUse PushValidationError
  * @apiUse PushError
@@ -292,8 +293,7 @@ module.exports.create = async params => {
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_draft', data: msg.json});
     }
     else {
-        msg.state = State.Created;
-        msg.status = Status.Created;
+        msg.status = Status.Active;
         await msg.save();
         if (!demo) {
             if (msg.triggers.find(t => DATE_TRIGGERS.includes(t.kind))) {
@@ -335,8 +335,7 @@ module.exports.update = async params => {
 
     if (msg.is(State.Done)) {
         if (msg.triggerAutoOrApi()) {
-            msg.state = State.Created;
-            msg.status = Status.Created;
+            msg.status = Status.Active;
             await msg.save();
             await msg.schedule(log, params);
             common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
@@ -355,9 +354,8 @@ module.exports.update = async params => {
         msg.info.rejectedByName = null;
 
         if (msg.status === Status.Draft) {
-            if (params.qstring.status === Status.Created) {
-                msg.status = Status.Created;
-                msg.state = State.Created;
+            if (params.qstring.status === Status.Active) {
+                msg.status = Status.Active;
                 await msg.save();
                 await msg.schedule(log, params);
                 common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated_draft', data: msg.json});
@@ -1214,7 +1212,7 @@ module.exports.all = async params => {
 
         let query = {
             app: data.app_id,
-            state: {$bitsAllClear: State.Deleted},
+            // state: {$bitsAllClear: State.Deleted},
             'triggers.kind': {$in: data.kind}
         };
 
@@ -1222,9 +1220,9 @@ module.exports.all = async params => {
             query.platforms = data.platform; //{$in: [data.platforms]};
         }
 
-        if (data.removed) {
-            delete query.state;
-        }
+        // if (data.removed) {
+        //     delete query.state;
+        // }
 
         if (data.sSearch) {
             query.$or = [
@@ -1236,9 +1234,20 @@ module.exports.all = async params => {
             query.status = data.status;
         }
 
-
-        var pipeline = [];
-        pipeline.push({"$match": query});
+        var pipeline = [{
+            $lookup: {
+                from: "message_schedules",
+                localField: "_id",
+                foreignField: "messageId",
+                as: "schedule",
+                pipeline: [
+                    { $sort: { scheduledTo: -1 } },
+                    { $limit: 1 }
+                ]
+            }
+        }, {
+            $match: query
+        }];
 
         var totalPipeline = [{"$group": {"_id": null, "cn": {"$sum": 1}}}];
         var dataPipeline = [];
@@ -1318,6 +1327,16 @@ module.exports.all = async params => {
         let res = (await common.db.collection(Message.collection).aggregate(pipeline).toArray() || [])[0] || {},
             items = res.data || [],
             total = res.total && res.total[0] && res.total[0].cn || 0;
+
+        // status fix:
+        if (Array.isArray(res.data) && res.data.length > 0) {
+            for (let i = 0; i < res.data.length; i++) {
+                const message = res.data[i];
+                const lastSchedule =  message.schedule && message.schedule[0];
+                message.status = getMessageStatus(message, lastSchedule);
+            }
+        }
+
         common.returnOutput(params, {
             sEcho: data.sEcho,
             iTotalRecords: total || items.length,
@@ -1372,8 +1391,7 @@ async function generateDemoData(msg, demo) {
         result = msg.result || new Result();
 
     if (msg.triggerAutoOrApi()) {
-        msg.state = State.Created | State.Streamable;
-        msg.status = Status.Scheduled;
+        msg.status = Status.Active;
 
         let total = Math.floor(count * 0.72),
             sent = Math.floor(total * 0.92),
@@ -1467,8 +1485,7 @@ async function generateDemoData(msg, demo) {
         events.push({timestamp: now - offset, key: '[CLY]_push_action', count: actioned, segmentation: {i: msg.id, a, t, p, ap: a + p, tp: t + p}});
     }
     else {
-        msg.state = State.Created | State.Done;
-        msg.status = Status.Sent;
+        msg.status = Status.Active;
 
         let total = demo === 1 ? Math.floor(count * 0.92) : Math.floor(Math.floor(count * 0.92) * 0.87),
             sent = demo === 1 ? Math.floor(total * 0.87) : total,

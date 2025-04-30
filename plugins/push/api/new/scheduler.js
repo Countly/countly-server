@@ -12,6 +12,7 @@
  * @typedef {import('./types/queue.ts').EventTriggerEvent} EventTriggerEvent
  * @typedef {import("mongodb").Db} MongoDb
  * @typedef {import("mongodb").Collection<Message>} MessageCollection
+ * @typedef {import("mongodb").Collection<Schedule>} ScheduleCollection
  * @typedef {import("mongodb").Filter<MessageTrigger>} MessageTriggerFilter
  * @typedef {import('./types/utils.ts').LogObject} LogObject
  * @typedef {{ [eventName: string]: Set<string> }} AutoTriggerEventMap
@@ -27,8 +28,6 @@ const { buildResultObject } = require('./resultor.js');
 /** @type {LogObject} */
 const log = require('../../../../api/utils/common').log('push:scheduler');
 
-/** @type {Message["status"][]} */
-const INACTIVE_MESSAGE_STATUSES = ["inactive", "draft", "sent", "stopped", "failed"];
 /** @type {MessageTrigger["kind"][]} */
 const DATE_TRIGGERS = ["plain", "rec", "multi"];
 const RESCHEDULABLE_DATE_TRIGGERS = ["rec", "multi"];
@@ -36,7 +35,7 @@ const NUMBER_OF_SCHEDULES_AHEAD_OF_TIME = 5;
 
 /**
  * Schedules the provided message to be sent on the next calculated date,
- * determined by the message's triggering properties
+ * determined by the message's triggering properties.
  * @param   {MongoDb}  db        - mongodb database object
  * @param   {ObjectId} messageId - message document from messages collection
  * @returns {Promise<Schedule[]|undefined>} the created Schedule documents from message_schedules collection
@@ -44,38 +43,52 @@ const NUMBER_OF_SCHEDULES_AHEAD_OF_TIME = 5;
 async function scheduleMessageByDateTrigger(db, messageId) {
     /** @type {MessageCollection} */
     const messageCol = db.collection("messages");
-    const message = await messageCol.findOne({ _id: messageId });
+    /** @type {ScheduleCollection} */
+    const scheduleCol = db.collection("message_schedules");
+
+    const message = await messageCol.findOne({ _id: messageId, status: "active" });
     if (!message) {
-        throw new Error("Message with ID " + messageId.toString()
-            + " couldn't be found");
+        throw new Error("Message " + messageId + " doesn't exist or inactive");
     }
 
     const trigger = message.triggers
         .find(trigger => DATE_TRIGGERS.includes(trigger.kind));
     if (!trigger) {
-        throw new Error(
-            "Cannot find a schedulable trigger for the message " + message._id
-        );
+        throw new Error("Cannot find a schedulable trigger for " + messageId);
     }
 
-    /** @type {Date[]} */
+    /** @type {Date[]} - Resulted dates from below calculations */
     let scheduleTo = [];
-    let startFrom = await findWhereToStartSearchFrom(db, message._id, trigger.kind);
 
     if (trigger.kind === "plain") {
         if (!message?.info?.scheduled) {
             scheduleTo.push(new Date);
         }
-        else if (trigger.start.getTime() > startFrom.getTime()) {
+        else if (trigger.start.getTime() > Date.now()) {
             scheduleTo.push(trigger.start);
+        }
+        else {
+            throw new Error("Start date is in the past");
         }
     }
     else {
-        // starting from now, create NUMBER_OF_SCHEDULES_AHEAD_OF_TIME schedules for the future
-        // for recurring and multi triggers
+        // starting from now, always keep NUMBER_OF_SCHEDULES_AHEAD_OF_TIME schedules
+        // for the future for recurring and multi triggers.
+        let previousSchedules = await scheduleCol
+            .find({ messageId, status: "scheduled" })
+            .sort({ scheduledTo: -1 })
+            .limit(NUMBER_OF_SCHEDULES_AHEAD_OF_TIME)
+            .toArray();
+
+        let lastScheduleDate = previousSchedules[0]?.scheduledTo;
+        const nOSchedules = NUMBER_OF_SCHEDULES_AHEAD_OF_TIME - previousSchedules.length;
+
         /** @type {Date|undefined} */
-        let foundDate = new Date;
-        for (let i = 0; i < NUMBER_OF_SCHEDULES_AHEAD_OF_TIME; i++) {
+        let foundDate = lastScheduleDate && lastScheduleDate.getTime() > Date.now()
+            ? lastScheduleDate
+            : new Date;
+
+        for (let i = 0; i < nOSchedules; i++) {
             if (trigger.kind === "multi") {
                 foundDate = findNextMatchForMulti(
                     trigger,
@@ -92,24 +105,20 @@ async function scheduleMessageByDateTrigger(db, messageId) {
             if (!foundDate) {
                 break;
             }
-            // the last schedule date in db is exceeding the found date: skip.
-            if (foundDate.getTime() < startFrom.getTime()) {
-                continue;
-            }
             scheduleTo.push(foundDate);
         }
     }
 
     // couldn't find a matching date
-    if (!scheduleTo) {
-        log.w("Couldn't find a matchin trigger for the message", message._id);
+    if (!scheduleTo.length) {
+        log.w("Couldn't find a matchin trigger for the message", messageId);
         return;
     }
 
     return Promise.all(scheduleTo.map(date => createSchedule(
         db,
         message.app,
-        message._id,
+        messageId,
         date,
         "tz" in trigger && trigger.tz ? trigger.tz : false,
         "sctz" in trigger ? trigger.sctz : undefined,
@@ -132,7 +141,7 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
     const promises = messageFilters.map(async ({ appId, triggerFilter, uids }) => {
         let messages = await messageCol.find({
             app: appId,
-            status: { $nin: INACTIVE_MESSAGE_STATUSES },
+            status: "active",
             triggers: {
                 $elemMatch: {
                     ...triggerFilter,
@@ -235,9 +244,19 @@ async function createSchedule(
         audienceFilters,
         messageOverrides,
         result: buildResultObject(),
+        events: {
+            scheduled: [],
+            composed: [],
+        }
     };
+
+    // save the events to keep track of the whole schedule's status (there can
+    // be multiple schedule events for a single schedule when timezoneAware)
+    const events = await createScheduleEvents(messageSchedule);
+    messageSchedule.events.scheduled = events
+        .map(({ scheduledTo, timezone }) => ({ scheduledTo, timezone, date: new Date }));
+
     await db.collection("message_schedules").insertOne(messageSchedule);
-    await createScheduleEvents(messageSchedule);
     return messageSchedule;
 }
 
@@ -271,6 +290,9 @@ async function createScheduleEvents(messageSchedule) {
             const tzAdjustedScheduleDate = new Date(
                 utcTime.getTime() + offset * minute
             );
+            if (tzAdjustedScheduleDate.getTime() < Date.now()) {
+                continue;
+            }
             events.push({
                 ...baseEvent,
                 scheduledTo: tzAdjustedScheduleDate,
@@ -279,7 +301,7 @@ async function createScheduleEvents(messageSchedule) {
         }
     }
     // schedule all events
-    await Promise.all(events.map(queue.sendScheduleEvent));
+    await queue.sendScheduleEvents(events);
     return events;
 }
 
@@ -297,32 +319,6 @@ function tzOffsetAdjustedTime(date, offset, time) {
         .add(time, "milliseconds")
         .add(offset, "minutes")
         .toDate();
-}
-
-/**
- * @param {MongoDb} db
- * @param {ObjectId} messageId
- * @param {string} triggerKind
- * @returns {Promise<Date>}
- */
-async function findWhereToStartSearchFrom(db, messageId, triggerKind) {
-    let startFrom = new Date;
-    // find the last schedule date if this trigger is recurring or multi
-    if (["rec", "multi"].includes(triggerKind)) {
-        const lastSchedule = /** @type {Schedule[]} */(
-            await db.collection("message_schedules")
-                .find({ messageId, status: "scheduled" })
-                .limit(1)
-                .sort({ scheduledTo: -1 })
-                .toArray()
-        );
-        if (lastSchedule.length) {
-            if (lastSchedule[0].scheduledTo.getTime() > startFrom.getTime()) {
-                startFrom = lastSchedule[0].scheduledTo;
-            }
-        }
-    }
-    return startFrom;
 }
 
 /**
@@ -517,7 +513,6 @@ function mergeAutoTriggerEvents(autoTriggerEvents) {
 module.exports = {
     DATE_TRIGGERS,
     RESCHEDULABLE_DATE_TRIGGERS,
-    INACTIVE_MESSAGE_STATUSES,
     scheduleMessageByDateTrigger,
     scheduleMessageByAutoTriggers,
     createScheduleEvents,
@@ -525,6 +520,5 @@ module.exports = {
     tzOffsetAdjustedTime,
     findNextMatchForRecurring,
     findNextMatchForMulti,
-    findWhereToStartSearchFrom,
     mergeAutoTriggerEvents,
 };

@@ -19,9 +19,8 @@ class Message extends Mongoable {
      * @param {string|ObjectID}     data._id        message id
      * @param {ObjectID}            data.app        app id
      * @param {array}               data.platforms  array of platform keys
-     * @param {BigInt}              data.state      internal message state
-     * @param {string}              data.status     user-facing message status
      * @param {object|Filter}       data.filter     user selection filter
+     * @param {string}              data.status     user-facing message status
      * @param {object[]|Trigger[]}  data.triggers   triggers of this message
      * @param {object|Content[]}    data.contents   message contents array: {la: undefined, p: undefined} is required, any other overrides default one in the order they specified in the array
      * @param {object|Result}       data.result     sending result
@@ -201,39 +200,6 @@ class Message extends Mongoable {
         else {
             delete this._data.platforms;
         }
-    }
-
-    /**
-     * Getter for state
-     *
-     * @returns {number|BigInt} internal message state
-     */
-    get state() {
-        return this._data.state;
-    }
-
-    /**
-     * Setter for state
-     *
-     * @param {number|BigInt} state internal message state
-     */
-    set state(state) {
-        if (state !== null && state !== undefined) {
-            this._data.state = state;
-        }
-        else {
-            delete this._data.state;
-        }
-    }
-
-    /**
-     * Handy method to check message state
-     *
-     * @param {Number} inState state to check against
-     * @returns {boolean} true if the message is in this state
-     */
-    is(inState) {
-        return (inState === 0 && this.state === 0) || (this.state !== 0 && (this.state & inState) > 0);
     }
 
     /**
@@ -479,30 +445,6 @@ class Message extends Mongoable {
     }
 
     /**
-     * Returns the ids of messages that has at least one record in "push" collection
-     *
-     * @returns {string[]} ids of the messages
-     */
-    static async findStreamableMessageIds() {
-        const streamableMessages = await this.findMany({
-            state: {
-                $bitsAllSet: State.Streamable
-            }
-        });
-        return streamableMessages.map(message => message._id);
-    }
-
-    // static async hasPushRecords(id) {
-    //     let oid = dbext.oidBlankWithDate(new Date());
-    //     const push = await common.db.collection(Push.collection).findOne({
-    //         _id: { $lte: oid },
-    //         m: dbext.ObjectID(id),
-    //     });
-    //     // console.log(push, id);
-    //     return !!push;
-    // }
-
-    /**
      * Encode field key so it could be stored in mongo (replace dots with S - Separator)
      *
      * @param {string} key field name
@@ -569,93 +511,6 @@ class Message extends Mongoable {
     }
 
     /**
-     * Whether this message needs to be scheduled
-     */
-    get needsScheduling() {
-        return this.state === State.Created && this.triggers.filter(t => t.kind === TriggerKind.Plain &&
-            (!t.delayed || (t.delayed && !t.tz && t.start.getTime() > Date.now() - Time.SCHEDULE_AHEAD) || (t.delayed && t.tz && t.start.getTime() > Date.now() - (Time.EASTMOST_TIMEZONE + Time.SCHEDULE_AHEAD)))).length > 0;
-    }
-
-    /**
-     * Backwards-compatibility conversion of Note to Message
-     *
-     * @deprecated
-     * @param {object} note Note object
-     * @returns {Message} Message instance
-     */
-    static fromNote(note) {
-        const OldStatus = {
-            NotCreated: 0, // 0
-            Created: 1 << 0, // 1
-            Scheduled: 1 << 1, // 2
-            Sending: 1 << 2, // 4
-            Done: 1 << 3, // 8
-            Error: 1 << 4, // 16
-            Success: 1 << 5, // 32
-            Aborted: 1 << 10, // 1024
-            Deleted: 1 << 11, // 2048
-        };
-
-        let status, state, old = note.result.status;
-        if (old & OldStatus.Done) {
-            if (old & OldStatus.Error) {
-                state = State.Done | State.Error;
-                status = Status.Failed;
-            }
-            else if (old & OldStatus.Success) {
-                state = State.Done;
-                status = Status.Sent;
-            }
-        }
-        else if (old & OldStatus.Sending) {
-            state = State.Done;
-            status = Status.Stopped;
-        }
-        else if (old & OldStatus.Scheduled) {
-            if (note.tx || note.auto) {
-                state = State.Streamable;
-                status = Status.Scheduled;
-            }
-            else {
-                state = State.Created | State.Streamable;
-                status = Status.Scheduled;
-            }
-        }
-        else if (old & OldStatus.Created) {
-            if (note.tx || note.auto) {
-                state = State.Done;
-                status = Status.Inactive;
-            }
-            else {
-                state = State.Created;
-                status = Status.Created;
-            }
-        }
-        else {
-            state = State.Done;
-            status = Status.Stopped;
-        }
-
-        if (old & OldStatus.Deleted) {
-            state = State.Deleted;
-            // keep status set above
-        }
-
-        return new Message({
-            _id: note._id,
-            app: note.apps[0],
-            platforms: note.platforms,
-            state,
-            status,
-            filter: Filter.fromNote(note),
-            triggers: Trigger.fromNote(note),
-            contents: Content.fromNote(note),
-            result: Result.fromNote(note),
-            info: Info.fromNote(note)
-        });
-    }
-
-    /**
      * Generate test message with default content
      *
      * @returns {Message} test message
@@ -674,110 +529,6 @@ class Message extends Mongoable {
             info: new Info()
         });
     }
-
-    /**
-     * Create schedule job if needed for plain messages, put auto/api into streamable
-     *
-     * @param {log} log logger
-     */
-    async schedule(log) {
-        let plain = this.triggerPlain();
-        if (plain) {
-            if (this.is(State.Streamable) || this.is(State.Streaming)) {
-                await this.stop(log);
-            }
-            if (this.is(State.Cleared) && !this.triggerAutoOrApi()) {
-                // reset message state removing all errors set by .stop() above
-                await this.updateAtomically({_id: this._id, state: this.state}, {
-                    $set: {
-                        state: State.Created,
-                        status: Status.Created,
-                        'result.errored': 0,
-                        'result.processed': 0,
-                        'result.total': 0,
-                        'result.errors': {},
-                        'result.subs': {}
-                    }
-                });
-            }
-            let date = Date.now();
-            if (plain.delayed) {
-                date = plain.start.getTime() - (plain.tz ? (Time.EASTMOST_TIMEZONE + Time.SCHEDULE_AHEAD) : Time.SCHEDULE_AHEAD);
-            }
-            await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app}).replace().once(date);
-        }
-        if (this.triggerAutoOrApi() && (this.is(State.Done) || this.state === State.Created)) {
-            await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Streamable | State.Created, status: Status.Scheduled}});
-            await require('../../../../pluginManager').getPluginsApis().push.cache.write(this.id, this.json);
-        }
-        let resch = this.triggerRescheduleable();
-        if (resch && !this.is(State.Done)) {
-            let reference = resch.nextReference(resch.last),
-                start = reference && resch.scheduleDate(reference);
-            log.i('Rescheduling message %s: reference %s (was %s), start %s', this.id, reference, resch.last, start);
-            if (start) {
-                await this.updateAtomically({_id: this._id, state: this.state, 'triggers.kind': resch.kind}, {$set: {'triggers.$.last': reference, 'triggers.$.prev': resch.last}});
-                await require('../../../../../api/parts/jobs').job('push:schedule', {mid: this._id, aid: this.app, reference}).replace().once(start);
-            }
-            else {
-                log.i('Message %s is sent, won\'t reschedule', this.id);
-                // await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Created | State.Done, status: Status.Sent}});
-            }
-        }
-    }
-
-    /**
-     * Remove job, clear queue and put message into inactive state
-     *
-     * @param {log} log logger
-     */
-    async stop(log) {
-        const { Audience } = require('../audience'),
-            JOBS = require('../../../../../api/parts/jobs'),
-            PLUGINS = require('../../../../pluginManager');
-
-        let plain = this.triggerPlain(),
-            auto = this.triggerAutoOrApi(),
-            resch = this.triggerRescheduleable(),
-            removed = 0,
-            audience = new Audience(log, this);
-
-        await audience.getApp();
-
-        if (auto) {
-            removed += await audience.pop(auto).clear();
-        }
-        else if (plain) {
-            removed += await audience.pop(plain).clear();
-        }
-        else if (resch) {
-            removed += await audience.pop(resch).clear();
-        }
-
-        await JOBS.cancel('push:schedule', {mid: this._id, aid: this.app});
-
-        await this.updateAtomically({_id: this._id, state: this.state}, {$set: {state: State.Created | State.Done | State.Cleared, status: Status.Stopped}});
-
-        if (auto) {
-            await PLUGINS.getPluginsApis().push.cache.remove(this.id);
-        }
-
-        log.i('Stopped message %s deleting %d notes', this.id, removed);
-
-        return removed;
-    }
 }
 
-/**
- * A stub class to make use of Mongoable's batchInsert()
- */
-class Push extends Mongoable {
-    /**
-     * Collection name for Mongoable
-     */
-    static get collection() {
-        return 'push';
-    }
-}
-
-module.exports = { Message, Push };
+module.exports = { Message };

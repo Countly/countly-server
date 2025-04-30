@@ -100,7 +100,7 @@ class Base extends Duplex {
             this.log.d('Sending %d chunks succeeded', chunks.length);
             callback();
         }, error => {
-            this.log.e('Sending %d chunks errored', chunks.length, error);
+            this.log.e('Sending %d chunks failed', chunks.length, error);
             this.send_push_fail(PushError.deserialize(error));
             callback();
         });

@@ -122,29 +122,33 @@ export interface Content {
 export interface MessageRun {
     start: Date;
     // processed: number;
-    errored: number;
+    failed: number;
     ended: Date;
 }
 
 // TODO: Update this accordingly to the new results
-export interface BaseResult {
+export interface Result {
+    subs?: { [key: string]: Result };
     total: number;
-    // processed: number;
     sent: number;
     actioned: number;
-    errored: number;
-    virtual?: string;
-    error?: any; // this is PushError most of the time
-    lastErrors?: any; // this is PushError[] most of the time
-    lastRuns?: MessageRun[];
-    next?: Date;
-    // subs: { [key: string]: BaseResult };
-    errors: { [key: string]: number };
+    failed: number;
+    errors: { [key: string]: number; };
+    // for message: the error occured before the message's last schedule. this error should also change message's status to "failed"
+    // for schedule: the error encountered before composing starts. this error should also change schedule's status to "failed"
+    error?: ResultError;
 }
+
 // To avoid circular referencing:
-export type SubSubResult = BaseResult & { subs: { [key: string]: any } }; // "sub" in here is not being used
-export type SubResult = BaseResult & { subs: { [key: string]: SubSubResult } };
-export type Result = BaseResult & { subs: { [key: string]: SubResult } };
+// export type SubSubResult = BaseResult & { subs: { [key: string]: any } }; // "sub" in here is not being used
+// export type SubResult = BaseResult & { subs: { [key: string]: SubSubResult } };
+// export type Result = BaseResult & { subs: { [key: string]: SubResult } };
+
+export interface ResultError {
+    name: string;
+    message: string;
+    stack?: string;
+}
 
 export interface Info {
     title?: string;
@@ -182,15 +186,23 @@ export interface Message {
     app: ObjectId;
     saveResults: boolean;
     platforms: PlatformKeys[];
-    state: number;
-    status: 'created' | // [Created] Created, haven't beeing scheduled yet or Stopped for automated/tx (sending is forbidden)
-        'inactive'    | // [Inactive] Second Created (waiting for approval)
-        'draft'       | // [Inactive] Cannot be sent, can only be duplicated
-        'scheduled'   | // [Streamable] Will be sent when appropriate
-        'sending'     | // [Streaming, Paused] Sending right now
-        'sent'        | // [Done] Sent, no further actions
-        'stopped'     | // [Done] Stopped sending (one time from UI)
-        'failed';       // [Done] Removed from queue, no further actions
+    status:
+        // Active, can be sent. If this message is an API, Cohort or Event message,
+        // this means it will be sent when appropriate. If its a Plain, Recurring or
+        // Multi message, check its last schedule's status for more details.
+        "active"    |
+        // Waiting for approval. This message cannot be sent until it is approved.
+        "inactive"  |
+        // Cannot be sent, can only be duplicated
+        "draft"     |
+        // Stopped sending (one time from UI)
+        "stopped";
+        // these are being calculated from the last schedule's status
+        // 'scheduled' Will be sent when appropriate
+        // 'sending'   Sending right now
+        // 'sent'      Some messages were sent, no further actions
+        // 'canceled'  Last schedule was canceled, no further actions (not being used right now)
+        // 'failed';   All push messages failed to send, no further actions
     filter?: MessageAudienceFilter;
     triggers: MessageTrigger[];
     contents: Content[];

@@ -3,14 +3,13 @@ import { SomeCredential } from "./credentials";
 import { ProxyConfiguration } from "./proxy";
 import { AutoTrigger } from "./message";
 import { PlatformKeys, PlatformEnvKeys } from "./message";
+import { ResultError } from "./message";
 
 export interface ScheduleEvent {
     appId: ObjectId;
     messageId: ObjectId;
     scheduleId: ObjectId;
     scheduledTo: Date;
-    startedAt?: Date;
-    finishedAt?: Date;
     timezone?: string;
 }
 
@@ -41,12 +40,6 @@ export interface PushEvent {
 export interface ResultEvent extends PushEvent {
     response?: any;
     error?: ResultError;
-}
-
-export interface ResultError {
-    name: string;
-    message: string;
-    stack?: string;
 }
 
 export interface BaseTriggerEvent {

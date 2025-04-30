@@ -89,23 +89,22 @@ plugins.internalDrillEvents.push('[CLY]_push_sent');
 
 /**
  * @param {MongoDb} db
- * @param {boolean} isMaster
  */
-async function queueInitializer(db, isMaster = false) {
+async function queueInitializer(db) {
     try {
         await initPushQueue(
             async function(pushes) {
                 try {
-                    console.log(JSON.stringify(pushes, null, 2));
+                    console.log("PUSH EVENTS", JSON.stringify(pushes, null, 2));
                     await sendAllPushes(pushes);
                 }
                 catch (err) {
-                    console.error("ERROR ON QUEUE PUSH HANDLER", err);
+                    console.error("ERROR ON QUEUE PUSH EVENT HANDLER", err);
                 }
             },
             async function(schedules) {
                 try {
-                    console.log(JSON.stringify(schedules, null, 2));
+                    console.log("SCHEDULE EVENTS", JSON.stringify(schedules, null, 2));
                     await composeAllScheduledPushes(db, schedules);
                 }
                 catch (err) {
@@ -114,7 +113,7 @@ async function queueInitializer(db, isMaster = false) {
             },
             async function(results) {
                 try {
-                    console.log(JSON.stringify(results, null, 2));
+                    console.log("RESULT EVENTS", JSON.stringify(results, null, 2));
                     await saveResults(db, results);
                 }
                 catch(err) {
@@ -123,7 +122,7 @@ async function queueInitializer(db, isMaster = false) {
             },
             async function(autoTriggerEvents) {
                 try {
-                    console.log(JSON.stringify(autoTriggerEvents, null, 2));
+                    console.log("AUTO TRIGGER EVENTS", JSON.stringify(autoTriggerEvents, null, 2));
                     await scheduleMessageByAutoTriggers(db, autoTriggerEvents);
                 }
                 catch (err) {
@@ -138,78 +137,22 @@ async function queueInitializer(db, isMaster = false) {
     }
 }
 
-
 plugins.register('/worker', async function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
-    // PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
-    queueInitializer(common.db, false);
+    await queueInitializer(common.db);
 });
 
 plugins.register('/master', async function() {
     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
-    // PUSH.cache = common.cache.cls(PUSH_CACHE_GROUP);
     setTimeout(() => {
         const jobManager = require('../../../api/parts/jobs');
         jobManager.job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
         jobManager.job("push:clear-stats").replace().schedule("at 3:00 am every 7 days");
     }, 10000);
-    queueInitializer(common.db, true);
+    await queueInitializer(common.db);
 });
-
-
-plugins.register('/master/runners', runners => {
-    let sender;
-    runners.push(async() => {
-        if (!sender) {
-            try {
-                sender = new Sender();
-                await sender.prepare();
-                let has = await sender.watch();
-                if (has) {
-                    await sender.send();
-                }
-                sender = undefined;
-            }
-            catch (e) {
-                log.e('Sending stopped with an error', e);
-                sender = undefined;
-            }
-        }
-    });
-});
-
-// plugins.register('/cache/init', function() {
-//     common.cache.init(PUSH_CACHE_GROUP, {
-//         init: async() => {
-//             let msgs = await Message.findMany({
-//                 state: {$bitsAllClear: State.Deleted | State.Done, $bitsAnySet: State.Streamable | State.Streaming | State.Paused},
-//                 'triggers.kind': {$in: [TriggerKind.API, TriggerKind.Cohort, TriggerKind.Event]}
-//             });
-//             log.d('cache: initialized with %d msgs: %j', msgs.length, msgs.map(m => m._id));
-//             return msgs.map(m => [m.id, m]);
-//         },
-//         Cls: ['plugins/push/api/send', 'Message'],
-//         read: k => {
-//             log.d('cache: read', k);
-//             return Message.findOne(k);
-//         },
-//         write: async(k, data) => {
-//             log.d('cache: writing', k, data);
-//             if (data && !(data instanceof Message)) {
-//                 data._id = data._id || k;
-//                 data = new Message(data);
-//             }
-//             return data;
-//         },
-//         remove: async(/*k, data*/) => true,
-//         update: async(/*k, data*/) => {
-//             throw new Error('We don\'t update cached messages');
-//         }
-//     });
-// });
-
 
 plugins.register('/i', async ob => {
     let params = ob.params,
@@ -534,7 +477,7 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiSuccess {Object} [result.processed] Number notifications processed so far
  * @apiSuccess {Object} [result.sent] Number notifications sent successfully
  * @apiSuccess {Object} [result.actioned] Number notifications with positive user reactions (notification taps & button clicks)
- * @apiSuccess {Object} [result.errored] Number notifications which weren't sent due to various errors
+ * @apiSuccess {Object} [result.failed] Number notifications which weren't sent due to various errors
  * @apiSuccess {Object[]} [result.lastErrors] Array of last 10 errors
  * @apiSuccess {Object[]} [result.lastRuns] Array of last 10 sending runs
  * @apiSuccess {Date} [result.next] Next sending date

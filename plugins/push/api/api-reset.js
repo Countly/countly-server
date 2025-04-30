@@ -4,7 +4,7 @@ const common = require('../../../api/utils/common'),
 
 /**
  * Reset the app by removing all push artifacts
- * 
+ *
  * @param {object} ob ob
  */
 async function reset(ob) {
@@ -31,7 +31,7 @@ async function reset(ob) {
 
 /**
  * Reset the app by removing all push data (clear queue for the app, remove messages and remove tokens while leaving credentials)
- * 
+ *
  * @param {object} ob ob
  */
 async function clear(ob) {
@@ -47,10 +47,10 @@ async function clear(ob) {
 
 /**
  * Remove push data for given users
- * 
+ *
  * @param {string|ObjectID} appId app id
  * @param {string[]} uids user uids to remove
- * @param {string} error error code (consent is default) 
+ * @param {string} error error code (consent is default)
  */
 async function removeUsers(appId, uids, error = 'consent') {
     let stream = common.db.collection('push').find({a: dbext.oid(appId), u: {$in: uids}}).stream(),
@@ -61,32 +61,32 @@ async function removeUsers(appId, uids, error = 'consent') {
         updates[doc.m] = updates[doc.m] || (updates[doc.m] = {$inc: {}});
         if (!updates[doc.m].$inc['result.processed']) {
             updates[doc.m].$inc['result.processed'] = 1;
-            updates[doc.m].$inc['result.errored'] = 1;
+            updates[doc.m].$inc['result.failed'] = 1;
             updates[doc.m].$inc[`result.errors.${error}`] = 1;
         }
         else {
             updates[doc.m].$inc['result.processed']++;
-            updates[doc.m].$inc['result.errored']++;
+            updates[doc.m].$inc['result.failed']++;
             updates[doc.m].$inc[`result.errors.${error}`]++;
         }
         if (!updates[doc.m].$inc[`result.subs.${doc.p}.processed`]) {
             updates[doc.m].$inc[`result.subs.${doc.p}.processed`] = 1;
-            updates[doc.m].$inc[`result.subs.${doc.p}.errored`] = 1;
+            updates[doc.m].$inc[`result.subs.${doc.p}.failed`] = 1;
             updates[doc.m].$inc[`result.subs.${doc.p}.errors.${error}`] = 1;
         }
         else {
             updates[doc.m].$inc[`result.subs.${doc.p}.processed`]++;
-            updates[doc.m].$inc[`result.subs.${doc.p}.errored`]++;
+            updates[doc.m].$inc[`result.subs.${doc.p}.failed`]++;
             updates[doc.m].$inc[`result.subs.${doc.p}.errors.${error}`]++;
         }
         if (!updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.processed`]) {
             updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.processed`] = 1;
-            updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.errored`] = 1;
+            updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.failed`] = 1;
             updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.errors.${error}`] = 1;
         }
         else {
             updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.processed`]++;
-            updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.errored`]++;
+            updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.failed`]++;
             updates[doc.m].$inc[`result.subs.${doc.p}.subs.${doc.pr.la || 'default'}.errors.${error}`]++;
         }
 

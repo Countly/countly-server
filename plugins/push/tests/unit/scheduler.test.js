@@ -19,7 +19,6 @@ const {
     createScheduleEvents,
     createSchedule,
     scheduleMessageByDateTrigger,
-    findWhereToStartSearchFrom,
     mergeAutoTriggerEvents,
     scheduleMessageByAutoTriggers,
 } = require("../../api/new/scheduler.js");
@@ -77,72 +76,6 @@ describe("Scheduler", () => {
                 result.getTime(),
                 (new Date("2024-03-01T13:30:00.000+03:00")).getTime()
             );
-        });
-    });
-
-    describe("Start date search", () => {
-        const messageId = new ObjectId;
-        it("should return Date.now when the message trigger is plain kind", async () => {
-            const before = Date.now();
-            const result = await findWhereToStartSearchFrom(
-                db,
-                messageId,
-                mockData.plainTrigger().kind
-            );
-            assert(before <= result.getTime());
-            assert(Date.now() >= result.getTime());
-            assert(db.collection.notCalled);
-        });
-        it("should return Date.now when the message is being scheduled for the first time", async () => {
-            findCursor.toArray.resolves([]);
-            const before = Date.now();
-            const result = await findWhereToStartSearchFrom(
-                db,
-                messageId,
-                mockData.dailyRecurringTrigger().kind
-            );
-            assert(before <= result.getTime());
-            assert(Date.now() >= result.getTime());
-            assert(db.collection.calledWith("message_schedules"));
-            assert(collection.find.calledWith({ messageId }));
-            assert(findCursor.limit.calledWith(1));
-            assert(findCursor.sort.calledWith({ scheduledTo: -1 }));
-            assert(findCursor.toArray.called);
-            findCursor.toArray.reset();
-        });
-        it("should return Date.now when the message's last schedule was before Date.now", async () => {
-            const scheduledTo = new Date(Date.now() - 1000);
-            const before = Date.now();
-            findCursor.toArray.resolves([ { scheduledTo } ]);
-            const result = await findWhereToStartSearchFrom(
-                db,
-                messageId,
-                mockData.dailyRecurringTrigger().kind
-            );
-            assert(before <= result.getTime());
-            assert(Date.now() >= result.getTime());
-            assert(db.collection.calledWith("message_schedules"));
-            assert(collection.find.calledWith({ messageId }));
-            assert(findCursor.limit.calledWith(1));
-            assert(findCursor.sort.calledWith({ scheduledTo: -1 }));
-            assert(findCursor.toArray.called);
-            findCursor.toArray.reset();
-        });
-        it("should return the last schedule date from database when it was already scheduled for a future date", async () => {
-            const scheduledTo = new Date(Date.now() + 1000);
-            findCursor.toArray.resolves([ { scheduledTo } ]);
-            const result = await findWhereToStartSearchFrom(
-                db,
-                messageId,
-                mockData.dailyRecurringTrigger().kind
-            );
-            assert(scheduledTo.getTime() === result.getTime());
-            assert(db.collection.calledWith("message_schedules"));
-            assert(collection.find.calledWith({ messageId }));
-            assert(findCursor.limit.calledWith(1));
-            assert(findCursor.sort.calledWith({ scheduledTo: -1 }));
-            assert(findCursor.toArray.called);
-            findCursor.toArray.reset();
         });
     });
 

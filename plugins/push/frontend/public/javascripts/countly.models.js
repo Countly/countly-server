@@ -62,7 +62,7 @@
         HUAWEI: "huawei"
     });
     var StatusEnum = Object.freeze({
-        CREATED: "created",
+        ACTIVE: "active",
         PENDING_APPROVAL: "pending_approval",
         DRAFT: "draft",
         SCHEDULED: "scheduled",
@@ -183,7 +183,7 @@
     platformOptions[PlatformEnum.IOS] = {label: 'iOS', value: PlatformEnum.IOS};
 
     var statusOptions = {};
-    statusOptions[StatusEnum.CREATED] = {label: CV.i18n('push-notification.created'), value: StatusEnum.CREATED};
+    statusOptions[StatusEnum.ACTIVE] = {label: CV.i18n('push-notification.active'), value: StatusEnum.ACTIVE};
     statusOptions[StatusEnum.PENDING_APPROVAL] = {label: CV.i18n('push-notification.waiting-for-approval'), value: StatusEnum.PENDING_APPROVAL};
     statusOptions[StatusEnum.REJECT] = {label: CV.i18n('push-notification.rejected'), value: StatusEnum.REJECT};
     statusOptions[StatusEnum.DRAFT] = {label: CV.i18n('push-notification.draft'), value: StatusEnum.DRAFT};
@@ -2194,10 +2194,10 @@
                 return count;
             },
             mapStatus: function(options) {
-                if (options.isDraft && options.isCreated) {
-                    return StatusEnum.CREATED;
+                if (options.isDraft && options.isActive) {
+                    return StatusEnum.ACTIVE;
                 }
-                if (options.isDraft && !options.isCreated) {
+                if (options.isDraft && !options.isActive) {
                     return StatusEnum.DRAFT;
                 }
                 return null;

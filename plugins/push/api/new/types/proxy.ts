@@ -20,5 +20,3 @@ export interface ProxyAgentOptions extends AgentOptions {
 export type CreateConnectionCallback = (err: Error|null, sock?: TLSSocket) => void;
 
 export type BaseAgent = HttpsAgent|HttpAgent;
-
-

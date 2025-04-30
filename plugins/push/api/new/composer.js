@@ -62,24 +62,25 @@ async function composeAllScheduledPushes(db, scheduleEvents) {
  * @param {ScheduleEvent} scheduleEvent
  * @returns {Promise<number>}
  */
-async function composeScheduledPushes(db, { appId, scheduleId, messageId, timezone }) {
+async function composeScheduledPushes(db, scheduleEvent) {
+    const { appId, scheduleId, messageId, timezone } = scheduleEvent
     // load necessary documents:
     /** @type {MessageCollection} */
     const messageCol = db.collection("messages");
     /** @type {ScheduleCollection} */
-    const scheduleCollection = db.collection("message_schedules");
-    const messageDoc = await messageCol.findOne({ _id: messageId });
+    const scheduleCol = db.collection("message_schedules");
+    const messageDoc = await messageCol.findOne({ _id: messageId, status: "active" });
     if (!messageDoc) {
-        await scheduleCollection.deleteMany({ messageId });
-        log.i("Message", messageId.toString(),
-            "was deleted. Cleaning up all schedules for this message.");
+        await scheduleCol.deleteMany({ messageId });
+        log.w("Message", messageId, "was deleted or became inactive.",
+            "Cleaning up all schedules for this message.");
         return 0;
     }
-    const scheduleDoc = await scheduleCollection.findOne({
+    const scheduleDoc = await scheduleCol.findOne({
         _id: scheduleId, status: "scheduled" });
     if (!scheduleDoc) {
-        log.i("Schedule", scheduleId.toString(),
-            "for message" + messageId.toString(), "was deleted or canceled.");
+        log.i("Schedule", scheduleId, "for message",
+            messageId, "was deleted or canceled.");
         return 0;
     }
     const appDoc = await db.collection("apps").findOne({
@@ -169,8 +170,9 @@ async function composeScheduledPushes(db, { appId, scheduleId, messageId, timezo
     if (events && events.length) {
         await queue.sendPushEvents(events);
     }
-    // update the message document
-    await applyResultObject(db, scheduleId, messageId, resultObject);
+    // update the schedule and message document
+    await applyResultObject(db, scheduleId, messageId, resultObject,
+        { composed: [scheduleEvent] });
 
     // check if we need to re-schedule this message
     const reschedulableTrigger = messageDoc.triggers
@@ -232,7 +234,7 @@ async function getUserStream(db, message, appTimezone, timezone, filters) {
     }
     // Timezone:
     if (timezone) {
-        $match.tz = timezone;
+        $match.tz = String(-1 * Number(timezone));
     }
     /** @type {Array<{ $match: { [key: string]: any } }>} */
     let filterPipeline = [];

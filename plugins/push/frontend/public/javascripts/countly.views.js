@@ -7,7 +7,7 @@
 
     var statusFilterOptions = [
         {label: countlyPushNotification.service.ALL_FILTER_OPTION_LABEL, value: countlyPushNotification.service.ALL_FILTER_OPTION_VALUE},
-        {label: CV.i18n("push-notification.created"), value: countlyPushNotification.service.StatusEnum.CREATED},
+        {label: CV.i18n("push-notification.active"), value: countlyPushNotification.service.StatusEnum.ACTIVE},
         {label: CV.i18n("push-notification.scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
         {label: CV.i18n("push-notification.sent"), value: countlyPushNotification.service.StatusEnum.SENT},
         {label: CV.i18n("push-notification.sending"), value: countlyPushNotification.service.StatusEnum.SENDING},
@@ -637,19 +637,19 @@
             saveDraft: function() {
                 var options = {};
                 options.isDraft = true;
-                options.isCreated = false;
+                options.isActive = false;
                 return this.save(options);
             },
             updateDraft: function() {
                 var options = {};
                 options.isDraft = true;
-                options.isCreated = false;
+                options.isActive = false;
                 return this.update(options);
             },
             saveFromDraft: function() {
                 var options = {};
                 options.isDraft = true;
-                options.isCreated = true;
+                options.isActive = true;
                 return this.update(options);
             },
             onDraft: function() {
@@ -1588,7 +1588,7 @@
                 return status === this.StatusEnum.PENDING_APPROVAL && this.hasApproverPermission;
             },
             shouldShowEditUserCommand: function(status) {
-                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED || status === this.StatusEnum.CREATED) && this.canUserUpdate;
+                return (status === this.StatusEnum.PENDING_APPROVAL || status === this.StatusEnum.SCHEDULED || status === this.StatusEnum.ACTIVE) && this.canUserUpdate;
             },
             shouldShowStartUserCommand: function(status) {
                 if (this.selectedPushNotificationType === this.TypeEnum.ONE_TIME) {
@@ -1611,7 +1611,7 @@
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
-                case this.StatusEnum.CREATED: {
+                case this.StatusEnum.ACTIVE: {
                     return "green";
                 }
                 case this.StatusEnum.PENDING_APPROVAL: {
@@ -2067,7 +2067,7 @@
             },
             getStatusBackgroundColor: function(status) {
                 switch (status) {
-                case this.StatusEnum.CREATED: {
+                case this.StatusEnum.ACTIVE: {
                     return "green";
                 }
                 case this.StatusEnum.PENDING_APPROVAL: {
@@ -3057,7 +3057,7 @@
 
 
     /**
-     * 
+     *
      * @returns {Object} container data with create new message event handler
      */
     function getCreateNewMessageEventContainerData() {
@@ -3073,7 +3073,7 @@
         };
     }
     /**
-     * 
+     *
      * @returns {Object} container data with push notification drawer
      */
     function getDrawerContainerData() {
