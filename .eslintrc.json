@@ -376,6 +376,33 @@
         },
         {
             "files": [
+                "plugins/content/frontend/content-blocks/**/*.js",
+                "plugins/journey_engine/frontend/builder/**/*.js",
+                "plugins/content/frontend/content-blocks/**/*.vue",
+                "plugins/journey_engine/frontend/builder/**/*.vue"
+            ],
+            "rules": {
+                "no-console": ["error"],
+                "@stylistic/quotes": ["error", "single"],
+                "@stylistic/quote-props": ["error", "as-needed"],
+                "no-unused-vars": "off",
+                "vue/no-unused-vars": ["error", {
+                    "ignorePattern": "^_"
+                }]
+            },
+            "parserOptions": {
+                "ecmaVersion": 2023,
+                "sourceType": "module",
+                "extraFileExtensions": [".vue"]
+            },
+            "env": {
+                "node": true,
+                "es2023": true,
+                "es6": true
+            }
+        },
+        {
+            "files": [
                 "frontend/express/public/javascripts/countly/*.js",
                 "frontend/express/public/javascripts/countly/vue/*.js",
                 "frontend/express/public/javascripts/countly/vue/components/*.js",
