@@ -384,8 +384,6 @@
             ],
             "rules": {
                 "no-console": ["error"],
-                "@stylistic/quotes": ["error", "single"],
-                "@stylistic/quote-props": ["error", "as-needed"],
                 "no-unused-vars": ["error", {
                     "argsIgnorePattern": "^_",   // unused function args
                     "varsIgnorePattern": "^_"    // unused variables
