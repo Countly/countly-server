@@ -1,6 +1,7 @@
 {
     "extends": "eslint:recommended",
     "rules": {
+        "quotes": ["warn", "single", { "avoidEscape": true }],
         "require-atomic-updates": "off",
         "block-spacing": [
             "error",
@@ -118,6 +119,240 @@
         "unicode-bom": [
             "error",
             "never"
+        ],
+        "no-restricted-properties": [
+            "warn",
+            {
+                "object": "Promise",
+                "property": "map",
+                "message": "Bluebird-specific method 'Promise.map' detected. Suggestion: use native arrays with Promise.all or a library like 'p-map'."
+            },
+            {
+                "object": "Promise",
+                "property": "reduce",
+                "message": "Bluebird-specific method 'Promise.reduce' detected. Suggestion: use Array.reduce plus async/await or a concurrency library."
+            },
+            {
+                "object": "Promise",
+                "property": "filter",
+                "message": "Bluebird-specific method 'Promise.filter' detected. Suggestion: use Array.filter plus async/await or a concurrency library."
+            },
+            {
+                "object": "Promise",
+                "property": "each",
+                "message": "Bluebird-specific method 'Promise.each' detected. Suggestion: use a for-loop/forEach with async/await."
+            },
+            {
+                "object": "Promise",
+                "property": "props",
+                "message": "Bluebird-specific method 'Promise.props' detected. Suggestion: use Promise.all with Object.entries or a custom approach."
+            },
+            {
+                "object": "Promise",
+                "property": "join",
+                "message": "Bluebird-specific method 'Promise.join' detected. Suggestion: use Promise.all([...]) and destructuring in .then."
+            },
+            {
+                "object": "Promise",
+                "property": "try",
+                "message": "Bluebird-specific method 'Promise.try' detected. Suggestion: use a try/catch block or an async function."
+            },
+            {
+                "object": "Promise",
+                "property": "attempt",
+                "message": "Bluebird-specific method 'Promise.attempt' detected. Suggestion: same as 'Promise.try'—use try/catch or async."
+            },
+            {
+                "object": "Promise",
+                "property": "method",
+                "message": "Bluebird-specific method 'Promise.method' detected. Suggestion: define an async function or return a native Promise."
+            },
+            {
+                "object": "Promise",
+                "property": "promisify",
+                "message": "Bluebird-specific method 'Promise.promisify' detected. Suggestion: use native 'util.promisify' or wrap in a new Promise."
+            },
+            {
+                "object": "Promise",
+                "property": "promisifyAll",
+                "message": "Bluebird-specific method 'Promise.promisifyAll' detected. Suggestion: consider 'util.promisify' for each function or a similar library."
+            },
+            {
+                "object": "Promise",
+                "property": "fromCallback",
+                "message": "Bluebird-specific method 'Promise.fromCallback' detected. Suggestion: use new Promise(...) or 'util.promisify'."
+            },
+            {
+                "object": "Promise",
+                "property": "coroutine",
+                "message": "Bluebird-specific method 'Promise.coroutine' detected. Suggestion: use native async/await."
+            },
+            {
+                "object": "Promise",
+                "property": "spawn",
+                "message": "Bluebird-specific method 'Promise.spawn' detected. Suggestion: use native async/await."
+            },
+            {
+                "object": "Promise",
+                "property": "using",
+                "message": "Bluebird-specific method 'Promise.using' detected. Suggestion: use try/finally or a resource-management library."
+            },
+            {
+                "object": "Promise",
+                "property": "disposer",
+                "message": "Bluebird-specific method 'Promise.disposer' detected. Suggestion: use try/finally or a resource-management library."
+            },
+            {
+                "object": "Promise",
+                "property": "settle",
+                "message": "Bluebird-specific method 'Promise.settle' detected. Suggestion: use native 'Promise.allSettled'."
+            },
+
+            /* ---------- Same methods on the Bluebird object itself ---------- */
+            {
+                "object": "Bluebird",
+                "property": "map",
+                "message": "Bluebird-specific method 'Bluebird.map' detected. Suggestion: use array mapping + Promise.all or 'p-map'."
+            },
+            {
+                "object": "Bluebird",
+                "property": "reduce",
+                "message": "Bluebird-specific method 'Bluebird.reduce' detected. Suggestion: use array reduce + async/await or concurrency library."
+            },
+            {
+                "object": "Bluebird",
+                "property": "filter",
+                "message": "Bluebird-specific method 'Bluebird.filter' detected. Suggestion: use array filter + async/await or concurrency library."
+            },
+            {
+                "object": "Bluebird",
+                "property": "each",
+                "message": "Bluebird-specific method 'Bluebird.each' detected. Suggestion: use a for-loop or forEach + async/await."
+            },
+            {
+                "object": "Bluebird",
+                "property": "props",
+                "message": "Bluebird-specific method 'Bluebird.props' detected. Suggestion: use Promise.all with object entries or a custom approach."
+            },
+            {
+                "object": "Bluebird",
+                "property": "join",
+                "message": "Bluebird-specific method 'Bluebird.join' detected. Suggestion: use Promise.all([...]) and destructuring."
+            },
+            {
+                "object": "Bluebird",
+                "property": "try",
+                "message": "Bluebird-specific method 'Bluebird.try' detected. Suggestion: use a try/catch block or async function."
+            },
+            {
+                "object": "Bluebird",
+                "property": "attempt",
+                "message": "Bluebird-specific method 'Bluebird.attempt' detected. Suggestion: use a try/catch block or async function."
+            },
+            {
+                "object": "Bluebird",
+                "property": "method",
+                "message": "Bluebird-specific method 'Bluebird.method' detected. Suggestion: define an async function or return a native Promise."
+            },
+            {
+                "object": "Bluebird",
+                "property": "promisify",
+                "message": "Bluebird-specific method 'Bluebird.promisify' detected. Suggestion: use native 'util.promisify' or wrap in a new Promise."
+            },
+            {
+                "object": "Bluebird",
+                "property": "promisifyAll",
+                "message": "Bluebird-specific method 'Bluebird.promisifyAll' detected. Suggestion: consider 'util.promisify' or a similar library."
+            },
+            {
+                "object": "Bluebird",
+                "property": "fromCallback",
+                "message": "Bluebird-specific method 'Bluebird.fromCallback' detected. Suggestion: use new Promise(...) or 'util.promisify'."
+            },
+            {
+                "object": "Bluebird",
+                "property": "coroutine",
+                "message": "Bluebird-specific method 'Bluebird.coroutine' detected. Suggestion: use native async/await."
+            },
+            {
+                "object": "Bluebird",
+                "property": "spawn",
+                "message": "Bluebird-specific method 'Bluebird.spawn' detected. Suggestion: use native async/await."
+            },
+            {
+                "object": "Bluebird",
+                "property": "using",
+                "message": "Bluebird-specific method 'Bluebird.using' detected. Suggestion: use try/finally or a resource-management library."
+            },
+            {
+                "object": "Bluebird",
+                "property": "disposer",
+                "message": "Bluebird-specific method 'Bluebird.disposer' detected. Suggestion: use try/finally or a resource-management library."
+            },
+            {
+                "object": "Bluebird",
+                "property": "settle",
+                "message": "Bluebird-specific method 'Bluebird.settle' detected. Suggestion: use native 'Promise.allSettled'."
+            }
+        ],
+        "no-restricted-syntax": [
+            "warn",
+            {
+                "selector": "CallExpression[callee.property.name='tap']",
+                "message": "Bluebird-specific instance method '.tap()' detected. Suggestion: use '.then(value => { ...; return value; })'."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='tapCatch']",
+                "message": "Bluebird-specific instance method '.tapCatch()' detected. Suggestion: use '.catch(error => { ...; throw error; })'."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='spread']",
+                "message": "Bluebird-specific instance method '.spread()' detected. Suggestion: use '.then(([a, b]) => ... )' with array destructuring."
+            },
+            {
+                "selector": "CallExpression[callee.type='MemberExpression'][callee.property.name='bind'][callee.object.name=/^(Promise|Bluebird|BPromise)$/]",
+                "message": "Bluebird-specific '.bind()' detected on a Bluebird promise. Suggestion: manually bind 'this' or use arrow functions."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='delay']",
+                "message": "Bluebird-specific instance method '.delay()' detected. Suggestion: use setTimeout() or a library (e.g., p-delay)."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='timeout']",
+                "message": "Bluebird-specific instance method '.timeout()' detected. Suggestion: use p-timeout or similar library."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='return']",
+                "message": "Bluebird-specific instance method '.return()' detected. Suggestion: use '.then(() => someValue)' or rewrite chain."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='throw']",
+                "message": "Bluebird-specific instance method '.throw()' detected. Suggestion: use '.then(() => { throw error; })'."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='asCallback']",
+                "message": "Bluebird-specific instance method '.asCallback()' detected. Suggestion: use 'util.callbackify' or rewrite manually."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='nodeify']",
+                "message": "Bluebird-specific instance method '.nodeify()' detected. Suggestion: use 'util.callbackify' or rewrite manually."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='reflect']",
+                "message": "Bluebird-specific instance method '.reflect()' detected. Suggestion: use 'Promise.allSettled' or custom handling."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='caught']",
+                "message": "Bluebird-specific instance method '.caught()' detected. Suggestion: use '.catch()' with condition or separate logic."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='catchReturn']",
+                "message": "Bluebird-specific instance method '.catchReturn()' detected. Suggestion: use '.catch(err => fallbackValue)' or similar."
+            },
+            {
+                "selector": "CallExpression[callee.property.name='catchThrow']",
+                "message": "Bluebird-specific instance method '.catchThrow()' detected. Suggestion: use '.catch(err => { throw newError; })'."
+            }
         ]
     },
     "overrides": [
@@ -137,44 +372,6 @@
             "env": {
                 "node": true,
                 "es2023": true
-            }
-        },
-        {
-            "files": [
-                "plugins/content/frontend/content-blocks/**/*.js",
-                "plugins/journey_engine/frontend/builder/**/*.js",
-                "plugins/content/frontend/content-blocks/**/*.vue",
-                "plugins/journey_engine/frontend/builder/**/*.vue"
-            ],
-            "plugins": [
-                "vue",
-                "@stylistic"
-            ],
-            "extends": [
-                "eslint:recommended",
-                "plugin:vue/vue3-essential",
-                "plugin:vue/vue3-strongly-recommended",
-                "plugin:vue/vue3-recommended"
-            ],
-            "rules": {
-                // override these post initial content release, to make them fit with countly convention
-                "no-console": ["error"],
-                "@stylistic/quotes": ["error", "single"],
-                "@stylistic/quote-props": ["error", "as-needed"],
-                "no-unused-vars": "off",
-                "vue/no-unused-vars": ["error", {
-                    "ignorePattern": "^_"
-                }]
-            },
-            "parserOptions": {
-                "ecmaVersion": 2023,
-                "sourceType": "module",
-                "extraFileExtensions": [".vue"]
-            },
-            "env": {
-                "node": true,
-                "es2023": true,
-                "es6": true
             }
         },
         {
