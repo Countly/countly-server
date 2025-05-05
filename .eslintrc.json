@@ -1,7 +1,7 @@
 {
     "extends": "eslint:recommended",
     "rules": {
-        "quotes": ["warn", "single", { "avoidEscape": true }],
+//        "quotes": ["warn", "single", { "avoidEscape": true }],
         "require-atomic-updates": "off",
         "block-spacing": [
             "error",
