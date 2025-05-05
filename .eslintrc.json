@@ -1,7 +1,7 @@
 {
     "extends": "eslint:recommended",
     "rules": {
-//        "quotes": ["warn", "single", { "avoidEscape": true }],
+        //        "quotes": ["warn", "single", { "avoidEscape": true }],
         "require-atomic-updates": "off",
         "block-spacing": [
             "error",
@@ -377,17 +377,18 @@
         {
             "files": [
                 "plugins/content/frontend/content-blocks/**/*.js",
-                "plugins/journey_engine/frontend/builder/**/*.js",
-                "plugins/content/frontend/content-blocks/**/*.vue",
-                "plugins/journey_engine/frontend/builder/**/*.vue"
+                "plugins/journey_engine/frontend/builder/**/*.js"
+            ],
+            "extends": [
+                "eslint:recommended"
             ],
             "rules": {
                 "no-console": ["error"],
                 "@stylistic/quotes": ["error", "single"],
                 "@stylistic/quote-props": ["error", "as-needed"],
-                "no-unused-vars": "off",
-                "vue/no-unused-vars": ["error", {
-                    "ignorePattern": "^_"
+                "no-unused-vars": ["error", {
+                    "argsIgnorePattern": "^_",   // unused function args
+                    "varsIgnorePattern": "^_"    // unused variables
                 }]
             },
             "parserOptions": {
