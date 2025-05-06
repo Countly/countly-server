@@ -1,2 +1,2 @@
 require('./views.js');
-require('./heatmaps.js');
+//require('./heatmaps.js');
