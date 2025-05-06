@@ -13,6 +13,15 @@
     "type": "git",
     "url": "git://github.com/countly/countly-server.git"
   },
+  "scripts": {
+    "test": "grunt --verbose",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,vue}": [
+      "eslint --fix --no-quiet"
+    ]
+  },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2.11.0",
     "docdash": "^2.0.1",
@@ -26,10 +35,9 @@
     "nyc": "17.1.0",
     "should": "13.2.3",
     "supertest": "7.1.0",
-    "typescript": "^5.8.2"
-  },
-  "scripts": {
-    "test": "grunt --verbose"
+    "typescript": "^5.8.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3"
   },
   "dependencies": {
     "all-the-cities": "3.1.0",
