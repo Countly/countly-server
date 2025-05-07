@@ -1387,6 +1387,14 @@
                     timesShown = this.count;
                 }
                 return parseFloat(((this.count / timesShown) * 100).toFixed(2)) || 0;
+            },
+
+            statusColor() {
+                return this.widget.status ? 'green' : 'red';
+            },
+
+            statusText() {
+                return CV.i18n(`feedback.${this.widget.status ? 'active' : 'disabled'}`);
             }
         },
         mounted: function() {
