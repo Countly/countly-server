@@ -44,37 +44,8 @@ class TopEventsJob extends job.Job {
     }
 
     /**
-     * async
-     * Get events count.
-     * @param {Object} params - getEventsCount object
-     * @param {String} params.collectionNameEvents - event collection name
-     * @param {Object} params.ob - it contains all necessary info
-     * @param {string} params.event - event name
-     * @param {Object} params.data - dummy event data
-     * @returns {Promise.<boolean>} true.
-     */
-    async getEventsCount(params) {
-        const { collectionNameEvents, ob, data, event } = params;
-        return await new Promise((resolve) => {
-            countlyApi.data.fetch.getTimeObjForEvents(collectionNameEvents, ob, (doc) => {
-                countlyEvents.setDb(doc || {});
-                const countProp = countlyEvents.getNumber("c", true);
-                const sumProp = countlyEvents.getNumber("s", true);
-                const durationProp = countlyEvents.getNumber("dur", true);
-                data[event] = {};
-                data[event].data = {
-                    count: countProp,
-                    sum: sumProp,
-                    duration: durationProp
-                };
-                resolve(true);
-            });
-        });
-    }
-
-    /**
      * 
-     * @param {object} params  - params obejct
+     * @param {object} params  - params object
      * @param {object} data  - object where to collect data
      * @param {boolean} previous  - if fetching for previous period
      * @returns {Promise} promise
