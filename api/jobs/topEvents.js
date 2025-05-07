@@ -72,6 +72,13 @@ class TopEventsJob extends job.Job {
         });
     }
 
+    /**
+     * 
+     * @param {object} params  - params obejct
+     * @param {object} data  - object where to collect data
+     * @param {boolean} previous  - if fetching for previous period
+     * @returns {Promise} promise
+     */
     async fetchEventTotalCounts(params, data, previous) {
         let collectionName = "all";
         params.qstring.segmentation = "key";
