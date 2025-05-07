@@ -2,6 +2,7 @@
 - [feedback] Uniformize drawer internal name input texts
 - [star-rating] Fix rating score and responses table sorting
 - [star-rating] Allow bulk update of widget status
+- [UI] Remove white background from input character amount suffix
 - [feedback] Uniformize feedback widgets status tag
 
 ## Version 24.05.30
