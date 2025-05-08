@@ -540,21 +540,46 @@
             countlySidebar: {
                 namespaced: true,
                 state: {
-                    selectedMenuItem: {}
+                    selectedMenuItem: {},
+                    guidesButton: '',
                 },
                 getters: {
                     getSelectedMenuItem: function(state) {
                         return state.selectedMenuItem;
+                    },
+                    getGuidesButton: function(state) {
+                        return state.guidesButton;
                     }
                 },
                 mutations: {
                     setSelectedMenuItem: function(state, payload) {
                         state.selectedMenuItem = payload;
+                    },
+                    setGuidesButton: function(state, payload) {
+                        state.guidesButton = payload;
                     }
                 },
                 actions: {
-                    updateSelectedMenuItem: function(context, payload) {
-                        context.commit('setSelectedMenuItem', payload);
+                    updateSelectedMenuItem: function({commit}, payload) {
+                        commit('setSelectedMenuItem', payload);
+                    },
+                    selectGuidesButton: function(context) {
+                        context.commit('setGuidesButton', 'selected');
+                    },
+                    deselectGuidesButton: ({ getters, commit }) => {
+                        const buttonState = getters.getGuidesButton;
+                        if (buttonState !== 'highlighted') {
+                            commit('setGuidesButton', '');
+                        }
+                    },
+                    highlightGuidesButton: function({getters, commit}, payload) {
+                        const buttonState = getters.getGuidesButton;
+                        if (!payload) {
+                            payload = 'hover';
+                        }
+                        if (buttonState !== 'selected') {
+                            commit('setGuidesButton', payload);
+                        }
                     }
                 }
             }

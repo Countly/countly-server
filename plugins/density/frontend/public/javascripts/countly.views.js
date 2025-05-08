@@ -42,6 +42,7 @@
                     {
                         title: CV.i18n('density.title'),
                         name: "density-table",
+                        dataTestId: "densities-table",
                         component: countlyVue.views.create({
                             template: CV.T("/density/templates/density_table.html"),
                             computed: {
@@ -65,6 +66,7 @@
                     {
                         title: CV.i18n('density.versions'),
                         name: "version-table",
+                        dataTestId: "versions-table",
                         component: countlyVue.views.create({
                             template: CV.T("/density/templates/version_table.html"),
                             data: function() {

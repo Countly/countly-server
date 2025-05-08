@@ -224,6 +224,7 @@ describe('Create New Widget', () => {
             submitButtonText: widget.submitButtonText,
             //TODO SER-1971 There is no Aggrement Checkbox in the demo page, Also Look at the line 136 in demoWidgetPage.js
             //hasAggrementCheckbox: true,
+            consentText: 'I agree to the Terms and Conditions and Privacy Policy.',
             selectedMainColor: widget.mainColor,
             selectedFontColor: widget.FontColor,
             hasPoweredByLogo: true,

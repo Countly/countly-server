@@ -87,6 +87,9 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             await drillDb.collection(collectionName).drop();
             console.log("Dropped collection:", collectionName);
         }
+        //delete from aggregated drill event collection
+        await drillDb.collection('drill_events').remove({'a': appId + "", 'e': {$in: events}});
+        console.log("Cleared from drill_events");
         await drillDb.collection('drill_bookmarks').remove({'app_id': appId, 'event_key': {$in: events}});
         console.log("Cleared drill_bookmarks");
         await drillDb.collection("drill_meta").remove({'app_id': (appId + ""), "type": "e", "e": {$in: events}});
@@ -98,6 +101,10 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             var collectionName = 'events' + drillCommon.getEventHash(events[i], appId);
             await countlyDb.collection(collectionName).drop();
             console.log("Dropped collection:", collectionName);
+
+            //clear from merged collection
+            await countlyDb.collection("events_data").remove({'_id': {"$regex": "^" + appId + "_" + drillCommon.getEventHash(events[i], appId) + "_.*"}});
+            console.log("Cleared from agregated collection");
         }
     }
 

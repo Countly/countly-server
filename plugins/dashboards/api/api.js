@@ -2206,7 +2206,7 @@ plugins.setConfigs("dashboards", {
         appIds = [...new Set(appIds)];
         let strDependencies = JSON.stringify(dependencies);
         appIds.forEach(appId=>{
-            strDependencies.replace(appId, 'APP_ID');
+            strDependencies = strDependencies.replace(appId, 'APP_ID');
         });
         return JSON.parse(strDependencies);
     }

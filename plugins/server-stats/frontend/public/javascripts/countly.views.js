@@ -53,6 +53,9 @@ var DataPointsView = countlyVue.views.create({
                 "ratings": CV.i18n('server-stats.ratings'),
                 "apm": CV.i18n('server-stats.apm'),
                 "custom": CV.i18n('server-stats.custom'),
+                "cs": CV.i18n('server-stats.cs'),
+                "ps": CV.i18n('server-stats.ps'),
+                "push": CV.i18n('server-stats.push')
             };
             return eventsBreakdownEnum[key];
         },
@@ -307,12 +310,19 @@ var DataPointsView = countlyVue.views.create({
                 item[CV.i18n('server-stats.events') + ": " + CV.i18n('server-stats.ratings')] = dataPoints[k].events_breakdown.ratings;
                 item[CV.i18n('server-stats.events') + ": " + CV.i18n('server-stats.apm')] = dataPoints[k].events_breakdown.apm;
                 item[CV.i18n('server-stats.events') + ": " + CV.i18n('server-stats.custom')] = dataPoints[k].events_breakdown.custom;
-                item[CV.i18n('server-stats.push')] = dataPoints[k].push;
+                item[CV.i18n('server-stats.push')] = dataPoints[k].events_breakdown.push;
+                item[CV.i18n('server-stats.ps')] = dataPoints[k].events_breakdown.ps;
+                item[CV.i18n('server-stats.cs')] = dataPoints[k].events_breakdown.cs;
                 item[CV.i18n('server-stats.data-points')] = dataPoints[k]['data-points'];
                 item[CV.i18n('server-stats.datapoint-change')] = dataPoints[k].change;
                 table.push(item);
             }
             return table;
+        }
+    },
+    computed: {
+        tooltip: function() {
+            return !this.app_id ? {description: this.description, placement: 'top-center'} : null;
         }
     }
 });

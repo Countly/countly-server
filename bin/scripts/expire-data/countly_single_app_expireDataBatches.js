@@ -39,7 +39,6 @@ var timeout = 500; //timeout in miliseconds between deletion. (One second  ==== 
 
 
 var async = require('async'),
-    crypto = require('crypto'),
     Promise = require("bluebird"),
     plugins = require('../../../plugins/pluginManager.js');
 
@@ -109,6 +108,9 @@ function eventIterator(fr, done) {
     console.log('Processing range: ' + JSON.stringify({"ts": {"$gte": fr.start, "$lt": fr.end}}) + ' for ' + fr.collection);
     var query = {};
     query["ts"] = {"$gte": fr.start, "$lt": fr.end};
+    if (collection === 'drill_events') {
+        query["a"] = APP_ID;
+    }
     if (fr.query) {
         for (var key in fr.query) {
             query[key] = fr.query.key;
@@ -242,41 +244,13 @@ function processDrillCollection(collection, seconds, callback) {
     }
 }
 
-function processDrillCollections(db, drill_db, callback) {
+function processDrillCollections(drill_db, callback) {
     if (process && process.drill_events) {
-        var collections = [];
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_session" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_apm_device" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_apm_network" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_nps" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_survey" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_push_action" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_push_sent" + APP_ID).digest('hex')});
-        collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update("[CLY]_consent" + APP_ID).digest('hex')});
-        db.collection("events").findOne({'_id': db.ObjectID(APP_ID)}, {list: 1}, function(err, eventData) {
-            if (eventData && eventData.list) {
-                for (var i = 0; i < eventData.list.length; i++) {
-                    collections.push({'db': drill_db, 'collection': "drill_events" + crypto.createHash('sha1').update(eventData.list[i] + APP_ID).digest('hex')});
-                }
+        processDrillCollection({"collection": "drill_events", db: drill_db}, false, function(err) {
+            if (err) {
+                console.log("ERROR: Error while processing drill collection: drill_events");
             }
-
-            async.eachSeries(collections, function(collection, done) {
-                processDrillCollection(collection, false, function(err) {
-                    if (err) {
-                        console.log("ERROR: Error while processing drill collection: " + collection.collection);
-                    }
-                    done(err);
-                });
-            }, function(err) {
-                if (err) {
-                    console.log("ERROR: Error processing collections.");
-                }
-                callback(err);
-            });
+            callback(err);
         });
     }
     else {
@@ -292,7 +266,7 @@ Promise.all([plugins.dbConnection("countly"), plugins.dbConnection("countly_dril
         db_drill.close();
     }
     else {
-        processDrillCollections(db, db_drill, function() {
+        processDrillCollections(db_drill, function() {
             var processCols = [];
             for (var key in process) {
                 if (key !== 'drill_events') {
