@@ -1155,7 +1155,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.DASHBOARD.ALLOW_DASHBOARD_SHARING }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "Enable dashboard sharing for users to share a dashboard with other users. If set to off, a dashboard cannot be shared with others.",
+        labelText: "Enable dashboard sharing for users to share a dashboard with other users. If set to off, dashboards cannot be shared with others.",
     });
 
     cy.verifyElement({
@@ -1179,7 +1179,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.HOOKS.ACTION_BATCH_PROCESING_SIZE }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Action batch procesing size",
+        labelText: "Action Batch Processing Size",
     });
 
     cy.verifyElement({
@@ -1195,7 +1195,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.HOOKS.ACTION_PIPELINE_INTERVAL }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Action pipeline interval",
+        labelText: "Action Pipeline Interval",
     });
 
     cy.verifyElement({
@@ -1211,7 +1211,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.HOOKS.REFRESH_RULES_PERIOD }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Refresh rules period",
+        labelText: "Refresh Rules Period",
     });
 
     cy.verifyElement({
@@ -1227,7 +1227,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.HOOKS.REQUEST_LIMIT }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Request limit",
+        labelText: "Request Limit",
     });
 
     cy.verifyElement({
@@ -1243,7 +1243,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.HOOKS.TIME_WINDOW_FOR_REQUEST_LIMIT }).SELECTED_SUBFEATURE_TITLE,
-        labelText: "Time window for request limit",
+        labelText: "Time Window for Request Limit",
     });
 
     cy.verifyElement({
@@ -1294,7 +1294,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.INCOMING_DATA_LOGS.DATA_LOGGING_STATE }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "If incoming data logging state is set to \"On\", only the last 1000 requests will be saved. When the state is set to \"Automatic\", requests will continue to be logged until the limit per minute is reached.",
+        labelText: "If the incoming data logging state is set to \"On\", only the last 1000 requests will be saved. When the state is set to \"Automatic\", requests will continue to be logged until the limit per minute is reached.",
     });
 
     cy.verifyElement({
@@ -1701,7 +1701,7 @@ const verifyPageElements = () => {
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.AUDIT_LOGS.DISABLE_IP_TRACKING }).SELECTED_SUBFEATURE_DESCRIPTION,
-        labelText: "Do not record IP address of actions taken by the users",
+        labelText: "Do not record the IP address of actions taken by the users.",
     });
 
     cy.verifyElement({

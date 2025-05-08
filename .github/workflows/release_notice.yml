@@ -14,7 +14,7 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
       - name: Send custom JSON data to Slack workflow
         id: slack
-        uses: slackapi/slack-github-action@v1.23.0
+        uses: slackapi/slack-github-action@v2.0.0
         with:
           # This data can be any valid JSON from a previous step in the GitHub Action
           payload: |
@@ -28,7 +28,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_RELEASE }}
       - name: Send custom JSON data to Discord
-        uses: sarisia/actions-status-discord@v1.13.0
+        uses: sarisia/actions-status-discord@v1.15.3
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
           nodetail: true

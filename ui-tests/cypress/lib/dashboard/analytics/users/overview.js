@@ -143,7 +143,7 @@ const verifyUsersOverviewChart = ({
         labelElement: usersOverviewEChartElements.CHART_TOTAL_USERS_LABEL,
         labelText: "Total Users",
         tooltipElement: usersOverviewEChartElements.CHART_TOTAL_USERS_TOOLTIP,
-        tooltipText: "The number of users (unique devices/IDs) who have opened your application in the selected time period.",
+        tooltipText: "The number of users (unique devices/IDs) who have opened your application within the selected time period.",
     });
 
     cy.verifyElement({
@@ -167,7 +167,7 @@ const verifyUsersOverviewChart = ({
         labelElement: usersOverviewEChartElements.CHART_NEW_USERS_LABEL,
         labelText: "New Users",
         tooltipElement: usersOverviewEChartElements.CHART_NEW_USERS_TOOLTIP,
-        tooltipText: "The number of first-time users (unique devices/IDs) in the selected time period.",
+        tooltipText: "The number of first-time users (unique devices/IDs) within the selected time period.",
     });
 
     cy.verifyElement({
@@ -191,7 +191,7 @@ const verifyUsersOverviewChart = ({
         labelElement: usersOverviewEChartElements.CHART_RETURNING_USERS_LABEL,
         labelText: "Returning Users",
         tooltipElement: usersOverviewEChartElements.CHART_RETURNING_USERS_TOOLTIP,
-        tooltipText: "Number of users using your application for the second or later time, in the selected time period, calculated as Total Users (less) New Users.",
+        tooltipText: "The number of users using your application for the second or later time within the selected time period, calculated as Total Users minus New Users.",
     });
 
     cy.verifyElement({

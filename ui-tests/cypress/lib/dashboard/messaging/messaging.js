@@ -49,7 +49,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: messagingMetricCardElements.ENABLED_USERS_PERCENTAGE_LABEL,
         labelText: "Enabled Users Percentage",
         tooltipElement: messagingMetricCardElements.ENABLED_USERS_PERCENTAGE_PROGRESS_TOOLTIP,
-        tooltipText: "Number of users who have agreed to receive notifications, expressed as a percentage over the total number of app users."
+        tooltipText: "The number of users who have agreed to receive notifications, expressed as a percentage of the total number of app users."
     });
 
     cy.verifyElement({
