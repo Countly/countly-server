@@ -1,9 +1,16 @@
 ## Version 24.05.x
+
+## Version 24.05.31
+Fixes:
 - [feedback] Uniformize drawer internal name input texts
-- [star-rating] Fix rating score and responses table sorting
-- [star-rating] Allow bulk update of widget status
-- [UI] Remove white background from input character amount suffix
 - [feedback] Uniformize feedback widgets status tag
+- [star-rating] Allow bulk update of widget status
+- [star-rating] Fix rating score and responses table sorting
+- [UI] Remove white background from input character amount suffix
+
+Enterprise Fixes:
+ -  [retention] Fixed report loading 
+
 
 ## Version 24.05.30
 Features:
