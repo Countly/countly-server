@@ -11,107 +11,6 @@
     }
   ],
   "paths": {
-    "/i/crashes": {
-      "post": {
-        "summary": "Submit crash data",
-        "description": "Submit a new crash report to Countly",
-        "tags": [
-          "Crash Reporting"
-        ],
-        "parameters": [
-          {
-            "name": "app_key",
-            "in": "query",
-            "required": true,
-            "description": "App key for authentication",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "device_id",
-            "in": "query",
-            "required": true,
-            "description": "Device ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "crash": {
-                    "type": "object",
-                    "required": true,
-                    "properties": {
-                      "_os": {
-                        "type": "string",
-                        "description": "Operating system"
-                      },
-                      "_os_version": {
-                        "type": "string",
-                        "description": "Operating system version"
-                      },
-                      "_device": {
-                        "type": "string",
-                        "description": "Device model"
-                      },
-                      "_app_version": {
-                        "type": "string",
-                        "description": "App version"
-                      },
-                      "_name": {
-                        "type": "string",
-                        "description": "Crash name/title"
-                      },
-                      "_error": {
-                        "type": "string",
-                        "description": "Error details or stack trace"
-                      },
-                      "_nonfatal": {
-                        "type": "boolean",
-                        "description": "Whether the crash is non-fatal"
-                      },
-                      "_logs": {
-                        "type": "string",
-                        "description": "Logs leading up to the crash"
-                      },
-                      "_custom": {
-                        "type": "object",
-                        "description": "Custom crash parameters"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Crash submitted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "example": "Success"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/o/crashes": {
       "get": {
         "summary": "Get crash data",
@@ -192,7 +91,7 @@
         "summary": "Resolve crash",
         "description": "Mark a crash group as resolved",
         "tags": [
-          "Crash Management"
+           "Crash Analytics"
         ],
         "parameters": [
           {
@@ -239,7 +138,7 @@
         "summary": "Unresolve crash",
         "description": "Mark a crash group as unresolved",
         "tags": [
-          "Crash Management"
+           "Crash Analytics"
         ],
         "parameters": [
           {
@@ -286,7 +185,7 @@
         "summary": "Mark crash as viewed",
         "description": "Mark a crash group as viewed",
         "tags": [
-          "Crash Management"
+           "Crash Analytics"
         ],
         "parameters": [
           {
@@ -333,7 +232,7 @@
         "summary": "Share crash",
         "description": "Create a public sharing URL for a crash",
         "tags": [
-          "Crash Management"
+           "Crash Analytics"
         ],
         "parameters": [
           {
@@ -384,7 +283,7 @@
         "summary": "Unshare crash",
         "description": "Remove public sharing for a crash",
         "tags": [
-          "Crash Management"
+           "Crash Analytics"
         ],
         "parameters": [
           {
@@ -431,7 +330,7 @@
         "summary": "Modify crash sharing",
         "description": "Modify sharing settings for a crash",
         "tags": [
-          "Crash Management"
+           "Crash Analytics"
         ],
         "parameters": [
           {
@@ -487,7 +386,7 @@
         "summary": "Hide crash",
         "description": "Hide a crash group",
         "tags": [
-          "Crash Management"
+           "Crash Analytics"
         ],
         "parameters": [
           {
@@ -534,7 +433,7 @@
         "summary": "Show crash",
         "description": "Unhide a crash group",
         "tags": [
-          "Crash Management"
+           "Crash Analytics"
         ],
         "parameters": [
           {
@@ -581,7 +480,7 @@
         "summary": "Add comment to crash",
         "description": "Add a comment to a crash group",
         "tags": [
-          "Crash Management"
+           "Crash Analytics"
         ],
         "parameters": [
           {
@@ -637,7 +536,7 @@
         "summary": "Edit crash comment",
         "description": "Edit an existing comment on a crash group",
         "tags": [
-          "Crash Management"
+           "Crash Analytics"
         ],
         "parameters": [
           {
@@ -702,7 +601,7 @@
         "summary": "Delete crash comment",
         "description": "Delete a comment from a crash group",
         "tags": [
-          "Crash Management"
+           "Crash Analytics"
         ],
         "parameters": [
           {

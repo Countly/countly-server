@@ -14,16 +14,16 @@
     "/i": {
       "post": {
         "summary": "Process data",
-        "description": "Process data from SDKs",
+        "description": "Main endpoint for SDK data collection. Used by SDKs to send analytics data to the server.",
         "tags": [
-          "Data Processing"
+          "Ingestion"
         ],
         "parameters": [
           {
             "name": "app_key",
             "in": "query",
             "required": true,
-            "description": "App key for authentication",
+            "description": "App key for authentication. Identifies which application the data belongs to.",
             "schema": {
               "type": "string"
             }
@@ -32,25 +32,294 @@
             "name": "device_id",
             "in": "query",
             "required": true,
-            "description": "Unique device identifier",
+            "description": "Unique device identifier. Used to identify a unique user/device in the system.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timestamp",
+            "in": "query",
+            "required": false,
+            "description": "Unix timestamp in milliseconds of when the request was generated. Used to handle offline requests.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "hour",
+            "in": "query",
+            "required": false,
+            "description": "Hour of the day (0-23) when the request was generated.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 23
+            }
+          },
+          {
+            "name": "dow",
+            "in": "query",
+            "required": false,
+            "description": "Day of the week (0-6, where 0 is Sunday) when the request was generated.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            }
+          },
+          {
+            "name": "sdk_name",
+            "in": "query",
+            "required": false,
+            "description": "Name of the SDK used to send the request (e.g., 'javascript', 'ios', 'android').",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sdk_version",
+            "in": "query",
+            "required": false,
+            "description": "Version of the SDK used to send the request.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ip_address",
+            "in": "query",
+            "required": false,
+            "description": "IP address of the device. If not provided, server will use the IP from the request.",
             "schema": {
               "type": "string"
             }
           }
         ],
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
+                  "begin_session": {
+                    "type": "integer",
+                    "enum": [1],
+                    "description": "Indicates the start of a new session. Value must be 1."
+                  },
+                  "end_session": {
+                    "type": "integer",
+                    "enum": [1],
+                    "description": "Indicates the end of a session. Value must be 1."
+                  },
+                  "session_duration": {
+                    "type": "integer",
+                    "description": "Duration of the session in seconds. Used to update an ongoing session's duration."
+                  },
+                  "metrics": {
+                    "type": "object",
+                    "description": "Device metrics data collected at the start of a session.",
+                    "properties": {
+                      "_os": {
+                        "type": "string",
+                        "description": "Operating system name (e.g., 'iOS', 'Android', 'Windows')."
+                      },
+                      "_os_version": {
+                        "type": "string",
+                        "description": "Operating system version (e.g., '14.2', '11.0')."
+                      },
+                      "_device": {
+                        "type": "string",
+                        "description": "Device model (e.g., 'iPhone12,1', 'SM-G981U')."
+                      },
+                      "_resolution": {
+                        "type": "string",
+                        "description": "Screen resolution in format 'widthxheight' (e.g., '1920x1080')."
+                      },
+                      "_carrier": {
+                        "type": "string",
+                        "description": "Mobile carrier or network operator name."
+                      },
+                      "_density": {
+                        "type": "string",
+                        "description": "Screen density or DPI."
+                      },
+                      "_locale": {
+                        "type": "string",
+                        "description": "Device locale in format 'language_COUNTRY' (e.g., 'en_US')."
+                      },
+                      "_app_version": {
+                        "type": "string",
+                        "description": "Application version string."
+                      },
+                      "_manufacturer": {
+                        "type": "string",
+                        "description": "Device manufacturer (e.g., 'Apple', 'Samsung')."
+                      },
+                      "_has_nfc": {
+                        "type": "boolean",
+                        "description": "Whether the device has NFC capability."
+                      },
+                      "_has_bluetooth": {
+                        "type": "boolean",
+                        "description": "Whether the device has Bluetooth capability."
+                      },
+                      "_has_telephone": {
+                        "type": "boolean",
+                        "description": "Whether the device can make telephone calls."
+                      }
+                    }
+                  },
                   "events": {
                     "type": "array",
-                    "description": "Events to track",
+                    "description": "Array of custom event objects to record.",
                     "items": {
-                      "type": "object"
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "description": "Event name or key."
+                        },
+                        "count": {
+                          "type": "integer",
+                          "description": "Event occurrence count (usually 1).",
+                          "default": 1
+                        },
+                        "sum": {
+                          "type": "number",
+                          "description": "Optional sum value associated with the event (for numeric data)."
+                        },
+                        "dur": {
+                          "type": "number",
+                          "description": "Optional duration value associated with the event in seconds."
+                        },
+                        "timestamp": {
+                          "type": "integer",
+                          "description": "Optional timestamp when the event occurred (in milliseconds)."
+                        },
+                        "segmentation": {
+                          "type": "object",
+                          "description": "Custom segmentation data for the event."
+                        }
+                      },
+                      "required": ["key"]
                     }
+                  },
+                  "user_details": {
+                    "type": "object",
+                    "description": "User profile data for the device_id.",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "User's full name."
+                      },
+                      "username": {
+                        "type": "string",
+                        "description": "User's username or nickname."
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "User's email address."
+                      },
+                      "organization": {
+                        "type": "string",
+                        "description": "User's organization or company."
+                      },
+                      "phone": {
+                        "type": "string",
+                        "description": "User's phone number."
+                      },
+                      "gender": {
+                        "type": "string",
+                        "description": "User's gender."
+                      },
+                      "byear": {
+                        "type": "integer",
+                        "description": "User's birth year (e.g., 1980)."
+                      },
+                      "picture": {
+                        "type": "string",
+                        "description": "URL to user's profile picture."
+                      },
+                      "custom": {
+                        "type": "object",
+                        "description": "Custom user properties as key-value pairs."
+                      }
+                    }
+                  },
+                  "crash": {
+                    "type": "object",
+                    "description": "Crash report data.",
+                    "properties": {
+                      "_os": {
+                        "type": "string",
+                        "description": "Operating system when the crash occurred."
+                      },
+                      "_os_version": {
+                        "type": "string",
+                        "description": "Operating system version when the crash occurred."
+                      },
+                      "_device": {
+                        "type": "string",
+                        "description": "Device model when the crash occurred."
+                      },
+                      "_app_version": {
+                        "type": "string",
+                        "description": "App version when the crash occurred."
+                      },
+                      "_name": {
+                        "type": "string",
+                        "description": "Crash name/title (e.g., exception class name)."
+                      },
+                      "_error": {
+                        "type": "string",
+                        "description": "Error details, stack trace, or exception message."
+                      },
+                      "_nonfatal": {
+                        "type": "boolean",
+                        "description": "Whether the crash is non-fatal (handled exception)."
+                      },
+                      "_logs": {
+                        "type": "string",
+                        "description": "Application logs leading up to the crash."
+                      },
+                      "_custom": {
+                        "type": "object",
+                        "description": "Custom key-value pairs for additional crash context."
+                      }
+                    }
+                  },
+                  "consent": {
+                    "type": "object",
+                    "description": "User consent settings for different features (GDPR compliance).",
+                    "additionalProperties": {
+                      "type": "boolean"
+                    },
+                    "example": {
+                      "sessions": true,
+                      "events": true,
+                      "views": false,
+                      "crashes": true
+                    }
+                  },
+                  "location": {
+                    "type": "object",
+                    "description": "User location data.",
+                    "properties": {
+                      "lat": {
+                        "type": "number",
+                        "description": "Latitude coordinate."
+                      },
+                      "lng": {
+                        "type": "number",
+                        "description": "Longitude coordinate."
+                      }
+                    }
+                  },
+                  "view": {
+                    "type": "string",
+                    "description": "Name of the view/screen the user is currently viewing."
                   }
                 }
               }
@@ -89,6 +358,182 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Unauthorized - invalid app_key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "App key not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Process data (GET method)",
+        "description": "Alternative to POST method for SDK data collection, using query parameters. Used by image beacons and environments with POST restrictions.",
+        "tags": [
+          "Ingestion"
+        ],
+        "parameters": [
+          {
+            "name": "app_key",
+            "in": "query",
+            "required": true,
+            "description": "App key for authentication. Identifies which application the data belongs to.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "device_id",
+            "in": "query",
+            "required": true,
+            "description": "Unique device identifier. Used to identify a unique user/device in the system.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timestamp",
+            "in": "query",
+            "required": false,
+            "description": "Unix timestamp in milliseconds of when the request was generated.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "hour",
+            "in": "query",
+            "required": false,
+            "description": "Hour of the day (0-23) when the request was generated.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "dow",
+            "in": "query",
+            "required": false,
+            "description": "Day of the week (0-6, where 0 is Sunday) when the request was generated.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "events",
+            "in": "query",
+            "required": false,
+            "description": "JSON encoded array of event objects.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "begin_session",
+            "in": "query",
+            "required": false,
+            "description": "Set to 1 to begin a new session.",
+            "schema": {
+              "type": "integer",
+              "enum": [1]
+            }
+          },
+          {
+            "name": "end_session",
+            "in": "query",
+            "required": false,
+            "description": "Set to 1 to end the current session.",
+            "schema": {
+              "type": "integer",
+              "enum": [1]
+            }
+          },
+          {
+            "name": "session_duration",
+            "in": "query",
+            "required": false,
+            "description": "Duration of the session in seconds.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "metrics",
+            "in": "query",
+            "required": false,
+            "description": "JSON encoded object with device metrics.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "safe_api_response",
+            "in": "query",
+            "required": false,
+            "description": "Whether to wait for all data processing to finish before responding",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error processing data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_key\" or \"device_id\""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid app_key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "App key not found"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -98,7 +543,7 @@
         "summary": "Process bulk requests",
         "description": "Process multiple requests in a single API call",
         "tags": [
-          "Core"
+          "Ingestion"
         ],
         "parameters": [
           {
@@ -117,6 +562,15 @@
             "description": "Unique device identifier",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "safe_api_response",
+            "in": "query",
+            "required": false,
+            "description": "Whether to wait for all data processing to finish before responding",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -337,13 +791,13 @@
             }
           },
           {
-            "name": "user_ids",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Array of user IDs to delete, as a JSON string",
+            "description": "User deletion data as JSON string",
             "schema": {
               "type": "string",
-              "example": "[\"user_id1\",\"user_id2\"]"
+              "example": "{\"user_ids\":[\"user_id1\",\"user_id2\"]}"
             }
           }
         ],
@@ -455,6 +909,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "homeSettings",
+            "in": "query",
+            "required": true,
+            "description": "Home dashboard settings as JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"selectedApps\":[\"app_id1\",\"app_id2\"],\"dashboardView\":\"appsByDefault\"}"
+            }
           }
         ],
         "responses": {
@@ -516,117 +980,6 @@
         "responses": {
           "200": {
             "description": "Notification acknowledged successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "example": "Success"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/i/login": {
-      "post": {
-        "summary": "Login",
-        "description": "Login to Countly",
-        "tags": [
-          "Authentication"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "username": {
-                    "type": "string",
-                    "description": "Username or email",
-                    "required": true
-                  },
-                  "password": {
-                    "type": "string",
-                    "description": "Password",
-                    "required": true
-                  },
-                  "remember_me": {
-                    "type": "boolean",
-                    "description": "Whether to remember the login"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Login successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "example": "Success"
-                    },
-                    "auth_token": {
-                      "type": "string",
-                      "description": "Authentication token"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Login failed",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "example": "Invalid username or password"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/i/logout": {
-      "get": {
-        "summary": "Logout",
-        "description": "Logout from Countly",
-        "tags": [
-          "Authentication"
-        ],
-        "parameters": [
-          {
-            "name": "auth_token",
-            "in": "query",
-            "required": true,
-            "description": "Authentication token",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Logout successful",
             "content": {
               "application/json": {
                 "schema": {
@@ -764,6 +1117,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "device_id",
+            "in": "query",
+            "required": true,
+            "description": "Device ID for the app user",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -775,6 +1137,21 @@
                 "properties": {
                   "data": {
                     "type": "object",
+                    "properties": {
+                      "did": {
+                        "type": "string",
+                        "description": "Device ID (should match the device_id in the query parameters)"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "User name"
+                      },
+                      "custom": {
+                        "type": "object",
+                        "description": "Custom properties"
+                      }
+                    },
+                    "required": ["did"],
                     "description": "User data to create"
                   }
                 }
@@ -858,13 +1235,15 @@
                   },
                   "update": {
                     "type": "object",
-                    "description": "Data to update"
+                    "description": "Data to update using MongoDB update operators like $set",
+                    "example": {"$set": {"custom.test": false}}
                   },
                   "force": {
                     "type": "boolean",
                     "description": "Force update if more than one user matches the query"
                   }
-                }
+                },
+                "required": ["query", "update"]
               }
             }
           }
@@ -879,7 +1258,7 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "User Updated"
+                      "example": "Success"
                     }
                   }
                 }
@@ -895,7 +1274,7 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "Missing parameter \"app_id\""
+                      "example": "Missing parameter or invalid format"
                     }
                   }
                 }
@@ -1440,7 +1819,7 @@
             "description": "App data as JSON string",
             "schema": {
               "type": "string",
-              "example": "{\"app_id\":\"app_id\"}"
+              "example": "{\"app_id\":\"app_id\",\"period\":\"reset\"}"
             }
           }
         ],
@@ -1507,31 +1886,13 @@
             }
           },
           {
-            "name": "group_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Group ID",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "in": "query",
-            "required": true,
-            "description": "Group name",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "events",
-            "in": "query",
-            "required": true,
-            "description": "Events in group",
+            "description": "Event group data as JSON string",
             "schema": {
               "type": "string",
-              "format": "array"
+              "example": "{\"group_id\":\"test_group\",\"name\":\"Test Group\",\"events\":[\"test_event\",\"second_event\"],\"source_events\":[\"test_event\",\"second_event\"],\"display_map\":{},\"status\":true}"
             }
           }
         ],
@@ -1598,31 +1959,13 @@
             }
           },
           {
-            "name": "group_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Group ID",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "in": "query",
-            "required": false,
-            "description": "Group name",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "events",
-            "in": "query",
-            "required": false,
-            "description": "Events in group",
+            "description": "Event group data as JSON string",
             "schema": {
               "type": "string",
-              "format": "array"
+              "example": "{\"group_id\":\"test_group\",\"name\":\"Updated Group\",\"events\":[\"event1\",\"event2\",\"event3\"]}"
             }
           }
         ],
@@ -1689,12 +2032,13 @@
             }
           },
           {
-            "name": "group_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Group ID",
+            "description": "Event group data as JSON string",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"group_id\":\"test_group\"}"
             }
           }
         ],
@@ -2044,7 +2388,7 @@
         "summary": "Whitelist event segments",
         "description": "Set whitelisted segments for events",
         "tags": [
-          "Events Management"
+          "Event Management"
         ],
         "parameters": [
           {
@@ -2117,7 +2461,7 @@
         "summary": "Edit event map",
         "description": "Edit event mapping configuration",
         "tags": [
-          "Events Management"
+          "Event Management"
         ],
         "parameters": [
           {
@@ -2216,7 +2560,7 @@
         "summary": "Delete events",
         "description": "Delete one or multiple events",
         "tags": [
-          "Events Management"
+          "Event Management"
         ],
         "parameters": [
           {
@@ -2289,7 +2633,7 @@
         "summary": "Change event visibility",
         "description": "Change visibility of events",
         "tags": [
-          "Events Management"
+          "Event Management"
         ],
         "parameters": [
           {
@@ -3067,22 +3411,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "Server is not responsive",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "example": "DB Error"
-                    }
-                  }
-                }
-              }
-            }
           }
         }
       }
@@ -3161,9 +3489,627 @@
           }
         }
       }
+    },
+    "/o": {
+      "get": {
+        "summary": "Analytics data retrieval",
+        "description": "Main endpoint for retrieving analytics data. Uses `method` parameter to determine what data to return.",
+        "tags": [
+          "Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID for which to retrieve data",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "method",
+            "in": "query",
+            "required": true,
+            "description": "Data retrieval method that determines what data to return",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "total_users",
+                "locations",
+                "sessions",
+                "users",
+                "carriers",
+                "devices",
+                "app_versions",
+                "cities",
+                "events",
+                "get_events",
+                "top_events",
+                "countries",
+                "notes",
+                "all_apps",
+                "jobs",
+                "get_event_groups",
+                "get_event_group",
+                "geodata"
+              ]
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Period for which to retrieve data. Can be a predefined period like '1month' or a custom period in format '[YYYYMMDD,YYYYMMDD]'.",
+            "schema": {
+              "type": "string",
+              "examples": ["30days", "7days", "hour", "[20220101,20221231]"]
+            }
+          },
+          {
+            "name": "timestamp",
+            "in": "query",
+            "required": false,
+            "description": "Timestamp for preventing browser cache",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data retrieved successfully. Response format varies by method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error retrieving data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Invalid API key"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/analytics": {
+      "get": {
+        "summary": "Get analytics data",
+        "description": "Retrieve analytics data for the specified app",
+        "tags": [
+          "Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Period for data (e.g., '30days')",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error retrieving analytics data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/users": {
+      "get": {
+        "summary": "Get user data",
+        "description": "Retrieve user data for the specified app",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Period for data (e.g., '30days')",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error retrieving user data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/locations": {
+      "get": {
+        "summary": "Get location data (alternative to /o with method=locations)",
+        "description": "Get device and user location data segmented by country",
+        "tags": [
+          "Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Period for data (e.g., '30days')",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error retrieving location data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/sessions": {
+      "get": {
+        "summary": "Get session data (alternative to /o with method=sessions)",
+        "description": "Get detailed session data including total sessions, unique users, new users, etc.",
+        "tags": [
+          "Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Period for data (e.g., '30days')",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error retrieving session data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/users/all": {
+      "get": {
+        "summary": "Get all users (alternative to /o/users with path all)",
+        "description": "Get all users in the system",
+        "tags": [
+          "User Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "User ID"
+                      },
+                      "full_name": {
+                        "type": "string",
+                        "description": "Full name"
+                      },
+                      "username": {
+                        "type": "string",
+                        "description": "Username"
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "Email address"
+                      },
+                      "global_admin": {
+                        "type": "boolean",
+                        "description": "Whether the user is a global admin"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Invalid API key"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
+    "schemas": {
+      "OMethodTotal_users": {
+        "type": "object",
+        "description": "Response for /o method=total_users",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Total number of users"
+          },
+          "prev-total": {
+            "type": "integer",
+            "description": "Total number of users in the previous period"
+          },
+          "change": {
+            "type": "string",
+            "description": "Percentage change from previous period"
+          }
+        }
+      },
+      "OMethodLocations": {
+        "type": "object",
+        "description": "Response for /o method=locations",
+        "properties": {
+          "countries": {
+            "type": "object",
+            "description": "Map of country codes to counts",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "t": {
+                  "type": "integer",
+                  "description": "Total sessions from this country"
+                },
+                "u": {
+                  "type": "integer",
+                  "description": "Unique users from this country"
+                },
+                "n": {
+                  "type": "integer",
+                  "description": "New users from this country"
+                }
+              }
+            }
+          }
+        }
+      },
+      "OMethodSessions": {
+        "type": "object",
+        "description": "Response for /o method=sessions",
+        "properties": {
+          "total_sessions": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "description": "Total number of sessions"
+              },
+              "change": {
+                "type": "string",
+                "description": "Percentage change from previous period"
+              },
+              "data": {
+                "type": "array",
+                "description": "Time series data for sessions",
+                "items": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string",
+                      "description": "Date in YYYY-MM-DD format"
+                    },
+                    {
+                      "type": "integer",
+                      "description": "Number of sessions on this date"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "total_users": {
+            "type": "object",
+            "description": "User statistics",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "description": "Total number of users"
+              },
+              "change": {
+                "type": "string",
+                "description": "Percentage change from previous period"
+              },
+              "data": {
+                "type": "array",
+                "description": "Time series data for users"
+              }
+            }
+          },
+          "new_users": {
+            "type": "object",
+            "description": "New user statistics",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "description": "Total number of new users"
+              },
+              "change": {
+                "type": "string",
+                "description": "Percentage change from previous period"
+              },
+              "data": {
+                "type": "array",
+                "description": "Time series data for new users"
+              }
+            }
+          }
+        }
+      },
+      "OMethodEvents": {
+        "type": "object",
+        "description": "Response for /o method=events",
+        "properties": {
+          "list": {
+            "type": "array",
+            "description": "List of event keys",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "OMethodGetEvents": {
+        "type": "object",
+        "description": "Response for /o method=get_events",
+        "properties": {
+          "event_key": {
+            "type": "object",
+            "description": "Data for specific event",
+            "properties": {
+              "c": {
+                "type": "integer",
+                "description": "Total event count"
+              },
+              "s": {
+                "type": "number",
+                "description": "Sum of event values"
+              },
+              "dur": {
+                "type": "number",
+                "description": "Total duration of events"
+              },
+              "segmentation": {
+                "type": "object",
+                "description": "Event segmentation data"
+              }
+            }
+          }
+        }
+      }
+    },
     "securitySchemes": {
       "ApiKeyAuth": {
         "type": "apiKey",

@@ -416,7 +416,7 @@
         "summary": "Create widget",
         "description": "Create a new widget in a dashboard",
         "tags": [
-          "Dashboard Widgets"
+          "Dashboards"
         ],
         "parameters": [
           {
