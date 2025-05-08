@@ -20,6 +20,15 @@
         ],
         "parameters": [
           {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with admin access",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "app_id",
             "in": "query",
             "required": true,
@@ -32,9 +41,10 @@
             "name": "alert_config",
             "in": "query",
             "required": true,
-            "description": "Alert configuration JSON object as a string. If it contains '_id' it will update the related alert in the database.",
+            "description": "Alert configuration as a properly escaped JSON string. If it contains '_id' it will update the related alert in the database.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"alertName\":\"Test Alert\",\"alertDataType\":\"metric\",\"alertDataSubType\":\"sessions\",\"compareType\":\"increased by at least\",\"compareValue\":\"10\",\"selectedApps\":[\"app_id\"],\"period\":\"every 1 hour\",\"alertBy\":\"email\",\"enabled\":true,\"compareDescribe\":\"increased by at least 10%\",\"alertValues\":[\"test@example.com\"]}"
             }
           }
         ],
@@ -129,6 +139,15 @@
         ],
         "parameters": [
           {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with admin access",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "app_id",
             "in": "query",
             "required": true,
@@ -179,6 +198,15 @@
         ],
         "parameters": [
           {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with admin access",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "app_id",
             "in": "query",
             "required": true,
@@ -191,9 +219,10 @@
             "name": "status",
             "in": "query",
             "required": true,
-            "description": "JSON string of status object for alerts to update, e.g. {\"alertID1\":false, \"alertID2\":true}",
+            "description": "Properly escaped JSON string of status object for alerts to update",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"alert_id_1\":false,\"alert_id_2\":true}"
             }
           }
         ],
@@ -223,6 +252,15 @@
           "Alerts Management"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with read access",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",

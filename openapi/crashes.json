@@ -11,83 +11,8 @@
     }
   ],
   "paths": {
-    "/o/crashes": {
-      "get": {
-        "summary": "Get crash data",
-        "description": "Get crash analytics data",
-        "tags": [
-          "Crash Analytics"
-        ],
-        "parameters": [
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "method",
-            "in": "query",
-            "required": true,
-            "description": "Method for data retrieval",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "dashboard",
-                "groups",
-                "refresh",
-                "crashes",
-                "crash"
-              ]
-            }
-          },
-          {
-            "name": "group",
-            "in": "query",
-            "required": false,
-            "description": "Crash group ID when using methods 'crashes' or 'refresh'",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "uid",
-            "in": "query",
-            "required": false,
-            "description": "Specific crash instance ID when using method 'crash'",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "period",
-            "in": "query",
-            "required": false,
-            "description": "Time period for the data",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Crash data retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/i/crashes/resolve": {
-      "post": {
+      "get": {
         "summary": "Resolve crash",
         "description": "Mark a crash group as resolved",
         "tags": [
@@ -95,6 +20,15 @@
         ],
         "parameters": [
           {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "app_id",
             "in": "query",
             "required": true,
@@ -104,12 +38,13 @@
             }
           },
           {
-            "name": "group_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Crash group ID",
+            "description": "JSON object containing the crash_id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\"}"
             }
           }
         ],
@@ -134,13 +69,22 @@
       }
     },
     "/i/crashes/unresolve": {
-      "post": {
+      "get": {
         "summary": "Unresolve crash",
         "description": "Mark a crash group as unresolved",
         "tags": [
            "Crash Analytics"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -151,12 +95,13 @@
             }
           },
           {
-            "name": "group_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Crash group ID",
+            "description": "JSON object containing the crash_id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\"}"
             }
           }
         ],
@@ -181,13 +126,22 @@
       }
     },
     "/i/crashes/view": {
-      "post": {
+      "get": {
         "summary": "Mark crash as viewed",
         "description": "Mark a crash group as viewed",
         "tags": [
            "Crash Analytics"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -198,12 +152,13 @@
             }
           },
           {
-            "name": "group_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Crash group ID",
+            "description": "JSON object containing the crash_id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\"}"
             }
           }
         ],
@@ -228,13 +183,22 @@
       }
     },
     "/i/crashes/share": {
-      "post": {
+      "get": {
         "summary": "Share crash",
         "description": "Create a public sharing URL for a crash",
         "tags": [
            "Crash Analytics"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -245,12 +209,13 @@
             }
           },
           {
-            "name": "crash_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Crash group ID",
+            "description": "JSON object containing the crash_id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\"}"
             }
           }
         ],
@@ -279,13 +244,22 @@
       }
     },
     "/i/crashes/unshare": {
-      "post": {
+      "get": {
         "summary": "Unshare crash",
         "description": "Remove public sharing for a crash",
         "tags": [
            "Crash Analytics"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -296,12 +270,13 @@
             }
           },
           {
-            "name": "crash_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Crash group ID",
+            "description": "JSON object containing the crash_id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\"}"
             }
           }
         ],
@@ -326,13 +301,22 @@
       }
     },
     "/i/crashes/modify_share": {
-      "post": {
+      "get": {
         "summary": "Modify crash sharing",
         "description": "Modify sharing settings for a crash",
         "tags": [
            "Crash Analytics"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -343,21 +327,13 @@
             }
           },
           {
-            "name": "crash_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Crash group ID",
+            "description": "JSON object containing the crash_id and data settings",
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "data",
-            "in": "query",
-            "required": true,
-            "description": "JSON string with sharing settings",
-            "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\",\"data\":{\"sharing\":true,\"public\":true}}"
             }
           }
         ],
@@ -382,13 +358,22 @@
       }
     },
     "/i/crashes/hide": {
-      "post": {
+      "get": {
         "summary": "Hide crash",
         "description": "Hide a crash group",
         "tags": [
            "Crash Analytics"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -399,12 +384,13 @@
             }
           },
           {
-            "name": "group_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Crash group ID",
+            "description": "JSON object containing the crash_id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\"}"
             }
           }
         ],
@@ -429,13 +415,22 @@
       }
     },
     "/i/crashes/show": {
-      "post": {
+      "get": {
         "summary": "Show crash",
         "description": "Unhide a crash group",
         "tags": [
            "Crash Analytics"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -446,12 +441,13 @@
             }
           },
           {
-            "name": "group_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Crash group ID",
+            "description": "JSON object containing the crash_id",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\"}"
             }
           }
         ],
@@ -476,13 +472,22 @@
       }
     },
     "/i/crashes/add_comment": {
-      "post": {
+      "get": {
         "summary": "Add comment to crash",
         "description": "Add a comment to a crash group",
         "tags": [
            "Crash Analytics"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -493,21 +498,13 @@
             }
           },
           {
-            "name": "group_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Crash group ID",
+            "description": "JSON object containing the crash_id and comment",
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "comment",
-            "in": "query",
-            "required": true,
-            "description": "Comment text",
-            "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\",\"comment\":\"Your comment text here\"}"
             }
           }
         ],
@@ -532,13 +529,22 @@
       }
     },
     "/i/crashes/edit_comment": {
-      "post": {
+      "get": {
         "summary": "Edit crash comment",
         "description": "Edit an existing comment on a crash group",
         "tags": [
            "Crash Analytics"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -549,30 +555,13 @@
             }
           },
           {
-            "name": "group_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Crash group ID",
+            "description": "JSON object containing the crash_id, comment_id and new comment text",
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "comment_id",
-            "in": "query",
-            "required": true,
-            "description": "Comment ID",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "comment",
-            "in": "query",
-            "required": true,
-            "description": "New comment text",
-            "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\",\"comment_id\":\"COMMENT_ID\",\"comment\":\"Updated comment text\"}"
             }
           }
         ],
@@ -597,13 +586,22 @@
       }
     },
     "/i/crashes/delete_comment": {
-      "post": {
+      "get": {
         "summary": "Delete crash comment",
         "description": "Delete a comment from a crash group",
         "tags": [
            "Crash Analytics"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -614,27 +612,76 @@
             }
           },
           {
-            "name": "group_id",
+            "name": "args",
             "in": "query",
             "required": true,
-            "description": "Crash group ID",
+            "description": "JSON object containing the crash_id and comment_id",
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "comment_id",
-            "in": "query",
-            "required": true,
-            "description": "Comment ID",
-            "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\",\"comment_id\":\"COMMENT_ID\"}"
             }
           }
         ],
         "responses": {
           "200": {
             "description": "Comment deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/crashes/delete": {
+      "get": {
+        "summary": "Delete crash",
+        "description": "Delete a crash group",
+        "tags": [
+           "Crash Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "JSON object containing the crash_id",
+            "schema": {
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\"}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Crash deleted successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -659,28 +706,12 @@
         "type": "apiKey",
         "in": "query",
         "name": "api_key"
-      },
-      "AuthToken": {
-        "type": "apiKey",
-        "in": "query",
-        "name": "auth_token"
-      },
-      "AppKey": {
-        "type": "apiKey",
-        "in": "query",
-        "name": "app_key"
       }
     }
   },
   "security": [
     {
       "ApiKeyAuth": []
-    },
-    {
-      "AuthToken": []
-    },
-    {
-      "AppKey": []
     }
   ]
 }

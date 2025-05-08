@@ -23,7 +23,7 @@
             "name": "api_key",
             "in": "query",
             "required": false,
-            "description": "API key",
+            "description": "API key (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
@@ -32,10 +32,18 @@
             "name": "auth_token",
             "in": "query",
             "required": false,
-            "description": "Authentication token",
+            "description": "Authentication token (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "apiKeyQuery": []
+          },
+          {
+            "authTokenQuery": []
           }
         ],
         "requestBody": {
@@ -48,6 +56,14 @@
                   "name": {
                     "type": "string",
                     "description": "Dashboard name",
+                    "required": true
+                  },
+                  "share_with": {
+                    "type": "array",
+                    "description": "List of user IDs to share the dashboard with",
+                    "items": {
+                      "type": "string"
+                    },
                     "required": true
                   },
                   "widgets": {
@@ -86,7 +102,8 @@
                       }
                     }
                   }
-                }
+                },
+                "required": ["name", "share_with"]
               }
             }
           }
@@ -102,6 +119,22 @@
                     "_id": {
                       "type": "string",
                       "description": "ID of the created dashboard"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter: share_with"
                     }
                   }
                 }
@@ -123,7 +156,7 @@
             "name": "api_key",
             "in": "query",
             "required": false,
-            "description": "API key",
+            "description": "API key (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
@@ -132,10 +165,18 @@
             "name": "auth_token",
             "in": "query",
             "required": false,
-            "description": "Authentication token",
+            "description": "Authentication token (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AuthToken": []
           }
         ],
         "requestBody": {
@@ -221,7 +262,7 @@
             "name": "api_key",
             "in": "query",
             "required": false,
-            "description": "API key",
+            "description": "API key (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
@@ -230,10 +271,18 @@
             "name": "auth_token",
             "in": "query",
             "required": false,
-            "description": "Authentication token",
+            "description": "Authentication token (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AuthToken": []
           }
         ],
         "requestBody": {
@@ -285,7 +334,7 @@
             "name": "api_key",
             "in": "query",
             "required": false,
-            "description": "API key",
+            "description": "API key (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
@@ -294,10 +343,18 @@
             "name": "auth_token",
             "in": "query",
             "required": false,
-            "description": "Authentication token",
+            "description": "Authentication token (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "apiKeyQuery": []
+          },
+          {
+            "authTokenQuery": []
           }
         ],
         "responses": {
@@ -339,6 +396,22 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -355,7 +428,7 @@
             "name": "api_key",
             "in": "query",
             "required": false,
-            "description": "API key",
+            "description": "API key (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
@@ -364,7 +437,7 @@
             "name": "auth_token",
             "in": "query",
             "required": false,
-            "description": "Authentication token",
+            "description": "Authentication token (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
@@ -377,6 +450,14 @@
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AuthToken": []
           }
         ],
         "responses": {
@@ -423,7 +504,7 @@
             "name": "api_key",
             "in": "query",
             "required": false,
-            "description": "API key",
+            "description": "API key (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
@@ -432,10 +513,18 @@
             "name": "auth_token",
             "in": "query",
             "required": false,
-            "description": "Authentication token",
+            "description": "Authentication token (Either api_key or auth_token is required)",
             "schema": {
               "type": "string"
             }
+          }
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AuthToken": []
           }
         ],
         "requestBody": {
@@ -511,12 +600,14 @@
       "ApiKeyAuth": {
         "type": "apiKey",
         "in": "query",
-        "name": "api_key"
+        "name": "api_key",
+        "description": "API key (Either api_key or auth_token is required)"
       },
       "AuthToken": {
         "type": "apiKey",
         "in": "query",
-        "name": "auth_token"
+        "name": "auth_token",
+        "description": "Authentication token (Either api_key or auth_token is required)"
       }
     }
   },
