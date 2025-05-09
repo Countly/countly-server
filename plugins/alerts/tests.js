@@ -645,7 +645,33 @@ describe('Testing Alert API against OpenAPI Specification', function() {
         });
 
         Promise.all(deletePromises)
-            .then(() => done())
+            .then(() => {
+                // Verify that all alerts were properly deleted
+                request.get(getRequestURL('/o/alert/list'))
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+
+                        // For each alert we created during testing, verify it no longer exists
+                        let undeletedAlerts = [];
+                        for (const alertID of createdAlerts) {
+                            const alert = res.body.alertsList.find(a => a._id === alertID);
+                            if (alert) {
+                                undeletedAlerts.push(alertID);
+                            }
+                        }
+
+                        // If any alerts weren't deleted, fail the test with details
+                        if (undeletedAlerts.length > 0) {
+                            return done(new Error(`The following alerts were not properly deleted: ${undeletedAlerts.join(', ')}`));
+                        }
+
+                        console.log(`✅ Successfully verified all ${createdAlerts.length} test alerts were properly deleted`);
+                        done();
+                    });
+            })
             .catch(done);
     });
 });
