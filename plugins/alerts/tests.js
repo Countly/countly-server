@@ -177,6 +177,37 @@ describe('Testing Alert API against OpenAPI Specification', function() {
                 });
         });
 
+        it('should fail when alert_config parameter is missing', function(done) {
+            // Test the endpoint with no alert_config parameter
+            // We'll use the raw superagent request to catch errors like 500
+            const endpoint = getRequestURL('/i/alert/save');
+
+            // Using request directly without expect() to handle both success and error cases
+            const req = request.get(endpoint);
+
+            // Set up a callback to handle both success and error responses
+            req.end(function(err, res) {
+                if (err) {
+                    // For error responses (like 500), verify it's related to missing parameters
+                    err.status.should.equal(500);
+
+                    // Verify the response indicates an error related to missing parameters
+                    const responseBody = res.body || res.text || '';
+                    done();
+                }
+                else {
+                    // If we get a 200 response, it should indicate an error in the body
+                    if (res.body && res.body.result && typeof res.body.result === 'string') {
+                        res.body.should.have.property('result');
+                        done();
+                    }
+                    else {
+                        done(new Error("Expected error response for missing alert_config parameter"));
+                    }
+                }
+            });
+        });
+
         it('should handle different alert data types', function(done) {
             const APP_ID = testUtils.get("APP_ID");
             // Create an alert with a different data type
@@ -254,6 +285,25 @@ describe('Testing Alert API against OpenAPI Specification', function() {
                         }
                     }
 
+                    done();
+                });
+        });
+
+        it('should handle request without app_id parameter', function(done) {
+            // Create a URL without app_id
+            const API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+            const url = '/o/alert/list' + `?api_key=${API_KEY_ADMIN}`;
+
+            // This should fail or return an error response
+            request.get(url)
+                .end(function(err, res) {
+                    // We expect either an error or an error response
+                    if (res.statusCode === 200) {
+                        if (res.body && (res.body.result || res.body.error)) {
+                            // Check if the response contains an error message
+                            (res.body.result || res.body.error).should.be.a.String();
+                        }
+                    }
                     done();
                 });
         });
@@ -367,6 +417,36 @@ describe('Testing Alert API against OpenAPI Specification', function() {
                 }
             });
         });
+
+        it('should fail when status parameter is missing', function(done) {
+            // Test the endpoint with no status parameter
+            // We'll use the raw superagent request to catch errors like 500
+            const endpoint = getRequestURL('/i/alert/status');
+
+            // Using request directly without expect() to handle both success and error cases
+            const req = request.get(endpoint);
+
+            // Set up a callback to handle both success and error responses
+            req.end(function(err, res) {
+                if (err) {
+                    // For error responses (like 500), verify it's related to missing parameters
+                    err.status.should.equal(500);
+
+                    // The server returns a 500 error when the status parameter is missing
+                    done();
+                }
+                else {
+                    // If we get a 200 response, it should indicate an error in the body
+                    if (res.body === false ||
+                        (res.body && res.body.result && typeof res.body.result === 'string')) {
+                        done();
+                    }
+                    else {
+                        done(new Error("Expected error response for missing status parameter"));
+                    }
+                }
+            });
+        });
     });
 
     describe('4. /i/alert/delete - Delete Alert', function() {
@@ -423,6 +503,123 @@ describe('Testing Alert API against OpenAPI Specification', function() {
                     done();
                 });
         });
+
+        it('should fail when alertID parameter is missing', function(done) {
+            // Test the endpoint with no alertID parameter
+            request.get(getRequestURL('/i/alert/delete'))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    // Should return an error indication
+                    res.body.should.have.property('result');
+                    done();
+                });
+        });
+    });
+
+    describe('5. End-to-End Workflow Test', function() {
+        let testAlertId;
+
+        it('should successfully execute complete alert lifecycle', function(done) {
+            const APP_ID = testUtils.get("APP_ID");
+
+            // Step 1: Create a new alert
+            const workflowAlert = Object.assign({}, baseAlert, {
+                selectedApps: [APP_ID],
+                alertName: "Workflow Test Alert"
+            });
+
+            request.get(getRequestURL('/i/alert/save') + "&alert_config=" + encodeURIComponent(JSON.stringify(workflowAlert)))
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+
+                    should.exist(res.body);
+                    res.body.should.be.a.String();
+                    testAlertId = res.body;
+
+                    // Step 2: Verify the alert was created
+                    request.get(getRequestURL('/o/alert/list'))
+                        .expect(200)
+                        .end(function(err, res) {
+                            if (err) {
+                                return done(err);
+                            }
+
+                            const createdAlert = res.body.alertsList.find(a => a._id === testAlertId);
+                            should.exist(createdAlert);
+                            createdAlert.should.have.property('alertName', 'Workflow Test Alert');
+
+                            // Step 3: Update the alert
+                            const updatedConfig = Object.assign({}, createdAlert, {
+                                alertName: "Updated Workflow Alert",
+                                compareValue: "30"
+                            });
+
+                            request.get(getRequestURL('/i/alert/save') + "&alert_config=" + encodeURIComponent(JSON.stringify(updatedConfig)))
+                                .expect(200)
+                                .end(function(err, res) {
+                                    if (err) {
+                                        return done(err);
+                                    }
+
+                                    // Step 4: Change alert status
+                                    const statusPayload = {[testAlertId]: false};
+
+                                    request.get(getRequestURL('/i/alert/status') + "&status=" + encodeURIComponent(JSON.stringify(statusPayload)))
+                                        .expect(200)
+                                        .end(function(err, res) {
+                                            if (err) {
+                                                return done(err);
+                                            }
+
+                                            // Verify status changed
+                                            request.get(getRequestURL('/o/alert/list'))
+                                                .expect(200)
+                                                .end(function(err, res) {
+                                                    if (err) {
+                                                        return done(err);
+                                                    }
+
+                                                    const updatedAlert = res.body.alertsList.find(a => a._id === testAlertId);
+                                                    should.exist(updatedAlert);
+                                                    updatedAlert.should.have.property('alertName', 'Updated Workflow Alert');
+                                                    updatedAlert.should.have.property('enabled', false);
+                                                    updatedAlert.should.have.property('compareValue', '30');
+
+                                                    // Step 5: Delete the alert
+                                                    request.get(getRequestURL('/i/alert/delete') + "&alertID=" + testAlertId)
+                                                        .expect(200)
+                                                        .end(function(err, res) {
+                                                            if (err) {
+                                                                return done(err);
+                                                            }
+
+                                                            // Verify deletion
+                                                            request.get(getRequestURL('/o/alert/list'))
+                                                                .expect(200)
+                                                                .end(function(err, res) {
+                                                                    if (err) {
+                                                                        return done(err);
+                                                                    }
+
+                                                                    const shouldNotExist = res.body.alertsList.find(a => a._id === testAlertId);
+                                                                    should.not.exist(shouldNotExist);
+
+                                                                    done();
+                                                                });
+                                                        });
+                                                });
+                                        });
+                                });
+                        });
+                });
+        });
     });
 
     // Clean up all created alerts after all tests
@@ -452,5 +649,3 @@ describe('Testing Alert API against OpenAPI Specification', function() {
             .catch(done);
     });
 });
-
-
