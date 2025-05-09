@@ -1,12 +1,20 @@
 
 ## Version 25.03.x
 Fixes:
+- [core] Changes for event omit script to validate data in new model and use countly-request.
+- [core] Changes to top events job. Fetching data from aggregated event totals.
+- [crashes] Fix unescaped SDK logs
 - [feedback] Uniformize drawer internal name input texts
+- [feedback] Uniformize feedback widgets status tag
 - [star-rating] Added missing columns to Rating Widgets table edit
+- [star-rating] Allow bulk update of widget status
 - [star-rating] Fix rating score and responses table sorting
 - [ui] Fix alignment of drawers title and close icon
+- [UI] Remove white background from input character amount suffix
 - [heatmaps] Get heatmap data from new drill events collection
 
+Enterprise Fixes:
+ -  [retention] Fixed report loading 
 Fixes:
 - [localization] Fixed grammatical errors
 
