@@ -107,7 +107,7 @@ Also, you are encouraged to read an extended contribution section on [how to con
 
 ## 👍 Badges
 
-If you like Countly, why not use one of our badges and give a link back to us?
+If you like Countly, why not use one of our badges and give a link back to  us?
 
 <a href="https://countly.com/?utm_source=badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/dark.svg?v2" alt="Countly - Product Analytics" /></a>
 
