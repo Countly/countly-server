@@ -36,7 +36,6 @@
             </li>
         </ul>
     </div>
-
     <transition name="cly-vue-sidebar__slide-transition">
         <div :class="['cly-vue-sidebar__menu', {'cly-vue-sidebar--floating': selectedMenuOption === 'dashboards'}]" data-test-id="sidebar-menu" v-show="showMainMenu" @mouseover="onMainMenuMouseOver" @mouseleave="onMainMenuMouseLeave">
             <analytics-menu ref="analytics" v-show="visibleSidebarMenu === 'analytics'"></analytics-menu>
@@ -56,4 +55,10 @@
             </a>
         </div>
     </transition>
+
+    <component
+        v-if="customSidebarComponents"
+        v-for="customComponent in customSidebarComponents"
+        :key="customComponent.name"
+        :is="customComponent.component" />
 </div>

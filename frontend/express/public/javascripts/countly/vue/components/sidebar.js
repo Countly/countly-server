@@ -560,7 +560,8 @@
             mixins: [
                 countlyVue.container.dataMixin({
                     "externalMainMenuOptions": "/sidebar/menu/main",
-                    "externalOtherMenuOptions": "/sidebar/menu/other"
+                    "externalOtherMenuOptions": "/sidebar/menu/other",
+                    "customSidebarComponents": "/sidebar/custom",
                 })
             ],
             components: {
