@@ -6,7 +6,6 @@
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
  * @typedef {import('mongodb').ObjectId} ObjectId
- * @typedef {import('mongodb').Db} MongoDb
  * @typedef {import('moment-timezone').Moment} MomentTimezone
  */
 
@@ -29,12 +28,6 @@ const _ = require('lodash');
 
 var matchHtmlRegExp = /"|'|&(?!amp;|quot;|#39;|lt;|gt;|#46;|#36;)|<|>/;
 var matchLessHtmlRegExp = /[<>]/;
-
-/** @type {MongoDb=} */
-common.db = undefined;
-
-/** @type {MongoDb=} */
-common.drillDb = undefined;
 
 common.plugins = plugins;
 

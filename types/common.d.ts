@@ -107,25 +107,25 @@ export interface ValidationArgProperties {
         //array: boolean;
         //discriminator: (value: any) => any;
         /** property should not be longer than provided value */
-        'max-length': string;//number;
+        'max-length'?: string;//number;
         /** property should not be shorter than provided value */
-        'min-length': string;//number;
-        max: string;// number;
-        min: string;// number;
+        'min-length'?: string;//number;
+        max?: string;// number;
+        min?: string;// number;
         /** should string property has any number in it */
-        'has-number': string;//boolean;
+        'has-number'?: string;//boolean;
         /** should string property has any latin character in it */
-        'has-char': string;//boolean;
+        'has-char'?: string;//boolean;
         /** should string property has any upper cased latin character in it */
-        'has-upchar': string;//boolean;
+        'has-upchar'?: string;//boolean;
         /** should string property has any none latin character in it */
-        'has-special': string;//boolean;
+        'has-special'?: string;//boolean;
         //in?: string[] | (() => string[]);
         //nonempty: boolean;
         //custom: (value: any) => string | undefined;
         //regex: string;
         /** should property be present in returned validated args object */
-        'exclude-from-ret-obj': string;//boolean;
+        'exclude-from-ret-obj'?: string;//boolean;
         //trim: boolean;
         //mods: string;
         //multiple: boolean;
@@ -293,6 +293,7 @@ export interface Common {
 
     /** Database reference */
     db: Db;
+    drillDb: Db;
 
     /**
      * Fetches nested property values from an obj.
@@ -508,11 +509,11 @@ export interface Common {
     /**
      * Output message as request response with provided http code
      * @param {Params} params - params object
-     * @param {output} output - object to stringify and output
-     * @param {string} noescape - prevent escaping HTML entities
-     * @param {object} heads - headers to add to the output
+     * @param {any} output - object to stringify and output
+     * @param {string?} noescape - prevent escaping HTML entities
+     * @param {object?} heads - headers to add to the output
      */
-    returnOutput: (params: Params, output: output, noescape: string, heads: object) => void;
+    returnOutput: (params: Params, output: any, noescape?: string, heads?: object) => void;
 
     /**
      * Get IP address from request object
