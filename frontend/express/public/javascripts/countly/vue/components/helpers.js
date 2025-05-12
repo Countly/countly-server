@@ -86,25 +86,63 @@
         }
     }));
 
-    Vue.component("cly-status-tag", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-status-tag" :class="dynamicClasses">\n' +
-                     '<div class="cly-vue-status-tag__blink"></div>\n' +
-                        '{{text}}\n' +
-                  '</div>',
-        mixins: [countlyVue.mixins.i18n],
+    Vue.component('cly-status-tag', countlyBaseComponent.extend({
         props: {
-            text: { required: true, type: String },
-            color: { default: "green", type: String},
-            size: { default: "unset", type: String},
-        },
-        computed: {
-            dynamicClasses: function() {
-                if (this.size === "small") {
-                    return ["cly-vue-status-tag--small", "cly-vue-status-tag--" + this.color];
-                }
-                return "cly-vue-status-tag--" + this.color;
+            color: {
+                default: 'green',
+                type: String
+            },
+
+            loading: {
+                default: false,
+                type: Boolean
+            },
+
+            size: {
+                default: 'unset',
+                type: String
+            },
+
+            text: {
+                required: true,
+                type: String
             }
         },
+
+        computed: {
+            dynamicClasses() {
+                const classes = [];
+
+                if (this.size === 'small') {
+                    classes.push('cly-vue-status-tag--small');
+                }
+
+                if (this.loading) {
+                    classes.push('cly-vue-status-tag--gray');
+                }
+                else {
+                    classes.push(`cly-vue-status-tag--${this.color}`);
+                }
+
+                return classes;
+            }
+        },
+
+        template: `
+            <div
+                class="cly-vue-status-tag"
+                :class="dynamicClasses"
+            >
+                <div class="cly-vue-status-tag__blink" />
+                <div
+                    v-if="loading"
+                    class="cly-vue-status-tag__skeleton"
+                />
+                <template v-else>
+                    {{ text }}
+                </template>
+            </div>
+        `
     }));
 
     Vue.component("cly-diff-helper", countlyBaseComponent.extend({

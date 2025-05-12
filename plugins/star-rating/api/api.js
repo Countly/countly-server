@@ -920,6 +920,72 @@ function uploadFile(myfile, id, callback) {
             });
         }
     });
+
+    /**
+     * @api {post} /i/feedback/widgets/status Bulk update feedback widgets
+     * @apiName BulkUpdateWidgetStatus
+     * @apiGroup Ratings
+     * 
+     * @apiDescription Update the status (active/inactive) of multiple feedback widgets in a single operation
+     * @apiPermission Update permission for star_rating feature
+     * @apiBody {Object} data JSON object where keys are widget IDs and values are boolean status values
+     * 
+     * @apiSuccessExample {json} Success Response:
+     * HTTP/1.1 200 OK
+     * {
+     *   "result": "Success"
+     * }
+     * 
+     * @apiErrorExample {json} Error - Invalid Data Format:
+     * HTTP/1.1 500 Internal Server Error
+     * {
+     *   "result": "Invalid parameter 'data'"
+     * }
+     */
+    plugins.register('/i/feedback/widgets/status', function(ob) {
+        const { params } = ob || {};
+
+        validateUpdate(params, FEATURE_NAME, function() {
+            let data = {};
+
+            try {
+                data = JSON.parse(params.qstring.data);
+            }
+            catch (error) {
+                common.returnMessage(params, 500, "Invalid parameter 'data'");
+                return false;
+            }
+
+            const hasToUpdate = data && Object.keys(data).length > 0;
+
+            if (!hasToUpdate) {
+                common.returnMessage(params, 400, 'Nothing to update');
+                return false;
+            }
+
+            const bulk = common.db.collection('feedback_widgets').initializeUnorderedBulkOp();
+
+            for (const key in data) {
+                const newStatusValue = data[key] === true || data[key] === 'true' ? true : false;
+
+                bulk.find({ _id: common.db.ObjectID(key) }).updateOne({ $set: { 'status': newStatusValue } });
+            }
+
+            bulk.execute(function(error) {
+                if (error) {
+                    log.e(error);
+                    common.returnMessage(params, 400, error);
+                }
+                else {
+                    common.returnMessage(params, 200, 'Success');
+                    plugins.dispatch('/systemlogs', { params: params, action: 'surveys_widget_status', data: data });
+                }
+            });
+        });
+
+        return true;
+    });
+
     /**
      * @api {post} /i/feedback/widgets/create Create new widget
      * @apiName CreateRatingsWidget
