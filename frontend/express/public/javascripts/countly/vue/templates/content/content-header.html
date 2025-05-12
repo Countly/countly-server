@@ -13,14 +13,7 @@
                 :class="closeButtonIcon"
             />
         </div>
-        <el-switch
-            v-if="toggle"
-            v-tooltip.right="toggleTooltip"
-            v-model="toggleLocalValue"
-            class="cly-vue-content-builder-header__toggle"
-            test-id="journey-publish"
-            :disabled="isToggleDisabled"
-        />
+
         <div class="cly-vue-content-builder-header__info">
             <div
                 v-tooltip="inputTooltip"
@@ -69,6 +62,18 @@
             :label="status.label"
             :mode="status.mode"
         />
+        <el-button
+            v-if="toggle"
+            v-tooltip.right="toggleTooltip"
+            :disabled="isToggleDisabled"
+            class="cly-vue-content-builder-header__save-button"
+            test-id="journey-publish"
+            :type="toggleLocalValue ? 'warning' : 'success'"
+            size="small"
+            @click="onPublishButtonClick"
+        >
+            {{ toggleLocalValue ? 'Unpublish': 'Publish' }}
+        </el-button>
         <el-button
             v-if="!hideSaveButton"
             class="cly-vue-content-builder-header__save-button"
