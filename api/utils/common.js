@@ -6,7 +6,7 @@
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
  * @typedef {import('mongodb').ObjectId} ObjectId
- * typedef {import('moment-timezone').Moment} MomentTimezone
+ * @typedef {import('moment-timezone').Moment} MomentTimezone
  */
 
 /** @lends module:api/utils/common **/
