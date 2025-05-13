@@ -5,6 +5,7 @@ Enterprise Fixes:
 
 Dependencies:
 - Bump sass from 1.87.0 to 1.88.0
+- Bump supertest from 7.1.0 to 7.1.1
 
 ## Version 25.03.5
 Fixes:
