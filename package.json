@@ -40,7 +40,9 @@
     "nyc": "17.1.0",
     "should": "13.2.3",
     "supertest": "7.1.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3"
   },
   "dependencies": {
     "@breejs/later": "^4.2.0",

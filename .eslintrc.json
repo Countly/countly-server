@@ -1,7 +1,7 @@
 {
     "extends": "eslint:recommended",
     "rules": {
-//        "quotes": ["warn", "single", { "avoidEscape": true }],
+        //        "quotes": ["warn", "single", { "avoidEscape": true }],
         "require-atomic-updates": "off",
         "block-spacing": [
             "error",
@@ -376,6 +376,32 @@
         },
         {
             "files": [
+                "plugins/content/frontend/content-blocks/**/*.js",
+                "plugins/journey_engine/frontend/builder/**/*.js"
+            ],
+            "extends": [
+                "eslint:recommended"
+            ],
+            "rules": {
+                "no-console": ["error"],
+                "no-unused-vars": ["error", {
+                    "argsIgnorePattern": "^_",   // unused function args
+                    "varsIgnorePattern": "^_"    // unused variables
+                }]
+            },
+            "parserOptions": {
+                "ecmaVersion": 2023,
+                "sourceType": "module",
+                "extraFileExtensions": [".vue"]
+            },
+            "env": {
+                "node": true,
+                "es2023": true,
+                "es6": true
+            }
+        },
+        {
+            "files": [
                 "frontend/express/public/javascripts/countly/*.js",
                 "frontend/express/public/javascripts/countly/vue/*.js",
                 "frontend/express/public/javascripts/countly/vue/components/*.js",
@@ -473,7 +499,6 @@
         {
             "files": [
                 "api/**/*.js",
-                "jobServer/**/*.js",
                 "frontend/express/*.js",
                 "frontend/express/libs/*.js",
                 "plugins/pluginManager.js",
