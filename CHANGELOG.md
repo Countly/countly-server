@@ -1,3 +1,7 @@
+## Version 25.03.x
+Enterprise Features:
+- [content] Publish toogle is converted into button and rearranged
+
 ## Version 25.03.2
 Fixes:
 - [alerts] alerts table default order should be by creation time newest at the top
