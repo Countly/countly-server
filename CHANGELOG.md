@@ -1,5 +1,7 @@
 
 ## Version 25.03.x
+Fixes:
+- [core] Unifying alphabetical order for dropdowns with dashboard apps
 
 Dependencies:
 - Bump sass from 1.87.0 to 1.88.0
