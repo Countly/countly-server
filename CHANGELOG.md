@@ -1,6 +1,9 @@
 
 ## Version 25.03.x
 
+Dependencies:
+- Bump sass from 1.87.0 to 1.88.0
+
 ## Version 25.03.5
 Fixes:
 - [core] Changes for event omit script to validate data in new model and use countly-request.
