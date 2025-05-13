@@ -1,6 +1,6 @@
 var plugins = require('../../pluginManager.js');
 var exported = {};
-var countlyConfig = require('../../../frontend/express/config', 'dont-enclose');
+var countlyConfig = require('../../../frontend/express/config');
 var countlyFs = require('../../../api/utils/countlyFs.js');
 
 (function(plugin) {

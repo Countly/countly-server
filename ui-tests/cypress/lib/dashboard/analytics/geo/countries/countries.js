@@ -9,7 +9,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: countriesPageElements.PAGE_TITLE,
         labelText: "Countries",
         tooltipElement: countriesPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "An overview of the geographical distribution of your users and their sessions in the selected time period."
+        tooltipText: "An overview of the geographical distribution of your users and their sessions within the selected time period."
     });
 
     cy.verifyElement({

@@ -9,7 +9,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: carriersPageElements.PAGE_TITLE,
         labelText: "Carriers",
         tooltipElement: carriersPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Detailed information on the network carriers of the devices through which your users access your application, in the selected time period."
+        tooltipText: "Detailed information on the network carriers of the devices through which your users access your application within the selected time period."
     });
 
     cy.verifyElement({

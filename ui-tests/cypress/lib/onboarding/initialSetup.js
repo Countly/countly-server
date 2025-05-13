@@ -113,7 +113,7 @@ const verifyDefaultPageElements = (isDemoApp) => {
 
         cy.verifyElement({
             labelElement: initialSetupPageElements.PAGE_SUB_TITLE,
-            labelText: "After adding your first application, you'll be ready to start collecting data"
+            labelText: "After adding your first application, you will be ready to start collecting data."
         });
 
         cy.verifyElement({
@@ -129,7 +129,7 @@ const verifyDefaultPageElements = (isDemoApp) => {
             element: initialSetupPageElements.APPLICATION_KEY_INPUT,
             elementPlaceHolder: "App Key",
             tooltipElement: initialSetupPageElements.APPLICATION_KEY_TOOLTIP,
-            tooltipText: "You'll need this key for SDK integration"
+            tooltipText: "You will need this key for SDK integration."
         });
 
         cy.verifyElement({

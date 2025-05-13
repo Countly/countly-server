@@ -1,6 +1,6 @@
 const http = require('http');
 const formidable = require('formidable');
-const countlyConfig = require('./config', 'dont-enclose');
+const countlyConfig = require('./config');
 const plugins = require('../plugins/pluginManager.js');
 const log = require('./utils/log.js')('ingestor-core:api');
 const {processRequest} = require('./ingestor/requestProcessor');
@@ -18,7 +18,13 @@ console.log("Connecting to databases");
 //Overriding function
 plugins.loadConfigs = plugins.loadConfigsIngestor;
 
-plugins.connectToAllDatabases(true).then(function() {
+/**
+ * TODO
+ * temporarily change this false since it fails at
+ * Cannot create uid TypeError: common.db.ObjectID is not a function
+ * at usersApi.getUid (api/parts/mgmt/app_users.js:434:90)
+ */
+plugins.connectToAllDatabases(false).then(function() {
     log.i("Db connections done");
     // common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new Cacher(common.db);
@@ -275,7 +281,7 @@ plugins.connectToAllDatabases(true).then(function() {
             else {
                 common.returnMessage(params, 405, "Method not allowed");
             }
-        }).listen(common.config.ingestor.port, common.config.ingestor.host || '').timeout = common.config.ingestor.timeout || 120000;
+        }).listen(common.config?.ingestor?.port || 3010, common.config?.ingestor?.host || '').timeout = common.config?.ingestor?.timeout || 120000;
     });
 });
 

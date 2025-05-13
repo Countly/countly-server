@@ -80,11 +80,11 @@ const verifySettingsPageElements = ({
         labelText: "Internal Name",
         element: feedbackRatingWidgetsPageElements.WIDGET_NAME_INPUT,
         value: widgetName,
-        elementPlaceHolder: "Widget Name"
+        elementPlaceHolder: "Enter an Internal Name"
     });
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.WIDGET_NAME_DESC,
-        labelText: "Name survey for internal purposes. It is not going to be shown on survey.",
+        labelText: "This name is internal and will not be shown to your end user.",
     });
     cy.verifyElement({
         labelElement: feedbackRatingWidgetsPageElements.QUESTION_LABEL,
