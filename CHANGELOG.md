@@ -1,7 +1,7 @@
 
 ## Version 25.03.x
 Enterprise Fixes:
-- [content] Asset URL was wrongly constructed when user swithes between apps
+- [content] Asset URL was wrongly constructed when user switches between apps
 
 Dependencies:
 - Bump sass from 1.87.0 to 1.88.0
