@@ -1,3 +1,7 @@
+## Version 25.03.x
+Enterprise Features:
+- [journey_engine] Record Event block added
+
 ## Version 25.03.2
 Fixes:
 - [alerts] alerts table default order should be by creation time newest at the top
