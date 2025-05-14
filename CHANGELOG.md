@@ -7,6 +7,7 @@ Enterprise Fixes:
     - Do not calculate result for completed experiments
 
 Dependencies:
+- Bump lint-staged from 15.5.2 to 16.0.0
 - Bump nodemailer from 6.10.1 to 7.0.3
 - Bump puppeteer from 24.8.0 to 24.8.2
 - Bump sass from 1.87.0 to 1.88.0
