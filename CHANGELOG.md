@@ -2,6 +2,9 @@
 ## Version 25.03.x
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
+- [ab-testing] Updates
+    - Do not wait for result calculation when requesting experiments
+    - Do not calculate result for completed experiments
 
 Dependencies:
 - Bump nodemailer from 6.10.1 to 7.0.3
