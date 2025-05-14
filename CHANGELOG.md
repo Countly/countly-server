@@ -4,6 +4,7 @@ Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
 
 Dependencies:
+- Bump nodemailer from 6.10.1 to 7.0.3
 - Bump puppeteer from 24.8.0 to 24.8.2
 - Bump sass from 1.87.0 to 1.88.0
 - Bump semver from 7.7.1 to 7.7.2
