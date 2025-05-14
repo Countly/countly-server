@@ -1,10 +1,23 @@
 
 ## Version 25.03.x
+
 Fixes:
 - [core] Unifying alphabetical order for dropdowns with dashboard apps
 
+Enterprise Fixes:
+- [content] Asset URL was wrongly constructed when user switches between apps
+- [ab-testing] Updates
+    - Do not wait for result calculation when requesting experiments
+    - Do not calculate result for completed experiments
+
+
 Dependencies:
+- Bump lint-staged from 15.5.2 to 16.0.0
+- Bump nodemailer from 6.10.1 to 7.0.3
+- Bump puppeteer from 24.8.0 to 24.8.2
 - Bump sass from 1.87.0 to 1.88.0
+- Bump semver from 7.7.1 to 7.7.2
+- Bump supertest from 7.1.0 to 7.1.1
 
 ## Version 25.03.5
 Fixes:
