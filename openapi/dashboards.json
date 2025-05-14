@@ -60,11 +60,12 @@
                   },
                   "share_with": {
                     "type": "array",
-                    "description": "List of user IDs to share the dashboard with",
+                    "description": "List of user IDs to share the dashboard with. An array with an empty string is acceptable for no sharing.",
                     "items": {
                       "type": "string"
                     },
-                    "required": true
+                    "required": true,
+                    "example": [""]
                   },
                   "widgets": {
                     "type": "array",
@@ -110,7 +111,7 @@
         },
         "responses": {
           "200": {
-            "description": "Dashboard created successfully",
+            "description": "Dashboard created successfully. Returns user object containing dashboard ID.",
             "content": {
               "application/json": {
                 "schema": {
@@ -119,6 +120,18 @@
                     "_id": {
                       "type": "string",
                       "description": "ID of the created dashboard"
+                    },
+                    "full_name": {
+                      "type": "string",
+                      "description": "Full name of the user who created the dashboard"
+                    },
+                    "username": {
+                      "type": "string", 
+                      "description": "Username of the user who created the dashboard"
+                    },
+                    "email": {
+                      "type": "string",
+                      "description": "Email of the user who created the dashboard"
                     }
                   }
                 }
@@ -540,34 +553,42 @@
                     "required": true
                   },
                   "widget": {
-                    "type": "object",
-                    "description": "Widget configuration",
-                    "required": true,
-                    "properties": {
-                      "widget_type": {
-                        "type": "string",
-                        "description": "Type of widget"
-                      },
-                      "data_type": {
-                        "type": "string",
-                        "description": "Type of data to display"
-                      },
-                      "apps": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        },
-                        "description": "App IDs to include in widget"
-                      },
-                      "configuration": {
+                    "oneOf": [
+                      {
                         "type": "object",
-                        "description": "Widget-specific configuration"
+                        "description": "Widget configuration object",
+                        "properties": {
+                          "widget_type": {
+                            "type": "string",
+                            "description": "Type of widget"
+                          },
+                          "data_type": {
+                            "type": "string",
+                            "description": "Type of data to display"
+                          },
+                          "apps": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "App IDs to include in widget"
+                          },
+                          "configuration": {
+                            "type": "object",
+                            "description": "Widget-specific configuration"
+                          },
+                          "dimensions": {
+                            "type": "object",
+                            "description": "Size and position of widget"
+                          }
+                        }
                       },
-                      "dimensions": {
-                        "type": "object",
-                        "description": "Size and position of widget"
+                      {
+                        "type": "string",
+                        "description": "JSON string containing widget configuration"
                       }
-                    }
+                    ],
+                    "required": true
                   }
                 }
               }

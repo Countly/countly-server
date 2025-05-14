@@ -39,6 +39,10 @@ const create = (params) => {
             'type': 'Boolean'
         }
     };
+    if (!params.qstring.args) {
+        common.returnMessage(params, 400, 'Error: args not found');
+        return false;
+    }
     params.qstring.args = JSON.parse(params.qstring.args);
     const {obj, errors} = common.validateArgs(params.qstring.args, argProps, true);
     if (!obj) {
@@ -72,7 +76,7 @@ const update = (params) => {
             common.returnMessage(params, 200, 'Success');
         });
     }
-    if (params.qstring.event_order) {
+    else if (params.qstring.event_order) {
         params.qstring.event_order = JSON.parse(params.qstring.event_order);
         var bulkArray = [];
         params.qstring.event_order.forEach(function(id, index) {
@@ -91,7 +95,7 @@ const update = (params) => {
             common.returnMessage(params, 200, 'Success');
         });
     }
-    if (params.qstring.update_status) {
+    else if (params.qstring.update_status) {
         params.qstring.update_status = JSON.parse(params.qstring.update_status);
         params.qstring.status = JSON.parse(params.qstring.status);
         var idss = params.qstring.update_status;
@@ -145,6 +149,10 @@ const update = (params) => {
         }
         );
     }
+    else {
+        common.returnMessage(params, 400, 'Error: args not found');
+        return false;
+    }
 };
 
 /**
@@ -152,6 +160,10 @@ const update = (params) => {
  * @param {Object} params - 
  */
 const remove = async(params) => {
+    if (!params.qstring.args) {
+        common.returnMessage(params, 400, 'Error: args not found');
+        return false;
+    }
     params.qstring.args = JSON.parse(params.qstring.args);
     var idss = params.qstring.args;
     common.db.collection(COLLECTION_NAME).remove({_id: { $in: params.qstring.args }}, (error) =>{
