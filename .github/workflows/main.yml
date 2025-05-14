@@ -277,6 +277,7 @@ jobs:
         shell: bash
         run: |
           rm -rf /opt/countly/frontend
+          rm -rf /opt/countly/plugins/old-ui-compatibility
           cp -rf ./* /opt/countly
           cp /opt/countly/frontend/express/config.sample.js /opt/countly/frontend/express/config.js
           cp /opt/countly/frontend/express/public/javascripts/countly/countly.config.sample.js /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
@@ -364,6 +365,7 @@ jobs:
         shell: bash
         run: |
           rm -rf /opt/countly/frontend
+          rm -rf /opt/countly/plugins/old-ui-compatibility
           cp -rf ./* /opt/countly
           cp /opt/countly/frontend/express/config.sample.js /opt/countly/frontend/express/config.js
           cp /opt/countly/frontend/express/public/javascripts/countly/countly.config.sample.js /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
