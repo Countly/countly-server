@@ -62,18 +62,7 @@
             :label="status.label"
             :mode="status.mode"
         />
-        <el-button
-            v-if="toggle"
-            v-tooltip.right="toggleTooltip"
-            :disabled="isToggleDisabled"
-            class="cly-vue-content-builder-header__save-button"
-            test-id="journey-publish"
-            :type="toggleLocalValue ? 'warning' : 'success'"
-            size="small"
-            @click="onPublishButtonClick"
-        >
-            {{ toggleLocalValue ? 'Unpublish': 'Publish' }}
-        </el-button>
+
         <el-button
             v-if="!hideSaveButton"
             class="cly-vue-content-builder-header__save-button"
@@ -84,6 +73,21 @@
             @click="onSaveButtonClick"
         >
             {{ saveButtonLabel }}
+        </el-button>
+        <el-button
+            v-if="toggle"
+            v-tooltip.right="toggleTooltip"
+            :disabled="isToggleDisabled"
+            class="cly-vue-content-builder-header__save-button"
+            test-id="journey-publish"
+            :type="toggleLocalValue ? 'warning' : 'success'"
+            size="small"
+            @click="onPublishButtonClick"
+        >
+            <template v-if="toggleLocalValue">
+                <i class="cly-is cly-is-pause" style="margin-right: 4px;"></i>
+            </template>
+            {{ toggleLocalValue ? 'Pause': 'Publish' }}
         </el-button>
         <cly-more-options
             v-if="isOptionsButtonVisible"
