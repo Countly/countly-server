@@ -9,7 +9,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: resolutionsPageElements.PAGE_TITLE,
         labelText: "Resolutions",
         tooltipElement: resolutionsPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Detailed information on the resolution settings of the devices through which your users access your application, in the selected time period."
+        tooltipText: "Detailed information on the resolution settings of the devices through which your users access your application within the selected time period."
     });
 
     cy.verifyElement({

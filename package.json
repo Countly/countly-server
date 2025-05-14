@@ -13,6 +13,15 @@
     "type": "git",
     "url": "git://github.com/countly/countly-server.git"
   },
+  "scripts": {
+    "test": "grunt --verbose",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,vue}": [
+      "eslint --fix --no-quiet"
+    ]
+  },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2.11.0",
     "docdash": "^2.0.1",
@@ -25,10 +34,10 @@
     "mocha": "10.8.2",
     "nyc": "17.1.0",
     "should": "13.2.3",
-    "supertest": "7.1.0"
-  },
-  "scripts": {
-    "test": "grunt --verbose"
+    "supertest": "7.1.1",
+    "typescript": "^5.8.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.0.0"
   },
   "dependencies": {
     "all-the-cities": "3.1.0",
@@ -76,14 +85,15 @@
     "method-override": "3.0.0",
     "moment": "2.30.1",
     "moment-timezone": "0.5.48",
-    "mongodb": "6.14.2",
+    "mongodb": "6.16.0",
     "nginx-conf": "2.1.0",
-    "nodemailer": "6.10.0",
+    "nodemailer": "7.0.3",
     "object-hash": "3.0.0",
     "offline-geocoder": "git+https://github.com/Countly/offline-geocoder.git",
     "properties-parser": "0.6.0",
-    "puppeteer": "^23.8.0",
-    "sass": "1.86.0",
+    "puppeteer": "^24.6.1",
+    "sass": "1.88.0",
+    "semver": "^7.7.1",
     "sqlite3": "^5.1.7",
     "tslib": "^2.6.3",
     "uglify-js": "3.19.3",

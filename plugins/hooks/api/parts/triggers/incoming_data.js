@@ -185,7 +185,7 @@ class IncomingDataTrigger {
          *  Assert if rule operation applies to value
          *  @param {varies} value - user's value
          *  @param {object} filterObj - object with operations
-         *  @returns {bool} true if user should be matched 
+         *  @returns {boolean} true if user should be matched 
          */
         function assertOperation(value, filterObj) {
             var matched = true;
@@ -228,7 +228,7 @@ class IncomingDataTrigger {
          *  Assert if filter applies to this user
          *  @param {object} userObj - User's document
          *  @param {Object} filterObj - filter's document
-         *  @returns {bool} if request matched 
+         *  @returns {boolean} if request matched 
          */
         function assertFilter(userObj, filterObj) {
             let matched = true;

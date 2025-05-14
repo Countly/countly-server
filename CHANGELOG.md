@@ -1,7 +1,68 @@
-## Version 25.03.x
 
+## Version 25.03.x
+Enterprise Fixes:
+- [content] Asset URL was wrongly constructed when user switches between apps
+- [ab-testing] Updates
+    - Do not wait for result calculation when requesting experiments
+    - Do not calculate result for completed experiments
+
+Dependencies:
+- Bump lint-staged from 15.5.2 to 16.0.0
+- Bump nodemailer from 6.10.1 to 7.0.3
+- Bump puppeteer from 24.8.0 to 24.8.2
+- Bump sass from 1.87.0 to 1.88.0
+- Bump semver from 7.7.1 to 7.7.2
+- Bump supertest from 7.1.0 to 7.1.1
+
+## Version 25.03.5
+Fixes:
+- [core] Changes for event omit script to validate data in new model and use countly-request.
+- [core] Changes to top events job. Fetching data from aggregated event totals.
+- [crashes] Fix unescaped SDK logs
+- [feedback] Uniformize drawer internal name input texts
+- [feedback] Uniformize feedback widgets status tag
+- [localization] Fixed grammatical errors
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [star-rating] Allow bulk update of widget status
+- [star-rating] Fix rating score and responses table sorting
+- [ui] Fix alignment of drawers title and close icon
+- [UI] Remove white background from input character amount suffix
+
+Enterprise Fixes:
+- [heatmaps] Get heatmap data from new drill events collection
+- [retention] Fixed report loading 
+
+Dependencies:
+- Bump countly-sdk-web from 25.1.0 to 25.4.0
+- Bump mongodb from 6.14.2 to 6.16.0
+- Bump nodemailer from 6.10.0 to 6.10.1
+- Bump puppeteer from 23.10.4 to 24.7.0
+- Bump sass from 1.86.0 to 1.87.0
+- Bump typescript from 5.8.2 to 5.8.3
+
+## Version 25.03.4
 Features:
 - Add ability to allow multiple CORS per app for web apps
+- Add app id and name as view segment for self-tracking
+- [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards
+
+Enterprise Features:
+- [license] Update locking conditions for expired license and over limit usage
+- [license] Enable force locking with remote config
+- [license] Update dashboard lock with redirection to home page for non admin user
+
+Fixes:
+- [core] Allow downloading data also from other databases in dbviewer
+- [crashes] Fix unescaped SDK logs
+- [crash_symbolication] Symbolication server api end point test fix
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [ui] Fix alignment of drawers title and close icon
+- [push] Fixed push notifications title and content text and variables combination
+- [reports] Correctly match event for email report if event key contains '.'
+
+Enterprise Fixes:
+- [cohorts] Fixed issue with combining multiple cohorts
+- [drill] Do not recheck old collections on app_user data deletion if querying from old collections is disabled
 
 Dependencies:
 - Bump body-parser from 1.20.3 to 2.2.0

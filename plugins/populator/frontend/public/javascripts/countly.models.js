@@ -791,8 +791,8 @@
                 "key": id,
                 "count": 1,
                 "timestamp": ts || this.ts,
-                "hour": getRandomInt(0, 23),
-                "dow": getRandomInt(0, 6)
+                "hour": new Date((ts || this.ts) * 1000).getHours(),
+                "dow": new Date((ts || this.ts) * 1000).getDay()
             };
 
             if (!id && eventTemplate && Object.keys(eventTemplate).length) {
@@ -906,8 +906,8 @@
                 "key": "[CLY]_star_rating",
                 "count": 1,
                 "timestamp": this.ts,
-                "hour": getRandomInt(0, 23),
-                "dow": getRandomInt(1, 6),
+                "hour": new Date(this.ts * 1000).getHours(),
+                "dow": new Date(this.ts * 1000).getDay(),
                 "test": 1,
             };
 
@@ -929,8 +929,8 @@
                 "key": "[CLY]_nps",
                 "count": 1,
                 "timestamp": this.ts,
-                "hour": getRandomInt(0, 23),
-                "dow": getRandomInt(1, 6),
+                "hour": new Date(this.ts * 1000).getHours(),
+                "dow": new Date(this.ts * 1000).getDay(),
                 "test": 1,
             };
 
@@ -952,8 +952,8 @@
                 "key": "[CLY]_survey",
                 "count": 1,
                 "timestamp": this.ts,
-                "hour": getRandomInt(0, 23),
-                "dow": getRandomInt(1, 6),
+                "hour": new Date(this.ts * 1000).getHours(),
+                "dow": new Date(this.ts * 1000).getDay(),
                 "test": 1,
             };
 
@@ -1023,8 +1023,8 @@
                 "key": "[CLY]_action",
                 "count": 1,
                 "timestamp": this.ts,
-                "hour": getRandomInt(0, 23),
-                "dow": getRandomInt(0, 6),
+                "hour": new Date(this.ts * 1000).getHours(),
+                "dow": new Date(this.ts * 1000).getDay(),
                 "test": 1
             };
             var selectedOffsets = [{x: 468, y: 366}, {x: 1132, y: 87}, {x: 551, y: 87}, {x: 647, y: 87}, {x: 1132, y: 87}];
@@ -1074,8 +1074,8 @@
                 "key": "[CLY]_action",
                 "count": 1,
                 "timestamp": this.ts,
-                "hour": getRandomInt(0, 23),
-                "dow": getRandomInt(0, 6),
+                "hour": new Date(this.ts * 1000).getHours(),
+                "dow": new Date(this.ts * 1000).getDay(),
                 "test": 1
             };
             this.ts += 1000;

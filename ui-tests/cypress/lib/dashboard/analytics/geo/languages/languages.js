@@ -9,7 +9,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: languagesPageElements.PAGE_TITLE,
         labelText: "Languages",
         tooltipElement: languagesPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Details of the application languages your users are using, in the selected time period and as determined by their default device language settings."
+        tooltipText: "Details of the application's languages your users use in the selected time period, based on their default device language settings."
     });
 
     cy.verifyElement({

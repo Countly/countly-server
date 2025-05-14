@@ -385,36 +385,68 @@
     });
 
     var WidgetsTable = countlyVue.views.create({
-        template: CV.T("/star-rating/templates/widgets-table.html"),
-        mixins: [
-            countlyVue.mixins.auth(FEATURE_NAME),
-            countlyVue.mixins.commonFormatters
-        ],
         props: {
             rows: {
                 type: Array,
                 default: []
-            },
-            loading: {
-                type: Boolean,
-                default: true
             }
         },
+
+        mixins: [
+            countlyVue.mixins.auth(FEATURE_NAME),
+            countlyVue.mixins.commonFormatters
+        ],
+
         data: function() {
             return {
                 cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
+
+                loading: false,
+
                 persistKey: 'ratingsWidgetsTable_' + countlyCommon.ACTIVE_APP_ID,
-                tableDynamicCols: [
+
+                widgetTableTrackedFields: ['status']
+            };
+        },
+
+        emits: [
+            'widgets-updated'
+        ],
+
+        computed: {
+            tableDynamicCols() {
+                const columns = [
+                    {
+                        value: 'rating_score',
+                        label: CV.i18n('feedback.rating-score'),
+                        default: true,
+                        required: true
+                    },
+                    {
+                        value: 'responses',
+                        label: CV.i18n('feedback.responses'),
+                        default: true,
+                        required: true
+                    },
                     {
                         value: "target_pages",
                         label: CV.i18n("feedback.pages"),
                         default: true,
                         required: true
                     }
-                ],
-            };
-        },
-        computed: {
+                ];
+
+                if (this.cohortsEnabled) {
+                    columns.unshift({
+                        value: 'targeting',
+                        label: CV.i18n('feedback.targeting'),
+                        default: true,
+                        required: true
+                    });
+                }
+
+                return columns;
+            },
             widgets: function() {
                 for (var i = 0; i < this.rows.length; i++) {
                     var ratingScore = 0;
@@ -431,14 +463,41 @@
                 return this.rows;
             }
         },
+
         methods: {
-            parseTargetingForExport: function(widget) {
-                var targeting = countlyCohorts.getSegmentationDescription(widget);
-                var html = targeting.behavior;
-                var div = document.createElement('div');
-                div.innerHTML = html;
-                return div.textContent || div.innerText || "";
+            bulkUpdateTableData(tableScope) {
+                const diff = tableScope?.diff || [];
+
+                if (diff.length > 0) {
+                    this.loading = true;
+                    const requests = diff.reduce((acc, item) => {
+                        acc[item.key] = item.newValue;
+
+                        return acc;
+                    }, {});
+
+
+                    starRatingPlugin.bulkUpdateWidgetStatus(requests)
+                        .then(() => {
+                            this.loading = false;
+                            this.$emit('widgets-updated');
+
+                            CountlyHelpers.notify({
+                                type: 'success',
+                                message: CV.i18n('feedback.successfully-updated')
+                            });
+                        })
+                        .catch(() => {
+                            this.loading = false;
+
+                            CountlyHelpers.notify({
+                                type: 'error',
+                                message: 'Something went wrong when trying to update the rating widgets status'
+                            });
+                        });
+                }
             },
+
             formatExportFunction: function() {
                 var tableData = this.widgets;
                 var table = [];
@@ -458,9 +517,11 @@
                 return table;
 
             },
+
             goWidgetDetail: function(row) {
                 window.location.hash = "#/" + countlyCommon.ACTIVE_APP_ID + "/feedback/ratings/widgets/" + row._id;
             },
+
             parseTargeting: function(widget) {
                 if (widget.targeting) {
                     try {
@@ -485,8 +546,18 @@
                     widget.targeting.steps = widget.targeting.steps || [];
                 }
                 return widget;
+            },
+
+            parseTargetingForExport: function(widget) {
+                var targeting = countlyCohorts.getSegmentationDescription(widget);
+                var html = targeting.behavior;
+                var div = document.createElement('div');
+                div.innerHTML = html;
+                return div.textContent || div.innerText || "";
             }
-        }
+        },
+
+        template: CV.T("/star-rating/templates/widgets-table.html")
     });
 
     var RatingsTab = countlyVue.views.create({
@@ -743,10 +814,16 @@
                 },
                 widget: '',
                 rating: {},
-                loading: true,
-                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
+                loading: true
             };
         },
+
+        computed: {
+            isEmptyTable() {
+                return !this.loading && !this.widgets?.length;
+            }
+        },
+
         methods: {
             createWidget: function() {
             // TODO: move this to model
@@ -821,26 +898,7 @@
             refresh: function(force) {
                 this.fetch(force);
             },
-            setWidget: function(row, status) {
-                var finalizedTargeting = null;
-                var target_pages = row.target_pages === "-" ? [] : row.target_pages.split(", ");
-                if (this.cohortsEnabled) {
-                    var exported = row.targeting;
-                    if (exported && !((exported.steps && exported.steps.length === 0) && (exported.user_segmentation && Object.keys(exported.user_segmentation.query).length === 0))) {
-                        finalizedTargeting = Object.assign({}, {
-                            user_segmentation: JSON.stringify(exported.user_segmentation),
-                            steps: JSON.stringify(exported.steps)
-                        });
-                    }
 
-                }
-                starRatingPlugin.editFeedbackWidget({ _id: row._id, status: status, target_pages: target_pages, targeting: finalizedTargeting }, function() {
-                    CountlyHelpers.notify({
-                        type: 'success',
-                        message: CV.i18n('feedback.successfully-updated')
-                    });
-                });
-            },
             matchPlatformVersion: function(documentName) {
                 var regexString = '';
                 if (this.widget !== '') {
@@ -1329,6 +1387,14 @@
                     timesShown = this.count;
                 }
                 return parseFloat(((this.count / timesShown) * 100).toFixed(2)) || 0;
+            },
+
+            statusColor() {
+                return this.widget.status ? 'green' : 'red';
+            },
+
+            statusText() {
+                return CV.i18n(`feedback.${this.widget.status ? 'active' : 'disabled'}`);
             }
         },
         mounted: function() {
