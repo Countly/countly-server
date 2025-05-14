@@ -2,6 +2,7 @@
 ## Version 25.03.x
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
+- [drill] [license] Shorten warning period from 14 days to 3 days
 
 Dependencies:
 - Bump puppeteer from 24.8.0 to 24.8.2
