@@ -1,4 +1,3 @@
-
 ## Version 25.03.x
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
