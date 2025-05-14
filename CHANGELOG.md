@@ -1,14 +1,36 @@
 
 ## Version 25.03.x
+Enterprise Fixes:
+- [content] Asset URL was wrongly constructed when user switches between apps
+- [ab-testing] Updates
+    - Do not wait for result calculation when requesting experiments
+    - Do not calculate result for completed experiments
+
+Dependencies:
+- Bump lint-staged from 15.5.2 to 16.0.0
+- Bump nodemailer from 6.10.1 to 7.0.3
+- Bump puppeteer from 24.8.0 to 24.8.2
+- Bump sass from 1.87.0 to 1.88.0
+- Bump semver from 7.7.1 to 7.7.2
+- Bump supertest from 7.1.0 to 7.1.1
+
+## Version 25.03.5
 Fixes:
+- [core] Changes for event omit script to validate data in new model and use countly-request.
+- [core] Changes to top events job. Fetching data from aggregated event totals.
+- [crashes] Fix unescaped SDK logs
 - [feedback] Uniformize drawer internal name input texts
+- [feedback] Uniformize feedback widgets status tag
+- [localization] Fixed grammatical errors
 - [star-rating] Added missing columns to Rating Widgets table edit
+- [star-rating] Allow bulk update of widget status
 - [star-rating] Fix rating score and responses table sorting
 - [ui] Fix alignment of drawers title and close icon
-- [heatmaps] Get heatmap data from new drill events collection
+- [UI] Remove white background from input character amount suffix
 
-Fixes:
-- [localization] Fixed grammatical errors
+Enterprise Fixes:
+- [heatmaps] Get heatmap data from new drill events collection
+- [retention] Fixed report loading 
 
 Dependencies:
 - Bump countly-sdk-web from 25.1.0 to 25.4.0
