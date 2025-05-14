@@ -1,3 +1,31 @@
+## Version 24.05.x
+
+## Version 24.05.31
+Fixes:
+- [feedback] Uniformize drawer internal name input texts
+- [feedback] Uniformize feedback widgets status tag
+- [star-rating] Allow bulk update of widget status
+- [star-rating] Fix rating score and responses table sorting
+- [UI] Remove white background from input character amount suffix
+
+Enterprise Fixes:
+ -  [retention] Fixed report loading 
+
+
+## Version 24.05.30
+Features:
+- [crashed] Fix unescaped SDK logs
+- [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [ui] Fix alignment of drawers title and close icon
+
+## Version 24.05.29
+Fixes:
+- [core] Allow downloading data also from other databases in dbviewer
+- [crash_symbolication] Symbolication server api end point test fix
+- [push] Fixed push notifications title and content text and variables combination
+- [reports] Correctly match event for email report if event key contains '.'
+
 ## Version 24.05.28
 Enterprise Fixes:
 - [cohorts] Fixed issue with combining multiple cohorts
@@ -4499,4 +4527,3 @@ This version provides several features and bugfixes to both server and SDKs. The
     A user of an application can only view analytics for that application 
     and cannot edit its settings.
   * Added csfr protection to all methods provided through app.js.
-
