@@ -1,5 +1,7 @@
 
 ## Version 25.03.x
+Enterprise Fixes:
+- [content] Asset URL was wrongly constructed when user switches between apps
 
 Dependencies:
 - Bump nodemailer from 6.10.1 to 7.0.3
