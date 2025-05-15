@@ -1,3 +1,32 @@
+
+## Version 25.03.x
+
+## Version 25.03.5
+Fixes:
+- [core] Changes for event omit script to validate data in new model and use countly-request.
+- [core] Changes to top events job. Fetching data from aggregated event totals.
+- [crashes] Fix unescaped SDK logs
+- [feedback] Uniformize drawer internal name input texts
+- [feedback] Uniformize feedback widgets status tag
+- [localization] Fixed grammatical errors
+- [star-rating] Added missing columns to Rating Widgets table edit
+- [star-rating] Allow bulk update of widget status
+- [star-rating] Fix rating score and responses table sorting
+- [ui] Fix alignment of drawers title and close icon
+- [UI] Remove white background from input character amount suffix
+
+Enterprise Fixes:
+- [heatmaps] Get heatmap data from new drill events collection
+- [retention] Fixed report loading 
+
+Dependencies:
+- Bump countly-sdk-web from 25.1.0 to 25.4.0
+- Bump mongodb from 6.14.2 to 6.16.0
+- Bump nodemailer from 6.10.0 to 6.10.1
+- Bump puppeteer from 23.10.4 to 24.7.0
+- Bump sass from 1.86.0 to 1.87.0
+- Bump typescript from 5.8.2 to 5.8.3
+
 ## Version 25.03.4
 Features:
 - Add ability to allow multiple CORS per app for web apps
