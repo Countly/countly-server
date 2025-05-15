@@ -924,7 +924,7 @@
                                         context.commit("setLabels", countlyAllEvents.helpers.getLabels(res, context.state.groupData, context.state.selectedEventName));
                                         countlyAllEvents.service.fetchSelectedEventsData(context, period)
                                             .then(function(response) {
-                                                if (response.eventName) {
+                                                if (response?.eventName) {
                                                     response.eventName = countlyAllEvents.helpers.decode(response.eventName);
                                                 }
                                                 if (response?.eventName === context.state.selectedEventName) {
