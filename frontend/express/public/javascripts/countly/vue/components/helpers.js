@@ -583,12 +583,13 @@
             },
             apps: function() {
                 var apps = countlyGlobal.apps || {};
+                let formattedApps = [];
 
                 if (this.auth && this.auth.feature && this.auth.permission) {
                     var expectedPermission = this.auth.permission,
                         targetFeature = this.auth.feature;
 
-                    return Object.keys(apps).reduce(function(acc, key) {
+                    formattedApps = Object.keys(apps).reduce(function(acc, key) {
                         var currentApp = apps[key];
 
                         if (countlyAuth.validate(expectedPermission, targetFeature, null, currentApp._id)) {
@@ -600,12 +601,34 @@
                         return acc;
                     }, []);
                 }
+                else {
+                    formattedApps = Object.keys(apps).map(function(key) {
+                        return {
+                            label: countlyCommon.unescapeHtml(apps[key].name),
+                            value: apps[key]._id
+                        };
+                    });
+                }
 
-                return Object.keys(apps).map(function(key) {
-                    return {
-                        label: countlyCommon.unescapeHtml(apps[key].name),
-                        value: apps[key]._id
-                    };
+                return formattedApps.sort(function(a, b) {
+                    const aLabel = a?.label || '';
+                    const bLabel = b?.label || '';
+                    const locale = countlyCommon.BROWSER_LANG || 'en';
+
+                    if (aLabel && bLabel) {
+                        return aLabel.localeCompare(bLabel, locale, { numeric: true }) || 0;
+                    }
+
+                    // Move items with no label to the end
+                    if (!aLabel && bLabel) {
+                        return 1;
+                    }
+
+                    if (aLabel && !bLabel) {
+                        return -1;
+                    }
+
+                    return 0;
                 });
             }
         },
