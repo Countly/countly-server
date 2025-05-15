@@ -38,7 +38,19 @@
     </div>
 
     <transition name="cly-vue-sidebar__slide-transition">
-        <div :class="['cly-vue-sidebar__menu', {'cly-vue-sidebar--floating': selectedMenuOption === 'dashboards'}]" data-test-id="sidebar-menu" v-show="showMainMenu" @mouseover="onMainMenuMouseOver" @mouseleave="onMainMenuMouseLeave">
+        <div
+            :class="[
+                'cly-vue-sidebar__menu',
+                {
+                    'cly-vue-sidebar--floating': selectedMenuOption === 'dashboards',
+                    'cly-vue-sidebar__menu--with-banner': isCommunityEdition
+                }
+            ]"
+            data-test-id="sidebar-menu"
+            v-show="showMainMenu"
+            @mouseover="onMainMenuMouseOver"
+            @mouseleave="onMainMenuMouseLeave"
+        >
             <analytics-menu ref="analytics" v-show="visibleSidebarMenu === 'analytics'"></analytics-menu>
             <management-menu ref="management" v-show="visibleSidebarMenu === 'management'" @management-menu-ready="onManagementMenuReady"></management-menu>
             <component :ref="item.name" v-for="item in components" :is="item.component" v-show="visibleSidebarMenu === item.name" :key="item.name"></component>
