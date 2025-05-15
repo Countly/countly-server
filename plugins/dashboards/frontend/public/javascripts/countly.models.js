@@ -454,7 +454,7 @@
                             if (events && events.list) {
                                 for (var k = 0; k < events.list.length; k++) {
                                     var isGroupEvent = false;
-                                    var eventName = events.list[k];
+                                    var eventName = decode(events.list[k]);
 
                                     var eventNamePostfix = (appIds.length > 1) ? " (" + ((appsObj[events._id] && appsObj[events._id].name) || "Unknown") + ")" : "";
 
@@ -898,6 +898,13 @@
      */
     function log(e) {
         countlyDashboards.factory.log(e);
+    }
+
+    function decode(str) {
+        if (typeof str === 'string') {
+            return str.replace(/&amp;/g, '&').replace(/^&#36;/g, "$").replace(/&#46;/g, '.').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&le;/g, '<=').replace(/&ge;/g, '>=');
+        }
+        return str;
     }
 
 })(window.countlyDashboards = window.countlyDashboards || {});
