@@ -449,6 +449,7 @@
                     var apps = countlyGlobal.apps || {};
                     var appKeys = Object.keys(apps);
                     var formattedApps = [];
+
                     for (var i = 0; i < appKeys.length; i++) {
                         formattedApps.push({
                             label: apps[appKeys[i]].name,
@@ -457,12 +458,23 @@
                     }
 
                     formattedApps.sort(function(a, b) {
-                        if (a.label < b.label) {
-                            return -1;
+                        const aLabel = a?.label || '';
+                        const bLabel = b?.label || '';
+                        const locale = countlyCommon.BROWSER_LANG || 'en';
+
+                        if (aLabel && bLabel) {
+                            return aLabel.localeCompare(bLabel, locale, { numeric: true }) || 0;
                         }
-                        if (a.label > b.label) {
+
+                        // Move items with no label to the end
+                        if (!aLabel && bLabel) {
                             return 1;
                         }
+
+                        if (aLabel && !bLabel) {
+                            return -1;
+                        }
+
                         return 0;
                     });
 

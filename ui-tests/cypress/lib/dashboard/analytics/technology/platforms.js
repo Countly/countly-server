@@ -10,7 +10,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: platformsPageElements.PAGE_TITLE,
         labelText: "Platforms",
         tooltipElement: platformsPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Details of the platforms on which yours users access your application, in the selected time period."
+        tooltipText: "Details of the platforms on which your users access your application within the selected time period."
     });
 
     cy.verifyElement({

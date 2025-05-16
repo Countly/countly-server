@@ -377,13 +377,13 @@
             <div class="cly-vue-content-builder__layout-steps">
                 <div v-if="collapse">
                     <el-collapse v-model="activeSection">
-                        <el-collapse-item :title="header" name="section">
+                        <el-collapse-item :title="header" name="section" :test-id="header.toLowerCase().replaceAll(' ', '-')">
                             <slot name="content-builder-layout-steps"></slot>
                         </el-collapse-item>
                     </el-collapse>  
                 </div>
                 <div v-else>
-                    <div class="cly-vue-content-builder__layout-steps__header text-medium font-weight-bold">{{ header }}</div>
+                    <div class="cly-vue-content-builder__layout-steps__header text-medium font-weight-bold" :data-test-id="'content-drawer-sidebar-step-' + header.toLowerCase().replaceAll(' ', '-')">{{ header }}</div>
                     <slot name="content-builder-layout-steps"></slot>
                 </div>
             </div>
@@ -629,6 +629,11 @@
             value: {
                 default: null,
                 type: [String, Number]
+            },
+            testId: {
+                type: String,
+                default: 'cly-option-swapper-test-id',
+                required: false
             }
         },
 
@@ -701,21 +706,21 @@
                      @click="selectedDevice = 'mobile'" 
                      :style="{ backgroundColor: selectedDevice === 'mobile' ? selectedBackground : 'transparent' }"
                      :class="[selectedDevice === 'mobile' ? 'color-white' : '']"
-                     class="cly-vue-device-selector__device bu-p-2">
+                     class="cly-vue-device-selector__device bu-p-2" data-test-id="small-devices-button">
                     <i class="cly-io cly-io-device-mobile"></i>
                 </div>
                 <div v-if="showTablet" 
                      @click="selectedDevice = 'tablet'" 
                      :style="{ backgroundColor: selectedDevice === 'tablet' ? selectedBackground : 'transparent' }"
                      :class="[selectedDevice === 'tablet' ? 'color-white' : '']"
-                     class="cly-vue-device-selector__device bu-p-2">
+                     class="cly-vue-device-selector__device bu-p-2" data-test-id="medium-devices-button">
                     <i class="cly-io cly-io-device-tablet"></i>
                 </div>
                 <div v-if="showDesktop" 
                      @click="selectedDevice = 'desktop'" 
                      :style="{ backgroundColor: selectedDevice === 'desktop' ? selectedBackground : 'transparent' }"
                      :class="[selectedDevice === 'desktop' ? 'color-white' : '']"
-                     class="cly-vue-device-selector__device bu-p-2">
+                     class="cly-vue-device-selector__device bu-p-2" data-test-id="large-devices-button">
                     <i class="cly-io cly-io-desktop-computer"></i>
                 </div>
             </div>
