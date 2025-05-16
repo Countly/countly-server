@@ -238,6 +238,11 @@
                 type: String,
                 required: false,
                 default: '#fff'
+            },
+            toolTipLeft: {
+                type: String,
+                required: false,
+                default: 'Screens'
             }
         },
         data: function() {

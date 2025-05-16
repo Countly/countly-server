@@ -4941,6 +4941,8 @@
         width: auto;
         height: 100%;
         object-fit: contain;
+        max-width: 100%; // image won't exceed the width of its container
+        max-height: 100%; //
     }
 }
 

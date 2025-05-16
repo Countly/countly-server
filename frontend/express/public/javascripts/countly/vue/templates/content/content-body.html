@@ -1,17 +1,10 @@
 <div class="cly-vue-content-builder__layout-main__body" :class="{ 'bu-is-justify-content-flex-end': hideLeftSidebar, 'bu-is-justify-content-flex-start': hideRightSidebar, 'cly-vue-content-builder__layout-main__body__dashed-bg': hasDashedBackground }" :style="{'background-color': backgroundColor}">
     <transition :name="toggleTransition" @enter="onViewEntered">
-        <div v-if="!hideLeftSidebar" class="cly-vue-content-builder__layout-main__body__left-sidebar" :style="{ 'width': this.leftSidebarWidth + 'px !important'}">
-            <template v-if="$slots['content-layout-left-sidebar-wrapper']">
-                <vue-scroll :ops="scrollOps">
-                    <slot name="content-layout-left-sidebar-wrapper"></slot>
-                </vue-scroll>
-            </template>
-        </div>
         <div v-if="!hideLeftSidebar && (collapsible && !isCollapsed)" class="cly-vue-content-builder__layout-main__body__left-sidebar" :style="{ 'width': this.leftSidebarWidth + 'px !important'}">
             <div class="cly-vue-content-builder__layout-main__body__left-sidebar__header">
                 <div class="cly-vue-content-builder__layout-main__body__left-sidebar__header__title">
                     <h4>Screens</h4>
-                    <cly-tooltip-icon class="bu-ml-1" tooltip="Screens"></cly-tooltip-icon>
+                    <cly-tooltip-icon class="bu-ml-1" :tooltip="toolTipLeft"></cly-tooltip-icon>
                 </div>
                 <div v-if="collapsible" class="cly-vue-content-builder__layout-main__body__collapse-button" @click="collapseBar('left')">
                     <div class="cly-vue-content-builder__layout-main__body__collapse-button__icon color-warm-gray-80">
@@ -27,6 +20,13 @@
             <div class="cly-vue-content-builder__layout-main__body__collapse-button__icon color-warm-gray-80">
                 <i class="cly-io cly-io-arrow-sm-left"></i>
             </div>
+        </div>
+        <div  v-else-if="!hideLeftSidebar" class="cly-vue-content-builder__layout-main__body__left-sidebar" :style="{ 'width': this.leftSidebarWidth + 'px !important'}">
+            <template v-if="$slots['content-layout-left-sidebar-wrapper']">
+                <vue-scroll :ops="scrollOps">
+                    <slot name="content-layout-left-sidebar-wrapper"></slot>
+                </vue-scroll>
+            </template>
         </div>
     </transition>
     <!-- <component 
