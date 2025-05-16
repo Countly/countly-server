@@ -205,6 +205,16 @@
                 app_version = "1";
             }
 
+        // Handle close button
+        var parsedCustom = JSON.parse(custom);
+
+        if (!parsedCustom?.xb) {
+            $('#close-btn').hide();
+        }
+        else {
+            $('#close-btn').show();
+        }
+
         $('.modal-content').hide();
         /*
           Get widget configurations for render
@@ -497,26 +507,31 @@
 
         function closeHandler(e) {
             if (window.parent && typeof window.parent.postMessage === "function") {
-                var d = JSON.stringify({"close": true});
+                var d = JSON.stringify({"close": 1});
                 window.parent.postMessage(d, parentOrigin);
             }
-            else if (isFromWeb){
-                window.location.href += "&reset=true";
-                // This is used as a fallback for browsers where postMessage API doesn't work.
-                // Instead of sending a message to the parent window, one could reload this iframe,
-                // and listen to onload event of iframe in the parent window (sdk)
-                // In the onload function you can hide the iframe
-                // While the iframe is hidden, it undergoes the reload in background
-                // You need to handle the reload by passing reset in the url.
-                // You can then check for this reset value and if its true,
-                // set {shown: false} while fetching the survey bcz it was a reset and survey
-                // was already shown. Also in the reset you need to handle the css of the survey.
-                // Caveat -
-                // There is although one caveat, between initiating iframe reload and hiding
-                // it the onload there is a lag of few miniseconds. Which gives an impression
-                // that the window is unresponsive for a split second.
-                // Therefore, using postMessage for cross window communication.
+            else {
+                window.location.href += '&close=1';
             }
+            // NOTE: the isFromWeb variable is not defined in this scope, this code will never run
+            // will leave it commented for now until certain if it is needed or not
+            // else if (isFromWeb){
+            //     window.location.href += "&reset=true";
+            //     // This is used as a fallback for browsers where postMessage API doesn't work.
+            //     // Instead of sending a message to the parent window, one could reload this iframe,
+            //     // and listen to onload event of iframe in the parent window (sdk)
+            //     // In the onload function you can hide the iframe
+            //     // While the iframe is hidden, it undergoes the reload in background
+            //     // You need to handle the reload by passing reset in the url.
+            //     // You can then check for this reset value and if its true,
+            //     // set {shown: false} while fetching the survey bcz it was a reset and survey
+            //     // was already shown. Also in the reset you need to handle the css of the survey.
+            //     // Caveat -
+            //     // There is although one caveat, between initiating iframe reload and hiding
+            //     // it the onload there is a lag of few miniseconds. Which gives an impression
+            //     // that the window is unresponsive for a split second.
+            //     // Therefore, using postMessage for cross window communication.
+            // }
         }
 
         // event handler for countly feedback show comment area checkbox
