@@ -1,8 +1,10 @@
 
 ## Version 24.10.x
+## Version 24.10.10
 Fixes:
 - [core] Changes for event omit script to validate data in new model and use countly-request.
 - [core] Changes to top events job. Fetching data from aggregated event totals.
+- [core] Fixes to correctly load graphs for events containing & in key.
 - [crashes] Fix unescaped SDK logs
 - [dashboards] Added the option to set a refresh rate for dashboards, allowing data to update more frequently for selected dashboards
 - [feedback] Uniformize drawer internal name input texts
