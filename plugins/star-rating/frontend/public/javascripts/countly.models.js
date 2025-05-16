@@ -45,6 +45,18 @@
         "links"
     ];
 
+    starRatingPlugin.bulkUpdateWidgetStatus = (payload) => {
+        return $.ajax({
+            type: 'POST',
+            url: `${countlyCommon.API_URL}/i/feedback/widgets/status`,
+            data: {
+                app_id: countlyCommon.ACTIVE_APP_ID,
+                data: JSON.stringify(payload)
+            },
+            dataType: 'json'
+        }, { disableAutoCatch: true });
+    };
+
     starRatingPlugin.extractWidgetProperties = function(props) {
         var data = widgetProperties.reduce(function(newData, key) {
             newData[key] = props[key];

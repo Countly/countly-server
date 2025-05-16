@@ -12,7 +12,11 @@
       </template>
 	</cly-header>
   <cly-main>
-    <widgets-table v-if="widgets.length>0 && !loading" @set-status="setWidget" :loading="loading" :rows="widgets"></widgets-table>
+    <widgets-table
+      v-if="!isEmptyTable"
+      :rows="widgets"
+      @widgets-updated="refresh()"
+    />
     <drawer @widgets-refresh="refresh()" :settings="drawerSettings" :controls="drawers.widget"></drawer>
     <cly-empty-view test-id="ratings-widgets" v-if="widgets.length===0 && !loading" :title="empty.title"
       :subTitle="empty.body"
