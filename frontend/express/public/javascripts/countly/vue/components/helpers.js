@@ -719,7 +719,8 @@
                         "label": this.i18n('internal-events.[CLY]_journey_engine'),
                         "name": "Journey",
                         "options": [
-                            { label: this.i18n('internal-events.[CLY]_journey_engine'), value: '[CLY]_journey_engine' },
+                            { label: this.i18n('internal-events.[CLY]_journey_engine_start'), value: '[CLY]_journey_engine_start' },
+                            { label: this.i18n('internal-events.[CLY]_journey_engine_end'), value: '[CLY]_journey_engine_end' },
                             { label: this.i18n('internal-events.[CLY]_content_shown'), value: '[CLY]_content_shown' },
                             { label: this.i18n('internal-events.[CLY]_content_interacted'), value: '[CLY]_content_interacted' }
                         ]
