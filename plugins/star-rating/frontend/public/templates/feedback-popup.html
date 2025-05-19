@@ -116,7 +116,7 @@
 <script>
     (function() {
         if (document.location.href.split("feedback/rating").length === 1) {
-            $('#close-btn').hide();
+            // $('#close-btn').hide();
             $('#question-area').css({ marginTop: '50px' });
         }
         /*
@@ -193,6 +193,7 @@
         var h = d.getHours();
         var dow = d.getDay();
         var symbol = 'emoji';
+        var xbFlag = false;
         var encodeHtml = function (html) {
             var div = document.createElement('div');
             div.innerText = html;
@@ -204,16 +205,6 @@
         if (!app_version || (app_version === "undefined") || (app_version === "null")) {
                 app_version = "1";
             }
-
-        // Handle close button
-        var parsedCustom = JSON.parse(custom);
-
-        if (!parsedCustom?.xb) {
-            $('#close-btn').hide();
-        }
-        else {
-            $('#close-btn').show();
-        }
 
         $('.modal-content').hide();
         /*
@@ -354,6 +345,7 @@
 
         try {
             custom = JSON.parse(custom) ;
+            xbFlag = custom.xb;
             if (custom && custom.sg) {
             custom = custom.sg;
             }
@@ -363,6 +355,10 @@
         }
         catch (error) {
             custom = {};
+        }
+
+        if (!xbFlag) {
+            $('#close-btn').hide();
         }
         
         for (var key in custom) {
