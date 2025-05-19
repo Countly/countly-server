@@ -507,7 +507,7 @@
                 window.parent.postMessage(d, parentOrigin);
             }
             else {
-                window.location.href += '&close=1';
+                window.location.href += '&reset=true&close=1';
             }
             // NOTE: the isFromWeb variable is not defined in this scope, this code will never run
             // will leave it commented for now until certain if it is needed or not
