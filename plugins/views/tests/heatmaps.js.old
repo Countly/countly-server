@@ -5,7 +5,7 @@ const should = require('should');
 const spt = require('supertest');
 
 const pluginManager = require('../../pluginManager.js');
-const testUtils = require('../../../test/testUtils');
+const testUtils = require('../../../test/testUtils.js');
 
 const request = spt(testUtils.url);
 const APP_ID = testUtils.get('APP_ID');
