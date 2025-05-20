@@ -1863,12 +1863,16 @@
                 var result = {
                     kind: 'plain',
                     start: model.delivery.startDate,
+                    reschedule: false,
                 };
                 if (model.delivery.type === SendEnum.LATER) {
                     if (model.timezone === TimezoneEnum.DEVICE) {
                         result.tz = true;
                         result.sctz = new Date().getTimezoneOffset();
                     }
+                }
+                if (model?.oneTime?.pastSchedule === PastScheduleEnum.NEXT_DAY) {
+                    result.reschedule = true;
                 }
                 result.delayed = model[TypeEnum.ONE_TIME].audienceSelection === AudienceSelectionEnum.BEFORE;
                 return [result];
@@ -1878,6 +1882,7 @@
                     kind: model.automatic.trigger === TriggerEnum.EVENT ? 'event' : 'cohort',
                     start: model.delivery.startDate,
                     actuals: model.automatic.deliveryDateCalculation === DeliveryDateCalculationEnum.EVENT_DEVICE_DATE,
+                    reschedule: false,
                 };
                 if (options.isEndDateSet) {
                     result.end = model.delivery.endDate;
@@ -1911,6 +1916,9 @@
                     result.cohorts = model.automatic.cohorts;
                     result.entry = model.automatic.trigger === TriggerEnum.COHORT_ENTRY,
                     result.cancels = model.automatic.triggerNotMet === TriggerNotMetEnum.CANCEL_ON_EXIT;
+                }
+                if (model?.automatic?.pastSchedule === PastScheduleEnum.NEXT_DAY) {
+                    result.reschedule = true;
                 }
                 return [result];
             },
