@@ -1871,7 +1871,7 @@
                         result.sctz = new Date().getTimezoneOffset();
                     }
                 }
-                if (model?.oneTime?.pastSchedule === PastScheduleEnum.NEXT_DAY) {
+                if (model.oneTime?.pastSchedule === PastScheduleEnum.NEXT_DAY) {
                     result.reschedule = true;
                 }
                 result.delayed = model[TypeEnum.ONE_TIME].audienceSelection === AudienceSelectionEnum.BEFORE;
@@ -1917,7 +1917,7 @@
                     result.entry = model.automatic.trigger === TriggerEnum.COHORT_ENTRY,
                     result.cancels = model.automatic.triggerNotMet === TriggerNotMetEnum.CANCEL_ON_EXIT;
                 }
-                if (model?.automatic?.pastSchedule === PastScheduleEnum.NEXT_DAY) {
+                if (model.automatic.pastSchedule === PastScheduleEnum.NEXT_DAY) {
                     result.reschedule = true;
                 }
                 return [result];
