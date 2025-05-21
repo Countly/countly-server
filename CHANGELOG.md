@@ -1,5 +1,7 @@
 
 ## Version 25.03.x
+Enterprise Features:
+- [journey_engine] Record Event block added
 
 Fixes:
 - [core] Unifying alphabetical order for dropdowns with dashboard apps
@@ -12,10 +14,11 @@ Enterprise Fixes:
 
 
 Dependencies:
+- Bump eslint-plugin-vue from 9.33.0 to 10.1.0
 - Bump lint-staged from 15.5.2 to 16.0.0
 - Bump nodemailer from 6.10.1 to 7.0.3
 - Bump puppeteer from 24.8.0 to 24.8.2
-- Bump sass from 1.87.0 to 1.88.0
+- Bump sass from 1.87.0 to 1.89.0
 - Bump semver from 7.7.1 to 7.7.2
 - Bump supertest from 7.1.0 to 7.1.1
 
