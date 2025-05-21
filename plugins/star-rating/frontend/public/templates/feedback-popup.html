@@ -191,8 +191,6 @@
                 </a>
             </div>
         </div>
-        <!-- TODO: this is just for testing, should be removed before merge -->
-        <div id="test-logs"></div>
         <script src="../../star-rating/javascripts/tippy.all.min.js"></script>
         <script src="../../javascripts/dom/jquery/jquery.js"></script>
         <script>
@@ -202,12 +200,6 @@
             const DEFAULT_PLATFORM = 'Web';
             
             (function() {
-
-                // TODO: this is just for testing, should be removed before merge
-                function log(payload) {
-                    $('#test-logs').text(JSON.stringify(payload));
-                }
-
                 // HELPER FUNCTIONS
                 function hasClass(ele, cls) {
                     return (
