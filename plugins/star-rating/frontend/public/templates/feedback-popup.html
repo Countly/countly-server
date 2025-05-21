@@ -1,557 +1,715 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>
-        Countly Feedback Popup
-    </title>
-    <link href="../../star-rating/stylesheets/ratings-iframe.css" rel="stylesheet"/>
-    <link href="../../stylesheets/font-awesome/css/font-awesome.min.css" rel="stylesheet"/>
-    <link href="../stylesheets/ionicons/css/ionicons.min.css" rel="stylesheet"/>
-    <% if (themeFiles && themeFiles.css) { %>
-    <% for(var i=0, l=themeFiles.css.length; i < l; i++) {%>
-    <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
-    <% } %>
-    <% } %>
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    </meta>
-</head>
-<body class="ratings-popup cly-vue-ratings-preview">
-<div class="rating-loader-wrapper">
-    <img src="../../star-rating/images/star-rating/loader.svg" class="rating-loader"/>
-</div>
-<div class="modal-content">
-    <div class="modal-content__top">
-        <div id="close-btn" class="close-button"><i class="ion-ios-close-empty"></i></div>
-    </div>
-    <p id="question-area">
-        What is your opinion
-        <br>
-        of this page?
-        </br>
-    </p>
-    <div class="emotions-area">
-        <span title="Very dissatisfied" data-score="1" id="cf-rating-item-0" class="rating-emotion emotion-first"></span>
-        <span title="Somewhat dissatisfied" data-score="2" id="cf-rating-item-1" class="rating-emotion emotion"></span>
-        <span title="Neither satisfied nor dissatisfied" id="cf-rating-item-2" data-score="3" class="rating-emotion emotion"></span>
-        <span title="Somewhat satisfied" data-score="4" id="cf-rating-item-3" class="rating-emotion emotion"></span>
-        <span title="Very satisfied" data-score="5" id="cf-rating-item-4" class="rating-emotion emotion"></span>
-    </div>
-    <div class="comment-area">
-        <div id="comment-section" class="input-wrapper">
-            <!--
-            <label class="countly-feedback-checkbox-container">
-                <input data-state="0" id="countly-feedback-show-comment" type="checkbox">
-                <span class="countly-feedback-show-comment-checkbox fa fa-square-o countly-feedback-check-green">
-                </span>
-                <span class="countly-feedback-checkbox-title" id="cf-comment-text">
-                    Add comment
-                </span>
-                </input>
-            </label>
-            -->
-            <div class="countly-feedback-checkbox-wrapper">
-                <input data-state="0" id="countly-feedback-show-comment" type="checkbox">
-                <label id="cf-comment-text" for="countly-feedback-show-comment">Add comment</label>    
-            </div>
-            <textarea id="countly-feedback-comment-textarea">
-            </textarea>
+    <head>
+        <title>Countly Feedback Popup</title>
+        <link href="../../star-rating/stylesheets/ratings-iframe.css" rel="stylesheet"/>
+        <link href="../../stylesheets/font-awesome/css/font-awesome.min.css" rel="stylesheet"/>
+        <link href="../stylesheets/ionicons/css/ionicons.min.css" rel="stylesheet"/>
+        <!-- TODO: check where are this themeFiles -->
+        <% if (themeFiles && themeFiles.css) { %>
+            <% for(var i=0, l=themeFiles.css.length; i < l; i++) {%>
+                <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
+            <% } %>
+        <% } %>
+        <meta content="width=device-width, initial-scale=1" name="viewport">
+    </head>
+    <body class="ratings-popup cly-vue-ratings-preview">
+        <div class="rating-loader-wrapper">
+            <img 
+                class="rating-loader"
+                src="../../star-rating/images/star-rating/loader.svg"
+            />
         </div>
-        <div id="contact-section" class="input-wrapper">
-            <!--
-            <label class="countly-feedback-checkbox-container">
-                <input data-state="0" id="countly-feedback-show-email" type="checkbox">
-                <span class="countly-feedback-show-email-checkbox fa fa-square-o countly-feedback-check-green">
-                            </span>
-                <span class="countly-feedback-checkbox-title" id="cf-email-text">
-                                Contact me by email
-                            </span>
-                </input>
-            </label>
-            -->
-            <div class="countly-feedback-checkbox-wrapper">
-                <input data-state="0" id="countly-feedback-show-email" type="checkbox">
-                <label id="cf-email-text" for="countly-feedback-show-email">Contact me by e-mail</label>
+        <div
+            class="modal-content"
+            id="widget-body"
+        >
+            <div class="modal-content__top">
+                <div
+                    class="close-button"
+                    id="close-btn"
+                >
+                    <i class="ion-ios-close-empty"></i>
+                </div>
             </div>
-            <input id="countly-feedback-contact-me-email" type="text">
-            </input>
+            <p id="question-area">
+                What is your opinion<br>of this page?
+                <!-- </br> -->
+            </p>
+            <div class="emotions-area">
+                <span
+                    class="rating-emotion emotion-first"
+                    data-score="1"
+                    id="cf-rating-item-0"
+                    title="Very dissatisfied"
+                ></span>
+                <span
+                    class="rating-emotion emotion"
+                    data-score="2"
+                    id="cf-rating-item-1"
+                    title="Somewhat dissatisfied"
+                ></span>
+                <span
+                    class="rating-emotion emotion"
+                    data-score="3"
+                    id="cf-rating-item-2"
+                    title="Neither satisfied nor dissatisfied"
+                ></span>
+                <span
+                    class="rating-emotion emotion"
+                    data-score="4"
+                    id="cf-rating-item-3"
+                    title="Somewhat satisfied"
+                ></span>
+                <span
+                    class="rating-emotion emotion"
+                    data-score="5"
+                    id="cf-rating-item-4"
+                    title="Very satisfied"
+                ></span>
+            </div>
+            <div class="comment-area">
+                <div
+                    class="input-wrapper"
+                    id="comment-section"
+                >
+                    <!-- NOTE: this is code is commented, if not used we can remove it -->
+                    <!-- <label class="countly-feedback-checkbox-container">
+                        <input data-state="0" id="countly-feedback-show-comment" type="checkbox">
+                        <span class="countly-feedback-show-comment-checkbox fa fa-square-o countly-feedback-check-green">
+                        </span>
+                        <span class="countly-feedback-checkbox-title" id="cf-comment-text">
+                            Add comment
+                        </span>
+                        </input>
+                    </label>-->
+                    <div class="countly-feedback-checkbox-wrapper">
+                        <input
+                            data-state="0"
+                            id="countly-feedback-show-comment"
+                            type="checkbox"
+                        >
+                        <label
+                            for="countly-feedback-show-comment"
+                            id="cf-comment-text"
+                        >
+                            Add comment
+                        </label>
+                    </div>
+                    <textarea id="countly-feedback-comment-textarea"></textarea>
+                </div>
+                <div
+                    class="input-wrapper"
+                    id="contact-section"
+                >
+                    <!-- NOTE: this is code is commented, if not used we can remove it -->
+                    <!-- <label class="countly-feedback-checkbox-container">
+                        <input data-state="0" id="countly-feedback-show-email" type="checkbox">
+                        <span class="countly-feedback-show-email-checkbox fa fa-square-o countly-feedback-check-green">
+                                    </span>
+                        <span class="countly-feedback-checkbox-title" id="cf-email-text">
+                                        Contact me by email
+                                    </span>
+                        </input>
+                    </label> -->
+                    <div class="countly-feedback-checkbox-wrapper">
+                        <input
+                            data-state="0"
+                            id="countly-feedback-show-email"
+                            type="checkbox"
+                        >
+                        <label
+                            for="countly-feedback-show-email"
+                            id="cf-email-text"
+                        >
+                            Contact me by e-mail
+                        </label>
+                    </div>
+                    <input
+                        id="countly-feedback-contact-me-email"
+                        type="text"
+                    >
+                </div>
+            </div>
+            <div
+                class="consent hidden"
+                id="consent"
+            >
+                <label>
+                    <input type="checkbox" />
+                    <span class="text">I agree to the terms and conditions and privacy policy<span>
+                </label>
+            </div>
+            <div class="buttons-area">
+                <button
+                    class="disabled-send-button disabled"
+                    disabled
+                    id="cf-submit-button"
+                >
+                    Submit Feedback
+                </button>
+            </div>
+            <div class="modal-footer">
+                <a
+                    href="https://count.ly"
+                    target="_new"
+                >
+                    <img
+                        id="powered-by-countly"
+                        src="../../star-rating/images/star-rating/powered-by-countly.svg"
+                    >
+                </a>
+            </div>
         </div>
-    </div>
-    <div id="consent"  class="consent hidden"><label><input type="checkbox" /><span class="text">I agree to the terms and conditions and privacy policy<span></label></div>
-    <div class="buttons-area">
-        <button class="disabled-send-button disabled" disabled="" id="cf-submit-button">
-            Submit Feedback
-        </button>
-    </div>
-    <div class="modal-footer">
-        <a href="https://count.ly" target="_new">
-            <img id="powered-by-countly" src="../../star-rating/images/star-rating/powered-by-countly.svg">
-            </img>
-        </a>
-    </div>
-</div>
-<div class="success-modal-content">
-    <div class="success-icon-area">
-        <i class="fa fa-check-circle fa-2x" id="thanks-area-logo">
-        </i>
-    </div>
-    <div class="success-emotions-area">
-        <p class="question-area" id="thanks-area">
-            Thank you.
-            <br>
-            We received your message.
-            </br>
-        </p>
-    </div>
-    <div class="modal-footer">
-        <a href="https://count.ly" target="_new">
-            <img id="powered-by-countly" src="../../star-rating/images/star-rating/powered-by-countly.svg">
-            </img>
-        </a>
-    </div>
-</div>
-<script src="../../star-rating/javascripts/tippy.all.min.js">
-</script>
-<script src="../../javascripts/dom/jquery/jquery.js">
-</script>
-<script>
-    (function() {
-        if (document.location.href.split("feedback/rating").length === 1) {
-            // $('#close-btn').hide();
-            $('#question-area').css({ marginTop: '50px' });
-        }
-        /*
-        Helper methods which we need
-        */
-        function hasClass(ele, cls) {
-            return (typeof ele.className !== 'undefined' && !!ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)')));
-        }
+        <div class="success-modal-content">
+            <div class="success-icon-area">
+                <i
+                    class="fa fa-check-circle fa-2x"
+                    id="thanks-area-logo"
+                ></i>
+            </div>
+            <div class="success-emotions-area">
+                <p
+                    class="question-area"
+                    id="thanks-area"
+                >
+                    Thank you.
+                    <br>
+                    We received your message.
+                    <!-- </br> -->
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a
+                    href="https://count.ly"
+                    target="_new"
+                >
+                    <img
+                        id="powered-by-countly"
+                        src="../../star-rating/images/star-rating/powered-by-countly.svg"
+                    >
+                </a>
+            </div>
+        </div>
+        <!-- TODO: this is just for testing, should be removed before merge -->
+        <div id="test-logs"></div>
+        <script src="../../star-rating/javascripts/tippy.all.min.js"></script>
+        <script src="../../javascripts/dom/jquery/jquery.js"></script>
+        <script>
+            const CLOSE_BUTTON_ID = '#close-btn';
+            const WIDGET_BODY_FULLSCREEN_CLASS = 'modal-content--fullscreen';
+            const WIDGET_BODY_ID = '#widget-body';
+            const DEFAULT_PLATFORM = 'Web';
+            
+            (function() {
 
-        function addClass(ele, cls) {
-            if (!hasClass(ele, cls)) {
-                ele.className += " " + cls;
-            }
-        }
+                // TODO: this is just for testing, should be removed before merge
+                function log(payload) {
+                    $('#test-logs').text(JSON.stringify(payload));
+                }
 
-        function removeClass(ele, cls) {
-            if (hasClass(ele, cls)) {
-                var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
-                ele.className = ele.className.replace(reg, ' ');
-            }
-        }
+                // HELPER FUNCTIONS
+                function hasClass(ele, cls) {
+                    return (
+                        typeof ele.className !== 'undefined' &&
+                        !!ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'))
+                    );
+                }
 
-        function asyncForeach(array, fn, atEnd) {
-            var at = -1;
-
-            function next(shouldBreak) {
-                if (shouldBreak || ++at == array.length) {
-                    if (atEnd) {
-                        setTimeout(atEnd);
+                function addClass(ele, cls) {
+                    if (!hasClass(ele, cls)) {
+                        ele.className += " " + cls;
                     }
                 }
-                else {
-                    setTimeout(fn, 0, array[at], next);
+
+                function removeClass(ele, cls) {
+                    if (hasClass(ele, cls)) {
+                        var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
+                        ele.className = ele.className.replace(reg, ' ');
+                    }
                 }
-            }
 
-            next();
-        }
+                function asyncForeach(array, fn, atEnd) {
+                    var at = -1;
 
-        function isValidEmail(email) {
-            return /^.+@.+\..+$/.test(email);
-        }
+                    function next(shouldBreak) {
+                        if (shouldBreak || ++at == array.length) {
+                            if (atEnd) {
+                                setTimeout(atEnd);
+                            }
+                        }
+                        else {
+                            setTimeout(fn, 0, array[at], next);
+                        }
+                    }
 
-        function getParameterByName(name, url) {
-            if (!url) {
-                url = window.location.href;
-            }
-            name = name.replace(/[\[\]]/g, "\\$&");
-            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-                results = regex.exec(url);
-            if (!results) {
-                return null;
-            }
-            if (!results[2]) {
-                return '';
-            }
-            return decodeURIComponent(results[2].replace(/\+/g, " "));
-        }
-
-        /*
-          Local variables
-        */
-        var widget_id = getParameterByName('widget_id');
-        var platform = getParameterByName('platform');
-        var device_id = getParameterByName('device_id');
-        var sdk_version = getParameterByName('sdk_version');
-        var app_key = getParameterByName('app_key');
-        var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
-        var app_version = getParameterByName('app_version');
-        var custom = getParameterByName('custom');
-        var parentOrigin = getParameterByName('origin');
-        var url = window.location.origin;
-        var d = new Date();
-        var h = d.getHours();
-        var dow = d.getDay();
-        var symbol = 'emoji';
-        var xbFlag = false;
-        var encodeHtml = function (html) {
-            var div = document.createElement('div');
-            div.innerText = html;
-            return div.innerHTML;
-        };
-        if (!platform || (platform === "undefined") || (platform === "null")) {
-                platform = "Web";
-            }
-        if (!app_version || (app_version === "undefined") || (app_version === "null")) {
-                app_version = "1";
-            }
-
-        $('.modal-content').hide();
-        /*
-          Get widget configurations for render
-        */
-        $.ajax({
-            "type": "GET",
-            "url": url + "/o/feedback/widget",
-            "data": {
-                "widget_id": widget_id,
-                "nfd": 1
-            },
-            "success": function(response) {
-                var consent = false;
-                var links = response.links;
-                var finalText = response.finalText;
-                var contentEl = $('#consent');
-                $('.rating-loader-wrapper').fadeOut();
-                $('.modal-content').show();
-                // replace widget specific strings
-                $('#question-area').html(response.popup_header_text);
-                $('#cf-comment-text').html(response.popup_comment_callout);
-                $('#cf-email-text').html(response.popup_email_callout);
-                $('#cf-submit-button').html(response.popup_button_callout);
-                $('#thanks-area').html(response.popup_thanks_message);
-                removeClass(sendButton, 'disabled-send-button');
-                addClass(sendButton, 'send-button');
-                sendButton.removeAttribute('disabled');
-                if(response.consent === true || response.consent === 'true'){
-                    consent = true;
+                    next();
                 }
-                if(response.links && response.links === 'string'){
-                    links = JSON.parse(response.links);
+
+                var encodeHtml = function (html) {
+                    var div = document.createElement('div');
+
+                    div.innerText = html;
+
+                    return div.innerHTML;
+                };
+
+                function isValidEmail(email) {
+                    return /^.+@.+\..+$/.test(email);
                 }
-                if(consent && links && finalText){
-                    //sanitize the text and links
-                    finalText = encodeHtml(finalText);
-                    links.forEach(function (link) {
-                        link.linkValue = encodeHtml(link.linkValue);
-                        link.textValue = encodeHtml(link.textValue);
-                        var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
-                        finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
+
+                function getParameterByName(name, url) {
+                    if (!url) {
+                        url = window.location.href;
+                    }
+
+                    name = name.replace(/[\[\]]/g, "\\$&");
+
+                    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+                    var results = regex.exec(url);
+
+                    if (!results) {
+                        return null;
+                    }
+
+                    if (!results[2]) {
+                        return '';
+                    }
+
+                    return decodeURIComponent(results[2].replace(/\+/g, " "));
+                }
+
+                // LOCAL VARIABLES
+
+                var app_key = getParameterByName('app_key');
+                var app_version = getParameterByName('app_version');
+                var custom = getParameterByName('custom');
+                var d = new Date();
+                var device_id = getParameterByName('device_id');
+                var dow = d.getDay();
+                var h = d.getHours();
+                let isCloseButtonVisible = false;
+                let isFullscreenWidget = false;
+                var parentOrigin = getParameterByName('origin');
+                var platform = getParameterByName('platform');
+                var sdk_name = getParameterByName('sdk_name') || 'javascript_feedback_popup';
+                var sdk_version = getParameterByName('sdk_version');
+                var symbol = 'emoji';
+                var url = window.location.origin;
+                var widget_id = getParameterByName('widget_id');
+                let widgetVersion = null;
+
+                if (!platform || (platform === "undefined") || (platform === "null")) {
+                    platform = DEFAULT_PLATFORM;
+                }
+
+                if (!app_version || (app_version === "undefined") || (app_version === "null")) {
+                    app_version = "1";
+                }
+
+                $('.modal-content').hide();
+
+                // Get widget configurations for render
+                $.ajax({
+                    data: {
+                        widget_id: widget_id,
+                        nfd: 1
+                    },
+                    success: function(response) {
+                        var consent = false;
+                        var links = response.links;
+                        var finalText = response.finalText;
+                        var contentEl = $('#consent');
+
+                        widgetVersion = response?.wv || null;
+
+                        $('.rating-loader-wrapper').fadeOut();
+                        $('.modal-content').show();
+
+                        // replace widget specific strings
+                        $('#question-area').html(response.popup_header_text);
+                        $('#cf-comment-text').html(response.popup_comment_callout);
+                        $('#cf-email-text').html(response.popup_email_callout);
+                        $('#cf-submit-button').html(response.popup_button_callout);
+                        $('#thanks-area').html(response.popup_thanks_message);
+
+                        removeClass(sendButton, 'disabled-send-button');
+                        addClass(sendButton, 'send-button');
+
+                        sendButton.removeAttribute('disabled');
+
+                        if(response.consent === true || response.consent === 'true'){
+                            consent = true;
+                        }
+
+                        if(response.links && response.links === 'string'){
+                            links = JSON.parse(response.links);
+                        }
+
+                        if(consent && links && finalText){
+                            //sanitize the text and links
+                            finalText = encodeHtml(finalText);
+                            links.forEach(function (link) {
+                                link.linkValue = encodeHtml(link.linkValue);
+                                link.textValue = encodeHtml(link.textValue);
+                                var regex = new RegExp('\\b' + link.textValue + '\\b', 'g');
+                                finalText = finalText.replace(regex, '<a href="' + link.linkValue + '" target="_blank">' + link.textValue + '</a>');
+                            });
+                        }
+
+                        if(consent){
+                            contentEl.removeClass("hidden");
+                            
+                            $(contentEl).find(".text").html(finalText);
+                            
+                            var consentChecked = contentEl.find("input").is(":checked");
+                            
+                            if (consentChecked) {
+                                $("#cf-submit-button").removeClass("disabled");
+                                removeClass(sendButton, 'disabled-send-button');
+                                addClass(sendButton, 'send-button');
+                            }
+                            else {
+                                removeClass(sendButton, 'send-button');
+                                addClass(sendButton, 'disabled-send-button');
+                                $("#cf-submit-button").find(".submit-button.next").addClass("disabled");
+                            }
+                        }
+
+                        response.rating_symbol = response.rating_symbol ? response.rating_symbol : "emojis";
+
+                        if (response.rating_symbol) {
+                            symbol = response.rating_symbol;
+
+                            for (var i = 0; i < 5; i++) {
+                                if (symbol === 'emojis') {
+                                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1));
+                                }
+                                else {
+                                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
+                                }
+                            }
+                        }
+
+                        if (response.trigger_bg_color) {
+                            $('#cf-submit-button').css({ 'background-color': response.trigger_bg_color });
+                            $('#thanks-area-logo').css({ 'color': response.trigger_bg_color });
+                        }
+
+                        if (response.trigger_font_color) {
+                            $('#cf-submit-button').css({ 'color': response.trigger_font_color });
+                        }
+
+                        if (
+                            (response.logo && !response.logoType) ||
+                            (response.logo && response.logoType && response.logoType === "custom")
+                        ) {
+                            if (typeof response.globalLogo === 'string') {
+                                response.globalLogo = response.globalLogo.toLowerCase() === 'true';
+                            }
+                            
+                            if (response.globalLogo) {
+                                $('#powered-by-countly').attr('src', url + response.logo);
+                            }
+                            else {
+                                $('#powered-by-countly').attr('src', url + '/star-rating/images/' + response.logo);
+                            }
+
+                            $('#powered-by-countly').parent().attr('href', 'void(0)');
+                            $('#powered-by-countly').css({ 'width':'100px' });
+                        }
+
+                        if (response.logoType && response.logoType === "none") {
+                            $('.modal-footer').find('img').remove();
+                        }
+
+                        if (response.comment_enable === "false") {
+                            $('#comment-section').hide();
+                        }
+
+                        if (response.contact_enable === "false") {
+                            $('#contact-section').hide();
+                        }
+
+                        for (var i = 0; i < response.ratings_texts.length; i++) {
+                            $('#cf-rating-item-' + i).attr('title', response.ratings_texts[i]);
+                        }
+
+                        tippy('.rating-emotion', {
+                            theme: 'honeybee',
+                            delay: 100,
+                            arrow: true,
+                            arrowType: 'round',
+                            duration: 250,
+                            animation: 'scale'
+                        });
+                    },
+                    type: "GET",
+                    url: url + "/o/feedback/widget",
+                });
+
+                var eventObject = {
+                    key: "[CLY]_star_rating",
+                    count: 1,
+                    segmentation: {
+                        widget_id: widget_id,
+                        contactMe: false,
+                        platform: platform,
+                        app_version: app_version,
+                        platform_version_rate: "",
+                        rating: 0,
+                        email: "",
+                        comment: ""
+                    },
+                    timestamp: Date.now(),
+                    hour: h,
+                    dow: dow
+                };
+
+                try {
+                    custom = JSON.parse(custom) ;
+                    isFullscreenWidget = !!custom?.rw;
+                    isCloseButtonVisible = !!custom?.xb;
+
+                    if (custom && custom.sg) {
+                        custom = custom.sg;
+                    }
+                    else {
+                        custom = {};
+                    }
+                }
+                catch (error) {
+                    custom = {};
+                }
+
+                if (!isCloseButtonVisible) {
+                    $(CLOSE_BUTTON_ID).hide();
+                }
+                else if ($(CLOSE_BUTTON_ID).is(":hidden")) {
+                    $(CLOSE_BUTTON_ID).show();
+                }
+
+                if (isFullscreenWidget) {
+                    $(WIDGET_BODY_ID).addClass(WIDGET_BODY_FULLSCREEN_CLASS);
+                }
+                else if ($(WIDGET_BODY_ID).hasClass(WIDGET_BODY_FULLSCREEN_CLASS)) {
+                    $(WIDGET_BODY_ID).removeClass(WIDGET_BODY_FULLSCREEN_CLASS);
+                }
+                
+                for (var key in custom) {
+                    if (!eventObject.segmentation[key]) {
+                        eventObject.segmentation[key] = custom[key];
+                    }
+                }
+
+                document.getElementById('countly-feedback-comment-textarea').value = "";
+                document.getElementById('countly-feedback-contact-me-email').value = "";
+
+                // Element variables
+                var contactMeCheckbox = document.getElementById('contact-me-checkbox');
+                var contactMeEmailInput = document.getElementById('countly-feedback-contact-me-email');
+                var modalEmotionImages = document.getElementsByClassName('rating-emotion');
+                var sendButton = document.getElementsByClassName('disabled-send-button')[0];
+                var showCommentCheckbox = document.getElementById('countly-feedback-show-comment');
+                var showCommentCheckboxMask = document.getElementsByClassName('countly-feedback-show-comment-checkbox')[0];
+                var showEmailCheckbox = document.getElementById('countly-feedback-show-email');
+                var showEmailCheckboxMask = document.getElementsByClassName('countly-feedback-show-email-checkbox')[0];
+
+                // Event handlers & actions
+                function hideFeedbackPopup() {
+                    document.getElementsByClassName("modal-content")[0].style.display = "none";
+                }
+
+                function hideSuccessPopup() {
+                    document.getElementsByClassName("success-modal-content")[0].style.display = "none";
+                }
+
+                function rate(e) {
+                    var index = parseInt(e.target.dataset.score) - 1;
+
+                    eventObject["segmentation"].rating = parseInt(modalEmotionImages[index].getAttribute('data-score'));
+
+                    for (var i = 0; i < 5; i++) {
+                        if (i <= index) {
+                            if (symbol==='emojis') {
+                                removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1));
+                                addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1) + '-fill');
+                            }
+                            else {
+                                removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
+                                addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill');
+                            }
+                        }
+                        else {
+                            if (symbol==='emojis') {
+                                addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1));
+                                removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1) + '-fill');
+                            }
+                            else {
+                                addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
+                                removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill'); 
+                            }
+                        }
+                    }
+
+                    if ($('#consent').hasClass('hidden')) {
+                        removeClass(sendButton, 'disabled-send-button');
+                        addClass(sendButton, 'send-button');
+                        removeClass(sendButton, 'disabled');
+                    }
+                }
+
+                function showHideCommentArea() {
+                    if (showCommentCheckbox.getAttribute('data-state') == 0) {
+                        document.getElementById('countly-feedback-comment-textarea').style.display = "block";
+                        showCommentCheckbox.setAttribute('data-state', 1);
+                    }
+                    else {
+                        showCommentCheckbox.setAttribute('data-state', 0);
+                        document.getElementById('countly-feedback-comment-textarea').style.display = "none";
+                    }
+                }
+
+                function showHideEmailArea() {
+                    if (showEmailCheckbox.getAttribute('data-state') == 0) {
+                        document.getElementById('countly-feedback-contact-me-email').style.display = "block";
+                        showEmailCheckbox.setAttribute('data-state', 1);
+                    }
+                    else {
+                        showEmailCheckbox.setAttribute('data-state', 0);
+                        document.getElementById('countly-feedback-contact-me-email').style.display = "none";
+                    }
+                }
+
+                function consent() {
+                    var consentClickChecked = $("#consent").find("input").is(":checked");
+
+                    if (consentClickChecked) {
+                        $("#cf-submit-button").removeClass("disabled");
+                        removeClass(sendButton, 'disabled-send-button');
+                        addClass(sendButton, 'send-button');
+                    }
+                    else {
+                        removeClass(sendButton, 'send-button');
+                        addClass(sendButton, 'disabled-send-button');
+                        $("#cf-submit-button").find(".submit-button.next").addClass("disabled");
+                    }
+                }
+
+                function sendFeedback() {
+                    if ($(this).hasClass("disabled-send-button")) {
+                        return;
+                    }
+                    
+                    // replace with value from dom
+                    eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
+                    
+                    // make required validations and replace email value from dom
+                    if (showEmailCheckbox.getAttribute('data-state') == 1) {
+                        if (!isValidEmail(document.getElementById('countly-feedback-contact-me-email').value.trim())) {
+                            addClass(document.getElementById('countly-feedback-contact-me-email'), 'countly-feedback-verification-fail');
+                            return;
+                        }
+                        else {
+                            removeClass(document.getElementById('countly-feedback-contact-me-email'), 'countly-feedback-verification-fail');
+                            eventObject["segmentation"].email = document.getElementById('countly-feedback-contact-me-email').value;
+                            eventObject["segmentation"].contactMe = true;
+                        }
+                    }
+
+                    $.ajax({
+                        error: function (e) {},
+                        success: function (response) {
+                            document.getElementsByClassName("success-modal-content")[0].style.display = "flex";
+                            document.getElementsByClassName("modal-content")[0].style.display = "none";
+                            // reset feedback popup after 10 seconds
+                            setTimeout(function () {
+                                // set popup to default state
+                                document.getElementsByClassName("success-modal-content")[0].style.display = "none";
+                                document.getElementsByClassName("modal-content")[0].style.display = "flex";
+                                document.getElementById('countly-feedback-comment-textarea').value = "";
+                                document.getElementById('countly-feedback-contact-me-email').value = "";
+                                for (var i = 0; i < 5; i++) {
+                                    $($('.rating-emotion')[i]).css({ 'opacity': 1 });
+                                    $($('.rating-emotion')[i]).css({ 'transform': 'scale(1.0)' });
+                                }
+                                closeHandler();
+                            }, 5000);
+                        },
+                        type: "GET",
+                        url: url + '/i/feedback/input?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version
                     });
                 }
-                if(consent){
-                                contentEl.removeClass("hidden");
-                                $(contentEl).find(".text").html(finalText);
-                            var consentChecked = contentEl.find("input").is(":checked");
-                            if(consentChecked){
-                            $("#cf-submit-button").removeClass("disabled");
-                            removeClass(sendButton, 'disabled-send-button');
-                            addClass(sendButton, 'send-button');
-                            }
-                            else{
-                                removeClass(sendButton, 'send-button');
-                            addClass(sendButton, 'disabled-send-button');
-                                $("#cf-submit-button").find(".submit-button.next").addClass("disabled");
-                            }
-                            }
-                response.rating_symbol = response.rating_symbol ? response.rating_symbol : "emojis";
-                if (response.rating_symbol) {
-                  symbol = response.rating_symbol;
-                  for (var i = 0; i < 5; i++) {
-                      if(symbol==='emojis'){
-                        addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1));
-                      }
-                      else{
-                        addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
-                      }
-                  }
-                }
 
-                if(response.trigger_bg_color){
-                    $('#cf-submit-button').css({'background-color':response.trigger_bg_color});
-                    $('#thanks-area-logo').css({'color':response.trigger_bg_color});
-                }
-
-                if(response.trigger_font_color){
-                    $('#cf-submit-button').css({'color':response.trigger_font_color});
-                }
-
-                if ((response.logo && !response.logoType) || (response.logo && response.logoType && response.logoType === "custom")) {
-                    if (typeof response.globalLogo === 'string') {
-                        response.globalLogo = response.globalLogo.toLowerCase() === 'true';
-                    }
-                    if(response.globalLogo){
-                        $('#powered-by-countly').attr('src', url + response.logo);
-                    }
-                    else
-                    {
-                        $('#powered-by-countly').attr('src', url + '/star-rating/images/' + response.logo);
-                    }
-                    $('#powered-by-countly').parent().attr('href', 'void(0)');
-                    $('#powered-by-countly').css({'width':'100px'});
-                }
-                if(response.logoType && response.logoType === "none"){
-                    $('.modal-footer').find('img').remove();
-                }
-                if (response.comment_enable === "false") {
-                    $('#comment-section').hide();
-                }
-                if (response.contact_enable === "false") {
-                    $('#contact-section').hide();
-                }
-
-                for (var i = 0; i < response.ratings_texts.length; i++) {
-                    $('#cf-rating-item-' + i).attr('title', response.ratings_texts[i]);
-                }
-
-                tippy('.rating-emotion', {
-                    theme: 'honeybee',
-                    delay: 100,
-                    arrow: true,
-                    arrowType: 'round',
-                    duration: 250,
-                    animation: 'scale'
-                });
-            }
-        });
-
-        var eventObject = {
-            key: "[CLY]_star_rating",
-            count: 1,
-            segmentation: {
-                widget_id: widget_id,
-                contactMe: false,
-                platform: platform,
-                app_version: app_version,
-                platform_version_rate: "",
-                rating: 0,
-                email: "",
-                comment: ""
-            },
-            timestamp: Date.now(),
-            hour: h,
-            dow: dow
-        };
-
-        try {
-            custom = JSON.parse(custom) ;
-            xbFlag = custom.xb;
-            if (custom && custom.sg) {
-            custom = custom.sg;
-            }
-            else {
-                custom = {};
-            }
-        }
-        catch (error) {
-            custom = {};
-        }
-
-        if (!xbFlag) {
-            $('#close-btn').hide();
-        }
-        
-        for (var key in custom) {
-            if (!eventObject.segmentation[key]) {
-                eventObject.segmentation[key] = custom[key];
-            }
-        }
-
-        document.getElementById('countly-feedback-comment-textarea').value = "";
-        document.getElementById('countly-feedback-contact-me-email').value = "";
-
-        /*
-          Element variables
-        */
-        var contactMeCheckbox = document.getElementById('contact-me-checkbox');
-        var contactMeEmailInput = document.getElementById('countly-feedback-contact-me-email');
-        var modalEmotionImages = document.getElementsByClassName('rating-emotion');
-        var sendButton = document.getElementsByClassName('disabled-send-button')[0];
-        var showCommentCheckbox = document.getElementById('countly-feedback-show-comment');
-        var showEmailCheckbox = document.getElementById('countly-feedback-show-email');
-        var showCommentCheckboxMask = document.getElementsByClassName('countly-feedback-show-comment-checkbox')[0];
-        var showEmailCheckboxMask = document.getElementsByClassName('countly-feedback-show-email-checkbox')[0];
-
-        /*
-          Event handlers & actions
-        */
-        function hideFeedbackPopup() {
-            document.getElementsByClassName("modal-content")[0].style.display = "none";
-        }
-
-        function hideSuccessPopup() {
-            document.getElementsByClassName("success-modal-content")[0].style.display = "none";
-        }
-
-        function rate(e) {
-            var index = parseInt(e.target.dataset.score) - 1;
-            eventObject["segmentation"].rating = parseInt(modalEmotionImages[index].getAttribute('data-score'));
-            for (var i = 0; i < 5; i++) {
-              if (i <= index) {
-                  if(symbol==='emojis'){
-                    removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1));
-                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1) + '-fill');
-                  }
-                  else{
-                    removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
-                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill');
-                  }
-              }
-              else {
-                if(symbol==='emojis'){
-                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1));
-                    removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + (i+1) + '-fill');
-                }
-                else{
-                    addClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol);
-                    removeClass(document.getElementById('cf-rating-item-' + i), 'rating-emotion-' + symbol + '-fill'); 
-                }
-              }
-            }
-            if($('#consent').hasClass('hidden')){
-            removeClass(sendButton, 'disabled-send-button');
-            addClass(sendButton, 'send-button');
-            removeClass(sendButton, 'disabled');
-            }
-        }
-
-        function showHideCommentArea() {
-            if (showCommentCheckbox.getAttribute('data-state') == 0) {
-                document.getElementById('countly-feedback-comment-textarea').style.display = "block";
-                showCommentCheckbox.setAttribute('data-state', 1);
-            }
-            else {
-                showCommentCheckbox.setAttribute('data-state', 0);
-                document.getElementById('countly-feedback-comment-textarea').style.display = "none";
-            }
-        }
-
-        function showHideEmailArea() {
-            if (showEmailCheckbox.getAttribute('data-state') == 0) {
-                document.getElementById('countly-feedback-contact-me-email').style.display = "block";
-                showEmailCheckbox.setAttribute('data-state', 1);
-            }
-            else {
-                showEmailCheckbox.setAttribute('data-state', 0);
-                document.getElementById('countly-feedback-contact-me-email').style.display = "none";
-            }
-        }
-
-        function consent() {
-            var consentClickChecked = $("#consent").find("input").is(":checked");
-                            if(consentClickChecked){
-                                $("#cf-submit-button").removeClass("disabled");
-                            removeClass(sendButton, 'disabled-send-button');
-                            addClass(sendButton, 'send-button');                            }
-                            else{
-                                removeClass(sendButton, 'send-button');
-                            addClass(sendButton, 'disabled-send-button');
-                                $("#cf-submit-button").find(".submit-button.next").addClass("disabled");
-                                                }
-        }
-        function sendFeedback() {
-            if ($(this).hasClass("disabled-send-button")) {
-                    return;
-                }            // replace with value from dom
-            eventObject["segmentation"].comment = document.getElementById('countly-feedback-comment-textarea').value;
-            // make required validations and replace email value from dom
-            if (showEmailCheckbox.getAttribute('data-state') == 1) {
-                if (!isValidEmail(document.getElementById('countly-feedback-contact-me-email').value.trim())) {
-                    addClass(document.getElementById('countly-feedback-contact-me-email'), 'countly-feedback-verification-fail');
-                    return;
-                }
-                else {
-                    removeClass(document.getElementById('countly-feedback-contact-me-email'), 'countly-feedback-verification-fail');
-                    eventObject["segmentation"].email = document.getElementById('countly-feedback-contact-me-email').value;
-                    eventObject["segmentation"].contactMe = true;
-                }
-            }
-            $.ajax({
-                "type": "GET",
-                "url": url + '/i/feedback/input?events=' + encodeURIComponent(JSON.stringify([eventObject])) + '&app_key=' + app_key + '&device_id=' + device_id + '&sdk_name=' + sdk_name + (sdk_version ? '&sdk_version=' + sdk_version : '') + '&timestamp=' + Date.now() + '&hour=' + h + '&dow=' + dow + '&app_version=' + app_version,
-                "success": function(response) {
-                    document.getElementsByClassName("success-modal-content")[0].style.display = "flex";
-                    document.getElementsByClassName("modal-content")[0].style.display = "none";
-                    // reset feedback popup after 10 seconds
-                    setTimeout(function() {
-                        // set popup to default state
-                        document.getElementsByClassName("success-modal-content")[0].style.display = "none";
-                        document.getElementsByClassName("modal-content")[0].style.display = "flex";
-                        document.getElementById('countly-feedback-comment-textarea').value = "";
-                        document.getElementById('countly-feedback-contact-me-email').value = "";
-                        for (var i = 0; i < 5; i++) {
-                            $($('.rating-emotion')[i]).css({'opacity': 1});
-                            $($('.rating-emotion')[i]).css({'transform':'scale(1.0)'});
+                function closeHandler(e) {
+                    if (widgetVersion) {
+                        const isWebSDK = platform === 'Web';
+    
+                        if (!isWebSDK) {
+                            window.location.href = 'https://countly_action_event?cly_widget_command=1&close=1';
                         }
-                        closeHandler();
-                    }, 5000);
-                },
-                "error": function(e) {
+                        else if (window.parent && typeof window.parent.postMessage === 'function') {
+                            const payload = JSON.stringify({
+                                close: 1,
+                                cly_widget_command: 1
+                            });
+    
+                            window.parent.postMessage(payload, parentOrigin);
+                        }
+                    }
+                    else {
+                        if (window.parent && typeof window.parent.postMessage === 'function') {
+                            var d = JSON.stringify({ close: true });
+                            window.parent.postMessage(d, parentOrigin);
+                        }
+                        // NOTE: the isFromWeb variable is not defined in this scope, this code will never run
+                        // will leave it commented for now until certain if it is needed or not
+                        // else if (isFromWeb) {
+                        //     window.location.href += "&reset=true";
+                        //     // This is used as a fallback for browsers where postMessage API doesn't work.
+                        //     // Instead of sending a message to the parent window, one could reload this iframe,
+                        //     // and listen to onload event of iframe in the parent window (sdk)
+                        //     // In the onload function you can hide the iframe
+                        //     // While the iframe is hidden, it undergoes the reload in background
+                        //     // You need to handle the reload by passing reset in the url.
+                        //     // You can then check for this reset value and if its true,
+                        //     // set {shown: false} while fetching the survey bcz it was a reset and survey
+                        //     // was already shown. Also in the reset you need to handle the css of the survey.
+                        //     // Caveat -
+                        //     // There is although one caveat, between initiating iframe reload and hiding
+                        //     // it the onload there is a lag of few miniseconds. Which gives an impression
+                        //     // that the window is unresponsive for a split second.
+                        //     // Therefore, using postMessage for cross window communication.
+                        // }
+                    }
+
                 }
-            });
-        }
 
-        function closeHandler(e) {
-            if (window.parent && typeof window.parent.postMessage === "function") {
-                var d = JSON.stringify({"close": 1});
-                window.parent.postMessage(d, parentOrigin);
-            }
-            else {
-                window.location.href += '&reset=true&close=1';
-            }
-            // NOTE: the isFromWeb variable is not defined in this scope, this code will never run
-            // will leave it commented for now until certain if it is needed or not
-            // else if (isFromWeb){
-            //     window.location.href += "&reset=true";
-            //     // This is used as a fallback for browsers where postMessage API doesn't work.
-            //     // Instead of sending a message to the parent window, one could reload this iframe,
-            //     // and listen to onload event of iframe in the parent window (sdk)
-            //     // In the onload function you can hide the iframe
-            //     // While the iframe is hidden, it undergoes the reload in background
-            //     // You need to handle the reload by passing reset in the url.
-            //     // You can then check for this reset value and if its true,
-            //     // set {shown: false} while fetching the survey bcz it was a reset and survey
-            //     // was already shown. Also in the reset you need to handle the css of the survey.
-            //     // Caveat -
-            //     // There is although one caveat, between initiating iframe reload and hiding
-            //     // it the onload there is a lag of few miniseconds. Which gives an impression
-            //     // that the window is unresponsive for a split second.
-            //     // Therefore, using postMessage for cross window communication.
-            // }
-        }
+                // event handler for countly feedback show comment area checkbox
+                // show hide comment area
+                $('body').on('change', '#countly-feedback-show-comment', showHideCommentArea);
 
-        // event handler for countly feedback show comment area checkbox
-        // show hide comment area
-        $('body').on('change', '#countly-feedback-show-comment', showHideCommentArea);
-        // event handler for countly feedback show comment area checkbox
-        // show hide comment area
-        $('body').on('change', '#countly-feedback-show-email', showHideEmailArea);
-        // event handler for countly feedback sender
-        // send feedback
-        $('body').on('click', '#cf-submit-button', sendFeedback);
-        $('body').on('click', '#consent', consent);
+                // event handler for countly feedback show comment area checkbox
+                // show hide comment area
+                $('body').on('change', '#countly-feedback-show-email', showHideEmailArea);
 
-        // event handler for countly feedback emotion img
-        // rate for feedback
-        $('body').on('click', '.rating-emotion', rate);
-        // event handler for popup closer
-        $('body').on('click', '#close-btn', closeHandler);
-    })();
-</script>
-<% if (themeFiles && themeFiles.js) { %>
-<% for(var i=0, l=themeFiles.js.length; i < l; i++) {%>
-<script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
-<% } %>
-<% } %>
-</body>
+                // event handler for countly feedback sender
+                // send feedback
+                $('body').on('click', '#cf-submit-button', sendFeedback);
+                $('body').on('click', '#consent', consent);
+
+                // event handler for countly feedback emotion img
+                // rate for feedback
+                $('body').on('click', '.rating-emotion', rate);
+
+                // event handler for popup closer
+                $('body').on('click', CLOSE_BUTTON_ID, closeHandler);
+            })();
+        </script>
+        <% if (themeFiles && themeFiles.js) { %>
+            <% for(var i=0, l=themeFiles.js.length; i < l; i++) {%>
+                <script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
+            <% } %>
+        <% } %>
+    </body>
 </html>
