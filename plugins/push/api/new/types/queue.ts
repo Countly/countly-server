@@ -1,9 +1,9 @@
 import { ObjectId } from "mongodb";
 import { SomeCredential } from "./credentials";
 import { ProxyConfiguration } from "./proxy";
-import { AutoTrigger } from "./message";
-import { PlatformKeys, PlatformEnvKeys } from "./message";
-import { ResultError } from "./message";
+import { AutoTrigger, MessageTrigger } from "./message";
+import { PlatformKey, PlatformEnvKey } from "./message";
+import { ErrorObject } from "./message";
 
 export interface ScheduleEvent {
     appId: ObjectId;
@@ -27,19 +27,24 @@ export interface PushEvent {
     scheduleId: ObjectId;
     uid: string;
     token: string;
-    message: any;
+    message: any; // actual message to be sent. data structure depends on the platform
     saveResult: boolean;
-    platform: PlatformKeys;
-    env: PlatformEnvKeys;
+    platform: PlatformKey;
+    env: PlatformEnvKey;
     language: string;
     credentials: SomeCredential;
     proxy?: ProxyConfiguration;
     platformConfiguration: IOSConfig|AndroidConfig|HuaweiConfig;
+
+    // these are required for internal post processing in resultor.js@updateInternals
+    // could be removed to reduce the size of this PushEvent and ResultEvent in the future.
+    trigger: MessageTrigger; // trigger that caused this push event to be created:
+    appTimezone: string; // timezone of the app
 }
 
 export interface ResultEvent extends PushEvent {
     response?: any;
-    error?: ResultError;
+    error?: ErrorObject;
 }
 
 export interface BaseTriggerEvent {

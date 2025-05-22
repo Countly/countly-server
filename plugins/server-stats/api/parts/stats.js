@@ -33,7 +33,7 @@ const internalEventsEnum =
 * @param {string} appId - Application Id
 * @param {Number} sessionCount - Session Count
 * @param {Number} eventCount - Event Count
-* @param {boolean} consolidated - If data is consolidated
+* @param {boolean=} consolidated - If data is consolidated
 * @returns {undefined} Returns nothing
 **/
 function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consolidated) {

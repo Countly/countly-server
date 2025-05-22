@@ -7,15 +7,17 @@
 
     var statusFilterOptions = [
         {label: countlyPushNotification.service.ALL_FILTER_OPTION_LABEL, value: countlyPushNotification.service.ALL_FILTER_OPTION_VALUE},
-        {label: CV.i18n("push-notification.active"), value: countlyPushNotification.service.StatusEnum.ACTIVE},
+        // this is not used in the UI:
+        // {label: CV.i18n("push-notification.active"), value: countlyPushNotification.service.StatusEnum.ACTIVE},
         {label: CV.i18n("push-notification.scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
         {label: CV.i18n("push-notification.sent"), value: countlyPushNotification.service.StatusEnum.SENT},
         {label: CV.i18n("push-notification.sending"), value: countlyPushNotification.service.StatusEnum.SENDING},
+        {label: CV.i18n("push-notification.canceled"), value: countlyPushNotification.service.StatusEnum.CANCELED},
         {label: CV.i18n("push-notification.failed"), value: countlyPushNotification.service.StatusEnum.FAILED},
         {label: CV.i18n("push-notification.stopped"), value: countlyPushNotification.service.StatusEnum.STOPPED},
         {label: CV.i18n("push-notification.draft"), value: countlyPushNotification.service.StatusEnum.DRAFT},
         {label: CV.i18n("push-notification.waiting-for-approval"), value: countlyPushNotification.service.StatusEnum.PENDING_APPROVAL},
-        {label: CV.i18n("push-notification.reject"), value: countlyPushNotification.service.StatusEnum.REJECT},
+        {label: CV.i18n("push-notification.rejected"), value: countlyPushNotification.service.StatusEnum.REJECTED},
     ];
 
     var platformFilterOptions = [
@@ -1462,12 +1464,9 @@
             activeFilterFields: function() {
                 var self = this;
                 var statusOptions = Object.keys(self.statusOptions).map(key => ({label: self.statusOptions[key].label, value: self.statusOptions[key].value}));
-
                 statusOptions.push({label: 'All Status', value: ''});
                 const lastElementStatus = statusOptions.pop();
                 statusOptions.unshift(lastElementStatus);
-
-
                 return [
                     {
                         label: "Platform",
@@ -1799,6 +1798,11 @@
                         title: CV.i18n('push-notification-details.stats-tab'),
                         name: "stats",
                         component: countlyPushNotificationComponent.DetailsStatsTab
+                    },
+                    {
+                        title: CV.i18n('push-notification-details.schedules-tab'),
+                        name: "schedules",
+                        component: countlyPushNotificationComponent.SchedulesTab
                     }
                 ],
                 usersTargetedOptionsXAxis: {
@@ -1851,16 +1855,16 @@
                 return selectedDashboardFilter;
             },
             targetedUsers: function() {
-                if (!this.selectedDashboard.processed) {
+                if (!this.selectedDashboard.total) {
                     return 0;
                 }
-                return CountlyHelpers.formatPercentage(this.selectedDashboard.processed / this.selectedDashboard.total);
+                return CountlyHelpers.formatPercentage((this.selectedDashboard.sent + this.selectedDashboard.failed) / this.selectedDashboard.total);
             },
             sentPushNotifications: function() {
                 if (!this.selectedDashboard.sent) {
                     return 0;
                 }
-                return CountlyHelpers.formatPercentage(this.selectedDashboard.sent / this.selectedDashboard.processed);
+                return CountlyHelpers.formatPercentage(this.selectedDashboard.sent / this.selectedDashboard.total);
             },
             clickedPushNotifications: function() {
                 if (!this.selectedDashboard.actioned) {
@@ -1869,10 +1873,10 @@
                 return CountlyHelpers.formatPercentage(this.selectedDashboard.actioned / this.selectedDashboard.sent);
             },
             failedPushNotifications: function() {
-                if (!this.selectedDashboard.errored) {
+                if (!this.selectedDashboard.failed) {
                     return 0;
                 }
-                return CountlyHelpers.formatPercentage(this.selectedDashboard.errored / this.selectedDashboard.processed);
+                return CountlyHelpers.formatPercentage(this.selectedDashboard.failed / this.selectedDashboard.total);
             },
             pushNotificationChartBars: function() {
                 return {
@@ -1927,7 +1931,7 @@
                 return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.sent > 0 && !this.pushNotification.demo;
             },
             shouldShowGoToErroredUrl: function() {
-                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.errored > 0 && !this.pushNotification.demo;
+                return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.failed > 0 && !this.pushNotification.demo;
             },
             shouldShowGoToActionedUrl: function() {
                 return this.pushNotification.type === this.TypeEnum.ONE_TIME && this.selectedDashboard.actioned > 0 && !this.pushNotification.demo;
@@ -2189,7 +2193,7 @@
                 try {
                     const rows = [];
                     rows.push([CV.i18n('push-notification.users-targeted'), CV.i18n('push-notification.sent-notifications'), CV.i18n('push-notification.clicked-notifications'), CV.i18n('push-notification.failed')]);
-                    rows.push([(this.targetedUsers + "%" + " " + (this.selectedDashboard.processed || 0) + " " + CV.i18n('push-notification.users')), (this.sentPushNotifications + "%" + " " + (this.selectedDashboard.sent || 0) + " " + CV.i18n('push-notification.users')), (this.clickedPushNotifications + "%" + " " + (this.selectedDashboard.actioned || 0) + " " + CV.i18n('push-notification.users')), (this.failedPushNotifications + "%" + " " + (this.selectedDashboard.errored || 0) + " " + CV.i18n('push-notification.users'))]);
+                    rows.push([(this.targetedUsers + "%" + " " + (this.selectedDashboard.total || 0) + " " + CV.i18n('push-notification.users')), (this.sentPushNotifications + "%" + " " + (this.selectedDashboard.sent || 0) + " " + CV.i18n('push-notification.users')), (this.clickedPushNotifications + "%" + " " + (this.selectedDashboard.actioned || 0) + " " + CV.i18n('push-notification.users')), (this.failedPushNotifications + "%" + " " + (this.selectedDashboard.failed || 0) + " " + CV.i18n('push-notification.users'))]);
                     let csvContent = "data:text/csv;charset=utf-8,";
                     rows.forEach((rowArray) => {
                         const row = rowArray.join(",");

@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 
-export type PlatformKeys = "a"|"i"|"h"; // android|ios|huawei
-export type PlatformEnvKeys = "p"|"d"|"a"; // production|debug|adhoc
+export type PlatformKey = "a"|"i"|"h"; // android|ios|huawei
+export type PlatformEnvKey = "p"|"d"|"a"; // production|debug|adhoc
 export type PlatformCombinedKeys = "ap"|"hp"|"ip"|"id"|"ia";
 
 export interface MessageAudienceFilter {
@@ -117,16 +117,6 @@ export interface Content {
     specific?: { [key: string]: string|number|boolean }[];
 }
 
-// TODO: this has missing props
-// TODO: remove this completely. we have schedules now
-export interface MessageRun {
-    start: Date;
-    // processed: number;
-    failed: number;
-    ended: Date;
-}
-
-// TODO: Update this accordingly to the new results
 export interface Result {
     subs?: { [key: string]: Result };
     total: number;
@@ -136,15 +126,16 @@ export interface Result {
     errors: { [key: string]: number; };
     // for message: the error occured before the message's last schedule. this error should also change message's status to "failed"
     // for schedule: the error encountered before composing starts. this error should also change schedule's status to "failed"
-    error?: ResultError;
+    error?: ErrorObject;
 }
 
+// TODO: remove this. use self referencing type instead
 // To avoid circular referencing:
 // export type SubSubResult = BaseResult & { subs: { [key: string]: any } }; // "sub" in here is not being used
 // export type SubResult = BaseResult & { subs: { [key: string]: SubSubResult } };
 // export type Result = BaseResult & { subs: { [key: string]: SubResult } };
 
-export interface ResultError {
+export interface ErrorObject {
     name: string;
     message: string;
     stack?: string;
@@ -171,7 +162,6 @@ export interface Info {
     approved?: Date;
     approvedBy?: ObjectId;
     approvedByName?: string;
-    rejected?: boolean;
     rejectedAt?: Date;
     rejectedBy?: ObjectId;
     rejectedByName?: string;
@@ -185,7 +175,7 @@ export interface Message {
     _id: ObjectId;
     app: ObjectId;
     saveResults: boolean;
-    platforms: PlatformKeys[];
+    platforms: PlatformKey[];
     status:
         // Active, can be sent. If this message is an API, Cohort or Event message,
         // this means it will be sent when appropriate. If its a Plain, Recurring or
@@ -193,10 +183,14 @@ export interface Message {
         "active"    |
         // Waiting for approval. This message cannot be sent until it is approved.
         "inactive"  |
+        // Rejected by the approver. This message cannot be sent until it is approved again.
+        "rejected"  |
         // Cannot be sent, can only be duplicated
         "draft"     |
         // Stopped sending (one time from UI)
-        "stopped";
+        "stopped"   |
+        // Deleted
+        "deleted";
         // these are being calculated from the last schedule's status
         // 'scheduled' Will be sent when appropriate
         // 'sending'   Sending right now

@@ -5,12 +5,17 @@
  * @typedef {import("../types/credentials").TLSKeyPair} TLSKeyPair
  * @typedef {import("../types/message").Message} Message
  * @typedef {import("../types/schedule").Schedule} Schedule
+ * @typedef {import("../types/queue.ts").ResultEvent} ResultEvent
  * @typedef {import("mongodb").Db} MongoDb
+ * @typedef {import("../types/utils").LogObject} LogObject
+ * @typedef {{ fetchUsers: (params: any, cb: (err: Error, uids: string[]) => void, db: MongoDb) => void }} DrillAPI
  */
 
 const { URL } = require("url");
 const nodeForge = require("node-forge");
-const { DATE_TRIGGERS } = require("../scheduler");
+const common = require('../../../../../api/utils/common');
+const { processEvents: processInternalEvents } = require('../../../../../api/parts/data/events');
+const { updateDataPoints } = require('../../../../server-stats/api/parts/stats');
 
 /**
  *
@@ -64,45 +69,88 @@ function parseKeyPair(credentials) {
 }
 
 /**
- * IGNORE THE LSP ERRORS
- * TODO: GET RID OF THIS
- * @returns {{ fetchUsers: (params: any, cb: (err: Error, uids: string[]) => void, db: MongoDb) => void }}
+ * @returns {DrillAPI=}
  */
 function loadDrillAPI() {
     if (typeof global.it === "function") {
         try {
-            return require("../../../../drill/api/api").drill;
+            return /** @type {{drill: DrillAPI}} */(require("../../../../drill/api/api")).drill;
         }
         catch (err) {
-            return undefined;
+            return;
         }
     }
     else {
-        return require("../../../../pluginManager").getPluginsApis().drill.drill;
+        const pluginManager = /** @type {{getPluginsApis: () => {drill: { drill: DrillAPI; }}}} */(
+            require("../../../../pluginManager")
+        );
+        const plugins = pluginManager.getPluginsApis();
+        // @ts-ignore
+        return plugins.drill.drill;
     }
 }
+
 
 /**
- * @param {Message} message
- * @param {Schedule=} lastSchedule
- * @returns {Message["status"]|Schedule["status"]}
+ * Emits [CLY]_push_sent events for each messageId in the results.
+ * Updates the data points for each messageId with the number of events.
+ * @param {ResultEvent[]} results
+ * @param {LogObject} log
  */
-function getMessageStatus(message, lastSchedule) {
-    const trigger = message.triggers?.[0];
-    const checkMessage = !trigger                // if there's no trigger somehow (this is probably an error)
-        || !DATE_TRIGGERS.includes(trigger.kind) // if the trigger is not a date trigger
-        || message.status !== "active"           // if the message is not active
-        || !lastSchedule;                        // if there's no schedule record yet
-    if (checkMessage) {
-        return message.status;
+function updateInternalsWithResults(results, log) {
+    /** @type {{[messageId: string]: ResultEvent[]}} */
+    const messageIndexedEvents = {};
+    for (let i = 0; i < results.length; i++) {
+        const mid = results[i].messageId.toString();
+        if (!(mid in messageIndexedEvents)) {
+            messageIndexedEvents[mid] = [];
+        }
+        messageIndexedEvents[mid].push(results[i]);
     }
-    return lastSchedule.status;
+    for (let mid in messageIndexedEvents) {
+        const events = messageIndexedEvents[mid];
+        const trigger = events[0].trigger;
+        const isAutoTrigger = ["cohort", "event"].includes(trigger.kind);
+        const isApiTrigger = trigger.kind === "api";
+        const params = {
+            qstring: {
+                events: [
+                    {
+                        key: "[CLY]_push_sent",
+                        count: events.length,
+                        segmentation: {
+                            i: mid,
+                            a: isAutoTrigger,
+                            t: isApiTrigger,
+                            p: events[0].platform,
+                            ap: String(isAutoTrigger) + events[0].platform,
+                            tp: String(isApiTrigger) + events[0].platform,
+                        }
+                    }
+                ]
+            },
+            app_id: events[0].appId,
+            appTimezone: events[0].appTimezone,
+            time: common.initTimeObj(events[0].appTimezone),
+        };
+        log.d('Recording %d [CLY]_push_sent\'s: %j', events.length, params);
+        processInternalEvents(params).catch(
+            /**
+             * @param {Error} err
+             */
+            err => {
+                console.error("LOREM IPSUM DOLOR SIT AMET");
+                log.e('Error while recording %d [CLY]_push_sent\'s: %j', events.length, params, err);
+            }
+        ).then(() => console.log("HEEEERRREEEEE"));
+        // @ts-ignore
+        updateDataPoints(common.writeBatcher, events[0].appId.toString(), 0, {"p": events.length});
+    }
 }
-
 module.exports = {
     buildProxyUrl,
     serializeProxyConfig,
     parseKeyPair,
     loadDrillAPI,
-    getMessageStatus
+    updateInternalsWithResults,
 }

@@ -7,13 +7,14 @@
  * @typedef {import("mongodb").BulkWriteResult} BulkWriteResult
  * @typedef {import("mongodb").SetFields<{[key: string]: any}>} SetFields
  * @typedef {import('./types/utils.ts').LogObject} LogObject
- * @typedef {import('./types/message.ts').PlatformKeys} PlatformKeys
+ * @typedef {import('./types/message.ts').PlatformKey} PlatformKey
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
  * @typedef {"total"|"sent"|"failed"|"actioned"} Stat
  */
 
 const { ObjectId } = require("mongodb");
 const { InvalidDeviceToken } = require('./lib/error.js');
+const { updateInternalsWithResults } = require("./lib/utils.js");
 
 /** @type {LogObject} */
 const log = require('../../../../api/utils/common').log('push:resultor');
@@ -26,6 +27,14 @@ const STAT_KEYS = ["total", "sent", "failed", "actioned"];
  * @param {ResultEvent[]} results
  */
 async function saveResults(db, results) {
+    try {
+        updateInternalsWithResults(results, log);
+    }
+    catch (error) {
+        console.error(error);
+        log.e("Error while updating internals with results", error);
+    }
+
     /** @type {{[scheduleId: string]: { resultObject: Result; messageId: ObjectId; }}} */
     const scheduleMap = {};
     for (let i = 0; i < results.length; i++) {
@@ -253,7 +262,7 @@ function buildResultObject() {
 
 /**
  * @param {Result} resultObject
- * @param {PlatformKeys} platform
+ * @param {PlatformKey} platform
  * @param {string} language
  * @param {Stat} stat
  * @param {string=} error
@@ -341,12 +350,12 @@ async function applyResultObject(db, scheduleId, messageId, resultObject, events
         const entries = Object.entries(events);
         for (const [key, value] of entries) {
             /** @type {Schedule["events"]["composed"]} */
-            const events = value.map(({ timezone, scheduledTo }) => ({
+            const occuredEvent = value.map(({ timezone, scheduledTo }) => ({
                 timezone,
                 scheduledTo,
                 date: new Date
             }))
-            $push["events." + key] = { $each: events };
+            $push["events." + key] = { $each: occuredEvent };
         }
     }
 
@@ -355,10 +364,25 @@ async function applyResultObject(db, scheduleId, messageId, resultObject, events
     await db.collection("messages")
         .updateOne({ _id: messageId }, { $inc });
 
-    // update the status of the schedule if all messages are sent or failed
+    // set status of the schedule: "sending".
     await db.collection("message_schedules").updateOne({
         _id: scheduleId,
-        "result.total": { $gt: 0 },
+        // there's at least one scheduled event:
+        "events.scheduled.0": { $exists: true },
+        // not all schedules are composed:
+        $expr: {
+            $ne: [
+                { $size: "$events.scheduled" },
+                { $size: "$events.composed" }
+            ]
+        }
+    }, {
+        $set: { status: "sending" }
+    });
+
+    // set status of the schedule: "sent" or "failed".
+    await db.collection("message_schedules").updateOne({
+        _id: scheduleId,
         // all schedules are composed:
         $expr: {
             $eq: [
@@ -377,12 +401,12 @@ async function applyResultObject(db, scheduleId, messageId, resultObject, events
                         ]
                     },
                     "sent",
-                    "$status"
+                    "sending"
                 ]
             }
         }
     }, {
-        $set: { // failed is equal to total (all messages failed)
+        $set: { // failed is equal to total (all of the messages are failed)
             status: {
                 $cond: [
                     { $eq: ["$result.total", "$result.failed"] },
@@ -393,6 +417,7 @@ async function applyResultObject(db, scheduleId, messageId, resultObject, events
         }
     }]);
 }
+
 
 module.exports = {
     STAT_KEYS,

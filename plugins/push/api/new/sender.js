@@ -1,7 +1,7 @@
 /**
  * @typedef {import('./types/queue.ts').PushEvent} PushEvent
  * @typedef {import('./types/queue.ts').ResultEvent} ResultEvent
- * @typedef {import('./types/message.ts').ResultError} ResultError
+ * @typedef {import('./types/message.ts').ErrorObject} ErrorObject
  * @typedef {import('./types/utils.ts').LogObject} LogObject
  */
 
@@ -47,7 +47,7 @@ async function sendAllPushes(pushes) {
         else {
             /** @type {string=} */
             let response;
-            /** @type {ResultError} */
+            /** @type {ErrorObject} */
             let error = { name: "UnkownError", message: "UnkownError" };
             if (result.reason instanceof Error) {
                 const { name, message, stack } = result.reason;

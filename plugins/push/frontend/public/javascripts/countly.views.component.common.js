@@ -1164,4 +1164,19 @@
         }
     });
 
+    countlyPushNotificationComponent.SchedulesTab = countlyVue.views.create({
+        template: '#details-schedules-tab',
+        data: () => {
+            return {
+            };
+        },
+        computed: {
+            schedules() {
+                return this.$store.state.countlyPushNotificationDetails.pushNotification?.schedules ?? [];
+            }
+        },
+        methods: {
+        }
+    });
+
 })(window.countlyPushNotificationComponent = window.countlyPushNotificationComponent || {});

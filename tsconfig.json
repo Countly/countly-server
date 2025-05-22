@@ -1,7 +1,9 @@
 {
     "include": [
         "plugins/push/**/*.ts",
-        "plugins/push/**/*.js"
+        "plugins/push/**/*.js",
+        "plugins/push_approver/**/*.ts",
+        "plugins/push_approver/**/*.js"
     ],
     "exclude": [
         "node_modules"

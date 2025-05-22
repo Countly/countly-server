@@ -21,7 +21,7 @@ class SendError extends PushError {
     }
 }
 /**
- * Generic unexpected error when we cannot make any sense for the response of the provider.
+ * Generic unexpected error when we cannot make any sense of the response from the provider.
  */
 class InvalidResponse extends SendError {}
 /**

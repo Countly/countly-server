@@ -163,6 +163,7 @@
                             </validation-provider>
                         </div>
                     </div>
+                    <!-- TODO: THIS IS COMPLICATING A LOT OF THINGS, SO WE ARE COMMENTING IT OUT FOR NOW UNTIL WE DECIDE IF WE WANT TO KEEP IT OR NOT
                     <div v-if="type === TypeEnum.ONE_TIME" class="cly-vue-drawer-step__section">
                         <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
                             {{i18n('push-notification.when-to-determine-users')}}
@@ -180,7 +181,7 @@
                                 :title="i18n('push-notification.determine-users-before')">
                             </line-radio-button-with-description>
                         </div>
-                    </div>
+                    </div> -->
                 </template>
                 <template v-else-if="type === TypeEnum.AUTOMATIC">
                     <div class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit.isGeo">
@@ -367,390 +368,396 @@
             </cly-form-step>
             <cly-form-step id="step3" :name="i18n('push-notification-drawer.step-three')">
                 <form>
-                <div class="cly-vue-drawer-step__section">
-                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
-                        <template v-if="type === TypeEnum.ONE_TIME || type === TypeEnum.RECURRING || type === TypeEnum.MULTIPLE">
-                            <span class="text-big font-weight-bold">{{i18n('push-notification.delivery')}}</span>
-                        </template>
-                        <template v-else>{{i18n('push-notification.set-start-date')}}</template>
-                        <cly-tooltip-icon :tooltip="i18n('push-notification.set-start-date-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
-                        <span v-if="type === TypeEnum.MULTIPLE" class="text-smallish color-cool-gray-50 bu-is-block bu-mt-2">{{i18n('push-notification.delivery-date-description')}}</span>
+                    <div class="cly-vue-drawer-step__section">
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
+                            <template v-if="type === TypeEnum.ONE_TIME || type === TypeEnum.RECURRING || type === TypeEnum.MULTIPLE">
+                                <span class="text-big font-weight-bold">{{i18n('push-notification.delivery')}}</span>
+                            </template>
+                            <template v-else>{{i18n('push-notification.set-start-date')}}</template>
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.set-start-date-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            <span v-if="type === TypeEnum.MULTIPLE" class="text-smallish color-cool-gray-50 bu-is-block bu-mt-2">{{i18n('push-notification.delivery-date-description')}}</span>
+                        </div>
+                        <div class="bu-level bu-is-flex-wrap-wrap" v-if="type === TypeEnum.ONE_TIME || type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL">
+                            <large-radio-button-with-description
+                                :label="SendEnum.NOW"
+                                v-model="pushNotificationUnderEdit.delivery.type"
+                                :title="i18n('push-notification.send-now')"
+                                :description="i18n('push-notification.send-now-description')">
+                            </large-radio-button-with-description>
+                            <large-radio-button-with-description
+                                :label="SendEnum.LATER"
+                                v-model="pushNotificationUnderEdit.delivery.type"
+                                :title="i18n('push-notification.schedule-for-later')">
+                                <cly-date-picker
+                                    :offset-correction="false"
+                                    v-bind:disabled="pushNotificationUnderEdit.delivery.type === SendEnum.NOW"
+                                    v-model="startDate"
+                                    timestampFormat="ms"
+                                    type="date"
+                                    :select-time="true"
+                                    :is-future="true">
+                                </cly-date-picker>
+                            </large-radio-button-with-description>
+                        </div>
                     </div>
-                    <div class="bu-level bu-is-flex-wrap-wrap" v-if="type === TypeEnum.ONE_TIME || type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL">
-                        <large-radio-button-with-description
-                            :label="SendEnum.NOW"
-                            v-model="pushNotificationUnderEdit.delivery.type"
-                            :title="i18n('push-notification.send-now')"
-                            :description="i18n('push-notification.send-now-description')">
-                        </large-radio-button-with-description>
-                        <large-radio-button-with-description
-                            :label="SendEnum.LATER"
-                            v-model="pushNotificationUnderEdit.delivery.type"
-                            :title="i18n('push-notification.schedule-for-later')">
-                            <cly-date-picker
-                                :offset-correction="false"
-                                v-bind:disabled="pushNotificationUnderEdit.delivery.type === SendEnum.NOW"
-                                v-model="startDate"
-                                timestampFormat="ms"
-                                type="date"
-                                :select-time="true"
-                                :is-future="true">
-                            </cly-date-picker>
-                        </large-radio-button-with-description>
-                    </div>
-                </div>
-                <div v-if="type === TypeEnum.AUTOMATIC" class="cly-vue-drawer-step__section">
-                    <div class="bu-is-flex bu-is-flex-direction-column bu-pb-5">
-                        <div class="bu-is-flex bu-is-align-items-center">
-                            <el-switch v-model="isEndDateSet" class="bu-mr-2"></el-switch>
-                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
-                                {{i18n('push-notification.set-end-date')}}
-                                <cly-tooltip-icon :tooltip="i18n('push-notification.set-end-date-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                    <div v-if="type === TypeEnum.AUTOMATIC" class="cly-vue-drawer-step__section">
+                        <div class="bu-is-flex bu-is-flex-direction-column bu-pb-5">
+                            <div class="bu-is-flex bu-is-align-items-center">
+                                <el-switch v-model="isEndDateSet" class="bu-mr-2"></el-switch>
+                                <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
+                                    {{i18n('push-notification.set-end-date')}}
+                                    <cly-tooltip-icon :tooltip="i18n('push-notification.set-end-date-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                                </div>
+                            </div>
+                            <div style="width:200px">
+                                <cly-date-picker
+                                    :offset-correction="false"
+                                    class="bu-ml-6"
+                                    v-bind:disabled="!isEndDateSet"
+                                    v-model="endDate"
+                                    timestampFormat="ms"
+                                    type="date"
+                                    width="200"
+                                    :select-time="true"
+                                    :is-future="true">
+                                </cly-date-picker>
                             </div>
                         </div>
-                        <div style="width:200px">
+                        <div class="bu-is-flex bu-is-flex-direction-column">
+                            <div class="bu-is-flex bu-is-align-items-center">
+                                <el-switch v-model="isUsersTimezoneSet" class="bu-mr-2"></el-switch>
+                                <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
+                                    {{i18n('push-notification.delivery-time')}}
+                                    <cly-tooltip-icon :tooltip="i18n('push-notification.delivery-time-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                                </div>
+                            </div>
+                            <div style="width:200px">
+                                <cly-time-picker
+                                    class="bu-ml-6"
+                                    v-bind:disabled="!isUsersTimezoneSet"
+                                    v-model="usersTimezone">
+                                </cly-time-picker>
+                            </div>
+                        </div>
+                        <div v-if="isUsersTimezoneSet" class="cly-vue-drawer-step__section bu-mt-5">
+                            <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
+                                {{i18n('push-notification.what-if-past-scheduled')}}
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.what-if-past-scheduled-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
+                            <div class="bu-is-flex bu-is-flex-direction-column">
+                                <line-radio-button-with-description
+                                    :label="PastScheduleEnum.SKIP"
+                                    v-model="pushNotificationUnderEdit[type].pastSchedule"
+                                    :title="i18n('push-notification.do-not-send-message')">
+                                </line-radio-button-with-description>
+                                <line-radio-button-with-description
+                                    :label="PastScheduleEnum.NEXT_DAY"
+                                    v-model="pushNotificationUnderEdit[type].pastSchedule"
+                                    :title="i18n('push-notification.deliver-next-day')">
+                                </line-radio-button-with-description>
+                            </div>
+                        </div>
+                    </div>
+                    <template v-if="type === TypeEnum.MULTIPLE">
+                        <div v-for="(_, index) in pushNotificationUnderEdit.delivery.multipleDates" class="bu-is-flex bu-mt-2">
                             <cly-date-picker
                                 :offset-correction="false"
-                                class="bu-ml-6"
-                                v-bind:disabled="!isEndDateSet"
-                                v-model="endDate"
+                                v-model="pushNotificationUnderEdit.delivery.multipleDates[index]"
                                 timestampFormat="ms"
                                 type="date"
                                 width="200"
                                 :select-time="true"
                                 :is-future="true">
                             </cly-date-picker>
-                        </div>
-                    </div>
-                    <div class="bu-is-flex bu-is-flex-direction-column">
-                        <div class="bu-is-flex bu-is-align-items-center">
-                            <el-switch v-model="isUsersTimezoneSet" class="bu-mr-2"></el-switch>
-                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
-                                {{i18n('push-notification.delivery-time')}}
-                                <cly-tooltip-icon :tooltip="i18n('push-notification.delivery-time-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            <div class="cly-icon-button cly-icon-button--gray cly-vue-qb-icon" @click="removeDate(index)">
+                                <i class="el-icon-close"></i>
                             </div>
                         </div>
-                        <div style="width:200px">
-                            <cly-time-picker
-                                class="bu-ml-6"
-                                v-bind:disabled="!isUsersTimezoneSet"
-                                v-model="usersTimezone">
-                            </cly-time-picker>
+                        <div class="cly-text-button bu-mt-3 bu-ml-3 bu-mb-5" @click="addDate()">
+                        + {{i18n('push-notification.add-more')}}
                         </div>
-                    </div>
-                    <div v-if="isUsersTimezoneSet" class="cly-vue-drawer-step__section bu-mt-5">
-                        <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
-                            {{i18n('push-notification.what-if-past-scheduled')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.what-if-past-scheduled-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                    </template>
+                    <template v-if="(type === TypeEnum.ONE_TIME && pushNotificationUnderEdit.delivery.type === SendEnum.LATER) || (type === TypeEnum.MULTIPLE)">
+                        <div class="cly-vue-drawer-step__section">
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                                {{i18n('push-notification.timezone')}}
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.timezone-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
+                            <div class="bu-level bu-is-flex-wrap-wrap bu-mt-2">
+                                <large-radio-button-with-description
+                                    :label="TimezoneEnum.SAME"
+                                    size="large"
+                                    v-model="pushNotificationUnderEdit.timezone"
+                                    :title="i18n('push-notification.deliver-to-all-users-same-time')"
+                                    :description="i18n('push-notification.deliver-to-all-users-same-time-description')">
+                                </large-radio-button-with-description>
+                                <large-radio-button-with-description
+                                    :label="TimezoneEnum.DEVICE"
+                                    size="large"
+                                    v-model="pushNotificationUnderEdit.timezone"
+                                    :title="i18n('push-notification.deliver-to-all-users-device-time')"
+                                    :description="i18n('push-notification.deliver-to-all-users-device-time-description')">
+                                </large-radio-button-with-description>
+                            </div>
                         </div>
-                        <div class="bu-is-flex bu-is-flex-direction-column">
-                            <line-radio-button-with-description
-                                :label="PastScheduleEnum.SKIP"
-                                v-model="pushNotificationUnderEdit[type].pastSchedule"
-                                :title="i18n('push-notification.do-not-send-message')">
-                            </line-radio-button-with-description>
-                            <line-radio-button-with-description
-                                :label="PastScheduleEnum.NEXT_DAY"
-                                v-model="pushNotificationUnderEdit[type].pastSchedule"
-                                :title="i18n('push-notification.deliver-next-day')">
-                            </line-radio-button-with-description>
+                        <div class="cly-vue-drawer-step__section">
+                            <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
+                                {{i18n('push-notification.what-if-past-scheduled')}}
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.what-if-past-scheduled-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
+                            <div class="bu-is-flex bu-is-flex-direction-column">
+                                <line-radio-button-with-description
+                                    :label="PastScheduleEnum.SKIP"
+                                    v-model="pushNotificationUnderEdit[type].pastSchedule"
+                                    :title="i18n('push-notification.do-not-send-message')">
+                                </line-radio-button-with-description>
+                                <line-radio-button-with-description
+                                    :label="PastScheduleEnum.NEXT_DAY"
+                                    v-model="pushNotificationUnderEdit[type].pastSchedule"
+                                    :title="i18n('push-notification.deliver-next-day')">
+                                </line-radio-button-with-description>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <template v-if="type === TypeEnum.MULTIPLE">
-                    <div v-for="(_, index) in pushNotificationUnderEdit.delivery.multipleDates" class="bu-is-flex bu-mt-2">
-                        <cly-date-picker
-                            :offset-correction="false"
-                            v-model="pushNotificationUnderEdit.delivery.multipleDates[index]"
-                            timestampFormat="ms"
-                            type="date"
-                            width="200"
-                            :select-time="true"
-                            :is-future="true">
-                        </cly-date-picker>
-                        <div class="cly-icon-button cly-icon-button--gray cly-vue-qb-icon" @click="removeDate(index)">
-                            <i class="el-icon-close"></i>
-                        </div>
-                    </div>
-                    <div class="cly-text-button bu-mt-3 bu-ml-3 bu-mb-5" @click="addDate()">
-                    + {{i18n('push-notification.add-more')}}
-                    </div>
-                </template>
-                <template v-if="(type === TypeEnum.ONE_TIME && pushNotificationUnderEdit.delivery.type === SendEnum.LATER) || (type === TypeEnum.MULTIPLE)">
-                    <div class="cly-vue-drawer-step__section">
-                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
-                            {{i18n('push-notification.timezone')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.timezone-description')" icon="ion ion-help-circled"> </cly-tooltip-icon>
-                        </div>
-                        <div class="bu-level bu-is-flex-wrap-wrap bu-mt-2">
-                            <large-radio-button-with-description
-                                :label="TimezoneEnum.SAME"
-                                size="large"
-                                v-model="pushNotificationUnderEdit.timezone"
-                                :title="i18n('push-notification.deliver-to-all-users-same-time')"
-                                :description="i18n('push-notification.deliver-to-all-users-same-time-description')">
-                            </large-radio-button-with-description>
-                            <large-radio-button-with-description
-                                :label="TimezoneEnum.DEVICE"
-                                size="large"
-                                v-model="pushNotificationUnderEdit.timezone"
-                                :title="i18n('push-notification.deliver-to-all-users-device-time')"
-                                :description="i18n('push-notification.deliver-to-all-users-device-time-description')">
-                            </large-radio-button-with-description>
-                        </div>
-                    </div>
-                    <div class="cly-vue-drawer-step__section">
-                        <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
-                            {{i18n('push-notification.what-if-past-scheduled')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.what-if-past-scheduled-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
-                        </div>
-                        <div class="bu-is-flex bu-is-flex-direction-column">
-                            <line-radio-button-with-description
-                                :label="PastScheduleEnum.SKIP"
-                                v-model="pushNotificationUnderEdit[type].pastSchedule"
-                                :title="i18n('push-notification.do-not-send-message')">
-                            </line-radio-button-with-description>
-                            <line-radio-button-with-description
-                                :label="PastScheduleEnum.NEXT_DAY"
-                                v-model="pushNotificationUnderEdit[type].pastSchedule"
-                                :title="i18n('push-notification.deliver-next-day')">
-                            </line-radio-button-with-description>
-                        </div>
-                    </div>
-                </template>
-                <div class="cly-vue-drawer-step__section" v-if="type === TypeEnum.AUTOMATIC">
-                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-big font-weight-bold">{{i18n('push-notification.delivery-method')}}</div>
-                    <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.delivery-method-description')}}</div>
-                    <div class="bu-level bu-is-flex-wrap-wrap">
-                        <large-radio-button-with-description
-                            :label="DeliveryMethodEnum.IMMEDIATELY"
-                            v-model="pushNotificationUnderEdit.automatic.deliveryMethod"
-                            :title="i18n('push-notification.immediately')"
-                            :description="i18n('push-notification.immediately-description')">
-                        </large-radio-button-with-description>
-                        <large-radio-button-with-description
-                            :label="DeliveryMethodEnum.DELAYED"
-                            v-model="pushNotificationUnderEdit.automatic.deliveryMethod"
-                            :title="i18n('push-notification.delayed')">
-                            <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
-                                <el-input
-                                    :disabled="pushNotificationUnderEdit.automatic.deliveryMethod !== DeliveryMethodEnum.DELAYED"
-                                    v-model="pushNotificationUnderEdit.automatic.delayed.days"
-                                    controls-position="right"
-                                    :class="{'is-error': validation.errors.length > 0}"
-                                    :min="0"
-                                    style="min-width:100px">
-                                    <template slot="suffix">
-                                        <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.days')}}</span>
-                                    </template>
-                                </el-input>
-                            </validation-provider>
-                            <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23|min:1|max:2" class="bu-ml-1">
-                                <el-input
-                                    :disabled="pushNotificationUnderEdit.automatic.deliveryMethod !== DeliveryMethodEnum.DELAYED"
-                                    v-model="pushNotificationUnderEdit.automatic.delayed.hours"
-                                    controls-position="right"
-                                    :min="0"
-                                    :max="23"
-                                    style="min-width:100px"
-                                    :class="{'is-error': validation.errors.length > 0}">
-                                    <template slot="suffix">
-                                        <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.hours')}}</span>
-                                    </template>
-                                </el-input>
-                            </validation-provider>
-                        </large-radio-button-with-description>
-                    </div>
-                </div>
-                <template v-if="type === TypeEnum.AUTOMATIC">
-                    <div class="cly-vue-drawer-step__section">
-                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
-                            {{i18n('push-notification.capping')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.capping-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
-                        </div>
+                    </template>
+                    <div class="cly-vue-drawer-step__section" v-if="type === TypeEnum.AUTOMATIC">
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-big font-weight-bold">{{i18n('push-notification.delivery-method')}}</div>
+                        <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.delivery-method-description')}}</div>
                         <div class="bu-level bu-is-flex-wrap-wrap">
                             <large-radio-button-with-description
-                                :label="false"
-                                v-model="pushNotificationUnderEdit.automatic.capping"
-                                :title="i18n('push-notification.no-capping')"
-                                :description="i18n('push-notification.no-capping-description')">
+                                :label="DeliveryMethodEnum.IMMEDIATELY"
+                                v-model="pushNotificationUnderEdit.automatic.deliveryMethod"
+                                :title="i18n('push-notification.immediately')"
+                                :description="i18n('push-notification.immediately-description')">
                             </large-radio-button-with-description>
                             <large-radio-button-with-description
-                                :label="true"
-                                v-model="pushNotificationUnderEdit.automatic.capping"
-                                :title="i18n('push-notification.capped')"
-                                :description="i18n('push-notification.capped-description')">
+                                :label="DeliveryMethodEnum.DELAYED"
+                                v-model="pushNotificationUnderEdit.automatic.deliveryMethod"
+                                :title="i18n('push-notification.delayed')">
+                                <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
+                                    <el-input
+                                        :disabled="pushNotificationUnderEdit.automatic.deliveryMethod !== DeliveryMethodEnum.DELAYED"
+                                        v-model="pushNotificationUnderEdit.automatic.delayed.days"
+                                        controls-position="right"
+                                        :class="{'is-error': validation.errors.length > 0}"
+                                        :min="0"
+                                        style="min-width:100px">
+                                        <template slot="suffix">
+                                            <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.days')}}</span>
+                                        </template>
+                                    </el-input>
+                                </validation-provider>
+                                <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23|min:1|max:2" class="bu-ml-1">
+                                    <el-input
+                                        :disabled="pushNotificationUnderEdit.automatic.deliveryMethod !== DeliveryMethodEnum.DELAYED"
+                                        v-model="pushNotificationUnderEdit.automatic.delayed.hours"
+                                        controls-position="right"
+                                        :min="0"
+                                        :max="23"
+                                        style="min-width:100px"
+                                        :class="{'is-error': validation.errors.length > 0}">
+                                        <template slot="suffix">
+                                            <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.hours')}}</span>
+                                        </template>
+                                    </el-input>
+                                </validation-provider>
                             </large-radio-button-with-description>
                         </div>
                     </div>
-                    <div class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit.automatic.capping">
-                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
-                            {{i18n('push-notification.maximum-messages-per-user')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.maximum-messages-per-user-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                    <template v-if="type === TypeEnum.AUTOMATIC">
+                        <div class="cly-vue-drawer-step__section">
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header">
+                                {{i18n('push-notification.capping')}}
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.capping-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
+                            <div class="bu-level bu-is-flex-wrap-wrap">
+                                <large-radio-button-with-description
+                                    :label="false"
+                                    v-model="pushNotificationUnderEdit.automatic.capping"
+                                    :title="i18n('push-notification.no-capping')"
+                                    :description="i18n('push-notification.no-capping-description')">
+                                </large-radio-button-with-description>
+                                <large-radio-button-with-description
+                                    :label="true"
+                                    v-model="pushNotificationUnderEdit.automatic.capping"
+                                    :title="i18n('push-notification.capped')"
+                                    :description="i18n('push-notification.capped-description')">
+                                </large-radio-button-with-description>
+                            </div>
                         </div>
-                        <div class="bu-level">
-                            <validation-provider v-slot="validation" rules="required|integer">
-                                <el-input v-model="pushNotificationUnderEdit.automatic.maximumMessagesPerUser" placeholder="0" :min="1" style="width:200px" :class="{'is-error': validation.errors.length > 0}">
-                                    <template slot="suffix">
-                                        <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.messages')}}</span>
-                                    </template>
-                                </el-input>
-                            </validation-provider>
+                        <div class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit.automatic.capping">
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
+                                {{i18n('push-notification.maximum-messages-per-user')}}
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.maximum-messages-per-user-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
+                            <div class="bu-level">
+                                <validation-provider v-slot="validation" rules="required|integer">
+                                    <el-input v-model="pushNotificationUnderEdit.automatic.maximumMessagesPerUser" placeholder="0" :min="1" style="width:200px" :class="{'is-error': validation.errors.length > 0}">
+                                        <template slot="suffix">
+                                            <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.messages')}}</span>
+                                        </template>
+                                    </el-input>
+                                </validation-provider>
+                            </div>
                         </div>
-                    </div>
-                    <div class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit.automatic.capping">
-                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
-                            {{i18n('push-notification.minimum-time-between-messages')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.minimum-time-between-messages-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                        <div class="cly-vue-drawer-step__section" v-if="pushNotificationUnderEdit.automatic.capping">
+                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
+                                {{i18n('push-notification.minimum-time-between-messages')}}
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.minimum-time-between-messages-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
+                            <div class="bu-is-flex is-justify-content-flex-start">
+                                <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
+                                    <el-input v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.days" controls-position="right" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
+                                        <template slot="suffix">
+                                            <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.days')}}</span>
+                                        </template>
+                                    </el-input>
+                                </validation-provider>
+                                <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23|min:1|max:2" class="bu-ml-1">
+                                    <el-input v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.hours" controls-position="right" :min="0" :max="23" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
+                                        <template slot="suffix">
+                                            <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.hours')}}</span>
+                                        </template>
+                                    </el-input>
+                                </validation-provider>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-if="type === TypeEnum.RECURRING">
+                        <div class="bu-is-flex bu-is-flex-direction-column">
+                            <span class="text-medium font-weight-bold">{{i18n('push-notification-drawer.rec-push-start-date')}}</span>
+                            <div class="cly-vue-push-notification-drawer__date-picker-wrapper bu-mt-2">
+                                <cly-date-picker
+                                    :offset-correction="false"
+                                    v-model="startDate"
+                                    timestampFormat="ms"
+                                    type="date"
+                                    width="200"
+                                    :select-time="true"
+                                    :is-future="true">
+                                </cly-date-picker>
+                            </div>
+                        </div>
+                        <div class="bu-is-flex bu-is-flex-direction-column bu-pb-5 bu-mt-5">
+                            <div class="bu-is-flex bu-is-align-items-center">
+                                <el-switch v-model="isEndDateSet" class="bu-mr-2"></el-switch>
+                                <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
+                                    <span class="text-medium font-weight-bold">{{i18n('push-notification.set-end-date')}}</span>
+                                </div>
+                            </div>
+                            <div class="cly-vue-push-notification-drawer__date-picker-wrapper">
+                                <cly-date-picker
+                                    :offset-correction="false"
+                                    class="bu-ml-6"
+                                    v-bind:disabled="!isEndDateSet"
+                                    v-model="endDate"
+                                    timestampFormat="ms"
+                                    type="date"
+                                    width="200"
+                                    :select-time="true"
+                                    :is-future="true">
+                                </cly-date-picker>
+                            </div>
+                        </div>
+                        <div class="bu-mt-5">
+                            <span class="text-big font-weight-bold">{{i18n('push-notification-drawer.notification-frequency')}}</span>
+                            <div class="cly-vue-push-notification-drawer__radio-button-group bu-mt-3">
+                                <el-radio-group class="bu-ml-1" size="medium" @change="onSelectedBucket" v-model="pushNotificationUnderEdit.delivery.repetition.bucket">
+                                    <el-radio-button
+                                        :label="bucketType"
+                                        :key="bucketType"
+                                        v-for="bucketType in bucketList">
+                                        {{i18n('push-notification.' + bucketType)}}
+                                    </el-radio-button>
+                                </el-radio-group>
+                            </div>
+                        </div>
+                        <div class="bu-mt-6">
+                            <span class="text-medium font-weight-bold">{{i18n('push-notification-drawer.repetition-for-every')}}</span>
+                            <cly-tooltip-icon :tooltip="i18n('push-notification-drawer.repetition-for-every-tooltip', i18n('push-notification-drawer.repetitions-' + pushNotificationUnderEdit.delivery.repetition.bucket))" icon="ion ion-help-circled"></cly-tooltip-icon>
+                            <div class="cly-vue-push-notification-drawer__radio-button-group bu-mt-2">
+                                <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
+                                    <el-input v-model="pushNotificationUnderEdit.delivery.repetition.every" :min="0" style="width:120px" :class="{'is-error': validation.errors.length > 0}">
+                                        <template slot="suffix">
+                                            <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">
+                                                {{pushNotificationUnderEdit.delivery.repetition.every === '0' || pushNotificationUnderEdit.delivery.repetition.every === '1' ? i18n('push-notification-drawer.repetition-' + pushNotificationUnderEdit.delivery.repetition.bucket) : i18n('push-notification-drawer.repetitions-' + pushNotificationUnderEdit.delivery.repetition.bucket)}}
+                                            </span>
+                                        </template>
+                                    </el-input>
+                                </validation-provider>
+                            </div>
+                        </div>
+                        <div class="bu-mt-5" v-if="pushNotificationUnderEdit.delivery.repetition.bucket === 'weekly' || pushNotificationUnderEdit.delivery.repetition.bucket === 'monthly'">
+                            <span class="text-medium font-weight-bold">{{i18n('push-notification-drawer.repeat-on')}}</span>
+                            <div class="cly-vue-push-notification-drawer__radio-button-group bu-mt-2">
+                                <validation-provider v-slot="validation" rules="required" class="bu-ml-1">
+                                    <cly-select-x
+                                        class="cly-vue-push-notification-drawer__repetition-weekly-select"
+                                        mode="multi-check"
+                                        :collapse-tags="false"
+                                        v-model="pushNotificationUnderEdit.delivery.repetition.on"
+                                        :options="pushNotificationUnderEdit.delivery.repetition.bucket === 'weekly' ? weeklyRepetitionOptions : monthlyRepetitionOptions">
+                                    </cly-select-x>
+                                </validation-provider>
+                            </div>
+                        </div>
+                        <div class="bu-mt-5">
+                            <span class="text-medium font-weight-bold">{{i18n('push-notification-drawer.repeat-at')}}</span>
+                            <cly-tooltip-icon :tooltip="i18n('push-notification-drawer.repeat-at-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
+                            <div class="cly-vue-push-notification-drawer__radio-button-group bu-mt-2">
+                                <cly-time-picker
+                                    style="width:100px"
+                                    v-model="pushNotificationUnderEdit.delivery.repetition.at">
+                                </cly-time-picker>
+                            </div>
+                        </div>
+                        <div class="cly-vue-drawer-step__section bu-mt-5">
+                            <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
+                                {{i18n('push-notification.what-if-past-scheduled')}}
+                                <cly-tooltip-icon :tooltip="i18n('push-notification.what-if-past-scheduled-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            </div>
+                            <div class="bu-is-flex bu-is-flex-direction-column">
+                                <line-radio-button-with-description
+                                    :label="PastScheduleEnum.SKIP"
+                                    v-model="pushNotificationUnderEdit[type].pastSchedule"
+                                    :title="i18n('push-notification.do-not-send-message')">
+                                </line-radio-button-with-description>
+                                <line-radio-button-with-description
+                                    :label="PastScheduleEnum.NEXT_DAY"
+                                    v-model="pushNotificationUnderEdit[type].pastSchedule"
+                                    :title="i18n('push-notification.deliver-next-day')">
+                                </line-radio-button-with-description>
+                            </div>
+                        </div>
+                    </template>
+                    <div class="cly-vue-drawer-step__section" v-if="type === TypeEnum.ONE_TIME || type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL || type === TypeEnum.MULTIPLE">
+                        <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-big font-weight-bold">
+                            {{i18n('push-notification.expiration-time')}}
+                            <cly-tooltip-icon :tooltip="i18n('push-notification.expiration-time-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
+                            <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.expiration-time-description')}}</div>
                         </div>
                         <div class="bu-is-flex is-justify-content-flex-start">
                             <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
-                                <el-input v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.days" controls-position="right" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
+                                <el-input v-model="pushNotificationUnderEdit.expiration.days" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
                                     <template slot="suffix">
-                                        <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.days')}}</span>
+                                        <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.days')}}</span>
                                     </template>
                                 </el-input>
                             </validation-provider>
-                            <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23|min:1|max:2" class="bu-ml-1">
-                                <el-input v-model="pushNotificationUnderEdit.automatic.minimumTimeBetweenMessages.hours" controls-position="right" :min="0" :max="23" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
+                            <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23" class="bu-ml-1">
+                                <el-input v-model="pushNotificationUnderEdit.expiration.hours" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
                                     <template slot="suffix">
-                                        <span class="bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.hours')}}</span>
-                                    </template>
-                                </el-input>
-                            </validation-provider>
-                        </div>
-                    </div>
-                </template>
-                <template v-if="type === TypeEnum.RECURRING">
-                    <div class="bu-is-flex bu-is-flex-direction-column">
-                        <span class="text-medium font-weight-bold">{{i18n('push-notification-drawer.rec-push-start-date')}}</span>
-                        <div class="cly-vue-push-notification-drawer__date-picker-wrapper bu-mt-2">
-                            <cly-date-picker
-                                :offset-correction="false"
-                                v-model="startDate"
-                                timestampFormat="ms"
-                                type="date"
-                                width="200"
-                                :select-time="true"
-                                :is-future="true">
-                            </cly-date-picker>
-                        </div>
-                    </div>
-                    <div class="bu-is-flex bu-is-flex-direction-column bu-pb-5 bu-mt-5">
-                        <div class="bu-is-flex bu-is-align-items-center">
-                            <el-switch v-model="isEndDateSet" class="bu-mr-2"></el-switch>
-                            <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-medium font-weight-bold">
-                                <span class="text-medium font-weight-bold">{{i18n('push-notification.set-end-date')}}</span>
-                            </div>
-                        </div>
-                        <div class="cly-vue-push-notification-drawer__date-picker-wrapper">
-                            <cly-date-picker
-                                :offset-correction="false"
-                                class="bu-ml-6"
-                                v-bind:disabled="!isEndDateSet"
-                                v-model="endDate"
-                                timestampFormat="ms"
-                                type="date"
-                                width="200"
-                                :select-time="true"
-                                :is-future="true">
-                            </cly-date-picker>
-                        </div>
-                    </div>
-                    <div class="bu-mt-5">
-                        <span class="text-big font-weight-bold">{{i18n('push-notification-drawer.notification-frequency')}}</span>
-                        <div class="cly-vue-push-notification-drawer__radio-button-group bu-mt-3">
-                            <el-radio-group class="bu-ml-1" size="medium" @change="onSelectedBucket" v-model="pushNotificationUnderEdit.delivery.repetition.bucket">
-                                <el-radio-button
-                                    :label="bucketType"
-                                    :key="bucketType"
-                                    v-for="bucketType in bucketList">
-                                    {{i18n('push-notification.' + bucketType)}}
-                                </el-radio-button>
-                            </el-radio-group>
-                        </div>
-                    </div>
-                    <div class="bu-mt-6">
-                        <span class="text-medium font-weight-bold">{{i18n('push-notification-drawer.repetition-for-every')}}</span>
-                        <cly-tooltip-icon :tooltip="i18n('push-notification-drawer.repetition-for-every-tooltip', i18n('push-notification-drawer.repetitions-' + pushNotificationUnderEdit.delivery.repetition.bucket))" icon="ion ion-help-circled"></cly-tooltip-icon>
-                        <div class="cly-vue-push-notification-drawer__radio-button-group bu-mt-2">
-                            <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
-                                <el-input v-model="pushNotificationUnderEdit.delivery.repetition.every" :min="0" style="width:120px" :class="{'is-error': validation.errors.length > 0}">
-                                    <template slot="suffix">
-                                        <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">
-                                            {{pushNotificationUnderEdit.delivery.repetition.every === '0' || pushNotificationUnderEdit.delivery.repetition.every === '1' ? i18n('push-notification-drawer.repetition-' + pushNotificationUnderEdit.delivery.repetition.bucket) : i18n('push-notification-drawer.repetitions-' + pushNotificationUnderEdit.delivery.repetition.bucket)}}
-                                        </span>
+                                        <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.hours')}}</span>
                                     </template>
                                 </el-input>
                             </validation-provider>
                         </div>
                     </div>
-                    <div class="bu-mt-5" v-if="pushNotificationUnderEdit.delivery.repetition.bucket === 'weekly' || pushNotificationUnderEdit.delivery.repetition.bucket === 'monthly'">
-                        <span class="text-medium font-weight-bold">{{i18n('push-notification-drawer.repeat-on')}}</span>
-                        <div class="cly-vue-push-notification-drawer__radio-button-group bu-mt-2">
-                            <validation-provider v-slot="validation" rules="required" class="bu-ml-1">
-                                <cly-select-x
-                                    class="cly-vue-push-notification-drawer__repetition-weekly-select"
-                                    mode="multi-check"
-                                    :collapse-tags="false"
-                                    v-model="pushNotificationUnderEdit.delivery.repetition.on"
-                                    :options="pushNotificationUnderEdit.delivery.repetition.bucket === 'weekly' ? weeklyRepetitionOptions : monthlyRepetitionOptions">
-                                </cly-select-x>
-                            </validation-provider>
-                        </div>
+                    <div class="cly-vue-drawer-step__section" v-if="type === TypeEnum.AUTOMATIC">
+                        <cly-notification
+                            :closable="false"
+                            class="bu-mt-3"
+                            :text="i18n('push-notification.auto-trigger-delay-warning')" />
                     </div>
-                    <div class="bu-mt-5">
-                        <span class="text-medium font-weight-bold">{{i18n('push-notification-drawer.repeat-at')}}</span>
-                        <cly-tooltip-icon :tooltip="i18n('push-notification-drawer.repeat-at-tooltip')" icon="ion ion-help-circled"></cly-tooltip-icon>
-                        <div class="cly-vue-push-notification-drawer__radio-button-group bu-mt-2">
-                            <cly-time-picker
-                                style="width:100px"
-                                v-model="pushNotificationUnderEdit.delivery.repetition.at">
-                            </cly-time-picker>
-                        </div>
-                    </div>
-                    <div class="cly-vue-drawer-step__section bu-mt-5">
-                        <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
-                            {{i18n('push-notification.what-if-past-scheduled')}}
-                            <cly-tooltip-icon :tooltip="i18n('push-notification.what-if-past-scheduled-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
-                        </div>
-                        <div class="bu-is-flex bu-is-flex-direction-column">
-                            <line-radio-button-with-description
-                                :label="PastScheduleEnum.SKIP"
-                                v-model="pushNotificationUnderEdit[type].pastSchedule"
-                                :title="i18n('push-notification.do-not-send-message')">
-                            </line-radio-button-with-description>
-                            <line-radio-button-with-description
-                                :label="PastScheduleEnum.NEXT_DAY"
-                                v-model="pushNotificationUnderEdit[type].pastSchedule"
-                                :title="i18n('push-notification.deliver-next-day')">
-                            </line-radio-button-with-description>
-                        </div>
-                    </div>
-                </template>
-                <div class="cly-vue-drawer-step__section" v-if="type === TypeEnum.ONE_TIME || type === TypeEnum.AUTOMATIC || type === TypeEnum.TRANSACTIONAL || type === TypeEnum.MULTIPLE">
-                    <div class="bu-py-1 bu-my-1 cly-vue-push-notification-drawer__radio-group-header text-big font-weight-bold">
-                        {{i18n('push-notification.expiration-time')}}
-                        <cly-tooltip-icon :tooltip="i18n('push-notification.expiration-time-tooltip')" icon="ion ion-help-circled"> </cly-tooltip-icon>
-                        <div class="cly-vue-push-notification-drawer__input-description">{{i18n('push-notification.expiration-time-description')}}</div>
-                    </div>
-                    <div class="bu-is-flex is-justify-content-flex-start">
-                        <validation-provider v-slot="validation" rules="required|integer" class="bu-mr-1">
-                            <el-input v-model="pushNotificationUnderEdit.expiration.days" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
-                                <template slot="suffix">
-                                    <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.days')}}</span>
-                                </template>
-                            </el-input>
-                        </validation-provider>
-                        <validation-provider v-slot="validation" rules="required|integer|min_value:0|max_value:23" class="bu-ml-1">
-                            <el-input v-model="pushNotificationUnderEdit.expiration.hours" :min="0" style="width:100px" :class="{'is-error': validation.errors.length > 0}">
-                                <template slot="suffix">
-                                    <span class="bu-mr-3 bu-is-flex bu-is-align-items-center cly-vue-push-notification-drawer__input-suffix">{{i18n('push-notification.hours')}}</span>
-                                </template>
-                            </el-input>
-                        </validation-provider>
-                    </div>
-                </div>
                 </form>
             </cly-form-step>
             <cly-form-step id="step4" :name="i18n('push-notification-drawer.step-four')" class="bu-container">

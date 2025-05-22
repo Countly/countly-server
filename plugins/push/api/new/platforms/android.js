@@ -107,4 +107,4 @@ async function send(pushEvent) {
     }
 }
 
-module.exports = { send }
+module.exports = { send, isProxyConfigurationUpdated };

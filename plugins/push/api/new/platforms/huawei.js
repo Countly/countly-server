@@ -186,7 +186,4 @@ async function send(pushEvent) {
 }
 
 
-module.exports = {
-    getAuthToken,
-    send
-}
+module.exports = { send, getAuthToken };

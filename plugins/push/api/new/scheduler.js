@@ -48,7 +48,7 @@ async function scheduleMessageByDateTrigger(db, messageId) {
 
     const message = await messageCol.findOne({ _id: messageId, status: "active" });
     if (!message) {
-        throw new Error("Message " + messageId + " doesn't exist or inactive");
+        throw new Error("Message " + messageId + " doesn't exist or it's inactive");
     }
 
     const trigger = message.triggers
@@ -75,7 +75,7 @@ async function scheduleMessageByDateTrigger(db, messageId) {
         // starting from now, always keep NUMBER_OF_SCHEDULES_AHEAD_OF_TIME schedules
         // for the future for recurring and multi triggers.
         let previousSchedules = await scheduleCol
-            .find({ messageId, status: "scheduled" })
+            .find({ messageId, status: { $in: ["scheduled", "sending"] }})
             .sort({ scheduledTo: -1 })
             .limit(NUMBER_OF_SCHEDULES_AHEAD_OF_TIME)
             .toArray();
@@ -111,7 +111,7 @@ async function scheduleMessageByDateTrigger(db, messageId) {
 
     // couldn't find a matching date
     if (!scheduleTo.length) {
-        log.w("Couldn't find a matchin trigger for the message", messageId);
+        log.w("Couldn't find a matching trigger for the message", messageId);
         return;
     }
 
@@ -250,11 +250,16 @@ async function createSchedule(
         }
     };
 
-    // save the events to keep track of the whole schedule's status (there can
-    // be multiple schedule events for a single schedule when timezoneAware)
+    // save the events to keep track of the main schedule's status (there can be
+    // multiple schedule events for a single schedule document when timezoneAware)
     const events = await createScheduleEvents(messageSchedule);
-    messageSchedule.events.scheduled = events
-        .map(({ scheduledTo, timezone }) => ({ scheduledTo, timezone, date: new Date }));
+    messageSchedule.events.scheduled = events.map(
+        ({ scheduledTo, timezone }) => ({
+            scheduledTo,
+            timezone,
+            date: new Date
+        })
+    );
 
     await db.collection("message_schedules").insertOne(messageSchedule);
     return messageSchedule;

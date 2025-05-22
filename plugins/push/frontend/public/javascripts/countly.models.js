@@ -63,14 +63,15 @@
     });
     var StatusEnum = Object.freeze({
         ACTIVE: "active",
-        PENDING_APPROVAL: "pending_approval",
+        PENDING_APPROVAL: "inactive",
         DRAFT: "draft",
         SCHEDULED: "scheduled",
         SENDING: "sending",
         SENT: "sent",
         STOPPED: "stopped",
         FAILED: "failed",
-        REJECT: 'reject',
+        REJECTED: 'rejected',
+        CANCELED: "canceled",
     });
     var UserCommandEnum = Object.freeze({
         RESEND: 'resend',
@@ -183,15 +184,15 @@
     platformOptions[PlatformEnum.IOS] = {label: 'iOS', value: PlatformEnum.IOS};
 
     var statusOptions = {};
-    statusOptions[StatusEnum.ACTIVE] = {label: CV.i18n('push-notification.active'), value: StatusEnum.ACTIVE};
-    statusOptions[StatusEnum.PENDING_APPROVAL] = {label: CV.i18n('push-notification.waiting-for-approval'), value: StatusEnum.PENDING_APPROVAL};
-    statusOptions[StatusEnum.REJECT] = {label: CV.i18n('push-notification.rejected'), value: StatusEnum.REJECT};
-    statusOptions[StatusEnum.DRAFT] = {label: CV.i18n('push-notification.draft'), value: StatusEnum.DRAFT};
     statusOptions[StatusEnum.SCHEDULED] = {label: CV.i18n('push-notification.scheduled'), value: StatusEnum.SCHEDULED};
-    statusOptions[StatusEnum.SENDING] = {label: CV.i18n('push-notification.sending'), value: StatusEnum.SENDING};
     statusOptions[StatusEnum.SENT] = {label: CV.i18n('push-notification.sent'), value: StatusEnum.SENT};
-    statusOptions[StatusEnum.STOPPED] = {label: CV.i18n('push-notification.stopped'), value: StatusEnum.STOPPED};
+    statusOptions[StatusEnum.SENDING] = {label: CV.i18n('push-notification.sending'), value: StatusEnum.SENDING};
+    statusOptions[StatusEnum.CANCELED] = {label: CV.i18n('push-notification.canceled'), value: StatusEnum.CANCELED};
+    statusOptions[StatusEnum.PENDING_APPROVAL] = {label: CV.i18n('push-notification.waiting-for-approval'), value: StatusEnum.PENDING_APPROVAL};
     statusOptions[StatusEnum.FAILED] = {label: CV.i18n('push-notification.failed'), value: StatusEnum.FAILED};
+    statusOptions[StatusEnum.STOPPED] = {label: CV.i18n('push-notification.stopped'), value: StatusEnum.STOPPED};
+    statusOptions[StatusEnum.DRAFT] = {label: CV.i18n('push-notification.draft'), value: StatusEnum.DRAFT};
+    statusOptions[StatusEnum.REJECTED] = {label: CV.i18n('push-notification.rejected'), value: StatusEnum.REJECTED};
 
     var iosAuthConfigTypeOptions = {};
     iosAuthConfigTypeOptions[IOSAuthConfigTypeEnum.P8] = {label: CV.i18n('push-notification.key-file-p8'), value: IOSAuthConfigTypeEnum.P8};
@@ -236,8 +237,7 @@
             return {
                 sent: 0,
                 actioned: 0,
-                errored: 0,
-                processed: 0,
+                failed: 0,
                 total: 0,
                 locales: {}
             };
@@ -1152,7 +1152,7 @@
             },
             mapStatus: function(dto) {
                 if (dto.status === 'draft' && dto.info.rejected) {
-                    return StatusEnum.REJECT;
+                    return StatusEnum.REJECTED;
                 }
                 if (dto.status === 'inactive') {
                     return StatusEnum.PENDING_APPROVAL;
@@ -1215,8 +1215,8 @@
                 return TargetingEnum.ALL;
             },
             getExpiredTokenErrorIfFound: function(dto) {
-                if (dto.result && (dto.result.processed > (dto.result.sent + dto.result.errored))) {
-                    var affectedUsers = dto.result.processed - (dto.result.sent + dto.result.errored);
+                if (dto.result && (dto.result.total > (dto.result.sent + dto.result.failed))) {
+                    var affectedUsers = dto.result.total - (dto.result.sent + dto.result.failed);
                     return {'ExpiredToken': affectedUsers};
                 }
                 return null;
@@ -1466,8 +1466,7 @@
                 return {
                     sent: dto.result.subs[PlatformDtoEnum.ANDROID].sent || 0,
                     actioned: dto.result.subs[PlatformDtoEnum.ANDROID].actioned || 0,
-                    errored: dto.result.subs[PlatformDtoEnum.ANDROID].errored || 0,
-                    processed: dto.result.subs[PlatformDtoEnum.ANDROID].processed || 0,
+                    failed: dto.result.subs[PlatformDtoEnum.ANDROID].failed || 0,
                     total: dto.result.subs[PlatformDtoEnum.ANDROID].total || 0,
                     locales: dto.result.subs[PlatformDtoEnum.ANDROID].subs || {},
                 };
@@ -1476,8 +1475,7 @@
                 return {
                     sent: dto.result.subs[PlatformDtoEnum.IOS].sent || 0,
                     actioned: dto.result.subs[PlatformDtoEnum.IOS].actioned || 0,
-                    errored: dto.result.subs[PlatformDtoEnum.IOS].errored || 0,
-                    processed: dto.result.subs[PlatformDtoEnum.IOS].processed || 0,
+                    failed: dto.result.subs[PlatformDtoEnum.IOS].failed || 0,
                     total: dto.result.subs[PlatformDtoEnum.IOS].total || 0,
                     locales: dto.result.subs[PlatformDtoEnum.IOS].subs || {},
                 };
@@ -1493,8 +1491,7 @@
                     }
                     allLocales[key].sent = allLocales[key].sent + dto.result.subs[platformDto].subs[key].sent || 0;
                     allLocales[key].actioned = allLocales[key].actioned + dto.result.subs[platformDto].subs[key].actioned || 0;
-                    allLocales[key].errored = allLocales[key].failed + dto.result.subs[platformDto].subs[key].errored || 0;
-                    allLocales[key].processed = allLocales[key].processed + dto.result.subs[platformDto].subs[key].processed || 0;
+                    allLocales[key].failed = allLocales[key].failed + dto.result.subs[platformDto].subs[key].failed || 0;
                     allLocales[key].total = allLocales[key].total + dto.result.subs[platformDto].subs[key].total || 0;
                 });
                 return allLocales;
@@ -1510,8 +1507,7 @@
                 return {
                     sent: dto.result.sent || 0,
                     actioned: dto.result.actioned || 0,
-                    errored: dto.result.errored || 0,
-                    processed: dto.result.processed || 0,
+                    failed: dto.result.failed || 0,
                     total: dto.result.total || 0,
                     locales: allLocales,
                 };
@@ -1554,6 +1550,7 @@
                     isCohorts: typeof countlyCohorts !== 'undefined',
                     isEe: typeof countlySegmentation !== 'undefined',
                     isGeo: typeof countlyLocationTargetComponent !== 'undefined',
+                    schedules: dto.schedules || [],
                 };
             },
             mapDtoToOneTimeModel: function(dto) {
@@ -2812,8 +2809,8 @@
                             console.error(testDto);
                             return;
                         }
-                        if (testDto.result.errored) {
-                            reject(new Error('Error sending push notification to test users. Number of errors:' + testDto.result.errored));
+                        if (testDto.result.failed) {
+                            reject(new Error('Error sending push notification to test users. Number of errors:' + testDto.result.failed));
                             console.error(testDto);
                             return;
                         }

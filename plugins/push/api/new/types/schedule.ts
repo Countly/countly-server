@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { Result, Content } from "./message";
+import { Result, Content, ErrorObject } from "./message";
 import { ScheduleEvent } from "./queue";
 
 export interface AudienceFilters {
@@ -32,7 +32,12 @@ export interface Schedule {
     audienceFilters?: AudienceFilters;
     messageOverrides?: MessageOverrides;
     uids?: string[]; // user ids from app_users{appId} collection sent by cohort or event AutoTrigger
-    status: "scheduled"|"sending"|"sent"|"canceled"|"failed";
+    status:
+        "scheduled" | // Scheduled but not yet sent. Waiting for the scheduled time
+        "sending"   | // Currently sending. Will be set to "sent" or "failed" when finished
+        "sent"      | // Some messages (or all messages) are sent. No further action for this schedule
+        "canceled"  | // Canceled and not sent. No further action for this schedule
+        "failed";     // All messages failed to send. No further action for this schedule
     result: Result;
     events: {
         scheduled: (Pick<ScheduleEvent,"timezone"|"scheduledTo">&{date: Date})[];

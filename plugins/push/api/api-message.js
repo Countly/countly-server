@@ -1,3 +1,7 @@
+/**
+ * @typedef {import("./new/types/message").Message} IMessage
+ * @typedef {import("./new/types/schedule").Schedule} ISchedule
+ */
 const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES, Template, PLATFORM } = require('./send'),
     crypto = require("crypto"),
     { DEFAULTS, RecurringType } = require('./send/data/const'),
@@ -8,11 +12,23 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
     {ObjectId} = require("mongodb");
 
 const countlyFetch = require("../../../api/parts/data/fetch.js");
-
 const { buildResultObject } = require("./new/resultor.js");
 const { scheduleMessageByDateTrigger, DATE_TRIGGERS } = require("./new/scheduler.js");
-const { getMessageStatus } = require("./new/lib/utils.js");
-
+/**
+ * @param {IMessage} message
+ * @param {ISchedule=} lastSchedule
+ * @returns {IMessage["status"]|ISchedule["status"]}
+ */
+function getMessageStatus(message, lastSchedule) {
+    const trigger = message.triggers[0];
+    const useMessage = !DATE_TRIGGERS.includes(trigger.kind) // if the trigger is not a date trigger
+        || message.status !== "active" // if the message is not active
+        || !lastSchedule;              // if there's no schedule record yet
+    if (useMessage) {
+        return message.status;
+    }
+    return lastSchedule.status;
+}
 /**
  * Validate data & construct message out of it, throw in case of error
  *
@@ -121,7 +137,7 @@ async function validate(args, draft = false) {
     }
 
     if (msg._id) {
-        let existing = await Message.findOne({_id: msg._id, state: {$bitsAllClear: State.Deleted}});
+        let existing = await Message.findOne({_id: msg._id});
         if (!existing) {
             throw new ValidationError('No message with such _id');
         }
@@ -144,7 +160,6 @@ async function validate(args, draft = false) {
 
         // state & status cannot be changed by api
         msg.status = existing.status;
-        msg.state = existing.state;
     }
 
     return msg;
@@ -288,7 +303,6 @@ module.exports.create = async params => {
 
     if (params.qstring.status === Status.Draft) {
         msg.status = Status.Draft;
-        msg.state = State.Inactive;
         await msg.save();
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_draft', data: msg.json});
     }
@@ -297,11 +311,17 @@ module.exports.create = async params => {
         await msg.save();
         if (!demo) {
             if (msg.triggers.find(t => DATE_TRIGGERS.includes(t.kind))) {
-                await scheduleMessageByDateTrigger(common.db, msg._id);
+                try {
+                    // await scheduleMessageByDateTrigger(common.db, msg._id);
+                }
+                catch (error) {
+                    log.e('Error while scheduling message', error);
+                    return common.returnMessage(params, 500, "Error while scheduling the message. Check the API logs for details.");
+                }
             }
-            // await msg.schedule(log, params);
+            await msg.schedule(log, params);
         }
-        log.i('Created message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
+        log.i('Created message %s: %j / %j / %j', msg.id, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
     }
     if (demo && demo !== 'no-data') {
@@ -348,7 +368,6 @@ module.exports.update = async params => {
         }
     }
     else {
-        msg.info.rejected = null;
         msg.info.rejectedAt = null;
         msg.info.rejectedBy = null;
         msg.info.rejectedByName = null;
@@ -379,7 +398,7 @@ module.exports.update = async params => {
         }
     }
 
-    log.i('Updated message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
+    log.i('Updated message %s: %j / %j / %j', msg.id, msg.status, msg.result.json);
 
     common.returnOutput(params, msg.json);
 };
@@ -416,29 +435,27 @@ module.exports.remove = async params => {
         common.returnMessage(params, 400, {errors: data.errors}, null, true);
         return true;
     }
+    const msg = await common.db.collection("messages").findOne({_id: data.obj._id});
 
-    let msg = await Message.findOne({_id: data.obj._id, state: {$bitsAllClear: State.Deleted}});
-    if (!msg) {
-        common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
-        return true;
-    }
+    // update the message:
+    await common.db.collection('messages').updateOne({
+        _id: data.obj._id
+    }, {
+        $set: {
+            status: "deleted",
+            "info.removed": new Date(),
+            "info.removedBy": params.member._id,
+            "info.removedByName": params.member.full_name
+        }
+    });
+    // update its schedules:
+    await common.db.collection('message_schedules').updateMany(
+        { messageId: data.obj._id },
+        { $set: { status: "canceled" } }
+    );
 
-    // TODO: stop the sending via cache
-    await msg.stop(log);
-
-    let ok = await msg.updateAtomically(
-        {_id: msg._id, state: msg.state},
-        {
-            $bit: {state: {or: State.Deleted}},
-            $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
-        });
-    if (ok) {
-        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_deleted', data: msg.json});
-        common.returnOutput(params, {});
-    }
-    else {
-        throw new ValidationError('Failed to delete the message, please try again');
-    }
+    common.plugins.dispatch('/systemlogs', { params: params, action: 'push_message_deleted', data: msg });
+    common.returnOutput(params, {});
 };
 
 
@@ -725,14 +742,31 @@ module.exports.one = async params => {
         common.returnMessage(params, 400, {errors: data.errors}, null, true);
         return true;
     }
+    const messages = await common.db.collection('messages').aggregate([{
+        $match: {
+            _id: data._id
+        }
+    }, {
+        $lookup: {
+            from: "message_schedules",
+            localField: "_id",
+            foreignField: "messageId",
+            as: "schedules",
+            pipeline: [
+                { $sort: { scheduledTo: -1 } },
+                { $limit: 20 }
+            ]
+        }
+    }]).toArray();
 
-    let msg = await Message.findOne(data._id);
-    if (!msg) {
+    if (messages.length < 1) {
         common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
         return true;
     }
-
-    common.returnOutput(params, msg.json);
+    const message = messages[0];
+    // status fix:
+    message.status = getMessageStatus(message, message.schedules?.[0]);
+    common.returnOutput(params, message);
     return true;
 };
 
@@ -787,7 +821,7 @@ module.exports.periodicStats = async params => {
     }
     const { _id: messageId, period } = validation.obj;
     const delta = dateDeltaMap[period];
-    const message = await common.db.collection("messages").findOne({ _id: ObjectId(messageId) });
+    const message = await common.db.collection("messages").findOne({ _id: new ObjectId(messageId) });
     const app = await common.db.collection("apps").findOne({ _id: message?.app });
     if (!message || !app || !delta) {
         common.returnMessage(params, 400, { errors: ["Invalid or missing parameters"] }, null, true);
@@ -1212,7 +1246,7 @@ module.exports.all = async params => {
 
         let query = {
             app: data.app_id,
-            // state: {$bitsAllClear: State.Deleted},
+            status: { $ne: 'deleted' },
             'triggers.kind': {$in: data.kind}
         };
 
@@ -1230,16 +1264,12 @@ module.exports.all = async params => {
                 {'contents.title': data.sSearch},
             ];
         }
-        if (data.status) {
-            query.status = data.status;
-        }
-
         var pipeline = [{
             $lookup: {
                 from: "message_schedules",
                 localField: "_id",
                 foreignField: "messageId",
-                as: "schedule",
+                as: "schedules",
                 pipeline: [
                     { $sort: { scheduledTo: -1 } },
                     { $limit: 1 }
@@ -1248,6 +1278,29 @@ module.exports.all = async params => {
         }, {
             $match: query
         }];
+
+        if (data.status) {
+            const scheduleStatuses = ["scheduled", "sending", "sent", "canceled", "failed"];
+            if (scheduleStatuses.includes(data.status)) {
+                pipeline.push({
+                    $match: {
+                        status: "active",
+                        schedules: {
+                            $elemMatch: {
+                                status: data.status
+                            }
+                        }
+                    }
+                });
+            }
+            else {
+                pipeline.push({
+                   $match: {
+                       status: data.status
+                   }
+                });
+            }
+        }
 
         var totalPipeline = [{"$group": {"_id": null, "cn": {"$sum": 1}}}];
         var dataPipeline = [];
@@ -1298,7 +1351,7 @@ module.exports.all = async params => {
             dataPipeline.push({"$limit": parseInt(data.iDisplayLength, 10)});
         }
 
-        if (sortcol !== 'info.title') { //adding correct titles now after narrowing down data
+        if (sortcol !== 'info.title') { // adding correct titles now after narrowing down data
             dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title", {"$first": "$contents"}]}}});
             dataPipeline.push({"$addFields": {"info.title": {"$ifNull": ["$info.title.message", "$info.title"]}}});
         }
@@ -1332,7 +1385,7 @@ module.exports.all = async params => {
         if (Array.isArray(res.data) && res.data.length > 0) {
             for (let i = 0; i < res.data.length; i++) {
                 const message = res.data[i];
-                const lastSchedule =  message.schedule && message.schedule[0];
+                const lastSchedule =  message.schedules?.[0];
                 message.status = getMessageStatus(message, lastSchedule);
             }
         }

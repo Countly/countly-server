@@ -1,6 +1,6 @@
 /**
  * @typedef {import("../types/message").Message} Message
- * @typedef {import("../types/message").PlatformKeys} PlatformKeys
+ * @typedef {import("../types/message").PlatformKey} PlatformKey
  * @typedef {import("../types/user").User} User
  */
 const { Message: OldMessage } = require("../../send/data/message.js");
@@ -17,7 +17,7 @@ function createTemplate(message) {
     const platforms = message.platforms
         .map(key => PLATFORM_KEYMAP[key].platforms)
         .flat()
-        .map(key => OLD_PLATFORM[/** @type {PlatformKeys} */(key)]);
+        .map(key => OLD_PLATFORM[/** @type {PlatformKey} */(key)]);
 
     const templates = Object.fromEntries(
         platforms.map(
@@ -30,7 +30,7 @@ function createTemplate(message) {
 
     /**
      * Compiles the template for the given user
-     * @param {PlatformKeys} platform - key for the platform: "a", "i" or "h"
+     * @param {PlatformKey} platform - key for the platform: "a", "i" or "h"
      * @param {User|{[key: string]: string;}} variables - app user object with push token populated and custom variables
      * @returns {string} compiled template
      */
@@ -50,7 +50,6 @@ function createTemplate(message) {
         //         "la": "en"                      language (default)
         //     }
         // }
-        console.log(JSON.stringify(variables, null, 2));
         const note = {
             h: String(Math.random()),
             pr: variables

@@ -5,8 +5,8 @@
  * @typedef {import('./types/queue.ts').AndroidConfig} AndroidConfig
  * @typedef {import('./types/queue.ts').HuaweiConfig} HuaweiConfig
  * @typedef {import('./types/message.ts').Message} Message
- * @typedef {import('./types/message.ts').PlatformKeys} PlatformKeys
- * @typedef {import('./types/message.ts').PlatformEnvKeys} PlatformEnvKeys
+ * @typedef {import('./types/message.ts').PlatformKey} PlatformKey
+ * @typedef {import('./types/message.ts').PlatformEnvKey} PlatformEnvKey
  * @typedef {import('./types/message.ts').PlatformCombinedKeys} PlatformCombinedKeys
  * @typedef {import('./types/credentials.ts').SomeCredential} SomeCredential
  * @typedef {import('./types/proxy.ts').ProxyConfiguration} ProxyConfiguration
@@ -77,7 +77,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
         return 0;
     }
     const scheduleDoc = await scheduleCol.findOne({
-        _id: scheduleId, status: "scheduled" });
+        _id: scheduleId, status: { $in: ["scheduled", "sending"] }});
     if (!scheduleDoc) {
         log.i("Schedule", scheduleId, "for message",
             messageId, "was deleted or canceled.");
@@ -86,7 +86,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
     const appDoc = await db.collection("apps").findOne({
         _id: scheduleDoc.appId });
     if (!appDoc) {
-        log.i("App", appId.toString(), "is deleted");
+        log.w("App", appId, "is deleted");
         return 0;
     }
 
@@ -127,11 +127,11 @@ async function composeScheduledPushes(db, scheduleEvent) {
             continue;
         }
         for (let pf in tokenObj) {
-            const platform = /** @type {PlatformKeys} */(pf[0]);
+            const platform = /** @type {PlatformKey} */(pf[0]);
             if (!(platform in creds)) {
                 continue;
             }
-            const env = /** @type {PlatformEnvKeys} */(pf[1]);
+            const env = /** @type {PlatformEnvKey} */(pf[1]);
             const token = /** @type {string} */(
                 tokenObj[/** @type {PlatformCombinedKeys} */(pf)]
             );
@@ -155,6 +155,8 @@ async function composeScheduledPushes(db, scheduleEvent) {
                 message: compileTemplate(platform, variables),
                 proxy,
                 platformConfiguration: getPlatformConfiguration(platform, messageDoc),
+                trigger: messageDoc.triggers[0],
+                appTimezone: appDoc.timezone,
             };
 
             events.push(push);
@@ -293,7 +295,7 @@ async function loadProxyConfiguration(db) {
 }
 
 /**
- * @param {PlatformKeys} platform - a, i or h
+ * @param {PlatformKey} platform - a, i or h
  * @param {Message} message - Message document
  * @returns {IOSConfig|AndroidConfig|HuaweiConfig} configuration for the given platform
  */

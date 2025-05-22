@@ -64,7 +64,6 @@ class Info extends Validatable {
             approved: {type: 'Date', required: false},
             approvedBy: {type: 'ObjectID', required: false},
             approvedByName: {type: 'String', required: false},
-            rejected: {type: 'Boolean', required: false},
             rejectedAt: {type: 'Date', required: false},
             rejectedBy: {type: 'ObjectID', required: false},
             rejectedByName: {type: 'String', required: false},
@@ -532,29 +531,6 @@ class Info extends Validatable {
         }
         else {
             delete this._data.approvedByName;
-        }
-    }
-
-    /**
-     * Getter for rejected
-     *
-     * @returns {boolean|undefined} message rejected
-     */
-    get rejected() {
-        return this._data.rejected;
-    }
-
-    /**
-     * Setter for rejected
-     *
-     * @param {boolean|undefined} rejected message rejected
-     */
-    set rejected(rejected) {
-        if (typeof rejected === 'boolean') {
-            this._data.rejected = rejected;
-        }
-        else {
-            delete this._data.rejected;
         }
     }
 

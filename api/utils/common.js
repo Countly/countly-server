@@ -601,7 +601,7 @@ common.fillTimeObject = function(params, object, property, increment) {
 /**
 * Creates a time object from request's milisecond or second timestamp in provided app's timezone
 * @param {string} appTimezone - app's timezone
-* @param {number} reqTimestamp - timestamp in the request
+* @param {number=} reqTimestamp - timestamp in the request
 * @returns {timeObject} Time object for current request
 */
 common.initTimeObj = function(appTimezone, reqTimestamp) {
