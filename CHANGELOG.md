@@ -20,6 +20,7 @@ Dependencies:
 - Bump puppeteer from 24.8.0 to 24.8.2
 - Bump sass from 1.87.0 to 1.89.0
 - Bump semver from 7.7.1 to 7.7.2
+- Bump sharp from 0.33.5 to 0.34.2
 - Bump supertest from 7.1.0 to 7.1.1
 
 ## Version 25.03.5
