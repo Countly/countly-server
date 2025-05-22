@@ -1,9 +1,18 @@
+// to set it up, you need to add typescript:
+// npm i typescript --save-dev
+//
+// to run the summary check, call:
+// npx tsc
 {
     "include": [
         "plugins/push/**/*.ts",
         "plugins/push/**/*.js",
         "plugins/push_approver/**/*.ts",
         "plugins/push_approver/**/*.js"
+        "api/utils/common.js",
+        "api/utils/localization.js",
+        "api/lib/countly.common.js",
+        "api/utils/requestProcessor.js"
     ],
     "exclude": [
         "node_modules"

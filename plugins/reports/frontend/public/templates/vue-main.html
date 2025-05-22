@@ -94,6 +94,9 @@
                         <el-dropdown-item  icon="el-icon-position" command="send-comment">
                             Send Now
                         </el-dropdown-item>
+                        <form name="previewemailform" method="post" target="_blank">
+                            <input type="hidden" name="auth_token">
+                        </form>
                         <el-dropdown-item  icon="el-icon-chat-dot-square" command="preview-comment">
                             Preview
                         </el-dropdown-item>

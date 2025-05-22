@@ -44,29 +44,49 @@ class TopEventsJob extends job.Job {
     }
 
     /**
-     * async
-     * Get events count.
-     * @param {Object} params - getEventsCount object
-     * @param {String} params.collectionNameEvents - event collection name
-     * @param {Object} params.ob - it contains all necessary info
-     * @param {string} params.event - event name
-     * @param {Object} params.data - dummy event data
-     * @returns {Promise.<boolean>} true.
+     * 
+     * @param {object} params  - params object
+     * @param {object} data  - object where to collect data
+     * @param {boolean} previous  - if fetching for previous period
+     * @returns {Promise} promise
      */
-    async getEventsCount(params) {
-        const { collectionNameEvents, ob, data, event } = params;
+    async fetchEventTotalCounts(params, data, previous) {
+        let collectionName = "all";
+        params.qstring.segmentation = "key";
         return await new Promise((resolve) => {
-            countlyApi.data.fetch.getTimeObjForEvents(collectionNameEvents, ob, (doc) => {
+            countlyApi.data.fetch.getTimeObjForEvents("events_data", params, {'id_prefix': params.app_id + "_" + collectionName + '_'}, function(doc) {
                 countlyEvents.setDb(doc || {});
-                const countProp = countlyEvents.getNumber("c", true);
-                const sumProp = countlyEvents.getNumber("s", true);
-                const durationProp = countlyEvents.getNumber("dur", true);
-                data[event] = {};
-                data[event].data = {
-                    count: countProp,
-                    sum: sumProp,
-                    duration: durationProp
-                };
+
+                var dd = countlyEvents.getSegmentedData(params.qstring.segmentation);
+                for (var z = 0; z < dd.length;z++) {
+                    var key = dd[z]._id;
+                    data[key] = data[key] || {};
+                    data[key].data = data[key].data || {};
+                    data[key].data.count = data[key].data.count || {"total": 0, "prev-total": 0, "change": "NA", "trend": "u"};
+                    if (previous) {
+                        data[key].data.count["prev-total"] = dd[z].c;
+                    }
+                    else {
+                        data[key].data.count.total = dd[z].c;
+                    }
+
+                    data[key].data.sum = data[key].data.sum || {"total": 0, "prev-total": 0, "change": "NA", "trend": "u"};
+                    if (previous) {
+                        data[key].data.sum["prev-total"] = dd[z].s;
+                    }
+                    else {
+                        data[key].data.sum.total = dd[z].s;
+                    }
+
+                    data[key].data.duration = data[key].data.duration || {"total": 0, "prev-total": 0, "change": "NA", "trend": "u"};
+                    if (previous) {
+                        data[key].data.duration["prev-total"] = dd[z].dur;
+                    }
+                    else {
+                        data[key].data.duration.total = dd[z].dur;
+                    }
+                }
+                //data.all = countlyEvents.getSegmentedData(params.qstring.segmentation);
                 resolve(true);
             });
         });
@@ -138,14 +158,19 @@ class TopEventsJob extends job.Job {
      * The errors of all functions will be caught here.
      */
     async getAllApps() {
+        log.d("Fetching all apps");
         try {
             const getAllApps = await new Promise((res, rej) => common.db.collection("apps").find({}, { _id: 1, timezone: 1 }).toArray((err, apps) => err ? rej(err) : res(apps)));
-            await Promise.all(getAllApps.map((app) => this.getAppEvents(app)));
+            for (var z = 0; z < getAllApps.length; z++) {
+                //Calculating for each app serially.
+                await this.getAppEvents(getAllApps[z]);
+            }
         }
         catch (error) {
             log.e("TopEvents Job has a error: ", error);
             throw error;
         }
+        log.d("Finished processing");
     }
 
     /**
@@ -178,6 +203,7 @@ class TopEventsJob extends job.Job {
      * @param {Object} app - saveAppEvents object
      */
     async getAppEvents(app) {
+        log.d(app._id + ": Fetching app events");
         const getEvents = await new Promise((res, rej) => common.db.collection("events").findOne({ _id: app._id }, (errorEvents, result) => errorEvents ? rej(errorEvents) : res(result)));
         if (getEvents && 'list' in getEvents) {
             const eventMap = this.eventsFilter(getEvents.list);
@@ -198,9 +224,20 @@ class TopEventsJob extends job.Job {
                     let prevTotalSum = 0;
                     let totalDuration = 0;
                     let prevTotalDuration = 0;
-                    for (const event of eventMap) {
-                        const collectionNameEvents = this.eventsCollentions({ event, id: app._id });
-                        await this.getEventsCount({ collectionNameEvents, ob, data, event });
+
+                    //Fetching totals for this period
+                    await this.fetchEventTotalCounts({ app_id: app._id, appTimezone: app.timezone, qstring: { period: period } }, data, false);
+                    var period2 = countlyCommon.getPeriodObj({appTimezone: app.timezone, qstring: {}}, period);
+                    var newPeriod = [period2.start - (period2.end - period2.start), period2.start];
+                    //Fetching totals for previous period
+                    await this.fetchEventTotalCounts({ app_id: app._id, appTimezone: app.timezone, qstring: { period: newPeriod } }, data, true);
+
+
+                    for (var event in data) {
+                        //Calculating trend
+                        var trend = countlyCommon.getPercentChange(data[event].data.count["prev-total"], data[event].data.count.total);
+                        data[event].data.count.change = trend.percent;
+                        data[event].data.count.trend = trend.trend;
                         totalCount += data[event].data.count.total;
                         prevTotalCount += data[event].data.count["prev-total"];
                         totalSum += data[event].data.sum.total;
@@ -208,10 +245,15 @@ class TopEventsJob extends job.Job {
                         totalDuration += data[event].data.duration.total;
                         prevTotalDuration += data[event].data.duration["prev-total"];
                     }
+                    log.d("    getting session count (" + period + ")");
                     await this.getSessionCount({ ob, sessionData, usersData, usersCollectionName });
+                    log.d("    saving data (" + period + ")");
                     await this.saveAppEvents({ app, data, sessionData, usersData, period, totalCount, prevTotalCount, totalSum, prevTotalSum, totalDuration, prevTotalDuration });
                 }
             }
+        }
+        else {
+            log.d("    No events found for app");
         }
 
     }

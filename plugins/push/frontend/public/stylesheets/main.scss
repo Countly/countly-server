@@ -715,18 +715,15 @@
 
 .cly-vue-push-notification-message-editor-with-emoji-picker {
 
-
-    &__user-property {
-        padding: 1px 5px 2px;
-        background: #ECECEC;
-        border-radius: 2px;
-        margin-right: 2px;
-
-        &:hover {
-            cursor: pointer;
-        }
+    // .cly-vue-push-notification-message-editor-with-emoji-picker__content
+    &__content {
+        word-break: break-all;
+        overflow-x:auto;
+        height: 100px;
+        padding-right:32px;
     }
 
+    // .cly-vue-push-notification-message-editor-with-emoji-picker__title
     &__title {
         word-break: break-all;
         overflow-x: auto;
@@ -734,11 +731,16 @@
         padding-right:32px;
     }
 
-    &__content {
-        word-break: break-all;
-        overflow-x:auto;
-        height: 100px;
-        padding-right:32px;
+    // .cly-vue-push-notification-message-editor-with-emoji-picker__user-property
+    &__user-property {
+        padding: 1px 5px 2px;
+        background: #ECECEC;
+        border-radius: 2px;
+
+        // .cly-vue-push-notification-message-editor-with-emoji-picker__user-property:hover
+        &:hover {
+            cursor: pointer;
+        }
     }
 }
 

@@ -97,7 +97,7 @@ function updateDataPoints(writeBatcher, appId, sessionCount, eventCount, consoli
 /**
  *  Check if data should be counted as consolidated
  *  @param {params} params - params object
- *  @returns {bool} true if consolidated
+ *  @returns {boolean} true if consolidated
  */
 function isConsolidated(params) {
     if (params && (params.isConsolidated || (params.req && params.req.method === "consolidate") || (params.qstring && params.qstring.consolidateAppIds))) {

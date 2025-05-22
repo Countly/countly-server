@@ -15,13 +15,13 @@ const log = require('./log.js')('core:authorizer');
 * @param {object} options - options for the task
 * @param {object} options.db - database connection
 * @param {number} options.ttl - amount of seconds for token to work, 0 works indefinately
-* @param {bool} [options.multi=false] - if true, can be used many times until expired
+* @param {boolean} [options.multi=false] - if true, can be used many times until expired
 * @param {string} options.token - token to store, if not provided, will be generated
 * @param {string} options.owner - id of the user who created this token
 * @param {string} options.app - list of the apps for which token was created
 * @param {string} options.endpoint - regexp of endpoint(any string - is used as substring,to mach exact ^{yourpath}$)
 * @param {string} options.tryReuse - if true - tries to find not expired token with same parameters. If not founds cretes new token. If found - updates token expiration time to new one and returns token.
-* @param {bool} [options.temporary=false] - If logged in with temporary token. Doesn't kill other sessions on logout.
+* @param {boolean} [options.temporary=false] - If logged in with temporary token. Doesn't kill other sessions on logout.
 * @param {function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
 */
 authorizer.save = function(options) {

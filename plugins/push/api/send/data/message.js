@@ -511,6 +511,14 @@ class Message extends Mongoable {
     }
 
     /**
+     * Whether this message needs to be scheduled
+     */
+    get needsScheduling() {
+        return this.state === State.Created && this.triggers.filter(t => t.kind === TriggerKind.Plain &&
+            (!t.delayed || (t.delayed && !t.tz && t.start.getTime() > Date.now() - DEFAULTS.schedule_ahead) || (t.delayed && t.tz && t.start.getTime() > Date.now() - DEFAULTS.schedule_ahead_tz))).length > 0;
+    }
+    
+    /**
      * Generate test message with default content
      *
      * @returns {Message} test message

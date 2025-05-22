@@ -15,6 +15,8 @@
                     theme: 0,
                     is_owner: true,
                     send_email_invitation: false,
+                    use_refresh_rate: false,
+                    refreshRate: 0,
                 };
             }
         },
@@ -88,6 +90,8 @@
                         "copy_dash_id": settings.copyDashId,
                         "share_with": settings.share_with,
                         "send_email_invitation": settings.send_email_invitation,
+                        "use_refresh_rate": settings.use_refresh_rate,
+                        "refreshRate": settings.refreshRate,
                         "theme": settings.theme
                     },
                     dataType: "json"
@@ -106,7 +110,9 @@
                         "shared_user_groups_view": JSON.stringify(settings.shared_user_groups_view),
                         "share_with": settings.share_with,
                         "send_email_invitation": settings.send_email_invitation,
-                        "theme": settings.theme
+                        "theme": settings.theme,
+                        "use_refresh_rate": settings.use_refresh_rate,
+                        "refreshRate": settings.refreshRate
                     },
                     dataType: "json"
                 }, {disableAutoCatch: true});
@@ -448,7 +454,7 @@
                             if (events && events.list) {
                                 for (var k = 0; k < events.list.length; k++) {
                                     var isGroupEvent = false;
-                                    var eventName = events.list[k];
+                                    var eventName = decode(events.list[k]);
 
                                     var eventNamePostfix = (appIds.length > 1) ? " (" + ((appsObj[events._id] && appsObj[events._id].name) || "Unknown") + ")" : "";
 
@@ -892,6 +898,24 @@
      */
     function log(e) {
         countlyDashboards.factory.log(e);
+    }
+
+    /**
+     *   Decode HTML entities
+     *  @param {string} str - string to decode
+     *  @returns {string} decoded string
+    */
+    function decode(str) {
+        if (typeof str === 'string') {
+            return str.replace(/^&#36;/g, "$")
+                .replace(/&#46;/g, '.')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&le;/g, '<=')
+                .replace(/&ge;/g, '>=')
+                .replace(/&amp;/g, '&');
+        }
+        return str;
     }
 
 })(window.countlyDashboards = window.countlyDashboards || {});

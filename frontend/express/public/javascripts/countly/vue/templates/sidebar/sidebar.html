@@ -38,14 +38,25 @@
     </div>
 
     <transition name="cly-vue-sidebar__slide-transition">
-        <div :class="['cly-vue-sidebar__menu', {'cly-vue-sidebar--floating': selectedMenuOption === 'dashboards'}]" data-test-id="sidebar-menu" v-show="showMainMenu" @mouseover="onMainMenuMouseOver" @mouseleave="onMainMenuMouseLeave">
+        <div
+            :class="[
+                'cly-vue-sidebar__menu',
+                {
+                    'cly-vue-sidebar--floating': selectedMenuOption === 'dashboards',
+                    'cly-vue-sidebar__menu--with-banner': isCommunityEdition
+                }
+            ]"
+            data-test-id="sidebar-menu"
+            v-show="showMainMenu"
+            @mouseover="onMainMenuMouseOver"
+            @mouseleave="onMainMenuMouseLeave"
+        >
             <analytics-menu ref="analytics" v-show="visibleSidebarMenu === 'analytics'"></analytics-menu>
             <management-menu ref="management" v-show="visibleSidebarMenu === 'management'" @management-menu-ready="onManagementMenuReady"></management-menu>
             <component :ref="item.name" v-for="item in components" :is="item.component" v-show="visibleSidebarMenu === item.name" :key="item.name"></component>
             <div v-if="isCommunityEdition" class="cly-vue-sidebar__version" data-test-id="sidebar-menu-version">
                 <div class="cly-vue-sidebar__version__banner">
                     <div class="text">{{i18n('sidebar.banner.text')}}</div>
-                    <div class="text bu-has-text-weight-medium">{{i18n('sidebar.banner.upgrade')}}</div>
                     <el-button class="button" type="success" @click="handleButtonClick">{{i18n('sidebar.banner.upgrade-button')}}</el-button>
                 </div>
             </div>

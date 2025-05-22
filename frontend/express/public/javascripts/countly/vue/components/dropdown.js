@@ -622,7 +622,7 @@
                     else {
                         this.$emit('command', command, instance);
                     }
-                    this.$refs.dropdown.handleClose();
+                    this.$refs?.dropdown?.handleClose();
                 }
             },
             toggleArrowState: function() {
