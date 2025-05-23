@@ -12,12 +12,11 @@ Enterprise Fixes:
     - Do not wait for result calculation when requesting experiments
     - Do not calculate result for completed experiments
 
-
 Dependencies:
 - Bump eslint-plugin-vue from 9.33.0 to 10.1.0
 - Bump lint-staged from 15.5.2 to 16.0.0
 - Bump nodemailer from 6.10.1 to 7.0.3
-- Bump puppeteer from 24.8.0 to 24.8.2
+- Bump puppeteer from 24.8.0 to 24.9.0
 - Bump sass from 1.87.0 to 1.89.0
 - Bump semver from 7.7.1 to 7.7.2
 - Bump sharp from 0.33.5 to 0.34.2
