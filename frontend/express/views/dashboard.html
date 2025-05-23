@@ -47,10 +47,10 @@
         };
     </script>
     <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css?<%= countlyVersion %>" />
-	 <link rel="stylesheet" href="<%- cdn %>stylesheets/countly-icons/style.css?<%= countlyVersion %>" />
+	<link rel="stylesheet" href="<%- cdn %>stylesheets/countly-icons/style.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/ionicons/css/ionicons.min.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/material/material-icons.css?<%= countlyVersion %>" />
-    <link rel="stylesheet" href="<%- cdn %>stylesheets/vue/element-ui.css?<%= countlyVersion %>" />
+    <link rel="stylesheet" href="<%- cdn %>stylesheets/vue/element-ui.css?<%= countlyVersion %>" id="element-ui-css" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.base.css?<%= countlyVersion %>" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.theme.css?<%= countlyVersion %>" />
     <% if (production) { %>
@@ -119,8 +119,8 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/js-deep-equals.unsorted.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfill/es6-promise.auto.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/polyfill/intersection-observer.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue.min.js?<%= countlyVersion %>"></script>
-		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/composition-api.min.js?<%= countlyVersion %>"></script>
+		<script id="vue2-lib" language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/composition-api.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuex.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/echarts.5.min.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-echarts.umd.min.js?<%= countlyVersion %>"></script>
@@ -130,7 +130,7 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-clipboard.min.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue-good-table.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2Dropzone.min.js?<%= countlyVersion %>"></script>
-        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/element-ui.js?<%= countlyVersion %>"></script>
+        <script id="element-ui-script" language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/element-ui.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vue2-leaflet.min.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/inViewportMixin.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/vue/vuescroll.min.js?<%= countlyVersion %>"></script>
@@ -152,6 +152,8 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/countly.checkbox.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.auth.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/element-tiptap.umd.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/coreVue3.js?<%= countlyVersion %>"></script>
+
     <% } %>
 
     <% if (themeFiles && themeFiles.css) { %>
@@ -187,8 +189,10 @@
         <div id="cly-vue-sidebar" data-test-id="dashboard-sidebar">
             <div id="sidebar-x"></div>
         </div>
-        <div class="main-view">
+        <div id="vue2-app" class="main-view">
             <div id="content"></div>
+        </div>
+        <div id="vue3-app" class="main-view">
         </div>
 	</div>
 
@@ -2078,5 +2082,8 @@
 	<% } %>
     <!-- The last countly script to load -->
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.loaded.js?<%= countlyVersion %>"></script>
+    <!-- Vue transition handler script -->
+    <!-- Todo: Find a way to manage dependicies on production mode -->
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/vue/dualVueGateway.js?<%= countlyVersion %>"></script>
 </body>
 </html>

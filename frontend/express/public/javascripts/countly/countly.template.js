@@ -3922,6 +3922,10 @@ Backbone.history.getFragment = function() {
     return fragment;
 };
 Backbone.history.checkUrl = function() {
+    const isExperimental = window.location.href.includes('experimental');
+    if (isExperimental) {
+        return;
+    }
     store.set("countly_fragment_name", Backbone.history._getFragment());
     var app_id = Backbone.history._getFragment().split("/")[1] || "";
     if (countlyCommon.APP_NAMESPACE !== false && countlyCommon.ACTIVE_APP_ID !== 0 && countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1) {
