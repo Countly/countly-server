@@ -11,6 +11,7 @@ Enterprise Fixes:
 - [ab-testing] Updates
     - Do not wait for result calculation when requesting experiments
     - Do not calculate result for completed experiments
+- [drill] [license] Shorten warning period from 14 days to 3 days
 
 Dependencies:
 - Bump eslint-plugin-vue from 9.33.0 to 10.1.0
