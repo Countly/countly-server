@@ -1020,7 +1020,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     isLocked: isLocked,
                 };
 
-
                 var toDashboard = {
                     countlyTitle: req.countly.title,
                     languages: languages,
@@ -1231,6 +1230,352 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                                             }
                                         }
                                         renderDashboard(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                    });
+                                });
+                            }
+                        }
+                    },
+                    e => {
+                        log.e('Error while checking member login', e);
+                    });
+                }
+                else {
+                    membersUtility.clearReqAndRes(req, res);
+                    res.redirect(countlyConfig.path + '/login');
+                }
+            });
+        }
+    });
+
+
+    /**
+    * Render next
+    * @param {object} req - request object
+    * @param {object} res - response object
+    * @param {function} next - callback for next middleware
+    * @param {object} member - dashboard member document
+    * @param {array} adminOfApps - list of apps member is admin of
+    * @param {array} userOfApps - list of apps member is user of
+    * @param {object} countlyGlobalApps - all apps user has any access to, where key is app id and value is app document
+    * @param {object} countlyGlobalAdminApps - all apps user has write access to, where key is app id and value is app document
+    **/
+    function renderNext(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
+        var configs = plugins.getConfig("frontend", member.settings),
+            countly_tracking = plugins.isPluginEnabled('tracker') ? true : plugins.getConfig('frontend').countly_tracking,
+            countly_domain = plugins.getConfig('api').domain,
+            licenseNotification, licenseError;
+        var isLocked = false;
+        var next_plugins = ['boards'];
+        configs.export_limit = plugins.getConfig("api").export_limit;
+        app.loadThemeFiles(configs.theme, async function(theme) {
+            if (configs._user.theme) {
+                res.cookie("theme", configs.theme);
+            }
+            req.session.uid = member._id;
+            req.session.gadm = (member.global_admin === true);
+            req.session.email = member.email;
+            req.session.settings = member.settings;
+            res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+            res.header('Expires', '0');
+            res.header('Pragma', 'no-cache');
+            if (member.upgrade) {
+                countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
+            }
+            if (IS_FLEX) {
+                let locked = await countlyDb.collection('mycountly').findOne({_id: 'lockServer'});
+                if (locked?.isLocked === true) {
+                    isLocked = true;
+                }
+
+            }
+
+            if (req.session.licenseError) {
+                licenseError = req.session.licenseError;
+            }
+            if (req.session.licenseNotification) {
+                try {
+                    licenseNotification = JSON.parse(req.session.licenseNotification);
+                }
+                catch (e) {
+                    log.e('Failed to parse notify', e);
+                }
+            }
+
+            member._id += "";
+            delete member.password;
+
+            adminOfApps = sortBy(adminOfApps, member.appSortList || []);
+            userOfApps = sortBy(userOfApps, member.appSortList || []);
+
+            stringifyIds(adminOfApps);
+            stringifyIds(userOfApps);
+            stringifyIds(countlyGlobalApps);
+            stringifyIds(countlyGlobalAdminApps);
+
+            plugins.reloadEnabledPluginList(common.db, function() {
+
+                var defaultApp = userOfApps[0];
+                var serverSideRendering = req.query.ssr;
+                _.extend(req.config, configs);
+                var countlyGlobal = {
+                    COUNTLY_CONTAINER: process.env.COUNTLY_CONTAINER,
+                    countlyTitle: req.countly.title,
+                    company: req.countly.company,
+                    languages: languages,
+                    countlyVersion: req.countly.version,
+                    countlyFavicon: req.countly.favicon,
+                    pluginsSHA: sha1Hash(plugins.getPlugins()),
+                    apps: countlyGlobalApps,
+                    defaultApp: defaultApp,
+                    admin_apps: countlyGlobalAdminApps,
+                    csrf_token: req.csrfToken(),
+                    auth_token: req.session.auth_token,
+                    member: member,
+                    config: req.config,
+                    security: plugins.getConfig("security"),
+                    plugins: plugins.getPlugins(),
+                    pluginsFull: plugins.getPlugins(true),
+                    path: countlyConfig.path || "",
+                    cdn: countlyConfig.cdn || "",
+                    message: req.flash("message"),
+                    licenseNotification,
+                    licenseError,
+                    ssr: serverSideRendering,
+                    timezones: timezones,
+                    countlyTypeName: COUNTLY_NAMED_TYPE,
+                    countlyTypeTrack: COUNTLY_TRACK_TYPE,
+                    countlyTypeCE: COUNTLY_TYPE_CE,
+                    countly_tracking,
+                    countly_domain,
+                    frontend_app: versionInfo.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',
+                    frontend_server: versionInfo.frontend_server || 'https://stats.count.ly/',
+                    usermenu: {
+                        feedbackLink: COUNTLY_FEEDBACK_LINK,
+                        documentationLink: COUNTLY_DOCUMENTATION_LINK,
+                        helpCenterLink: COUNTLY_HELPCENTER_LINK,
+                        featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
+                    },
+                    mycountly: IS_FLEX,
+                    isLocked: isLocked,
+                };
+
+
+                var toDashboard = {
+                    countlyTitle: req.countly.title,
+                    languages: languages,
+                    countlyFavicon: req.countly.favicon,
+                    adminOfApps: adminOfApps,
+                    userOfApps: userOfApps,
+                    defaultApp: defaultApp,
+                    member: member,
+                    intercom: countlyConfig.web.use_intercom,
+                    track: countlyConfig.web.track || false,
+                    installed: req.session.install || false,
+                    cpus: require('os').cpus().length,
+                    countlyVersion: req.countly.version,
+                    countlyType: COUNTLY_TYPE_CE,
+                    countlyTrial: COUNTLY_TRIAL,
+                    countlyTypeName: COUNTLY_NAMED_TYPE,
+                    feedbackLink: COUNTLY_FEEDBACK_LINK,
+                    documentationLink: COUNTLY_DOCUMENTATION_LINK,
+                    helpCenterLink: COUNTLY_HELPCENTER_LINK,
+                    featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
+                    countlyTypeTrack: COUNTLY_TRACK_TYPE,
+                    frontend_app: versionInfo.frontend_app,
+                    frontend_server: versionInfo.frontend_server,
+                    production: configs.production || false,
+                    pluginsSHA: sha1Hash(plugins.getPlugins()),
+                    plugins: plugins.getPlugins(),
+                    config: req.config,
+                    path: countlyConfig.path || "",
+                    cdn: countlyConfig.cdn || "",
+                    use_google: configs.use_google || false,
+                    themeFiles: theme,
+                    inject_template: req.template,
+                    javascripts: [],
+                    javascripts_next: [],
+                    stylesheets: [],
+                    offline_mode: configs.offline_mode || false
+                };
+                // google services cannot work when offline mode enable
+                if (toDashboard.offline_mode) {
+                    toDashboard.use_google = false;
+                }
+                if (countlyGlobal.config.offline_mode) {
+                    countlyGlobal.config.use_google = false;
+                }
+
+
+                var plgns = [].concat(plugins.getPlugins());
+                if (plgns.indexOf('push') !== -1) {
+                    plgns.splice(plgns.indexOf('push'), 1);
+                    plgns.unshift('push');
+                }
+                plgns.forEach(plugin => {
+                    try {
+                        let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/javascripts`) || [];
+                        if (next_plugins.includes(plugin)) {
+                            toDashboard.javascripts_next.push.apply(toDashboard.javascripts_next, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+                        }
+                        else {
+                            toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+                        }
+                    }
+                    catch (e) {
+                        console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
+                    }
+                    try {
+                        let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/stylesheets`) || [];
+                        toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => typeof n === 'string' && n.includes('.css') && n.length > 4 && n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
+                    }
+                    catch (e) {
+                        console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
+                    }
+                });
+
+                if (req.session.install) {
+                    req.session.install = null;
+                    res.clearCookie('install');
+                }
+                plugins.callMethod("renderDashboard", {req: req, res: res, next: next, data: {member: member, adminApps: countlyGlobalAdminApps, userApps: countlyGlobalApps, countlyGlobal: countlyGlobal, toDashboard: toDashboard}});
+
+                res.expose(countlyGlobal, 'countlyGlobal');
+
+                res.render('next', toDashboard);
+            });
+        });
+    }
+
+    app.get(countlyConfig.path + '/next', function(req, res, next) {
+        if (!req.session.uid) {
+            res.redirect(countlyConfig.path + '/login');
+        }
+        else {
+            countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid + "")}, function(err, member) {
+                if (member) {
+                    plugins.callPromisedAppMethod('checkMemberLicense', { req, member }).then(licenseCheck => {
+                        common.licenseAssign(req, licenseCheck);
+                        req.session.cookie.maxAge = countlyConfig.cookie.maxAgeLogin;
+                        var adminOfApps = [],
+                            userOfApps = [],
+                            countlyGlobalApps = {},
+                            countlyGlobalAdminApps = {};
+
+                        if (Number.isInteger(member.session_count)) {
+                            member.session_count += 1;
+                        }
+                        else {
+                            member.session_count = 1;
+                        }
+
+                        countlyDb.collection('members').update(
+                            { _id: common.db.ObjectID(member._id) },
+                            {
+                                $inc: { session_count: 1 },
+                                $set: {
+                                    last_login: Math.round(new Date().getTime() / 1000),
+                                    lu: new Date()
+                                }
+                            }
+                        );
+
+                        if (member.global_admin) {
+                            countlyDb.collection('apps').find({}).toArray(function(err2, apps) {
+                                adminOfApps = apps;
+                                userOfApps = apps;
+
+                                for (let i = 0; i < apps.length; i++) {
+                                    if (apps[i].checksum_salt) {
+                                        apps[i].salt = apps[i].salt || apps[i].checksum_salt;
+                                    }
+                                    apps[i].type = apps[i].type || "mobile";
+                                    countlyGlobalApps[apps[i]._id] = apps[i];
+                                    countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
+                                }
+                                countlyGlobalAdminApps = countlyGlobalApps;
+                                renderNext(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                            });
+                        }
+                        else {
+                            var adminOfAppIds = [],
+                                userOfAppIds = [];
+
+                            /*
+                        We keep this section for backward compatibility.
+                        This block will run if member has legacy permission properties like user_of, admin_of.
+                        */
+                            if (typeof member.permission === "undefined") {
+                                if (member.admin_of.length === 1 && member.admin_of[0] === "") {
+                                    member.admin_of = [];
+                                }
+
+                                for (let i = 0; i < member.admin_of.length; i++) {
+                                    if (member.admin_of[i] === "") {
+                                        continue;
+                                    }
+                                    adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
+                                }
+
+                                for (let i = 0; i < member.user_of.length; i++) {
+                                    if (member.user_of[i] === "") {
+                                        continue;
+                                    }
+                                    userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
+                                }
+
+                                countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
+                                    for (let i = 0; i < admin_of.length; i++) {
+                                        countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
+                                        countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
+                                    }
+
+                                    countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {
+                                        adminOfApps = admin_of;
+                                        userOfApps = user_of;
+
+                                        for (let i = 0; i < user_of.length; i++) {
+                                            countlyGlobalApps[user_of[i]._id] = user_of[i];
+                                            countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
+                                            countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                                        }
+
+                                        renderNext(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                    });
+                                });
+                            }
+                            else {
+                                var writableAppIds = member.permission._.a;
+                                var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
+                                var preparedReadableIds = [];
+                                var preparedWritableIds = [];
+
+                                for (let i = 0; i < readableAppIds.length; i++) {
+                                    if (readableAppIds[i] !== 'undefined' && (member.permission.r[readableAppIds[i]].all || Object.keys(member.permission.r[readableAppIds[i]].allowed).length > 0)) {
+                                        preparedReadableIds.push(countlyDb.ObjectID(readableAppIds[i]));
+                                    }
+                                }
+
+                                for (let i = 0; i < writableAppIds.length; i++) {
+                                    preparedWritableIds.push(countlyDb.ObjectID(writableAppIds[i]));
+                                }
+
+                                countlyDb.collection('apps').find({ _id: { '$in': preparedReadableIds } }).toArray(function(err4, readableApps) {
+                                    countlyDb.collection('apps').find({ _id: { '$in': preparedWritableIds } }).toArray(function(err5, writableApps) {
+                                        adminOfApps = writableApps;
+                                        userOfApps = readableApps.concat(writableApps);
+
+                                        for (let i = 0; i < userOfApps.length; i++) {
+                                            countlyGlobalApps[userOfApps[i]._id] = userOfApps[i];
+                                            countlyGlobalApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
+                                            countlyGlobalApps[userOfApps[i]._id].type = countlyGlobalApps[userOfApps[i]._id].type || "mobile";
+
+                                            if (adminOfApps.indexOf(userOfApps[i]) !== -1) {
+                                                countlyGlobalAdminApps[userOfApps[i]._id] = userOfApps[i];
+                                                countlyGlobalAdminApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
+                                                countlyGlobalAdminApps[userOfApps[i]._id].type = userOfApps[i].type || "mobile";
+                                            }
+                                        }
+                                        renderNext(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
                                     });
                                 });
                             }
@@ -1924,6 +2269,351 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.redirect(countlyConfig.path + '/login?message=login.result');
             }
         });
+    });
+
+    /**
+    * Render next
+    * @param {object} req - request object
+    * @param {object} res - response object
+    * @param {function} next - callback for next middleware
+    * @param {object} member - dashboard member document
+    * @param {array} adminOfApps - list of apps member is admin of
+    * @param {array} userOfApps - list of apps member is user of
+    * @param {object} countlyGlobalApps - all apps user has any access to, where key is app id and value is app document
+    * @param {object} countlyGlobalAdminApps - all apps user has write access to, where key is app id and value is app document
+    **/
+    function renderNext(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps) {
+        var configs = plugins.getConfig("frontend", member.settings),
+            countly_tracking = plugins.isPluginEnabled('tracker') ? true : plugins.getConfig('frontend').countly_tracking,
+            countly_domain = plugins.getConfig('api').domain,
+            licenseNotification, licenseError;
+        var isLocked = false;
+        var next_plugins = ['boards2'];
+        configs.export_limit = plugins.getConfig("api").export_limit;
+        app.loadThemeFiles(configs.theme, async function(theme) {
+            if (configs._user.theme) {
+                res.cookie("theme", configs.theme);
+            }
+            req.session.uid = member._id;
+            req.session.gadm = (member.global_admin === true);
+            req.session.email = member.email;
+            req.session.settings = member.settings;
+            res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+            res.header('Expires', '0');
+            res.header('Pragma', 'no-cache');
+            if (member.upgrade) {
+                countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
+            }
+            if (IS_FLEX) {
+                let locked = await countlyDb.collection('mycountly').findOne({_id: 'lockServer'});
+                if (locked?.isLocked === true) {
+                    isLocked = true;
+                }
+
+            }
+
+            if (req.session.licenseError) {
+                licenseError = req.session.licenseError;
+            }
+            if (req.session.licenseNotification) {
+                try {
+                    licenseNotification = JSON.parse(req.session.licenseNotification);
+                }
+                catch (e) {
+                    log.e('Failed to parse notify', e);
+                }
+            }
+
+            member._id += "";
+            delete member.password;
+
+            adminOfApps = sortBy(adminOfApps, member.appSortList || []);
+            userOfApps = sortBy(userOfApps, member.appSortList || []);
+
+            stringifyIds(adminOfApps);
+            stringifyIds(userOfApps);
+            stringifyIds(countlyGlobalApps);
+            stringifyIds(countlyGlobalAdminApps);
+
+            plugins.reloadEnabledPluginList(common.db, function() {
+
+                var defaultApp = userOfApps[0];
+                var serverSideRendering = req.query.ssr;
+                _.extend(req.config, configs);
+                var countlyGlobal = {
+                    COUNTLY_CONTAINER: process.env.COUNTLY_CONTAINER,
+                    countlyTitle: req.countly.title,
+                    company: req.countly.company,
+                    languages: languages,
+                    countlyVersion: req.countly.version,
+                    countlyFavicon: req.countly.favicon,
+                    pluginsSHA: sha1Hash(plugins.getPlugins()),
+                    apps: countlyGlobalApps,
+                    defaultApp: defaultApp,
+                    admin_apps: countlyGlobalAdminApps,
+                    csrf_token: req.csrfToken(),
+                    auth_token: req.session.auth_token,
+                    member: member,
+                    config: req.config,
+                    security: plugins.getConfig("security"),
+                    plugins: plugins.getPlugins(),
+                    pluginsFull: plugins.getPlugins(true),
+                    path: countlyConfig.path || "",
+                    cdn: countlyConfig.cdn || "",
+                    message: req.flash("message"),
+                    licenseNotification,
+                    licenseError,
+                    ssr: serverSideRendering,
+                    timezones: timezones,
+                    countlyTypeName: COUNTLY_NAMED_TYPE,
+                    countlyTypeTrack: COUNTLY_TRACK_TYPE,
+                    countlyTypeCE: COUNTLY_TYPE_CE,
+                    countly_tracking,
+                    countly_domain,
+                    frontend_app: versionInfo.frontend_app || 'e70ec21cbe19e799472dfaee0adb9223516d238f',
+                    frontend_server: versionInfo.frontend_server || 'https://stats.count.ly/',
+                    usermenu: {
+                        feedbackLink: COUNTLY_FEEDBACK_LINK,
+                        documentationLink: COUNTLY_DOCUMENTATION_LINK,
+                        helpCenterLink: COUNTLY_HELPCENTER_LINK,
+                        featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
+                    },
+                    mycountly: IS_FLEX,
+                    isLocked: isLocked,
+                };
+
+
+                var toDashboard = {
+                    countlyTitle: req.countly.title,
+                    languages: languages,
+                    countlyFavicon: req.countly.favicon,
+                    adminOfApps: adminOfApps,
+                    userOfApps: userOfApps,
+                    defaultApp: defaultApp,
+                    member: member,
+                    intercom: countlyConfig.web.use_intercom,
+                    track: countlyConfig.web.track || false,
+                    installed: req.session.install || false,
+                    cpus: require('os').cpus().length,
+                    countlyVersion: req.countly.version,
+                    countlyType: COUNTLY_TYPE_CE,
+                    countlyTrial: COUNTLY_TRIAL,
+                    countlyTypeName: COUNTLY_NAMED_TYPE,
+                    feedbackLink: COUNTLY_FEEDBACK_LINK,
+                    documentationLink: COUNTLY_DOCUMENTATION_LINK,
+                    helpCenterLink: COUNTLY_HELPCENTER_LINK,
+                    featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
+                    countlyTypeTrack: COUNTLY_TRACK_TYPE,
+                    frontend_app: versionInfo.frontend_app,
+                    frontend_server: versionInfo.frontend_server,
+                    production: configs.production || false,
+                    pluginsSHA: sha1Hash(plugins.getPlugins()),
+                    plugins: plugins.getPlugins(),
+                    config: req.config,
+                    path: countlyConfig.path || "",
+                    cdn: countlyConfig.cdn || "",
+                    use_google: configs.use_google || false,
+                    themeFiles: theme,
+                    inject_template: req.template,
+                    javascripts: [],
+                    javascripts_next: [],
+                    stylesheets: [],
+                    offline_mode: configs.offline_mode || false
+                };
+                // google services cannot work when offline mode enable
+                if (toDashboard.offline_mode) {
+                    toDashboard.use_google = false;
+                }
+                if (countlyGlobal.config.offline_mode) {
+                    countlyGlobal.config.use_google = false;
+                }
+
+
+                var plgns = [].concat(plugins.getPlugins());
+                if (plgns.indexOf('push') !== -1) {
+                    plgns.splice(plgns.indexOf('push'), 1);
+                    plgns.unshift('push');
+                }
+                plgns.forEach(plugin => {
+                    try {
+                        let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/javascripts`) || [];
+                        if (next_plugins.includes(plugin)) {
+                            toDashboard.javascripts_next.push.apply(toDashboard.javascripts_next, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+                        }
+                        else {
+                            toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => typeof n === 'string' && n.includes('.js') && n.length > 3 && n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+                        }
+                    }
+                    catch (e) {
+                        console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
+                    }
+                    try {
+                        let contents = fs.readdirSync(__dirname + `/../../plugins/${common.sanitizeFilename(plugin)}/frontend/public/stylesheets`) || [];
+                        toDashboard.stylesheets.push.apply(toDashboard.stylesheets, contents.filter(n => typeof n === 'string' && n.includes('.css') && n.length > 4 && n.indexOf('.css') === n.length - 4).map(n => `${plugin}/stylesheets/${n}`));
+                    }
+                    catch (e) {
+                        console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
+                    }
+                });
+
+                if (req.session.install) {
+                    req.session.install = null;
+                    res.clearCookie('install');
+                }
+                plugins.callMethod("renderDashboard", {req: req, res: res, next: next, data: {member: member, adminApps: countlyGlobalAdminApps, userApps: countlyGlobalApps, countlyGlobal: countlyGlobal, toDashboard: toDashboard}});
+
+                res.expose(countlyGlobal, 'countlyGlobal');
+
+                res.render('next', toDashboard);
+            });
+        });
+    }
+
+    app.get(countlyConfig.path + '/next', function(req, res, next) {
+        if (!req.session.uid) {
+            res.redirect(countlyConfig.path + '/login');
+        }
+        else {
+            countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid + "")}, function(err, member) {
+                if (member) {
+                    plugins.callPromisedAppMethod('checkMemberLicense', { req, member }).then(licenseCheck => {
+                        common.licenseAssign(req, licenseCheck);
+                        req.session.cookie.maxAge = countlyConfig.cookie.maxAgeLogin;
+                        var adminOfApps = [],
+                            userOfApps = [],
+                            countlyGlobalApps = {},
+                            countlyGlobalAdminApps = {};
+
+                        if (Number.isInteger(member.session_count)) {
+                            member.session_count += 1;
+                        }
+                        else {
+                            member.session_count = 1;
+                        }
+
+                        countlyDb.collection('members').update(
+                            { _id: common.db.ObjectID(member._id) },
+                            {
+                                $inc: { session_count: 1 },
+                                $set: {
+                                    last_login: Math.round(new Date().getTime() / 1000),
+                                    lu: new Date()
+                                }
+                            }
+                        );
+
+                        if (member.global_admin) {
+                            countlyDb.collection('apps').find({}).toArray(function(err2, apps) {
+                                adminOfApps = apps;
+                                userOfApps = apps;
+
+                                for (let i = 0; i < apps.length; i++) {
+                                    if (apps[i].checksum_salt) {
+                                        apps[i].salt = apps[i].salt || apps[i].checksum_salt;
+                                    }
+                                    apps[i].type = apps[i].type || "mobile";
+                                    countlyGlobalApps[apps[i]._id] = apps[i];
+                                    countlyGlobalApps[apps[i]._id]._id = "" + apps[i]._id;
+                                }
+                                countlyGlobalAdminApps = countlyGlobalApps;
+                                renderNext(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                            });
+                        }
+                        else {
+                            var adminOfAppIds = [],
+                                userOfAppIds = [];
+
+                            /*
+                        We keep this section for backward compatibility.
+                        This block will run if member has legacy permission properties like user_of, admin_of.
+                        */
+                            if (typeof member.permission === "undefined") {
+                                if (member.admin_of.length === 1 && member.admin_of[0] === "") {
+                                    member.admin_of = [];
+                                }
+
+                                for (let i = 0; i < member.admin_of.length; i++) {
+                                    if (member.admin_of[i] === "") {
+                                        continue;
+                                    }
+                                    adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
+                                }
+
+                                for (let i = 0; i < member.user_of.length; i++) {
+                                    if (member.user_of[i] === "") {
+                                        continue;
+                                    }
+                                    userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
+                                }
+
+                                countlyDb.collection('apps').find({ _id: { '$in': adminOfAppIds } }).toArray(function(err2, admin_of) {
+                                    for (let i = 0; i < admin_of.length; i++) {
+                                        countlyGlobalAdminApps[admin_of[i]._id] = admin_of[i];
+                                        countlyGlobalAdminApps[admin_of[i]._id]._id = "" + admin_of[i]._id;
+                                    }
+
+                                    countlyDb.collection('apps').find({ _id: { '$in': userOfAppIds } }).toArray(function(err3, user_of) {
+                                        adminOfApps = admin_of;
+                                        userOfApps = user_of;
+
+                                        for (let i = 0; i < user_of.length; i++) {
+                                            countlyGlobalApps[user_of[i]._id] = user_of[i];
+                                            countlyGlobalApps[user_of[i]._id]._id = "" + user_of[i]._id;
+                                            countlyGlobalApps[user_of[i]._id].type = countlyGlobalApps[user_of[i]._id].type || "mobile";
+                                        }
+
+                                        renderNext(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                    });
+                                });
+                            }
+                            else {
+                                var writableAppIds = member.permission._.a;
+                                var readableAppIds = Object.keys(member.permission.r).filter(readableApp => readableApp !== 'global');
+                                var preparedReadableIds = [];
+                                var preparedWritableIds = [];
+
+                                for (let i = 0; i < readableAppIds.length; i++) {
+                                    if (readableAppIds[i] !== 'undefined' && (member.permission.r[readableAppIds[i]].all || Object.keys(member.permission.r[readableAppIds[i]].allowed).length > 0)) {
+                                        preparedReadableIds.push(countlyDb.ObjectID(readableAppIds[i]));
+                                    }
+                                }
+
+                                for (let i = 0; i < writableAppIds.length; i++) {
+                                    preparedWritableIds.push(countlyDb.ObjectID(writableAppIds[i]));
+                                }
+
+                                countlyDb.collection('apps').find({ _id: { '$in': preparedReadableIds } }).toArray(function(err4, readableApps) {
+                                    countlyDb.collection('apps').find({ _id: { '$in': preparedWritableIds } }).toArray(function(err5, writableApps) {
+                                        adminOfApps = writableApps;
+                                        userOfApps = readableApps.concat(writableApps);
+
+                                        for (let i = 0; i < userOfApps.length; i++) {
+                                            countlyGlobalApps[userOfApps[i]._id] = userOfApps[i];
+                                            countlyGlobalApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
+                                            countlyGlobalApps[userOfApps[i]._id].type = countlyGlobalApps[userOfApps[i]._id].type || "mobile";
+
+                                            if (adminOfApps.indexOf(userOfApps[i]) !== -1) {
+                                                countlyGlobalAdminApps[userOfApps[i]._id] = userOfApps[i];
+                                                countlyGlobalAdminApps[userOfApps[i]._id]._id = "" + userOfApps[i]._id;
+                                                countlyGlobalAdminApps[userOfApps[i]._id].type = userOfApps[i].type || "mobile";
+                                            }
+                                        }
+                                        renderNext(req, res, next, member, adminOfApps, userOfApps, countlyGlobalApps, countlyGlobalAdminApps);
+                                    });
+                                });
+                            }
+                        }
+                    },
+                    e => {
+                        log.e('Error while checking member login', e);
+                    });
+                }
+                else {
+                    membersUtility.clearReqAndRes(req, res);
+                    res.redirect(countlyConfig.path + '/login');
+                }
+            });
+        }
     });
 
     countlyDb.collection('apps').createIndex({"key": 1}, { unique: true }, function() {});
