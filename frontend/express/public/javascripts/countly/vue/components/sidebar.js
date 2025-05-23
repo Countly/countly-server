@@ -232,7 +232,8 @@
             data: function() {
                 return {
                     selectedAnalyticsMenu: null,
-                    appSelector: false
+                    appSelector: false,
+                    menuItems: null,
                 };
             },
             computed: {
@@ -412,6 +413,51 @@
                 },
                 toggleAppSelection: function() {
                     this.appSelector = !this.appSelector;
+                },
+                getMenuUrl: function(menuItem) {
+                    if (menuItem && menuItem.next) {
+                        if (menuItem.url.indexOf('#') === 0) {
+                            return '/next/#/' + countlyCommon.ACTIVE_APP_ID + menuItem.url.replace('#', '');
+                        }
+                        else {
+                            return menuItem.url;
+                        }
+                    }
+                    return menuItem.url;
+                },
+                loadMenuDataFromStorage() {
+                    const storedData = localStorage.getItem("common_menu_storage");
+                    if (storedData) {
+                        try {
+                            this.menuItems = JSON.parse(storedData);
+                        }
+                        catch (error) {
+                            // error
+                        }
+                    }
+                },
+                updateMenuStorage() {
+                    const menuData = {
+                        categories: this.categories,
+                        categorizedMenus: this.categorizedMenus,
+                        categorizedSubmenus: this.categorizedSubmenus
+                    };
+
+                    // get localization values for now, we will get them in a common place later
+                    const parsedMenuData = JSON.stringify(menuData, (key, value) => {
+                        if (key === "title" && typeof value === "string") {
+                            return CV.i18n(value);
+                        }
+                        return value;
+                    });
+                    localStorage.setItem("common_menu_storage", parsedMenuData);
+                }
+            },
+            mounted: function() {
+                this.loadMenuDataFromStorage();
+
+                if (!localStorage.getItem("common_menu_storage")) {
+                    this.updateMenuStorage();
                 }
             }
         });

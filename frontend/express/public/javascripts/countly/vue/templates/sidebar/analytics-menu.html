@@ -21,18 +21,18 @@
         :allApps="allApps"></app-selector>
     <div class="cly-vue-sidebar__main-menu" data-test-id="sidebar-mainmenu-panel">
         <vue-scroll :ops="{scrollPanel: { scrollingX: false }}">
-            <div v-for="(cat, id) in categories" :data-test-id="`sidebar-mainmenu-${cat.name}`" :data-category="cat.name" style="margin-bottom: 40px">
+            <div v-for="(cat, id) in menuItems.categories" :data-test-id="`sidebar-mainmenu-${cat.name}`" :data-category="cat.name" style="margin-bottom: 40px">
                 <ul>
-                    <li v-for="(menu, idx) in categorizedMenus[cat.name]" class="bu-px-3 bu-is-clickable bu-mb-1" :data-test-id="`sidebar-mainmenu-${menu.name}`" :style="menu.node && menu.node.bottom ? {'marginBottom': menu.node.bottom + 'px !important'} : {}">
-                        <div v-if="categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length" :data-test-id="`sidebar-mainmenu-clickable-${menu.name}`">
+                    <li v-for="(menu, idx) in menuItems.categorizedMenus[cat.name]" class="bu-px-3 bu-is-clickable bu-mb-1" :data-test-id="`sidebar-mainmenu-${menu.name}`" :style="menu.node && menu.node.bottom ? {'marginBottom': menu.node.bottom + 'px !important'} : {}">
+                        <div v-if="menuItems.categorizedSubmenus[menu.name] && categorizedSubmenus[menu.name].length" :data-test-id="`sidebar-mainmenu-clickable-${menu.name}`">
                             <el-collapse v-model="selectedAnalyticsMenu" accordion
                                 :class="[{'cly-vue-sidebar__el-collapse--selected':  (selectedMenuItem && (selectedMenuItem.parent_code === menu.name))}]" :data-test-id="`sidebar-mainmenu-sub-${menu.name}`">
                                 <el-collapse-item :title="i18nM(menu.title)" :test-id="`sidebar-mainmenu-menutitle-${menu.title ? menu.title.replace('.', '-') : '-menu-title'}`" :name="menu.name"
                                     :icon="{position: 'right', direction: 'down'}">
                                     <ul>
-                                        <li v-for="(submenu, idx) in categorizedSubmenus[menu.name]"
+                                        <li v-for="(submenu, idx) in menuItems.categorizedSubmenus[menu.name]"
                                             :class="['bu-mb-1', {'bu-mt-1': idx === 0}]" :data-test-id="`sidebar-mainmenu-submenu-${submenu.name}`">
-                                            <a :href="submenu.url" :data-test-id="`sidebar-mainmenu-url-${submenu.name}`">
+                                            <a :href="getMenuUrl(submenu)" :data-test-id="`sidebar-mainmenu-url-${submenu.name}`">
                                                 <div
                                                     style="width: calc(100% - 44px);"
                                                     :class="['cly-vue-sidebar__submenu-items has-ellipsis',
@@ -46,7 +46,7 @@
                                 </el-collapse-item>
                             </el-collapse>
                         </div>
-                        <a v-else-if="menu.url" :href="menu.url">
+                        <a v-else-if="menu.url" :href="getMenuUrl(menu)">
                             <div
                                 style="width: calc(100% - 24px);"
                                 :class="['cly-vue-sidebar__menu-items has-ellipsis',

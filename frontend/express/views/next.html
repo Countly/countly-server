@@ -1,0 +1,622 @@
+<html>
+    <head>
+        <script><%- javascript %></script>
+        <!-- Vue3 Assets -->
+        <script src="https://unpkg.com/vue@3.5.14/dist/vue.global.prod.js"></script>
+        <script src="https://unpkg.com/vue-router@4.1.6/dist/vue-router.global.prod.js"></script>
+        <script src="https://unpkg.com/vue-demi@0.13.11/lib/index.iife.js"></script>
+        <script src="https://unpkg.com/pinia@2.0.33/dist/pinia.iife.js"></script>
+
+        <!-- UI Library Assets -->
+        <script src="https://cdn.jsdelivr.net/npm/echarts@5.0.0/dist/echarts.min.js"></script>
+        <script src="https://unpkg.com/element-plus@2.3.9/dist/index.full.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/element-plus@2.3.9/dist/index.css" />
+
+        <script type="text/javascript">
+            window.eval = function(){
+                console.log("eval not available");
+                window.Countly = window.Countly || {};
+                Countly.q = Countly.q || [];
+                Countly.q.push(['log_error', new Error("eval not available")]);
+            };
+            window.paceOptions = {
+                ajax: {
+                    ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", "method=get_events", "display_loader=false"]
+                }
+            };
+            window.loadPlugin = function(plugin, callback, args){
+                if (typeof plugin !== "string") {
+                    console.log("when loading plugin, provided plugin was not a string, but a", plugin);
+                }
+                if (typeof callback !== "function") {
+                    console.log("when loading plugin", plugin, "provided callback was not a function, but a", callback);
+                }
+                if (countlyGlobal.plugins.indexOf(plugin) !== -1) {
+                    if (Array.isArray(args)){
+                        callback.apply(window, args);
+                    }
+                    else {
+                        callback(args);
+                    }
+                }
+            };
+        </script>
+    </head>
+    <body>
+        <div id="app">
+        </div>
+        <!-- countly.common.js dependencies-->
+         <!-- Todo: We will remove Jquery from countly.common.js -->
+        <script language="javascript" type="text/javascript" src="../javascripts/dom/jquery/jquery.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="../javascripts/dom/jquery.form.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="../javascripts/utils/underscore-min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="../javascripts/utils/store+json2.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="../javascripts/utils/moment/moment-with-locales.min.js?<%= countlyVersion %>"></script>
+        <script language="javascript" type="text/javascript" src="../javascripts/countly/countly.common.js?<%= countlyVersion %>"></script>
+
+        <script language="javascript" type="text/javascript" src="../javascripts/countly/vue/coreVue3.js?<%= countlyVersion %>"></script>
+
+        <% if (javascripts_next) { %>
+			<% for(var i=0, l=javascripts_next.length; i<l; i++) {%>
+				<script language="javascript" type="text/javascript" src="../<%= javascripts_next[i] %>?<%= countlyVersion %>"></script>
+			<% } %>
+		<% } %>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log("countlyGlobal loaded:", typeof countlyGlobal);
+                console.log("countlyCommon loaded:", typeof countlyCommon);
+
+                // Create Pinia store for sidebar menu
+                const useSidebarStore = Pinia.defineStore('sidebar', {
+                    state: () => ({
+                        menu: [
+                            { name: "Home", path: "/home" },
+                            { name: "Boards", path: "/next#/boards" },
+                            {
+                                name: "Analytics",
+                                expanded: false,
+                                children: [
+                                    { name: "Visitor Analytics", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/visitor' },
+                                    { name: "Visitor Loyalty", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/loyalty' },
+                                    { name: "Session Analytics", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/session' },
+                                    { name: "Page Views", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/pageviews' },
+                                    { name: "Heatmaps", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/heatmaps' },
+                                    { name: "Acquisition", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/acquisition' },
+                                    { name: "Technology", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/technology' },
+                                    { name: "Geo", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/analytics/geo' }
+                                ]
+                            },
+                            { name: "Retention", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + "/retention" },
+                            {
+                                name: "Events",
+                                expanded: false,
+                                children: [
+                                    { name: "Custom Events", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + "/events/custom" },
+                                    { name: "Crash Events", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + "/events/crash" }
+                                ]
+                            },
+                            { name: "Revenue", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + "/revenue" },
+                            { name: "Attribution", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + "/attribution" },
+                            { name: "Visitor Profiles", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + "/visitor-profiles" },
+                            { name: "Cohorts", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID +"/cohorts" },
+                            { name: "Funnels", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID +"/funnels" },
+                            { name: "Flows", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID +"/flows" },
+                            { name: "Drill", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID +"/drill" },
+                            { name: "Formulas", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID +"/formulas" },
+                            { name: "Journeys", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID +"/journeys" },
+                            { name: "Feedback", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID +"/feedback" },
+                            { name: "Errors", path: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID +"/errors" }
+                        ],
+                        appInfo: {
+                            name: "empty",
+                            type: "Web",
+                            image: "/appimages/657984294c3287b7df6c220f.png"
+                        }
+                    }),
+                    actions: {
+                        toggleMenu(index) {
+                            const item = this.menu[index];
+                            if (item.children) {
+                                item.expanded = !item.expanded;
+                            }
+                        }
+                    }
+                });
+
+                // Vue 3 ECharts component
+                const VueECharts = {
+                    name: 'vue-echarts',
+                    props: {
+                        option: {
+                            type: Object,
+                            required: true
+                        },
+                        height: {
+                            type: [String, Number],
+                            default: '300px'
+                        },
+                        width: {
+                            type: [String, Number],
+                            default: '100%'
+                        },
+                        theme: {
+                            type: String,
+                            default: null
+                        },
+                        autoResize: {
+                            type: Boolean,
+                            default: true
+                        }
+                    },
+                    template: `
+                        <div ref="chartContainer" :style="{ width: width, height: height }"></div>
+                    `,
+                    data() {
+                        return {
+                            chart: null,
+                            resizeObserver: null
+                        }
+                    },
+                    mounted() {
+                        this.$nextTick(() => {
+                            this.initChart();
+                        });
+                    },
+                    beforeUnmount() {
+                        if (this.chart) {
+                            this.chart.dispose();
+                            this.chart = null;
+                        }
+                        
+                        if (this.resizeObserver) {
+                            this.resizeObserver.disconnect();
+                            this.resizeObserver = null;
+                        } else if (this._resizeHandler) {
+                            window.removeEventListener('resize', this._resizeHandler);
+                            this._resizeHandler = null;
+                        }
+                    },
+                    methods: {
+                        initChart() {
+                            // Get the chart container DOM element
+                            const container = this.$refs.chartContainer;
+                            
+                            if (!container) {
+                                console.error('Chart container not found');
+                                return;
+                            }
+                            
+                            this.chart = this.theme 
+                                ? echarts.init(container, this.theme)
+                                : echarts.init(container);
+                                
+                            this.updateChart();
+                            this.handleResize();
+                        },
+                        updateChart() {
+                            if (!this.chart) {
+                                return;
+                            }
+                            
+                            this.chart.setOption(this.option, true);
+                        },
+                        handleResize() {
+                            if (!this.chart || !this.autoResize) {
+                                return;
+                            }
+                            
+                            if (typeof ResizeObserver !== 'undefined') {
+                                this.resizeObserver = new ResizeObserver(() => {
+                                    this.chart.resize();
+                                });
+                                this.resizeObserver.observe(this.$refs.chartContainer);
+                            } else {
+                                // Fallback to window resize
+                                this._resizeHandler = () => {
+                                    this.chart.resize();
+                                };
+                                window.addEventListener('resize', this._resizeHandler);
+                            }
+                        }
+                    },
+                    watch: {
+                        option: {
+                            deep: true,
+                            handler() {
+                                this.updateChart();
+                            }
+                        },
+                        theme() {
+                            this.chart && this.chart.dispose();
+                            this.initChart();
+                        }
+                    }
+                };
+
+                // ECharts demo component
+                const EchartsDemo = {
+                    components: {
+                        'vue-echarts': VueECharts
+                    },
+                    template: `
+                        <div style="padding: 20px">
+                            <h3>Apache ECharts with Vue 3 Integration</h3>
+                            <div style="margin-bottom: 20px;">
+                                <el-button @click="changeData">Change Data</el-button>
+                                <el-button @click="toggleChartType">Toggle Chart Type</el-button>
+                            </div>
+                            <div>
+                                <vue-echarts :option="chartOption" height="400px"></vue-echarts>
+                            </div>
+                        </div>
+                    `,
+                    data() {
+                        return {
+                            chartOption: {
+                                title: {
+                                    text: 'ECharts Basic Example'
+                                },
+                                tooltip: {
+                                    trigger: 'axis'
+                                },
+                                legend: {
+                                    data: ['Sales', 'Revenue']
+                                },
+                                xAxis: {
+                                    type: 'category',
+                                    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                                },
+                                yAxis: {
+                                    type: 'value'
+                                },
+                                series: [
+                                {
+                                        name: 'Sales',
+                                        type: 'line',
+                                        data: [120, 132, 101, 134, 90, 230, 210]
+                                    },
+                                    {
+                                        name: 'Revenue',
+                                        type: 'bar',
+                                        data: [220, 182, 191, 234, 290, 330, 310]
+                                    }
+                                ]
+                            },
+                            currentMode: 'default'
+                        };
+                    },
+                    methods: {
+                        changeData() {
+                            // Generate new random data
+                            const newSalesData = Array.from({ length: 7 }, () => 
+                                Math.floor(Math.random() * 200) + 50);
+                            const newRevenueData = Array.from({ length: 7 }, () => 
+                                Math.floor(Math.random() * 300) + 100);
+                                
+                            this.chartOption = {
+                                ...this.chartOption,
+                                series: [
+                                    {
+                                        ...this.chartOption.series[0],
+                                        data: newSalesData
+                                    },
+                                    {
+                                        ...this.chartOption.series[1],
+                                        data: newRevenueData
+                                    }
+                                ]
+                            };
+                        },
+                        toggleChartType() {
+                            if (this.currentMode === 'default') {
+                                // Switch to pie chart
+                                this.chartOption = {
+                                    title: {
+                                        text: 'ECharts Pie Chart Example',
+                                        left: 'center'
+                                    },
+                                    tooltip: {
+                                        trigger: 'item',
+                                        formatter: '{a} <br/>{b}: {c} ({d}%)'
+                                    },
+                                    legend: {
+                                        orient: 'vertical',
+                                        left: 'left',
+                                        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                                    },
+                                    series: [
+                                        {
+                                            name: 'Sales',
+                                            type: 'pie',
+                                            radius: '50%',
+                                            data: [
+                                                {value: 120, name: 'Mon'},
+                                                {value: 132, name: 'Tue'},
+                                                {value: 101, name: 'Wed'},
+                                                {value: 134, name: 'Thu'},
+                                                {value: 90, name: 'Fri'},
+                                                {value: 230, name: 'Sat'},
+                                                {value: 210, name: 'Sun'}
+                                            ],
+                                            emphasis: {
+                                                itemStyle: {
+                                                    shadowBlur: 10,
+                                                    shadowOffsetX: 0,
+                                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                                }
+                                            }
+                                        }
+                                    ]
+                                };
+                                this.currentMode = 'pie';
+                            } else {
+                                // Switch back to bar/line chart
+                                this.chartOption = {
+                                    title: {
+                                        text: 'ECharts Basic Example'
+                                    },
+                                    tooltip: {
+                                        trigger: 'axis'
+                                    },
+                                    legend: {
+                                        data: ['Sales', 'Revenue']
+                                    },
+                                    xAxis: {
+                                        type: 'category',
+                                        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                                    },
+                                    yAxis: {
+                                        type: 'value'
+                                    },
+                                    series: [
+                                        {
+                                            name: 'Sales',
+                                            type: 'line',
+                                            data: [120, 132, 101, 134, 90, 230, 210]
+                                        },
+                                        {
+                                            name: 'Revenue',
+                                            type: 'bar',
+                                            data: [220, 182, 191, 234, 290, 330, 310]
+                                        }
+                                    ]
+                                };
+                                this.currentMode = 'default';
+                            }
+                        }
+                    }
+                };
+
+                // Sidebar menu component
+                const SidebarMenu = {
+                    name: "SidebarMenu",
+                    template: `
+                        <div class="sidebar">
+                            <div class="left-sidebar"></div>
+                            <div style="width: 100%;" class="cly-vue-sidebar">
+                                <div class="menu-selected-application">
+                                    <div class="menu-selected-application-image" :style="'background-image: url(' + store.appInfo.image + ');'"></div>
+                                    <div class="menu-selected-application-info">
+                                        <div class="menu-app-name">
+                                            <span>{{ store.appInfo.name }}</span>
+                                        </div>
+                                        <div class="menu-app-type">
+                                            <span>{{ store.appInfo.type }}</span>
+                                        </div>
+                                    </div>
+                                <div>
+                                        <span class="arrow">▼</span>
+                                    </div>
+                                </div>
+
+                                <div v-for="(cat, id) in store.menuItems.categories" :key="cat.name" :data-category="cat.name" style="margin-bottom: 40px">
+                                    <ul>
+                                        <li v-for="(menu, idx) in store.menuItems.categorizedMenus[cat.name]" :key="menu.name" class="cly-vue-sidebar__items" :style="menu.node && menu.node.bottom ? {'marginBottom': menu.node.bottom + 'px'} : {}">
+
+                                            <div v-if="store.menuItems.categorizedSubmenus[menu.name] && store.menuItems.categorizedSubmenus[menu.name].length">
+                                                <el-collapse v-model="store.selectedAnalyticsMenu" accordion :class="[{'cly-vue-sidebar__el-collapse--selected': (store.selectedMenuItem && store.selectedMenuItem.parent_code === menu.name)}]">
+                                                    <el-collapse-item :title="menu.title" :name="menu.name">
+                                                        <ul>
+                                                            <li v-for="(submenu, subIdx) in store.menuItems.categorizedSubmenus[menu.name]" :key="submenu.name" :class="['bu-mb-1', {'bu-mt-1': subIdx === 0}]">
+                                                                <a :href="getSubmenuUrl(submenu)" style="text-decoration: none;">
+                                                                    <div
+                                                                        style="width: calc(100% - 44px);"
+                                                                        :style="submenu.title === 'Boards' ? { backgroundColor: '#DF7E2E !important', borderRadius: '4px' } : {}"
+                                                                        :class="['cly-vue-sidebar__submenu-items has-ellipsis', {'cly-vue-sidebar__submenu-items--selected': (store.selectedMenuItem && store.selectedMenuItem.name === submenu.name)}]"
+                                                                        @click="store.onMenuItemClick(submenu)">
+                                                                        {{ submenu.title }}
+                                                                    </div>
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </el-collapse-item>
+                                                </el-collapse>
+                                            </div>
+                                            
+                                            <a v-else-if="menu.url" :href="getSubmenuUrl(menu)" style="text-decoration: none;">
+                                                <div
+                                                    style="width: calc(100% - 24px);"
+                                                    :style="menu.title === 'Boards' ? { backgroundColor: '#DF7E2E !important', borderRadius: '4px' } : {}"
+                                                    :class="['cly-vue-sidebar__menu-items has-ellipsis', {'cly-vue-sidebar__menu-items--selected': (store.selectedMenuItem && store.selectedMenuItem.name === menu.name)}]"
+                                                    @click="store.onMenuItemClick(menu)"
+                                                >
+                                                    {{ menu.title }}
+                                                </div>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    setup() {
+                        const store = useSidebarStore();
+                        store.menuItems = JSON.parse(localStorage.getItem("common_menu_storage"));
+                        const getSubmenuUrl = (menu) => {
+                            const urlPrefix = menu.next ? '/next#/' : '/dashboard#/';
+                            return urlPrefix + countlyCommon.ACTIVE_APP_ID + menu.url.replace(/#/g, '');
+                        };
+                        return { store, getSubmenuUrl };
+                    }
+                };
+
+                // Vue Router setup
+                var CountlyVueThreeRouter = window.VueRouter.createRouter({
+                    history: window.VueRouter.createWebHashHistory(),
+                    routes: [
+                    {
+                            path: '/echarts-demo',
+                            component: EchartsDemo
+                        },
+                        ...countlyVue3.getRoutes(),
+                    ]
+                });
+
+                // Create Vue app
+                const app = Vue.createApp({
+                    data() {
+                        return {
+                            appId: countlyCommon.ACTIVE_APP_ID
+                        };
+                    },
+                    components: {
+                        'sidebar-menu': SidebarMenu
+                    },
+                    template: `<div style="display: flex; width: 100%; height: 100vh;">
+                                    <sidebar-menu></sidebar-menu>
+                                    <div style="flex: 1;">
+                                        <router-view></router-view>
+                                    </div>
+                            </div>`,
+                });
+                
+                // Pinia integration
+                const pinia = Pinia.createPinia();
+                app.use(pinia);
+                app.use(CountlyVueThreeRouter);
+                app.use(ElementPlus);
+
+                // Mount the Vue app
+                app.mount('#app');
+            });
+        </script>
+
+        <style>
+            html, body {
+                font-family: 'Inter', sans-serif;
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .sidebar {
+                width: 248px;
+                background-color: #24292e;
+                padding: 1rem;
+                color: #ccc;
+                height: 100vh;
+                overflow-y: auto;
+                display: flex;
+            }
+
+            .left-sidebar {
+                width: 48px;
+                height: 100%;
+                background-color: #191c20;
+                margin: -16 16 -16 -16px;
+            }
+
+            .cly-vue-sidebar__menu-items, .cly-vue-sidebar__submenu-items, .cly-vue-sidebar .el-collapse-item__header {
+                line-height: 20px;
+                height: 20px;
+                background-color: #24292e !important;
+                color: #d6d6d6 !important;
+                border: none;
+                font-size: 14px;
+                padding: 0;
+                font-weight: 400;
+                font-family: Inter;
+                padding: 6px 12px;
+            }
+
+            .cly-vue-sidebar__items {
+                padding-left: 12px;
+                padding-right: 12px;
+                cursor: pointer;
+                margin-bottom: 8px;
+            }
+
+            .menu-selected-application {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border: 1px solid #424243;
+                box-sizing: border-box;
+                box-shadow: 0px 11px 14px rgba(0, 0, 0, .371635);
+                border-radius: 4px;
+                height: 50px;
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+            
+            .menu-selected-application-info {
+                margin-right: 75px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .menu-selected-application-image {
+                width: 26px;
+                height: 26px;
+                background-size: 26px 26px;
+                border-radius: 4px;
+                background-position: center;
+                display: inline-block;
+            }
+
+            .menu-app-name {
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 12px;
+            }
+
+            .menu-app-type {
+                font-size: 10px;
+                font-weight: 400;
+                line-height: 12px;
+                margin-top: 2px;
+            }
+
+            .arrow {
+                float: right;
+                margin-top: -8px;
+                font-size: 8px;
+            }
+
+            .sidebar ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .cly-vue-sidebar .el-collapse-item__wrap {
+                border-bottom: 1px solid #424243;
+                background-color: #24292e;
+                box-shadow: 0px 1px 0px rgba(0, 0, 0, .4);
+            }
+
+            .cly-vue-sidebar .el-collapse-item__header {
+                background-color: #24292e !important;
+                color: #d6d6d6 !important;
+                margin-top: -1px;
+                margin-bottom: -2px;
+                font-size: 14px;
+                padding: 0;
+                font-weight: 400;
+                font-family: Inter;
+                padding: 6px 12px;
+            }
+        </style>
+    </body>
+</html>
