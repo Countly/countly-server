@@ -1,6 +1,6 @@
 var request = require('supertest');
 var should = require('should');
-var testUtils = require("../../test/testUtils");
+var testUtils = require("../../../test/testUtils");
 request = request.agent(testUtils.url);
 var APP_KEY = "";
 var API_KEY_ADMIN = "";

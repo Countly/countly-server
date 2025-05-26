@@ -24,7 +24,7 @@ var alternateChrome = true;
 var chromePath = "";
 var countlyFs = require('./countlyFs');
 var log = require('./log.js')('core:render');
-var countlyConfig = require('./../config', 'dont-enclose');
+var countlyConfig = require('./../config');
 
 
 /**

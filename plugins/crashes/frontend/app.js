@@ -1,5 +1,5 @@
 var exportedPlugin = {},
-    countlyConfig = require('../../../frontend/express/config', 'dont-enclose');
+    countlyConfig = require('../../../frontend/express/config');
 
 var config;
 try {

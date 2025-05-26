@@ -9,7 +9,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: userActivityPageElements.PAGE_TITLE,
         labelText: "User Activity",
         tooltipElement: userActivityPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Overview of the total number of users who started a session on your application, distributed in pre-set categories of numbers of sessions."
+        tooltipText: "An overview of the total number of users who started a session on your application, distributed in pre-set categories based on the number of sessions."
     });
 
     cy.scrollPageToTop();

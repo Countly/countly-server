@@ -26,8 +26,8 @@ const hooksDataTableElements = (index = 0) => ({
     COLUMN_NAME_TRIGGER_COUNT_SORTABLE_ICON: 'datatable-hooks-sortable-icon-trigger-count',
     COLUMN_NAME_LAST_TRIGGERED_LABEL: 'datatable-hooks-label-last-triggered',
     COLUMN_NAME_LAST_TRIGGERED_SORTABLE_ICON: 'datatable-hooks-sortable-icon-last-triggered',
-    COLUMN_NAME_CREATE_BY_LABEL: 'datatable-hooks-label-create-by',
-    COLUMN_NAME_CREATE_BY_SORTABLE_ICON: 'datatable-hooks-sortable-icon-create-by',
+    COLUMN_NAME_CREATE_BY_LABEL: 'datatable-hooks-label-created-by',
+    COLUMN_NAME_CREATE_BY_SORTABLE_ICON: 'datatable-hooks-sortable-icon-created-by',
 
     //Columns' Rows' Datas Elements 
     STATUS: 'datatable-hooks-status-' + index + '-el-switch-wrapper',

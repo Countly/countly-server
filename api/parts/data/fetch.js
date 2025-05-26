@@ -1747,6 +1747,7 @@ async function fetchFromGranural(collection, params, options, callback) {
 * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
 * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
 * @param {function} callback - to call when fetch done
+ * @returns {void} void
 **/
 function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 

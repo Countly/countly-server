@@ -3,7 +3,7 @@
 * @module api/utils/utils
 */
 var crypto = require('crypto'),
-    countlyConfig = require('./../config', 'dont-enclose');
+    countlyConfig = require('./../config');
 
 if (!countlyConfig.encryption) {
     countlyConfig.encryption = {};

@@ -8,12 +8,12 @@ const verifyStaticElementsOfPage = (isEnabled) => {
         labelElement: loggerPageElements.PAGE_TITLE,
         labelText: "Incoming Data Logs",
         tooltipElement: loggerPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Log requests made to the write API to review and debug incoming data"
+        tooltipText: "Logs requests made to the write API to review and debug incoming data."
     });
 
     cy.verifyElement({
         labelElement: loggerPageElements.PAGE_SUB_TITLE,
-        labelText: "Only up to last 1000 incoming data logs are stored"
+        labelText: "Only up to the last 1000 incoming data logs are stored"
     });
 
     if (isEnabled) {
@@ -23,7 +23,7 @@ const verifyStaticElementsOfPage = (isEnabled) => {
             element: loggerPageElements.ENABLED_LABEL,
             elementText: "Enabled",
             tooltipElement: loggerPageElements.AUTO_REFRESH_IS_ENABLED_TOOLTIP,
-            tooltipText: "Automatically refresh can be adjusted through this switch",
+            tooltipText: "Automatic refresh can be adjusted through this switch.",
         });
 
         cy.verifyElement({
@@ -37,7 +37,7 @@ const verifyStaticElementsOfPage = (isEnabled) => {
             labelElement: loggerPageElements.ENABLE_AUTO_REFRESH_LABEL,
             labelText: "Enable Auto-refresh",
             tooltipElement: loggerPageElements.ENABLE_AUTO_REFRESH_TOOLTIP,
-            tooltipText: "Automatically refresh can be adjusted through this switch"
+            tooltipText: "Automatic refresh can be adjusted through this switch."
         });
     }
 
