@@ -272,7 +272,7 @@ describe("Scheduler", () => {
                 status: "scheduled",
                 timezoneAware: false,
                 schedulerTimezone: undefined,
-                audienceFilters: undefined,
+                audienceFilter: undefined,
                 result: buildResultObject()
             }));
         });

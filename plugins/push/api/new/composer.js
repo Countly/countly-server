@@ -12,11 +12,10 @@
  * @typedef {import('./types/proxy.ts').ProxyConfiguration} ProxyConfiguration
  * @typedef {import("mongodb").Db} MongoDb
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
- * @typedef {import('./types/schedule.ts').AudienceFilters} AudienceFilters
+ * @typedef {import('./types/schedule.ts').AudienceFilter} AudienceFilter
  * @typedef {import('./types/user.ts').User} User
  * @typedef {import('stream').Readable} Readable
  * @typedef {import('./types/utils.ts').LogObject} LogObject
- * @typedef {import('./types/utils.ts').CountlyCommon} CountlyCommon
  * @typedef {import("mongodb").Collection<{ radius: number; unit: "mi"|"km"; geo: { coordinates: [number, number]; } }>} GeosCollection
  * @typedef {import("mongodb").Collection<Message>} MessageCollection
  * @typedef {import("mongodb").Collection<Schedule>} ScheduleCollection
@@ -27,7 +26,7 @@ const queue = require("./lib/kafka.js"); // do not import by destructuring; it's
 const { createTemplate, getUserPropertiesUsedInsideMessage } = require("./lib/template.js");
 const PLATFORM_KEYMAP = require("./constants/platform-keymap.json");
 const { buildResultObject, increaseResultStat, applyResultObject } = require("./resultor.js");
-const common = /** @type {CountlyCommon} */(require("../../../../api/utils/common.js"));
+const common = require("../../../../api/utils/common.js");
 const { loadDrillAPI } = require("./lib/utils.js");
 /** @type {LogObject} */
 const log = require('../../../../api/utils/common').log('push:composer');
@@ -102,7 +101,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
         messageDoc,
         appDoc.timezone,
         timezone,
-        scheduleDoc.audienceFilters
+        scheduleDoc.audienceFilter
     );
     const compileTemplate = createTemplate(messageDoc);
     const proxy = await loadProxyConfiguration(db);
@@ -209,7 +208,7 @@ function userPropsProjection(message) {
  * @param {Message} message
  * @param {string=} appTimezone
  * @param {string=} timezone
- * @param {AudienceFilters=} filters
+ * @param {AudienceFilter=} filters
  * @returns {Promise<Readable & AsyncIterable<User>>}
  */
 async function getUserStream(db, message, appTimezone, timezone, filters) {
@@ -317,7 +316,7 @@ function getPlatformConfiguration(platform, message) {
 
 /**
  * @param {MongoDb} db
- * @param {AudienceFilters} filters
+ * @param {AudienceFilter} filters
  * @param {string} appIdStr
  * @param {string=} appTimezone
  * @returns {Promise<Array<{ $match: { [key: string]: any } }>>}
@@ -327,16 +326,31 @@ async function buildPipelineFromFilters(db, filters, appIdStr, appTimezone) {
     const pipeline = [];
     // User ids:
     if (Array.isArray(filters.uids)) {
-        pipeline.push({ $match: { $in: filters.uids } });
+        pipeline.push({ $match: { uid: { $in: filters.uids } } });
+    }
+    // User ids with cohort status:
+    if (Array.isArray(filters.userCohortStatuses)) {
+        /** @type {{[key: string]: string|{$exists: false;};}[]} */
+        const $or = [];
+        for (let i = 0; i < filters.userCohortStatuses.length; i++) {
+            const { uid, cohort } = filters.userCohortStatuses[i];
+            $or.push({
+                uid,
+                ["chr." + cohort.id + ".in"]: cohort.status
+                    ? "true"
+                    : { $exists: false }
+            });
+        }
+        pipeline.push({ $match: { $or } });
     }
     // Cohorts:
     if (Array.isArray(filters?.cohorts)) {
         /** @type {{ [cohortPath: string]: "true" }} */
-        const cohortFilters = {};
+        const $match = {};
         for (let i = 0; i < filters.cohorts.length; i++) {
-            cohortFilters["chr." + filters.cohorts[i] + ".in"] = "true";
+            $match["chr." + filters.cohorts[i] + ".in"] = "true";
         }
-        pipeline.push({ $match: cohortFilters });
+        pipeline.push({ $match });
     }
     // Geos:
     if (Array.isArray(filters?.geos)) {

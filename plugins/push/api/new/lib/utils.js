@@ -139,10 +139,9 @@ function updateInternalsWithResults(results, log) {
              * @param {Error} err
              */
             err => {
-                console.error("LOREM IPSUM DOLOR SIT AMET");
                 log.e('Error while recording %d [CLY]_push_sent\'s: %j', events.length, params, err);
             }
-        ).then(() => console.log("HEEEERRREEEEE"));
+        ).then(() => log.d('Recorded %d [CLY]_push_sent\'s: %j', events.length, params));
         // @ts-ignore
         updateDataPoints(common.writeBatcher, events[0].appId.toString(), 0, {"p": events.length});
     }

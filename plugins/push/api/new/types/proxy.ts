@@ -2,7 +2,6 @@ import { AgentOptions, Agent as HttpsAgent } from "https";
 import { Agent as HttpAgent } from "http";
 import { TLSSocket } from "tls";
 
-
 export interface ProxyConfiguration {
     host: string;
     port: string;

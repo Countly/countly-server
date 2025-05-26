@@ -2,7 +2,7 @@ import { Moment } from "moment-timezone";
 import { Collection, Db, ObjectId } from "mongodb";
 import { Params } from "./requestProcessor";
 
-export interface TimeObject {   
+export interface TimeObject {
     /** Momentjs instance for request's time in app's timezone */
     now: Moment;
     /** Momentjs instance for request's time in UTC */
@@ -151,7 +151,7 @@ export interface CustomMetricProps {
     collection: string;
     /** id to prefix document ids, like app_id or segment id, etc */
     id: string;
-    /** object defining metrics to record, using key as metric name and value object for segmentation, unique, etc */    
+    /** object defining metrics to record, using key as metric name and value object for segmentation, unique, etc */
     metrics: {
         [key: string]: {
             /** value to increment current metric for, default 1 */
@@ -186,7 +186,7 @@ export interface DbExt {
 export interface APICallback {
     /**
     * Custom API response handler callback
-    * @param {boolean} error - true if there was problem processing request, and false if request was processed successfully 
+    * @param {boolean} error - true if there was problem processing request, and false if request was processed successfully
     * @param {string} responseMessage - what API returns
     * @param {object} headers - what API would have returned to HTTP request
     * @param {number} returnCode - HTTP code, what API would have returned to HTTP request
@@ -206,7 +206,7 @@ export interface HTMLWhitelist {
 export interface Common {
     /** Reference to plugins */
     plugins: any;
-    
+
     /**
      * Escape special characters in the given string of html.
      * @param  {string} string - The string to escape for inserting into HTML
@@ -223,7 +223,7 @@ export interface Common {
     encodeCharacters: (str: string) => string;
 
     /**
-     * Decode escaped html 
+     * Decode escaped html
      * @param {string} string - The string to decode
      * @returns {string} escaped string
      **/
@@ -277,7 +277,7 @@ export interface Common {
     crypto: object;
 
     /**
-     * Operating syste/platform mappings from what can be passed in metrics to shorter representations 
+     * Operating syste/platform mappings from what can be passed in metrics to shorter representations
      * stored in db as prefix to OS segmented values
      */
     os_mapping: OsMapping;
@@ -306,7 +306,7 @@ export interface Common {
     getDescendantProp: (obj: any, desc: string) => any;
 
     /**
-     * Checks if provided value could be converted to a number, 
+     * Checks if provided value could be converted to a number,
      * even if current type is other, as string, as example value "42"
      * @param {any} n - value to check if it can be converted to number
      * @returns {boolean} true if can be a number, false if can't be a number
@@ -391,7 +391,7 @@ export interface Common {
     md5Hash: (str: string) => string;
 
     /**
-     * Modifies provided object in the format object["2012.7.20.property"] = increment. 
+     * Modifies provided object in the format object["2012.7.20.property"] = increment.
      * Usualy used when filling up Countly metric model data
      * @param {Params} params - {@link Params} object
      * @param {object} object - object to fill
@@ -414,10 +414,10 @@ export interface Common {
     /**
      * Creates a time object from request's milisecond or second timestamp in provided app's timezone
      * @param {string} appTimezone - app's timezone
-     * @param {string} reqTimestamp - timestamp in the request
+     * @param {number=} reqTimestamp - timestamp in the request
      * @returns {TimeObject} Time object for current request
      */
-    initTimeObj: (appTimezone: string, reqTimestamp: string) => TimeObject;
+    initTimeObj: (appTimezone: string, reqTimestamp?: number) => TimeObject;
 
     /**
      * Creates a Date object from provided seconds timestamp in provided timezone
@@ -522,7 +522,7 @@ export interface Common {
     getIpAddress: (req: req) => string;
 
     /**
-     * Modifies provided object filling properties used in zero documents in the format object["2012.7.20.property"] = increment. 
+     * Modifies provided object filling properties used in zero documents in the format object["2012.7.20.property"] = increment.
      * Usualy used when filling up Countly metric model zero document
      * @param {Params} params - {@link params} object
      * @param {object} object - object to fill
@@ -540,7 +540,7 @@ export interface Common {
     fillTimeObjectZero: (params: Params, object: any, property: string | string[], increment?: number, isUnique?: boolean) => boolean;
 
     /**
-     * Modifies provided object filling properties used in monthly documents in the format object["2012.7.20.property"] = increment. 
+     * Modifies provided object filling properties used in monthly documents in the format object["2012.7.20.property"] = increment.
      * Usualy used when filling up Countly metric model monthly document
      * @param {Params} params - {@link params} object
      * @param {object} object - object to fill
@@ -764,7 +764,7 @@ export interface Common {
 
     /**
      * Not deep object and primitive type comparison function
-     * 
+     *
      * @param  {any} a object to compare
      * @param  {any} b object to compare
      * @param  {boolean} checkFromA true if check should be performed agains keys of a, resulting in true even if b has more keys
@@ -856,7 +856,7 @@ export interface Common {
     /**
      * Gets a random string from given character set string with given length
      * @param {string} charSet - charSet string
-     * @param {number} length - length of the random string. default 1 
+     * @param {number} length - length of the random string. default 1
      * @returns {string} random string from charset
      */
     getRandomValue: (charSet: string, length?: number) => string;
@@ -876,7 +876,7 @@ export interface Common {
      * Check db host match for both of API and Frontend config
      * @param {object} apiConfig - mongodb object from API config
      * @param {object} frontendConfig - mongodb object from Frontend config
-     * @returns {boolean} isMatched - is config correct?  
+     * @returns {boolean} isMatched - is config correct?
      */
     checkDatabaseConfigMatch: (apiConfig: any, frontendConfig: any) => boolean;
 
@@ -908,7 +908,7 @@ export interface Common {
 
     /**
      * Sync license check results to request (and session if present)
-     * 
+     *
      * @param {object} req request
      * @param {object|undefined} check check results
      */

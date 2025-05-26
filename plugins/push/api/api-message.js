@@ -2,7 +2,7 @@
  * @typedef {import("./new/types/message").Message} IMessage
  * @typedef {import("./new/types/schedule").Schedule} ISchedule
  */
-const { Message, Result, Creds, State, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES, Template, PLATFORM } = require('./send'),
+const { Message, Result, Creds, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES, Template, PLATFORM } = require('./send'),
     crypto = require("crypto"),
     { DEFAULTS, RecurringType } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
@@ -13,7 +13,7 @@ const { Message, Result, Creds, State, Status, platforms, Audience, ValidationEr
 
 const countlyFetch = require("../../../api/parts/data/fetch.js");
 const { buildResultObject } = require("./new/resultor.js");
-const { scheduleMessageByDateTrigger, DATE_TRIGGERS } = require("./new/scheduler.js");
+const { scheduleIfEligible, DATE_TRIGGERS } = require("./new/scheduler.js");
 /**
  * @param {IMessage} message
  * @param {ISchedule=} lastSchedule
@@ -45,7 +45,6 @@ async function validate(args, draft = false) {
             _id: { required: false, type: 'ObjectID' },
             app: { required: true, type: 'ObjectID' },
             platforms: { required: true, type: 'String[]', in: () => require('./send/platforms').platforms },
-            // state: { type: 'Number' },
             status: { type: 'String', in: Object.values(Status) },
             filter: {
                 type: Filter.scheme,
@@ -72,7 +71,6 @@ async function validate(args, draft = false) {
         else {
             throw new ValidationError(data.errors);
         }
-        msg.state = State.Inactive;
         msg.status = Status.Draft;
     }
     else {
@@ -158,7 +156,7 @@ async function validate(args, draft = false) {
             locales: msg.info.locales,
         }));
 
-        // state & status cannot be changed by api
+        // status cannot be changed by api
         msg.status = existing.status;
     }
 
@@ -204,7 +202,6 @@ module.exports.test = async params => {
 
     msg._id = common.db.ObjectID();
     msg.triggers = [new PlainTrigger({start: new Date()})];
-    msg.state = State.Streamable;
     msg.status = Status.Scheduled;
     await msg.save();
 
@@ -237,10 +234,6 @@ module.exports.test = async params => {
             if (msg.result.total === msg.result.processed) {
                 break;
             }
-            if (msg.is(State.Error)) {
-                break;
-            }
-
             await new Promise(res => setTimeout(res, 1000));
         }
     }
@@ -251,10 +244,14 @@ module.exports.test = async params => {
     if (msg) {
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_test', data: {test_uids, test_cohorts}});
         let ok = await msg.updateAtomically(
-            {_id: msg._id, state: msg.state},
+            {_id: msg._id},
             {
-                $bit: {state: {or: State.Deleted}},
-                $set: {'result.removed': new Date(), 'result.removedBy': params.member._id, 'result.removedByName': params.member.full_name}
+                $set: {
+                    status: "deleted",
+                    'result.removed': new Date(),
+                    'result.removedBy': params.member._id,
+                    'result.removedByName': params.member.full_name
+                }
             });
         if (error) {
             log.e('Error while sending test message', error);
@@ -309,18 +306,23 @@ module.exports.create = async params => {
     else {
         msg.status = Status.Active;
         await msg.save();
-        if (!demo) {
-            if (msg.triggers.find(t => DATE_TRIGGERS.includes(t.kind))) {
-                try {
-                    // await scheduleMessageByDateTrigger(common.db, msg._id);
-                }
-                catch (error) {
-                    log.e('Error while scheduling message', error);
-                    return common.returnMessage(params, 500, "Error while scheduling the message. Check the API logs for details.");
-                }
-            }
-            await msg.schedule(log, params);
+        if (common.plugins.isPluginEnabled("push_approver")) {
+            // this might change the status of the message:
+            await common.plugins.getPluginsApis()
+                .push_approver.onMessageActivated(params, msg);
         }
+        try {
+            await scheduleIfEligible(common.db, msg);
+        }
+        catch (error) {
+            log.e('Error while scheduling message', error);
+            return common.returnMessage(params, 500, "Error while scheduling the message. Check the API logs for details.");
+        }
+
+        // if (!demo && msg.status === Status.Active) {
+        //     await msg.schedule(log, params);
+        // }
+
         log.i('Created message %s: %j / %j / %j', msg.id, msg.status, msg.result.json);
         common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_created', data: msg.json});
     }
@@ -348,58 +350,46 @@ module.exports.create = async params => {
  * @apiUse PushError
  */
 module.exports.update = async params => {
-    let msg = await validate(params.qstring, params.qstring.status === Status.Draft);
+    let msg = await validate(params.qstring, params.qstring.status === "draft");
+
+    if (msg.status === "deleted") {
+        throw new ValidationError("Deleted messages cannot be updated");
+    }
+
     msg.info.updated = new Date();
     msg.info.updatedBy = params.member._id;
     msg.info.updatedByName = params.member.full_name;
 
-    if (msg.is(State.Done)) {
-        if (msg.triggerAutoOrApi()) {
-            msg.status = Status.Active;
-            await msg.save();
-            await msg.schedule(log, params);
-            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
+    if (msg.status === "draft" && params.qstring.status === "active") {
+        msg.status = "active";
+        await msg.save();
+        if (common.plugins.isPluginEnabled("push_approver")) {
+            await common.plugins.getPluginsApis()
+                .push_approver.onMessageActivated(params, msg);
         }
-        else if (msg.triggerPlain()) {
-            throw new ValidationError('Finished plain messages cannot be changed');
+        try {
+            await scheduleIfEligible(common.db, msg);
         }
-        else {
-            throw new ValidationError('Wrong trigger kind');
+        catch (error) {
+            log.e('Error while scheduling message', error);
+            return common.returnMessage(params, 500, "Error while scheduling the message. Check the API logs for details.");
         }
+        common.plugins.dispatch('/systemlogs', {
+            params,
+            action: 'push_message_updated_draft',
+            data: msg.json
+        });
     }
     else {
-        msg.info.rejectedAt = null;
-        msg.info.rejectedBy = null;
-        msg.info.rejectedByName = null;
-
-        if (msg.status === Status.Draft) {
-            if (params.qstring.status === Status.Active) {
-                msg.status = Status.Active;
-                await msg.save();
-                await msg.schedule(log, params);
-                common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated_draft', data: msg.json});
-            }
-            else {
-                await msg.save();
-                common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
-            }
-        }
-        else if (msg.status === Status.Inactive) { // reschedule (email again) when editing unapproved message
-            await msg.save();
-            await msg.schedule(log, params);
-            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
-        }
-        else {
-            await msg.save();
-            if (!params.qstring.demo && msg.triggerPlain() && (msg.is(State.Paused) || msg.is(State.Streaming) || msg.is(State.Streamable) || msg.is(State.Created))) {
-                await msg.schedule(log, params);
-            }
-            common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_updated', data: msg.json});
-        }
+        await msg.save();
+        common.plugins.dispatch('/systemlogs', {
+            params,
+            action: 'push_message_updated',
+            data: msg.json
+        });
     }
 
     log.i('Updated message %s: %j / %j / %j', msg.id, msg.status, msg.result.json);
-
     common.returnOutput(params, msg.json);
 };
 
@@ -500,6 +490,7 @@ module.exports.remove = async params => {
  * @apiUse PushError
  */
 module.exports.toggle = async params => {
+    const toggleableTriggers = ["api", "cohort", "event", "multi", "rec"];
     let data = common.validateArgs(params.qstring, {
         _id: {type: 'ObjectID', required: true},
         active: {type: 'BooleanString', required: true}
@@ -512,35 +503,48 @@ module.exports.toggle = async params => {
         return true;
     }
 
-    let msg = await Message.findOne(data._id);
+    let msg = await common.db.collection('messages').findOne({ _id: data._id });
     if (!msg) {
         common.returnMessage(params, 404, {errors: ['Message not found']}, null, true);
         return true;
     }
-
-    if (!msg.triggerAutoOrApi() && !msg.triggerRescheduleable()) {
-        throw new ValidationError(`The message doesn't have Cohort, Event, Multi or Recurring trigger`);
+    if (!msg.triggers.find(t => toggleableTriggers.includes(t.kind))) {
+        throw new ValidationError(`The message doesn't have API, Cohort, Event, Multi or Recurring trigger`);
     }
 
-    if (data.active && msg.is(State.Streamable)) {
+    if (!["active", "stopped"].includes(msg.status)) {
+        throw new ValidationError("Message can only be toggled if it is active or stopped");
+    }
+    else if (data.active && msg.status === "active") {
         throw new ValidationError(`The message is already active`);
     }
-    else if (!data.active && !msg.is(State.Streamable)) {
+    else if (!data.active && msg.status === "stopped") {
         throw new ValidationError(`The message is already stopped`);
     }
 
-    if (msg.is(State.Streamable)) {
-        await msg.stop(log);
-        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_deactivated', data: msg.json});
+    const status = data.active ? "active" : "stopped";
+    msg.status = status;
+    await common.db.collection("messages").updateOne({
+        _id: msg._id
+    }, {
+        $set: {
+            status,
+            "info.updated": new Date(),
+            "info.updatedBy": params.member._id,
+            "info.updatedByName": params.member.full_name
+        }
+    });
+
+    if (status === "active") {
+        await scheduleIfEligible(common.db, msg);
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_deactivated', data: msg});
     }
     else {
-        await msg.schedule(log, params);
-        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_activated', data: msg.json});
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_activated', data: msg});
     }
-
     log.i('Toggled message %s: %j / %j / %j', msg.id, msg.state, msg.status, msg.result.json);
 
-    common.returnOutput(params, msg.json);
+    common.returnOutput(params, msg);
 };
 
 /**

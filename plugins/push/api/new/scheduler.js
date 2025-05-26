@@ -4,7 +4,7 @@
  * @typedef {import('./types/message.ts').RecurringTrigger} RecurringTrigger
  * @typedef {import('./types/message.ts').MultiTrigger} MultiTrigger
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
- * @typedef {import('./types/schedule.ts').AudienceFilters} AudienceFilters
+ * @typedef {import('./types/schedule.ts').AudienceFilter} AudienceFilter
  * @typedef {import('./types/schedule.ts').MessageOverrides} MessageOverrides
  * @typedef {import('./types/queue.ts').ScheduleEvent} ScheduleEvent
  * @typedef {import('./types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
@@ -122,11 +122,13 @@ async function scheduleMessageByDateTrigger(db, messageId) {
         date,
         "tz" in trigger && trigger.tz ? trigger.tz : false,
         "sctz" in trigger ? trigger.sctz : undefined,
+        trigger.reschedule,
         message.filter,
     )));
 }
 
 /**
+ * Schedules messages based on auto trigger events (cohort and event).
  * @param {MongoDb} db
  * @param {AutoTriggerEvent[]} autoTriggerEvents
  * @returns {Promise<Schedule[]>}
@@ -154,20 +156,32 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
             }
         }).toArray();
         return Promise.allSettled(messages.map(message => {
-            /** @type {AudienceFilters} */
-            const audienceFilters = { ...message.filter, uids };
+            /** @type {AudienceFilter} */
+            const audienceFilter = { ...message.filter };
             const trigger = message.triggers[0];
             let scheduleTo = now;
             let timezoneAware = false;
             let schedulerTimezone;
             if (trigger.kind === "cohort" || trigger.kind === "event") {
+                if (trigger.kind === "cohort" && trigger.cancels === true) {
+                    audienceFilter.userCohortStatuses = uids.map(uid => ({
+                        uid,
+                        cohort: {
+                            id: triggerFilter.cohorts,
+                            status: triggerFilter.entry ? "in" : "out"
+                        }
+                    }));
+                }
+                else {
+                    audienceFilter.uids = uids;
+                }
                 if (trigger.cap || trigger.sleep) {
-                    audienceFilters.cap = { messageId: message._id };
+                    audienceFilter.cap = { messageId: message._id };
                     if (trigger.cap) {
-                        audienceFilters.cap.maxMessages = trigger.cap;
+                        audienceFilter.cap.maxMessages = trigger.cap;
                     }
                     if (trigger.sleep) {
-                        audienceFilters.cap.minTime = trigger.sleep;
+                        audienceFilter.cap.minTime = trigger.sleep;
                     }
                 }
                 if (trigger.time) {
@@ -191,7 +205,8 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
                 scheduleTo,
                 timezoneAware,
                 schedulerTimezone,
-                audienceFilters
+                trigger.reschedule,
+                audienceFilter,
             );
         }));
     });
@@ -207,15 +222,18 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
 }
 
 /**
- *
- * @param {MongoDb}           db                - mongodb database object
- * @param {ObjectId}          appId             - ObjectId of the app
- * @param {ObjectId}          messageId         - ObjectId of the message
- * @param {Date}              scheduledTo       - Date to schedule this message to. UTC user's schedule date when timezone aware
- * @param {Boolean}           timezoneAware     - set true if this is going to be scheduled for each timezone
- * @param {Number=}           schedulerTimezone - timezone of the scheduler
- * @param {AudienceFilters=}  audienceFilters   - user ids from app_users{appId} collection
- * @param {MessageOverrides=} messageOverrides  - user ids from app_users{appId} collection
+ * Creates a schedule for the message to be sent at the given date.
+ * This function is used in both auto and date trigger event handlers.
+ * API (tx) triggers uses this directly to schedule messages.
+ * @param {MongoDb}           db                 - mongodb database object
+ * @param {ObjectId}          appId              - ObjectId of the app
+ * @param {ObjectId}          messageId          - ObjectId of the message
+ * @param {Date}              scheduledTo        - Date to schedule this message to. UTC user's schedule date when timezone aware
+ * @param {boolean}           timezoneAware      - set true if this is going to be scheduled for each timezone
+ * @param {number=}           schedulerTimezone  - timezone of the scheduler
+ * @param {boolean=}          rescheduleIfPassed - true if we want to reschedule to next day if the date is in the past
+ * @param {AudienceFilter=}  audienceFilter    - user ids from app_users{appId} collection
+ * @param {MessageOverrides=} messageOverrides   - overrides for the message (content, parameters, etc.)
  * @returns {Promise<Schedule>} created Schedule document from message_schedules collection
  */
 async function createSchedule(
@@ -225,7 +243,8 @@ async function createSchedule(
     scheduledTo,
     timezoneAware,
     schedulerTimezone,
-    audienceFilters,
+    rescheduleIfPassed = false,
+    audienceFilter,
     messageOverrides,
 ) {
     if (timezoneAware && typeof schedulerTimezone !== "number") {
@@ -238,10 +257,11 @@ async function createSchedule(
         appId,
         messageId,
         scheduledTo,
+        rescheduleIfPassed,
         status: "scheduled",
         timezoneAware,
         schedulerTimezone,
-        audienceFilters,
+        audienceFilter,
         messageOverrides,
         result: buildResultObject(),
         events: {
@@ -292,11 +312,19 @@ async function createScheduleEvents(messageSchedule) {
         );
         for (let i = 0; i < allTZOffsets.length; i++) {
             const offset = allTZOffsets[i].offset;
-            const tzAdjustedScheduleDate = new Date(
+            let tzAdjustedScheduleDate = new Date(
                 utcTime.getTime() + offset * minute
             );
             if (tzAdjustedScheduleDate.getTime() < Date.now()) {
-                continue;
+                // reschedule to the next day if the date is in the past
+                if (messageSchedule.rescheduleIfPassed) {
+                    tzAdjustedScheduleDate = new Date(
+                        tzAdjustedScheduleDate.getTime() + 24 * 60 * minute
+                    );
+                }
+                else {
+                    continue;
+                }
             }
             events.push({
                 ...baseEvent,
@@ -515,6 +543,24 @@ function mergeAutoTriggerEvents(autoTriggerEvents) {
     return messageFilters;
 }
 
+/**
+ * Schedules the message if it is eligible for date scheduling.
+ * @param {MongoDb} db - mongodb database object
+ * @param {Message} message - message document from messages collection
+ * @returns {Promise<Schedule[]|undefined>} the created Schedule documents from message_schedules collection
+ */
+async function scheduleIfEligible(db, message) {
+    if (message.info.demo || message.status !== "active") {
+        return;
+    }
+    const trigger = message.triggers
+        .find(trigger => DATE_TRIGGERS.includes(trigger.kind));
+    if (!trigger) {
+        return;
+    }
+    return scheduleMessageByDateTrigger(db, message._id);
+}
+
 module.exports = {
     DATE_TRIGGERS,
     RESCHEDULABLE_DATE_TRIGGERS,
@@ -526,4 +572,5 @@ module.exports = {
     findNextMatchForRecurring,
     findNextMatchForMulti,
     mergeAutoTriggerEvents,
+    scheduleIfEligible,
 };

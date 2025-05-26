@@ -27,7 +27,7 @@ export interface BaseAutoTrigger extends BaseTrigger {
     end?: Date;
     actuals?: boolean;
     time?: number; // Delivery time in milliseconds (from clock input)
-    reschedule?: boolean; // THIS IS NOT WORKING. SHOULD BE: What if the user is past the scheduled time? "Do not send the message": true. "Deliver the message next day": false
+    reschedule?: boolean;
     delay?: number; // Delivery method: Delayed in milliseconds (from days and hours inputs)
     cap?: number; // Capping: Capped: Maximum number of messages per user
     sleep?: number; // Capping: Capped: Minimum time between messages
@@ -44,6 +44,7 @@ export interface PlainTrigger extends BaseTrigger {
     tz?: boolean;
     sctz?: number; // exists only if tz: true
     delayed?: boolean;
+    reschedule?: boolean;
 }
 
 export interface EventTrigger extends BaseAutoTrigger {
@@ -156,19 +157,17 @@ export interface Info {
     removed?: Date;
     removedBy?: ObjectId;
     removedByName?: string;
-    submitted?: Date;
-    submittedBy?: ObjectId;
-    submittedByName?: string;
+    started?: Date;
+    startedLast?: Date;
+    finished?: Date;
+    demo?: boolean;
+    // these are being added by push_approver:
     approved?: Date;
     approvedBy?: ObjectId;
     approvedByName?: string;
     rejectedAt?: Date;
     rejectedBy?: ObjectId;
     rejectedByName?: string;
-    started?: Date;
-    startedLast?: Date;
-    finished?: Date;
-    demo?: boolean;
 }
 
 export interface Message {

@@ -1,5 +1,5 @@
 /**
- * @typedef {import("./new/types/schedule").AudienceFilters} AudienceFilters
+ * @typedef {import("./new/types/schedule").AudienceFilter} AudienceFilter
  */
 
 // const { Audience, TriggerKind, Filter, Content, PushError, ERROR, ValidationError } = require('./send'),
@@ -136,6 +136,7 @@ module.exports.apiPush = async params => {
         data.obj.start,
         false,
         undefined,
+        false,
         data.obj.filter,
         {
             contents: data.obj.contents,

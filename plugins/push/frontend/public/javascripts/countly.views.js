@@ -7,8 +7,7 @@
 
     var statusFilterOptions = [
         {label: countlyPushNotification.service.ALL_FILTER_OPTION_LABEL, value: countlyPushNotification.service.ALL_FILTER_OPTION_VALUE},
-        // this is not used in the UI:
-        // {label: CV.i18n("push-notification.active"), value: countlyPushNotification.service.StatusEnum.ACTIVE},
+        {label: CV.i18n("push-notification.active"), value: countlyPushNotification.service.StatusEnum.ACTIVE},
         {label: CV.i18n("push-notification.scheduled"), value: countlyPushNotification.service.StatusEnum.SCHEDULED},
         {label: CV.i18n("push-notification.sent"), value: countlyPushNotification.service.StatusEnum.SENT},
         {label: CV.i18n("push-notification.sending"), value: countlyPushNotification.service.StatusEnum.SENDING},

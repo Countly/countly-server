@@ -184,6 +184,7 @@
     platformOptions[PlatformEnum.IOS] = {label: 'iOS', value: PlatformEnum.IOS};
 
     var statusOptions = {};
+    statusOptions[StatusEnum.ACTIVE] = {label: CV.i18n('push-notification.active'), value: StatusEnum.ACTIVE};
     statusOptions[StatusEnum.SCHEDULED] = {label: CV.i18n('push-notification.scheduled'), value: StatusEnum.SCHEDULED};
     statusOptions[StatusEnum.SENT] = {label: CV.i18n('push-notification.sent'), value: StatusEnum.SENT};
     statusOptions[StatusEnum.SENDING] = {label: CV.i18n('push-notification.sending'), value: StatusEnum.SENDING};
@@ -2067,6 +2068,7 @@
                 if (options.isEndDateSet) {
                     result.end = model.delivery.endDate;
                 }
+                window.test = model.automatic;
                 if (options.isUsersTimezoneSet) {
                     var usersTimezone = {
                         hours: model.automatic.usersTimezone.getHours(),
@@ -2111,7 +2113,8 @@
                     start: model.delivery.startDate,
                     bucket: model.delivery.repetition.bucket,
                     every: parseInt(model.delivery.repetition.every),
-                    on: model.delivery.repetition.on
+                    on: model.delivery.repetition.on,
+                    reschedule: false,
                 };
                 if (typeof model.delivery.repetition.at === 'number') {
                     model.delivery.repetition.at = new Date(model.delivery.repetition.at);
@@ -2123,6 +2126,9 @@
 
                 if (options.isEndDateSet) {
                     result.end = model.delivery.endDate;
+                }
+                if (model[TypeEnum.RECURRING].pastSchedule === PastScheduleEnum.NEXT_DAY) {
+                    result.reschedule = true;
                 }
 
                 result.time = countlyPushNotification.helper.convertDateTimeToMS(repeatedHour);
@@ -2136,10 +2142,14 @@
                     kind: 'multi',
                     start: model.delivery.startDate,
                     dates: model.delivery.multipleDates,
+                    reschedule: false,
                 };
                 if (model.timezone === TimezoneEnum.DEVICE) {
                     result.tz = true;
                     result.sctz = new Date().getTimezoneOffset();
+                }
+                if (model[TypeEnum.MULTIPLE].pastSchedule === PastScheduleEnum.NEXT_DAY) {
+                    result.reschedule = true;
                 }
                 result.delayed = model[TypeEnum.MULTIPLE].audienceSelection === AudienceSelectionEnum.BEFORE;
                 return [result];

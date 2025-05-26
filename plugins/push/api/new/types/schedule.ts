@@ -2,17 +2,26 @@ import { ObjectId } from "mongodb";
 import { Result, Content, ErrorObject } from "./message";
 import { ScheduleEvent } from "./queue";
 
-export interface AudienceFilters {
+export interface AudienceFilter {
     uids?: string[];
-    user?: string; // JSON
-    drill?: string; // JSON
+    user?: string;
+    drill?: string;
     geos?: ObjectId[];
     cohorts?: string[];
     cap?: {
-        maxMessages?: number; // Maximum number of messages per user.
-        minTime?: number; // Minimum time between messages in milliseconds.
-        messageId: ObjectId; // Message ID
+        /** Maximum number of messages per user. If not set, no cap is applied. */
+        maxMessages?: number;
+        /** Minimum time between messages to the same user in milliseconds. If not set, no minimum time is applied. */
+        minTime?: number;
+        messageId: ObjectId;
     };
+    userCohortStatuses?: Array<{
+        uid: string;
+        cohort: {
+            id: string;
+            status: "in"|"out";
+        };
+    }>;
 }
 
 export interface MessageOverrides {
@@ -25,13 +34,12 @@ export interface Schedule {
     appId: ObjectId;
     messageId: ObjectId;
     scheduledTo: Date;
-    startedAt?: Date;
-    finishedAt?: Date;
+    /** If true, the schedule event will be moved to the next day if the scheduled time has already passed. This property is important for the timezone-aware schedules. */
+    rescheduleIfPassed?: boolean;
     timezoneAware: boolean;
     schedulerTimezone?: number;
-    audienceFilters?: AudienceFilters;
+    audienceFilter?: AudienceFilter;
     messageOverrides?: MessageOverrides;
-    uids?: string[]; // user ids from app_users{appId} collection sent by cohort or event AutoTrigger
     status:
         "scheduled" | // Scheduled but not yet sent. Waiting for the scheduled time
         "sending"   | // Currently sending. Will be set to "sent" or "failed" when finished
