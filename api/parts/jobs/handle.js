@@ -33,7 +33,8 @@ class Handle {
     * @returns {Job} job
     **/
     job(name, data) {
-        let Constructor = this.classes[name];
+        
+        let Constructor = this.classes && this.classes[name];
         if (Constructor) {
             return new Constructor(name, data);
         }
