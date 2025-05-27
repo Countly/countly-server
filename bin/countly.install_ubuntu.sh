@@ -137,6 +137,9 @@ if [ "$INSIDE_DOCKER" != "1" ]; then
     sudo /etc/init.d/nginx restart
 fi
 
+#configure and start kafka
+sudo bash "$DIR/scripts/kafka.install.ubuntu.sh" 
+
 cp -n "$DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js" "$DIR/../frontend/express/public/javascripts/countly/countly.config.js"
 
 #create api configuration file from sample

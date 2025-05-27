@@ -134,6 +134,9 @@ sudo systemctl restart nginx > /dev/null || echo "nginx service does not exist"
 sudo systemctl enable nginx > /dev/null || echo "nginx service does not exist"
 set -e
 
+#configure and start kafka
+sudo bash "$DIR/scripts/kafka.install.rhel.sh" 
+
 #create configuration files from samples
 if [ ! -f "$DIR/../api/config.js" ]; then
 	cp "$DIR/../api/config.sample.js" "$DIR/../api/config.js"

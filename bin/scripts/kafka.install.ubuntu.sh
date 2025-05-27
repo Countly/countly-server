@@ -1,42 +1,70 @@
 #!/bin/bash
+
 set -e
 
-# Install dependencies
-sudo apt update && sudo apt install -y openjdk-11-jdk wget
-
-# Set variables
-KAFKA_VERSION="3.6.0"
+KAFKA_VERSION="3.6.1"
 SCALA_VERSION="2.13"
 KAFKA_DIR="/opt/kafka"
-CONFIG_DIR="/config"
+KAFKA_USER="root"
 
-# Download and extract Kafka
-wget -qO- "https://downloads.apache.org/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz" | sudo tar -xz -C /opt
-sudo mv "/opt/kafka_${SCALA_VERSION}-${KAFKA_VERSION}" "$KAFKA_DIR"
+echo "🔧 Updating system and installing Java..."
+sudo apt update
+sudo apt install -y openjdk-11-jdk curl
 
-# Ensure config directory exists
-if [ ! -d "$CONFIG_DIR" ]; then
-  echo "Config directory $CONFIG_DIR does not exist. Please create it and add required config files."
-  exit 1
-fi
+echo "📥 Downloading Kafka..."
+cd /opt
+sudo curl -o kafka.tgz https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz
 
-# Copy Kafka configuration
-sudo cp "$CONFIG_DIR/kafka.server.conf" "$KAFKA_DIR/config/kraft/server.properties"
+sudo tar -xvzf kafka.tgz
+sudo mv kafka_${SCALA_VERSION}-${KAFKA_VERSION} kafka
+sudo chown -R $USER:$USER kafka
 
-# Format storage
-sudo "$KAFKA_DIR/bin/kafka-storage.sh" format -t $(uuidgen) -c "$KAFKA_DIR/config/kraft/server.properties"
+echo "⚙️ Setting up server.properties..."
+cat <<EOF > ${KAFKA_DIR}/config/kraft/server.properties
+node.id=1
+process.roles=broker,controller
+listeners=CONTROLLER://127.0.0.1:19093,BROKER_HOST://127.0.0.1:9092,BROKER_INTERNAL://127.0.0.1:9091
+advertised.listeners=BROKER_HOST://127.0.0.1:19092,BROKER_INTERNAL://127.0.0.1:9091
+listener.security.protocol.map=CONTROLLER:PLAINTEXT,BROKER_HOST:PLAINTEXT,BROKER_INTERNAL:PLAINTEXT
+controller.listener.names=CONTROLLER
+controller.quorum.voters=1@127.0.0.1:19093
+inter.broker.listener.name=BROKER_INTERNAL
+offsets.topic.replication.factor=1
+group.initial.rebalance.delay.ms=0
+transaction.state.log.min.isr=1
+transaction.state.log.replication.factor=1
+log.dirs=/tmp/kraft-combined-logs
+EOF
 
-# Copy systemd service configuration
-sudo cp "$CONFIG_DIR/kafka.service.conf" /etc/systemd/system/kafka.service
+echo "🔐 Initializing KRaft metadata..."
+CLUSTER_ID=$(${KAFKA_DIR}/bin/kafka-storage.sh random-uuid)
+${KAFKA_DIR}/bin/kafka-storage.sh format -t $CLUSTER_ID -c ${KAFKA_DIR}/config/kraft/server.properties
 
-# Enable and start Kafka
+echo "📝 Setting up kafka.service..."
+sudo tee /etc/systemd/system/kafka.service > /dev/null <<EOF
+[Unit]
+Description=Apache Kafka
+After=network.target
+
+[Service]
+User=${KAFKA_USER}
+ExecStart=${KAFKA_DIR}/bin/kafka-server-start.sh ${KAFKA_DIR}/config/kraft/server.properties
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "🔄 Reloading systemd and starting Kafka..."
 sudo systemctl daemon-reload
 sudo systemctl enable kafka
 sudo systemctl start kafka
 
-# Set up scheduler consumer environment
-sudo cp "$CONFIG_DIR/kafka.consumer.conf" /etc/profile.d/kafka_env.sh
-source /etc/profile.d/kafka_env.sh
+echo "📄 Writing kafka.consumer.conf..."
+cat <<EOF > ~/kafka.consumer.conf
+export BOOTSTRAP_SERVERS="127.0.0.1:9091"
+export SCHEDULES_TOPICS="CLY_PUSH_MESSAGE_SCHEDULE"
+EOF
 
-# Print completion message
-echo "Kafka installation and configuration completed successfully."
+echo "✅ Kafka installation (KRaft mode) complete."
+echo "👉 Run 'source ~/kafka.consumer.conf' to load environment variables."
