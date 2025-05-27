@@ -424,7 +424,20 @@ describe('Testing Rating plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                    //giving morre time to remove widget
+                    setTimeout(done, 10 * testUtils.testScalingFactor + 2000);
+                });
+        });
+        it('should not find widget in database', function(done) {
+            request.get('/o/feedback/widget?app_id=' + APP_ID + '&api_key=' + API_KEY_ADMIN + '&widget_id=' + WIDGET_ID)
+                .expect(404)
+                .end(function(err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result', 'Widget not found.');
+                    done();
                 });
         });
     });
