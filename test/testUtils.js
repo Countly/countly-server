@@ -287,7 +287,7 @@ var testUtils = function testUtils() {
 
         var pipeline = [{"$match": match}];
         options.values = options.values || {};
-        pipeline.push({"$group": {"_id": "$uid", "t": {"$sum": 1}, "ls": {"$min": "$up.ls"}, "fs": {"$min": "$up.fs"}}});
+        pipeline.push({"$group": {"_id": "$uid", "t": {"$sum": "$c"}, "ls": {"$min": "$up.ls"}, "fs": {"$min": "$up.fs"}}});
         pipeline.push({"$group": {"_id": null, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
         console.log(JSON.stringify(pipeline));
         db.collection("drill_events").aggregate(pipeline, function(err, res) {

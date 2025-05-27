@@ -12,7 +12,7 @@ var DEVICE_ID = "1234567890";
 
 var compareAgainstGranuralData = function(options, data, done) {
     request
-        .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&query=' + JSON.stringify(options.query) + '&period=' + (options.period || "30ddays"))
+        .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&no_cache=true&app_id=' + APP_ID + '&query=' + JSON.stringify(options.query) + '&period=' + (options.period || "30ddays"))
         .expect(200)
         .end(function(err, res) {
             if (err) {
