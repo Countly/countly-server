@@ -5,12 +5,13 @@
 .ratings-popup .modal-content {
   .hidden {
     display: none;
-}
+  }
 
-.disabled {
+  .disabled { 
     cursor: auto !important;
     opacity: 0.5;
-}
+  }
+
   border-radius: 13px;
   background-color: white;
   padding: 0px 25px 40px 25px;
@@ -29,6 +30,17 @@
     .close-button {
       font-size: 36px;
       cursor: pointer;
+    }
+  }
+
+  /* .ratings-popup .modal-content--fullscreen */
+  &--fullscreen {
+    margin: 40px 0;
+    height: calc(100vh - 100px);
+
+    /* .ratings-popup--fullscreen .modal-content__top */
+    &__top {
+      margin-top: 0px;
     }
   }
 }
