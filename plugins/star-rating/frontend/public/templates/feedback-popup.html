@@ -194,10 +194,10 @@
         <script src="../../star-rating/javascripts/tippy.all.min.js"></script>
         <script src="../../javascripts/dom/jquery/jquery.js"></script>
         <script>
-            const CLOSE_BUTTON_ID = '#close-btn';
-            const WIDGET_BODY_FULLSCREEN_CLASS = 'modal-content--fullscreen';
-            const WIDGET_BODY_ID = '#widget-body';
-            const DEFAULT_PLATFORM = 'Web';
+            var CLOSE_BUTTON_ID = '#close-btn';
+            var WIDGET_BODY_FULLSCREEN_CLASS = 'modal-content--fullscreen';
+            var WIDGET_BODY_ID = '#widget-body';
+            var DEFAULT_PLATFORM = 'Web';
             
             (function() {
                 // HELPER FUNCTIONS
@@ -313,7 +313,7 @@
                         var finalText = response.finalText;
                         var contentEl = $('#consent');
 
-                        widgetVersion = response?.wv || null;
+                        widgetVersion = response.wv || null;
 
                         $('.rating-loader-wrapper').fadeOut();
                         $('.modal-content').show();
@@ -437,7 +437,7 @@
                         });
                     },
                     type: "GET",
-                    url: url + "/o/feedback/widget",
+                    url: url + "/o/feedback/widget"
                 });
 
                 var eventObject = {
@@ -460,8 +460,8 @@
 
                 try {
                     custom = JSON.parse(custom) ;
-                    isFullscreenWidget = !!custom?.rw;
-                    isCloseButtonVisible = !!custom?.xb;
+                    isFullscreenWidget = !!custom.rw;
+                    isCloseButtonVisible = !!custom.xb;
 
                     if (custom && custom.sg) {
                         custom = custom.sg;
@@ -635,13 +635,13 @@
 
                 function closeHandler(e) {
                     if (widgetVersion) {
-                        const isWebSDK = platform === 'Web';
+                        var isWebSDK = platform === 'Web';
     
                         if (!isWebSDK) {
                             window.location.href = 'https://countly_action_event?cly_widget_command=1&close=1';
                         }
                         else if (window.parent && typeof window.parent.postMessage === 'function') {
-                            const payload = JSON.stringify({
+                            var payload = JSON.stringify({
                                 close: 1,
                                 cly_widget_command: 1
                             });
