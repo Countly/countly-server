@@ -1,5 +1,5 @@
-var exported = {},
-    plugins = require('../../pluginManager.js');
+
+var plugins = require('../../pluginManager.js');
 
 (function() {
     plugins.register("/session/metrics", function(ob) {
@@ -11,6 +11,4 @@ var exported = {},
             ]
         });
     });
-}(exported));
-
-module.exports = exported;
+}());

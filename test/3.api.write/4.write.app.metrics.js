@@ -185,7 +185,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
             });
         });
@@ -221,7 +221,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
             });
         });
@@ -270,7 +270,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 1000);
                     });
             });
         });
@@ -359,7 +359,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 1000);
                     });
             });
         });
@@ -391,7 +391,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 1000);
                     });
             });
         });
@@ -478,7 +478,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 1000);
                     });
             });
         });
