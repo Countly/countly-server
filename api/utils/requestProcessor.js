@@ -2772,11 +2772,12 @@ const processRequest = (params) => {
                             params.qstring.query.period = params.qstring.query.period || params.qstring.period || "30days";
                         }
                         if (params.qstring.periodOffset) {
-                            params.qstring.query.periodOffset = params.qstrig.query.periodOffset || params.qstring.periodOffset || 0;
+                            params.qstring.query.periodOffset = params.qstring.query.periodOffset || params.qstring.periodOffset || 0;
                         }
 
                         calculatedDataManager.longtask({
                             db: common.db,
+                            no_cache: params.qstring.no_cache,
                             threshold: plugins.getConfig("api").request_threshold,
                             app_id: params.qstring.query.app_id,
                             query_data: params.qstring.query,
