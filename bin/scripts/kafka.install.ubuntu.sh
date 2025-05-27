@@ -60,11 +60,5 @@ sudo systemctl daemon-reload
 sudo systemctl enable kafka
 sudo systemctl start kafka
 
-echo "📄 Writing kafka.consumer.conf..."
-cat <<EOF > ~/kafka.consumer.conf
-export BOOTSTRAP_SERVERS="127.0.0.1:9091"
-export SCHEDULES_TOPICS="CLY_PUSH_MESSAGE_SCHEDULE"
-EOF
-
 echo "✅ Kafka installation (KRaft mode) complete."
-echo "👉 Run 'source ~/kafka.consumer.conf' to load environment variables."
+echo "👉 Run 'source /opt/countly/bin/config/kafka.consumer.conf' to load environment variables."
