@@ -5,6 +5,7 @@ Enterprise Features:
 
 Fixes:
 - [core] Unifying alphabetical order for dropdowns with dashboard apps
+- [hooks] Added null check for incoming data
 
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
