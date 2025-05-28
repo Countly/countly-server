@@ -7,6 +7,7 @@ var APP_KEY = "";
 var API_KEY_ADMIN = "";
 var APP_ID = "";
 var DEVICE_ID = "1234567890";
+var drill_db = "";
 
 var totalEventCounts = {};
 
@@ -52,6 +53,7 @@ describe('Writing app events', function() {
                 API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
                 APP_ID = testUtils.get("APP_ID");
                 APP_KEY = testUtils.get("APP_KEY");
+                drill_db = testUtils.client.db("countly_drill");
                 var params = [];
                 request
                     .get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY + "&events=" + JSON.stringify(params))
@@ -167,8 +169,15 @@ describe('Writing app events', function() {
             });
         });
         /*{"2015":{"1":{"6":{"17":{"c":1},"c":1},"c":1},"c":1}}
-		*/
+        */
         describe('verify events without params', function() {
+            it("Verify granural data", function(done) {
+                testUtils.validateTotalsInDrillData(
+                    drill_db,
+                    {app_id: APP_ID, event: "test", query: {}, values: {u: 1, t: 2}},
+                    done
+                );
+            });
             it('should have 2 event', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events')
@@ -256,6 +265,13 @@ describe('Writing app events', function() {
             });
         });
         describe('verify events without params', function() {
+            it("Verify granural data", function(done) {
+                testUtils.validateTotalsInDrillData(
+                    drill_db,
+                    {app_id: APP_ID, event: "test", query: {}, values: {u: 1, t: 4}},
+                    done
+                );
+            });
             it('should have 4 test events', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events')
@@ -340,12 +356,26 @@ describe('Writing app events', function() {
             });
         });
         describe('verify events without params', function() {
+            it("Verify granural data(test)", function(done) {
+                testUtils.validateTotalsInDrillData(
+                    drill_db,
+                    {app_id: APP_ID, event: "test", query: {}, values: {u: 1, t: 4}},
+                    done
+                );
+            });
+            it("Verify granural data(test1)", function(done) {
+                testUtils.validateTotalsInDrillData(
+                    drill_db,
+                    {app_id: APP_ID, event: "test1", query: {}, values: {u: 1, t: 1}},
+                    done
+                );
+            });
             it('should 1 test1 and 4 test events', function(done) {
                 request
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=events')
                     .expect(200)
                     .end(function(err, res) {
-                        testUtils.validateEvents(err, res, done, {c: 4});
+                        testUtils.validateEvents(err, res, done, {c: 5});
                     });
             });
         });

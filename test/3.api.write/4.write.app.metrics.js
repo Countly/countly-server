@@ -12,7 +12,7 @@ var DEVICE_ID = "1234567890";
 
 var compareAgainstGranuralData = function(options, data, done) {
     request
-        .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&query=' + JSON.stringify(options.query) + '&period=' + (options.period || "30ddays"))
+        .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&no_cache=true&app_id=' + APP_ID + '&query=' + JSON.stringify(options.query) + '&period=' + (options.period || "30ddays"))
         .expect(200)
         .end(function(err, res) {
             if (err) {
@@ -185,7 +185,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
             });
         });
@@ -196,6 +196,7 @@ describe('Writing app metrics', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=device_details')
                     .expect(200)
                     .end(function(err, res) {
+                        console.log(JSON.stringify(res));
                         testUtils.validateMetrics(err, res, done, {meta: {"os": ["Android"], "os_versions": ["a4:4"]}, Android: {"n": 2, "t": 2, "u": 2}, "a4:4": {"n": 1, "t": 1, "u": 1}});
                     });
             });
@@ -221,7 +222,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
             });
         });
@@ -270,7 +271,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
             });
         });
@@ -359,7 +360,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
             });
         });
@@ -391,7 +392,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
             });
         });
@@ -478,7 +479,7 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
             });
         });

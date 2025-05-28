@@ -23,6 +23,9 @@ const log = require('./log.js')('core:calculatedDataManager');
  * @param {object} options - options object
  * @param {object} options.query_data - query data
  * @param {object} options.db - db connection
+ * @param {string} options.id - id of the query, if not given it will be calculated based on query_data
+ * @param {boolean} [options.no_cache=false] - if true, will not use cache
+ * @param {boolean} [options.returned=false] - if true, will not output data
  * @param {function} options.outputData - function to output data
  * @param {number} options.threshold - threshold in seconds
  */
@@ -32,6 +35,9 @@ calculatedDataManager.longtask = async function(options) {
     var timeout;
     var keep = parseInt(plugins.getConfig("drill").drill_snapshots_cache_time, 10) || 60 * 60 * 24;
     keep = keep * 1000;
+    if (options.no_cache) {
+        keep = 0;
+    }
 
     /**
      * Return message in case it takes too long

@@ -175,7 +175,7 @@ function verifySegments(values) {
 function verifyTotals(period, order, orderString) {
     it("Checking against calculating same table from granural data", function(done) {
         request
-            .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&query={"queryName":"viewsTableData"}&period=' + period)
+            .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&no_cache=true&app_id=' + APP_ID + '&query={"queryName":"viewsTableData"}&period=' + period)
             .expect(200)
             .end(function(err, res) {
                 console.log(res.text);
@@ -341,12 +341,12 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - (25 * 24 * 60 * 60 * 1000)) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                 });
         });
     });
 
-    describe('verifying totals after last update', function() {
+    describe('verifying totals after last update(last year+ 25 days ago)', function() {
         verifyTotals("30days");
         verifyTotals("month");
     });
@@ -383,7 +383,7 @@ describe('Testing views plugin', function() {
                 });
         });
     });
-    describe('verifying totals after last update', function() {
+    describe('verifying totals after last update(yesterday)', function() {
         verifyTotals("yesterday");
         verifyTotals("30days");
         verifyTotals("month");
@@ -407,11 +407,11 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - 10) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                 });
         });
     });
-    describe('verifying totals after last update', function() {
+    describe('verifying totals after last update(right now)', function() {
         verifyTotals("hour");
         verifyTotals("yesterday");
         verifyTotals("30days");
@@ -437,11 +437,11 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                 });
         });
     });
-    describe('verifying totals after last update', function() {
+    describe('verifying totals after last update(Same user different view)', function() {
         verifyTotals("hour");
         verifyTotals("yesterday");
         verifyTotals("30days");
