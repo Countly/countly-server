@@ -1,6 +1,6 @@
 ## Version 25.03.x
 Enterprise Features:
-- [content] Publish toogle is converted into button and rearranged
+- [content] Publish toggle is converted into button and rearranged
 
 ## Version 25.03.2
 Fixes:
