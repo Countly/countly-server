@@ -45,29 +45,49 @@ class TopEventsJob extends Job {
     }
 
     /**
-     * async
-     * Get events count.
-     * @param {Object} params - getEventsCount object
-     * @param {String} params.collectionNameEvents - event collection name
-     * @param {Object} params.ob - it contains all necessary info
-     * @param {string} params.event - event name
-     * @param {Object} params.data - dummy event data
-     * @returns {Promise.<boolean>} true.
+     * 
+     * @param {object} params  - params object
+     * @param {object} data  - object where to collect data
+     * @param {boolean} previous  - if fetching for previous period
+     * @returns {Promise} promise
      */
-    async getEventsCount(params) {
-        const { collectionNameEvents, ob, data, event } = params;
+    async fetchEventTotalCounts(params, data, previous) {
+        let collectionName = "all";
+        params.qstring.segmentation = "key";
         return await new Promise((resolve) => {
-            countlyApi.data.fetch.getTimeObjForEvents(collectionNameEvents, ob, (doc) => {
+            countlyApi.data.fetch.getTimeObjForEvents("events_data", params, {'id_prefix': params.app_id + "_" + collectionName + '_'}, function(doc) {
                 countlyEvents.setDb(doc || {});
-                const countProp = countlyEvents.getNumber("c", true);
-                const sumProp = countlyEvents.getNumber("s", true);
-                const durationProp = countlyEvents.getNumber("dur", true);
-                data[event] = {};
-                data[event].data = {
-                    count: countProp,
-                    sum: sumProp,
-                    duration: durationProp
-                };
+
+                var dd = countlyEvents.getSegmentedData(params.qstring.segmentation);
+                for (var z = 0; z < dd.length;z++) {
+                    var key = dd[z]._id;
+                    data[key] = data[key] || {};
+                    data[key].data = data[key].data || {};
+                    data[key].data.count = data[key].data.count || {"total": 0, "prev-total": 0, "change": "NA", "trend": "u"};
+                    if (previous) {
+                        data[key].data.count["prev-total"] = dd[z].c;
+                    }
+                    else {
+                        data[key].data.count.total = dd[z].c;
+                    }
+
+                    data[key].data.sum = data[key].data.sum || {"total": 0, "prev-total": 0, "change": "NA", "trend": "u"};
+                    if (previous) {
+                        data[key].data.sum["prev-total"] = dd[z].s;
+                    }
+                    else {
+                        data[key].data.sum.total = dd[z].s;
+                    }
+
+                    data[key].data.duration = data[key].data.duration || {"total": 0, "prev-total": 0, "change": "NA", "trend": "u"};
+                    if (previous) {
+                        data[key].data.duration["prev-total"] = dd[z].dur;
+                    }
+                    else {
+                        data[key].data.duration.total = dd[z].dur;
+                    }
+                }
+                //data.all = countlyEvents.getSegmentedData(params.qstring.segmentation);
                 resolve(true);
             });
         });
@@ -205,10 +225,20 @@ class TopEventsJob extends Job {
                     let prevTotalSum = 0;
                     let totalDuration = 0;
                     let prevTotalDuration = 0;
-                    for (const event of eventMap) {
-                        log.d("    getting event data for event: " + event + " (" + period + ")");
-                        const collectionNameEvents = this.eventsCollentions({ event, id: app._id });
-                        await this.getEventsCount({ collectionNameEvents, ob, data, event });
+
+                    //Fetching totals for this period
+                    await this.fetchEventTotalCounts({ app_id: app._id, appTimezone: app.timezone, qstring: { period: period } }, data, false);
+                    var period2 = countlyCommon.getPeriodObj({appTimezone: app.timezone, qstring: {}}, period);
+                    var newPeriod = [period2.start - (period2.end - period2.start), period2.start];
+                    //Fetching totals for previous period
+                    await this.fetchEventTotalCounts({ app_id: app._id, appTimezone: app.timezone, qstring: { period: newPeriod } }, data, true);
+
+
+                    for (var event in data) {
+                        //Calculating trend
+                        var trend = countlyCommon.getPercentChange(data[event].data.count["prev-total"], data[event].data.count.total);
+                        data[event].data.count.change = trend.percent;
+                        data[event].data.count.trend = trend.trend;
                         totalCount += data[event].data.count.total;
                         prevTotalCount += data[event].data.count["prev-total"];
                         totalSum += data[event].data.sum.total;

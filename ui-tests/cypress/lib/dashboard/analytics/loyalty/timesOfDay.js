@@ -9,7 +9,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: timesOfDayPageElements.PAGE_TITLE,
         labelText: "Times of Day",
         tooltipElement: timesOfDayPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "Scatter plot chart with times and days of Session and Event occurrences in your application, based on users' local time."
+        tooltipText: "Shows a scatter plot chart with the times and days of session and event occurrences in your application, based on users' local time."
     });
 
     cy.scrollPageToTop();

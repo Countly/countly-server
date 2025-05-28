@@ -26,7 +26,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Copy code
         shell: bash
@@ -96,7 +96,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Copy code
         shell: bash
@@ -153,7 +153,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Prepare tests
         shell: bash
@@ -205,7 +205,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Copy code
         shell: bash
@@ -263,7 +263,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install Chrome
         shell: bash
@@ -275,7 +275,12 @@ jobs:
 
       - name: Copy code
         shell: bash
-        run: cp -rf ./* /opt/countly
+        run: |
+          rm -rf /opt/countly/frontend
+          rm -rf /opt/countly/plugins/old-ui-compatibility
+          cp -rf ./* /opt/countly
+          cp /opt/countly/frontend/express/config.sample.js /opt/countly/frontend/express/config.js
+          cp /opt/countly/frontend/express/public/javascripts/countly/countly.config.sample.js /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
 
       - name: Prepare files to use correct MongoDB host
         shell: bash
@@ -346,7 +351,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install Chrome
         shell: bash
@@ -358,8 +363,13 @@ jobs:
 
       - name: Copy code
         shell: bash
-        run: cp -rf ./* /opt/countly
-
+        run: |
+          rm -rf /opt/countly/frontend
+          rm -rf /opt/countly/plugins/old-ui-compatibility
+          cp -rf ./* /opt/countly
+          cp /opt/countly/frontend/express/config.sample.js /opt/countly/frontend/express/config.js
+          cp /opt/countly/frontend/express/public/javascripts/countly/countly.config.sample.js /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
+          
       - name: Prepare files to use correct MongoDB host
         shell: bash
         run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"

@@ -74,7 +74,7 @@ const verifyConfirmPasswordHintSymbolMessage = () => {
     cy.verifyElement({
         element: setupPageElements.CONFIRM_PASSWORD_ERROR_DOT,
         labelElement: setupPageElements.CONFIRM_PASSWORD_ERROR,
-        labelText: "Confirmation password has to be the same as password.",
+        labelText: "The confirmation password has to be the same as the password.",
     });
 };
 
@@ -135,7 +135,7 @@ const verifyDefaultPageElements = () => {
 
     cy.verifyElement({
         labelElement: setupPageElements.EMAIL_ADDRESS_ERROR,
-        labelText: "Please enter a valid email adress.",
+        labelText: "Please enter a valid email address.",
     });
 
     cy.verifyElement({
@@ -168,7 +168,7 @@ const verifyDefaultPageElements = () => {
     cy.verifyElement({
         element: setupPageElements.CONFIRM_PASSWORD_ERROR_DOT,
         labelElement: setupPageElements.CONFIRM_PASSWORD_ERROR,
-        labelText: "Confirmation password has to be the same as password.",
+        labelText: "The confirmation password has to be the same as the password.",
     });
 };
 
