@@ -200,7 +200,6 @@
 
             onPublishButtonClick() {
                 this.toggleLocalValue = !this.toggleLocalValue;
-                //:this.$emit('switch-toggle', this.toggleLocalValue);
             },
 
             toggleInputReadonlyState() {
