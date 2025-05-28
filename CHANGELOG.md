@@ -4,6 +4,10 @@ Enterprise Fixes:
 - [ab-testing] Updates
     - Do not wait for result calculation when requesting experiments
     - Do not calculate result for completed experiments
+- [core] Fix auto refresh frontend component
+- [license] Fix chart legend
+- [times-of-day] Fix chart component
+- [push] Fix external drawer initialization
 
 Dependencies:
 - Bump lint-staged from 15.5.2 to 16.0.0
