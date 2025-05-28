@@ -1,9 +1,15 @@
 ## Version 25.03.x
+Fixes:
+- [core] Fix auto refresh frontend component
+- [times-of-day] Fix chart component
+- [push] Fix external drawer initialization
+
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
 - [ab-testing] Updates
     - Do not wait for result calculation when requesting experiments
     - Do not calculate result for completed experiments
+- [license] Fix chart legend
 
 Dependencies:
 - Bump lint-staged from 15.5.2 to 16.0.0
