@@ -189,6 +189,9 @@ class IncomingDataTrigger {
          */
         function assertOperation(value, filterObj) {
             var matched = true;
+            if (typeof value === 'undefined' || value === null) {
+                return false;
+            }
             if (filterObj.$in && filterObj.$in.indexOf(value) === -1) {
                 matched = false;
             }
