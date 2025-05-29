@@ -5,6 +5,7 @@ Enterprise Features:
 
 Fixes:
 - [core] Unifying alphabetical order for dropdowns with dashboard apps
+- [hooks] Added null check for incoming data
 
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
@@ -16,6 +17,7 @@ Enterprise Fixes:
 Dependencies:
 - Bump eslint-plugin-vue from 9.33.0 to 10.1.0
 - Bump lint-staged from 15.5.2 to 16.0.0
+- Bump moment-timezone from 0.5.48 to 0.6.0
 - Bump nodemailer from 6.10.1 to 7.0.3
 - Bump puppeteer from 24.8.0 to 24.9.0
 - Bump sass from 1.87.0 to 1.89.0
