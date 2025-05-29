@@ -873,6 +873,40 @@
                 event.segmentation.start = 1;
                 event.segmentation.bounce = 1;
             }
+            else if (id === "[CLY]_llm_interaction") {
+                event.segmentation = {};
+                var api_host_type = ['openai_api', 'azure_openai', 'local_infra'];
+                event.segmentation.api_host_type = api_host_type[getRandomInt(0, api_host_type.length - 1)];      // Where the model is hosted (e.g., 'openai_api', 'azure_openai', 'local_infra')
+                var api_base_url = {
+                    openai_api: "https://api.openai.com/v1", 
+                    azure_openai:"https://api.openai.azure.com/v1",
+                    local_infra: "https://api.openai.azure.com/v1"
+                };
+                event.segmentation.api_base_url = api_base_url[event.segmentation.api_host_type];        // Base API URL used (for routing, debugging, or billing separation)
+                var model_name = ["gpt-4-turbo", "gpt-3.5-turbo", "gpt-4", "gpt-3.5"];
+                event.segmentation.model_name = model_name[getRandomInt(0, model_name.length)];          // Name of the model used
+                event.segmentation.model_provider = "openai";           // Provider of the model (e.g., openai, anthropic, local)
+                event.segmentation.token_input = getRandomInt(1, 1024),                   // Number of tokens in the input request
+                event.segmentation.token_reason = getRandomInt(1, 1024),                 // Number of tokens used for reasoning
+                event.segmentation.token_output = getRandomInt(1, 1024),                  // Number of tokens in the model's response
+                event.segmentation.token_total = event.segmentation.token_input + event.segmentation.token_reason + event.segmentation.token_output,                  // Number of total tokens, summed up if not provided
+                event.segmentation.cost_input = getRandomInt(1, 1024)/10000,                // Estimated cost of the input
+                event.segmentation.cost_reason = getRandomInt(1, 1024)/10000,                 // Estimated cost of the input
+                event.segmentation.cost_output = getRandomInt(1, 1024)/10000,               // Estimated cost of the input
+                event.segmentation.cost_total = event.segmentation.cost_input + event.segmentation.cost_reason + event.segmentation.cost_output,                // This will be attempted to be calculated based on total token count and model if empty
+                event.segmentation.latency_first = getRandomInt(1, 1024),                // Latency till first output token
+                event.segmentation.latency_last = getRandomInt(1025, 4098),                 // Latency till end
+                event.segmentation.config_temperature = getRandomInt(1, 10)/10,            // Optional sampling temperature used in the generation
+                event.segmentation.config_top_p = getRandomInt(1, 10)/10,                  // Optional top-p sampling value
+                event.segmentation.config_max_tokens = getRandomInt(1, 1024),             // Optional maximum allowed response tokens
+                event.segmentation.config_stop =  ["\n\n"];              // Optional stop sequences used to cut off response generation
+                event.segmentation.status = "success";                  // Whether the call was successful (false if errored or timed out)
+                event.segmentation.error_code = null;                   // Optional error code or message if the request failed
+                event.segmentation.text_input_preview = "...";          // First 200? characters of input
+                event.segmentation.text_reason_preview = "...";         // First 200? characters of reasoning
+                event.segmentation.text_output_preview = "...";         // First 200? characters of output
+                event.segmentation.tools_used = ["get_list_events", "funnel_filter_needed", "funnel_filter_needed"]; // List of tools used in the request, if any
+            }
 
             return [event];
         };
@@ -1101,6 +1135,7 @@
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
                     .concat(
                         this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], this.ts + getRandomInt(100, 300)),
+                        this.getEvent("[CLY]_llm_interaction", null, this.ts + getRandomInt(100, 300)),
                         this.getEvents(4, template && template.events).map((arr) => arr.length && arr[0])
                     );
                 if (template && template.events && template.events.length) {
@@ -1118,6 +1153,7 @@
                 events = this.getEvent("[CLY]_view", template && template.events && template.events["[CLY]_view"], this.ts, true)
                     .concat(
                         this.getEvent("[CLY]_orientation", template && template.events && template.events["[CLY]_orientation"], this.ts + getRandomInt(100, 300)),
+                        this.getEvent("[CLY]_llm_interaction", null, this.ts + getRandomInt(100, 300)),
                         this.getEvents(4, template && template.events).map((arr) => arr.length && arr[0])
                     );
                 if (template && template.events && template.events.length) {
