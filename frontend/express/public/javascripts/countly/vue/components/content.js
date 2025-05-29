@@ -126,7 +126,7 @@
 
         data() {
             return {
-                currentTab: null,   
+                currentTab: null,
                 isReadonlyInput: true,
                 showActionsPopup: false
             };
