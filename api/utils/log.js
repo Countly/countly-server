@@ -168,19 +168,19 @@ const logLevel = function(name) {
  * Build a transport config: pretty in dev, JSON in prod.
  * @returns {Object} Transport config
  */
-function getTransport() {
-    if (process.env.NODE_ENV === 'development') {
-        return {
-            target: 'pino-pretty',
-            options: {
-                colorize: true,
-                translateTime: 'yyyy-mm-dd HH:MM:ss.l',
-                ignore: 'pid,hostname'
-            }
-        };
-    }
-    return undefined;
-}
+// function getTransport() {
+// if (process.env.NODE_ENV === 'development') {
+//     return {
+//         target: 'pino-pretty',
+//         options: {
+//             colorize: true,
+//             translateTime: 'yyyy-mm-dd HH:MM:ss.l',
+//             ignore: 'pid,hostname'
+//         }
+//     };
+// }
+// return undefined;
+// }
 
 
 /**
@@ -205,7 +205,7 @@ const createLogger = (name, level) => {
         },
         sync: false,
         browser: false,
-        transport: getTransport()
+        // transport: getTransport()
     });
 };
 

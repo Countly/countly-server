@@ -30,6 +30,13 @@ const OVERRIDES = {
         SERVEROPTIONS: 'serverOptions'
     },
 
+    CLICKHOUSE: {
+        REQUEST_TIMEOUT: 'request_timeout',
+        MAX_OPEN_CONNECTIONS: 'max_open_connections',
+        CLICKHOUSE_SETTINGS: 'clickhouse_settings',
+        KEEP_ALIVE: 'keep_alive'
+    },
+
     API: {
         MAX_SOCKETS: 'max_sockets',
         MAX_UPLOAD_FILE_SIZE: 'maxUploadFileSize'
