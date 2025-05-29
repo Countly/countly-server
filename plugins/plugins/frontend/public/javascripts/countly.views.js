@@ -1316,6 +1316,12 @@
         });
     }
 
+    if (app.configurationsView) {
+        app.configurationsView.registerLabel("allow_access_control_origin", jQuery.i18n.map["configs.allow_access_control_origin"]);
+    }
+
+    app.addAppManagementInput("allow_access_control_origin", jQuery.i18n.map["configs.access_control_origin"], {"allow_access_control_origin": {input: "el-input", attrs: {type: "textarea", rows: 5}}});
+
     app.route('/account-settings', 'account-settings', function() {
         this.renderWhenReady(getAccountView());
     });

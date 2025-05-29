@@ -86,25 +86,63 @@
         }
     }));
 
-    Vue.component("cly-status-tag", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-status-tag" :class="dynamicClasses">\n' +
-                     '<div class="cly-vue-status-tag__blink"></div>\n' +
-                        '{{text}}\n' +
-                  '</div>',
-        mixins: [countlyVue.mixins.i18n],
+    Vue.component('cly-status-tag', countlyBaseComponent.extend({
         props: {
-            text: { required: true, type: String },
-            color: { default: "green", type: String},
-            size: { default: "unset", type: String},
-        },
-        computed: {
-            dynamicClasses: function() {
-                if (this.size === "small") {
-                    return ["cly-vue-status-tag--small", "cly-vue-status-tag--" + this.color];
-                }
-                return "cly-vue-status-tag--" + this.color;
+            color: {
+                default: 'green',
+                type: String
+            },
+
+            loading: {
+                default: false,
+                type: Boolean
+            },
+
+            size: {
+                default: 'unset',
+                type: String
+            },
+
+            text: {
+                required: true,
+                type: String
             }
         },
+
+        computed: {
+            dynamicClasses() {
+                const classes = [];
+
+                if (this.size === 'small') {
+                    classes.push('cly-vue-status-tag--small');
+                }
+
+                if (this.loading) {
+                    classes.push('cly-vue-status-tag--gray');
+                }
+                else {
+                    classes.push(`cly-vue-status-tag--${this.color}`);
+                }
+
+                return classes;
+            }
+        },
+
+        template: `
+            <div
+                class="cly-vue-status-tag"
+                :class="dynamicClasses"
+            >
+                <div class="cly-vue-status-tag__blink" />
+                <div
+                    v-if="loading"
+                    class="cly-vue-status-tag__skeleton"
+                />
+                <template v-else>
+                    {{ text }}
+                </template>
+            </div>
+        `
     }));
 
     Vue.component("cly-diff-helper", countlyBaseComponent.extend({
@@ -545,12 +583,13 @@
             },
             apps: function() {
                 var apps = countlyGlobal.apps || {};
+                let formattedApps = [];
 
                 if (this.auth && this.auth.feature && this.auth.permission) {
                     var expectedPermission = this.auth.permission,
                         targetFeature = this.auth.feature;
 
-                    return Object.keys(apps).reduce(function(acc, key) {
+                    formattedApps = Object.keys(apps).reduce(function(acc, key) {
                         var currentApp = apps[key];
 
                         if (countlyAuth.validate(expectedPermission, targetFeature, null, currentApp._id)) {
@@ -562,12 +601,34 @@
                         return acc;
                     }, []);
                 }
+                else {
+                    formattedApps = Object.keys(apps).map(function(key) {
+                        return {
+                            label: countlyCommon.unescapeHtml(apps[key].name),
+                            value: apps[key]._id
+                        };
+                    });
+                }
 
-                return Object.keys(apps).map(function(key) {
-                    return {
-                        label: countlyCommon.unescapeHtml(apps[key].name),
-                        value: apps[key]._id
-                    };
+                return formattedApps.sort(function(a, b) {
+                    const aLabel = a?.label || '';
+                    const bLabel = b?.label || '';
+                    const locale = countlyCommon.BROWSER_LANG || 'en';
+
+                    if (aLabel && bLabel) {
+                        return aLabel.localeCompare(bLabel, locale, { numeric: true }) || 0;
+                    }
+
+                    // Move items with no label to the end
+                    if (!aLabel && bLabel) {
+                        return 1;
+                    }
+
+                    if (aLabel && !bLabel) {
+                        return -1;
+                    }
+
+                    return 0;
                 });
             }
         },
@@ -710,6 +771,19 @@
                         "name": "[CLY]_push_action",
                         "options": [
                             { label: this.i18n('internal-events.[CLY]_push_action'), value: '[CLY]_push_action' }
+                        ]
+                    });
+                }
+
+                if (countlyGlobal.plugins.indexOf('journey_engine') !== -1) {
+                    preparedEventList.push({
+                        "label": this.i18n('internal-events.[CLY]_journey_engine'),
+                        "name": "Journey",
+                        "options": [
+                            { label: this.i18n('internal-events.[CLY]_journey_engine_start'), value: '[CLY]_journey_engine_start' },
+                            { label: this.i18n('internal-events.[CLY]_journey_engine_end'), value: '[CLY]_journey_engine_end' },
+                            { label: this.i18n('internal-events.[CLY]_content_shown'), value: '[CLY]_content_shown' },
+                            { label: this.i18n('internal-events.[CLY]_content_interacted'), value: '[CLY]_content_interacted' }
                         ]
                     });
                 }

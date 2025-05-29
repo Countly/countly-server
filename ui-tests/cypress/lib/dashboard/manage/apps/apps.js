@@ -58,7 +58,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: applicationsPageElements.SALT_FOR_CHECKSUM_LABEL,
         labelText: "Salt for checksum",
         element: applicationsPageElements.SALT_FOR_CHECKSUM_DESCRIPTION_LABEL,
-        elementText: "Will only accept requests where checksum is signed with the same salt in SDK",
+        elementText: "Will only accept requests where the checksum is signed with the same salt in the SDK.",
     });
 
     cy.verifyElement({
@@ -72,7 +72,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: applicationsPageElements.APP_KEY_LABEL,
         labelText: "App Key",
         element: applicationsPageElements.APP_KEY_DESCRIPTION_LABEL,
-        elementText: "You'll need this key for SDK integration",
+        elementText: "You will need this key for SDK integration.",
     });
 
     cy.verifyElement({
@@ -84,7 +84,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         labelElement: applicationsPageElements.ADD_UPLOAD_INSRUCTIONS_LABEL,
-        labelText: "Only jpg, png and gif image formats are allowed",
+        labelText: "Only JPG, PNG, and GIF image formats are allowed.",
     });
 };
 
