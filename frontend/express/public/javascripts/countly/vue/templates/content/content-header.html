@@ -70,6 +70,7 @@
             :disabled="disableSaveButton"
             size="small"
             type="success"
+            v-tooltip="saveButtonTooltip"
             @click="onSaveButtonClick"
         >
             {{ saveButtonLabel }}

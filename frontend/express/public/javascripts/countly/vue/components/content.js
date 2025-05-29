@@ -66,6 +66,11 @@
                 type: String
             },
 
+            saveButtonTooltip: {
+                default: null,
+                type: String
+            },
+
             status: {
                 default: () => ({
                     label: 'Status',
