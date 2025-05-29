@@ -1,6 +1,6 @@
-
 ## Version 25.03.x
 Enterprise Features:
+- [journey_engine] Publish toggle is converted into button and rearranged
 - [journey_engine] Record Event block added
 
 Fixes:

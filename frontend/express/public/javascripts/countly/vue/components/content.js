@@ -66,6 +66,11 @@
                 type: String
             },
 
+            saveButtonTooltip: {
+                default: null,
+                type: String
+            },
+
             status: {
                 default: () => ({
                     label: 'Status',
@@ -119,11 +124,13 @@
             'tab-change'
         ],
 
-        data: () => ({
-            currentTab: null,
-
-            isReadonlyInput: true
-        }),
+        data() {
+            return {
+                currentTab: null,
+                isReadonlyInput: true,
+                showActionsPopup: false
+            };
+        },
 
         computed: {
             activeTab: {
@@ -133,6 +140,15 @@
                 set(value) {
                     this.currentTab = value;
                     this.$emit('tab-change', value);
+                }
+            },
+
+            localValue: {
+                get() {
+                    return countlyCommon.unescapeHtml(this.value);
+                },
+                set(value) {
+                    this.$emit('input', value);
                 }
             },
 
@@ -150,15 +166,6 @@
 
             isOptionsButtonVisible() {
                 return !!this.options.length;
-            },
-
-            localValue: {
-                get() {
-                    return countlyCommon.unescapeHtml(this.value);
-                },
-                set(value) {
-                    this.$emit('input', value);
-                }
             },
 
             toggleLocalValue: {
@@ -194,6 +201,10 @@
 
             onSaveButtonClick() {
                 this.$emit('save');
+            },
+
+            onPublishButtonClick() {
+                this.toggleLocalValue = !this.toggleLocalValue;
             },
 
             toggleInputReadonlyState() {
