@@ -14,6 +14,7 @@ const internalEventsEnum =
     "[CLY]_push_action": "p",
     "[CLY]_push_sent": "ps",
     "[CLY]_consent": "cs",
+    "[CLY]_llm_interaction": "llm",
 };
 
 /**
