@@ -789,7 +789,7 @@ function trim_ending_slashes(address) {
                 }
             }
             else {
-                if (params.qstring.only_export && parseInt(params.qstring.only_export) === 2) {
+                if (params.qstring.only_export && parseInt(params.qstring.only_export, 10) === 2) {
                     params.qstring.only_commands = true;
                 }
                 params.qstring.only_export = true;
@@ -821,7 +821,7 @@ function trim_ending_slashes(address) {
                         if (typeof result === "string") {
                             result = Buffer.from(result, 'utf8');
                         }
-                        common.returnRaw(params, 200, result, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-export-commands.log'});
+                        common.returnRaw(params, 200, result, {'Content-Type': 'text/plain; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-export-commands.log'});
                     },
                     function(error) {
                         common.returnMessage(params, 404, error.message);

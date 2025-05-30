@@ -1172,7 +1172,7 @@ module.exports = function(my_db) {
             var image_folder = path.resolve(my_folder, './countly_app_icons');
             for (let i = 0; i < apps.length; i++) {
                 let subfolder = path.resolve(my_folder, './' + apps[i]);
-                scriptobj.push({appid: apps[i], my_folder: subfolder, image_folder: image_folder, aditional_files: path.resolve(my_folder, './countly_symbolication_files')});
+                scriptobj.push({appid: apps[i], my_folder: subfolder, image_folder: image_folder, additional_files: path.resolve(my_folder, './countly_symbolication_files')});
             }
 
 

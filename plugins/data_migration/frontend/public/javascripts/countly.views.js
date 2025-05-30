@@ -328,6 +328,12 @@
                                 message: CV.i18n('data-migration.download-auto ')
                             });
                         }
+                        else {
+                            CountlyHelpers.notify({
+                                type: 'success',
+                                message: CV.i18n('data-migration.export-started')
+                            });
+                        }
                     }
                     else {
                         CountlyHelpers.notify({
