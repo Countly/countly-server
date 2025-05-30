@@ -168,7 +168,8 @@ class PulseJobScheduler extends IJobScheduler {
                 schedule,
                 stack: error.stack
             });
-            throw error;
+            // Do not throw error to prevent process termination
+            // The error has been logged for debugging purposes
         }
     }
 
