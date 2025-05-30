@@ -64,6 +64,7 @@
                         'has-sidecars': this.hasSidecars,
                         'has-right-sidecar': this.hasRightSidecar,
                     };
+                    // NOTE: currentScreenMode variable seems to be not defined it should be defined or removed
                     classes["cly-vue-drawer--" + this.currentScreenMode + "-screen"] = true;
                     if (this.currentScreenMode === 'half') {
                         classes["cly-vue-drawer--half-screen-" + this.size] = true;

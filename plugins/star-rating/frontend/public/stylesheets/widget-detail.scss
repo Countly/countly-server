@@ -23,24 +23,9 @@
   }
 
   &__widget-informations {
-    flex-direction: row;
     display: flex;
-  }
-
-  &__widget-status-active {
-    background-color: #EBFAEE !important;
-    color: #12AF51 !important;
-    height: 19px;
-    padding: 1px 6px 0px 6px;
-    border-radius: 4px;
-  }
-
-  &__widget-status-disabled {
-    background-color: #d9d9d9 !important;
-    color: #81868D !important;
-    padding: 1px 6px 0px 6px;
-    height: 19px;
-    border-radius: 4px;
+    flex-direction: row;
+    align-items: center;
   }
 
   &__created-at, &__widget-id {
