@@ -25,6 +25,7 @@ var generate_events_scripts = function(data) {
         db.collection("events").find({_id: db.ObjectID(data.appid)}).toArray(function(err, res) {
             if (err) {
                 reject(Error(err));
+                return;
             }
             var scripts = [];
             if (res && res.length > 0) {
@@ -59,6 +60,7 @@ var generate_credentials_scripts = function(data) {
         db.collection("apps").findOne({_id: db.ObjectID(data.appid)}, function(err, res) {
             if (err) {
                 reject(Error(err));
+                return;
             }
             var cid = [];
             if (res && res.plugins && res.plugins.push) {
@@ -227,7 +229,7 @@ var create_export_scripts = function(data) {
                 }
 
                 //events sctipts
-                generate_events_scripts({appid: appid, my_folder: my_folder, dbargs: dbargs, dbargs_drill: dbargs_drill}, db)
+                generate_events_scripts({appid: appid, my_folder: my_folder, dbargs: dbargs, dbargs_drill: dbargs_drill})
                     .then(
                         function(result) {
                             if (result && Array.isArray(result)) {
