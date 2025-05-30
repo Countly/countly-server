@@ -385,8 +385,8 @@
             "rules": {
                 "no-console": ["error"],
                 "no-unused-vars": ["error", {
-                    "argsIgnorePattern": "^_",   // unused function args
-                    "varsIgnorePattern": "^_"    // unused variables
+                    "argsIgnorePattern": "^_",
+                    "varsIgnorePattern": "^_"
                 }]
             },
             "parserOptions": {
@@ -499,6 +499,7 @@
         {
             "files": [
                 "api/**/*.js",
+                "jobServer/**/*.js",
                 "frontend/express/*.js",
                 "frontend/express/libs/*.js",
                 "plugins/pluginManager.js",
