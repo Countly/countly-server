@@ -711,6 +711,11 @@
                         "options": [ { label: this.i18n('sidebar.analytics.sessions'), value: '[CLY]_session' } ]
                     },
                     {
+                        "label": this.i18n('internal-events.[CLY]_llm_interaction'),
+                        "name": "[CLY]_llm_interaction",
+                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_interaction'), value: '[CLY]_llm_interaction' } ]
+                    },
+                    {
                         "label": this.i18n('sidebar.events'),
                         "name": "event",
                         "options": []
