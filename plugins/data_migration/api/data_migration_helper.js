@@ -413,7 +413,7 @@ module.exports = function(my_db) {
                         }
                     }
                     //new data
-                    scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', "events_data", '-q', '{ "_id": {"$in":{"$regex":"^' + data.appid + '_.*"}}}}', '--out', data.my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', "events_data", '-q', '{ "_id": {"$regex":"^' + data.appid + '_.*"}}', '--out', data.my_folder]});
                     if (plugins.isPluginEnabled('drill')) {
                         scripts.push({cmd: 'mongodump', args: [...data.dbargs_drill, '--collection', "drill_events", '-q', '{ "a": "' + data.appid + '"}', '--out', data.my_folder]});
                     }
@@ -1144,6 +1144,60 @@ module.exports = function(my_db) {
 
     this.update_progress = function(my_exportid, step, status, dif, reason, reset_progress, more_fields) {
         update_progress(my_exportid, step, status, dif, reason, reset_progress, more_fields);
+    };
+
+    this.create_export_commands = function(apps, my_params, passed_db, passed_log) {
+        return new Promise(function(resolve, reject) {
+            if (passed_db) {
+                db = passed_db;
+            }
+            if (my_params) {
+                params = my_params;
+            }
+            if (passed_log) {
+                log = passed_log;
+            }
+
+            apps = apps.sort();
+            //clear out duplicates
+            for (let i = 1; i < apps.length - 1; i++) {
+                if (apps[i - 1] === apps[i]) {
+                    apps.splice(i, 1); i--;
+                }
+            }
+
+            var scriptobj = [];
+            exportid = crypto.createHash('SHA1').update(JSON.stringify(apps)).digest('hex');
+            var my_folder = path.resolve(__dirname, './../export/' + exportid);
+            var image_folder = path.resolve(my_folder, './countly_app_icons');
+            for (let i = 0; i < apps.length; i++) {
+                let subfolder = path.resolve(my_folder, './' + apps[i]);
+                scriptobj.push({appid: apps[i], my_folder: subfolder, image_folder: image_folder, aditional_files: path.resolve(my_folder, './countly_symbolication_files')});
+            }
+
+
+            Promise.all(scriptobj.map(create_export_scripts)).then(function(result) {
+                var lines = [];
+                if (result && Array.isArray(result)) {
+                    for (var i = 0; i < result.length; i++) {
+                        if (Array.isArray(result[i]) && result[i].length > 0) {
+                            for (let j = 0; j < result[i].length; j++) {
+                                lines.push(result[i][j].cmd + " '" + result[i][j].args.join("' '") + "'");
+                            }
+                        }
+                    }
+                }
+                var data = lines.join("\n");
+                //save document in gridfs
+                resolve(data);
+
+
+            }).catch(function(err) {
+                log.e(err);
+                reject(Error(err.message));
+            });
+        });
+
     };
     this.export_data = function(apps, my_params, passed_db, passed_log) {
         return new Promise(function(resolve, reject) {

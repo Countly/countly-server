@@ -210,7 +210,12 @@
             data: exportData,
             success: function(json) {
                 if (callback) {
-                    callback({result: "success", data: json.result});
+                    if (json.result) {
+                        callback({result: "success", data: json.result});
+                    }
+                    else {
+                        callback({result: "success", data: json});
+                    }
                 }
             },
             error: function(xhr, status, error) {

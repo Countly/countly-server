@@ -313,10 +313,21 @@
 
                 countlyDataMigration.saveExport(requestData, function(res) {
                     if (res.result === "success") {
-                        CountlyHelpers.notify({
-                            type: 'success',
-                            message: CV.i18n('data-migration.export-started')
-                        });
+                        if (requestData.only_export === 2) {
+                            var data = res.data;
+                            //pack data and download
+                            var blob = new Blob([data], { type: 'application/x-sh' });
+                            var url = URL.createObjectURL(blob);
+                            var a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'export_commands.sh';
+                            document.body.appendChild(a);
+                            a.click();
+                            CountlyHelpers.notify({
+                                type: 'success',
+                                message: CV.i18n('data-migration.download-auto ')
+                            });
+                        }
                     }
                     else {
                         CountlyHelpers.notify({
