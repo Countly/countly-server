@@ -325,7 +325,7 @@
                             a.click();
                             CountlyHelpers.notify({
                                 type: 'success',
-                                message: CV.i18n('data-migration.download-auto ')
+                                message: CV.i18n('data-migration.download-auto')
                             });
                         }
                         else {
