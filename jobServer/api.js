@@ -1,4 +1,5 @@
 /* api.js */
+// TODO: first version this needs more checks and refactoring and fixes
 
 const Logger = require('../api/utils/log.js');
 const log = new Logger('jobs:api');
@@ -7,6 +8,7 @@ const plugins = require("../plugins/pluginManager");
 const {validateGlobalAdmin} = require("../api/utils/rights");
 const common = require("../api/utils/common");
 const cronstrue = require('cronstrue');
+const {isValidCron} = require('cron-validator');
 
 // ----------------------------------
 // Helper Functions
@@ -413,6 +415,15 @@ plugins.register('/i/jobs', async function(ob) {
                     common.returnMessage(ob.params, 400, 'Schedule configuration is required');
                     return;
                 }
+
+                // Validate cron expression if provided
+                if (schedule && typeof schedule === 'string') {
+                    if (!isValidCron(schedule)) {
+                        common.returnMessage(ob.params, 400, 'Invalid cron expression provided');
+                        return;
+                    }
+                }
+
                 updateData.schedule = schedule;
                 break;
             case 'updateRetry':
