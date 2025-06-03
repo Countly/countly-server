@@ -40,7 +40,6 @@
 const JobServer = require('./JobServer');
 const Logger = require('../api/utils/log.js');
 const log = new Logger('jobServer:index');
-const CountlyRequest = require("countly-request");
 const {ReadBatcher, WriteBatcher, InsertBatcher} = require('../api/parts/data/batcher');
 const common = require('../api/utils/common.js');
 const pluginManager = require('../plugins/pluginManager.js');
@@ -55,129 +54,6 @@ if (require.main === module) {
     log.i('Initializing job server process...');
 
     /**
-     * Initialize countly request
-     * @param {Object} config - Configuration object
-     * @returns {Promise<Object>} A promise that resolves to an object containing countly request
-     */
-    const initializeCountlyRequest = async(config) => {
-        try {
-            const countlyRequest = CountlyRequest(config.security);
-            log.d('Countly request initialized successfully');
-            return countlyRequest;
-        }
-        catch (error) {
-            log.e('Failed to initialize countly request:', {
-                error: error.message,
-                stack: error.stack,
-                config: config ? 'present' : 'missing'
-            });
-            throw new Error('Countly request initialization failed: ' + error.message);
-        }
-    };
-
-    /**
-     * Override common batcher with the provided connections
-     * @param {Db} commonDb - Object containing database connections
-     */
-    const overrideCommonBatcher = async(commonDb) => {
-        try {
-            common.writeBatcher = new WriteBatcher(commonDb);
-            common.readBatcher = new ReadBatcher(commonDb);
-            common.insertBatcher = new InsertBatcher(commonDb);
-        }
-        catch (error) {
-            log.e('Failed to override common batcher:', {
-                error: error.message,
-                stack: error.stack
-            });
-        }
-    };
-
-    /**
-     * Override common dispatch with a Countly server request
-     * @param {Function} countlyRequest - Countly request function
-     * @param {Object} countlyConfig - Countly config object
-     */
-    const overrideCommonDispatch = (countlyRequest, countlyConfig) => {
-        try {
-            if (!countlyRequest || !countlyConfig) {
-                throw new Error('Invalid parameters for dispatch override');
-            }
-
-            const protocol = process.env.COUNTLY_CONFIG_PROTOCOL || "http";
-            const hostname = process.env.COUNTLY_CONFIG_HOSTNAME || "localhost";
-            const pathPrefix = countlyConfig.path || "";
-
-            // The base URL of the running Countly server
-            let baseUrl = protocol + "://" + hostname + pathPrefix;
-            log.d('Configuring dispatch override with base URL:', baseUrl);
-            baseUrl = "http://localhost:3001";
-
-            /**
-             * Keep the same signature, but perform a request to the running Countly server
-             * @param {string} event - The event name
-             * @param {Object} params - The event parameters
-             * @param {Function} callback - Callback function
-             * @returns {void} Void
-             */
-            const originalDispatch = pluginManager.dispatch;
-            pluginManager.dispatch = async function(event, params, callback) {
-                // Ignore dispatch if event starts with /db
-                if (event.startsWith('/db')) {
-                    if (typeof callback === 'function') {
-                        return callback(null, null, null);
-                    }
-                    return;
-                }
-                else if (event.startsWith('/drill/preprocess_query')) {
-                    // we should not load entire api.js for this
-                    // Need to figure out a better way to call preprocess_query
-                    require('./../plugins/drill/api/api.js');
-                    require('./../plugins/geo/api/api.js');
-
-                    return originalDispatch.call(pluginManager, event, params, callback);
-                }
-
-                const requestBody = {
-                    ...(params || {}),
-                    source: 'job_server',
-                    api_key: countlyConfig.api_key || "b2cc5212e091193e13299e2ece6222a6"
-                };
-
-                countlyRequest({
-                    url: baseUrl + event,
-                    method: 'POST',
-                    form: requestBody
-                }, function(err, res, body) {
-                    if (err) {
-                        log.e("Error dispatching event to Countly server:", {
-                            error: err,
-                            event: event,
-                            baseUrl: baseUrl,
-                        });
-                    }
-                    if (typeof callback === 'function') {
-                        callback(err, res, body);
-                    }
-                    else {
-                        log.w("No callback provided for dispatch");
-                    }
-                });
-            };
-            log.d('Common dispatch successfully overridden');
-        }
-        catch (error) {
-            log.e('Failed to override common dispatch:', {
-                error: error.message,
-                stack: error.stack,
-                config: countlyConfig ? 'present' : 'missing',
-                request: countlyRequest ? 'present' : 'missing'
-            });
-            throw new Error('Dispatch override failed: ' + error.message);
-        }
-    };
-
-    /**
      * Initialize configuration and database connections
      * @returns {Promise<{config: Object, dbConnections: Array}>} e.g. { config: {...}, dbConnections: { countlyDb, outDb, fsDb, drillDb } }
      */
@@ -189,15 +65,30 @@ if (require.main === module) {
             // Use connectToAllDatabases which handles config loading and db connections
             const [countlyDb, outDb, fsDb, drillDb] = await pluginManager.connectToAllDatabases();
 
-            // Only need to override batcher since connectToAllDatabases handles other overrides
-            await new Promise(resolve => {
-                setTimeout(async() => {
-                    const countlyRequest = await initializeCountlyRequest(config);
-                    overrideCommonDispatch(countlyRequest, config);
-                    await overrideCommonBatcher(countlyDb);
-                    resolve();
-                }, 3000);
-            });
+            log.d('Initializing batchers for job server...');
+            try {
+                common.writeBatcher = new WriteBatcher(countlyDb);
+                common.readBatcher = new ReadBatcher(countlyDb);
+                common.insertBatcher = new InsertBatcher(countlyDb);
+
+                // Initialize drill-specific batchers if drillDb is available
+                if (drillDb) {
+                    common.drillReadBatcher = new ReadBatcher(drillDb);
+                }
+                log.d('Batchers initialized successfully');
+            }
+            catch (batcherError) {
+                log.e('Failed to initialize batchers:', {
+                    error: batcherError.message,
+                    stack: batcherError.stack
+                });
+                throw new Error('Batcher initialization failed: ' + batcherError.message);
+            }
+
+            // Initialize plugins after batchers are ready
+            log.d('Initializing plugin manager for job server...');
+            pluginManager.init({skipDependencies: true});
+            log.d('Plugin manager initialized successfully');
 
             return {
                 config,
