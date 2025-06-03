@@ -1,12 +1,10 @@
-const {RUNNER_TYPES, createJobRunner} = require('./JobRunner/index');
+const PulseJobRunner = require('./PulseJobRunner');
 const config = require("./config");
 const JobUtils = require('./JobUtils');
 
 /**
  * @typedef {import('../api/utils/log.js').Logger} Logger
  * @typedef {import('mongodb').Db} MongoDb
- * @typedef {import('./JobRunner/types').IJobRunner} IJobRunner
- * @typedef {import('./JobRunner/PulseImpl').JobRunnerPulseImpl} JobRunnerPulseImpl
  * 
  * @typedef {Object} JobConfig
  * @property {string} jobName - The unique identifier for the job
@@ -41,7 +39,7 @@ class JobManager {
     /** @type {MongoDb} */
     #db = null;
 
-    /** @type {IJobRunner | JobRunnerPulseImpl | null} */
+    /** @type {PulseJobRunner | null} */
     #jobRunner = null;
 
     /** @type {import('mongodb').Collection<JobConfig>} */
@@ -59,10 +57,8 @@ class JobManager {
         this.#log = Logger('jobs:manager');
         this.#log.d('Creating JobManager');
 
-        const runnerType = RUNNER_TYPES.PULSE;
         const pulseConfig = config.PULSE;
-
-        this.#jobRunner = createJobRunner(this.#db, runnerType, pulseConfig, Logger);
+        this.#jobRunner = new PulseJobRunner(this.#db, pulseConfig, Logger);
         this.#jobConfigsCollection = db.collection('jobConfigs');
         this.#watchConfigs();
     }

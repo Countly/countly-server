@@ -175,67 +175,33 @@ JobExecutor JobScheduler JobLifecycle
 
 ## Design Patterns
 
-The Job Server Module employs several design patterns to maintain flexibility, testability, and extensibility:
+The Job Server Module has been refactored for better maintainability:
 
 ### Core Patterns
 
-1. **Interface Segregation**
-   - Job operations split into focused interfaces (IJobExecutor, IJobScheduler, IJobLifecycle)
-   - Enables targeted implementation of specific job aspects
-   - Reduces coupling between components
-   ```javascript
-   // Example: Separate interfaces for different concerns
-   interface IJobExecutor { /* job execution methods */ }
-   interface IJobScheduler { /* scheduling methods */ }
-   interface IJobLifecycle { /* lifecycle methods */ }
-   ```
+1. **Single Responsibility**
+   - PulseJobRunner combines all job operations in one cohesive class
+   - Eliminates interface complexity while maintaining clear method organization
+   - Reduces file count and simplifies debugging
 
-2. **Composition over Inheritance**
-   - BaseJobRunner composes functionality from specialized interfaces
-   - Runner implementations combine executor, scheduler, and lifecycle components
-   - Allows flexible mixing of different implementations
-   ```javascript
-   class BaseJobRunner {
-       constructor(scheduler, executor, lifecycle) {
-           this.scheduler = scheduler;
-           this.executor = executor;
-           this.lifecycle = lifecycle;
-       }
-   }
-   ```
+2. **Direct Instantiation**
+   - JobManager directly creates PulseJobRunner instances
+   - Removes factory pattern complexity for single implementation
+   - Simplifies dependency management
 
 3. **Dependency Injection**
    - Components receive dependencies through constructors
    - Facilitates testing and configuration
-   - Enables runtime selection of implementations
    ```javascript
-   const server = await JobServer.create(common, Logger, pluginManager, {
-       runner: {
-           type: 'pulse',
-           config: { /* ... */ }
-       }
-   });
+   const jobRunner = new PulseJobRunner(db, config, Logger);
    ```
-
-4. **Factory Pattern**
-   - Runner implementations created through factory methods
-   - Centralizes runner instantiation logic
-   - Supports multiple runner types (Pulse, BullMQ)
-   ```javascript
-   // Example: Runner factory
-   const RUNNER_TYPES = {
-       PULSE: 'pulse',
-       BULL: 'bullmq'
-   };
-   ```
-
 
 ### Benefits
 
-- **Extensibility**: New runners can be added without modifying existing code
-- **Testability**: Components can be tested in isolation with mock implementations
-- **Flexibility**: Runtime configuration of job processing behavior
-- **Maintainability**: Clear separation of concerns and modular design
+- **Maintainability**: Single class contains all related functionality
+- **Simplicity**: Reduced abstraction layers and file complexity
+- **Performance**: Direct method calls without interface overhead
+- **Debugging**: Easier to trace execution through single class
 
 ## Server Configuration
 
@@ -557,36 +523,23 @@ Jobs are distributed across processes based on:
 jobServer/
 ├── constants/
 │   └── JobPriorities.js       # Priority level definitions
-├── jobRunner/
-│   ├── interfaces/            # Core interfaces
-│   │   ├── IJobExecutor.js
-│   │   ├── IJobLifecycle.js
-│   │   └── IJobScheduler.js
-│   ├── impl/                  # Runner implementations
-│   │   ├── pulse/            # Pulse runner
-│   │   │   ├── PulseJobExecutor.js
-│   │   │   ├── PulseJobLifecycle.js
-│   │   │   └── PulseJobScheduler.js
-│   │   └── bullmq/          # Future BullMQ implementation
-│   ├── BaseJobRunner.js      # Abstract runner base
-│   ├── PulseJobRunner.js     # Pulse runner composition
-│   └── index.js             # Runner factory
 ├── Job.js                    # Base job class
 ├── JobManager.js            # Job management
 ├── JobScanner.js           # Job discovery
 ├── JobServer.js            # Main entry point
 ├── JobUtils.js             # Utility functions
+├── PulseJobRunner.js       # Consolidated Pulse implementation
 └── config.js               # Default configurations
 ```
 
-## Interface Contracts
+## PulseJobRunner API
 
-### IJobExecutor
+The consolidated PulseJobRunner class provides all job operations:
 
-Handles job creation and execution control:
+### Job Execution Methods
 
 ```javascript
-class IJobExecutor {
+class PulseJobRunner {
     async createJob(jobName, JobClass) {}
     async enableJob(jobName) {}
     async disableJob(jobName) {}
@@ -594,25 +547,21 @@ class IJobExecutor {
 }
 ```
 
-### IJobScheduler
-
-Manages job scheduling and timing:
+### Job Scheduling Methods
 
 ```javascript
-class IJobScheduler {
+class PulseJobRunner {
     async schedule(name, scheduleConfig, data) {}
     async updateSchedule(jobName, schedule) {}
     async runJobNow(jobName) {}
 }
 ```
 
-### IJobLifecycle
-
-Controls runner lifecycle:
+### Job Lifecycle Methods
 
 ```javascript
-class IJobLifecycle {
-    async start(jobClasses) {}
+class PulseJobRunner {
+    async start() {}
     async close() {}
 }
 ```
@@ -621,36 +570,39 @@ class IJobLifecycle {
 
 ### Runner Implementation Steps
 
-1. **Create Implementation Directory**
-```bash
-mkdir -p jobRunner/impl/myRunner
-```
-
-2. **Implement Required Classes**
-   - MyJobExecutor extends IJobExecutor
-   - MyJobScheduler extends IJobScheduler
-   - MyJobLifecycle extends IJobLifecycle
-
-3. **Create Runner Class**
+1. **Create New Runner Class**
 ```javascript
-class MyJobRunner extends BaseJobRunner {
+class MyJobRunner {
     constructor(db, config, Logger) {
-        const executor = new MyJobExecutor(/* ... */);
-        const scheduler = new MyJobScheduler(/* ... */);
-        const lifecycle = new MyJobLifecycle(/* ... */);
-        super(scheduler, executor, lifecycle);
+        this.db = db;
+        this.config = config;
+        this.log = Logger('jobs:runner:my');
+        // Initialize your runner implementation
     }
+
+    // Implement all required methods
+    async createJob(jobName, JobClass) { /* ... */ }
+    async enableJob(jobName) { /* ... */ }
+    async disableJob(jobName) { /* ... */ }
+    async configureRetry(jobName, retryConfig) { /* ... */ }
+    async schedule(name, scheduleConfig, data) { /* ... */ }
+    async updateSchedule(jobName, schedule) { /* ... */ }
+    async runJobNow(jobName) { /* ... */ }
+    async start() { /* ... */ }
+    async close() { /* ... */ }
 }
 ```
 
-4. **Register Runner Type**
+2. **Update JobManager**
 ```javascript
-// jobRunner/index.js
-const RUNNER_TYPES = {
-    PULSE: 'pulse',
-    MY_RUNNER: 'myRunner'
-};
+// JobManager.js
+const MyJobRunner = require('./MyJobRunner');
+
+// In constructor:
+this.#jobRunner = new MyJobRunner(this.#db, config, Logger);
 ```
+
+**Note:** With the simplified architecture, new runners are directly instantiated in JobManager rather than using a factory pattern.
 
 ## Error Handling & Monitoring
 
