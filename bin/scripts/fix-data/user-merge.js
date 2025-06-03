@@ -1,12 +1,20 @@
 /**
- *  Description: This script is used to merge users based on username.
+ *  Description: This script merges users if they match on any fields configured in the script.
+ *  configure - processAllFields function to add or remove fields for merging.
  *  Server: countly
  *  Path: $(countly dir)/bin/scripts/fix-data
- *  Command: node user-merge.js
+ *  Command: node user-merge.js --no-dry-run
  */
 var pluginManager = require("../../../plugins/pluginManager.js");
 var appUsers = require("../../../api/parts/mgmt/app_users.js");
 var common = require("../../../api/utils/common.js");
+
+// Check for dry run flag
+let DRY_RUN = true;
+if (process.argv.includes('--no-dry-run')) {
+    DRY_RUN = false;
+}
+console.log(DRY_RUN ? "Running in DRY RUN mode - no actual merges will be performed" : "Running in LIVE mode - merges will be performed");
 
 console.log("Merging app users");
 
@@ -15,7 +23,6 @@ var COLLECTION_NAME = "app_users" + APP_ID;
 
 var RETRY_LIMIT = 3;
 var UPDATE_COUNTER = 0;
-
 //Number of requests to be made before checking record count in app_user_merges
 var UPDATE_LIMIT = 100;
 //Number of records in app_user_merges after which script will sleep
@@ -26,21 +33,22 @@ var RECORD_OVERLOAD_SLEEP = 2000;
 var COOLDOWN_PERIOD = 1000;
 
 const sleep = m => new Promise((r) => {
-    //console.log("Cooling period for " + m + " seconds!");
     setTimeout(r, m);
 });
 
 pluginManager.dbConnection("countly").then(async(countlyDb) => {
     try {
-
         common.db = countlyDb;
-
-        await cursor();
-
-        console.log("Total updates on the server - ", UPDATE_COUNTER);
-        console.log("Script ran successfully!");
+        await processAllFields();
+        console.log("Total potential merges found - ", UPDATE_COUNTER);
+        if (DRY_RUN) {
+            console.log("Dry run completed - no actual merges were performed");
+        }
+        else {
+            console.log("All merges completed successfully!");
+        }
         common.db.close();
-        process.exit(1);
+        process.exit(0);
     }
     catch (e) {
         console.log("Error while running script ", e);
@@ -48,56 +56,86 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
         process.exit(1);
     }
 
-    async function cursor() {
+    async function processAllFields() {
+        //await processDuplicates('email'); we can also run multiple merges one after the other based on different fields
+        await processDuplicates('name');
+    }
+
+    async function processDuplicates(field) {
+        console.log(`\nProcessing duplicates by ${field}`);
 
         const duplicates = await common.db.collection(COLLECTION_NAME).aggregate([
             {
+                $match: {
+                    [field]: { $nin: [null, ""], $exists: true } // Only match non-null, non-empty values
+                }
+            },
+            {
                 $group: {
-                    _id: "$username",
+                    _id: `$${field}`,
                     count: { $sum: 1 }
                 }
             },
             {
                 $match: {
-                    count: { $gt: 1 },
-                    _id: { $ne: null }
+                    count: { $gt: 1 }
                 }
             }
         ]).toArray();
 
-        console.log("Found", duplicates.length, "duplicate username groups.");
+        console.log(`Found ${duplicates.length} duplicate groups for ${field}`);
 
-        for (var i = 0; i < duplicates.length; i++) {
+        for (const duplicate of duplicates) {
+            const query = { [field]: duplicate._id };
 
-            var mainUser = null;
-            var mergedUsersUIDs = [];
+            const users = await common.db.collection(COLLECTION_NAME)
+                .find(query)
+                .sort({ lac: -1 })
+                .toArray();
 
-            var query = {
-                username: duplicates[i]._id
-            };
+            if (users.length < 2) {
+                continue;
+            }
 
-            var projections = {};
+            const mainUser = users[0]; // Most recent user becomes main user
+            const usersToMerge = users.slice(1); // All other users will be merged
+            //const noFlag = users.every(user => user['name'] === users[0]['name']); //true if all names are same
+            const mergedUIDs = [];
 
-            var sort = { ls: -1 };
+            console.log(`\n${DRY_RUN ? '[DRY RUN] Would merge' : 'Merging'} users matching ${field}: "${duplicate._id}"`);
+            // if (!noFlag) {
+            //     console.log('---- Users Flagged ----');
+            //     console.log('USER WILL NOT BE MERGED');
+            //     console.log('userUIDS:', users.map(user => user.uid));
+            // }
+            console.log('Main user would be:', {
+                uid: mainUser.uid,
+                email: mainUser.email || "null",
+                phone: mainUser.phone || "null",
+                name: mainUser.name || "null",
+                last_action: formatLac(mainUser.lac)
+            });
 
-            var cursor = common.db.collection(COLLECTION_NAME).find(query).project(projections).sort(sort);
+            for (const userToMerge of usersToMerge) {
+                if (userToMerge.uid && userToMerge.uid !== "") {
+                    console.log('Would merge user:', {
+                        uid: userToMerge.uid,
+                        email: userToMerge.email || "null",
+                        phone: userToMerge.phone || "null",
+                        name: userToMerge.name || "null",
+                        last_action: formatLac(userToMerge.lac)
+                    });
 
-            while (await cursor.hasNext()) {
-                var doc = await cursor.next();
-
-                if (doc.uid && doc.uid !== "") {
-                    if (!mainUser) {
-                        mainUser = doc;
+                    if (!DRY_RUN) { //&& noFlag
+                        await mergeUsers(mainUser, userToMerge);
                     }
-                    else {
-                        await mergeUsers(mainUser, doc);
-                        mergedUsersUIDs.push(doc.uid);
-                    }
+                    mergedUIDs.push(userToMerge.uid);
+                    UPDATE_COUNTER++;
                 }
             }
 
-            if (mergedUsersUIDs.length > 0) {
-                console.log("Total", mergedUsersUIDs.length, "users merged into user", mainUser.uid, ": (", mergedUsersUIDs.join(", "), ")");
+            if (mergedUIDs.length > 0) {
+                console.log(`${DRY_RUN ? '[DRY RUN] Would merge' : 'Merged'} ${mergedUIDs.length} users into ${mainUser.uid}`);
             }
         }
     }
@@ -118,7 +156,6 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
                     else {
                         success = true;
                     }
-
                     resolve();
                 });
             });
@@ -129,7 +166,6 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
             if (retryCounter > 1) {
                 console.log("User ", user.uid, " merged successfully after ", retryCounter, " retries.");
             }
-            UPDATE_COUNTER += 1;
             if (UPDATE_COUNTER % UPDATE_LIMIT === 0) {
                 await checkRecordCount();
             }
@@ -140,13 +176,27 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
     }
 
     async function checkRecordCount() {
+        if (DRY_RUN) {
+            return;
+        }
+
         var recordCount = await common.db.collection("app_user_merges").countDocuments();
         console.log("Record count in app_user_merges: ", recordCount);
 
         while (recordCount > RECORD_COUNT_LIMIT) {
-            console.log("Record count exceeds limit. Sleeping for " + RECORD_OVERLOAD_SLEEP / 1000 + "seconds.");
+            console.log("Record count exceeds limit. Sleeping for " + RECORD_OVERLOAD_SLEEP / 1000 + " seconds.");
             await sleep(RECORD_OVERLOAD_SLEEP);
             recordCount = await common.db.collection("app_user_merges").countDocuments();
         }
+    }
+
+    function formatLac(timestamp) {
+        if (!timestamp) {
+            return null;
+        }
+        if (Math.round(timestamp).toString().length === 10) {
+            timestamp *= 1000;
+        }
+        return new Date(timestamp);
     }
 });
