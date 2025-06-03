@@ -2,7 +2,7 @@
 ## Version 25.03.x
 Enterprise Features:
 - [journey_engine] Record Event block added
-- [oidc] PKCE Flow support addded
+- [oidc] PKCE Flow support added
 
 Fixes:
 - [core] Unifying alphabetical order for dropdowns with dashboard apps
