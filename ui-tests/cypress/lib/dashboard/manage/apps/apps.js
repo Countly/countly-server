@@ -152,7 +152,7 @@ const selectAppType = (appType) => {
 };
 
 const clickCreateButton = () => {
-    cy.clickElement(applicationsPageElements.CREATE_BUTTON);
+    cy.clickElement(applicationsPageElements.CREATE_BUTTON,true);
 }
 
 const searchApp = (appName) => {
