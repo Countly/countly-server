@@ -6,6 +6,9 @@ Enterprise Features:
 Fixes:
 - [core] Unifying alphabetical order for dropdowns with dashboard apps
 - [hooks] Added null check for incoming data
+- [core] Fix auto refresh frontend component
+- [times-of-day] Fix chart component
+- [push] Fix external drawer initialization
 
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
@@ -13,6 +16,7 @@ Enterprise Fixes:
     - Do not wait for result calculation when requesting experiments
     - Do not calculate result for completed experiments
 - [drill] [license] Shorten warning period from 14 days to 3 days
+- [license] Fix chart legend
 
 Dependencies:
 - Bump eslint-plugin-vue from 9.33.0 to 10.1.0
