@@ -9,17 +9,13 @@ var pluginManager = require("../../../plugins/pluginManager.js");
 var appUsers = require("../../../api/parts/mgmt/app_users.js");
 var common = require("../../../api/utils/common.js");
 
-// Check for dry run flag
-let DRY_RUN = true;
-if (process.argv.includes('--no-dry-run')) {
-    DRY_RUN = false;
-}
-console.log(DRY_RUN ? "Running in DRY RUN mode - no actual merges will be performed" : "Running in LIVE mode - merges will be performed");
-
-console.log("Merging app users");
-
 var APP_ID = "";
 var COLLECTION_NAME = "app_users" + APP_ID;
+
+if (!APP_ID) {
+    console.error("Please set APP_ID variable to the ID of the app you want to merge users for.");
+    process.exit(1);
+}
 
 var RETRY_LIMIT = 3;
 var UPDATE_COUNTER = 0;
@@ -31,6 +27,15 @@ var RECORD_COUNT_LIMIT = 10;
 var RECORD_OVERLOAD_SLEEP = 2000;
 //Cooldown period between requests
 var COOLDOWN_PERIOD = 1000;
+
+// Check for dry run flag
+let DRY_RUN = true;
+if (process.argv.includes('--no-dry-run')) {
+    DRY_RUN = false;
+}
+console.log(DRY_RUN ? "Running in DRY RUN mode - no actual merges will be performed" : "Running in LIVE mode - merges will be performed");
+
+console.log("Merging app users");
 
 const sleep = m => new Promise((r) => {
     setTimeout(r, m);
@@ -88,54 +93,48 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
         for (const duplicate of duplicates) {
             const query = { [field]: duplicate._id };
 
-            const users = await common.db.collection(COLLECTION_NAME)
+            const cursor = common.db.collection(COLLECTION_NAME)
                 .find(query)
                 .sort({ lac: -1 })
-                .toArray();
+                .cursor();
 
-            if (users.length < 2) {
-                continue;
-            }
-
-            const mainUser = users[0]; // Most recent user becomes main user
-            const usersToMerge = users.slice(1); // All other users will be merged
-            //const noFlag = users.every(user => user['name'] === users[0]['name']); //true if all names are same
-            const mergedUIDs = [];
+            let mainUser = null;
+            let mergedUIDs = 0;
 
             console.log(`\n${DRY_RUN ? '[DRY RUN] Would merge' : 'Merging'} users matching ${field}: "${duplicate._id}"`);
-            // if (!noFlag) {
-            //     console.log('---- Users Flagged ----');
-            //     console.log('USER WILL NOT BE MERGED');
-            //     console.log('userUIDS:', users.map(user => user.uid));
-            // }
-            console.log('Main user would be:', {
-                uid: mainUser.uid,
-                email: mainUser.email || "null",
-                phone: mainUser.phone || "null",
-                name: mainUser.name || "null",
-                last_action: formatLac(mainUser.lac)
-            });
 
-            for (const userToMerge of usersToMerge) {
-                if (userToMerge.uid && userToMerge.uid !== "") {
+            for await (const user of cursor) {
+                if (!mainUser) {
+                    mainUser = user;
+                    console.log('Main user would be:', {
+                        uid: mainUser.uid,
+                        email: mainUser.email || "null",
+                        phone: mainUser.phone || "null",
+                        name: mainUser.name || "null",
+                        last_action: formatLac(mainUser.lac)
+                    });
+                    continue;
+                }
+
+                if (user.uid && user.uid !== "") {
                     console.log('Would merge user:', {
-                        uid: userToMerge.uid,
-                        email: userToMerge.email || "null",
-                        phone: userToMerge.phone || "null",
-                        name: userToMerge.name || "null",
-                        last_action: formatLac(userToMerge.lac)
+                        uid: user.uid,
+                        email: user.email || "null",
+                        phone: user.phone || "null",
+                        name: user.name || "null",
+                        last_action: formatLac(user.lac)
                     });
 
-                    if (!DRY_RUN) { //&& noFlag
-                        await mergeUsers(mainUser, userToMerge);
+                    if (!DRY_RUN) {
+                        await mergeUsers(mainUser, user);
                     }
-                    mergedUIDs.push(userToMerge.uid);
+                    mergedUIDs++;
                     UPDATE_COUNTER++;
                 }
             }
 
-            if (mergedUIDs.length > 0) {
-                console.log(`${DRY_RUN ? '[DRY RUN] Would merge' : 'Merged'} ${mergedUIDs.length} users into ${mainUser.uid}`);
+            if (mergedUIDs > 0) {
+                console.log(`${DRY_RUN ? '[DRY RUN] Would merge' : 'Merged'} ${mergedUIDs} users into ${mainUser.uid}`);
             }
         }
     }
