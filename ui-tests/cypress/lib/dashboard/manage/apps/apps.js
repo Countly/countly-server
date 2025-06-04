@@ -292,7 +292,7 @@ const clickYesDeleteButton = () => {
     cy.clickElement(applicationsPageElements.DELETE_APP_POPUP_DELETE_BUTTON);
 };
 
-const verifyAppShouldBeDleted = ()=> {
+const verifyAppShouldBeDeleted = ()=> {
     cy.verifyElement({
         element: applicationsPageElements.NO_MATCHE_FOUND_LABEL,
         elementText: "No match found",
