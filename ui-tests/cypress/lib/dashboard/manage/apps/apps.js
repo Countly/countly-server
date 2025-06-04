@@ -374,7 +374,7 @@ module.exports = {
     clickDeleteAppOption,
     verifyDeleteAppPopupElements,
     clickYesDeleteButton,
-    verifyAppShouldBeDleted,
+    verifyAppShouldBeDeleted,
     clickEditButton,
     verifyEditPopupElements,
     clickSaveChangesButton,
