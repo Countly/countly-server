@@ -1,4 +1,6 @@
 import applicationsPageElements from "../../../../support/elements/dashboard/manage/apps/apps";
+import helper from "../../../../../cypress/support/helper";
+const { APP_TYPE } = require('../../../../support/constants');
 
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
@@ -129,6 +131,254 @@ const verifyPageElements = () => {
     });
 };
 
+const clickAddNewAppButton = () => {
+    cy.clickElement(applicationsPageElements.ADD_NEW_APP_BUTTON);
+};
+
+const typeAppName = (appName) => {
+    cy.typeInput(applicationsPageElements.APP_NAME_INPUT, appName);
+};
+
+const selectAppType = (appType) => {
+
+    cy.clickElement(applicationsPageElements.APP_TYPE_DROPDOWN);
+
+    if (appType === APP_TYPE.MOBILE) {
+        cy.clickElement(applicationsPageElements.APP_TYPE_DROPDOWN_MOBILE_OPTION);
+    }
+    else if (appType === APP_TYPE.WEB) {
+        cy.clickElement(applicationsPageElements.APP_TYPE_DROPDOWN_WEB_OPTION);
+    }
+    else if (appType === APP_TYPE.DESKTOP) {
+        cy.clickElement(applicationsPageElements.APP_TYPE_DROPDOWN_DESKTOP_OPTION);
+    }
+};
+
+const clickCreateButton = () => {
+    cy.clickElement(applicationsPageElements.CREATE_BUTTON, true);
+};
+
+const searchApp = (appName) => {
+    cy.typeInput(applicationsPageElements.LISTBOX_SEARCH_INPUT, appName);
+};
+
+const selectAppFromList = () => {
+    cy.clickElement(applicationsPageElements.APP_LIST_ITEM);
+};
+
+const verifyCreatedApp = ({
+    appName,
+    appType,
+    country,
+    timeZone
+}) => {
+
+    cy.verifyElement({
+        labelElement: applicationsPageElements.APPLICATION_NAME_VALUE_LABEL,
+        labelText: appName,
+    });
+
+    cy.verifyElement({
+        labelElement: applicationsPageElements.APPLICATION_TYPE_VALUE_LABEL,
+        labelText: helper.toSlug(appType),
+    });
+
+    cy.verifyElement({
+        labelElement: applicationsPageElements.COUNTRY_VALUE_LABEL,
+        labelText: country,
+    });
+
+    cy.verifyElement({
+        labelElement: applicationsPageElements.TIMEZONE_VALUE_LABEL,
+        labelText: timeZone,
+    });
+
+    cy.verifyElement({
+        shouldNot: true,
+        element: applicationsPageElements.APP_ID_VALUE_LABEL,
+        elementText: null,
+    });
+
+    cy.verifyElement({
+        shouldNot: true,
+        element: applicationsPageElements.APP_KEY_VALUE_LABEL,
+        elementText: null,
+    });
+};
+
+const clickmoreOptionsButton = () => {
+    cy.clickElement(applicationsPageElements.APP_PAGE_MORE_OPTIONS_BUTTON);
+};
+
+const verifyMoreOptionsElements = () => {
+
+    cy.verifyElement({
+        element: applicationsPageElements.APP_PAGE_MORE_OPTIONS_BUTTON,
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.APP_PAGE_CLEAR_DATA_OLDER_THAN_ONE_MONTH_OPTION,
+        elementText: "Clear data older than 1 month",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.APP_PAGE_CLEAR_DATA_OLDER_THAN_THREE_MONTH_OPTION,
+        elementText: "Clear data older than 3 months",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.APP_PAGE_CLEAR_DATA_OLDER_THAN_SIX_MONTH_OPTION,
+        elementText: "Clear data older than 6 months",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.APP_PAGE_CLEAR_DATA_OLDER_THAN_ONE_YEAR_OPTION,
+        elementText: "Clear data older than 1 year",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.APP_PAGE_CLEAR_DATA_OLDER_THAN_TWO_YEAR_OPTION,
+        elementText: "Clear data older than 2 years",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.APP_PAGE_CLEAR_ALL_DATA_OPTION,
+        elementText: "Clear all data",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.APP_PAGE_RESET_APP_OPTION,
+        elementText: "Reset application",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.APP_PAGE_DELETE_APP_OPTION,
+        elementText: "Delete application",
+    });
+};
+
+const clickDeleteAppOption = () => {
+    verifyMoreOptionsElements();
+    cy.clickElement(applicationsPageElements.APP_PAGE_DELETE_APP_OPTION);
+};
+
+const verifyDeleteAppPopupElements = () => {
+    cy.verifyElement({
+        labelElement: applicationsPageElements.DELETE_APP_POPUP_TITLE_LABEL,
+        labelText: "Delete application?",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.DELETE_APP_POPUP_CLOSE_BUTTON,
+    });
+
+    cy.verifyElement({
+        labelElement: applicationsPageElements.DELETE_APP_POPUP_DESCRIPTION_LABEL,
+        labelText: "You are about to delete all the data associated with your application. Do you want to continue?",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.DELETE_APP_POPUP_CANCEL_BUTTON,
+        elementText: "No, don't delete",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.DELETE_APP_POPUP_DELETE_BUTTON,
+        elementText: "Yes, delete the app",
+    });
+};
+
+const clickYesDeleteButton = () => {
+    cy.clickElement(applicationsPageElements.DELETE_APP_POPUP_DELETE_BUTTON);
+};
+
+const verifyAppShouldBeDleted = ()=> {
+    cy.verifyElement({
+        element: applicationsPageElements.NO_MATCHE_FOUND_LABEL,
+        elementText: "No match found",
+    });
+};
+
+const clickEditButton = () => {
+    cy.clickElement(applicationsPageElements.APP_PAGE_EDIT_BUTTON);
+};
+
+const verifyEditPopupElements = () => {
+
+    cy.verifyElement({
+        element: applicationsPageElements.EDIT_PAGE_NUMBER_OF_CHANGES,
+        elementText: "3",
+    });
+
+    cy.verifyElement({
+        labelElement: applicationsPageElements.EDIT_POPUP_CHANGE_HAS_BEEN_MADE_LABEL,
+        labelText: "changes have been made.",
+    });
+
+    cy.verifyElement({
+        labelElement: applicationsPageElements.EDIT_POPUP_DO_YOU_WANNA_KEEP_LABEL,
+        labelText: "Do you want to keep them?",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.EDIT_POPUP_SAVE_CHANGES_BUTTON,
+        elementText: "Save Changes",
+    });
+
+    cy.verifyElement({
+        element: applicationsPageElements.EDIT_POPUP_CLOSE_BUTTON,
+    });
+};
+
+const clickSaveChangesButton = () => {
+    cy.clickElement(applicationsPageElements.EDIT_POPUP_SAVE_CHANGES_BUTTON);
+};
+
+const uploadAppIcon = (filePath) => {
+    cy.uploadFile(filePath);
+};
+
+const verifyChangesSavedNotification = () => {
+    cy.verifyElement({
+        element: applicationsPageElements.EDIT_NOTIFICATION_MESSAGE,
+        elementText: "Changes were successfully saved",
+    });
+};
+
+const searchCountry = (country) => {
+    cy.typeInput(applicationsPageElements.COUNTRY_SEARCH_INPUT, country);
+};
+
+const selectCountry = (country) => {
+    cy.clickElement(applicationsPageElements.COUNTRY_DROPDOWN);
+    searchCountry(country);
+
+    if (country === "Turkey") {
+        cy.clickElement(applicationsPageElements.DROPDOWN_OPTION_TURKEY);
+    }
+    else if (country === "United Kingdom") {
+        cy.clickElement(applicationsPageElements.DROPDOWN_OPTION_UNITED_KINGDOM);
+    }
+};
+
 module.exports = {
-    verifyPageElements
+    verifyPageElements,
+    clickAddNewAppButton,
+    typeAppName,
+    clickCreateButton,
+    searchApp,
+    verifyCreatedApp,
+    selectAppFromList,
+    selectAppType,
+    clickmoreOptionsButton,
+    clickDeleteAppOption,
+    verifyDeleteAppPopupElements,
+    clickYesDeleteButton,
+    verifyAppShouldBeDleted,
+    clickEditButton,
+    verifyEditPopupElements,
+    clickSaveChangesButton,
+    uploadAppIcon,
+    verifyChangesSavedNotification,
+    selectCountry
 };
