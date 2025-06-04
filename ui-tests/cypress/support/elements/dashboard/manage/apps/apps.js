@@ -60,5 +60,10 @@ export default {
     EDIT_POPUP_DO_YOU_WANNA_KEEP_LABEL: 'do-you-wanna-keep-label',
     EDIT_POPUP_SAVE_CHANGES_BUTTON: 'save-changes-button',
     EDIT_POPUP_CLOSE_BUTTON: 'save-changes-button',
-    EDIT_NOTIFICATION_MESSAGE: 'cly-notification-text'
+    EDIT_NOTIFICATION_MESSAGE: 'cly-notification-text',
+
+    COUNTRY_DROPDOWN: 'empty-page-country-select',
+    COUNTRY_SEARCH_INPUT: 'empty-page-country-select-search-box',
+    DROPDOWN_OPTION_TURKEY: 'empty-page-country-select-item-turkey',
+    DROPDOWN_OPTION_UNITED_KINGDOM: 'empty-page-country-select-item-united-kingdom',
 };

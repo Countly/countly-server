@@ -18,6 +18,7 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.clickAddNewAppButton();
         appHelper.typeAppName(app.appName);
         appHelper.selectAppType(APP_TYPE.MOBILE);
+        appHelper.selectCountry("Turkey");
         appHelper.clickCreateButton();
 
         appHelper.searchApp(app.appName);
@@ -26,6 +27,8 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.verifyCretedApp({
             appName: app.appName,
             appType: APP_TYPE.MOBILE,
+            country: "TR",
+            timeZone: "Europe/Istanbul"
         });
 
         //add icon case
@@ -38,12 +41,15 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.clickAddNewAppButton();
         appHelper.typeAppName(app.appName);
         appHelper.selectAppType(APP_TYPE.DESKTOP);
+        appHelper.selectCountry("Turkey");
         appHelper.clickCreateButton();
 
         appHelper.searchApp(app.appName);
         appHelper.verifyCretedApp({
             appName: app.appName,
             appType: APP_TYPE.DESKTOP,
+            country: "TR",
+            timeZone: "Europe/Istanbul"
         });
 
         //update app case
@@ -52,6 +58,7 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.clickEditButton();
         appHelper.typeAppName(updatedName.appName);
         appHelper.selectAppType(APP_TYPE.MOBILE);
+        appHelper.selectCountry("United Kingdom");
         appHelper.verifyEditPopupElements();
         appHelper.clickSaveChangesButton();
     
@@ -61,6 +68,8 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.verifyCretedApp({
             appName: updatedName.appName,
             appType: APP_TYPE.MOBILE,
+            country: "GB",
+            timeZone: "Europe/Istanbul"
         });
 
         appHelper.verifyCahangesShouldBeMade();
@@ -72,12 +81,15 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.clickAddNewAppButton();
         appHelper.typeAppName(app.appName);
         appHelper.selectAppType(APP_TYPE.WEB);
+        appHelper.selectCountry("Turkey");
         appHelper.clickCreateButton();
 
         appHelper.searchApp(app.appName);
         appHelper.verifyCretedApp({
             appName: app.appName,
             appType: APP_TYPE.WEB,
+            country: "TR",
+            timeZone: "Europe/Istanbul"
         });
 
         //delete app case

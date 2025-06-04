@@ -165,7 +165,9 @@ const selectAppFromList = () => {
 
 const verifyCretedApp = ({
         appName,
-        appType
+        appType,
+        country,
+        timeZone
 }) => {
 
     cy.verifyElement({
@@ -176,6 +178,16 @@ const verifyCretedApp = ({
     cy.verifyElement({
         labelElement: applicationsPageElements.APPLICATION_TYPE_VALUE_LABEL,
         labelText: helper.toSlug(appType),
+    });
+
+    cy.verifyElement({
+        labelElement: applicationsPageElements.COUNTRY_VALUE_LABEL,
+        labelText: country,
+    });
+
+    cy.verifyElement({
+        labelElement: applicationsPageElements.TIMEZONE_VALUE_LABEL,
+        labelText: timeZone,
     });
 };
 
@@ -280,7 +292,7 @@ const verifyEditPopupElements = () => {
 
     cy.verifyElement({
         element: applicationsPageElements.EDIT_PAGE_NUMBER_OF_CHANGES,
-        elementText: "2",
+        elementText: "3",
     });
 
     cy.verifyElement({
@@ -318,6 +330,22 @@ const verifyCahangesShouldBeMade = () => {
     });
 };
 
+const searchCountry = (country) => {
+    cy.typeInput(applicationsPageElements.COUNTRY_SEARCH_INPUT, country);
+};
+
+
+const selectCountry = (country) => {
+    cy.clickElement(applicationsPageElements.COUNTRY_DROPDOWN);
+    searchCountry(country);
+    
+    if (country === "Turkey") {
+        cy.clickElement(applicationsPageElements.DROPDOWN_OPTION_TURKEY);
+    }else if (country === "United Kingdom") {
+        cy.clickElement(applicationsPageElements.DROPDOWN_OPTION_UNITED_KINGDOM);
+    }
+};
+
 module.exports = {
     verifyPageElements,
     clickAddNewAppButton,
@@ -337,4 +365,5 @@ module.exports = {
     clickSaveChangesButton,
     uploadAppIcon,
     verifyCahangesShouldBeMade,
+    selectCountry
 };
