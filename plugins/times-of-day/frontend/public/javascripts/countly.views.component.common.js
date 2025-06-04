@@ -4,7 +4,7 @@
     var MAX_SYMBOL_VALUE = 20;
 
     countlyTimesOfDayComponent.ScatterChart = countlyVue.views.create({
-        template: '<cly-chart-generic v-bind="$attrs" :option="timesOfDayOptions" v-loading="isLoading"></cly-chart-generic>',
+        template: '<cly-chart-generic v-bind="$attrs" :option="timesOfDayOptions"></cly-chart-generic>',
         mixins: [countlyVue.mixins.commonFormatters],
         props: {
             maxSeriesValue: {

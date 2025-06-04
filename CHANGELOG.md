@@ -6,6 +6,9 @@ Enterprise Features:
 Fixes:
 - [core] Unifying alphabetical order for dropdowns with dashboard apps
 - [hooks] Added null check for incoming data
+- [core] Fix auto refresh frontend component
+- [times-of-day] Fix chart component
+- [push] Fix external drawer initialization
 
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
@@ -13,16 +16,20 @@ Enterprise Fixes:
     - Do not wait for result calculation when requesting experiments
     - Do not calculate result for completed experiments
 - [drill] [license] Shorten warning period from 14 days to 3 days
+- [license] Fix chart legend
 
 Dependencies:
 - Bump eslint-plugin-vue from 9.33.0 to 10.1.0
 - Bump lint-staged from 15.5.2 to 16.0.0
 - Bump moment-timezone from 0.5.48 to 0.6.0
+- Bump mongodb from 6.16.0 to 6.17.0
 - Bump nodemailer from 6.10.1 to 7.0.3
 - Bump puppeteer from 24.8.0 to 24.9.0
 - Bump sass from 1.87.0 to 1.89.0
 - Bump semver from 7.7.1 to 7.7.2
+- Bump sharp from 0.33.5 to 0.34.2
 - Bump supertest from 7.1.0 to 7.1.1
+- Bump tar-fs
 
 ## Version 25.03.5
 Fixes:
