@@ -170,7 +170,7 @@ const selectAppForAdmin = (application) => {
 
 // TODO: SER-2348
 // const uploadImage = (uploadImage) => {
-//     cy.uploadFile(usersCreationPageElements().UPLOAD_IMAGE_DROPZONE, uploadImage);
+//     cy.dragAndDropFile(usersCreationPageElements().UPLOAD_IMAGE_DROPZONE, uploadImage);
 // };
 
 module.exports = {
