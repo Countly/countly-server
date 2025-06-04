@@ -189,6 +189,18 @@ const verifyCretedApp = ({
         labelElement: applicationsPageElements.TIMEZONE_VALUE_LABEL,
         labelText: timeZone,
     });
+
+    cy.verifyElement({
+        shouldNot: true,
+        element: applicationsPageElements.APP_ID_VALUE_LABEL,
+        elementText: null,
+    });
+
+    cy.verifyElement({
+        shouldNot: true,
+        element: applicationsPageElements.APP_KEY_VALUE_LABEL,
+        elementText: null,
+    });
 };
 
 const clickmoreOptionsButton = () => {
