@@ -6,13 +6,13 @@ const { generateAppsFixture } = require('../../../../fixtures/generators/apps');
 const { APP_TYPE } = require('../../../../support/constants');
 
 describe('Create apps with different types such as Desktop, Mobile, and Web. ', () => {
-    beforeEach(function () {
+    beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
         navigationHelpers.goToApplicationsPage();
     });
 
-    it('Create a mobile type app with icon.', function () {
+    it('Create a mobile type app with icon.', function() {
 
         const app = generateAppsFixture();
         appHelper.clickAddNewAppButton();
@@ -33,9 +33,9 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
 
         //add icon case
         appHelper.uploadAppIcon(app.logoPath);
-    })
+    });
 
-    it('Create a desktop type app without icon and update the name and app type.', function () {
+    it('Create a desktop type app without icon and update the name and app type.', function() {
 
         const app = generateAppsFixture();
         appHelper.clickAddNewAppButton();
@@ -61,7 +61,7 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.selectCountry("United Kingdom");
         appHelper.verifyEditPopupElements();
         appHelper.clickSaveChangesButton();
-    
+
         appHelper.searchApp(updatedName.appName);
         appHelper.selectAppFromList();
 
@@ -73,9 +73,9 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         });
 
         appHelper.verifyCahangesShouldBeMade();
-    })
+    });
 
-    it('Create a web type app without icon and delete it.', function () {
+    it('Create a web type app without icon and delete it.', function() {
 
         const app = generateAppsFixture();
         appHelper.clickAddNewAppButton();
@@ -100,5 +100,5 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         appHelper.searchApp(app.appName);
         appHelper.verifyAppShouldBeDleted();
 
-    })
+    });
 });

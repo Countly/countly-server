@@ -1,5 +1,5 @@
 import applicationsPageElements from "../../../../support/elements/dashboard/manage/apps/apps";
-import helper from "../../../../../cypress/support/helper"
+import helper from "../../../../../cypress/support/helper";
 
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
@@ -135,8 +135,8 @@ const clickAddNewAppButton = () => {
 };
 
 const typeAppName = (appName) => {
-    cy.typeInput(applicationsPageElements.APP_NAME_INPUT, appName); 
-}
+    cy.typeInput(applicationsPageElements.APP_NAME_INPUT, appName);
+};
 
 const selectAppType = (appType) => {
 
@@ -144,16 +144,18 @@ const selectAppType = (appType) => {
 
     if (appType === 'Mobile') {
         cy.clickElement(applicationsPageElements.APP_TYPE_DROPDOWN_MOBILE_OPTION);
-    } else if (appType === 'Web') {
+    }
+    else if (appType === 'Web') {
         cy.clickElement(applicationsPageElements.APP_TYPE_DROPDOWN_WEB_OPTION);
-    } else if (appType === 'Desktop') {
+    }
+    else if (appType === 'Desktop') {
         cy.clickElement(applicationsPageElements.APP_TYPE_DROPDOWN_DESKTOP_OPTION);
     }
 };
 
 const clickCreateButton = () => {
-    cy.clickElement(applicationsPageElements.CREATE_BUTTON,true);
-}
+    cy.clickElement(applicationsPageElements.CREATE_BUTTON, true);
+};
 
 const searchApp = (appName) => {
     cy.typeInput(applicationsPageElements.LISTBOX_SEARCH_INPUT, appName);
@@ -161,13 +163,13 @@ const searchApp = (appName) => {
 
 const selectAppFromList = () => {
     cy.clickElement(applicationsPageElements.APP_LIST_ITEM);
-}
+};
 
 const verifyCretedApp = ({
-        appName,
-        appType,
-        country,
-        timeZone
+    appName,
+    appType,
+    country,
+    timeZone
 }) => {
 
     cy.verifyElement({
@@ -204,7 +206,7 @@ const verifyCretedApp = ({
 };
 
 const clickmoreOptionsButton = () => {
-    cy.clickElement(applicationsPageElements.APP_PAGE_MORE_OPTIONS_BUTTON)
+    cy.clickElement(applicationsPageElements.APP_PAGE_MORE_OPTIONS_BUTTON);
 };
 
 const verifyMoreOptionsElements = () => {
@@ -294,7 +296,7 @@ const verifyAppShouldBeDleted = ()=> {
         element: applicationsPageElements.NO_MATCHE_FOUND_LABEL,
         elementText: "No match found",
     });
-}
+};
 
 const clickEditButton = () => {
     cy.clickElement(applicationsPageElements.APP_PAGE_EDIT_BUTTON);
@@ -325,7 +327,7 @@ const verifyEditPopupElements = () => {
     cy.verifyElement({
         element: applicationsPageElements.EDIT_POPUP_CLOSE_BUTTON,
     });
-}
+};
 
 const clickSaveChangesButton = () => {
     cy.clickElement(applicationsPageElements.EDIT_POPUP_SAVE_CHANGES_BUTTON);
@@ -333,7 +335,7 @@ const clickSaveChangesButton = () => {
 
 const uploadAppIcon = (filePath) => {
     cy.uploadFile(filePath);
-}
+};
 
 const verifyCahangesShouldBeMade = () => {
     cy.verifyElement({
@@ -350,10 +352,11 @@ const searchCountry = (country) => {
 const selectCountry = (country) => {
     cy.clickElement(applicationsPageElements.COUNTRY_DROPDOWN);
     searchCountry(country);
-    
+
     if (country === "Turkey") {
         cy.clickElement(applicationsPageElements.DROPDOWN_OPTION_TURKEY);
-    }else if (country === "United Kingdom") {
+    }
+    else if (country === "United Kingdom") {
         cy.clickElement(applicationsPageElements.DROPDOWN_OPTION_UNITED_KINGDOM);
     }
 };
