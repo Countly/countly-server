@@ -29,7 +29,7 @@ describe('Create apps with different types such as Desktop, Mobile, and Web. ', 
         });
 
         //add icon case
-        appHelper.uploadAppIcon(app.logoPath);ƒ
+        appHelper.uploadAppIcon(app.logoPath);
     })
 
     it('Create a desktop type app without icon and update the name and app type.', function () {
