@@ -1857,6 +1857,23 @@ var pluginManager = function pluginManager() {
         common.outDb = dbOut;
         require('../api/utils/countlyFs').setHandler(dbFs);
         common.drillDb = dbDrill;
+
+        // Connect to ClickHouse if drill_events_driver is set to clickhouse
+        if (apiCountlyConfig && apiCountlyConfig.drill_events_driver === 'clickhouse') {
+            try {
+                const ClickhouseClient = require('./drill/api/clickhouse/ClickhouseClient.js');
+                common.clickhouse = ClickhouseClient;
+                console.log("ClickHouse client connected successfully");
+            }
+            catch (error) {
+                console.error("Failed to connect to ClickHouse:", error);
+                common.clickhouse = null;
+            }
+        }
+        else {
+            common.clickhouse = null;
+        }
+
         var self = this;
         await new Promise(function(resolve) {
             self.loadConfigs(common.db, function() {
