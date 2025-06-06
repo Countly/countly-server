@@ -1,7 +1,7 @@
-
 ## Version 25.03.x
 Enterprise Features:
 - [journey_engine] Record Event block added
+- [llm interaction] Add LLM interaction event
 - [oidc] PKCE Flow support added
 
 Fixes:
