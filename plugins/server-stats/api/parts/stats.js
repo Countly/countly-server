@@ -15,6 +15,9 @@ const internalEventsEnum =
     "[CLY]_push_sent": "ps",
     "[CLY]_consent": "cs",
     "[CLY]_llm_interaction": "llm",
+    "[CLY]_llm_interaction_feedback": "llm",
+    "[CLY]_llm_tool_used": "llm",
+    "[CLY]_llm_tool_usage_parameter": "llm",
 };
 
 /**

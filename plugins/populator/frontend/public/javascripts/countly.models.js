@@ -874,8 +874,11 @@
                 event.segmentation.bounce = 1;
             }
             else if (id === "[CLY]_llm_interaction") {
+                var llm_events = [];
                 event.segmentation = {};
                 var api_host_type = ['openai_api', 'azure_openai', 'local_infra'];
+                event.segmentation.prompt_id = chance.guid(); // Unique identifier for the prompt
+                event.segmentation.thread_id = chance.guid(); // Unique identifier for the thread
                 event.segmentation.api_host_type = api_host_type[getRandomInt(0, api_host_type.length - 1)]; // Where the model is hosted (e.g., 'openai_api', 'azure_openai', 'local_infra')
                 var api_base_url = {
                     openai_api: "https://api.openai.com/v1",
@@ -901,11 +904,141 @@
                 event.segmentation.config_max_tokens = getRandomInt(1, 1024), // Optional maximum allowed response tokens
                 event.segmentation.config_stop = ["\n\n"]; // Optional stop sequences used to cut off response generation
                 event.segmentation.status = "success"; // Whether the call was successful (false if errored or timed out)
-                event.segmentation.error_code = null; // Optional error code or message if the request failed
+                event.segmentation.error = null; // Optional error code or message if the request failed
                 event.segmentation.text_input_preview = "..."; // First 200? characters of input
                 event.segmentation.text_reason_preview = "..."; // First 200? characters of reasoning
                 event.segmentation.text_output_preview = "..."; // First 200? characters of output
-                event.segmentation.tools_used = ["get_list_events", "funnel_filter_needed", "funnel_filter_needed"]; // List of tools used in the request, if any
+                event.segmentation.tools_used = ["get_list_events", "funnel_filter_needed", "fetch_funnel_steps"]; // List of tools used in the request, if any
+                llm_events.push(event);
+
+                var issue_categories = ["general", "technical", "halucination", "other"];
+                llm_events.push({
+                    key: "[CLY]_llm_interaction_feedback",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        rating: Math.random() > 0.5 ? "thumbs_up" : "thumbs_down", // Rating of the interaction, e.g., thumbs up/down, 1-5 stars
+                        comment: chance.sentence({words: 7}), // Optional feedback text on the interaction
+                        category: issue_categories[getRandomInt(0, issue_categories.length - 1)], // Category of the issue, if any (e.g., general, technical, halucination, other)
+                    }
+                });
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_used",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        status: "success", // Whether the tool call was successful (false if errored or timed out)
+                        error: null, // Optional error code or message if the request failed
+                        tool_name: "get_list_events", // Name of the tool used
+                        type: "function_cal", // Type of the tool used (e.g., function_call, tool_call, etc.)
+                    }
+                });
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_used",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        status: "success", // Whether the tool call was successful (false if errored or timed out)
+                        error: null, // Optional error code or message if the request failed
+                        tool_name: "funnel_filter_needed", // Name of the tool used
+                        type: "function_cal", // Type of the tool used (e.g., function_call, tool_call, etc.)
+                    }
+                });
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_used",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        status: "success", // Whether the tool call was successful (false if errored or timed out)
+                        error: null, // Optional error code or message if the request failed
+                        tool_name: "fetch_funnel_steps", // Name of the tool used
+                        type: "function_cal", // Type of the tool used (e.g., function_call, tool_call, etc.)
+                    }
+                });
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_usage_parameter",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        tool_name: event.segmentation.tools_used[getRandomInt(0, event.segmentation.tools_used.length - 1)],
+                        param_name: chance.word(),
+                        param_value: chance.word()
+                    }
+                });
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_usage_parameter",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        tool_name: event.segmentation.tools_used[getRandomInt(0, event.segmentation.tools_used.length - 1)],
+                        param_name: chance.word(),
+                        param_value: chance.word()
+                    }
+                });
+
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_usage_parameter",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        tool_name: event.segmentation.tools_used[getRandomInt(0, event.segmentation.tools_used.length - 1)],
+                        param_name: chance.word(),
+                        param_value: chance.word()
+                    }
+                });
+
+
+                llm_events.push({
+                    key: "[CLY]_llm_tool_usage_parameter",
+                    count: 1,
+                    timestamp: ts || this.ts,
+                    hour: new Date((ts || this.ts) * 1000).getHours(),
+                    dow: new Date((ts || this.ts) * 1000).getDay(),
+                    segmentation: {
+                        prompt_id: event.segmentation.prompt_id, // Unique identifier for the prompt
+                        thread_id: event.segmentation.thread_id, // Unique identifier for the thread
+                        tool_name: event.segmentation.tools_used[getRandomInt(0, event.segmentation.tools_used.length - 1)],
+                        param_name: chance.word(),
+                        param_value: chance.word()
+                    }
+                });
+
+
+                return llm_events;
             }
 
             return [event];
