@@ -2,6 +2,7 @@
 ## Version 25.03.x
 Enterprise Features:
 - [journey_engine] Record Event block added
+- [oidc] PKCE Flow support added
 
 Fixes:
 - [core] Unifying alphabetical order for dropdowns with dashboard apps
@@ -24,7 +25,7 @@ Dependencies:
 - Bump moment-timezone from 0.5.48 to 0.6.0
 - Bump mongodb from 6.16.0 to 6.17.0
 - Bump nodemailer from 6.10.1 to 7.0.3
-- Bump puppeteer from 24.8.0 to 24.9.0
+- Bump puppeteer from 24.8.0 to 24.10.0
 - Bump sass from 1.87.0 to 1.89.0
 - Bump semver from 7.7.1 to 7.7.2
 - Bump sharp from 0.33.5 to 0.34.2
