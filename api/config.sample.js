@@ -5,6 +5,15 @@
 
 /** @lends module:api/config */
 var countlyConfig = {
+
+    /**
+     * Drill events database driver configuration
+     * @type {string}
+     * @property {string} [drill_events_driver=mongodb] - database driver to use for drill events storage
+     * Possible values are: "mongodb", "clickhouse"
+     */
+    drill_events_driver: "clickhouse",
+
     /**
     * MongoDB connection definition and options
     * @type {object} 
@@ -51,9 +60,51 @@ var countlyConfig = {
     },
     */
     /*  or define as a url
-	//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-	mongodb: "mongodb://localhost:27017/countly",
+ //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
+ mongodb: "mongodb://localhost:27017/countly",
     */
+    /**
+    * ClickHouse connection definition and options
+    * @type {object|string}
+    * @property {string} [url=http://localhost:8123] - ClickHouse server URL
+    * @property {string} [username=default] - username for authenticating user
+    * @property {string} [password=] - password for authenticating user
+    * @property {string} [database=countly_drill] - ClickHouse database name
+    * @property {object} [compression] - compression settings
+    * @property {string} [application] - application name for connection
+    * @property {number} [request_timeout=1200000] - request timeout in milliseconds
+    * @property {object} [keep_alive] - keep alive settings
+    * @property {number} [max_open_connections=10] - maximum number of open connections
+    * @property {object} [clickhouse_settings] - ClickHouse specific settings
+    */
+    clickhouse: {
+        url: "http://localhost:8123",
+        username: "default",
+        password: "",
+        database: "countly_drill",
+        compression: {
+            request: false,
+            response: false,
+        },
+        application: "countly_drill",
+        request_timeout: 1200_000,
+        keep_alive: {
+            enabled: true,
+            idle_socket_ttl: 10000,
+        },
+        max_open_connections: 10,
+        clickhouse_settings: {
+            idle_connection_timeout: 11000 + '',
+            async_insert: 1,
+            wait_for_async_insert: 1,
+            wait_end_of_query: 1,
+            optimize_on_insert: 1,
+            allow_suspicious_types_in_group_by: 1,
+            allow_suspicious_types_in_order_by: 1,
+            optimize_move_to_prewhere: 1,
+            query_plan_optimize_lazy_materialization: 1
+        }
+    },
     /**
     * Default API configuration
     * @type {object} 
