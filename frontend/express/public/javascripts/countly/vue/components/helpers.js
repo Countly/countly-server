@@ -1462,7 +1462,7 @@
                             <el-button @click='stopAutoRefresh()'><i class='bu-ml-2 fa fa-stop-circle' :data-test-id='testId + \"-auto-refresh-toggle-button\"'></i> {{i18n('auto-refresh.stop')}}\
                             </el-button>\
                         </div>\
-                        <div v-else-if='!autoRefresh' class='bu-level-item'>\
+                        <div class='bu-level-item' :class=\"{ 'bu-is-hidden': autoRefresh }\">\
                             <el-switch v-model='autoRefresh' :test-id='testId + \"-auto-refresh-toggle\"'>\
                             </el-switch>\
                             <span class='cly-vue-auto-refresh-toggle__refresh--disabled' :data-test-id='testId + \"-auto-refresh-toggle-disabled-label\"'>{{i18n('auto-refresh.enable')}}</span>\
