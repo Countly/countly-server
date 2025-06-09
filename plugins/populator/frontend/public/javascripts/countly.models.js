@@ -1178,7 +1178,7 @@
         this.reportConversion = function(uid, campaingId, deviceId) {
             $.ajax({
                 type: "GET",
-                url: countlyCommon.INGESTOR_URL + "/i",
+                url: (countlyCommon.INGESTOR_URL || countlyCommon.API_URL) + "/i",
                 data: {
                     campaign_id: uid,
                     campaign_user: campaingId,
