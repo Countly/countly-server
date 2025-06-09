@@ -471,11 +471,11 @@
             var days = parseInt(countlyCommon.periodObj.numberOfDays, 10),
                 ticks = [],
                 tickTexts = [],
+                tickKeys = [],
                 skipReduction = false,
                 limitAdjustment = 0;
-
+            var thisDay;
             if (overrideBucket) {
-                var thisDay;
                 if (countlyCommon.periodObj.activePeriod) {
                     thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
                 }
@@ -484,12 +484,21 @@
                 }
                 ticks.push([0, countlyCommon.formatDate(thisDay, "D MMM")]);
                 tickTexts[0] = countlyCommon.formatDate(thisDay, "D MMM, dddd");
+                tickKeys[0] = countlyCommon.formatDate(thisDay, "YYYY:M:D");
             }
             else if ((days === 1 && _period !== "month" && _period !== "day") || (days === 1 && bucket === "hourly")) {
-                //When period is an array or string like Xdays, Xweeks
+                //Single day
+                if (countlyCommon.periodObj.activePeriod) {
+                    thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
+                }
+                else {
+                    thisDay = moment(countlyCommon.periodObj.currentPeriodArr[0], "YYYY.M.D");
+                }
+                var dayValue = countlyCommon.formatDate(thisDay, "YYYY:M:D");
                 for (var z = 0; z < 24; z++) {
                     ticks.push([z, (z + ":00")]);
                     tickTexts.push((z + ":00"));
+                    tickKeys.push(dayValue + ":" + z);
                 }
                 skipReduction = true;
             }
@@ -501,6 +510,7 @@
                 var i = 0;
                 if (bucket === "monthly") {
                     var allMonths = [];
+                    var allKeys = [];
 
                     //so we would not start from previous year
                     start.add(1, 'day');
@@ -509,14 +519,17 @@
 
                     for (i = 0; i < monthCount; i++) {
                         allMonths.push(start.format(countlyCommon.getDateFormat("MMM YYYY")));
+                        allKeys.push(start.format("YYYY:M"));
                         start.add(1, 'months');
                     }
 
                     allMonths = _.uniq(allMonths);
+                    allKeys = _.uniq(allKeys);
 
                     for (i = 0; i < allMonths.length; i++) {
                         ticks.push([i, allMonths[i]]);
                         tickTexts[i] = allMonths[i];
+                        tickKeys[i] = allKeys[i];
                     }
                 }
                 else if (bucket === "weekly") {
@@ -550,7 +563,7 @@
                             //if (j === 0) {
                             ticks.push([((24 * i) + j), countlyCommon.formatDate(start, "D MMM") + " 0:00"]);
                             //}
-
+                            tickKeys.push(countlyCommon.formatDate(start, "YYYY:M:D") + j);
                             tickTexts.push(countlyCommon.formatDate(start, "D MMM, ") + j + ":00");
                         }
                     }
@@ -564,6 +577,7 @@
                         for (i = 0; i < currentMonthCount; i++) {
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            tickKeys.push(countlyCommon.formatDate(start, "YYYY:M:D"));
                             start.add(1, 'days');
                         }
                     }
@@ -575,6 +589,7 @@
                         for (i = 0; i < prevMonthCount; i++) {
                             ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                             tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                            tickKeys.push(countlyCommon.formatDate(start, "YYYY:M:D"));
                             start.add(1, 'days');
                         }
                     }
@@ -591,6 +606,7 @@
                                 ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
                                 tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
                             }
+                            tickKeys.push(countlyCommon.formatDate(start, "YYYY:M:D"));
                         }
                     }
                 }
@@ -646,7 +662,8 @@
                 max: (limitAdjustment) ? tickTexts.length - 3 + limitAdjustment : tickTexts.length - 1,
                 tickTexts: tickTexts,
                 ticks: _.compact(ticks),
-                labelCn: labelCn
+                labelCn: labelCn,
+                tickKeys: tickKeys
             };
         };
 
