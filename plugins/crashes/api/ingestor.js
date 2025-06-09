@@ -164,12 +164,14 @@ plugins.internalDrillEvents.push("[CLY]_crash");
                         }
                         var hash = common.crypto.createHash('sha1').update(seed).digest('hex');
                         report.group = hash;
+                        report.session = params.app_user.sc;
                         if (!report.name) {
                             report.name = (report.error.split('\n')[0] + "").trim();
                         }
                         params.qstring.events.push({
                             key: "[CLY]_crash",
                             count: 1,
+                            name: report.group,
                             segmentation: report
                         });
                     }
