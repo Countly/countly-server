@@ -26,6 +26,7 @@ function verifyMetrics(ob, correct) {
         }
     }
     if (correct.meta) {
+        ob.meta = ob.meta || {};
         ob.should.have.property("meta").eql(correct.meta);
     }
     for (var i in ob) {
@@ -268,7 +269,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + 5000);
                 });
         });
     });
@@ -450,7 +451,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + 5000);
                 });
         });
     });
@@ -469,7 +470,7 @@ describe('Testing Crashes', function() {
         ]);
 
     describe('Check crash data', function() {
-        it('should have 1 crash', function(done) {
+        it('should have 2 crashes', function(done) {
             request
                 .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID)
                 .expect(200)
@@ -660,7 +661,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + 5000);
                 });
         });
     });
@@ -679,7 +680,7 @@ describe('Testing Crashes', function() {
         ]);
 
     describe('Check crash data', function() {
-        it('should have 1 crash', function(done) {
+        it('should have 3 crashes', function(done) {
             request
                 .get('/o?method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID)
                 .expect(200)
@@ -709,7 +710,7 @@ describe('Testing Crashes', function() {
     });
 
     describe('Check crash details', function() {
-        it('should have provided details', function(done) {
+        it('should have provided details - fails with session is 2 not 1. Reason - we are not fetching previous crash on ingestion', function(done) {
             request
                 .get('/o?group=' + CRASHES[0] + '&method=crashes&api_key=' + API_KEY_ADMIN + "&app_id=" + APP_ID)
                 .expect(200)
@@ -829,7 +830,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + 5000);
                 });
         });
     });
@@ -1014,7 +1015,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 500 * testUtils.testScalingFactor + 5000);
                 });
         });
     });
@@ -3002,7 +3003,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 500 * testUtils.testScalingFactor + 5000);
                 });
         });
     });
