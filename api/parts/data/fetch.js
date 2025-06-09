@@ -1764,7 +1764,8 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     }
 
     if (!params || !params.app_id || !params.qstring) {
-        return callback({});
+        callback({});
+        return;
     }
     if (params.qstring.fetchFromGranural) {
         fetchFromGranural(collection, params, options, callback);
