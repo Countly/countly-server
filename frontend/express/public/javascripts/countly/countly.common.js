@@ -474,9 +474,8 @@
                 tickKeys = [],
                 skipReduction = false,
                 limitAdjustment = 0;
-
+            var thisDay;
             if (overrideBucket) {
-                var thisDay;
                 if (countlyCommon.periodObj.activePeriod) {
                     thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
                 }
@@ -489,7 +488,6 @@
             }
             else if ((days === 1 && _period !== "month" && _period !== "day") || (days === 1 && bucket === "hourly")) {
                 //Single day
-                var thisDay;
                 if (countlyCommon.periodObj.activePeriod) {
                     thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
                 }
@@ -500,7 +498,7 @@
                 for (var z = 0; z < 24; z++) {
                     ticks.push([z, (z + ":00")]);
                     tickTexts.push((z + ":00"));
-                    tickKeys.push(dayValue+":"+z);
+                    tickKeys.push(dayValue + ":" + z);
                 }
                 skipReduction = true;
             }
@@ -565,7 +563,7 @@
                             //if (j === 0) {
                             ticks.push([((24 * i) + j), countlyCommon.formatDate(start, "D MMM") + " 0:00"]);
                             //}
-                            tickKeys.push(countlyCommon.formatDate(start, "YYYY:M:D") + j );
+                            tickKeys.push(countlyCommon.formatDate(start, "YYYY:M:D") + j);
                             tickTexts.push(countlyCommon.formatDate(start, "D MMM, ") + j + ":00");
                         }
                     }
@@ -665,7 +663,7 @@
                 tickTexts: tickTexts,
                 ticks: _.compact(ticks),
                 labelCn: labelCn,
-                tickKeys:tickKeys
+                tickKeys: tickKeys
             };
         };
 
