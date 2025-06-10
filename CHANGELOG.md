@@ -6,11 +6,12 @@ Enterprise Features:
 - [oidc] PKCE Flow support added
 
 Fixes:
-- [core] Unifying alphabetical order for dropdowns with dashboard apps
-- [hooks] Added null check for incoming data
 - [core] Fix auto refresh frontend component
-- [times-of-day] Fix chart component
+- [core] Unifying alphabetical order for dropdowns with dashboard apps
+- [formulas] Fix loading state when selecting event count
+- [hooks] Added null check for incoming data
 - [push] Fix external drawer initialization
+- [times-of-day] Fix chart component
 
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
