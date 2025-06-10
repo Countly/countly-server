@@ -3,13 +3,14 @@
  *  configure - processAllFields function to add or remove fields for merging.
  *  Server: countly
  *  Path: $(countly dir)/bin/scripts/fix-data
- *  Command: node user-merge.js --no-dry-run
+ *  Command: node user-merge.js --no-dry-run [--record-overload-sleep 1000]
+ *  --record-overload-sleep: Cooldown period when record count exceeds RECORD_COUNT_LIMIT
  */
 var pluginManager = require("../../../plugins/pluginManager.js");
 var appUsers = require("../../../api/parts/mgmt/app_users.js");
 var common = require("../../../api/utils/common.js");
 
-var APP_ID = "";
+var APP_ID = "6837fcf8def439eea13e0ca9";
 var COLLECTION_NAME = "app_users" + APP_ID;
 
 if (!APP_ID) {
@@ -25,6 +26,12 @@ var UPDATE_LIMIT = 100;
 var RECORD_COUNT_LIMIT = 10;
 //Cooldown period if record count exceeds limit
 var RECORD_OVERLOAD_SLEEP = 2000;
+for (let i = 2; i < process.argv.length; i++) {
+    if (process.argv[i] === '--record-overload-sleep' && process.argv[i + 1]) {
+        RECORD_OVERLOAD_SLEEP = parseInt(process.argv[i + 1]);
+        break;
+    }
+}
 //Cooldown period between requests
 var COOLDOWN_PERIOD = 1000;
 
@@ -95,8 +102,7 @@ pluginManager.dbConnection("countly").then(async(countlyDb) => {
 
             const cursor = common.db.collection(COLLECTION_NAME)
                 .find(query)
-                .sort({ lac: -1 })
-                .cursor();
+                .sort({ lac: -1 });
 
             let mainUser = null;
             let mergedUIDs = 0;
