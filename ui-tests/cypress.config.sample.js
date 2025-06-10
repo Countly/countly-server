@@ -12,6 +12,9 @@ module.exports = defineConfig({
         projectId: "000000",
         chromeWebSecurity: false,
         watchForFileChanges: true,
+        testReplay: {
+            enabled: false,
+        },
         video: true,
         setupNodeEvents(on, config) {
             on('after:spec', (spec, results) => {
