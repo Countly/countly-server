@@ -12,7 +12,7 @@ var countlyConfig = {
      * @property {string} [drill_events_driver=mongodb] - database driver to use for drill events storage
      * Possible values are: "mongodb", "clickhouse"
      */
-    drill_events_driver: "clickhouse",
+    drill_events_driver: "mongodb",
 
     /**
     * MongoDB connection definition and options
