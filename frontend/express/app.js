@@ -928,6 +928,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             licenseNotification, licenseError;
         var isLocked = false;
         configs.export_limit = plugins.getConfig("api").export_limit;
+        configs.drill_clickhouse_debug = countlyConfig.drill_clickhouse_debug || false;
         app.loadThemeFiles(configs.theme, async function(theme) {
             if (configs._user.theme) {
                 res.cookie("theme", configs.theme);
