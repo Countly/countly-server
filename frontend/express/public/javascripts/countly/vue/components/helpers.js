@@ -741,6 +741,37 @@
                     });
                 }
 
+                var llmEvents = [];
+                llmEvents.push(
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_interaction'),
+                        "name": "[CLY]_llm_interaction",
+                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_interaction'), value: '[CLY]_llm_interaction' } ]
+                    },
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_interaction_feedback'),
+                        "name": "[CLY]_llm_interaction_feedback",
+                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_interaction_feedback'), value: '[CLY]_llm_interaction_feedback' } ]
+                    },
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_tool_used'),
+                        "name": "[CLY]_llm_tool_used",
+                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_tool_used'), value: '[CLY]_llm_tool_used' } ]
+                    },
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_tool_usage_parameter'),
+                        "name": "[CLY]_llm_tool_usage_parameter",
+                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_tool_usage_parameter'), value: '[CLY]_llm_tool_usage_parameter' } ]
+                    }
+                );
+                if (llmEvents.length > 0) {
+                    preparedEventList.push({
+                        "label": this.i18n("llm.events"),
+                        "name": "llm",
+                        "options": llmEvents
+                    });
+                }
+
 
                 if (countlyGlobal.plugins.indexOf('compliance-hub') !== -1) {
                     preparedEventList.push({
@@ -1455,7 +1486,7 @@
                             <el-button @click='stopAutoRefresh()'><i class='bu-ml-2 fa fa-stop-circle' :data-test-id='testId + \"-auto-refresh-toggle-button\"'></i> {{i18n('auto-refresh.stop')}}\
                             </el-button>\
                         </div>\
-                        <div v-else-if='!autoRefresh' class='bu-level-item'>\
+                        <div class='bu-level-item' :class=\"{ 'bu-is-hidden': autoRefresh }\">\
                             <el-switch v-model='autoRefresh' :test-id='testId + \"-auto-refresh-toggle\"'>\
                             </el-switch>\
                             <span class='cly-vue-auto-refresh-toggle__refresh--disabled' :data-test-id='testId + \"-auto-refresh-toggle-disabled-label\"'>{{i18n('auto-refresh.enable')}}</span>\

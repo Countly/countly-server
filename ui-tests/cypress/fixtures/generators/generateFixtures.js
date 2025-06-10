@@ -5,6 +5,8 @@ const { generateWidgetFixture } = require('./widgets');
 const { generateWidgetsRatesFixture } = require('./widgetsRates');
 const { generateAlertFixture } = require('./alerts');
 const { generateUsersFixture } = require('./users');
+const { generateAppsFixture } = require('./apps');
+
 
 const BASE_DIR = path.join(__dirname, '../generated');
 
@@ -16,6 +18,7 @@ const setupFolders = () => {
     fs.mkdirSync(path.join(BASE_DIR, 'widgetsRates'), { recursive: true });
     fs.mkdirSync(path.join(BASE_DIR, 'alerts'), { recursive: true });
     fs.mkdirSync(path.join(BASE_DIR, 'users'), { recursive: true });
+    fs.mkdirSync(path.join(BASE_DIR, 'apps'), { recursive: true });
 };
 
 const writeJson = (filePath, data) => {
@@ -31,6 +34,7 @@ const writeJson = (filePath, data) => {
     writeJson('/widgetsRates/widgetsRate.json', generateWidgetsRatesFixture());
     writeJson('/alerts/alert.json', generateAlertFixture());
     writeJson('/users/user.json', generateUsersFixture());
+    writeJson('/apps/app.json', generateAppsFixture());
 })();
 
 // node ./cypress/fixtures/generators/generateFixtures.js
