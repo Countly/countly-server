@@ -46,3 +46,6 @@ plugins/plugins.json.*
 .sdk
 dump
 dist/
+.claude
+CLAUDE.md
+CLAUDE.*.md
