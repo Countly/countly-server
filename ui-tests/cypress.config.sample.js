@@ -39,7 +39,8 @@ module.exports = defineConfig({
                         launchOptions.args.push("--disable-gpu");
                         launchOptions.args.push("--disable-dev-shm-usage");
                     }
-                    launchOptions.args.push('--js-flags="--max_old_space_size=3500 --max_semi_space_size=1024"');
+                    launchOptions.args.push('--js-flags="--max_old_space_size=4096 --max_semi_space_size=1024"');
+                    launchOptions.args.push("--disable-software-rasterizer");
                 }
                 return launchOptions;
             });
