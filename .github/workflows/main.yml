@@ -243,7 +243,8 @@ jobs:
           node bin/scripts/test.connection.js
           npx grunt mochaTest       
   ui-test-dashboard:
-    runs-on: ubuntu-latest
+    runs-on:
+      labels: ubuntu-latest-16core
 
     services:
       mongodb:
@@ -326,7 +327,8 @@ jobs:
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
 
   ui-test-onboarding:
-    runs-on: ubuntu-latest
+    runs-on:
+      labels: ubuntu-latest-16core
 
     services:
       mongodb:
