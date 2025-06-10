@@ -46,6 +46,10 @@ Dependencies:
 - Bump sass from 1.81.0 to 1.83.3
 - Bump tslib from 2.7.0 to 2.8.1
 
+## Version 24.12.1
+Enterprise Fixes:
+- [drill] Fix query for users in drill that leads to severe server slowdown
+
 ## Version 24.10.8
 Fixes:
 - [app-management] Unescaping HTML for created/updated application names
