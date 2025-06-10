@@ -1,5 +1,8 @@
 
-## Version 24.10.x
+## Version 24.10.11
+Enterprise Fixes:
+- [drill] Fix query for users in drill that leads to severe server slowdown
+
 ## Version 24.10.10
 Fixes:
 - [core] Changes for event omit script to validate data in new model and use countly-request.
