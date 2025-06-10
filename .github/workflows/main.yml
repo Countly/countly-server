@@ -244,7 +244,7 @@ jobs:
           npx grunt mochaTest       
   ui-test-dashboard:
     runs-on:
-      labels: ubuntu-latest-16core
+      labels: ubuntu-22.04-16core
 
     services:
       mongodb:
@@ -328,7 +328,7 @@ jobs:
 
   ui-test-onboarding:
     runs-on:
-      labels: ubuntu-latest-16core
+      labels: ubuntu-22.04-16core
 
     services:
       mongodb:
