@@ -10,7 +10,7 @@ var pluginManager = require("../../../plugins/pluginManager.js");
 var appUsers = require("../../../api/parts/mgmt/app_users.js");
 var common = require("../../../api/utils/common.js");
 
-var APP_ID = "6837fcf8def439eea13e0ca9";
+var APP_ID = "";
 var COLLECTION_NAME = "app_users" + APP_ID;
 
 if (!APP_ID) {
