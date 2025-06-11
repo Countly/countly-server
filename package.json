@@ -89,6 +89,7 @@
     "nginx-conf": "2.1.0",
     "nodemailer": "7.0.3",
     "object-hash": "3.0.0",
+    "offline-geocoder": "file:bin/scripts/offline-geocoder",
     "properties-parser": "0.6.0",
     "puppeteer": "^24.6.1",
     "sass": "1.88.0",
