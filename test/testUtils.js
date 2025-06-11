@@ -182,7 +182,7 @@ var testUtils = function testUtils() {
                 ob.should.have.property(i).and.not.eql({});
                 if (RE.test(i)) {
                     for (var c in correct) {
-                        if (c == "Unknown") {
+                        if (c == "Unknown" || c == "IT") {
                             ob[i].should.have.property(c, {"u": correct.u, "t": correct.t, "n": correct.n});
                         }
                         else if (c != "meta") {
@@ -192,7 +192,7 @@ var testUtils = function testUtils() {
                     for (var j in ob[i]) {
                         if (RE.test(j)) {
                             for (var c in correct) {
-                                if (c == "Unknown") {
+                                if (c == "Unknown" || c == "IT") {
                                     ob[i][j].should.have.property(c, {"u": correct.u, "t": correct.t, "n": correct.n});
                                 }
                                 else if (c != "meta") {
@@ -202,7 +202,7 @@ var testUtils = function testUtils() {
                             for (var k in ob[i][j]) {
                                 if (RE.test(k)) {
                                     for (var c in correct) {
-                                        if (c == "Unknown") {
+                                        if (c == "Unknown" || c == "IT") {
                                             ob[i][j][k].should.have.property(c, {"u": correct.u, "t": correct.t, "n": correct.n});
                                         }
                                         else if (c != "meta") {
