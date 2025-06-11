@@ -480,7 +480,7 @@ describe('Writing app metrics', function() {
                     });
             });
         });
-        //{"2014":{"9":{"17":{"Italy":{"n":1,"t":1,"u":1}},"Italy":{"n":1,"t":1,"u":1}},"Italy":{"n":1,"t":1,"u":1},"w38":{"Italy":{"u":1}}},"_id":"5419935501f67bb24000008b","meta":{"countries":["Italy"]}}
+        //{"2014":{"9":{"17":{"IT":{"n":1,"t":1,"u":1}},"IT":{"n":1,"t":1,"u":1}},"IT":{"n":1,"t":1,"u":1},"w38":{"IT":{"u":1}}},"_id":"5419935501f67bb24000008b","meta":{"countries":["Italy"]}}
         describe('Verify countries', function() {
             it('should have Italy', function(done) {
                 request
@@ -488,7 +488,7 @@ describe('Writing app metrics', function() {
                     .expect(200)
                     .end(function(err, res) {
                         console.log(res.text);
-                        testUtils.validateMetrics(err, res, done, {meta: {"countries": ["Italy"]}, "Italy": {"n": 1, "t": 1, "u": 1}});
+                        testUtils.validateMetrics(err, res, done, {meta: {"countries": ["IT"]}, "IT": {"n": 1, "t": 1, "u": 1}});
                     });
             });
         });

@@ -25,15 +25,13 @@ async function findFeature(geocoder, latitude, longitude, callback) {
         latitude: { $gte: latitude - 1.5, $lte: latitude + 1.5 },
         longitude: { $gte: longitude - 1.5, $lte: longitude + 1.5 }
     }).toArray();
-
     if (!nearestCoords || nearestCoords.length === 0) {
         if (typeof (callback) === 'function') {
             callback(undefined, {});
         }
-        else if (typeof (resolve) === 'function') {
+        else {
             return {};
         }
-        return;
     }
 
     // Calculate distances and find the closest one
@@ -47,15 +45,13 @@ async function findFeature(geocoder, latitude, longitude, callback) {
 
     // Get the feature
     const feature = await featuresCollection.findOne({ id: closest.feature_id });
-
     if (!feature) {
         if (typeof (callback) === 'function') {
             callback(undefined, {});
         }
-        else if (typeof (resolve) === 'function') {
+        else {
             return {};
         }
-        return;
     }
 
     // Get related data
@@ -79,11 +75,10 @@ async function findFeature(geocoder, latitude, longitude, callback) {
     };
 
     const formattedResult = formatResult([result]);
-
     if (typeof (callback) === 'function') {
         callback(undefined, formattedResult);
     }
-    else if (typeof (resolve) === 'function') {
+    else {
         return formattedResult;
     }
 }
