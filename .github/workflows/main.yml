@@ -244,6 +244,10 @@ jobs:
           npx grunt mochaTest       
   ui-test-dashboard:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        node: [14, 16]
 
     services:
       mongodb:
@@ -327,7 +331,11 @@ jobs:
 
   ui-test-onboarding:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        node: [14, 16]
+        
     services:
       mongodb:
         image: mongo:8.0
