@@ -7,7 +7,7 @@
 var usage = {},
     common = require('./../../utils/common.js'),
     geoip = require('geoip-lite'),
-    geocoder = require('offline-geocoder')(),
+    geocoder = require('./../../bin/scripts/offline-geocoder')(),
     log = require('../../utils/log.js')('api:usage'),
     async = require('async'),
     plugins = require('../../../plugins/pluginManager.js'),
