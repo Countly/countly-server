@@ -19,7 +19,7 @@ function downloadFile(url, destination) {
 
         https.get(url, response => {
             if (response.statusCode !== 200) {
-                console.error(`Failed to download ${url}: ${response.statusCode}`);
+                console.log(`Failed to download ${url}: ${response.statusCode}`);
                 reject(new Error(`Failed to download ${url}: ${response.statusCode}`));
                 return;
             }
@@ -31,13 +31,13 @@ function downloadFile(url, destination) {
                 resolve();
             });
         }).on('error', err => {
-            console.error(`Error downloading ${url}:`, err);
+            console.log(`Error downloading ${url}:`, err);
             fs.unlink(destination, () => {});
             reject(err);
         });
 
         file.on('error', err => {
-            console.error(`Error writing to file ${destination}:`, err);
+            console.log(`Error writing to file ${destination}:`, err);
             fs.unlink(destination, () => {});
             reject(err);
         });
@@ -102,7 +102,7 @@ async function unzipFile(zipFile, destination) {
             });
 
             zipfile.on('error', (err) => {
-                console.error(`Error reading zip file ${zipFile}:`, err);
+                console.log(`Error reading zip file ${zipFile}:`, err);
                 reject(err);
             });
 
@@ -116,7 +116,7 @@ async function unzipFile(zipFile, destination) {
         });
     }
     catch (err) {
-        console.error(`Error unzipping file ${zipFile}:`, err);
+        console.log(`Error unzipping file ${zipFile}:`, err);
         return Promise.reject(err);
     }
 }
@@ -135,7 +135,7 @@ async function downloadFiles() {
             await fsPromises.unlink(zipFile);
         }
         catch (error) {
-            console.error("Error extracting zip file:", error);
+            console.log("Error extracting zip file:", error);
             throw error;
         }
     }
@@ -312,7 +312,7 @@ async function main() {
         console.log("Done!");
     }
     catch (err) {
-        console.error("Error:", err);
+        console.log("Error:", err);
         process.exit(1);
     }
 }
