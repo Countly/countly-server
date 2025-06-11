@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { MongoClient } = require('mongodb');
+const pluginManager = require("../../../plugins/pluginManager.js");
 
 // Get the project root directory (directory of the script)
 const PROJECT_ROOT = path.resolve(__dirname, '..');
@@ -10,11 +10,7 @@ const DATA_DIR = path.join(PROJECT_ROOT, "data");
 const DATA = path.join(DATA_DIR, "cities1000.txt");
 const ADMIN1 = path.join(DATA_DIR, "admin1CodesASCII.txt");
 const COUNTRIES = path.join(DATA_DIR, "countryInfo.txt");
-const DATABASE_NAME = "countly";
 const COLLECTION_PREFIX = "geocoder_";
-
-// MongoDB connection URL
-const url = 'mongodb://localhost:27017';
 
 // Parse TSV files and insert into MongoDB
 async function processTsvFiles() {
@@ -31,11 +27,7 @@ async function processTsvFiles() {
         throw new Error(`Data file ${COUNTRIES} does not exist. Please run download_geonames_data.js first.`);
     }
 
-    // Connect to MongoDB
-    const client = new MongoClient(url);
-    await client.connect();
-
-    const db = client.db(DATABASE_NAME);
+    const db = await pluginManager.dbConnection();
 
     // Create collections if they don't exist
     const features = db.collection(COLLECTION_PREFIX + 'features');
@@ -170,7 +162,7 @@ async function processTsvFiles() {
     console.log(`Created MongoDB collections with ${featuresArray.length} features.`);
 
     // Clean up
-    await client.close();
+    db.close();
 }
 
 // Main execution
