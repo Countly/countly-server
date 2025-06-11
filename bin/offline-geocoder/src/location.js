@@ -1,53 +1,48 @@
 "use strict";
 
 async function find(geocoder, locationId, locationCountryId) {
-    try {
-        const featuresCollection = geocoder.db.collection(geocoder.options.collectionPrefix + 'features');
-        const coordinatesCollection = geocoder.db.collection(geocoder.options.collectionPrefix + 'coordinates');
-        const admin1Collection = geocoder.db.collection(geocoder.options.collectionPrefix + 'admin1');
-        const countriesCollection = geocoder.db.collection(geocoder.options.collectionPrefix + 'countries');
+    const featuresCollection = geocoder.db.collection(geocoder.options.collectionPrefix + 'features');
+    const coordinatesCollection = geocoder.db.collection(geocoder.options.collectionPrefix + 'coordinates');
+    const admin1Collection = geocoder.db.collection(geocoder.options.collectionPrefix + 'admin1');
+    const countriesCollection = geocoder.db.collection(geocoder.options.collectionPrefix + 'countries');
 
-        let query;
-        if (typeof locationCountryId === 'string') {
-            query = { name: locationId, country_id: locationCountryId };
-        }
-        else {
-            query = { id: locationId };
-        }
-
-        // Get the feature
-        const feature = await featuresCollection.findOne(query);
-
-        if (!feature) {
-            return;
-        }
-
-        // Get related data
-        const coordinates = await coordinatesCollection.findOne({ feature_id: feature.id });
-        const country = await countriesCollection.findOne({ id: feature.country_id });
-        const admin1 = await admin1Collection.findOne({
-            country_id: feature.country_id,
-            id: feature.admin1_id
-        });
-
-        // Combine the results to match the expected schema
-        const result = {
-            id: feature.id,
-            name: feature.name,
-            tz: feature.tz,
-            admin1_id: admin1 ? admin1.id : null,
-            admin1_name: admin1 ? admin1.name : null,
-            country_id: country ? country.id : null,
-            country_name: country ? country.name : null,
-            latitude: coordinates ? coordinates.latitude : null,
-            longitude: coordinates ? coordinates.longitude : null
-        };
-
-        return formatResult([result]);
+    let query;
+    if (typeof locationCountryId === 'string') {
+        query = { name: locationId, country_id: locationCountryId };
     }
-    catch (err) {
-        console.log("Error in offline geocoder", err);
+    else {
+        query = { id: locationId };
     }
+
+    // Get the feature
+    const feature = await featuresCollection.findOne(query);
+
+    if (!feature) {
+        return;
+    }
+
+    // Get related data
+    const coordinates = await coordinatesCollection.findOne({ feature_id: feature.id });
+    const country = await countriesCollection.findOne({ id: feature.country_id });
+    const admin1 = await admin1Collection.findOne({
+        country_id: feature.country_id,
+        id: feature.admin1_id
+    });
+
+    // Combine the results to match the expected schema
+    const result = {
+        id: feature.id,
+        name: feature.name,
+        tz: feature.tz,
+        admin1_id: admin1 ? admin1.id : null,
+        admin1_name: admin1 ? admin1.name : null,
+        country_id: country ? country.id : null,
+        country_name: country ? country.name : null,
+        latitude: coordinates ? coordinates.latitude : null,
+        longitude: coordinates ? coordinates.longitude : null
+    };
+
+    return formatResult([result]);
 }
 
 function formatResult(rows) {

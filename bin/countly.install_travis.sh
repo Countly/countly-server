@@ -116,6 +116,7 @@ bash "$DIR/scripts/countly.install.plugins.sh"
 
 #load city data into database
 nodejs "$DIR/scripts/loadCitiesInDb.js"
+nodejs "$DIR/offline-geocoder/scripts/generate_geonames_mongodb.js"
 
 #compile scripts for production
 countly task dist-all

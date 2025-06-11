@@ -1,8 +1,8 @@
 "use strict";
 
-const { MongoClient } = require('mongodb');
 const reverse = require('./reverse');
 const findLocation = require('./location').find;
+const pluginManager = require("../../../plugins/pluginManager.js");
 
 const NO_DB = 'Database connection failed';
 
@@ -30,16 +30,8 @@ function Geocoder(options) {
     };
 
     geocoder.prototype.connect = async function() {
-        try {
-            this.dbClient = new MongoClient(this.options.dbUrl);
-            await this.dbClient.connect();
-            this.db = this.dbClient.db(this.options.dbName);
-            this.dbConnected = true;
-        }
-        catch (err) {
-            console.error('Failed to connect to MongoDB:', err);
-            this.dbConnected = false;
-        }
+        this.db = await pluginManager.dbConnection();
+        this.dbConnected = true;
     };
 
     geocoder.prototype.reverse = async function(latitude, longitude, callback) {
@@ -58,13 +50,6 @@ function Geocoder(options) {
         }
 
         return findLocation(this, locationId, locationCountryId);
-    };
-
-    geocoder.prototype.close = async function() {
-        if (this.dbClient) {
-            await this.dbClient.close();
-            this.dbConnected = false;
-        }
     };
 
     return new geocoder(options);

@@ -158,6 +158,7 @@ bash "$DIR/scripts/countly.install.plugins.sh"
 
 #load city data into database
 nodejs "$DIR/scripts/loadCitiesInDb.js"
+nodejs "$DIR/offline-geocoder/scripts/generate_geonames_mongodb.js"
 
 #get web sdk
 sudo countly update sdk-web
