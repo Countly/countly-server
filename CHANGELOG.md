@@ -1,15 +1,17 @@
-## Version 25.03.x
+## Version 25.03.6
 Enterprise Features:
+- [journey_engine] Publish toggle is converted into button and rearranged
 - [journey_engine] Record Event block added
 - [llm interaction] Add LLM interaction event
 - [oidc] PKCE Flow support added
 
 Fixes:
-- [core] Unifying alphabetical order for dropdowns with dashboard apps
-- [hooks] Added null check for incoming data
 - [core] Fix auto refresh frontend component
-- [times-of-day] Fix chart component
+- [core] Unifying alphabetical order for dropdowns with dashboard apps
+- [formulas] Fix loading state when selecting event count
+- [hooks] Added null check for incoming data
 - [push] Fix external drawer initialization
+- [times-of-day] Fix chart component
 
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
@@ -17,6 +19,7 @@ Enterprise Fixes:
     - Do not wait for result calculation when requesting experiments
     - Do not calculate result for completed experiments
 - [drill] [license] Shorten warning period from 14 days to 3 days
+- [drill] Fix query for users in drill that leads to severe server slowdown
 - [license] Fix chart legend
 
 Dependencies:
