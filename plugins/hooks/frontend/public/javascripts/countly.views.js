@@ -143,6 +143,7 @@
         data: function() {
             return {
                 methodOptions: [{label: 'GET', value: 'get'}, {label: 'POST', value: 'post'}],
+                headers: []
             };
         },
         props: {
@@ -152,10 +153,40 @@
         },
         mounted: function() {
             this.value.requestData = _.unescape(this.value.requestData);
+            // Initialize headers from saved configuration
+            if (this.value.headers) {
+                this.headers = Object.entries(this.value.headers).map(([key, value]) => ({key, value}));
+            }
         },
         methods: {
             textChange: function(event) {
                 this.value.requestData = _.unescape(event.currentTarget.value);
+            },
+            addHeader: function() {
+                this.headers.push({key: '', value: ''});
+                this.updateHeaders();
+            },
+            removeHeader: function(index) {
+                this.headers.splice(index, 1);
+                this.updateHeaders();
+            },
+            updateHeaders: function() {
+                // Convert headers array to object format and update value
+                const headerObj = {};
+                this.headers.forEach(h => {
+                    if (h.key && h.value) {
+                        headerObj[h.key] = h.value;
+                    }
+                });
+                this.value.headers = headerObj;
+            }
+        },
+        watch: {
+            headers: {
+                deep: true,
+                handler: function() {
+                    this.updateHeaders();
+                }
             }
         }
     });
@@ -402,6 +433,12 @@
                     {value: "/systemlogs", label: "/systemlogs"},
                     {value: "/crashes/new", label: "/crashes/new"},
                     {value: "/hooks/trigger", label: "/hooks/trigger"},
+                    {value: "/i/remote-config/add-parameter", label: "/i/remote-config/add-parameter"},
+                    {value: "/i/remote-config/update-parameter", label: "/i/remote-config/update-parameter"},
+                    {value: "/i/remote-config/remove-parameter", label: "/i/remote-config/remove-parameter"},
+                    {value: "/i/remote-config/add-condition", label: "/i/remote-config/add-condition"},
+                    {value: "/i/remote-config/update-condition", label: "/i/remote-config/update-condition"},
+                    {value: "/i/remote-config/remove-condition", label: "/i/remote-config/remove-condition"},
                     {value: "/alerts/trigger", label: "/alerts/trigger"}
                 ],
                 cohortOptions: [],

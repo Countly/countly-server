@@ -18,7 +18,7 @@ const verifyStaticElementsOfPage = () => {
         labelElement: eventsOverviewPageElements.PAGE_SUB_TITLE,
         labelText: "Event Metrics",
         tooltipElement: eventsOverviewPageElements.PAGE_SUB_TITLE_TOOLTIP,
-        tooltipText: "Overview of the metrics calculated by the identified Events, in the last 30 days."
+        tooltipText: "An overview of the metrics calculated by the identified Events in the last 30 days."
     });
 
     cy.verifyElement({
@@ -337,7 +337,7 @@ const verifyMonitorEventsMetricCard = ({
 
         cy.verifyElement({
             labelElement: eventsOverviewMonitorEventsMetricCardElements().EMPTY_MONITOR_EVENTS_TABLE_TITLE,
-            labelText: "This application doesn't have any custom events",
+            labelText: "This application does not have any custom events.",
         });
 
         cy.verifyElement({

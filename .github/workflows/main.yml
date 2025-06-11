@@ -21,20 +21,29 @@ jobs:
   # This workflow contains a single job called "build"
   install:
     # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
+      - name: Copy code
+        shell: bash
+        run: |
+          sudo mkdir -p /opt/countly
+          touch log/countly-dashboard.log
+          touch log/countly-api.log
+          cp -rf ./* /opt/countly
+        
       - name: Github Actions Azure connection fix
         run: |
           # Workaround for https://github.com/actions/runner-images/issues/675#issuecomment-1381389712
           sudo sed -i 's/azure/us/g' /etc/apt/sources.list
-
+        
       - name: Installing Countly
         shell: bash
+        working-directory: /opt/countly
         run: sudo bash ./bin/countly.install.sh
 
       - name: NodeJS version
@@ -50,10 +59,12 @@ jobs:
         run: mongosh --version
 
       - name: Output API Logs
+        working-directory: /opt/countly
         if: ${{ always() }}
         run: cat log/countly-api.log
 
       - name: Output Dashboard Logs
+        working-directory: /opt/countly
         if: ${{ always() }}
         run: cat log/countly-dashboard.log
 
@@ -85,7 +96,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Copy code
         shell: bash
@@ -142,7 +153,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Prepare tests
         shell: bash
@@ -194,7 +205,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Copy code
         shell: bash
@@ -252,7 +263,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install Chrome
         shell: bash
@@ -264,7 +275,12 @@ jobs:
 
       - name: Copy code
         shell: bash
-        run: cp -rf ./* /opt/countly
+        run: |
+          rm -rf /opt/countly/frontend
+          rm -rf /opt/countly/plugins/old-ui-compatibility
+          cp -rf ./* /opt/countly
+          cp /opt/countly/frontend/express/config.sample.js /opt/countly/frontend/express/config.js
+          cp /opt/countly/frontend/express/public/javascripts/countly/countly.config.sample.js /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
 
       - name: Prepare files to use correct MongoDB host
         shell: bash
@@ -335,7 +351,7 @@ jobs:
         COUNTLY_CONFIG_API_PREVENT_JOBS: true
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install Chrome
         shell: bash
@@ -347,8 +363,13 @@ jobs:
 
       - name: Copy code
         shell: bash
-        run: cp -rf ./* /opt/countly
-
+        run: |
+          rm -rf /opt/countly/frontend
+          rm -rf /opt/countly/plugins/old-ui-compatibility
+          cp -rf ./* /opt/countly
+          cp /opt/countly/frontend/express/config.sample.js /opt/countly/frontend/express/config.js
+          cp /opt/countly/frontend/express/public/javascripts/countly/countly.config.sample.js /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
+          
       - name: Prepare files to use correct MongoDB host
         shell: bash
         run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"

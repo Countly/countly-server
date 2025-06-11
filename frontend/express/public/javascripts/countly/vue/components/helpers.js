@@ -1,4 +1,4 @@
-/* global Vue, CV, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon CountlyHelpers*/
+/* global Vue, CV, $, app, countlyEvent, countlyGlobal, countlyAuth, VueJsonPretty, ElementTiptapPlugin, countlyCommon CountlyHelpers*/
 
 (function(countlyVue) {
 
@@ -86,25 +86,63 @@
         }
     }));
 
-    Vue.component("cly-status-tag", countlyBaseComponent.extend({
-        template: '<div class="cly-vue-status-tag" :class="dynamicClasses">\n' +
-                     '<div class="cly-vue-status-tag__blink"></div>\n' +
-                        '{{text}}\n' +
-                  '</div>',
-        mixins: [countlyVue.mixins.i18n],
+    Vue.component('cly-status-tag', countlyBaseComponent.extend({
         props: {
-            text: { required: true, type: String },
-            color: { default: "green", type: String},
-            size: { default: "unset", type: String},
-        },
-        computed: {
-            dynamicClasses: function() {
-                if (this.size === "small") {
-                    return ["cly-vue-status-tag--small", "cly-vue-status-tag--" + this.color];
-                }
-                return "cly-vue-status-tag--" + this.color;
+            color: {
+                default: 'green',
+                type: String
+            },
+
+            loading: {
+                default: false,
+                type: Boolean
+            },
+
+            size: {
+                default: 'unset',
+                type: String
+            },
+
+            text: {
+                required: true,
+                type: String
             }
         },
+
+        computed: {
+            dynamicClasses() {
+                const classes = [];
+
+                if (this.size === 'small') {
+                    classes.push('cly-vue-status-tag--small');
+                }
+
+                if (this.loading) {
+                    classes.push('cly-vue-status-tag--gray');
+                }
+                else {
+                    classes.push(`cly-vue-status-tag--${this.color}`);
+                }
+
+                return classes;
+            }
+        },
+
+        template: `
+            <div
+                class="cly-vue-status-tag"
+                :class="dynamicClasses"
+            >
+                <div class="cly-vue-status-tag__blink" />
+                <div
+                    v-if="loading"
+                    class="cly-vue-status-tag__skeleton"
+                />
+                <template v-else>
+                    {{ text }}
+                </template>
+            </div>
+        `
     }));
 
     Vue.component("cly-diff-helper", countlyBaseComponent.extend({
@@ -580,32 +618,36 @@
 
     Vue.component("cly-event-select", countlyBaseComponent.extend({
         mixins: [countlyVue.mixins.i18n],
-        template: '<cly-select-x\
-                    :test-id="testId"\
-                    pop-class="cly-event-select"\
-                    all-placeholder="All Events"\
-                    search-placeholder="Search in Events"\
-                    placeholder="Select Event"\
-                    :disabled="disabled"\
-                    :hide-default-tabs="true"\
-                    :options="availableEvents"\
-                    :hide-all-options-tab="true"\
-                    :single-option-settings="singleOptionSettings"\
-                    :adaptive-length="adaptiveLength"\
-                    :arrow="arrow"\
-                    :width="width"\
-                    v-bind="$attrs"\
-                    v-on="$listeners">\
-                    <template v-slot:header="selectScope">\
-                        <h4 class="color-cool-gray-100 bu-mb-2" v-if="hasTitle">{{title}}</h4>\
-                        <el-radio-group\
-                            :value="selectScope.activeTabId"\
-                            @input="selectScope.updateTab"\
-                            size="small">\
-                            <el-radio-button :test-id="testId + \'-tab-\' + idx" v-for="(tab,idx) in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>\
-                        </el-radio-group>\
-                    </template>\
-                </cly-select-x>',
+        template: '<div class="cly-event-select">\
+                    <cly-select-x\
+                        :test-id="testId"\
+                        pop-class="cly-event-select"\
+                        all-placeholder="All Events"\
+                        search-placeholder="Search in Events"\
+                        placeholder="Select Event"\
+                        :disabled="disabled"\
+                        :hide-default-tabs="true"\
+                        :options="availableEvents"\
+                        :hide-all-options-tab="true"\
+                        :single-option-settings="singleOptionSettings"\
+                        :adaptive-length="adaptiveLength"\
+                        :arrow="arrow"\
+                        :width="width"\
+                        v-bind="$attrs"\
+                        v-if="!isLoading"\
+                        v-on="$listeners">\
+                        <template v-slot:header="selectScope">\
+                            <h4 class="color-cool-gray-100 bu-mb-2" v-if="hasTitle">{{title}}</h4>\
+                            <el-radio-group\
+                                :value="selectScope.activeTabId"\
+                                @input="selectScope.updateTab"\
+                                size="small">\
+                                <el-radio-button :test-id="testId + \'-tab-\' + idx" v-for="(tab,idx) in selectScope.tabs" :key="tab.name" :label="tab.name">{{tab.label}}</el-radio-button>\
+                            </el-radio-group>\
+                        </template>\
+                    </cly-select-x>\
+                    <div v-else class="cly-event-select__loading el-loading-spinner"><i class="el-icon-loading bu-mr-2"></i><p class="el-loading-text">Loading...</p></div>\
+                </div>',
         props: {
             blacklistedEvents: {
                 type: Array,
@@ -626,16 +668,20 @@
                 singleOptionSettings: {
                     autoPick: true,
                     hideList: true
-                }
+                },
+                availableEvents: [],
+                isLoading: false
             };
         },
         computed: {
             hasTitle: function() {
                 return !!this.title;
-            },
-            availableEvents: function() {
+            }
+        },
+        methods: {
+            prepareAvailableEvents: function() {
                 var self = this;
-                var availableEvents = [
+                var preparedEventList = [
                     {
                         "label": this.i18n('sidebar.analytics.sessions'),
                         "name": "[CLY]_session",
@@ -648,7 +694,7 @@
                     }
                 ];
                 if (countlyGlobal.plugins.indexOf('views') !== -1) {
-                    availableEvents.push({
+                    preparedEventList.push({
                         "label": this.i18n('internal-events.[CLY]_view'),
                         "name": "[CLY]_view",
                         "options": [ { label: this.i18n('internal-events.[CLY]_view'), value: '[CLY]_view' } ]
@@ -665,7 +711,7 @@
                     feedbackOptions.push({ label: this.i18n('internal-events.[CLY]_survey'), value: '[CLY]_survey' });
                 }
                 if (feedbackOptions.length > 0) {
-                    availableEvents.push({
+                    preparedEventList.push({
                         "label": this.i18n("sidebar.feedback"),
                         "name": "feedback",
                         "options": feedbackOptions
@@ -674,7 +720,7 @@
 
 
                 if (countlyGlobal.plugins.indexOf('compliance-hub') !== -1) {
-                    availableEvents.push({
+                    preparedEventList.push({
                         "label": this.i18n('internal-events.[CLY]_consent'),
                         "name": "[CLY]_consent",
                         "options": [ { label: this.i18n('internal-events.[CLY]_consent'), value: '[CLY]_consent' } ]
@@ -682,7 +728,7 @@
                 }
 
                 if (countlyGlobal.plugins.indexOf('crashes') !== -1) {
-                    availableEvents.push({
+                    preparedEventList.push({
                         "label": this.i18n('internal-events.[CLY]_crash'),
                         "name": "[CLY]_crash",
                         "options": [ { label: this.i18n('internal-events.[CLY]_crash'), value: '[CLY]_crash' } ]
@@ -697,7 +743,7 @@
                             { label: this.i18n('internal-events.[CLY]_push_sent'), value: '[CLY]_push_sent' }
                         ]
                     });*/
-                    availableEvents.push({
+                    preparedEventList.push({
                         "label": 'Push Actioned',
                         "name": "[CLY]_push_action",
                         "options": [
@@ -712,26 +758,50 @@
                 //     "noChild": true
                 // }
 
-                if (this.selectedApp) {
-                    countlyEvent.getEventsForApps([this.selectedApp], function(eData) {
-                        availableEvents[1].options = eData.map(function(e) {
-                            return {label: countlyCommon.unescapeHtml(e.name), value: e.value};
+                return new Promise(function(resolve) {
+                    if (this.selectedApp) {
+                        self.isLoading = true;
+                        countlyEvent.getEventsForApps([this.selectedApp], function(eData) {
+                            preparedEventList[1].options = eData.map(function(e) {
+                                return {label: countlyCommon.unescapeHtml(e.name), value: e.value};
+                            });
                         });
-                    });
-                }
-                else {
-                    availableEvents[1].options = countlyEvent.getEvents().map(function(event) {
-                        return {label: countlyCommon.unescapeHtml(event.name), value: event.key};
-                    });
-                }
-
-                availableEvents = availableEvents.filter(function(evt) {
-                    return !(self.blacklistedEvents.includes(evt.name));
+                        preparedEventList = preparedEventList.filter(function(evt) {
+                            return !(self.blacklistedEvents.includes(evt.name));
+                        });
+                        self.isLoading = false;
+                        resolve(preparedEventList);
+                    }
+                    else {
+                        self.isLoading = true;
+                        $.when(countlyEvent.refreshEvents()).then(function() {
+                            const events = countlyEvent.getEvents();
+                            preparedEventList[1].options = events.map(function(event) {
+                                return {label: countlyCommon.unescapeHtml(event.name), value: event.key};
+                            });
+                            preparedEventList = preparedEventList.filter(function(evt) {
+                                return !(self.blacklistedEvents.includes(evt.name));
+                            });
+                            self.isLoading = false;
+                            resolve(preparedEventList);
+                        }, function() {
+                            const events = countlyEvent.getEvents();
+                            preparedEventList[1].options = events.map(function(event) {
+                                return {label: countlyCommon.unescapeHtml(event.name), value: event.key};
+                            });
+                            preparedEventList = preparedEventList.filter(function(evt) {
+                                return !(self.blacklistedEvents.includes(evt.name));
+                            });
+                            self.isLoading = false;
+                            resolve(preparedEventList);
+                        });
+                    }
                 });
-
-                return availableEvents;
             }
         },
+        created: async function() {
+            this.availableEvents = await this.prepareAvailableEvents();
+        }
     }));
 
     Vue.component("cly-paginate", countlyBaseComponent.extend({

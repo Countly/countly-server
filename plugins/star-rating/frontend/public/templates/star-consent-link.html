@@ -1,15 +1,23 @@
 <div class="bu-py-1 bu-px-4 cly-vue-drawer-step__section-group--filled">
   <div class="cly-vue-drawer-step__section">
-    <div class="text-small text-heading bu-pb-1" data-test-id="ratings-drawer-settings-add-user-consent-text-label">{{i18n('rating.drawer.consent.text')}}</div>
-    <validation-provider name="value.consent" rules="required|max:93" v-slot="v">
+    <div class="text-small text-heading bu-pb-1">{{i18n('rating.drawer.consent.text')}}</div>
+    <validation-provider name="value.consent" rules="required|max:94" v-slot="v">
       <el-input
         test-id="ratings-drawer-settings-add-user-consent-text-input"
+        class="cly-vue-drawer__input-element"
         :class="{'is-error': v.errors.length > 0}"
+        maxlength="95"
         :placeholder="i18n('rating.drawer.consent.placeholder')"
         v-model="value.finalText"
-        maxlength="94"
+        maxlength="95"
         show-word-limit
+      >
+        <span
+          class="el-input__count"
+          slot="suffix"
         >
+          <span class="el-input__count-inner">{{ value.finalText.length }}/94</span>
+        </span>
       </el-input>
     </validation-provider>
     <div class="bu-pt-4 text-small text-heading" data-test-id="ratings-drawer-settings-add-user-consent-links-label">

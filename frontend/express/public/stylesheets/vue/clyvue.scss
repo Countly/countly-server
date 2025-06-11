@@ -143,73 +143,125 @@
 }
     
 .cly-vue-status-tag {
-    padding-right: 16.33px;
-    border-radius: 4px;
     display: inline-block;
+    border-radius: 4px;
+    padding: 0px 6px;
+
+    // .cly-vue-status-tag__blink
+    &__blink {
+        display: inline-block;
+        position: relative;
+        top: -1px;
+        width: 6px;
+        height: 6px;
+        border-radius: 8px;
+        vertical-align: middle;
+        margin-right: 2px;
+        animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+    }
+
+    // .cly-vue-status-tag__skeleton
+    &__skeleton {
+        display: inline-block;
+        position: relative;
+        top: -1px;
+        background-color: #BDBDBD;
+        width: 40px;
+        height: 4px;
+        border-radius: 8px;
+        vertical-align: middle;
+        animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
+    }
+
+    // .cly-vue-status-tag--blue
+    &--blue {
+        background-color: #E6F0FB;
+        color: #017AFF;
+
+        // .cly-vue-status-tag--blue .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            background-color: #017AFF;
+        }
+    }
+
+    // .cly-vue-status-tag--gray
+    &--gray {
+        background-color: #F5F5F5;
+        color: #BDBDBD;
+
+        // .cly-vue-status-tag--gray .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            background-color: #BDBDBD;
+        }
+    }
+
+    // .cly-vue-status-tag--green
+    &--green {
+        background-color: #EBFAEE;
+        color: #12AF51;
+        
+        // .cly-vue-status-tag--green .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            background-color: #12AF51;
+        }
+    }
+
+    // .cly-vue-status-tag--red
+    &--red {
+        background-color: #FBECE5;
+        color: #D23F00;
+        
+        // .cly-vue-status-tag--red .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            background-color: #D23F00;
+        }
+    }
+
+    // .cly-vue-status-tag--small
     &--small {
         font-size: 12px;
         line-height: 18px;
         display: flex;
         align-items: baseline;
         font-weight: 500;
+
+        // .cly-vue-status-tag--small .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            /*
+                NOTE: This is a hack to make the blinking dot align with the blinking line
+                the hole component styles should be redone when working on the new UI
+            */
+            top: 1px;
+        }
+
+        // .cly-vue-status-tag--small .cly-vue-status-tag__skeleton
+        & .cly-vue-status-tag__skeleton {
+            /*
+                NOTE: This is a hack to make the blinking line align with the blinking dot
+                the hole component styles should be redone when working on the new UI
+            */
+            top: 0px;
+            margin: 4px 0;
+        }
     }
-    &--green {
-        background-color: #EBFAEE;
-        color: #12AF51;
-        padding: 0px 6px;   
-    }
-    &--green  &__blink{
-        background-color: #12AF51;
-    }
-    &--blue {
-        background-color: #E6F0FB;
-        color: #017AFF;
-        padding: 0px 6px;   
-    }
-    &--blue  &__blink{
-        background-color: #017AFF;
-    }
+    
+    // .cly-vue-status-tag--yellow
     &--yellow {
         background-color: #FCF5E5;
         color: #CDAD7A;
-        padding: 0px 6px;
+        
+        // .cly-vue-status-tag--yellow .cly-vue-status-tag__blink
+        & .cly-vue-status-tag__blink {
+            background-color: #CDAD7A;
+        }
     }
-    &--yellow  &__blink{
-        background-color: #CDAD7A;
-    }
-    &--red {
-        background-color: #FBECE5;
-        color: #D23F00;
-        padding: 0px 6px;
-    }
-    &--red  &__blink{
-        background-color: #D23F00;
-    }
-    &--gray {
-        background-color: #F5F5F5;
-        color: #BDBDBD;
-        padding: 0px 6px;
-    }
-    &--gray  &__blink{
-        background-color: #BDBDBD;
-    }
-    &__blink {
-        position: relative;
-        top: -1px;
-        width: 6px;
-        height: 6px;
-        border-radius: 8px;
-        display: inline-block;
-        vertical-align: middle;
-        margin-right: 2px;
-        animation: blinker 1.5s cubic-bezier(0.5, 0, 1, 1) infinite alternate;
-    }
+
     @keyframes blinker {
         50% {
-          opacity: 0;
+            opacity: 0;
         }
-      }    
-  }
+    }
+}
 
 .cly-vue-theme-clydef {
 
@@ -1786,11 +1838,39 @@
             position: absolute;
             left: 0;
         }
+        &__right-sidecar {
+            height: 100%;
+            right: 0;
+        }
         &__steps-view {
             box-sizing: border-box;
             position: absolute;
             right: 0;
             background-color: white;
+        }
+
+        &.has-right-sidecar {
+            display: flex;
+            flex-direction: row;
+
+            .cly-vue-drawer__steps-view {
+                position: relative;
+                flex-grow: 1;
+                display: flex;
+                justify-content: center;
+            }
+
+            .cly-vue-drawer__steps-container {
+                position: relative;
+            }
+
+            .cly-vue-drawer__steps-wrapper {
+                max-width: 840px;
+            }
+
+            .cly-vue-drawer__right-sidecar {
+                max-width: 480px;
+            }
         }
 
         &__steps-view,
@@ -1899,14 +1979,9 @@
             box-sizing: border-box;
         }
 
+        // .cly-vue-drawer__title-container
         &__title-container {
-            width: 100%; 
-            margin-bottom: 24px;
-        }
-
-        &__title-header {
-            margin-top: 24px; 
-            margin-left: 32px;
+            margin: 24px 32px;
         }
 
         &__subtitle {
@@ -1914,16 +1989,19 @@
             margin-bottom: 24px !important;
         }
 
+        // .cly-vue-drawer__close-button
         &__close-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             font-size: 30px;
             color: #81868D;
             transition: color 1s;
             cursor: pointer;
-            //width: 30px;
-            height: 15px;
-            //margin-block: auto;
-            margin-right: 32px;
-            margin-top: 24px;
+            height: 20px;
+
+            // .cly-vue-drawer__close-button:hover
             &:hover {
                 color: #333;
                 transition: color 1s;
@@ -4320,7 +4398,6 @@
     }		
 }
 
-
 .cly-vue-content-builder {
     position: absolute;
     z-index: 2001;
@@ -4710,6 +4787,41 @@
                 background-color: #E2E4E8;
             }
         }
+
+        // .cly-vue-content-builder-sidebar-input__component--upload
+        &--upload {
+            position: relative;
+            display: block;
+            width: 100%;
+            height: 144px;
+            max-width: initial;
+
+            // .cly-vue-content-builder-sidebar-input__component--upload .el-upload
+            & .el-upload {
+                width: 100%;
+                height: 100%;
+
+                // .cly-vue-content-builder-sidebar-input__component--upload .el-upload .el-upload-dragger
+                & .el-upload-dragger {
+                    border: none;
+                    border-radius: 8px;
+                    background: #FCFCFC;
+
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+
+                    width: 100%;
+                    height: 100%;
+
+                    // .cly-vue-content-builder-sidebar-input__component--upload .el-upload .el-upload-dragger::hover
+                    &:hover {
+                        background: #0166D60D;
+                    }
+                }
+            }
+        }
     }
 
     // .cly-vue-content-builder-sidebar-input__input-container
@@ -4720,14 +4832,30 @@
         flex-wrap: wrap;
         gap: 8px;
 
-        // .cly-vue-content-builder-sidebar-input__input-container--small .cly-vue-content-builder-sidebar-input__component
-        &--small .cly-vue-content-builder-sidebar-input__component {
-            max-width: 70px;
+        // .cly-vue-content-builder-sidebar-input__input-container--small
+        &--small {
+            // .cly-vue-content-builder-sidebar-input__input-container--small .cly-vue-content-builder-sidebar-input__component:not(.cly-vue-content-builder-sidebar-input__component--upload)
+            & .cly-vue-content-builder-sidebar-input__component:not(.cly-vue-content-builder-sidebar-input__component--upload) {
+                max-width: 70px;
+            }
+
+            // .cly-vue-content-builder-sidebar-input__input-container--small .cly-vue-content-builder-sidebar-input__component--upload
+            & .cly-vue-content-builder-sidebar-input__component--upload {
+                max-height: 64px;
+            }
         }
 
-        // .cly-vue-content-builder-sidebar-input__input-container--large .cly-vue-content-builder-sidebar-input__component
-        &--large .cly-vue-content-builder-sidebar-input__component {
-            max-width: 100%;
+        // .cly-vue-content-builder-sidebar-input__input-container--large
+        &--large {
+            // .cly-vue-content-builder-sidebar-input__input-container--large .cly-vue-content-builder-sidebar-input__component:not(.cly-vue-content-builder-sidebar-input__component--upload)
+            & .cly-vue-content-builder-sidebar-input__component:not(.cly-vue-content-builder-sidebar-input__component--upload) {
+                max-width: 100%;
+            }
+
+            // .cly-vue-content-builder-sidebar-input__input-container--large .cly-vue-content-builder-sidebar-input__component--upload
+            & .cly-vue-content-builder-sidebar-input__component--upload {
+                height: 224px;
+            }
         }
 
         // .cly-vue-content-builder-sidebar-input__input-container--vertical
@@ -4784,6 +4912,63 @@
         font-weight: 500;
         line-height: 16px;
         margin-bottom: 16px;
+    }
+    
+    // .cly-vue-content-builder-sidebar-input__upload-action
+    &__upload-action {
+        height: 24px;
+        width: 24px;
+
+        // .cly-vue-content-builder-sidebar-input__upload-action.el-button
+        &.el-button {
+            background-color: #FFFFFF;
+            border-radius: 6px;
+            border: 1px solid #E2E4E8;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            // .cly-vue-content-builder-sidebar-input__upload-action.el-button i
+            i {
+                width: 16px;
+                height: 16px;
+                font-size: 16px;
+                color: #81868D;
+            }
+
+            // .cly-vue-content-builder-sidebar-input__upload-action.el-button:hover
+            &:hover {
+                border-color: #0166D6;
+            }
+        }
+    }
+
+    // .cly-vue-content-builder-sidebar-input__upload-actions
+    &__upload-actions {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+    }
+
+    // .cly-vue-content-builder-sidebar-input__upload-placeholder
+    &__upload-placeholder {
+        color: #A7AEB8;
+        height: 48px;
+        width: 48px;
+        font-size: 48px;
+    }
+
+    // .cly-vue-content-builder-sidebar-input__upload-value
+    &__upload-value {
+        width: auto;
+        height: 100%;
+        object-fit: contain;
     }
 }
 
@@ -4896,5 +5081,14 @@
     &__device {
         cursor: pointer;
         border-radius: 8px;
+    }
+}
+
+.cly-event-select {
+    &__loading {
+        display: flex;
+        margin-top:0;
+        position: unset;
+        top:0;
     }
 }

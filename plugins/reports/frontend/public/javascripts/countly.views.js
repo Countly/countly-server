@@ -71,10 +71,7 @@
                     });
                     break;
                 case "send-comment":
-                    var overlay = $("#overlay").clone();
-                    overlay.show();
                     $.when(countlyReporting.send(scope.row._id)).always(function(sendResult) {
-                        overlay.hide();
                         if (sendResult && sendResult.result === "Success") {
                             CountlyHelpers.notify({
                                 message: jQuery.i18n.map["reports.sent"],
@@ -97,8 +94,9 @@
                     });
                     break;
                 case "preview-comment":
-                    var url = '/i/reports/preview?auth_token=' + countlyGlobal.auth_token + '&args=' + JSON.stringify({_id: scope.row._id}) + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
-                    window.open(url, "_blank");
+                    document.forms.previewemailform.action = '/i/reports/preview?args=' + JSON.stringify({_id: scope.row._id}) + "&app_id=" + countlyCommon.ACTIVE_APP_ID;
+                    document.forms.previewemailform.querySelectorAll('input[type=hidden]')[0].value = countlyGlobal.auth_token;
+                    document.forms.previewemailform.submit();
                     break;
                 default:
                     return;

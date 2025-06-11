@@ -4,36 +4,46 @@ const { dot } = require('../../../../../api/utils/common');
  * Personalize function. A factory to create a function which would apply personalization to a given string.
  * 
  * @param {String} string string to personalize
- * @param {Object} personaliztion object of {5: {f: 'fallback', c: false, k: 'key'}, 10: {...}} kind
+ * @param {Object} personalizations object of {5: {f: 'fallback', c: false, k: 'key'}, 10: {...}} kind
  * 
  * @returns {function} function with single obejct parameter which returns final string for a given data
  */
-module.exports = function personalize(string, personaliztion) {
-    let parts = [],
-        indicies = personaliztion ? Object.keys(personaliztion).map(n => parseInt(n, 10)) : [],
-        i = 0,
-        def;
+module.exports = function personalize(string, personalizations) {
+    let parts = [];
+    let def;
+    let i = 0;
+    let indexes = Object.keys(personalizations || {}).map(n => parseInt(n, 10));
 
-    indicies.forEach(idx => {
+    indexes.forEach(idx => {
         if (i < idx) {
-            parts.push(string.substr(i, idx));
+            const subStringLength = idx - i;
+            // push all the string that appears before the personalization index
+            parts.push(string.substr(i, subStringLength));
         }
+
+        // push the personalization function
         parts.push(function(data) {
-            let pers = personaliztion[idx];
-            data = dot(data, pers.k);
-            if (pers.c && data) {
+            let personalization = personalizations[idx];
+
+            data = dot(data, personalization.k);
+
+            if (personalization.c && data) {
                 if (typeof data !== 'string') {
                     data = data + '';
                 }
+
                 return data.substr(0, 1).toUpperCase() + data.substr(1);
             }
-            return data === null || data === undefined ? pers.f : (data + '');
+
+            // if data does not exist return fallback value
+            return data === null || data === undefined ? personalization.f : (data + '');
         });
-        i = idx + 1;
+
+        i = idx;
     });
 
     if (i < string.length) {
-        parts.push(string.substr(i, string.length));
+        parts.push(string.substr(i));
     }
 
     /**
@@ -48,6 +58,7 @@ module.exports = function personalize(string, personaliztion) {
                 return parts.map(p => typeof p === 'string' ? p : p(data)).join('');
             }
         }
+
         return def;
     };
 
