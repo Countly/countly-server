@@ -484,7 +484,7 @@ describe('Writing app metrics', function() {
         describe('Verify countries', function() {
             it('should have Italy', function(done) {
                 request
-                    .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=countries')
+                    .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=locations')
                     .expect(200)
                     .end(function(err, res) {
                         console.log(res.text);
