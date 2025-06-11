@@ -1,6 +1,6 @@
-//require("./download_geonames_data.js");
+require("./download_geonames_data.js");
 //require("./import_geonames_mongodb.js");
-
+/*
 const https = require('https');
 const { createWriteStream } = require('fs');
 const file = createWriteStream("cities1000.zip");
@@ -17,4 +17,4 @@ https.get('https://download.geonames.org/export/dump/cities1000.zip', (res) => {
 
 }).on('error', (e) => {
     console.error(e);
-});
+});*/
