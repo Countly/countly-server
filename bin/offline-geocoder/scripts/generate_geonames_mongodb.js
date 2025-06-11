@@ -4,10 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const { createWriteStream, promises: fsPromises } = require('fs');
-const { exec } = require('child_process');
-const { promisify } = require('util');
-
-const execAsync = promisify(exec);
+const yauzl = require('yauzl');
 
 const DATA = "cities1000.txt";
 const ADMIN1 = "admin1CodesASCII.txt";
@@ -44,16 +41,76 @@ function downloadFile(url, destination) {
     });
 }
 
-// Helper function to unzip a file using tar command
+// Helper function to unzip a file using yauzl (pure JS implementation)
 async function unzipFile(zipFile, destination) {
-    console.log(`Unzipping ${zipFile} to ${destination}...`);
     try {
-    // The unzip command is more appropriate for .zip files than tar
-        await execAsync(`unzip -o ${zipFile} -d ${path.dirname(destination)}`);
-        return Promise.resolve();
+    // Read zip file into memory
+        const zipBuffer = await fsPromises.readFile(zipFile);
+
+        // Open zip file from buffer
+        const zipfile = await new Promise((resolve, reject) => {
+            yauzl.fromBuffer(zipBuffer, { lazyEntries: true }, (err, zipfile) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(zipfile);
+                }
+            });
+        });
+
+        return new Promise((resolve, reject) => {
+
+            zipfile.on('entry', (entry) => {
+                // Skip directory entries
+                if (/\/$/.test(entry.fileName)) {
+                    zipfile.readEntry();
+                    return;
+                }
+
+                // Check if this is the file we want (cities1000.txt)
+                if (entry.fileName === path.basename(destination)) {
+                    zipfile.openReadStream(entry, (err, readStream) => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+
+                        // Extract file to destination
+                        const writeStream = fs.createWriteStream(destination);
+
+                        readStream.on('end', () => {
+                            zipfile.readEntry();
+                        });
+
+                        writeStream.on('finish', () => {
+                            // We found and extracted the file we needed
+                            resolve();
+                        });
+
+                        readStream.pipe(writeStream);
+                    });
+                }
+                else {
+                    // Not the file we're looking for, continue to next entry
+                    zipfile.readEntry();
+                }
+            });
+
+            zipfile.on('error', (err) => {
+                reject(err);
+            });
+
+            zipfile.on('end', () => {
+                // If we get here without resolving, we didn't find the file
+                resolve();
+            });
+
+            // Start reading entries
+            zipfile.readEntry();
+        });
     }
     catch (err) {
-        console.error(`Error unzipping file: ${err.message}`);
         return Promise.reject(err);
     }
 }
