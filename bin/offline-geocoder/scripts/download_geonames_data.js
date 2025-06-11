@@ -140,9 +140,14 @@ async function downloadFiles() {
         const zipFile = path.join(DATA_DIR, "cities1000.zip");
 
         try {
+            console.log("before downloading cities1000.zip");
             await downloadFile("https://download.geonames.org/export/dump/cities1000.zip", zipFile);
+            console.log("after downloading cities1000.zip");
+            console.log("Extracting cities1000.zip...");
             await unzipFile(zipFile, dataFilePath);
+            console.log("Extraction complete, removing zip file...");
             await fsPromises.unlink(zipFile);
+            console.log(`Extracted ${dataFilePath}`);
         }
         catch (error) {
             console.log("Error extracting zip file:", error);
