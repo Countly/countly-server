@@ -1,23 +1,77 @@
 #!/usr/bin/env node
-
-const fs = require('fs');
-const { execSync } = require('child_process');
 const pluginManager = require("../../../plugins/pluginManager.js");
+const fs = require('fs');
+const path = require('path');
+const https = require('https');
+const { createWriteStream, promises: fsPromises } = require('fs');
+const { exec } = require('child_process');
+const { promisify } = require('util');
+
+const execAsync = promisify(exec);
 
 const DATA = "cities1000.txt";
 const ADMIN1 = "admin1CodesASCII.txt";
 const COUNTRIES = "countryInfo.txt";
 const COLLECTION_PREFIX = "geocoder_";
 
+// Helper function to download a file using Node.js
+function downloadFile(url, destination) {
+    return new Promise((resolve, reject) => {
+        const file = createWriteStream(destination);
+
+        https.get(url, response => {
+            if (response.statusCode !== 200) {
+                reject(new Error(`Failed to download ${url}: ${response.statusCode}`));
+                return;
+            }
+
+            response.pipe(file);
+
+            file.on('finish', () => {
+                file.close();
+                resolve();
+            });
+        }).on('error', err => {
+            fs.unlink(destination, () => {});
+            reject(err);
+        });
+
+        file.on('error', err => {
+            fs.unlink(destination, () => {});
+            reject(err);
+        });
+    });
+}
+
+// Helper function to unzip a file using tar command
+async function unzipFile(zipFile, destination) {
+    try {
+    // The unzip command is more appropriate for .zip files than tar
+        await execAsync(`unzip -o ${zipFile} -d ${path.dirname(destination)}`);
+        return Promise.resolve();
+    }
+    catch (err) {
+        return Promise.reject(err);
+    }
+}
+
 // Download files if they don't exist
-function downloadFiles() {
+async function downloadFiles() {
     console.log("Checking and downloading necessary files...");
 
     if (!fs.existsSync(DATA)) {
         console.log("Downloading cities from Geonames...");
-        execSync("wget http://download.geonames.org/export/dump/cities1000.zip");
-        execSync("unzip cities1000.zip");
-        execSync("rm cities1000.zip");
+        const zipFile = "cities1000.zip";
+        await downloadFile("https://download.geonames.org/export/dump/cities1000.zip", zipFile);
+
+        try {
+            await unzipFile(zipFile, DATA);
+            await fsPromises.unlink(zipFile);
+        }
+        catch (error) {
+            console.error("Error extracting zip file:", error);
+            throw error;
+        }
     }
     else {
         console.log(`Using existing ${DATA}`);
@@ -25,7 +79,7 @@ function downloadFiles() {
 
     if (!fs.existsSync(ADMIN1)) {
         console.log("Downloading admin1 from Geonames...");
-        execSync("wget http://download.geonames.org/export/dump/admin1CodesASCII.txt");
+        await downloadFile("https://download.geonames.org/export/dump/admin1CodesASCII.txt", ADMIN1);
     }
     else {
         console.log(`Using existing ${ADMIN1}`);
@@ -33,7 +87,7 @@ function downloadFiles() {
 
     if (!fs.existsSync(COUNTRIES)) {
         console.log("Downloading countries from Geonames...");
-        execSync("wget http://download.geonames.org/export/dump/countryInfo.txt");
+        await downloadFile("https://download.geonames.org/export/dump/countryInfo.txt", COUNTRIES);
     }
     else {
         console.log(`Using existing ${COUNTRIES}`);
