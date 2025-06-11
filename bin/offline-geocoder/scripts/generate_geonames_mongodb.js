@@ -18,6 +18,7 @@ function downloadFile(url, destination) {
         const file = createWriteStream(destination);
 
         https.get(url, response => {
+            console.log(`Response status code: ${response.statusCode}`);
             if (response.statusCode !== 200) {
                 console.log(`Failed to download ${url}: ${response.statusCode}`);
                 reject(new Error(`Failed to download ${url}: ${response.statusCode}`));
@@ -27,6 +28,7 @@ function downloadFile(url, destination) {
             response.pipe(file);
 
             file.on('finish', () => {
+                console.log(`Downloaded ${url} to ${destination}`);
                 file.close();
                 resolve();
             });
