@@ -487,7 +487,7 @@ describe('Writing app metrics', function() {
                     .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=countries')
                     .expect(200)
                     .end(function(err, res) {
-                        console.log(res);
+                        console.log(res.text);
                         testUtils.validateMetrics(err, res, done, {meta: {"countries": ["Italy"]}, "Italy": {"n": 1, "t": 1, "u": 1}});
                     });
             });
