@@ -30,14 +30,14 @@
     "grunt-eslint": "24.3.0",
     "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
+    "husky": "^9.1.7",
     "jsdoc": "^4.0.0",
+    "lint-staged": "^16.0.0",
     "mocha": "10.8.2",
     "nyc": "17.1.0",
     "should": "13.2.3",
     "supertest": "7.1.1",
-    "typescript": "^5.8.2",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.0.0"
+    "typescript": "^5.8.2"
   },
   "dependencies": {
     "all-the-cities": "3.1.0",
@@ -58,6 +58,7 @@
     "csvtojson": "2.0.10",
     "ejs": "3.1.10",
     "errorhandler": "1.5.1",
+    "eslint": "^8.56.0",
     "express": "4.21.2",
     "express-rate-limit": "7.5.0",
     "express-session": "1.18.1",
