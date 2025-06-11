@@ -15,8 +15,9 @@ const DATA_DIR = "data";
 function downloadFile(url, destination) {
     console.log(`Downloading ${url} to ${destination}...`);
     return new Promise((resolve, reject) => {
+        console.log(`Download promise enter: ${url}`);
         const file = createWriteStream(destination);
-
+        console.log(`Download stream created for ${destination}`);
         https.get(url, response => {
             console.log(`Response status code: ${response.statusCode}`);
             if (response.statusCode !== 200) {
@@ -37,12 +38,13 @@ function downloadFile(url, destination) {
             fs.unlink(destination, () => {});
             reject(err);
         });
-
+        console.log(`File stream created for ${destination}`);
         file.on('error', err => {
             console.log(`Error writing to file ${destination}:`, err);
             fs.unlink(destination, () => {});
             reject(err);
         });
+        console.log(`Download promise exit: ${url}`);
     });
 }
 
