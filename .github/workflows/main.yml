@@ -245,7 +245,7 @@ jobs:
 
   ui-test-dashboard:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
 
     strategy:
       matrix:
@@ -313,37 +313,33 @@ jobs:
           cp cypress.config.sample.js cypress.config.js
           sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
 
-      - name: Run UI tests in parallel parts
+      - name: Split dashboard test files for parallel execution
         shell: bash
         working-directory: /opt/countly/ui-tests
         run: |
           /sbin/my_init &
           npm install
+          FILES=($(find cypress/e2e/dashboard -type f -name '*.cy.js' | sort))
+          SELECTED=()
+          for i in "${!FILES[@]}"; do
+            INDEX=$((i % 2 + 1))
+            if [ "$INDEX" -eq "${{ matrix.part }}" ]; then
+              SELECTED+=("${FILES[$i]}")
+            fi
+          done
+          echo "SELECTED_SPECS=${SELECTED[*]}" >> $GITHUB_OUTPUT
 
-          # Test dosyalarını parçalayalım (örnek):
-          TEST_FILES=( $(find cypress/e2e/dashboard -name '*.cy.js' | sort) )
-          TOTAL=${#TEST_FILES[@]}
-          HALF=$(( (TOTAL + 1) / 2 ))
-
-          if [[ "${{ matrix.part }}" == "1" ]]; then
-            SPEC_FILES="${TEST_FILES[@]:0:$HALF}"
-          else
-            SPEC_FILES="${TEST_FILES[@]:$HALF}"
-          fi
-
-          echo "Running part ${{ matrix.part }} with specs:"
-          echo $SPEC_FILES
-
-          # Cypress komutunu bu dosyalarla çalıştır
-          xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
-          npx cypress run --spec "${SPEC_FILES// /,}"
+      - name: Run dashboard Cypress tests
+        run: |
+          echo "Running specs: ${{ steps.split-dashboard-tests.outputs.SELECTED_SPECS }}"
+          npx cypress run --browser chrome --spec "${{ steps.split-dashboard-tests.outputs.SELECTED_SPECS }}"
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
         shell: bash
         working-directory: /opt/countly/ui-tests/cypress
         run: |
-          ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}.tar.gz"
+          ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}-part-${{ matrix.part }}.tar.gz"
           mkdir -p screenshots videos
           tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
@@ -351,7 +347,7 @@ jobs:
 
   ui-test-onboarding:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
 
     strategy:
       matrix:
@@ -415,35 +411,35 @@ jobs:
           cp cypress.config.sample.js cypress.config.js
           sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
 
-      - name: Run UI tests in parallel parts
+      - name: Split onboarding test files for parallel execution
         shell: bash
         working-directory: /opt/countly/ui-tests
         run: |
           /sbin/my_init &
           npm install
+  
+          FILES=($(find cypress/e2e/onboarding -type f -name '*.cy.js' | sort))
+          SELECTED=()
+          for i in "${!FILES[@]}"; do
+            INDEX=$((i % 2 + 1))
+            if [ "$INDEX" -eq "${{ matrix.part }}" ]; then
+              SELECTED+=("${FILES[$i]}")
+            fi
+          done
+          echo "SELECTED_SPECS=${SELECTED[*]}" >> $GITHUB_OUTPUT
 
-          TEST_FILES=( $(find cypress/e2e/onboarding -name '*.cy.js' | sort) )
-          TOTAL=${#TEST_FILES[@]}
-          HALF=$(( (TOTAL + 1) / 2 ))
+      - name: Run onboarding Cypress tests
+        run: |
+          echo "Running specs: ${{ steps.split-onboarding-tests.outputs.SELECTED_SPECS }}"
+          npx cypress run --browser chrome --spec "${{ steps.split-onboarding-tests.outputs.SELECTED_SPECS }}"
 
-          if [[ "${{ matrix.part }}" == "1" ]]; then
-            SPEC_FILES="${TEST_FILES[@]:0:$HALF}"
-          else
-            SPEC_FILES="${TEST_FILES[@]:$HALF}"
-          fi
-
-          echo "Running part ${{ matrix.part }} with specs:"
-          echo $SPEC_FILES
-
-          xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
-          npx cypress run --spec "${SPEC_FILES// /,}"
-
+          
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
         shell: bash
         working-directory: /opt/countly/ui-tests/cypress
         run: |
-          ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}.tar.gz"
+          ARTIFACT_ARCHIVE_NAME="$(date '+%Y%m%d-%H.%M')_${GITHUB_REPOSITORY#*/}_CI#${{ github.run_number }}-part-${{ matrix.part }}.tar.gz"
           mkdir -p screenshots videos
           tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
