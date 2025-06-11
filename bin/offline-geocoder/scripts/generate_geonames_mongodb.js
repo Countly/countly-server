@@ -16,6 +16,7 @@ const COLLECTION_PREFIX = "geocoder_";
 
 // Helper function to download a file using Node.js
 function downloadFile(url, destination) {
+    console.log(`Downloading ${url} to ${destination}...`);
     return new Promise((resolve, reject) => {
         const file = createWriteStream(destination);
 
@@ -45,12 +46,14 @@ function downloadFile(url, destination) {
 
 // Helper function to unzip a file using tar command
 async function unzipFile(zipFile, destination) {
+    console.log(`Unzipping ${zipFile} to ${destination}...`);
     try {
     // The unzip command is more appropriate for .zip files than tar
         await execAsync(`unzip -o ${zipFile} -d ${path.dirname(destination)}`);
         return Promise.resolve();
     }
     catch (err) {
+        console.error(`Error unzipping file: ${err.message}`);
         return Promise.reject(err);
     }
 }
