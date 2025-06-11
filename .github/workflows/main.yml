@@ -161,7 +161,9 @@ jobs:
 
       - name: Copy code
         shell: bash
-        run: cp -rf ./* /opt/countly
+        run: |
+          cp -rf ./* /opt/countly
+          cp ./bin/docker/postinstall.sh /etc/my_init.d
 
       - name: Remove plugin tests
         shell: bash
