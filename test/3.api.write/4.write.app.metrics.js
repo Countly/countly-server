@@ -468,7 +468,7 @@ describe('Writing app metrics', function() {
             it('should success', function(done) {
                 var params = {"_carrier": "Vodafone"};
                 request
-                    .get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY + "&begin_session=1&location=41.89,12.49")
+                    .get('/i?device_id=' + DEVICE_ID + "42" + '&app_key=' + APP_KEY + "&begin_session=1&location=41.89,12.49")
                     .expect(200)
                     .end(function(err, res) {
                         if (err) {
