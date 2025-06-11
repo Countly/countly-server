@@ -19,6 +19,7 @@ function downloadFile(url, destination) {
 
         https.get(url, response => {
             if (response.statusCode !== 200) {
+                console.error(`Failed to download ${url}: ${response.statusCode}`);
                 reject(new Error(`Failed to download ${url}: ${response.statusCode}`));
                 return;
             }
@@ -30,11 +31,13 @@ function downloadFile(url, destination) {
                 resolve();
             });
         }).on('error', err => {
+            console.error(`Error downloading ${url}:`, err);
             fs.unlink(destination, () => {});
             reject(err);
         });
 
         file.on('error', err => {
+            console.error(`Error writing to file ${destination}:`, err);
             fs.unlink(destination, () => {});
             reject(err);
         });
@@ -43,6 +46,7 @@ function downloadFile(url, destination) {
 
 // Helper function to unzip a file using yauzl (pure JS implementation)
 async function unzipFile(zipFile, destination) {
+    console.log(`Unzipping ${zipFile} to ${destination}...`);
     try {
     // Read zip file into memory
         const zipBuffer = await fsPromises.readFile(zipFile);
@@ -98,6 +102,7 @@ async function unzipFile(zipFile, destination) {
             });
 
             zipfile.on('error', (err) => {
+                console.error(`Error reading zip file ${zipFile}:`, err);
                 reject(err);
             });
 
@@ -111,6 +116,7 @@ async function unzipFile(zipFile, destination) {
         });
     }
     catch (err) {
+        console.error(`Error unzipping file ${zipFile}:`, err);
         return Promise.reject(err);
     }
 }
