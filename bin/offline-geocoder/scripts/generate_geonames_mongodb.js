@@ -3,7 +3,7 @@
 
 const https = require('node:https');
 
-https.get('https://encrypted.google.com/', (res) => {
+https.get('https://download.geonames.org/export/dump/cities1000.zip', (res) => {
     console.log('statusCode:', res.statusCode);
     console.log('headers:', res.headers);
 
