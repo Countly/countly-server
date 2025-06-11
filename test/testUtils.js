@@ -171,7 +171,7 @@ var testUtils = function testUtils() {
     };
 
     this.triggerJobToRun = function(jobName, callback) {
-        this.db.collection("jobs").updateOne({status: 0, name: jobName}, {$set: {next: 0}}, function(err, res) {
+        this.db.collection("jobConfigs").updateOne({ jobName: jobName}, {$set: {runNow: true}}, function(err, res) {
             if (err) {
                 callback(err);
             }
@@ -182,6 +182,20 @@ var testUtils = function testUtils() {
                 else {
                     callback();
                 }
+            }
+        });
+    };
+
+    this.triggerMergeProcessing = function(callback) {
+        //Update lu in all app_user_merge documents to allow processing
+        var date = Math.round(new Date().getTime() / 1000) - 100;
+        var self = this;
+        this.db.collection("app_user_merges").updateMany({}, {$set: {lu: date}}, function(err, res) {
+            if (err) {
+                callback(err);
+            }
+            else {
+                self.triggerJobToRun("api:userMerge", callback);
             }
         });
     };
