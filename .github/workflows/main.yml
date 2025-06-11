@@ -241,13 +241,15 @@ jobs:
           npm install
           /sbin/my_init &
           node bin/scripts/test.connection.js
-          npx grunt mochaTest       
+          npx grunt mochaTest
+
   ui-test-dashboard:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
     strategy:
       matrix:
-        node: [14, 16]
+        part: [1, 2]
 
     services:
       mongodb:
@@ -283,7 +285,9 @@ jobs:
 
       - name: Prepare files to use correct MongoDB host
         shell: bash
-        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
+        run: |
+          sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh
+          sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh
 
       - name: NPM install
         shell: bash
@@ -309,15 +313,30 @@ jobs:
           cp cypress.config.sample.js cypress.config.js
           sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
 
-      - name: Run UI tests
+      - name: Run UI tests in parallel parts
         shell: bash
-        working-directory: /opt/countly
+        working-directory: /opt/countly/ui-tests
         run: |
           /sbin/my_init &
-          cd ui-tests
           npm install
+
+          # Test dosyalarını parçalayalım (örnek):
+          TEST_FILES=( $(find cypress/e2e/dashboard -name '*.cy.js' | sort) )
+          TOTAL=${#TEST_FILES[@]}
+          HALF=$(( (TOTAL + 1) / 2 ))
+
+          if [[ "${{ matrix.part }}" == "1" ]]; then
+            SPEC_FILES="${TEST_FILES[@]:0:$HALF}"
+          else
+            SPEC_FILES="${TEST_FILES[@]:$HALF}"
+          fi
+
+          echo "Running part ${{ matrix.part }} with specs:"
+          echo $SPEC_FILES
+
+          # Cypress komutunu bu dosyalarla çalıştır
           xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
-          npm run cy:run:dashboard
+          npx cypress run --spec "${SPEC_FILES// /,}"
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
@@ -329,13 +348,15 @@ jobs:
           tar zcvf "$ARTIFACT_ARCHIVE_NAME" screenshots videos
           curl -o /tmp/uploader.log -u "${{ secrets.BOX_UPLOAD_AUTH }}" ${{ secrets.BOX_UPLOAD_PATH }} -T "$ARTIFACT_ARCHIVE_NAME"
 
+
   ui-test-onboarding:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
     strategy:
       matrix:
-        node: [14, 16]
-        
+        part: [1, 2]
+
     services:
       mongodb:
         image: mongo:8.0
@@ -370,7 +391,9 @@ jobs:
 
       - name: Prepare files to use correct MongoDB host
         shell: bash
-        run: "sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh && sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh"
+        run: |
+          sed -i 's/mongosh --quiet/mongosh --host mongodb --quiet/' /opt/countly/bin/backup/import_events.sh
+          sed -i 's/mongoimport --db/mongoimport --host mongodb --db/' /opt/countly/bin/backup/import_events.sh
 
       - name: NPM install
         shell: bash
@@ -392,15 +415,28 @@ jobs:
           cp cypress.config.sample.js cypress.config.js
           sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
 
-      - name: Run UI tests
+      - name: Run UI tests in parallel parts
         shell: bash
-        working-directory: /opt/countly
+        working-directory: /opt/countly/ui-tests
         run: |
           /sbin/my_init &
-          cd ui-tests
           npm install
+
+          TEST_FILES=( $(find cypress/e2e/onboarding -name '*.cy.js' | sort) )
+          TOTAL=${#TEST_FILES[@]}
+          HALF=$(( (TOTAL + 1) / 2 ))
+
+          if [[ "${{ matrix.part }}" == "1" ]]; then
+            SPEC_FILES="${TEST_FILES[@]:0:$HALF}"
+          else
+            SPEC_FILES="${TEST_FILES[@]:$HALF}"
+          fi
+
+          echo "Running part ${{ matrix.part }} with specs:"
+          echo $SPEC_FILES
+
           xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" \
-          npm run cy:run:onboarding
+          npx cypress run --spec "${SPEC_FILES// /,}"
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
