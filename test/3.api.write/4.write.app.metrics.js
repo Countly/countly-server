@@ -463,6 +463,36 @@ describe('Writing app metrics', function() {
             });
         });
     });
+    describe('testing offline geocoder metric', function() {
+        describe('GET request', function() {
+            it('should success', function(done) {
+                var params = {"_carrier": "Vodafone"};
+                request
+                    .get('/i?device_id=' + DEVICE_ID + '&app_key=' + APP_KEY + "&begin_session=1&location=41.89,12.49")
+                    .expect(200)
+                    .end(function(err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.property('result', 'Success');
+                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    });
+            });
+        });
+        //{"2014":{"9":{"17":{"Italy":{"n":1,"t":1,"u":1}},"Italy":{"n":1,"t":1,"u":1}},"Italy":{"n":1,"t":1,"u":1},"w38":{"Italy":{"u":1}}},"_id":"5419935501f67bb24000008b","meta":{"countries":["Italy"]}}
+        describe('Verify countries', function() {
+            it('should have Italy', function(done) {
+                request
+                    .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=countries')
+                    .expect(200)
+                    .end(function(err, res) {
+                        console.log(res);
+                        testUtils.validateMetrics(err, res, done, {meta: {"countries": ["Italy"]}, "Italy": {"n": 1, "t": 1, "u": 1}});
+                    });
+            });
+        });
+    });
     describe('reset app', function() {
         describe('reseting data', function() {
             it('should reset data', function(done) {
