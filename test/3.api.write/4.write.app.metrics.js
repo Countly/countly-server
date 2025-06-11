@@ -488,7 +488,7 @@ describe('Writing app metrics', function() {
                     .expect(200)
                     .end(function(err, res) {
                         console.log(res.text);
-                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown", "IT"], "f-ranges": ["0"]}, f: {"0": 10}, u: 1, n: 1, t: 1});
+                        testUtils.validateSessionData(err, res, done, {meta: {"countries": ["Unknown", "IT"], "f-ranges": ["0"]}, f: {"0": 10}, "IT": { u: 1, n: 1, t: 1}});
                     });
             });
         });
