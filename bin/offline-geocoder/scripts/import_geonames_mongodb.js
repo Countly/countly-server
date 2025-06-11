@@ -4,7 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const { MongoClient } = require('mongodb');
 
-const DATA_DIR = "data";
+// Get the project root directory (directory of the script)
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+const DATA_DIR = path.join(PROJECT_ROOT, "data");
 const DATA = path.join(DATA_DIR, "cities1000.txt");
 const ADMIN1 = path.join(DATA_DIR, "admin1CodesASCII.txt");
 const COUNTRIES = path.join(DATA_DIR, "countryInfo.txt");
