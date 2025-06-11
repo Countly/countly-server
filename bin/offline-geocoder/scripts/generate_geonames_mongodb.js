@@ -128,9 +128,9 @@ async function downloadFiles() {
     if (!fs.existsSync(DATA)) {
         console.log("Downloading cities from Geonames...");
         const zipFile = "cities1000.zip";
-        await downloadFile("https://download.geonames.org/export/dump/cities1000.zip", zipFile);
 
         try {
+            await downloadFile("https://download.geonames.org/export/dump/cities1000.zip", zipFile);
             await unzipFile(zipFile, DATA);
             await fsPromises.unlink(zipFile);
         }
@@ -145,7 +145,13 @@ async function downloadFiles() {
 
     if (!fs.existsSync(ADMIN1)) {
         console.log("Downloading admin1 from Geonames...");
-        await downloadFile("https://download.geonames.org/export/dump/admin1CodesASCII.txt", ADMIN1);
+        try {
+            await downloadFile("https://download.geonames.org/export/dump/admin1CodesASCII.txt", ADMIN1);
+        }
+        catch (error) {
+            console.log("Error downloading admin1:", error);
+            throw error;
+        }
     }
     else {
         console.log(`Using existing ${ADMIN1}`);
@@ -153,7 +159,13 @@ async function downloadFiles() {
 
     if (!fs.existsSync(COUNTRIES)) {
         console.log("Downloading countries from Geonames...");
-        await downloadFile("https://download.geonames.org/export/dump/countryInfo.txt", COUNTRIES);
+        try {
+            await downloadFile("https://download.geonames.org/export/dump/countryInfo.txt", COUNTRIES);
+        }
+        catch (error) {
+            console.log("Error downloading countries:", error);
+            throw error;
+        }
     }
     else {
         console.log(`Using existing ${COUNTRIES}`);
