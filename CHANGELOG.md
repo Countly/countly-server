@@ -1,3 +1,7 @@
+## Version 25.03.X
+Fixes:
+- [star-rating] Fix consent text limit counter
+
 ## Version 25.03.6
 Enterprise Features:
 - [journey_engine] Publish toggle is converted into button and rearranged
