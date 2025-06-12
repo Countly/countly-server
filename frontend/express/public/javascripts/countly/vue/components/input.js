@@ -328,7 +328,7 @@
                                 @keyup.enter="!option.group && handleItemClick(option)"\
                                 @click.stop="!option.group && handleItemClick(option)"\
                                 v-for="(option, idx) in searchedOptions">\
-                                <div class="cly-vue-listbox__item-content">\
+                                <div class="cly-vue-listbox__item-content" :data-test-id="testId + \'-\' + \'item\'">\
                                     <div class="bu-level">\
                                         <div class="bu-level-left">\
                                             <div v-if="!!$scopedSlots[\'option-prefix\']" class="cly-vue-listbox__item-prefix bu-mr-1">\

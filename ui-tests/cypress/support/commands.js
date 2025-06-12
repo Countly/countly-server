@@ -82,12 +82,16 @@ Cypress.Commands.add("selectColor", (element, colorCode) => {
     cy.clickElement('.cly-vue-button.button-green-skin');
 });
 
-Cypress.Commands.add('uploadFile', (element, filePath) => {
+Cypress.Commands.add('dragAndDropFile', (element, filePath) => {
     cy.getElement(element)
         .attachFile(filePath, {
             encoding: 'utf-8',
             subjectType: 'drag-n-drop'
         });
+});
+
+Cypress.Commands.add('uploadFile', (filePath) => {
+    cy.get('input[type="file"]').attachFile(filePath, { force: true });
 });
 
 Cypress.Commands.add("shouldTooltipContainText", (element, text) => {
