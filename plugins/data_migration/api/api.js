@@ -773,7 +773,7 @@ function trim_ending_slashes(address) {
                 return true;
             }
 
-            if (!params.qstring.only_export || parseInt(params.qstring.only_export) !== 1) {
+            if (!params.qstring.only_export || (parseInt(params.qstring.only_export) !== 1 && parseInt(params.qstring.only_export) !== 2)) {
                 params.qstring.only_export = false;
                 if (!params.qstring.server_token || params.qstring.server_token === '') {
                     common.returnMessage(params, 404, 'data-migration.token_missing');
@@ -789,6 +789,9 @@ function trim_ending_slashes(address) {
                 }
             }
             else {
+                if (params.qstring.only_export && parseInt(params.qstring.only_export, 10) === 2) {
+                    params.qstring.only_commands = true;
+                }
                 params.qstring.only_export = true;
                 params.qstring.server_address = "";
                 params.qstring.server_token = "";
@@ -811,16 +814,30 @@ function trim_ending_slashes(address) {
 
 
             var data_migrator = new migration_helper();
-
-            data_migrator.export_data(apps, params, common.db, log).then(
-                function(result) {
-                    common.returnMessage(params, 200, result);
-                },
-                function(error) {
-                    common.returnMessage(params, 404, error.message);
-                }
-
-            );
+            if (params.qstring.only_commands) {
+                data_migrator.create_export_commands(apps, params, common.db, log).then(
+                    function(result) {
+                        //convert string to buffer
+                        if (typeof result === "string") {
+                            result = Buffer.from(result, 'utf8');
+                        }
+                        common.returnRaw(params, 200, result, {'Content-Type': 'text/plain; charset=utf-8', 'Content-disposition': 'attachment; filename=countly-export-commands.log'});
+                    },
+                    function(error) {
+                        common.returnMessage(params, 404, error.message);
+                    }
+                );
+            }
+            else {
+                data_migrator.export_data(apps, params, common.db, log).then(
+                    function(result) {
+                        common.returnMessage(params, 200, result);
+                    },
+                    function(error) {
+                        common.returnMessage(params, 404, error.message);
+                    }
+                );
+            }
 
         });
         return true;

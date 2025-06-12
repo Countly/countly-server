@@ -313,10 +313,27 @@
 
                 countlyDataMigration.saveExport(requestData, function(res) {
                     if (res.result === "success") {
-                        CountlyHelpers.notify({
-                            type: 'success',
-                            message: CV.i18n('data-migration.export-started')
-                        });
+                        if (requestData.only_export === 2) {
+                            var data = res.data;
+                            //pack data and download
+                            var blob = new Blob([data], { type: 'application/x-sh' });
+                            var url = URL.createObjectURL(blob);
+                            var a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'export_commands.sh';
+                            document.body.appendChild(a);
+                            a.click();
+                            CountlyHelpers.notify({
+                                type: 'success',
+                                message: CV.i18n('data-migration.download-auto')
+                            });
+                        }
+                        else {
+                            CountlyHelpers.notify({
+                                type: 'success',
+                                message: CV.i18n('data-migration.export-started')
+                            });
+                        }
                     }
                     else {
                         CountlyHelpers.notify({
@@ -336,6 +353,27 @@
                     value: countlyGlobal.apps[apps[i]]._id
                 });
             }
+
+            this.apps.sort(function(a, b) {
+                const aLabel = a?.label || '';
+                const bLabel = b?.label || '';
+                const locale = countlyCommon.BROWSER_LANG || 'en';
+
+                if (aLabel && bLabel) {
+                    return aLabel.localeCompare(bLabel, locale, { numeric: true }) || 0;
+                }
+
+                // Move items with no label to the end
+                if (!aLabel && bLabel) {
+                    return 1;
+                }
+
+                if (aLabel && !bLabel) {
+                    return -1;
+                }
+
+                return 0;
+            });
         }
     });
 
