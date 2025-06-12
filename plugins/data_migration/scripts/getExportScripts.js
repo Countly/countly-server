@@ -34,19 +34,19 @@ var generate_events_scripts = function(data) {
                         for (var z = 0; z < res[j].list.length; z++) {
                             var eventCollName = "events" + crypto.createHash('sha1').update(res[j].list[z] + data.appid).digest('hex');
                             //old data, can be removed once we are sure that we are only using merged events_data collection
-                            scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', eventCollName, '--out', data.my_folder]});
+                            scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', eventCollName, '--out', data.my_folder, '--gzip']});
 
                             if (plugins.isPluginEnabled('drill')) {
                                 eventCollName = "drill_events" + crypto.createHash('sha1').update(res[j].list[z] + data.appid).digest('hex');
-                                scripts.push({cmd: 'mongodump', args: [...data.dbargs_drill, '--collection', eventCollName, '--out', data.my_folder]});
+                                scripts.push({cmd: 'mongodump', args: [...data.dbargs_drill, '--collection', eventCollName, '--out', data.my_folder, '--gzip']});
                             }
                         }
                     }
                 }
                 //new data
-                scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', "events_data", '-q', '{ "_id": {"$regex":"^' + data.appid + '_.*"}}', '--out', data.my_folder]});
+                scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', "events_data", '-q', '{ "_id": {"$regex":"^' + data.appid + '_.*"}}', '--out', data.my_folder, '--gzip']});
                 if (plugins.isPluginEnabled('drill')) {
-                    scripts.push({cmd: 'mongodump', args: [...data.dbargs_drill, '--collection', "drill_events", '-q', '{ "a": "' + data.appid + '"}', '--out', data.my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...data.dbargs_drill, '--collection', "drill_events", '-q', '{ "a": "' + data.appid + '"}', '--out', data.my_folder, '--gzip']});
                 }
             }
             resolve(scripts);
@@ -73,7 +73,7 @@ var generate_credentials_scripts = function(data) {
                 }
             }
             if (cid.length > 0) {
-                resolve([{cmd: 'mongodump', args: [...data.dbargs, '--collection', 'credentials', '-q', '{ "_id": {"$in":[' + cid.join(',') + ']}}', '--out', data.my_folder]}]);
+                resolve([{cmd: 'mongodump', args: [...data.dbargs, '--collection', 'credentials', '-q', '{ "_id": {"$in":[' + cid.join(',') + ']}}', '--out', data.my_folder, '--gzip']}]);
             }
             else {
                 resolve([]);
@@ -89,15 +89,15 @@ var createScriptsForViews = function(data) {
         db.collection("views").findOne({'_id': db.ObjectID(appId)}, {}, function(err, viewInfo) {
 
             var colName = "app_viewdata" + crypto.createHash('sha1').update(appId).digest('hex');
-            scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', colName, '--out', data.my_folder]});
+            scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', colName, '--out', data.my_folder, '--gzip']});
             if (viewInfo) {
                 for (let segKey in viewInfo.segments) {
                     colName = "app_viewdata" + crypto.createHash('sha1').update(segKey + appId).digest('hex');
-                    scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', colName, '--out', data.my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', colName, '--out', data.my_folder, '--gzip']});
                 }
             }
             colName = "app_viewdata" + crypto.createHash('sha1').update('platform' + appId).digest('hex');
-            scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', colName, '--out', data.my_folder]});
+            scripts.push({cmd: 'mongodump', args: [...data.dbargs, '--collection', colName, '--out', data.my_folder, '--gzip']});
             resolve(scripts);
         });
 
@@ -146,67 +146,67 @@ var create_export_scripts = function(data) {
             }
             else {
                 if (!res.redirect_url || res.redirect_url === "") {
-                    scripts.push({cmd: 'mongodump', args: [...dbargs, "--collection", "apps", "-q", '{ "_id": {"$oid":"' + appid + '"}}', "--out", my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, "--collection", "apps", "-q", '{ "_id": {"$oid":"' + appid + '"}}', "--out", my_folder, '--gzip']});
                 }
                 else {
                     //remove redirect field and add it after dump.
                     scripts.push({cmd: 'mongo', args: [countly_db_name, ...dbargs0, "--eval", 'db.apps.update({ "_id": ObjectId("' + appid + '")}, { "$unset": { "redirect_url": 1 } })']});
-                    scripts.push({cmd: 'mongodump', args: [...dbargs, "--collection", "apps", "-q", '{ "_id": {"$oid":"' + appid + '"}}', "--out", my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, "--collection", "apps", "-q", '{ "_id": {"$oid":"' + appid + '"}}', "--out", my_folder, '--gzip']});
                     scripts.push({cmd: 'mongo', args: [countly_db_name, ...dbargs0, "--eval", 'db.apps.update({ "_id": ObjectId("' + appid + '")}, { $set: { redirect_url: "' + res.redirect_url + '" } })']});
                 }
 
                 var appDocs = ['app_users', 'metric_changes', 'app_crashes', 'app_crashgroups', 'app_crashusers', 'app_nxret', 'app_viewdata', 'app_views', 'app_userviews', 'app_viewsmeta', 'blocked_users', 'campaign_users', 'consent_history', 'crashes_jira', 'event_flows', 'timesofday', 'feedback', 'push_', 'apm', "nps", "survey", "completed_surveys"];
                 for (let j = 0; j < appDocs.length; j++) {
-                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', appDocs[j] + appid, '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', appDocs[j] + appid, '--out', my_folder, '--gzip']});
                 }
 
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'campaigndata', '-q', '{ "a": "' + appid + '"}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'campaigns', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'crash_share', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'feedback_widgets', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'notes', '-q', '{ "app_id":"' + appid + '"}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'messages', '-q', '{ "apps": {"$oid":"' + appid + '"}}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohortdata', '-q', '{ "a": "' + appid + '"}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohorts', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'server_stats_data_points', '-q', '{ "a": "' + appid + '"}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'consent_history', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'flow_schemas', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'flow_data', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'times_of_day', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder]});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'campaigndata', '-q', '{ "a": "' + appid + '"}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'campaigns', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'crash_share', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'feedback_widgets', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'notes', '-q', '{ "app_id":"' + appid + '"}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'messages', '-q', '{ "apps": {"$oid":"' + appid + '"}}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohortdata', '-q', '{ "a": "' + appid + '"}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'cohorts', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'server_stats_data_points', '-q', '{ "a": "' + appid + '"}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'consent_history', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'flow_schemas', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'flow_data', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'times_of_day', '-q', '{ "app_id": "' + appid + '"}', '--out', my_folder, '--gzip']});
 
                 //concurrent_users
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'concurrent_users_max', '-q', '{"$or":[{ "app_id": "' + appid + '"},{ "_id": {"$in" :["' + appid + '_overall", "' + appid + '_overall_new"]}}]}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'concurrent_users_alerts', '-q', '{ "app": "' + appid + '"}', '--out', my_folder]});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'concurrent_users_max', '-q', '{"$or":[{ "app_id": "' + appid + '"},{ "_id": {"$in" :["' + appid + '_overall", "' + appid + '_overall_new"]}}]}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'concurrent_users_alerts', '-q', '{ "app": "' + appid + '"}', '--out', my_folder, '--gzip']});
 
 
                 var sameStructures = ["browser", "carriers", "cities", "consents", "crashdata", "density", "device_details", "devices", "langs", "sources", "users", "retention_daily", "retention_weekly", "retention_monthly", "server_stats_data_points"];
 
                 for (var k = 0; k < sameStructures.length; k++) {
-                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', sameStructures[k], '-q', '{ "_id": {"$regex": "^' + appid + '_.*" }}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', sameStructures[k], '-q', '{ "_id": {"$regex": "^' + appid + '_.*" }}', '--out', my_folder, '--gzip']});
                 }
                 if (dbargs_out && dbargs_out.length) {
-                    scripts.push({cmd: 'mongodump', args: [...dbargs_out, '--collection', "ab_testing_experiments" + appid, '--out', my_folder]});
-                    scripts.push({cmd: 'mongodump', args: [...dbargs_out, '--collection', "remoteconfig_parameters" + appid, '--out', my_folder]});
-                    scripts.push({cmd: 'mongodump', args: [...dbargs_out, '--collection', "remoteconfig_conditions" + appid, '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs_out, '--collection', "ab_testing_experiments" + appid, '--out', my_folder, '--gzip']});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs_out, '--collection', "remoteconfig_parameters" + appid, '--out', my_folder, '--gzip']});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs_out, '--collection', "remoteconfig_conditions" + appid, '--out', my_folder, '--gzip']});
                 }
 
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'max_online_counts', '-q', '{"_id": {"$oid":"' + appid + '"}}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'top_events', '-q', '{ "app_id": {"$oid":"' + appid + '"}}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'events', '-q', '{ "_id": {"$oid":"' + appid + '"}}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'views', '-q', '{ "_id": {"$oid":"' + appid + '"}}', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'funnels', '-q', '{ "app_id": "' + appid + '" }', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'calculated_metrics', '-q', '{ "app": "' + appid + '" }', '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'datamanager_transforms', '-q', '{ "app": "' + appid + '" }', '--out', my_folder]});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'max_online_counts', '-q', '{"_id": {"$oid":"' + appid + '"}}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'top_events', '-q', '{ "app_id": {"$oid":"' + appid + '"}}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'events', '-q', '{ "_id": {"$oid":"' + appid + '"}}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'views', '-q', '{ "_id": {"$oid":"' + appid + '"}}', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'funnels', '-q', '{ "app_id": "' + appid + '" }', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'calculated_metrics', '-q', '{ "app": "' + appid + '" }', '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'datamanager_transforms', '-q', '{ "app": "' + appid + '" }', '--out', my_folder, '--gzip']});
 
 
                 //event Timeline data:
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'eventTimes' + appid, '--out', my_folder]});
-                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'timelineStatus', '-q', '{ "app_id": "' + appid + '" }', '--out', my_folder]});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'eventTimes' + appid, '--out', my_folder, '--gzip']});
+                scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'timelineStatus', '-q', '{ "app_id": "' + appid + '" }', '--out', my_folder, '--gzip']});
 
                 //internal events
                 for (let j = 0; j < plugins.internalEvents.length; j++) {
                     let eventCollName = "events" + crypto.createHash('sha1').update(plugins.internalEvents[j] + appid).digest('hex');
-                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', eventCollName, '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', eventCollName, '--out', my_folder, '--gzip']});
                 }
 
                 if (plugins.isPluginEnabled('drill')) {
@@ -215,17 +215,17 @@ var create_export_scripts = function(data) {
 
                     for (let j = 0; j < drill_events.length; j++) {
                         let eventCollName = "drill_events" + crypto.createHash('sha1').update(drill_events[j] + appid).digest('hex');
-                        scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', eventCollName, '--out', my_folder]});
+                        scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', eventCollName, '--out', my_folder, '--gzip']});
                     }
 
-                    scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', 'drill_bookmarks', '-q', '{ "app_id": "' + appid + '" }', '--out', my_folder]});
-                    scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', 'drill_meta' + appid, '--out', my_folder]});
-                    scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', 'drill_meta', '-q', '{ "_id": {"$regex": "^' + appid + '_.*" }}', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', 'drill_bookmarks', '-q', '{ "app_id": "' + appid + '" }', '--out', my_folder, '--gzip']});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', 'drill_meta' + appid, '--out', my_folder, '--gzip']});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs_drill, '--collection', 'drill_meta', '-q', '{ "_id": {"$regex": "^' + appid + '_.*" }}', '--out', my_folder, '--gzip']});
                 }
                 //export symbolication files
                 if (data.aditional_files) {
-                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'app_crashsymbols' + appid, '--out', my_folder]});
-                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'symbolication_jobs', '-q', '{ "app_id": "' + appid + '" }', '--out', my_folder]});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'app_crashsymbols' + appid, '--out', my_folder, '--gzip']});
+                    scripts.push({cmd: 'mongodump', args: [...dbargs, '--collection', 'symbolication_jobs', '-q', '{ "app_id": "' + appid + '" }', '--out', my_folder, '--gzip']});
                 }
 
                 //events sctipts
