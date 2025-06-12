@@ -4,7 +4,7 @@ const common = require('./common.js'),
     plugins = require('../../plugins/pluginManager.js');
 
 (function() {
-    plugins.register("/core/delete_granural_data", async function(ob) {
+    plugins.register("/core/delete_granular_data", async function(ob) {
         var db = ob.db;
         var query = ob.query;
         var collection = ob.collection || "drill_events";
