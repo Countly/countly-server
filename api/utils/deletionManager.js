@@ -14,7 +14,7 @@ const common = require('./common.js'),
             "query": query
         }));
         //We can do it smarter after. When we insert check if there is not one to extend. 
-        //For example - if we delete multiple events for same app - merge them into single query. Definietly better for mongodb.
+        //For example - if we delete multiple events for same app - merge them into single query. Definitely better for mongodb.
         var now = new Date().valueOf();
 
         await common.db.collection("deletion_manager").insertOne({
