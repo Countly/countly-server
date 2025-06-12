@@ -14,7 +14,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 bash "$DIR/scripts/logo.sh";
 
 # prerequisite per release
-sudo dnf install -y wget openssl-devel make git sqlite unzip bzip2
+sudo dnf install -y wget openssl-devel make git unzip bzip2
 
 sudo dnf install -y python3-pip
 sudo pip3 install pip --upgrade
@@ -87,7 +87,7 @@ sudo systemctl start sendmail > /dev/null || echo "sendmail service does not exi
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
-( cd "$DIR/.."; npm install argon2; npm install sqlite3 --build-from-source; npm install; )
+( cd "$DIR/.."; npm install argon2; npm install; )
 
 #install numactl
 sudo dnf install -y numactl
@@ -156,7 +156,8 @@ node "$DIR/scripts/install_plugins"
 
 #load city data into database
 nodejs "$DIR/scripts/loadCitiesInDb.js"
-nodejs "$DIR/offline-geocoder/scripts/generate_geonames_mongodb.js"
+nodejs "$DIR/offline-geocoder/scripts/download_geonames_data.js"
+nodejs "$DIR/offline-geocoder/scripts/import_geonames_mongodb.js"
 
 #get web sdk
 sudo countly update sdk-web
