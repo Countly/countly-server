@@ -26,7 +26,7 @@ const common = require('./common.js'),
         });
 
         //Triggering now, but lets change it after to job triggering processing those.
-        //Also we will need to retriger any if they do not finish in some time
+        //Also we will need to retrigger any if they do not finish in some time
         manager.processDeletionTasks().then(function() {
             log.d("Deletion tasks processed successfully");
         }
