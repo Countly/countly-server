@@ -491,6 +491,7 @@ describe('Writing app metrics', function() {
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('meta');
                         ob.meta.should.have.property("countries", ["Unknown", "IT"]);
+                        done();
                     });
             });
         });
