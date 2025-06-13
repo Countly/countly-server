@@ -93,7 +93,7 @@
     "offline-geocoder": "git+https://github.com/Countly/offline-geocoder.git",
     "properties-parser": "0.6.0",
     "puppeteer": "^24.6.1",
-    "sass": "1.89.1",
+    "sass": "1.89.2",
     "semver": "^7.7.1",
     "sharp": "^0.34.2",
     "sqlite3": "^5.1.7",
