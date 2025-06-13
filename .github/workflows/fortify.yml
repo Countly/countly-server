@@ -68,46 +68,13 @@ jobs:
           # FOD_CLIENT_SECRET: ${{secrets.FOD_CLIENT_SECRET}}
           ### Optional configuration
           # FOD_LOGIN_EXTRA_OPTS: --socket-timeout=60s     # Extra 'fcli fod session login' options
-          # FOD_RELEASE: MyApp:MyRelease                   # FoD release name, default: <org>/<repo>:<branch>
+          FOD_RELEASE: 25.03                   # FoD release name, default: <org>/<repo>:<branch>
           # DO_SETUP: true                                 # Setup FoD application, release & static scan configuration
           # SETUP_ACTION: <URL or file>                    # Customize setup action
                                                            # Pass extra options to setup action:
           # SETUP_EXTRA_OPTS: --copy-from "${{ github.repository }}:${{ github.event.repository.default_branch }}"
           # PACKAGE_EXTRA_OPTS: -oss -bt mvn               # Extra 'scancentral package' options
           # FOD_SAST_SCAN_EXTRA_OPTS:                      # Extra 'fcli fod sast-scan start' options
-          # DO_WAIT: true                                  # Wait for successful scan completion (implied if post-scan actions enabled)
-          # DO_POLICY_CHECK: true                          # Fail pipeline if security policy outcome is FAIL
-          # POLICY_CHECK_ACTION: <URL or file>             # Customize security policy checks
-          # POLICY_CHECK_EXTRA_OPTS: --on-unsigned=ignore  # Pass extra options to policy check action
-          # DO_JOB_SUMMARY: true                           # Generate workflow job summary
-          # JOB_SUMMARY_ACTION: <URL or file>              # Customize job summary
-          # JOB_SUMMARY_EXTRA_OPTS: --on-unsigned=ignore   # Pass extra options to job summary action
-          # DO_PR_COMMENT: true                            # Generate PR comments, only used on pull_request triggers
-          # PR_COMMENT_ACTION: <URL or file>               # Customize PR comments
-          # PR_COMMENT_EXTRA_OPTS: --on-unsigned=ignore    # Pass extra options to PR comment action
-          # DO_EXPORT: true                                # Export vulnerability data to GitHub code scanning dashboard
-          # EXPORT_ACTION: <URL or file>                   # Customize export action
-          # EXPORT_EXTRA_OPTS: --on-unsigned=ignore        # Pass extra options to export action
-          # TOOL_DEFINITIONS: <URL>                        # URL from where to retrieve Fortify tool definitions
-
-          #############################################################
-          ##### Fortify Hosted / Software Security Center & ScanCentral
-          ##### Remove this section if you're integrating with Fortify on Demand (see above)
-          ### Required configuration
-          SSC_URL: ${{vars.SSC_URL}}                       # Must be hardcoded or configured through GitHub variable, not secret
-          SSC_TOKEN: ${{secrets.SSC_TOKEN}}                # SSC CIToken; credentials should be configured through GitHub secrets
-          SC_SAST_TOKEN: ${{secrets.SC_CLIENT_AUTH_TOKEN}} # ScanCentral SAST client_auth_token, required if SAST scan is enabled
-          DEBRICKED_TOKEN: ${{secrets.DEBRICKED_TOKEN}}    # Debricked token, required if Debricked scan is enabled
-          SC_SAST_SENSOR_VERSION: 24.4.0                   # Sensor version to use for the scan, required if SAST scan is enabled
-          ### Optional configuration
-          # SSC_LOGIN_EXTRA_OPTS: --socket-timeout=60s     # Extra 'fcli ssc session login' options
-          # SC_SAST_LOGIN_EXTRA_OPTS: --socket-timeout=60s # Extra 'fcli sc-sast session login' options
-          # SSC_APPVERSION: MyApp:MyVersion                # SSC application version name, default: <org>/<repo>:<branch>
-          # DO_SETUP: true                                 # Set up SSC application & version
-          # SETUP_ACTION: <URL or file>                    # Customize setup action
-          # SETUP_EXTRA_OPTS: --on-unsigned=ignore         # Pass extra options to setup action
-          # PACKAGE_EXTRA_OPTS: -bt mvn                    # Extra 'scancentral package' options
-          # EXTRA_SC_SAST_SCAN_OPTS:                       # Extra 'fcli sc-sast scan start' options
           # DO_WAIT: true                                  # Wait for successful scan completion (implied if post-scan actions enabled)
           # DO_POLICY_CHECK: true                          # Fail pipeline if security policy outcome is FAIL
           # POLICY_CHECK_ACTION: <URL or file>             # Customize security policy checks
