@@ -2,13 +2,17 @@
 *  Sharding Countly collections when DB requires authentication, provide it to authDB.auth command in the code
 *  Server: mongodb
 *  Path: any
-*  Command: mongosh < sharding.js
+*  Command: mongosh -u uname -p 'password' --authenticationDatabase admin sharding.js
 */
 
-/* global Mongo, print, printjson */
-var COUNTLY_DRILL = 'countly_drill',
-    COUNTLY = 'countly',
-    COUNT_TO_SHARD = 100000;
+/* global db, print, printjson */
+
+// Set countly_drill database name
+const COUNTLY_DRILL = 'countly_drill';
+// Set countly database name
+const COUNTLY = 'countly';
+// Set the threshold for sharding collections
+const COUNT_TO_SHARD = 100000;
 
 var EXCEPTIONS = [
     /^system\./,
@@ -27,14 +31,8 @@ var COUNTLY_TO_SHARD = [
     "feedback",
 ];
 
-var conn = new Mongo(),
-    authDB = conn.getDB('admin');
-
-// need to update this info
-authDB.auth('<username>', '<password>');
-
-var cly = conn.getDB(COUNTLY),
-    drill = conn.getDB(COUNTLY_DRILL);
+var cly = db.getSiblingDB(COUNTLY),
+    drill = db.getSiblingDB(COUNTLY_DRILL);
 
 var clyCollections = cly.getCollectionNames(), collections = clyCollections.concat(drill.getCollectionNames()), check = [];
 
@@ -61,8 +59,7 @@ check.forEach(function(c) {
     var db = clyCollections.indexOf(c) === -1 ? drill : cly,
         dbName = clyCollections.indexOf(c) === -1 ? COUNTLY_DRILL : COUNTLY,
         count = db[c].count(),
-        capped = db[c].stats()['capped'],
-        status = db[c].getShardVersion().ok;
+        capped = db[c].stats()['capped'];
 
     COUNTLY_TO_SHARD.some((e) => {
         if (c.indexOf(e) == 0) {
@@ -71,7 +68,7 @@ check.forEach(function(c) {
         }
     });
 
-    if (!capped && count > COUNT_TO_SHARD && !status && !exceptional) {
+    if (!capped && count > COUNT_TO_SHARD && !exceptional) {
         print('Creating hashed index & enabling sharding for collection "' + c + '"... ');
 
         db.getCollection(c).createIndex({ _id: 'hashed' });
