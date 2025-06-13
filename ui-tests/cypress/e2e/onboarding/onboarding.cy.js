@@ -63,11 +63,8 @@ const { APP_TYPE, DATA_TYPE } = require('../../support/constants');
 
 describe('Complete Onboarding', () => {
     beforeEach(function() {
-        navigationHelpers.goToLoginPage();
-    });
-
-    afterEach(function() {
         cy.dropMongoDatabase();
+        navigationHelpers.goToLoginPage();
     });
 
     it('should be complete onboarding flow with creating web type demo application', function() {
