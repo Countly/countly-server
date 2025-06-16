@@ -34,7 +34,7 @@ RUN apt-get update && \
 	make && \
 	make altinstall && \
 	ldconfig /usr/src/Python-3.8.20 && \
-	ln -s /usr/local/bin/python3.8 /usr/bin/python3
+	ln -sf /usr/local/bin/python3.8 /usr/bin/python3
 
 RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" && \
 	dpkg -i /tmp/tini.deb && \
@@ -57,11 +57,12 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	\
 	# cleanup & chown
 	npm remove -y --no-save mocha nyc should supertest puppeteer && \
-	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 wget && \
+	apt-get purge -y python3 python3-pip python3-distutils python3-setuptools && \
+        apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 wget && \
 	apt-get autoremove -y && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \
-        rm -f /usr/local/lib/python3.8/ensurepip/_bundled/*.whl && rm -rf /usr/src/Python* && \
+        apt-get autoremove -y && \
+        rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm /usr/local/lib/python3.8/ensurepip/_bundled/*.whl /usr/src/Python* /var/lib/dpkg/info/python3* && \
 	\
 	# temporary to remove npm bug message
 	mkdir /.npm && chown -R 1001:0 /.npm && \
