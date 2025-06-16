@@ -27,9 +27,9 @@ module.exports = defineConfig({
                         }
                     }
                 }
-            })
+            });
         },
     },
-})
+});
 
 
