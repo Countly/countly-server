@@ -27,21 +27,9 @@ module.exports = defineConfig({
                         }
                     }
                 }
-            });
-            on("before:browser:launch", (browser, launchOptions) => {
-                if (["chrome", "edge", "electron"].includes(browser.name)) {
-                    if (browser.isHeadless) {
-                        launchOptions.args.push("--no-sandbox");
-                        launchOptions.args.push("--disable-gl-drawing-for-tests");
-                        launchOptions.args.push("--disable-gpu");
-                        launchOptions.args.push("--disable-dev-shm-usage");
-                    }
-                    launchOptions.args.push('--js-flags="--max_old_space_size=3500 --max_semi_space_size=1024"');
-                }
-                return launchOptions;
-            });
+            })
         },
     },
-});
+})
 
 
