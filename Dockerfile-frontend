@@ -60,6 +60,7 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	apt-get autoremove -y && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
 	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \
+        rm -f /usr/local/lib/python3.8/ensurepip/_bundled/*.whl && rm -rf /usr/src/Python* && \
 	\
 	# temporary to remove npm bug message
 	mkdir /.npm && chown -R 1001:0 /.npm && \
