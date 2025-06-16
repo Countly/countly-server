@@ -52,7 +52,6 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	HOME=/tmp npm install argon2 --build-from-source --unsafe-perm=true --allow-root && \
 	./bin/docker/preinstall.sh && \
 	bash /opt/countly/bin/scripts/detect.init.sh && \
-	python3.8 -m pip install --upgrade pip setuptools && \
 	countly update sdk-web && \
 	\
 	# cleanup & chown
