@@ -10,6 +10,7 @@ if [ -z "$1" ]
 then
     usage ;
 elif [ "$1" = "generate" ]; then
+    npm install jsdoc@latest --save-dev ;
     #browser code
     npx jsdoc "$DIR/../../../frontend/express/public/javascripts/countly" "$DIR/../../../frontend/express/public/javascripts/pre-login.js" -R "$DIR/../../../README.md" -c  "$DIR/../../../jsdoc_conf.json" -d "$DIR/../../../frontend/express/public/docs/browser" ;
     
