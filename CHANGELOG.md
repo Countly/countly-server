@@ -9,9 +9,9 @@ Fixes:
 - [formulas] Fix loading state when selecting event count
 
 Enterprise Fixes:
-- [star-rating] Fix consent text limit counter
 - [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set
 - [journey-engine] Undefined value check for cooldown in Engagement Queue
+- [star-rating] Fix consent text limit counter
 
 Dependencies:
 - Bump sass from 1.89.1 to 1.89.2
