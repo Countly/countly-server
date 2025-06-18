@@ -2,6 +2,10 @@
 Enterprise Fixes:
 - [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set.
 
+Fixes:
+- [core] Allow chrome to launch multiple instances to fix blank dashboard emails
+
+
 ## Version 24.05.31
 Fixes:
 - [feedback] Uniformize drawer internal name input texts
