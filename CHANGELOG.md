@@ -1,6 +1,7 @@
-## Version 24.05.x
+## Version 24.05.32
 Enterprise Fixes:
 - [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set.
+
 
 ## Version 24.05.31
 Fixes:
