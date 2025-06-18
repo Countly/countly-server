@@ -51,7 +51,12 @@
                 type: Boolean
             },
 
-            isToggleDisabled: {
+            isPublishButtonDisabled: {
+                default: false,
+                type: Boolean
+            },
+
+            isPublished: {
                 default: false,
                 type: Boolean
             },
@@ -59,6 +64,11 @@
             options: {
                 default: () => ([]),
                 type: Array
+            },
+
+            publishButtonTooltip: {
+                default: null,
+                type: String
             },
 
             saveButtonLabel: {
@@ -90,15 +100,6 @@
                 type: Boolean
             },
 
-            toggleTooltip: {
-                type: String
-            },
-
-            toggleValue: {
-                default: false,
-                type: Boolean
-            },
-
             value: {
                 required: true,
                 type: String
@@ -112,6 +113,11 @@
             version: {
                 default: null,
                 type: String
+            },
+
+            withPublishButton: {
+                default: false,
+                type: Boolean
             }
         },
 
@@ -119,8 +125,8 @@
             'close',
             'handle-command',
             'input',
+            'publish-button-click',
             'save',
-            'switch-toggle',
             'tab-change'
         ],
 
@@ -168,13 +174,16 @@
                 return !!this.options.length;
             },
 
-            toggleLocalValue: {
-                get() {
-                    return this.toggleValue;
-                },
-                set(value) {
-                    this.$emit('switch-toggle', value);
-                }
+            publishButtonIcon() {
+                return this.isPublished ? 'cly-is cly-is-pause' : null;
+            },
+
+            publishButtonType() {
+                return this.isPublished ? 'warning' : 'success';
+            },
+
+            saveButtonType() {
+                return this.withPublishButton ? 'info' : 'success';
             }
         },
 
@@ -204,7 +213,7 @@
             },
 
             onPublishButtonClick() {
-                this.toggleLocalValue = !this.toggleLocalValue;
+                this.$emit('publish-button-click');
             },
 
             toggleInputReadonlyState() {
