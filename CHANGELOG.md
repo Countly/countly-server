@@ -1,3 +1,12 @@
+## Version 25.03.X
+Fixes:
+- [star-rating] Fix consent text limit counter
+
+Enterprise Fixes:
+- [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set.
+- [funnels] Added explanatory tooltip for filters section on Funnel Detail page
+
+
 ## Version 25.03.6
 Enterprise Features:
 - [journey_engine] Publish toggle is converted into button and rearranged
