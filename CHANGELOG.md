@@ -1,11 +1,28 @@
-## Version 25.03.X
-Fixes:
-- [star-rating] Fix consent text limit counter
-
-Enterprise Fixes:
-- [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set.
+## Version 25.03.7
+Enterprise Features:
 - [funnels] Added explanatory tooltip for filters section on Funnel Detail page
 
+Fixes:
+- [core] Applied some fixes to user-merge, togetExportScripts, sharding, delete_old_drill_events, add_indexes script
+- [core] Fix/docker python vulnerabilities
+- [core] Allow chrome to launch multiple instances to fix blank dashboard emails
+- [formulas] Fix loading state when selecting event count
+
+Enterprise Fixes:
+- [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set
+- [journey-engine] Undefined value check for cooldown in Engagement Queue
+- [star-rating] Fix consent text limit counter
+
+Dependencies:
+- Bump sass from 1.89.1 to 1.89.2
+- Bump puppeteer from 24.10.0 to 24.10.1
+- Bump countly-sdk-nodejs from 24.10.1 to 24.10.2
+- Bump sass-embedded in /plugins/content from 1.89.1 to 1.89.2
+- Bump @vue-flow/node-resizer  in /plugins/content from 1.4.0 to 1.5.0
+- Bump @vue-flow/core in /plugins/content from 1.44.0 to 1.45.0
+- Bump vue-i18n in /plugins/content from 11.1.5 to 11.1.6 
+- Bump terser in /plugins/content from 5.42.0 to 5.43.0 
+- Bump mockttp in /plugins/crash_symbolication from 3.17.1 to 4.0.0
 
 ## Version 25.03.6
 Enterprise Features:
