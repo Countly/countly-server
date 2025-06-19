@@ -244,7 +244,7 @@ jobs:
           npx grunt mochaTest       
 
   ui-tests:
-    runs-on: ubuntu-22.04-4core
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
