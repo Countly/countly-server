@@ -69,26 +69,24 @@
             data-test-id="content-header-save-button"
             :disabled="disableSaveButton"
             size="small"
-            type="success"
+            :type="saveButtonType"
             v-tooltip="saveButtonTooltip"
             @click="onSaveButtonClick"
         >
             {{ saveButtonLabel }}
         </el-button>
         <el-button
-            v-if="toggle"
-            v-tooltip.down="toggleTooltip"
-            :disabled="isToggleDisabled"
+            v-if="withPublishButton"
+            v-tooltip.down="publishButtonTooltip"
             class="cly-vue-content-builder-header__save-button"
-            test-id="journey-publish"
-            :type="toggleLocalValue ? 'warning' : 'success'"
+            :disabled="isPublishButtonDisabled"
+            :icon="publishButtonIcon"
             size="small"
+            test-id="journey-publish"
+            :type="publishButtonType"
             @click="onPublishButtonClick"
         >
-            <template v-if="toggleLocalValue">
-                <i class="cly-is cly-is-pause" style="margin-right: 4px;"></i>
-            </template>
-            {{ toggleLocalValue ? 'Pause': 'Publish' }}
+            {{ isPublished ? 'Pause': 'Publish' }}
         </el-button>
         <cly-more-options
             v-if="isOptionsButtonVisible"
@@ -97,13 +95,13 @@
             size="small"
             @command="onCommand"
         >
-          <el-dropdown-item
-              v-for="(option, idx) in options"
-              :key="`cly-vue-content-builder-header-option-${idx}`"
-              class="cly-vue-content-builder-header__option"
-              :data-test-id="'more-button-option-' + option.value"
-              :command="option.value"
-              :disabled="option.disabled"
+            <el-dropdown-item
+                v-for="(option, idx) in options"
+                :key="`cly-vue-content-builder-header-option-${idx}`"
+                class="cly-vue-content-builder-header__option"
+                :data-test-id="'more-button-option-' + option.value"
+                :command="option.value"
+                :disabled="option.disabled"
             >
                 <span class="cly-vue-content-builder-header__option-label">
                     {{ option.label }}
