@@ -154,7 +154,7 @@
                                 <el-dropdown-item command="created" icon="cly-io cly-io-plus-circle">{{ i18n('data-manager.created') }}</el-dropdown-item>
                                 <el-dropdown-item command="blocked" icon="cly-io cly-io-x-circle">{{ i18n('data-manager.blocked') }}</el-dropdown-item>
                             </cly-more-options>
-                            <cly-more-options size="small" :text=" i18n('data-manager.change-visibility') " type="default" icon="cly-io cly-io-eye bu-mr-2" widthSameAsTrigger="true" :showArrows=true @command="handleChangeVisibility($event, scope.diff)">
+                            <cly-more-options size="small" :text=" i18n('data-manager.change-visibility') " type="default" icon="cly-io cly-io-eye bu-mr-2" :widthSameAsTrigger="true" :showArrows=true @command="handleChangeVisibility($event, scope.diff)">
                                 <el-dropdown-item command="visible"><i class="cly-io cly-io-eye"></i>{{ i18n('data-manager.visible') }}</el-dropdown-item>
                                 <el-dropdown-item command="hidden"><i class="cly-io cly-io-eye-off"></i>{{ i18n('data-manager.hidden') }}</el-dropdown-item>
                             </cly-more-options>
