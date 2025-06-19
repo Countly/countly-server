@@ -13,6 +13,7 @@ module.exports = defineConfig({
         chromeWebSecurity: false,
         watchForFileChanges: true,
         video: true,
+        testIsolation: true,
         setupNodeEvents(on, config) {
             on('after:spec', (spec, results) => {
                 if (results && results.video) {
