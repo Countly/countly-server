@@ -49,3 +49,4 @@ dist/
 .claude
 CLAUDE.md
 CLAUDE.*.md
+comparison_logs/
