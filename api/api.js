@@ -7,6 +7,7 @@ const common = require('./utils/common.js');
 const {processRequest} = require('./utils/requestProcessor');
 const frontendConfig = require('../frontend/express/config.js');
 const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher.js');
+const QueryRunner = require('./parts/data/QueryRunner.js');
 const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
@@ -28,6 +29,7 @@ plugins.connectToAllDatabases().then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
+    common.queryRunner = new QueryRunner();
 
 
     if (common.drillDb) {
