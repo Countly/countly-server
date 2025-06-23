@@ -14,6 +14,9 @@ const moment = require("moment");
 
 var {MongoDbQueryRunner} = require('./utils/mongoDbQueryRunner.js');
 
+//Add deletion manager endpoint
+require('./utils/deletionManager.js');
+
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
 
