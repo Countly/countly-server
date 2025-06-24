@@ -169,8 +169,30 @@
                     "independent": CV.i18n("report-manager.app-independent")
                 };
                 if (countlyGlobal.apps && Object.keys(countlyGlobal.apps).length !== 0) {
-                    for (var app in countlyGlobal.apps) {
-                        obj[app] = countlyGlobal.apps[app].name;
+                    const globalApps = Object.values(countlyGlobal.apps)
+                        .sort(function(a, b) {
+                            const aLabel = a?.label || '';
+                            const bLabel = b?.label || '';
+                            const locale = countlyCommon.BROWSER_LANG || 'en';
+
+                            if (aLabel && bLabel) {
+                                return aLabel.localeCompare(bLabel, locale, { numeric: true }) || 0;
+                            }
+
+                            // Move items with no label to the end
+                            if (!aLabel && bLabel) {
+                                return 1;
+                            }
+
+                            if (aLabel && !bLabel) {
+                                return -1;
+                            }
+
+                            return 0;
+                        });
+
+                    for (var app of globalApps) {
+                        obj[app._id] = app.name;
                     }
                 }
                 return obj;

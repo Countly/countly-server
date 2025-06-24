@@ -28,7 +28,7 @@ RUN apt-get update && \
 	cd /usr/src && \
 	wget https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tar.xz && \
 	tar -xf Python-3.8.12.tar.xz && \
-	apt-get install -y build-essential sudo zlib1g-dev libssl3 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev && \
+	apt-get install -y build-essential sudo zlib1g-dev libssl3 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev curl libbz2-dev && \
 	cd Python-3.8.12 && \
 	./configure --enable-optimizations --enable-shared && \
 	make && \
@@ -40,7 +40,6 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	dpkg -i /tmp/tini.deb && \
 	\
 	# modify standard distribution
-	apt-get update && apt-get install -y sqlite3 && \
 	./bin/docker/modify.sh && \
 	\
 	# preinstall
@@ -56,7 +55,7 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	\
 	# cleanup & chown
 	npm remove -y --no-save mocha nyc should supertest puppeteer && \
-	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 wget && \
+	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip wget && \
 	apt-get autoremove -y && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
 	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \

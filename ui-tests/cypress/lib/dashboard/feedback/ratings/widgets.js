@@ -541,7 +541,7 @@ const clickDontUseLogoRadioButton = () => {
 };
 
 const uploadLogo = (logoPath) => {
-    cy.uploadFile(feedbackRatingWidgetsPageElements.UPLOAD_FILE_DROPZONE, logoPath);
+    cy.dragAndDropFile(feedbackRatingWidgetsPageElements.UPLOAD_FILE_DROPZONE, logoPath);
 };
 
 const selectMainColor = (colorCode) => {
