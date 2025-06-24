@@ -1,3 +1,8 @@
+## Version 24.05.33
+Fixes:
+- [emails] [puppeteer] [fix] Allow chrome to launch multiple instances
+
+
 ## Version 24.05.32
 Enterprise Fixes:
 - [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set.
@@ -32,7 +37,7 @@ Fixes:
 ## Version 24.05.28
 Enterprise Fixes:
 - [cohorts] Fixed issue with combining multiple cohorts
-  
+
 ## Version 24.05.27
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
@@ -92,7 +97,7 @@ Enterprise fixes:
 - [drill] [license] Update license loader to enable supplying db client
 - [users] Format data points displayed in user sidebar
 - [cohorts] Unescape drill texts in cohort component
-   
+
 Dependencies:
 - Bump fs-extra from 11.2.0 to 11.3.0
 - Bump nodemailer from 6.9.16 to 6.10.0
