@@ -7,6 +7,8 @@
 
 const config = require('../../config');
 const log = require('../../utils/log.js')('query-runner');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * QueryRunner Class
@@ -43,6 +45,39 @@ const log = require('../../utils/log.js')('query-runner');
  */
 class QueryRunner {
 
+    /**
+     * Ensure comparison logs directory exists
+     * @returns {string} Path to the comparison logs directory
+     * @private
+     */
+    ensureComparisonLogsDir() {
+        const comparisonLogsDir = path.join(process.cwd(), 'comparison_logs');
+        if (!fs.existsSync(comparisonLogsDir)) {
+            fs.mkdirSync(comparisonLogsDir, { recursive: true });
+        }
+        return comparisonLogsDir;
+    }
+
+    /**
+     * Write comparison results to JSON file
+     * @param {string} queryName - Query name for file naming
+     * @param {Object} comparisonData - Data to write
+     * @private
+     */
+    writeComparisonLog(queryName, comparisonData) {
+        try {
+            const comparisonLogsDir = this.ensureComparisonLogsDir();
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const filename = `${queryName}_${timestamp}.json`;
+            const filepath = path.join(comparisonLogsDir, filename);
+
+            fs.writeFileSync(filepath, JSON.stringify(comparisonData, null, 2));
+            log.d(`Comparison log written to: ${filepath}`);
+        }
+        catch (error) {
+            log.e('Failed to write comparison log', error);
+        }
+    }
 
     /**
      * Execute a query definition directly without registration
@@ -58,6 +93,7 @@ class QueryRunner {
      * @param {Object} params - Query parameters passed to the handler function
      * @param {Object} [options] - Execution options
      * @param {string} [options.adapter] - Force specific adapter ('mongodb' or 'clickhouse')
+     * @param {boolean} [options.comparison] - Enable comparison mode (runs on all adapters)
      * @param {Function} [transform] - Optional transformation function applied to results
      * @param {Object} [transformOptions] - Options passed to the transform function
      * @returns {Promise<any>} Query result as returned by the handler (and transformed if transform is provided)
@@ -100,6 +136,12 @@ class QueryRunner {
             }
 
             const queryName = queryDef.name || 'unnamed_query';
+
+            // Check if comparison mode is enabled
+            if (options.comparison) {
+                return await this.executeQueryWithComparison(queryDef, params, options, transform, transformOptions);
+            }
+
             const selectedAdapter = this.selectAdapterForDef(queryDef, options.adapter);
             let result = await this.executeOnAdapter(queryDef, selectedAdapter, params, options);
 
@@ -129,6 +171,112 @@ class QueryRunner {
             log.e(`Query execution failed: ${queryName} after ${duration}ms`, error);
             throw error;
         }
+    }
+
+    /**
+     * Execute query with comparison mode - runs on all available adapters
+     * @param {Object} queryDef - Query definition object
+     * @param {Object} params - Query parameters
+     * @param {Object} options - Execution options
+     * @param {Function} transform - Transformation function
+     * @param {Object} transformOptions - Transform options
+     * @returns {Promise<any>} Result from the selected adapter (normal flow)
+     * @private
+     */
+    async executeQueryWithComparison(queryDef, params, options, transform, transformOptions) {
+        const queryName = queryDef.name || 'unnamed_query';
+        const comparisonData = {
+            queryName,
+            timestamp: new Date().toISOString(),
+            adapters: {}
+        };
+
+        // Determine the primary adapter for return value
+        const primaryAdapter = this.selectAdapterForDef(queryDef, options.adapter);
+        let primaryResult = null;
+
+        // Get all available adapters for this query
+        const availableAdapters = Object.keys(queryDef.adapters).filter(
+            name => queryDef.adapters[name].available !== false && this.isAdapterAvailable(name)
+        );
+
+        log.d(`Comparison mode: Running query '${queryName}' on all adapters: ${availableAdapters.join(', ')}`);
+
+        // Execute on all available adapters
+        for (const adapterName of availableAdapters) {
+            const adapterStartTime = Date.now();
+            const adapterData = {
+                adapter: adapterName,
+                startTime: new Date().toISOString(),
+                success: false,
+                duration: 0,
+                query: null,
+                rawResult: null,
+                transformedResult: null,
+                error: null
+            };
+
+            try {
+                // Execute query on adapter
+                log.d(`Comparison mode: Executing on ${adapterName}`);
+                const rawResult = await this.executeOnAdapter(queryDef, adapterName, params, options);
+
+                // Extract query metadata and actual data
+                if (rawResult && rawResult._queryMeta) {
+                    adapterData.query = rawResult._queryMeta.query;
+                    adapterData.rawResult = rawResult.data;
+                }
+                else {
+                    adapterData.rawResult = rawResult;
+                }
+
+                adapterData.success = true;
+
+                // Apply transformation if provided
+                let transformedResult = rawResult;
+                if (transform && typeof transform === 'function') {
+                    try {
+                        transformedResult = await transform(rawResult, adapterName, transformOptions);
+                        adapterData.transformedResult = JSON.parse(JSON.stringify(transformedResult));
+                    }
+                    catch (transformError) {
+                        log.e(`Comparison mode: Transformation failed for ${adapterName}`, transformError);
+                        adapterData.transformError = transformError.message;
+                        adapterData.transformedResult = null;
+                    }
+                }
+                else {
+                    adapterData.transformedResult = adapterData.rawResult;
+                }
+
+                // Store primary result for return
+                if (adapterName === primaryAdapter) {
+                    primaryResult = transformedResult;
+                }
+
+                adapterData.duration = Date.now() - adapterStartTime;
+                log.d(`Comparison mode: ${adapterName} completed in ${adapterData.duration}ms`);
+            }
+            catch (error) {
+                adapterData.success = false;
+                adapterData.error = error.message;
+                adapterData.duration = Date.now() - adapterStartTime;
+                log.e(`Comparison mode: ${adapterName} failed after ${adapterData.duration}ms`, error);
+
+                // If primary adapter failed, throw error to maintain normal flow
+                if (adapterName === primaryAdapter) {
+                    throw error;
+                }
+            }
+
+            comparisonData.adapters[adapterName] = adapterData;
+        }
+
+        // Write comparison log
+        this.writeComparisonLog(queryName, comparisonData);
+
+        log.d(`Comparison mode: Query '${queryName}' completed on all adapters, returning result from ${primaryAdapter}`);
+        return primaryResult;
     }
 
     /**
