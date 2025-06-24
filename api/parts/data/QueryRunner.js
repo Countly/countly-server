@@ -58,7 +58,9 @@ class QueryRunner {
      * @param {Object} params - Query parameters passed to the handler function
      * @param {Object} [options] - Execution options
      * @param {string} [options.adapter] - Force specific adapter ('mongodb' or 'clickhouse')
-     * @returns {Promise<any>} Query result as returned by the handler
+     * @param {Function} [transform] - Optional transformation function applied to results
+     * @param {Object} [transformOptions] - Options passed to the transform function
+     * @returns {Promise<any>} Query result as returned by the handler (and transformed if transform is provided)
      * @throws {Error} If query definition is invalid or no suitable adapter found
      * @example
      * const queryDef = {
@@ -76,9 +78,21 @@ class QueryRunner {
      *     }
      *   }
      * };
-     * const result = await queryRunner.executeQuery(queryDef, { filter: { app_id: '123' } });
+     * 
+     * const transform = async (result, adapter, transformOptions) => {
+     *   // Transform result based on adapter type
+     *   return transformedResult;
+     * };
+     * 
+     * const result = await queryRunner.executeQuery(
+     *   queryDef, 
+     *   { filter: { app_id: '123' } }, 
+     *   { adapter: 'clickhouse' },
+     *   transform,
+     *   { type: 'drill_format' }
+     * );
      */
-    async executeQuery(queryDef, params, options = {}) {
+    async executeQuery(queryDef, params, options = {}, transform = null, transformOptions = {}) {
         const startTime = Date.now();
         try {
             if (!queryDef || !queryDef.adapters) {
@@ -87,7 +101,23 @@ class QueryRunner {
 
             const queryName = queryDef.name || 'unnamed_query';
             const selectedAdapter = this.selectAdapterForDef(queryDef, options.adapter);
-            const result = await this.executeOnAdapter(queryDef, selectedAdapter, params, options);
+            let result = await this.executeOnAdapter(queryDef, selectedAdapter, params, options);
+
+            // Apply transformation if provided
+            if (transform && typeof transform === 'function') {
+                const transformStartTime = Date.now();
+                try {
+                    result = await transform(result, selectedAdapter, transformOptions);
+                    const transformDuration = Date.now() - transformStartTime;
+                    log.d(`Query transformation completed: ${queryName} in ${transformDuration}ms`);
+                }
+                catch (transformError) {
+                    const transformDuration = Date.now() - transformStartTime;
+                    log.e(`Query transformation failed: ${queryName} after ${transformDuration}ms`, transformError);
+                    throw transformError;
+                }
+            }
+
             const duration = Date.now() - startTime;
             log.d(`Query completed: ${queryName} on ${selectedAdapter} in ${duration}ms`);
 
