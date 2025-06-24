@@ -80,7 +80,7 @@ const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         isElementVisible: false,
         labelElement: eventsDataTableElements().COLUMN_NAME_LAST_MODIFIED_LABEL,
-        labelText: "Last modıfıed",
+        labelText: "Last modified",
     });
 
     cy.verifyElement({
