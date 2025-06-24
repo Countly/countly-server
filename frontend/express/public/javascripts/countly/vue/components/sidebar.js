@@ -157,6 +157,32 @@
                     errorMessage: CV.i18n("common.copy-error-message")
                 };
             },
+            computed: {
+                member: function() {
+                    //We should fetch the user from vuex
+                    //So that updates are reactive
+
+                    var userImage = {};
+                    var member = countlyGlobal.member;
+                    if (member.member_image) {
+                        userImage.url = member.member_image;
+                        userImage.found = true;
+                    }
+                    else {
+                        var defaultAvatarSelector = (member.created_at || Date.now()) % 10 * -60;
+                        var name = member.full_name.split(" ");
+
+                        userImage.found = false;
+                        userImage.url = "images/avatar-sprite.png?v2";
+                        userImage.position = defaultAvatarSelector;
+                        userImage.initials = name[0][0] + name[name.length - 1][0];
+                    }
+
+                    member.image = userImage;
+
+                    return member;
+                },
+            },
             methods: {
                 logout: function() {
                     this.$store.dispatch("countlyCommon/removeActiveApp");
@@ -555,12 +581,41 @@
             }
         });
 
+        // we need to register the sidebar menu items here so that they are available in the
+        // sidebar in the order they are registered otherwise the order registered from other
+        // plugins will not be respected:
+        CV.container.registerData("/sidebar/menu/other", {
+            name: CountlyHelpers.isPluginEnabled('guides') ? "countly-guides" : "help-center",
+            icon: CountlyHelpers.isPluginEnabled('guides') ? "cly-icon-sidebar-countly-guides" : "cly-icon-sidebar-help-center",
+            noSelect: true,
+            tooltip: CountlyHelpers.isPluginEnabled('guides') ? "Countly Guides" : "Help Center",
+            priority: 10,
+        });
+        CV.container.registerData("/sidebar/menu/other", {
+            name: "user",
+            noSelect: true,
+            tooltip: CV.i18n("sidebar.my-profile"),
+            priority: 20,
+        });
+        CV.container.registerData("/sidebar/menu/other", {
+            name: "language",
+            noSelect: true,
+            tooltip: "Language",
+            priority: 30,
+        });
+        CV.container.registerData("/sidebar/menu/other", {
+            name: "toggle",
+            icon: "cly-icon-sidebar-toggle-left",
+            noSelect: true,
+            priority: 40,
+        });
+
         var SidebarView = countlyVue.views.create({
             template: CV.T('/javascripts/countly/vue/templates/sidebar/sidebar.html'),
             mixins: [
                 countlyVue.container.dataMixin({
                     "externalMainMenuOptions": "/sidebar/menu/main",
-                    "externalOtherMenuOptions": "/sidebar/menu/other",
+                    "otherMenuOptions": "/sidebar/menu/other",
                     "customSidebarComponents": "/sidebar/custom",
                 })
             ],
@@ -616,14 +671,14 @@
                     var menuOptions = [];
 
                     var externalMainMenuOptions = this.externalMainMenuOptions;
-                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
+                    var otherMenuOptions = this.otherMenuOptions;
 
                     if (externalMainMenuOptions && externalMainMenuOptions.length) {
                         menuOptions = menuOptions.concat(externalMainMenuOptions);
                     }
 
-                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
-                        menuOptions = menuOptions.concat(externalOtherMenuOptions);
+                    if (otherMenuOptions && otherMenuOptions.length) {
+                        menuOptions = menuOptions.concat(otherMenuOptions);
                     }
 
                     return menuOptions;
@@ -641,66 +696,42 @@
 
                     return menuOptions;
                 },
-                otherMenuOptions: function() {
-                    var menuOptions = [
-                        {
-                            name: this.enableGuides ? "countly-guides" : "help-center",
-                            icon: this.enableGuides ? "cly-icon-sidebar-countly-guides" : "cly-icon-sidebar-help-center",
-                            noSelect: true,
-                            tooltip: this.enableGuides ? "Countly Guides" : "Help Center"
-                        },
-                        {
-                            name: "user",
-                            noSelect: true,
-                            member: this.member,
-                            tooltip: CV.i18n("sidebar.my-profile")
-                        },
-                        {
-                            name: "language",
-                            noSelect: true,
-                            tooltip: "Language"
-                        },
-                        {
-                            name: "toggle",
-                            icon: "cly-icon-sidebar-toggle-left",
-                            noSelect: true
-                        }
-                    ];
+                // otherMenuOptions: function() {
+                //     var menuOptions = [
+                //         {
+                //             name: this.enableGuides ? "countly-guides" : "help-center",
+                //             icon: this.enableGuides ? "cly-icon-sidebar-countly-guides" : "cly-icon-sidebar-help-center",
+                //             noSelect: true,
+                //             tooltip: this.enableGuides ? "Countly Guides" : "Help Center"
+                //         },
+                //         {
+                //             name: "user",
+                //             noSelect: true,
+                //             member: this.member,
+                //             tooltip: CV.i18n("sidebar.my-profile")
+                //         },
+                //         {
+                //             name: "language",
+                //             noSelect: true,
+                //             tooltip: "Language"
+                //         },
+                //         {
+                //             name: "toggle",
+                //             icon: "cly-icon-sidebar-toggle-left",
+                //             noSelect: true
+                //         }
+                //     ];
 
-                    var externalOtherMenuOptions = this.externalOtherMenuOptions;
+                //     var otherMenuOptions = this.otherMenuOptions;
 
-                    if (externalOtherMenuOptions && externalOtherMenuOptions.length) {
-                        for (var i = 0; i < externalOtherMenuOptions.length; i++) {
-                            menuOptions.splice(3, 0, externalOtherMenuOptions[i]);
-                        }
-                    }
+                //     if (otherMenuOptions && otherMenuOptions.length) {
+                //         for (var i = 0; i < otherMenuOptions.length; i++) {
+                //             menuOptions.splice(3, 0, otherMenuOptions[i]);
+                //         }
+                //     }
 
-                    return menuOptions;
-                },
-                member: function() {
-                    //We should fetch the user from vuex
-                    //So that updates are reactive
-
-                    var userImage = {};
-                    var member = countlyGlobal.member;
-                    if (member.member_image) {
-                        userImage.url = member.member_image;
-                        userImage.found = true;
-                    }
-                    else {
-                        var defaultAvatarSelector = (member.created_at || Date.now()) % 10 * -60;
-                        var name = member.full_name.split(" ");
-
-                        userImage.found = false;
-                        userImage.url = "images/avatar-sprite.png?v2";
-                        userImage.position = defaultAvatarSelector;
-                        userImage.initials = name[0][0] + name[name.length - 1][0];
-                    }
-
-                    member.image = userImage;
-
-                    return member;
-                },
+                //     return menuOptions;
+                // },
                 pseudoSelectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
