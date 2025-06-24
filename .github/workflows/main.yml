@@ -312,12 +312,6 @@ jobs:
           cp cypress.config.sample.js cypress.config.js
           sed -i 's/000000/${{ secrets.CYPRESS_PROJECT_ID }}/g' cypress.config.js
 
-      # - name: Monitor memory & CPU (before)
-      #   run: |
-      #     echo "Before step:" 
-      #     free -m
-      #     top -b -n1 | head -10
-
       - name: Start memory monitor (background)
         run: |
           nohup bash -c 'while true; do echo "$(date)" >> /tmp/mem.log; free -m >> /tmp/mem.log; sleep 1; done' &
@@ -340,12 +334,6 @@ jobs:
         run: |
           echo "Memory log:"
           cat /tmp/mem.log
-
-     #  - name: Monitor memory & CPU (after)
-     #    run: |
-     #      echo "After step:"
-     #      free -m
-     #      top -b -n1 | head -10
 
       - name: Upload UI tests artifacts
         if: ${{ failure() }}
