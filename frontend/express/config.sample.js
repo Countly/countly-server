@@ -114,13 +114,6 @@ var countlyConfig = {
     */
     passwordSecret: "",
 
-    /**
-     * Enable ClickHouse debug features for drill
-     * @type {boolean}
-     * @property {boolean} [drill_clickhouse_debug=false] - enables db_override toggle and related debugging features in UI and backend
-     * When false, the toggle is hidden and system falls back to drill_events_driver config
-     */
-    drill_clickhouse_debug: false
 };
 
 module.exports = require('../../api/configextender')('FRONTEND', countlyConfig, process.env);

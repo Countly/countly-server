@@ -1858,21 +1858,6 @@ var pluginManager = function pluginManager() {
         require('../api/utils/countlyFs').setHandler(dbFs);
         common.drillDb = dbDrill;
 
-        // Connect to ClickHouse if drill_events_driver is set to clickhouse
-        if (apiCountlyConfig && apiCountlyConfig.drill_events_driver === 'clickhouse') {
-            try {
-                const ClickhouseClient = require('./drill/api/clickhouse/ClickhouseClient.js');
-                common.clickhouse = ClickhouseClient;
-                console.log("ClickHouse client connected successfully");
-            }
-            catch (error) {
-                console.error("Failed to connect to ClickHouse:", error);
-                common.clickhouse = null;
-            }
-        }
-        else {
-            common.clickhouse = null;
-        }
 
         var self = this;
         await new Promise(function(resolve) {
@@ -3116,6 +3101,28 @@ var pluginManager = function pluginManager() {
         }
         return toReturn;
     };
+
+    this.register('/database/register', function(params) {
+        if (!params || !params.name || !params.client) {
+            console.error('Invalid database registration: missing name or client');
+            return;
+        }
+
+        try {
+            const common = require('../api/utils/common.js');
+
+            // Attach database client to common object using the provided name
+            common[params.name] = params.client;
+            console.log(`Database '${params.name}' (${params.type || 'unknown'}) registered with common object`);
+
+            if (params.description) {
+                console.log(`  Description: ${params.description}`);
+            }
+        }
+        catch (error) {
+            console.error(`Failed to register database '${params.name}':`, error);
+        }
+    });
 };
 /* ************************************************************************
 SINGLETON CLASS DEFINITION

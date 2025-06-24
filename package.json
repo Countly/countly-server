@@ -44,7 +44,6 @@
   },
   "dependencies": {
     "@breejs/later": "^4.2.0",
-    "@clickhouse/client": "^1.11.1",
     "@pulsecron/pulse": "^1.6.8",
     "all-the-cities": "3.1.0",
     "argon2": "0.41.1",

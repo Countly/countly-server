@@ -15,6 +15,28 @@ var countlyConfig = {
     drill_events_driver: "mongodb",
 
     /**
+     * Query Runner configuration for multi-database query execution
+     * @type {object}
+     * @property {array} [adapterPreference=['mongodb', 'clickhouse']] - Adapter preference order (first match wins)
+     * @property {object} adapters - Adapter availability settings
+     * @property {object} adapters.mongodb - MongoDB adapter settings
+     * @property {boolean} [adapters.mongodb.enabled=true] - Enable MongoDB adapter
+     * @property {object} adapters.clickhouse - ClickHouse adapter settings
+     * @property {boolean} [adapters.clickhouse.enabled=true] - Enable ClickHouse adapter
+     */
+    queryRunner: {
+        adapterPreference: ['mongodb', 'clickhouse'],
+        adapters: {
+            mongodb: {
+                enabled: true
+            },
+            clickhouse: {
+                enabled: true
+            }
+        }
+    },
+
+    /**
     * MongoDB connection definition and options
     * @type {object} 
     * @property {string} [host=localhost] - host where to connect to mongodb, default localhost
