@@ -745,23 +745,19 @@
                 llmEvents.push(
                     {
                         "label": this.i18n('internal-events.[CLY]_llm_interaction'),
-                        "name": "[CLY]_llm_interaction",
-                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_interaction'), value: '[CLY]_llm_interaction' } ]
+                        "name": "[CLY]_llm_interaction"
                     },
                     {
                         "label": this.i18n('internal-events.[CLY]_llm_interaction_feedback'),
-                        "name": "[CLY]_llm_interaction_feedback",
-                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_interaction_feedback'), value: '[CLY]_llm_interaction_feedback' } ]
+                        "name": "[CLY]_llm_interaction_feedback"
                     },
                     {
                         "label": this.i18n('internal-events.[CLY]_llm_tool_used'),
-                        "name": "[CLY]_llm_tool_used",
-                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_tool_used'), value: '[CLY]_llm_tool_used' } ]
+                        "name": "[CLY]_llm_tool_used"
                     },
                     {
                         "label": this.i18n('internal-events.[CLY]_llm_tool_usage_parameter'),
-                        "name": "[CLY]_llm_tool_usage_parameter",
-                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_tool_usage_parameter'), value: '[CLY]_llm_tool_usage_parameter' } ]
+                        "name": "[CLY]_llm_tool_usage_parameter"
                     }
                 );
                 if (llmEvents.length > 0) {
