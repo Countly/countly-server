@@ -4,7 +4,6 @@
  * Supports multiple database adapters with configuration-based selection
  * @module api/parts/data/QueryRunner
  */
-
 const config = require('../../config');
 const log = require('../../utils/log.js')('query-runner');
 const fs = require('fs');
@@ -327,7 +326,6 @@ class QueryRunner {
             throw error;
         }
     }
-
 
     /**
      * Select best adapter for a query definition based on availability and configuration
