@@ -4,7 +4,6 @@
  * Supports multiple database adapters with configuration-based selection
  * @module api/parts/data/QueryRunner
  */
-
 const config = require('../../config');
 const log = require('../../utils/log.js')('query-runner');
 const fs = require('fs');
@@ -136,7 +135,11 @@ class QueryRunner {
                 throw new Error('Invalid query definition: must have adapters');
             }
 
-            const queryName = queryDef.name || 'unnamed_query';
+            if (!queryDef.name) {
+                throw new Error('Query definition must have a name');
+            }
+
+            const queryName = queryDef.name;
 
             // Check if comparison mode is enabled
             if (options.comparison) {
@@ -151,7 +154,12 @@ class QueryRunner {
             if (adapterTransform && typeof adapterTransform === 'function') {
                 const transformStartTime = Date.now();
                 try {
-                    result = await adapterTransform(result, transformOptions);
+                    // Pass only the data to transform, then reconstruct the result
+                    const transformedData = await adapterTransform(result.data, transformOptions);
+                    result = {
+                        _queryMeta: result._queryMeta,
+                        data: transformedData
+                    };
                     const transformDuration = Date.now() - transformStartTime;
                     log.d(`Query transformation completed: ${queryName} on ${selectedAdapter} in ${transformDuration}ms`);
                 }
@@ -165,7 +173,12 @@ class QueryRunner {
             const duration = Date.now() - startTime;
             log.d(`Query completed: ${queryName} on ${selectedAdapter} in ${duration}ms`);
 
-            return result;
+            // Enforce QueryRunner convention: handlers must return { _queryMeta, data }
+            if (!result || typeof result !== 'object' || !Object.prototype.hasOwnProperty.call(result, '_queryMeta') || !Object.prototype.hasOwnProperty.call(result, 'data')) {
+                throw new Error(`Handler for query '${queryName}' on adapter '${selectedAdapter}' must return object with '_queryMeta' and 'data' properties`);
+            }
+
+            return result.data;
         }
         catch (error) {
             const duration = Date.now() - startTime;
@@ -233,8 +246,13 @@ class QueryRunner {
                 const adapterTransform = queryDef.adapters[adapterName]?.transform;
                 if (adapterTransform && typeof adapterTransform === 'function') {
                     try {
-                        transformedResult = await adapterTransform(rawResult, transformOptions);
-                        adapterData.transformedResult = JSON.parse(JSON.stringify(transformedResult));
+                        // Pass only the data to transform, consistent with normal mode
+                        const transformedData = await adapterTransform(rawResult.data, transformOptions);
+                        transformedResult = {
+                            _queryMeta: rawResult._queryMeta,
+                            data: transformedData
+                        };
+                        adapterData.transformedResult = transformedData;
                     }
                     catch (transformError) {
                         log.e(`Comparison mode: Transformation failed for ${adapterName}`, transformError);
@@ -274,7 +292,7 @@ class QueryRunner {
         this.writeComparisonLog(queryName, comparisonData);
 
         log.d(`Comparison mode: Query '${queryName}' completed on all adapters, returning result from ${primaryAdapter}`);
-        return primaryResult;
+        return primaryResult ? primaryResult.data : primaryResult;
     }
 
     /**
@@ -308,7 +326,6 @@ class QueryRunner {
             throw error;
         }
     }
-
 
     /**
      * Select best adapter for a query definition based on availability and configuration
