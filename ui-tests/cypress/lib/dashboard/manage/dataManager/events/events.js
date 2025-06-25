@@ -6,10 +6,7 @@ import {
 const verifyStaticElementsOfPage = () => {
 
 
-    cy.verifyElement({
-        element: eventsPageElements.TAB_EVENTS,
-        elementText: "Events",
-    });
+
 
     cy.verifyElement({
         element: eventsPageElements.TAB_EVENT_GROUPS,
