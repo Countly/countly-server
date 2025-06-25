@@ -45,7 +45,9 @@ const verifyPageDefaultElements = () => {
 const login = (username, password) => {
     typeUsername(username);
     typePassword(password);
+    cy.task('logMemory');
     clickLoginButton();
+    cy.task('logMemory');
 };
 
 module.exports = {
