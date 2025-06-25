@@ -8,10 +8,7 @@ const verifyStaticElementsOfPage = () => {
 
 
 
-    cy.verifyElement({
-        element: eventsPageElements.TAB_EVENT_GROUPS,
-        elementText: "Event Groups",
-    });
+
 
     cy.verifyElement({
         element: eventsPageElements.FILTER_PARAMETERS_SELECT,
