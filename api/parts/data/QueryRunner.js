@@ -86,16 +86,17 @@ class QueryRunner {
      * @param {Object} queryDef.adapters - Adapter configurations keyed by adapter name
      * @param {Object} [queryDef.adapters.mongodb] - MongoDB adapter configuration
      * @param {Function} queryDef.adapters.mongodb.handler - Async function that executes MongoDB query
+     * @param {Function} [queryDef.adapters.mongodb.transform] - Optional transformation function for MongoDB results
      * @param {boolean} [queryDef.adapters.mongodb.available] - Whether this adapter is available (defaults to true)
      * @param {Object} [queryDef.adapters.clickhouse] - ClickHouse adapter configuration
      * @param {Function} queryDef.adapters.clickhouse.handler - Async function that executes ClickHouse query
+     * @param {Function} [queryDef.adapters.clickhouse.transform] - Optional transformation function for ClickHouse results
      * @param {boolean} [queryDef.adapters.clickhouse.available] - Whether this adapter is available (defaults to true)
      * @param {Object} params - Query parameters passed to the handler function
      * @param {Object} [options] - Execution options
      * @param {string} [options.adapter] - Force specific adapter ('mongodb' or 'clickhouse')
      * @param {boolean} [options.comparison] - Enable comparison mode (runs on all adapters)
-     * @param {Function} [transform] - Optional transformation function applied to results
-     * @param {Object} [transformOptions] - Options passed to the transform function
+     * @param {Object} [transformOptions] - Options passed to adapter-specific transform functions
      * @returns {Promise<any>} Query result as returned by the handler (and transformed if transform is provided)
      * @throws {Error} If query definition is invalid or no suitable adapter found
      * @example
@@ -105,30 +106,30 @@ class QueryRunner {
      *     mongodb: {
      *       handler: async (params) => { 
      *         return await db.collection('events').find(params.filter).toArray();
+     *       },
+     *       transform: async (result, transformOptions) => {
+     *         return result.data.map(doc => ({ id: doc._id, count: doc.count }));
      *       }
      *     },
      *     clickhouse: {
      *       handler: async (params) => {
      *         return await ch.query({ query: params.sql });
+     *       },
+     *       transform: async (result, transformOptions) => {
+     *         return result.data.map(row => ({ id: row.id, count: parseInt(row.count) }));
      *       }
      *     }
      *   }
-     * };
-     * 
-     * const transform = async (result, adapter, transformOptions) => {
-     *   // Transform result based on adapter type
-     *   return transformedResult;
      * };
      * 
      * const result = await queryRunner.executeQuery(
      *   queryDef, 
      *   { filter: { app_id: '123' } }, 
      *   { adapter: 'clickhouse' },
-     *   transform,
      *   { type: 'drill_format' }
      * );
      */
-    async executeQuery(queryDef, params, options = {}, transform = null, transformOptions = {}) {
+    async executeQuery(queryDef, params, options = {}, transformOptions = {}) {
         const startTime = Date.now();
         try {
             if (!queryDef || !queryDef.adapters) {
@@ -139,23 +140,24 @@ class QueryRunner {
 
             // Check if comparison mode is enabled
             if (options.comparison) {
-                return await this.executeQueryWithComparison(queryDef, params, options, transform, transformOptions);
+                return await this.executeQueryWithComparison(queryDef, params, options, transformOptions);
             }
 
             const selectedAdapter = this.selectAdapterForDef(queryDef, options.adapter);
             let result = await this.executeOnAdapter(queryDef, selectedAdapter, params, options);
 
-            // Apply transformation if provided
-            if (transform && typeof transform === 'function') {
+            // Apply adapter-specific transformation if provided
+            const adapterTransform = queryDef.adapters[selectedAdapter]?.transform;
+            if (adapterTransform && typeof adapterTransform === 'function') {
                 const transformStartTime = Date.now();
                 try {
-                    result = await transform(result, selectedAdapter, transformOptions);
+                    result = await adapterTransform(result, transformOptions);
                     const transformDuration = Date.now() - transformStartTime;
-                    log.d(`Query transformation completed: ${queryName} in ${transformDuration}ms`);
+                    log.d(`Query transformation completed: ${queryName} on ${selectedAdapter} in ${transformDuration}ms`);
                 }
                 catch (transformError) {
                     const transformDuration = Date.now() - transformStartTime;
-                    log.e(`Query transformation failed: ${queryName} after ${transformDuration}ms`, transformError);
+                    log.e(`Query transformation failed: ${queryName} on ${selectedAdapter} after ${transformDuration}ms`, transformError);
                     throw transformError;
                 }
             }
@@ -178,12 +180,11 @@ class QueryRunner {
      * @param {Object} queryDef - Query definition object
      * @param {Object} params - Query parameters
      * @param {Object} options - Execution options
-     * @param {Function} transform - Transformation function
      * @param {Object} transformOptions - Transform options
      * @returns {Promise<any>} Result from the selected adapter (normal flow)
      * @private
      */
-    async executeQueryWithComparison(queryDef, params, options, transform, transformOptions) {
+    async executeQueryWithComparison(queryDef, params, options, transformOptions) {
         const queryName = queryDef.name || 'unnamed_query';
         const comparisonData = {
             queryName,
@@ -221,22 +222,18 @@ class QueryRunner {
                 log.d(`Comparison mode: Executing on ${adapterName}`);
                 const rawResult = await this.executeOnAdapter(queryDef, adapterName, params, options);
 
-                // Extract query metadata and actual data
-                if (rawResult && rawResult._queryMeta) {
-                    adapterData.query = rawResult._queryMeta.query;
-                    adapterData.rawResult = rawResult.data;
-                }
-                else {
-                    adapterData.rawResult = rawResult;
-                }
+                // Extract query metadata and actual data from standardized format
+                adapterData.query = rawResult._queryMeta.query;
+                adapterData.rawResult = rawResult.data;
 
                 adapterData.success = true;
 
-                // Apply transformation if provided
+                // Apply adapter-specific transformation if provided
                 let transformedResult = rawResult;
-                if (transform && typeof transform === 'function') {
+                const adapterTransform = queryDef.adapters[adapterName]?.transform;
+                if (adapterTransform && typeof adapterTransform === 'function') {
                     try {
-                        transformedResult = await transform(rawResult, adapterName, transformOptions);
+                        transformedResult = await adapterTransform(rawResult, transformOptions);
                         adapterData.transformedResult = JSON.parse(JSON.stringify(transformedResult));
                     }
                     catch (transformError) {
@@ -246,7 +243,8 @@ class QueryRunner {
                     }
                 }
                 else {
-                    adapterData.transformedResult = adapterData.rawResult;
+                    // No transform, return the raw data (not the full result with _queryMeta)
+                    adapterData.transformedResult = rawResult.data;
                 }
 
                 // Store primary result for return
