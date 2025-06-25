@@ -12,10 +12,13 @@ describe('Login', () => {
     });
 
     it('should successfully log in to with valid username and password', function() {
+        cy.task('logMemory');
         loginHelpers.typeUsername(user.username);
         loginHelpers.typePassword(user.password);
         loginHelpers.clickLoginButton();
+        cy.task('logMemory'); 
         navigationHelpers.isNavigatedToDashboard();
+        cy.task('logMemory');
     });
 
     it('should successfully log in to with valid e-mail and password', function() {

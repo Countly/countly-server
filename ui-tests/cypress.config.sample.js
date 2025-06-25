@@ -35,10 +35,25 @@ module.exports = defineConfig({
                         launchOptions.args.push("--disable-gl-drawing-for-tests");
                         launchOptions.args.push("--disable-gpu");
                         launchOptions.args.push("--disable-dev-shm-usage");
+                        launchOptions.args.push('--enable-precise-memory-info');
+                        launchOptions.args.push('--js-flags="--expose-gc"');
                     }
                     launchOptions.args.push('--js-flags="--max_old_space_size=3500 --max_semi_space_size=1024"');
                 }
                 return launchOptions;
+            });
+            on('task', {
+                logMemory() {
+                    if (global.gc) {
+                        global.gc();
+                    } else {
+                        console.warn('Garbage collection is not exposed. Run node with --expose-gc');
+                    }
+
+                    const used = process.memoryUsage();
+                    console.log(`MEMORY USAGE: RSS: ${Math.round(used.rss / 1024 / 1024)} MB | Heap Used: ${Math.round(used.heapUsed / 1024 / 1024)} MB`);
+                    return null;
+                }
             });
         },
     },
