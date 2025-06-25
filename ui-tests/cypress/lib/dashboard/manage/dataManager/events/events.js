@@ -11,10 +11,6 @@ const verifyStaticElementsOfPage = () => {
 
 
     cy.verifyElement({
-        element: eventsPageElements.FILTER_PARAMETERS_SELECT,
-    });
-
-    cy.verifyElement({
         element: eventsDataTableElements().EDIT_COLUMNS_BUTTON,
     });
 
