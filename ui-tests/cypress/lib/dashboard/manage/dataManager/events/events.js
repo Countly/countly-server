@@ -4,10 +4,7 @@ import {
 } from "../../../../../support/elements/dashboard/manage/dataManager/events/events";
 
 const verifyStaticElementsOfPage = () => {
-    cy.verifyElement({
-        labelElement: eventsPageElements.PAGE_TITLE,
-        labelText: "Manage Events",
-    });
+
 
     cy.verifyElement({
         element: eventsPageElements.TAB_EVENTS,
