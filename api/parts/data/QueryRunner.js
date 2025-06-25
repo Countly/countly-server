@@ -293,7 +293,7 @@ class QueryRunner {
         this.writeComparisonLog(queryName, comparisonData);
 
         log.d(`Comparison mode: Query '${queryName}' completed on all adapters, returning result from ${primaryAdapter}`);
-        return primaryResult;
+        return primaryResult ? primaryResult.data : primaryResult;
     }
 
     /**
