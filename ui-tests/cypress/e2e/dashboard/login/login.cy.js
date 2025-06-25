@@ -16,7 +16,7 @@ describe('Login', () => {
         loginHelpers.typeUsername(user.username);
         loginHelpers.typePassword(user.password);
         loginHelpers.clickLoginButton();
-        cy.task('logMemory'); 
+        cy.task('logMemory');
         navigationHelpers.isNavigatedToDashboard();
         cy.task('logMemory');
     });

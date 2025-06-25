@@ -46,7 +46,8 @@ module.exports = defineConfig({
                 logMemory() {
                     if (global.gc) {
                         global.gc();
-                    } else {
+                    }
+                    else {
                         console.warn('Garbage collection is not exposed. Run node with --expose-gc');
                     }
 
