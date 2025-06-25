@@ -15,6 +15,14 @@ var countlyConfig = {
     drill_events_driver: "mongodb",
 
     /**
+     * Enable ClickHouse debug features for drill
+     * @type {boolean}
+     * @property {boolean} [drill_clickhouse_debug=false] - enables db_override toggle and related debugging features in UI and backend
+     * When false, the toggle is hidden and system falls back to drill_events_driver config
+     */
+    drill_clickhouse_debug: false,
+
+    /**
      * Query Runner configuration for multi-database query execution
      * @type {object}
      * @property {array} [adapterPreference=['mongodb', 'clickhouse']] - Adapter preference order (first match wins)
