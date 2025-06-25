@@ -121,7 +121,8 @@
             'input',
             'save',
             'switch-toggle',
-            'tab-change'
+            'tab-change',
+            'publish-button-click'
         ],
 
         data() {
@@ -204,6 +205,10 @@
             },
 
             onPublishButtonClick() {
+                if (this.isToggleDisabled) {
+                    this.$emit('publish-button-click');
+                    return;
+                }
                 this.toggleLocalValue = !this.toggleLocalValue;
             },
 
