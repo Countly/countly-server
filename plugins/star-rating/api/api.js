@@ -904,7 +904,7 @@ function uploadFile(myfile, id, callback) {
                         "contact_me": currEvent.segmentation.contactMe,
                         "rating": currEvent.segmentation.rating,
                         "platform": currEvent.segmentation.platform,
-                        "app_version": currEvent.segmentation.app_version,
+                        "app_version": currEvent.segmentation.app_version.trim(),
                         "widget_id": currEvent.segmentation.widget_id
                     }, function(err) {
                         if (err) {
