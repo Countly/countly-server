@@ -675,6 +675,8 @@ export interface Common {
         major?: number;
         minor?: number;
         patch?: number;
+        prerelease?: string|number[];
+        build?: string|number[];
         original: string;
         success: boolean;
     };

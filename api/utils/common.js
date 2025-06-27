@@ -2074,7 +2074,7 @@ common.parseAppVersion = function(version) {
             version += '.0';
         }
 
-        const parsedVersion = semver.valid(semver.coerce(version));
+        const parsedVersion = semver.valid(semver.coerce(version, {includePrerelease: true}));
         if (parsedVersion) {
             const versionObj = semver.parse(parsedVersion);
             if (versionObj) {
@@ -2082,6 +2082,8 @@ common.parseAppVersion = function(version) {
                     major: versionObj.major,
                     minor: versionObj.minor,
                     patch: versionObj.patch,
+                    prerelease: versionObj.prerelease,
+                    build: versionObj.build,
                     original: version,
                     success: true
                 };
