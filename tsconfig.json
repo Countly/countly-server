@@ -15,6 +15,9 @@
         "types/pluginManager.d.ts", // Plugin manager type definitions
         "types/utils.d.ts",         // Utility functions type definitions
         "types/batcher.d.ts",       // Database batcher type definitions
+        "types/rights.d.ts",        // Rights validation type definitions
+        "types/events.d.ts",        // Events processing type definitions
+        "types/usage.d.ts",         // Usage processing type definitions
         "api/utils/localization.js" // Include JS file for type checking
     ],
     "compilerOptions": {
@@ -40,7 +43,6 @@
         "forceConsistentCasingInFileNames": true, // Ensure that casing is correct in imports
 
         // Completeness
-        "skipLibCheck": true,                  // Skip type checking all .d.ts files
         "typeRoots": ["./types", "./node_modules/@types"] // Specify multiple folders that act like './node_modules/@types'
     }
 }

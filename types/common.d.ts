@@ -67,6 +67,7 @@ export interface DbMap {
     sum: string;
     dur: string;
     count: string;
+    paying: string;
 }
 
 /** Mapping of common user database properties */
@@ -158,6 +159,10 @@ export interface ValidationArgProperties {
         mods?: string;
         /** allow multiple values */
         multiple?: boolean;
+        /** array-specific validation options */
+        array?: any;
+        /** discriminator for validation */
+        discriminator?: any;
     };
 }
 
@@ -931,8 +936,6 @@ export interface Common {
      * DB-related extensions / functions
      */
     dbext: DbExt;
-
-    DataTable: any;
 
     /**
      * Sync license check results to request (and session if present)
