@@ -32,14 +32,26 @@ const OVERRIDES = {
 
     API: {
         MAX_SOCKETS: 'max_sockets',
-        MAX_UPLOAD_FILE_SIZE: 'maxUploadFileSize'
+        MAX_UPLOAD_FILE_SIZE: 'maxUploadFileSize',
+        SSL: {
+            ENABLED: 'enabled',
+            KEY: 'key',
+            CERT: 'cert',
+            CA: 'ca',
+        },
     },
 
     WEB: {
         USE_INTERCOM: 'use_intercom',
         SECURE_COOKIES: 'secure_cookies',
         SESSION_SECRET: 'session_secret',
-        SESSION_NAME: 'session_name'
+        SESSION_NAME: 'session_name',
+        SSL: {
+            ENABLED: 'enabled',
+            KEY: 'key',
+            CERT: 'cert',
+            CA: 'ca',
+        },
     },
 
     MAIL: {

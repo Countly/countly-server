@@ -1,15 +1,43 @@
-## Version 25.03.x
+## Version 25.03.7
 Enterprise Features:
+- [funnels] Added explanatory tooltip for filters section on Funnel Detail page
+
+Fixes:
+- [core] Applied some fixes to user-merge, togetExportScripts, sharding, delete_old_drill_events, add_indexes script
+- [core] Fix/docker python vulnerabilities
+- [core] Allow chrome to launch multiple instances to fix blank dashboard emails
+- [formulas] Fix loading state when selecting event count
+
+Enterprise Fixes:
+- [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set
+- [journey-engine] Undefined value check for cooldown in Engagement Queue
+- [star-rating] Fix consent text limit counter
+
+Dependencies:
+- Bump sass from 1.89.1 to 1.89.2
+- Bump puppeteer from 24.10.0 to 24.10.1
+- Bump countly-sdk-nodejs from 24.10.1 to 24.10.2
+- Bump sass-embedded in /plugins/content from 1.89.1 to 1.89.2
+- Bump @vue-flow/node-resizer  in /plugins/content from 1.4.0 to 1.5.0
+- Bump @vue-flow/core in /plugins/content from 1.44.0 to 1.45.0
+- Bump vue-i18n in /plugins/content from 11.1.5 to 11.1.6 
+- Bump terser in /plugins/content from 5.42.0 to 5.43.0 
+- Bump mockttp in /plugins/crash_symbolication from 3.17.1 to 4.0.0
+
+## Version 25.03.6
+Enterprise Features:
+- [journey_engine] Publish toggle is converted into button and rearranged
 - [journey_engine] Record Event block added
 - [llm interaction] Add LLM interaction event
 - [oidc] PKCE Flow support added
 
 Fixes:
-- [core] Unifying alphabetical order for dropdowns with dashboard apps
-- [hooks] Added null check for incoming data
 - [core] Fix auto refresh frontend component
-- [times-of-day] Fix chart component
+- [core] Unifying alphabetical order for dropdowns with dashboard apps
+- [formulas] Fix loading state when selecting event count
+- [hooks] Added null check for incoming data
 - [push] Fix external drawer initialization
+- [times-of-day] Fix chart component
 
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
@@ -17,6 +45,7 @@ Enterprise Fixes:
     - Do not wait for result calculation when requesting experiments
     - Do not calculate result for completed experiments
 - [drill] [license] Shorten warning period from 14 days to 3 days
+- [drill] Fix query for users in drill that leads to severe server slowdown
 - [license] Fix chart legend
 
 Dependencies:

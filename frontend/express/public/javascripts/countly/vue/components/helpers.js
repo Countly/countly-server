@@ -745,23 +745,19 @@
                 llmEvents.push(
                     {
                         "label": this.i18n('internal-events.[CLY]_llm_interaction'),
-                        "name": "[CLY]_llm_interaction",
-                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_interaction'), value: '[CLY]_llm_interaction' } ]
+                        "value": "[CLY]_llm_interaction"
                     },
                     {
                         "label": this.i18n('internal-events.[CLY]_llm_interaction_feedback'),
-                        "name": "[CLY]_llm_interaction_feedback",
-                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_interaction_feedback'), value: '[CLY]_llm_interaction_feedback' } ]
+                        "value": "[CLY]_llm_interaction_feedback"
                     },
                     {
                         "label": this.i18n('internal-events.[CLY]_llm_tool_used'),
-                        "name": "[CLY]_llm_tool_used",
-                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_tool_used'), value: '[CLY]_llm_tool_used' } ]
+                        "value": "[CLY]_llm_tool_used"
                     },
                     {
                         "label": this.i18n('internal-events.[CLY]_llm_tool_usage_parameter'),
-                        "name": "[CLY]_llm_tool_usage_parameter",
-                        "options": [ { label: this.i18n('internal-events.[CLY]_llm_tool_usage_parameter'), value: '[CLY]_llm_tool_usage_parameter' } ]
+                        "value": "[CLY]_llm_tool_usage_parameter"
                     }
                 );
                 if (llmEvents.length > 0) {
@@ -802,6 +798,19 @@
                         "name": "[CLY]_push_action",
                         "options": [
                             { label: this.i18n('internal-events.[CLY]_push_action'), value: '[CLY]_push_action' }
+                        ]
+                    });
+                }
+
+                if (countlyGlobal.plugins.indexOf('journey_engine') !== -1) {
+                    preparedEventList.push({
+                        "label": this.i18n('internal-events.[CLY]_journey_engine'),
+                        "name": "Journey",
+                        "options": [
+                            { label: this.i18n('internal-events.[CLY]_journey_engine_start'), value: '[CLY]_journey_engine_start' },
+                            { label: this.i18n('internal-events.[CLY]_journey_engine_end'), value: '[CLY]_journey_engine_end' },
+                            { label: this.i18n('internal-events.[CLY]_content_shown'), value: '[CLY]_content_shown' },
+                            { label: this.i18n('internal-events.[CLY]_content_interacted'), value: '[CLY]_content_interacted' }
                         ]
                     });
                 }
