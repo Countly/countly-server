@@ -24,8 +24,8 @@ const eventsDataTableElements = (index = 0) => ({
     COLUMN_NAME_CATEGORY_SORTABLE_ICON: 'datatable-events-sortable-icon-category',
     COLUMN_NAME_COUNT_LABEL: 'datatable-events-label-count',
     COLUMN_NAME_COUNT_SORTABLE_ICON: 'datatable-events-sortable-icon-count',
-    COLUMN_NAME_LAST_MODIFIED_LABEL: 'datatable-events-label-last-modıfıed',
-    COLUMN_NAME_LAST_MODIFIED_SORTABLE_ICON: 'datatable-events-sortable-icon-last-modıfıed',
+    COLUMN_NAME_LAST_MODIFIED_LABEL: 'datatable-events-label-last-modified',
+    COLUMN_NAME_LAST_MODIFIED_SORTABLE_ICON: 'datatable-events-sortable-icon-last-modified',
 
     //Columns' Rows' Datas Elements 
     SELECT_EVENT_CHECKBOX: 'datatable-manage-events-events-select-event-checkbox-' + index, //TODO: data test id is missing

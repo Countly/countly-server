@@ -26,15 +26,15 @@ RUN apt-get update && \
 RUN apt-get update && \
 	apt-get upgrade -y && \
 	cd /usr/src && \
-	wget https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tar.xz && \
-	tar -xf Python-3.8.12.tar.xz && \
+	wget https://www.python.org/ftp/python/3.8.20/Python-3.8.20.tar.xz && \
+	tar -xf Python-3.8.20.tar.xz && \
 	apt-get install -y build-essential sudo zlib1g-dev libssl3 libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev && \
-	cd Python-3.8.12 && \
+	cd Python-3.8.20 && \
 	./configure --enable-optimizations --enable-shared && \
 	make && \
 	make altinstall && \
-	ldconfig /usr/src/Python-3.8.12 && \
-	ln -s /usr/local/bin/python3.8 /usr/bin/python3
+	ldconfig /usr/src/Python-3.8.20 && \
+	ln -sf /usr/local/bin/python3.8 /usr/bin/python3
 
 RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" && \
 	dpkg -i /tmp/tini.deb && \
@@ -52,14 +52,17 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	HOME=/tmp npm install argon2 --build-from-source --unsafe-perm=true --allow-root && \
 	./bin/docker/preinstall.sh && \
 	bash /opt/countly/bin/scripts/detect.init.sh && \
-	countly update sdk-web && \
+	python3.8 -m pip install --upgrade pip setuptools && \
+        countly update sdk-web && \
 	\
 	# cleanup & chown
 	npm remove -y --no-save mocha nyc should supertest puppeteer && \
-	apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 wget && \
+	apt-get purge -y python3 python3-pip python3-distutils python3-setuptools && \
+        apt-get remove -y git gcc g++ make automake autoconf libtool pkg-config unzip sqlite3 wget && \
 	apt-get autoremove -y && \
 	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-	rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm && \
+        apt-get autoremove -y && \
+        rm -rf test /tmp/* /tmp/.??* /var/tmp/* /var/tmp/.??* /var/log/* /root/.npm /usr/local/lib/python3.8/ensurepip/_bundled/*.whl /usr/src/Python* /var/lib/dpkg/info/python3* && \
 	\
 	# temporary to remove npm bug message
 	mkdir /.npm && chown -R 1001:0 /.npm && \
