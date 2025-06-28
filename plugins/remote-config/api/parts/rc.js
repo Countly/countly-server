@@ -2,6 +2,7 @@
 * Fetching and processing data for remote config
 * @module plugins/remote-config/api/parts/data/rc
 */
+const semver = require('semver');
 var prng = require('../../../../api/utils/random-sfc32.js');
 var globalSeed = "Countly_is_awesome";
 
@@ -38,7 +39,16 @@ remoteConfig.processFilter = function(user, query) {
             }
 
             if (parts[0] !== "chr") {
-                if (typeof (value) !== "undefined") {
+                if (prop === 'up.av') {
+                    if ('av' in user) {
+                        hasValue = true;
+                        queryStatus = queryStatus && processAppVersionValues(user.av, query, prop);
+                    }
+                    else {
+                        hasValue = false;
+                    }
+                }
+                else if (typeof (value) !== "undefined") {
                     hasValue = true;
                     queryStatus = queryStatus && processPropertyValues(value, query, prop);
                 }
@@ -109,6 +119,25 @@ function processPropertyValues(value, query, prop) {
     }
 
     return status;
+}
+
+/**
+ * Function to process query property value
+ * @param  {Object} inpUserAv - user app version
+ * @param  {Object} query - filter
+ * @param  {String} prop - query property
+ * @returns {Boolean} property value status
+ */
+function processAppVersionValues(inpUserAv, query, prop) {
+    const userAv = inpUserAv.replace(/:/g, '.');
+    const filterType = Object.keys(query[prop])[0];
+    const targetAv = query[prop] && query[prop][filterType] && query[prop][filterType].replace(/:/g, '.');
+
+    if (!semver.valid(userAv) || !semver.valid(targetAv)) {
+        return false;
+    }
+
+    return semver[filterType.slice(1)](userAv, targetAv);
 }
 
 /**
