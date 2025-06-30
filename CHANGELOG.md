@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Fixes:
+- [star-rating] Fix rating not appearing when app version contains space ' '
+
 ## Version 25.03.7
 Enterprise Features:
 - [funnels] Added explanatory tooltip for filters section on Funnel Detail page
