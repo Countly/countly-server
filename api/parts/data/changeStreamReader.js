@@ -50,13 +50,16 @@ class changeStreamReader {
     */
     checkState() {
         if ((!this.stream || this.stream.closed) && !this.keep_closed) {
-            console.log("Stream is closed. Setting up again");
+            log.i(`[${this.name}] Stream is closed. Setting up again`);
             this.setUp(this.onData);
         }
         else if (this.waitingForAcknowledgement && Date.now() - this.waitingForAcknowledgement > 60000) {
-            console.log("Waiting for acknowledgement for more than 60 seconds. Closing stream and restarting");
+            const waitTime = Date.now() - this.waitingForAcknowledgement;
+            log.w(`[${this.name}] Waiting for acknowledgement for ${waitTime}ms (>60s). Closing stream and restarting`);
             this.keep_closed = false;
-            this.stream.close();
+            if (this.stream && !this.stream.closed) {
+                this.stream.close();
+            }
         }
     }
 
@@ -180,7 +183,7 @@ class changeStreamReader {
                 next_token._id = doc.__id;
                 next_token.cd = doc.cd;
                 try {
-                    this.processBadRange({name: this.name, cd1: token.cd, cd2: next_token.cd}, this.failedToken);
+                    await this.processBadRange({name: this.name, cd1: token.cd, cd2: next_token.cd}, this.failedToken);
                     this.onData(next_token, doc);
                     this.waitingForAcknowledgement = Date.now();
                     this.restartStream = true;
@@ -272,9 +275,11 @@ class changeStreamReader {
             await common.db.collection("plugins").updateOne({"_id": "_changeStreams"}, {$set: {[this.name]: token}}, {"upsert": true});
             if (this.restartStream) {
                 this.waitingForAcknowledgement = false;
-                this.keep_closed = false;
                 this.restartStream = false;
-                this.stream.close();
+                this.keep_closed = false;
+                if (this.stream && !this.stream.closed) {
+                    this.stream.close();
+                }
             }
         }
         catch (err) {
@@ -289,11 +294,13 @@ class changeStreamReader {
         console.log("Closing permanently");
         if (this.intervalRunner) {
             clearInterval(this.intervalRunner);
+            this.intervalRunner = null;
         }
         this.keep_closed = true;
-        this.stream.close(true);
+        if (this.stream && !this.stream.closed) {
+            this.stream.close(true);
+        }
     }
-
 
 }
 
