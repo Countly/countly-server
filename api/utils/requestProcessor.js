@@ -649,7 +649,7 @@ const processRequest = (params) => {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
                     catch (SyntaxError) {
-                        console.log('Parse ' + apiPath + ' JSON failed %s', params.req.url, params.req.body);
+                        console.log('Parse %s JSON failed %s', apiPath, params.req.url, params.req.body);
                     }
                 }
 
