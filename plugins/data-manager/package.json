@@ -19,6 +19,7 @@
         "plugins",
         "template"
     ],
+    "cly_dependencies": { "plugins": true },
     "dependencies": {},
     "private": true
 }
