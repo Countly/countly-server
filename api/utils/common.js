@@ -2069,14 +2069,9 @@ common.parseAppVersion = function(version) {
             version = String(version);
         }
 
-        // Ensure version has at least one decimal point
-        if (version.indexOf('.') === -1) {
-            version += '.0';
-        }
-
-        const parsedVersion = semver.valid(semver.coerce(version, {includePrerelease: true}));
-        if (parsedVersion) {
-            const versionObj = semver.parse(parsedVersion, {includePrerelease: true});
+        const isValid = semver.valid(semver.coerce(version, {includePrerelease: true}));
+        if (isValid) {
+            const versionObj = semver.parse(semver.coerce(version, {includePrerelease: true}));
             if (versionObj) {
                 return {
                     major: versionObj.major,
