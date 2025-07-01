@@ -1,8 +1,8 @@
 ## Version 25.03.XX
-
 Fixes:
 - [crashes] Derive crash name from crash stracktrace for drill event
 - [data-manager] Fix frontend component attribute name
+- [star-rating] Fix rating not appearing when app version contains space ' '
 
 ## Version 25.03.7
 Enterprise Features:

@@ -622,7 +622,7 @@
                     regexString += this.activeFilter.platform.toString().toUpperCase() + '(\\*\\*)';
                 }
                 if (this.activeFilter.version === '') {
-                    regexString += '(\\w+)(\\S*)(\\w*)(\\*\\*)[1-5]';
+                    regexString += '(.*)(\\*\\*)[1-5]';
                 }
                 else {
                     regexString += this.activeFilter.version.toString() + '(\\*\\*)[1-5]';
@@ -1281,7 +1281,7 @@
                     regexString += this.activeFilter.platform.toString().toUpperCase() + '(\\*\\*)';
                 }
                 if (this.activeFilter.version === '') {
-                    regexString += '(\\w+)(\\S*)(\\w*)(\\*\\*)[1-5]';
+                    regexString += '(.*)(\\*\\*)[1-5]';
                 }
                 else {
                     regexString += this.activeFilter.version.toString() + '(\\*\\*)[1-5]';
