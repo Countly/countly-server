@@ -1,3 +1,9 @@
+## Version 25.03.XX
+
+Fixes:
+- [crashes] Derive crash name from crash stracktrace for drill event
+- [data-manager] Fix frontend component attribute name
+
 ## Version 25.03.7
 Enterprise Features:
 - [funnels] Added explanatory tooltip for filters section on Funnel Detail page
