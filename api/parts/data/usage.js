@@ -1117,7 +1117,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
                 userProps.av_major = versionComponents.major;
                 userProps.av_minor = versionComponents.minor;
                 userProps.av_patch = versionComponents.patch;
-                userProps.av_rel = versionComponents.prerelease;
+                userProps.av_prerel = versionComponents.prerelease;
                 userProps.av_build = versionComponents.build;
             }
             else {
