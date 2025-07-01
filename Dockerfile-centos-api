@@ -6,7 +6,7 @@ ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,vi
 
 ARG GEOIP=empty
 EXPOSE 3001
-HEALTHCHECK --start-period=400s CMD curl --fail http://localhost:3001/o/ping || exit 1
+HEALTHCHECK --start-period=400s CMD curl -k --fail http://localhost:3001/o/ping || exit 1
 
 USER root
 
