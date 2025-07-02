@@ -1,8 +1,12 @@
-## Version 25.03.XX
+## Version 25.03.8
 Fixes:
+- [core] Fix adding llm observability to cly-event-select component
 - [crashes] Derive crash name from crash stracktrace for drill event
 - [data-manager] Fix frontend component attribute name
 - [star-rating] Fix rating not appearing when app version contains space ' '
+
+Enterprise Features:
+- [journey-engine] Added default translations to prevent an error when languages are not yet defined, and visually indicate the browser language as the default
 
 ## Version 25.03.7
 Enterprise Features:
