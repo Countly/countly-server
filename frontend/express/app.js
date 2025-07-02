@@ -21,6 +21,7 @@ var versionInfo = require('./version.info'),
     COUNTLY_HELPCENTER_LINK = (typeof versionInfo.helpCenterLink === "undefined") ? true : (typeof versionInfo.helpCenterLink === "string") ? versionInfo.helpCenterLink : (typeof versionInfo.helpCenterLink === "boolean") ? versionInfo.helpCenterLink : true,
     COUNTLY_FEATUREREQUEST_LINK = (typeof versionInfo.featureRequestLink === "undefined") ? true : (typeof versionInfo.featureRequestLink === "string") ? versionInfo.featureRequestLink : (typeof versionInfo.featureRequestLink === "boolean") ? versionInfo.featureRequestLink : true,
     express = require('express'),
+    https = require('https'),
     SkinStore = require('./libs/connect-mongo.js'),
     expose = require('./libs/express-expose.js'),
     dollarDefender = require('./libs/dollar-defender.js')({
@@ -1952,5 +1953,22 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     countlyDb.collection('jobs').createIndex({ name: 1 }, function() {});
     countlyDb.collection('long_tasks').createIndex({ manually_create: 1, start: -1 }, function() {});
 
-    app.listen(countlyConfig.web.port, countlyConfig.web.host || '');
+    const serverOptions = {
+        port: countlyConfig.web.port,
+        host: countlyConfig.web.host || ''
+    };
+
+    if (countlyConfig.web.ssl && countlyConfig.web.ssl.enabled) {
+        const sslOptions = {
+            key: fs.readFileSync(countlyConfig.web.ssl.key),
+            cert: fs.readFileSync(countlyConfig.web.ssl.cert)
+        };
+        if (countlyConfig.web.ssl.ca) {
+            sslOptions.ca = fs.readFileSync(countlyConfig.web.ssl.ca);
+        }
+        https.createServer(sslOptions, app).listen(serverOptions.port, serverOptions.host);
+    }
+    else {
+        app.listen(serverOptions.port, serverOptions.host);
+    }
 });
