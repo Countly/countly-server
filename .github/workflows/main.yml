@@ -297,8 +297,6 @@ jobs:
         run: |
           sed -i 's/port: 3001,/port: 3001, workers: 1,/' /opt/countly/api/config.js
           cp "./plugins/plugins.mobile-only.json" "/opt/countly/plugins/plugins.json"
-          rm -rf /opt/countly/plugins/desktop
-          rm -rf /opt/countly/plugins/web
           npm install
           sudo countly task dist-all
           bash bin/backup/import_events.sh
