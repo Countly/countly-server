@@ -188,7 +188,7 @@ describe('Fetch remote config', () => {
                 .expect('Content-Type', /json/);
         });
 
-        it('Should match targetted user', () => {
+        it('Should match targetted user (device id)', () => {
             const targettedUser = {
                 _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
                 uid: '13',
@@ -199,7 +199,7 @@ describe('Fetch remote config', () => {
             should(remoteConfig.processFilter(targettedUser, query)).equal(true);
         });
 
-        it('Should match targetted user', () => {
+        it('Should match targetted user (country)', () => {
             const targettedUser = {
                 _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
                 uid: '13',
@@ -209,6 +209,42 @@ describe('Fetch remote config', () => {
             const query = { 'up.cc': { $exists: true } };
 
             should(remoteConfig.processFilter(targettedUser, query)).equal(true);
+        });
+
+        it('Should match targetted user (app version)', () => {
+            const targettedUser = {
+                _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
+                uid: '13',
+                did: 'targetted_user',
+                av: '1:0:0',
+            };
+            const queryGt = { 'up.av': { $gt: '0:0:0' } };
+            const queryGte = { 'up.av': { $gte: '1:0:0' } };
+            const queryLt = { 'up.av': { $lt: '2:0:0' } };
+            const queryLte = { 'up.av': { $lte: '1:0:0' } };
+
+            should(remoteConfig.processFilter(targettedUser, queryGt)).equal(true);
+            should(remoteConfig.processFilter(targettedUser, queryGte)).equal(true);
+            should(remoteConfig.processFilter(targettedUser, queryLt)).equal(true);
+            should(remoteConfig.processFilter(targettedUser, queryLte)).equal(true);
+        });
+
+        it('Should not match non targetted user (app version)', () => {
+            const nonTargettedUser = {
+                _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
+                uid: '13',
+                did: 'targetted_user',
+                av: '1:0:0',
+            };
+            const queryGt = { 'up.av': { $gt: '1:0:0' } };
+            const queryGte = { 'up.av': { $gte: '2:0:0' } };
+            const queryLt = { 'up.av': { $lt: '1:0:0' } };
+            const queryLte = { 'up.av': { $lte: '0:0:0' } };
+
+            should(remoteConfig.processFilter(nonTargettedUser, queryGt)).equal(false);
+            should(remoteConfig.processFilter(nonTargettedUser, queryGte)).equal(false);
+            should(remoteConfig.processFilter(nonTargettedUser, queryLt)).equal(false);
+            should(remoteConfig.processFilter(nonTargettedUser, queryLte)).equal(false);
         });
 
         it('Should not match non targetted user', () => {
