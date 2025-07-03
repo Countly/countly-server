@@ -10,20 +10,20 @@
               <cly-report-manager-dialog class="bu-mr-2" origin="data-manager"></cly-report-manager-dialog>
           </div>
           <div v-if="currentSecondaryTab !== 'validations'">
-            <cly-more-options v-if="showMoreOptions" size="small" text="Create new" type="success" icon="el-icon-circle-plus" @command="handleCreateCommand($event, currentSecondaryTab)">
-                <el-dropdown-item v-if="isDrill && canUserCreateTransform && (currentSecondaryTab === 'events' || currentSecondaryTab === 'segmentation') " command="create-transform">
+            <cly-more-options v-if="showMoreOptions" test-id="create-new-event-more-option" size="small" text="Create new" type="success" icon="el-icon-circle-plus" @command="handleCreateCommand($event, currentSecondaryTab)">
+                <el-dropdown-item v-if="isDrill && canUserCreateTransform && (currentSecondaryTab === 'events' || currentSecondaryTab === 'segmentation') " :data-test-id="'events-page-create-new-' +i18n('data-manager.create-transformation').replaceAll(' ', '-').toLowerCase() + '-button'" command="create-transform">
                     {{i18n('data-manager.create-transformation')}}
                 </el-dropdown-item>
-                <el-dropdown-item v-if="isDrill && canUserCreate && (currentSecondaryTab === 'events' )" command="create-event">
+                <el-dropdown-item v-if="isDrill && canUserCreate && (currentSecondaryTab === 'events' )" :data-test-id="'events-page-create-new-' +i18n('data-manager.create-event').replaceAll(' ', '-').toLowerCase() + '-button'" command="create-event">
                     {{i18n('data-manager.create-event')}}
                 </el-dropdown-item>
-                <el-dropdown-item v-if="canUserCreate && (currentSecondaryTab === 'event-groups') " command="create-event-group">
+                <el-dropdown-item v-if="canUserCreate && (currentSecondaryTab === 'event-groups') " :data-test-id="'events-page-create-new-' +i18n('data-manager.create-group').replaceAll(' ', '-').toLowerCase() + '-button'" command="create-event-group">
                     {{i18n('data-manager.create-group')}}
                 </el-dropdown-item>
-                <el-dropdown-item v-if="isDrill && canUserCreateTransform && (currentSecondaryTab === 'transformations') " command="create-event-transform">
+                <el-dropdown-item v-if="isDrill && canUserCreateTransform && (currentSecondaryTab === 'transformations') " :data-test-id="'events-page-create-new-' +i18n('data-manager.create-event-transformation').replaceAll(' ', '-').toLowerCase() + '-button'" command="create-event-transform">
                     {{i18n('data-manager.create-event-transformation')}}
                 </el-dropdown-item>
-                <el-dropdown-item v-if="isDrill && canUserCreateTransform && (currentSecondaryTab === 'transformations') " command="create-segment-transform">
+                <el-dropdown-item v-if="isDrill && canUserCreateTransform && (currentSecondaryTab === 'transformations') " :data-test-id="'events-page-create-new-' +i18n('data-manager.create-segment-transformation').replaceAll(' ', '-').toLowerCase() + '-button'" command="create-segment-transform">
                     {{i18n('data-manager.create-segment-transformation')}}
                 </el-dropdown-item>
             </cly-more-options>
