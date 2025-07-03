@@ -443,6 +443,10 @@
             placement: {
                 type: String,
                 default: 'auto'
+            },
+            tooltipClass: {
+                type: String,
+                default: ''
             }
         },
         computed: {
@@ -453,7 +457,7 @@
                 };
             }
         },
-        template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltipConf"></i>'
+        template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon + \' \' + tooltipClass" v-tooltip="tooltipConf"></i>'
     }));
 
     Vue.component("cly-remover", countlyBaseComponent.extend({
