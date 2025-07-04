@@ -6,7 +6,7 @@ ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,vi
 
 ARG GEOIP=empty
 EXPOSE 3001
-HEALTHCHECK --start-period=400s CMD curl -k --fail http://localhost:3001/o/ping || exit 1
+# HEALTHCHECK --start-period=400s CMD curl -k --fail http://localhost:3001/o/ping || exit 1
 
 USER root
 
@@ -22,6 +22,8 @@ ENV COUNTLY_CONTAINER="api" \
 
 WORKDIR /opt/countly
 COPY . .
+
+HEALTHCHECK --start-period=400s CMD bash ./bin/docker/healthcheck-api.sh
 
 # fix 'appstream' repo for CentOS 8
 RUN cd /etc/yum.repos.d/
