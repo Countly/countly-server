@@ -10,7 +10,7 @@
               <cly-report-manager-dialog class="bu-mr-2" origin="data-manager"></cly-report-manager-dialog>
           </div>
           <div v-if="currentSecondaryTab !== 'validations'">
-            <cly-more-options v-if="showMoreOptions" size="small" text="Create new" type="success" icon="el-icon-circle-plus" @command="handleCreateCommand($event, currentSecondaryTab)">
+            <cly-more-options v-if="showMoreOptions" test-id="create-new-event-more-option" size="small" text="Create new" type="success" icon="el-icon-circle-plus" @command="handleCreateCommand($event, currentSecondaryTab)">
                 <el-dropdown-item v-if="isDrill && canUserCreateTransform && (currentSecondaryTab === 'events' || currentSecondaryTab === 'segmentation') " :data-test-id="'events-page-create-new-' +i18n('data-manager.create-transformation').replaceAll(' ', '-').toLowerCase() + '-button'" command="create-transform">
                     {{i18n('data-manager.create-transformation')}}
                 </el-dropdown-item>
