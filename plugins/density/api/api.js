@@ -10,29 +10,13 @@ const FEATURE_NAME = 'density';
     plugins.register("/permissions/features", function(ob) {
         ob.features.push(FEATURE_NAME);
     });
-    plugins.register("/worker", function() {
+    plugins.register("/master", function() {
         common.dbUserMap.density = 'dnst';
     });
     plugins.register("/o/method/total_users", function(ob) {
         ob.shortcodesForMetrics.densities = "dnst";
     });
     plugins.register("/session/metrics", function(ob) {
-        var params = ob.params;
-        if (params.qstring.metrics && params.qstring.metrics._density && common.isNumber(params.qstring.metrics._density)) {
-            params.qstring.metrics._density = parseFloat(params.qstring.metrics._density).toFixed(2);
-        }
-        if (params.qstring.metrics && params.qstring.metrics._os && params.qstring.metrics._density) {
-            var custom_os = "[" + params.qstring.metrics._os + "]";
-            if (common.os_mapping[params.qstring.metrics._os.toLowerCase()]) {
-                //for whatewer reason we go there twice. And on second time _density is already modified. Nested if to prevent error.
-                if (!params.qstring.metrics._density.startsWith(common.os_mapping[params.qstring.metrics._os.toLowerCase()])) {
-                    params.qstring.metrics._density = common.os_mapping[params.qstring.metrics._os.toLowerCase()] + params.qstring.metrics._density;
-                }
-            }
-            else if (!params.qstring.metrics._density.startsWith(custom_os)) {
-                params.qstring.metrics._density = custom_os + params.qstring.metrics._density;
-            }
-        }
         var predefinedMetrics = ob.predefinedMetrics;
         predefinedMetrics.push({
             db: "density",

@@ -1,11 +1,24 @@
-const job = require('../../../../api/parts/jobs/job.js');
+// const job = require('../../../../api/parts/jobs/job.js');
+const Job = require('./../../../../jobServer/Job');
 const log = require('../../../../api/utils/log.js')('job:crashes:cleanup_custom_field');
 const pluginManager = require('../../../pluginManager.js');
 
 const { cleanupCustomField, DEFAULT_MAX_CUSTOM_FIELD_KEYS } = require('../parts/custom_field.js');
 
 /** class CleanupCustomFieldJob */
-class CleanupCustomFieldJob extends job.Job {
+class CleanupCustomFieldJob extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "1 1 * * *" // every day at 1:01
+        };
+    }
+
     /** function run
      * @param {object} countlyDb - db connection object
      * @param {function} doneJob - function to call when finishing Job

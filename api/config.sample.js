@@ -5,6 +5,45 @@
 
 /** @lends module:api/config */
 var countlyConfig = {
+
+    /**
+     * Drill events database driver configuration
+     * @type {string}
+     * @property {string} [drill_events_driver=mongodb] - database driver to use for drill events storage
+     * Possible values are: "mongodb", "clickhouse"
+     */
+    drill_events_driver: "mongodb",
+
+    /**
+     * Enable ClickHouse debug features for drill
+     * @type {boolean}
+     * @property {boolean} [drill_clickhouse_debug=false] - enables db_override toggle and related debugging features in UI and backend
+     * When false, the toggle is hidden and system falls back to drill_events_driver config
+     */
+    drill_clickhouse_debug: false,
+
+    /**
+     * Query Runner configuration for multi-database query execution
+     * @type {object}
+     * @property {array} [adapterPreference=['mongodb', 'clickhouse']] - Adapter preference order (first match wins)
+     * @property {object} adapters - Adapter availability settings
+     * @property {object} adapters.mongodb - MongoDB adapter settings
+     * @property {boolean} [adapters.mongodb.enabled=true] - Enable MongoDB adapter
+     * @property {object} adapters.clickhouse - ClickHouse adapter settings
+     * @property {boolean} [adapters.clickhouse.enabled=true] - Enable ClickHouse adapter
+     */
+    queryRunner: {
+        adapterPreference: ['mongodb', 'clickhouse'],
+        adapters: {
+            mongodb: {
+                enabled: true
+            },
+            clickhouse: {
+                enabled: true
+            }
+        }
+    },
+
     /**
     * MongoDB connection definition and options
     * @type {object} 
@@ -24,6 +63,7 @@ var countlyConfig = {
         db: "countly",
         port: 27017,
         max_pool_size: 500,
+        replicaName: "rs0",
         //username: test,
         //password: test,
         //mongos: false,
@@ -50,9 +90,51 @@ var countlyConfig = {
     },
     */
     /*  or define as a url
-	//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-	mongodb: "mongodb://localhost:27017/countly",
+ //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
+ mongodb: "mongodb://localhost:27017/countly",
     */
+    /**
+    * ClickHouse connection definition and options
+    * @type {object|string}
+    * @property {string} [url=http://localhost:8123] - ClickHouse server URL
+    * @property {string} [username=default] - username for authenticating user
+    * @property {string} [password=] - password for authenticating user
+    * @property {string} [database=countly_drill] - ClickHouse database name
+    * @property {object} [compression] - compression settings
+    * @property {string} [application] - application name for connection
+    * @property {number} [request_timeout=1200000] - request timeout in milliseconds
+    * @property {object} [keep_alive] - keep alive settings
+    * @property {number} [max_open_connections=10] - maximum number of open connections
+    * @property {object} [clickhouse_settings] - ClickHouse specific settings
+    */
+    clickhouse: {
+        url: "http://localhost:8123",
+        username: "default",
+        password: "",
+        database: "countly_drill",
+        compression: {
+            request: false,
+            response: false,
+        },
+        application: "countly_drill",
+        request_timeout: 1200_000,
+        keep_alive: {
+            enabled: true,
+            idle_socket_ttl: 10000,
+        },
+        max_open_connections: 10,
+        clickhouse_settings: {
+            idle_connection_timeout: 11000 + '',
+            async_insert: 1,
+            wait_for_async_insert: 1,
+            wait_end_of_query: 1,
+            optimize_on_insert: 1,
+            allow_suspicious_types_in_group_by: 1,
+            allow_suspicious_types_in_order_by: 1,
+            optimize_move_to_prewhere: 1,
+            query_plan_optimize_lazy_materialization: 1
+        }
+    },
     /**
     * Default API configuration
     * @type {object} 
@@ -75,6 +157,23 @@ var countlyConfig = {
             cert: "/path/to/ssl/certificate.crt",
             ca: "/path/to/ssl/ca_bundle.crt" // Optional: for client certificate verification
         }
+    },
+    /**
+    * Default Ingestor configuration
+    * @type {object} 
+    * @property {number} [port=3010] - api port number to use, default 3010
+    * @property {string} [host=localhost] - host to which to bind connection
+    * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
+    * @property {number} workers - amount of paralel countly processes to run, defaults to cpu/core amount
+    * @property {number} [timeout=120000] - nodejs server request timeout, need to also increase nginx timeout too for longer requests
+    * @property {number} maxUploadFileSize - limit the size of uploaded file
+    */
+    ingestor: {
+        port: 3010,
+        host: "localhost",
+        max_sockets: 1024,
+        timeout: 120000,
+        maxUploadFileSize: 200 * 1024 * 1024, // 200MB
     },
     /**
     * Path to use for countly directory, empty path if installed at root of website

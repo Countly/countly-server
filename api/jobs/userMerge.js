@@ -1,10 +1,10 @@
-'use strict';
 
-const job = require('../parts/jobs/job.js'),
-    plugins = require('../../plugins/pluginManager.js'),
-    log = require('../utils/log.js')('job:userMerge');
-var Promise = require("bluebird");
-var usersApi = require('../parts/mgmt/app_users.js');
+// const job = require('../parts/jobs/job.js');
+const Job = require("../../jobServer/Job");
+const plugins = require('../../plugins/pluginManager.js');
+const log = require('../utils/log.js')('job:userMerge');
+const Promise = require("bluebird");
+const usersApi = require('../parts/mgmt/app_users.js');
 
 
 var getMergeDoc = function(data) {
@@ -180,7 +180,13 @@ var handleMerges = function(db, callback) {
                 }
             }
             else {
-                resolve();
+                //delete invalid document
+                db.collection('app_user_merges').remove({"_id": user._id}, function(err5) {
+                    if (err5) {
+                        log.e(err5);
+                    }
+                    resolve();
+                });
             }
         }
     }
@@ -197,12 +203,11 @@ var handleMerges = function(db, callback) {
             for (var z = 0; z < paralel_cn; z++) {
                 promises.push(new Promise((resolve)=>{
                     processMerging(dataObj, resolve);
-
                 }));
             }
 
             Promise.all(promises).then(()=>{
-                if (mergedocs.length === 100) {
+                if (mergedocs.length === limit) {
                     setTimeout(()=>{
                         handleMerges(db, callback);
                     }, 0); //To do not grow stack.
@@ -223,7 +228,19 @@ var handleMerges = function(db, callback) {
     });
 };
 /** Class for the user mergind job **/
-class UserMergeJob extends job.Job {
+class UserMergeJob extends Job {
+
+    /**
+     * Get the schedule configuration for this job
+     * @returns {GetScheduleConfig} schedule configuration
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "*/5 * * * *" // Every 5 minutes
+        };
+    }
+
     /**
      * Run the job
      * @param {Db} db connection

@@ -15,8 +15,20 @@ case "$COUNTLY_CONTAINER" in
   	exec node /opt/countly/frontend/express/app.js
     ;;
 
+  "ingestor" )
+    exec node /opt/countly/api/ingestor.js
+    ;;
+
+  "aggregator" )
+    exec node /opt/countly/api/aggregator.js
+    ;;
+
+  "jobserver" )
+    exec node /opt/countly/core/jobServer/index.js
+    ;;
+
    * )
-    # Run custom command. Thanks to this line we can still use 
+    # Run custom command. Thanks to this line we can still use
     # "docker run our_image /bin/bash" and it will work
     exec "$CMD" "${@:2}"
     ;;

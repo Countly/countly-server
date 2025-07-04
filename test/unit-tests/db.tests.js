@@ -255,6 +255,51 @@ describe('Testing Simple database operations', function() {
         });
     });
 
+    describe("test insert Many(+behaviour on duplicate)", function() {
+        it("Insert once and check result(promise)", async function() {
+            try {
+                var rr = await db.collection("testCommands3").insertMany([{"_id": 1}, { "_id": 2}, {"_id": 3}]);
+            }
+            catch (err) {
+                console.log("Error: " + JSON.stringify(err));
+            }
+
+            var cursor = db.collection("testCommands3").find();
+            var res = await cursor.toArray();
+            res.should.have.property("length", 3);
+        });
+
+        it("Insert again and check result(callback)", function(done) {
+            db.collection("testCommands3").insertMany([{"_id": 4}, { "_id": 5}, { "_id": 6}], function(err, res) {
+
+                db.collection("testCommands3").insertMany([{"_id": 4}, { "_id": 5}, { "_id": 6}], function(err, res) {
+                    db.collection("testCommands3").find().toArray(function(err, res) {
+                        if (!res || res.length !== 6) {
+                            done("Error: " + JSON.stringify(res));
+                        }
+                        else {
+                            done();
+                        }
+                    });
+                });
+            });
+        });
+
+        it("Insert and should get duplicate error", async function() {
+            try {
+                var rr = await db.collection("testCommands3").insertMany([{"_id": 7}, { "_id": 1}, { "_id": 8}], {"ordered": false});
+            }
+            catch (err) {
+                console.log("Error: " + JSON.stringify(err));
+            }
+
+            var cursor = db.collection("testCommands3").find();
+            var res = await cursor.toArray();
+            if (!res || res.length !== 8) {
+                throw (new Error("Error: " + JSON.stringify(res)));
+            }
+        });
+    });
 
 
     describe('Cleanup', function() {
@@ -270,6 +315,9 @@ describe('Testing Simple database operations', function() {
         });
         it('should remove collection with promise', async function() {
             var res = await db.collection("testCommands2").drop();
+            res.should.be.true;
+
+            res = await db.collection("testCommands3").drop();
             res.should.be.true;
         });
         after('Close db connection', async function() {

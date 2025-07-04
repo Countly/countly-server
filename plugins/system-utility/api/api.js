@@ -3,12 +3,10 @@ var plugin = {},
     tracker = require('../../../api/parts/mgmt/tracker.js'),
     plugins = require('../../pluginManager.js'),
     systemUtility = require('./system.utility'),
-    log = common.log('system-utility:api'),
-    cluster = require("cluster");
+    log = common.log('system-utility:api');
 
-const processName = (cluster.isMaster ? "master" : "worker") + "-" + process.pid;
+const processName = "master-" + process.pid;
 const profilerCmds = ["startProfiler", "stopProfiler", "startInspector", "stopInspector"];
-let numberOfWorkers;
 
 /**
  * Checks if the message is sent from profiler/inspector endpoints
@@ -20,80 +18,44 @@ function isInspectorMessage(msg) {
 }
 
 /**
- * Handles IPC messages sent by profiler and inspector endpoints.
- * @param {object} msg should contain at least "cmd" and "msgId" key
+ * Handles messages sent by profiler and inspector endpoints.
+ * @param {object} msg should contain at least "cmd" key
  */
 function handleMessage(msg) {
     if (isInspectorMessage(msg)) {
         let args = msg.args || [];
-        // each process will have their own processName. So we can't pass
-        // that from the main process:
+        // Set processName for profiler commands
         if (msg.cmd === "stopProfiler" || msg.cmd === "startProfiler") {
             args = [processName];
         }
         systemUtility[msg.cmd](...args).catch(err => log.e(err));
     }
-    else if (typeof msg === "object" && msg.cmd === "setNumberOfWorkers") {
-        numberOfWorkers = msg.params.numberOfWorkers;
-    }
 }
-
-// Handle messages broadcasted from master to worker.
-process.on("message", msg => handleMessage(msg));
-
-// Handle messages sent from worker to master.
-plugins.register("/master", () => {
-    const workers = Object.values(cluster.workers);
-
-    workers.forEach(worker => {
-        // set the numberOfWorkers variable on each worker
-        worker.on("listening", () => {
-            worker.send({
-                cmd: "setNumberOfWorkers",
-                params: { numberOfWorkers: workers.length }
-            });
-        });
-
-        // listen workers for inspector/profiler messages
-        worker.on("message", msg => {
-            if (isInspectorMessage(msg)) {
-                // handle on master
-                handleMessage(msg);
-
-                // broadcast to all workers except for "startInspector".
-                // running startInspector on master also starts worker's inspectors.
-                if (!["startInspector"].includes(msg.cmd)) {
-                    workers.forEach(_worker => _worker.send(msg));
-                }
-            }
-        });
-    });
-});
 
 // helper functions to start/stop with a timeout.
 let timeouts = { Profiler: null, Inspector: null };
 /**
- * Sends a "startInspector" or "startProfiler" message to main process.
- * Sets a timeout callback to stop the same operation.
+ * Starts Inspector or Profiler with a timeout
  * @param {string} type Inspector|Profiler
  */
 function startWithTimeout(type) {
     if (timeouts[type]) {
         throw new Error("Already started");
     }
-    process.send({ cmd: "start" + type });
+    handleMessage({ cmd: "start" + type });
     timeouts[type] = setTimeout(() => stopWithTimeout(type, true), 2 * 60 * 60 * 1000);
 }
+
 /**
- * Sends a "stopInspector" or "stopProfiler" message to main process.
+ * Stops Inspector or Profiler
  * @param {string} type Inspector|Profiler
- * @param {boolean} fromTimeout true if its being stoped because of the timeout
+ * @param {boolean} fromTimeout true if its being stopped because of the timeout
  */
 function stopWithTimeout(type, fromTimeout = false) {
     if (!timeouts[type]) {
         throw new Error(type + " needs to be started");
     }
-    process.send({ cmd: "stop" + type });
+    handleMessage({ cmd: "stop" + type });
     if (!fromTimeout) {
         clearTimeout(timeouts[type]);
     }
@@ -113,8 +75,7 @@ function stopWithTimeout(type, fromTimeout = false) {
                 try {
                     startWithTimeout("Inspector");
                     common.returnMessage(params, 200, {
-                        workers: numberOfWorkers,
-                        ports: [masterPort, masterPort + numberOfWorkers]
+                        ports: [masterPort]
                     });
                 }
                 catch (err) {

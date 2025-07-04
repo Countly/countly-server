@@ -57,10 +57,6 @@ plugins.setConfigs("crashes", {
                 console.log(err);
             }
         });
-
-        setTimeout(() => {
-            require('../../../api/parts/jobs').job('crashes:cleanup_custom_field').replace().schedule('at 01:01 am ' + 'every 1 day');
-        }, 10000);
     });
     var ranges = ["ram", "bat", "disk", "run", "session"];
     var segments = ["os_version", "os_name", "manufacture", "device", "resolution", "app_version", "cpu", "opengl", "orientation", "view", "browser"];
@@ -903,14 +899,70 @@ plugins.setConfigs("crashes", {
                                             }
                                         }
                                     }
-                                    var cursor = common.db.collection('app_crashes' + params.app_id).find({group: result._id}, {fields: {binary_crash_dump: 0}}).sort({ ts: -1 });
-                                    cursor.limit(plugins.getConfig("crashes").report_limit);
-                                    cursor.toArray(function(cursorErr, res) {
-                                        if (res && res.length) {
-                                            res.forEach(trace.postprocessCrash);
+                                    //Fetch from drill. If not enough - check old collections.
+                                    var cursor0 = common.drillDb.collection("drill_events").find({"a": (params.app_id + ""), "e": "[CLY]_crash", "n": (result._id + "")}).sort({ts: -1});
+                                    cursor0.limit(plugins.getConfig("crashes").report_limit);
+                                    cursor0.toArray(function(cursorErr, res0) {
+                                        if (cursorErr) {
+                                            log.e("Error fetching crash reports from drill: " + cursorErr);
                                         }
-                                        result.data = res || [];
-                                        common.returnOutput(params, result);
+                                        res0 = res0 || [];
+                                        if (res0 && res0.length) {
+                                            for (var z = 0; z < res0.length; z++) {
+                                                //Converts to usual format
+                                                res0[z].sg = res0[z].sg || {};
+                                                var dd = res0[z].sg;
+                                                dd.ts = res0[z].ts;
+                                                dd._id = res0[z]._id;
+                                                for (var bkey in bools) {
+                                                    if (res0[z].sg[bkey] === "true") {
+                                                        res0[z].sg[bkey] = 1;
+                                                    }
+                                                    else if (res0[z].sg[bkey] === "false") {
+                                                        res0[z].sg[bkey] = 0;
+                                                    }
+                                                }
+                                                var rw = ["not_os_specific", "nonfatal", "javascript", "native_cpp", "plcrash"];
+                                                for (var ii = 0; ii < rw.length; ii++) {
+                                                    if (res0[z].sg[rw[ii]] === "true") {
+                                                        res0[z].sg[rw[ii]] = true;
+                                                    }
+                                                    else if (res0[z].sg[rw[ii]] === "false") {
+                                                        res0[z].sg[rw[ii]] = false;
+                                                    }
+                                                }
+                                                dd.custom = res0[z].custom || {};
+                                                for (var key in res0[z].sg) {
+                                                    if (key.indexOf("custom_") === 0) {
+                                                        dd.custom[key.replace("custom_", "")] = res0[z].sg[key];
+                                                    }
+                                                }
+                                                dd.group = res0[z].n;
+                                                dd.uid = res0[z].uid;
+                                                dd.cd = res0[z].cd;
+                                                res0[z] = dd;
+                                                trace.postprocessCrash(res0[z]);
+                                            }
+                                        }
+                                        if (res0.length < plugins.getConfig("crashes").report_limit) {
+                                            var cursor = common.db.collection('app_crashes' + params.app_id).find({group: result._id}, {fields: {binary_crash_dump: 0}}).sort({ ts: -1 });
+                                            cursor.limit(plugins.getConfig("crashes").report_limit - res0.length);
+                                            cursor.toArray(function(cursorErr2, res) {
+                                                if (cursorErr2) {
+                                                    log.e("Error fetching crash reports from app_crashes: " + cursorErr2);
+                                                }
+                                                if (res && res.length) {
+                                                    res.forEach(trace.postprocessCrash);
+                                                    //apped res to res0
+                                                    res0 = res0.concat(res);
+                                                }
+                                                result.data = res0 || [];
+                                                common.returnOutput(params, result);
+                                            });
+                                        }
+                                        else {
+                                            common.returnOutput(params, res0);
+                                        }
                                     });
                                     if (result.is_new) {
                                         common.db.collection('app_crashgroups' + params.app_id).update({groups: params.qstring.group}, {$set: {is_new: false}}, function() {});
@@ -1141,7 +1193,12 @@ plugins.setConfigs("crashes", {
                                             return true;
                                         }
                                     }).map(function(crash) {
-                                        trace.postprocessCrash(crash);
+                                        try {
+                                            trace.postprocessCrash(crash);
+                                        }
+                                        catch (ee) {
+                                            console.error("Error in postprocessing crash", crash, ee);
+                                        }
                                         delete crash.threads;
                                         delete crash.oldthreads;
                                         delete crash.olderror;
@@ -1752,6 +1809,7 @@ plugins.setConfigs("crashes", {
         common.db.collection('crashdata').remove({'_id': {$regex: appId + ".*"}}, function() {});
         if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + appId).digest('hex')).drop(function() {});
+            common.drillDb.collection("drill_events").remove({"a": appId + "", e: "[CLY]_crash"}, function() {});
         }
     });
 
@@ -1762,6 +1820,7 @@ plugins.setConfigs("crashes", {
         common.db.collection('app_crashes' + appId).remove({ts: {$lt: ob.moment.unix()}}, function() {});
         if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + appId).digest('hex')).remove({ts: {$lt: ob.moment.valueOf()}}, function() {});
+            common.drillDb.collection("drill_events").remove({a: appId + "", e: "[CLY]_crash", ts: {$lt: ob.moment.valueOf()}}, function() {});
         }
     });
 
@@ -1794,6 +1853,7 @@ plugins.setConfigs("crashes", {
         common.db.collection('crashdata').remove({'_id': {$regex: appId + ".*"}}, function() {});
         if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + appId).digest('hex')).drop(function() {});
+            common.drillDb.collection("drill_events").remove({"a": appId + "", e: "[CLY]_crash"}, function() {});
         }
     });
 
@@ -1826,6 +1886,7 @@ plugins.setConfigs("crashes", {
         common.db.collection('crashdata').remove({'_id': {$regex: appId + ".*"}}, function() {});
         if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + appId).digest('hex')).drop(function() {});
+            common.drillDb.collection("drill_events").remove({"a": appId + "", e: "[CLY]_crash"}, function() {});
         }
     });
 }(plugin));

@@ -836,6 +836,8 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
     common.db.collection('cities').remove({'_id': {$regex: "^" + appId + ".*"}}, function() {});
     common.db.collection('top_events').remove({'app_id': common.db.ObjectID(appId)}, function() {});
     common.db.collection('app_user_merges').remove({'_id': {$regex: "^" + appId + "_.*"}}, function() {});
+
+    common.drillDb.collection("drill_events").remove({"a": appId}, function() {});
     deleteAppLongTasks(appId);
     /**
     * Deletes all app's events
@@ -857,12 +859,8 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
                 common.db.collection('metric_changes' + appId).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, function() {});
                 common.db.collection('metric_changes' + appId).ensureIndex({uid: 1}, { background: true }, function() {});
             });
-            common.db.collection('app_user_merges' + appId).drop(function() {
-                common.db.collection('app_user_merges' + appId).ensureIndex({cd: 1}, {
-                    expireAfterSeconds: 60 * 60 * 3,
-                    background: true
-                }, function() {});
-            });
+            //Removes old app_user_merges collection
+            common.db.collection('app_user_merges' + appId).drop(function() {});
             if (params.qstring.args.period === "reset") {
                 plugins.dispatch("/i/apps/reset", {
                     params: params,
@@ -949,6 +947,7 @@ function deletePeriodAppData(appId, fromAppDelete, params, app) {
     common.db.collection('device_details').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: skip}}]}, function() {});
     common.db.collection('cities').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: skip}}]}, function() {});
 
+    common.drillDb.collection("drill_events").remove({"a": appId, "ts": {$lt: (oldestTimestampWanted * 1000)}}, function() {});
     common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
         if (!err && events && events.list) {
             common.arrayAddUniq(events.list, plugins.internalEvents);

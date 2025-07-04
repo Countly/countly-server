@@ -127,8 +127,8 @@
 					</template>
 				</template>
 			</cly-datatable-n>
-			<cly-datatable-n v-else resizable border v-loading="isTableLoading" :force-loading="isTableLoading" test-id="datatable-analytics-views"
-				:default-sort="{prop: 'u', order: 'descending'}" :available-dynamic-cols="tableDynamicCols"
+			<cly-datatable-n v-else resizable border test-id="datatable-analytics-views"
+				:default-sort="{prop: 't', order: 'descending'}" :available-dynamic-cols="tableDynamicCols"
 				:persist-key="tablePersistKey" :data-source="remoteTableDataSource" :export-query="getExportQuery"
 				ref="viewsTable" @selection-change="handleSelectionChange">
 				<template v-slot:header-left>

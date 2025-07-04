@@ -20,18 +20,68 @@ var fetch = {},
     _ = require('underscore'),
     crypto = require('crypto'),
     usage = require('./usage.js'),
-    STATUS_MAP = require('../jobs/job').STATUS_MAP,
     plugins = require('../../../plugins/pluginManager.js');
 
+
+
+fetch.fetchFromGranuralData = async function(queryData, callback) {
+    var data;
+    if (queryData.queryName === "uniqueCount") {
+        data = await common.drillQueryRunner.getUniqueCount(queryData);
+        callback(null, data);
+    }
+    else if (queryData.queryName === "uniqueGraph") {
+        data = await common.drillQueryRunner.getUniqueGraph(queryData);
+        callback(null, data);
+    }
+    else if (queryData.queryName === "viewsTableData") {
+        data = await common.drillQueryRunner.getViewsTableData(queryData);
+        callback(null, data);
+    }
+    else if (queryData.queryName === "aggregatedSessionData") {
+        data = await common.drillQueryRunner.aggregatedSessionData(queryData);
+        callback(null, data);
+    }
+    else if (queryData.queryName === "segmentValuesForPeriod") {
+        data = await common.drillQueryRunner.segmentValuesForPeriod(queryData);
+        callback(null, data);
+    }
+    else if (common.drillQueryRunner[queryData.queryName] && typeof common.drillQueryRunner[queryData.queryName] === "function") {
+        data = await common.drillQueryRunner[queryData.queryName](queryData);
+        callback(null, data);
+    }
+    else {
+
+        callback("Invalid query name - " + queryData.queryName, null);
+    }
+    /*else {
+        try {
+            data = await common.drillQueryRunner.getAggregatedData(queryData);
+            callback(null, data);
+
+        }
+        catch (e) {
+            console.log(e);
+            return callback(e);
+        }
+    }*/
+};
 /**
-* Prefetch event data, either by provided key or first event in the list and output result to browser
+* Prefetch event data, either by provided key or first event all events
 * @param {string} collection - event key
 * @param {params} params - params object
 **/
 fetch.prefetchEventData = function(collection, params) {
     if (!params.qstring.event) {
         common.readBatcher.getOne("events", { '_id': params.app_id }, (err, result) => {
+            if (err) {
+                console.log(err);
+            }
+            var events = [];
             if (result && result.list) {
+                events = result.list.filter((event) => {
+                    return event.indexOf("[CLY]") !== 0;
+                });
                 if (result.order && result.order.length) {
                     for (let i = 0; i < result.order.length; i++) {
                         if (result.order[i].indexOf("[CLY]") !== 0) {
@@ -49,9 +99,10 @@ fetch.prefetchEventData = function(collection, params) {
                         }
                     }
                 }
-
                 var collectionName = crypto.createHash('sha1').update(collection + params.app_id).digest('hex');
-                fetch.fetchTimeObj("events_data", params, true, {'id_prefix': params.app_id + "_" + collectionName + '_'});
+                fetch.getMergedEventData(params, events, {'id_prefix': params.app_id + "_" + collectionName + '_'}, function(result3) {
+                    common.returnOutput(params, result3);
+                });
             }
             else {
                 common.returnOutput(params, {});
@@ -334,6 +385,7 @@ fetch.getMergedEventData = function(params, events, options, callback) {
         var collectionName = crypto.createHash('sha1').update(eventKey.e + eventKey.a).digest('hex');
         var optionsCopy = JSON.parse(JSON.stringify(options));
         optionsCopy.id_prefix = eventKey.a + "_" + collectionName + "_";
+        params.qstring.event = eventKey.e;
         fetchTimeObj("events_data", params, true, optionsCopy, function(output) {
             done(null, output || {});
         });
@@ -1069,6 +1121,39 @@ fetch.metricToCollection = function(metric) {
     }
 };
 
+fetch.metricToProperty = function(metric) {
+    switch (metric) {
+    case 'locations':
+    case 'countries':
+        return "up.cc";
+    case 'cities':
+        return "up.cc";
+    case 'sessions':
+    case 'users':
+        return "u";
+    case 'app_versions':
+        return "up.av";
+    case 'os':
+    case 'platforms':
+        return "up.os";
+    case 'os_versions':
+    case 'platform_version':
+        return "up.os_version";
+    case 'resolutions':
+        return "up.r";
+    case 'device_type':
+        return "up.d";
+    case 'device_details':
+        return "up.d";
+    case 'devices':
+        return "up.d";
+    case 'manufacturers':
+        return "up.m";
+    default:
+        return metric;
+    }
+};
+
 /**
 * Get metric data for metric api and output to browser
 * @param {params} params - params object
@@ -1088,7 +1173,6 @@ fetch.fetchMetric = function(params) {
         else {
             common.returnOutput(params, []);
         }
-
     }
 };
 
@@ -1595,6 +1679,62 @@ fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
 };
 
 /**
+ * Caluclates model data from granural data
+ * @param {string} collection - collection name 
+ * @param {object} params  - request parameters
+ * @param {object} options  - options of query
+ * @param {funtyion} callback  - callback function with result
+ */
+async function fetchFromGranural(collection, params, options, callback) {
+    if (params.qstring.segmentation) {
+        if (params.qstring.segmentation === "key") {
+            params.qstring.segmentation = "n";
+        }
+        else {
+            params.qstring.segmentation = "sg." + params.qstring.segmentation;
+        }
+    }
+
+    if (params.qstring.refresh) {
+        params.qstring.period = "hour";
+    }
+
+    var queryObject = {
+        "appID": params.app_id,
+        "timezone": params.appTimezone,
+        "period": params.qstring.period,
+        "segmentation": params.qstring.segmentation,
+        "graphData": true
+    };
+    if (params.qstring.event !== "[CLY]_star_rating") {
+        queryObject.event = "[CLY]_custom";
+        queryObject.name = params.qstring.event;
+    }
+    if (collection === "users") {
+        queryObject.event = "[CLY]_session";
+    }
+
+    var data = await common.drillQueryRunner.getAggregatedData(queryObject);
+    var modelData = common.convertArrayToModel(data, params.qstring.segmentation);
+    modelData.lu = Date.now();
+    var pp = options.id_prefix.split("_");
+    try {
+        var meta = await common.drillReadBatcher.getOne("drill_meta", {"_id": pp[0] + "_meta_" + pp[1]});
+        if (meta && meta.sg) {
+            modelData.meta = modelData.meta || {};
+            modelData.meta.segments = [];
+            for (var val in meta.sg) {
+                modelData.meta.segments.push(val);
+            }
+        }
+    }
+    catch (e) {
+        console.log(e);
+    }
+    callback(modelData);
+}
+
+/**
 * Fetch db data in standard format
 * @param {string} collection - from which collection to fetch
 * @param {params} params - params object
@@ -1609,6 +1749,7 @@ fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
 * @param {function} callback - to call when fetch done
 **/
 function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
+
     if (typeof options === "function") {
         callback = options;
         options = {};
@@ -1620,6 +1761,15 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
 
     if (typeof options.db === "undefined") {
         options.db = common.db;
+    }
+
+    if (!params || !params.app_id || !params.qstring) {
+        callback({});
+        return;
+    }
+    if (params.qstring.fetchFromGranural) {
+        fetchFromGranural(collection, params, options, callback);
+        return;
     }
 
     if (typeof options.unique === "undefined") {
@@ -1647,7 +1797,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
     }
 
     if (params.qstring.fullRange) {
-        options.db.collection(collection).find({ '_id': { $regex: "^" + (options.id_prefix || "") + options.id + ".*" } }).toArray(function(err1, data) {
+        options.db.collection(collection).find({ '_id': { $regex: "^" + (options.id_prefix || "") + options.id + ".*" + (options.id_postfix || "") } }).toArray(function(err1, data) {
             callback(getMergedObj(data, true, options.levels, params.truncateEventValuesList));
         });
     }
@@ -1706,11 +1856,10 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         var monthDocs = [monthIdToFetch];
         if (!options.dontBreak) {
             for (let i = 0; i < common.base64.length; i++) {
-                zeroDocs.push(zeroIdToFetch + "_" + common.base64[i]);
-                monthDocs.push(monthIdToFetch + "_" + common.base64[i]);
+                zeroDocs.push(zeroIdToFetch + "_" + common.base64[i] + (options.id_postfix || ""));
+                monthDocs.push(monthIdToFetch + "_" + common.base64[i] + (options.id_postfix || ""));
             }
         }
-
         options.db.collection(collection).find({ '_id': { $in: zeroDocs } }, fetchFromZero).toArray(function(err1, zeroObject) {
             options.db.collection(collection).find({ '_id': { $in: monthDocs } }, fetchFromMonth).toArray(function(err2, monthObject) {
                 zeroObject = zeroObject || [];
@@ -1746,7 +1895,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         }
         else {
             for (let i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
-                documents.push((options.id_prefix || "") + options.id + "_" + periodObj.reqZeroDbDateIds[i]);
+                documents.push((options.id_prefix || "") + options.id + "_" + periodObj.reqZeroDbDateIds[i] + (options.id_postfix || ""));
                 if (!(options && options.dontBreak)) {
                     for (let m = 0; m < common.base64.length; m++) {
                         documents.push((options.id_prefix || "") + options.id + "_" + periodObj.reqZeroDbDateIds[i] + "_" + common.base64[m]);
@@ -1755,7 +1904,7 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
             }
 
             for (let i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
-                documents.push((options.id_prefix || "") + options.id + "_" + periodObj.reqMonthDbDateIds[i]);
+                documents.push((options.id_prefix || "") + options.id + "_" + periodObj.reqMonthDbDateIds[i] + (options.id_postfix || ""));
                 if (!(options && options.dontBreak)) {
                     for (let m = 0; m < common.base64.length; m++) {
                         documents.push((options.id_prefix || "") + options.id + "_" + periodObj.reqMonthDbDateIds[i] + "_" + common.base64[m]);
@@ -1763,7 +1912,6 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
                 }
             }
         }
-
         options.db.collection(collection).find({ '_id': { $in: documents } }, {}).toArray(function(err, dataObjects) {
             if (err) {
                 console.log(err);
@@ -2006,130 +2154,6 @@ function union(x, y) {
 
     return res;
 }
-
-/**
-* Get data for jobs listing for jobs api
-* @param {string} metric - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
-*/
-fetch.fetchJobs = async function(metric, params) {
-    try {
-        if (params.qstring.name) {
-            await fetch.jobDetails(metric, params);
-        }
-        else {
-            await fetch.alljobs(metric, params);
-        }
-    }
-    catch (e) {
-        console.log(e);
-        common.returnOutput(params, 500, "Fetching jobs failed");
-    }
-};
-
-/**
-* Get all jobs grouped by job name for jobs api
-* @param {string} metric - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
-*/
-fetch.alljobs = async function(metric, params) {
-    const columns = ["name", "schedule", "next", "finished", "status", "total"];
-    let sort = {};
-    let total = await common.db.collection('jobs').aggregate([
-        {
-            $group: { _id: "$name" }
-        },
-        {
-            $count: 'total'
-        }
-    ]).toArray();
-    total = total.length > 0 ? total[0].total : 0;
-    const pipeline = [
-        {
-            $addFields: {
-                sortKey: {
-                    $cond: {
-                        if: { $eq: ["$status", 0] },
-                        then: 0,
-                        else: {
-                            $cond: {
-                                if: { $eq: ["$status", 7] },
-                                then: 1,
-                                else: 2
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        {
-            $sort: {
-                sortKey: 1,
-                finished: -1
-            }
-        },
-        {
-            $group: {
-                _id: "$name",
-                name: { $first: "$name" },
-                status: { $first: "$status" },
-                schedule: { $first: "$schedule" },
-                next: { $first: "$next" },
-                finished: { $first: "$finished" },
-                total: { $sum: 1 },
-                rowId: { $first: "$_id" }
-            }
-        }
-    ];
-    if (params.qstring.sSearch) {
-        var rr;
-        try {
-            rr = new RegExp(params.qstring.sSearch, "i");
-            pipeline.unshift({
-                $match: { name: { $regex: rr } }
-            });
-        }
-        catch (e) {
-            console.log('Could not use as regex:' + params.qstring.sSearch);
-        }
-    }
-    const cursor = common.db.collection('jobs').aggregate(pipeline, { allowDiskUse: true });
-    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
-    cursor.sort(sort);
-    cursor.skip(Number(params.qstring.iDisplayStart || 0));
-    cursor.limit(Number(params.qstring.iDisplayLength || 10));
-    let items = await cursor.toArray();
-    items = items.map((job) => {
-        job.status = STATUS_MAP[job.status];
-        return job;
-    });
-    cursor.close();
-    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || [] });
-};
-
-/**
-* Get all documents for a given job name
-* @param {string} metric - name of the collection where to get data from
-* @param {params} params - params object with app_id and date
-*/
-fetch.jobDetails = async function(metric, params) {
-    const columns = ["schedule", "next", "finished", "status", "data", "duration"];
-    let sort = {};
-    const total = await common.db.collection('jobs').count({ name: params.qstring.name });
-    const cursor = common.db.collection('jobs').find({ name: params.qstring.name });
-    sort[columns[params.qstring.iSortCol_0 || 0]] = (params.qstring.sSortDir_0 === "asc") ? 1 : -1;
-    cursor.sort(sort);
-    cursor.skip(Number(params.qstring.iDisplayStart || 0));
-    cursor.limit(Number(params.qstring.iDisplayLength || 10));
-    let items = await cursor.toArray();
-    items = items.map((job) => {
-        job.status = STATUS_MAP[job.status];
-        return job;
-    });
-    cursor.close();
-    common.returnOutput(params, { sEcho: params.qstring.sEcho, iTotalRecords: total, iTotalDisplayRecords: total, aaData: items || [] });
-};
-
 
 /**
  * Fetch data for tops

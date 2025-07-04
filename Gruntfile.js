@@ -154,6 +154,8 @@ module.exports = function(grunt) {
                     'frontend/express/public/core/home/javascripts/countly.views.js',
                     'frontend/express/public/core/notes/javascripts/countly.views.js',
                     'frontend/express/public/core/version-history/javascripts/countly.views.js',
+                    'frontend/express/public/core/aggregator-status/javascripts/countly.views.js',
+                    'frontend/express/public/core/aggregator-status/javascripts/countly.model.js',
                     'frontend/express/public/core/onboarding/javascripts/countly.models.js',
                     'frontend/express/public/core/onboarding/javascripts/countly.views.js'
                 ],
