@@ -1,3 +1,6 @@
+## Version 25.03.XX
+Fixes:
+- [active_directory] Fix for reading azure application tenant id from config
 ## Version 25.03.8
 Fixes:
 - [core] Fix adding llm observability to cly-event-select component
