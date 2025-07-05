@@ -4,6 +4,27 @@
 (function() {
     var FEATURE_NAME = "hooks";
 
+    var appsSortFunction = function(a, b) {
+        const aLabel = a?.label || '';
+        const bLabel = b?.label || '';
+        const locale = countlyCommon.BROWSER_LANG || 'en';
+
+        if (aLabel && bLabel) {
+            return aLabel.localeCompare(bLabel, locale, { numeric: true }) || 0;
+        }
+
+        // Move items with no label to the end
+        if (!aLabel && bLabel) {
+            return 1;
+        }
+
+        if (aLabel && !bLabel) {
+            return -1;
+        }
+
+        return 0;
+    };
+
     var TableView = countlyVue.views.BaseView.extend({
         template: '#hooks-table',
         mixins: [
@@ -44,6 +65,9 @@
             for (var id in countlyGlobal.apps) {
                 appsSelectorOption.push({label: countlyGlobal.apps[id].name, value: id, image: "background-image:url(" + countlyGlobal.apps[id].image + ")"});
             }
+
+            appsSelectorOption.sort(appsSortFunction);
+
             return {
                 appsSelectorOption: appsSelectorOption,
                 filterStatus: 'all',
@@ -740,6 +764,9 @@
                     appsSelectorOption2.push(item);
                 }
             }
+
+            appsSelectorOption.sort(appsSortFunction);
+            appsSelectorOption2.sort(appsSortFunction);
 
             return {
                 title: "",

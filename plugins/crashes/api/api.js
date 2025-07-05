@@ -546,6 +546,9 @@ plugins.setConfigs("crashes", {
                                         }
                                     }
                                 }
+                                if (!('name' in report) && 'error' in report) {
+                                    data.name = (report.error.split('\n')[0] + "").trim();
+                                }
                                 if (report.custom) {
                                     for (let i in report.custom) {
                                         if (!data[i]) {

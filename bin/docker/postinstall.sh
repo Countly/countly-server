@@ -20,4 +20,6 @@ else
 
     #load city data into database
     node "/opt/countly/bin/scripts/loadCitiesInDb.js"
+	node "/opt/countly/bin/offline-geocoder/scripts/download_geonames_data.js"
+	node "/opt/countly/bin/offline-geocoder/scripts/import_geonames_mongodb.js"
 fi

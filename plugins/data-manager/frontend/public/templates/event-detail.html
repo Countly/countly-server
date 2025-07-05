@@ -41,7 +41,7 @@
         </template>
         <template v-slot:header-right>
             <div class="bu-mt-6">
-                <el-button v-if="canUserUpdate" @click="handleEdit" size="small" icon="ion-edit">{{i18n('data-manager.edit-event')}}</el-button>
+                <el-button data-test-id="event-detail-page-edit-button" v-if="canUserUpdate" @click="handleEdit" size="small" icon="ion-edit">{{i18n('data-manager.edit-event')}}</el-button>
                 <cly-more-options v-if="canUserDelete" class="bu-ml-2" size="small" @command="handleCommand($event, event.key)">
                     <el-dropdown-item command="delete">{{i18n('common.delete')}}</el-dropdown-item>
                 </cly-more-options>
