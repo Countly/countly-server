@@ -36,7 +36,6 @@
     "@stylistic/eslint-plugin": "^3.1.0",
     "docdash": "^2.0.1",
     "eslint": "^8.56.0",
-    "eslint-plugin-vue": "^10.2.0",
     "grunt-contrib-watch": "1.1.0",
     "grunt-eslint": "24.3.0",
     "grunt-mocha-nyc": "1.0.3",
