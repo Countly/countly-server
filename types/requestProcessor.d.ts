@@ -230,4 +230,97 @@ export interface Params {
     };
     /** Default value for metrics */
     defaultValue?: number;
+
+    /** Allow any additional properties for legacy compatibility */
+    [key: string]: any;
 }
+
+/** Bulk request structure */
+export interface BulkRequest {
+    [key: string]: any;
+}
+
+/** API validation functions */
+export interface ValidationFunctions {
+    validateAppForWriteAPI: (params: Params, callback: Function, callbackParam?: any) => Promise<any>;
+    validateUserForDataReadAPI: (params: Params, feature: string | string[], callback: Function, callbackParam?: any) => Promise<any>;
+    validateUserForDataWriteAPI: (params: Params, callback: Function, callbackParam?: any) => Promise<any>;
+    validateUserForGlobalAdmin: (params: Params, callback: Function, callbackParam?: any) => Promise<any>;
+}
+
+/** Version mark entry */
+export interface VersionMark {
+    version: string;
+    timestamp: number;
+    [key: string]: any;
+}
+
+/** Countly API modules structure */
+export interface CountlyAPI {
+    data: {
+        usage: any;
+        fetch: any;
+        events: any;
+        exports: any;
+        geoData: any;
+    };
+    mgmt: {
+        users: any;
+        apps: any;
+        appUsers: any;
+        eventGroups: any;
+        cms: any;
+        datePresets: any;
+    };
+}
+
+/**
+ * Default request processing handler, which requires request context to operate
+ * @param params - Request context parameters with minimum required properties
+ * @returns void
+ * @example
+ * // Creating request context
+ * var params = {
+ *     // providing data in request object
+ *     'req': {"url": "/i", "body": {"device_id": "test", "app_key": "APP_KEY", "begin_session": 1, "metrics": {}}},
+ *     // adding custom processing for API responses
+ *     'APICallback': function(err, data, headers, returnCode, params) {
+ *         // handling api response, like sending to client or verifying
+ *         if (err) {
+ *             // there was problem processing request
+ *             console.log(data, returnCode);
+ *         }
+ *         else {
+ *             // request was processed, let's handle response data
+ *             handle(data);
+ *         }
+ *     }
+ * };
+ * 
+ * // processing request
+ * processRequest(params);
+ */
+export declare function processRequest(params: Params): void;
+
+/**
+ * Process user data and app_user document with retry logic
+ * @param params - Request context parameters
+ * @param initiator - The initiating component or identifier
+ * @param done - Callback function when processing is complete
+ * @param try_times - Number of retry attempts (optional, defaults to appropriate value)
+ * @returns Promise that resolves when user processing is complete
+ */
+export declare function processUserFunction(
+    params: Params, 
+    initiator: any, 
+    done: (error?: any) => void, 
+    try_times?: number
+): Promise<void>;
+
+/** Request processor module exports */
+declare const requestProcessor: {
+    processRequest: typeof processRequest;
+    processUserFunction: typeof processUserFunction;
+};
+
+export default requestProcessor;
