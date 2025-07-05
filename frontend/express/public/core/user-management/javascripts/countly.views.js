@@ -1013,6 +1013,27 @@
             for (var app in countlyGlobal.apps) {
                 this.apps.push({value: countlyGlobal.apps[app]._id, label: countlyGlobal.apps[app].name });
             }
+
+            this.apps.sort(function(a, b) {
+                const aLabel = a?.label || '';
+                const bLabel = b?.label || '';
+                const locale = countlyCommon.BROWSER_LANG || 'en';
+
+                if (aLabel && bLabel) {
+                    return aLabel.localeCompare(bLabel, locale, { numeric: true }) || 0;
+                }
+
+                // Move items with no label to the end
+                if (!aLabel && bLabel) {
+                    return 1;
+                }
+
+                if (aLabel && !bLabel) {
+                    return -1;
+                }
+
+                return 0;
+            });
         }
     });
 

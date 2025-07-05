@@ -77,7 +77,13 @@ var countlyConfig = {
         track: "all",
         theme: "",
         session_secret: "countlyss",
-        session_name: "connect.sid"
+        session_name: "connect.sid",
+        ssl: {
+            enabled: false,
+            key: "/path/to/ssl/private.key",
+            cert: "/path/to/ssl/certificate.crt",
+            ca: "/path/to/ssl/ca_bundle.crt" // Optional: for client certificate verification
+        }
     },
     /**
      * Cookie configuration

@@ -1,4 +1,6 @@
 const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const formidable = require('formidable');
 const countlyConfig = require('./config', 'dont-enclose');
 const plugins = require('../plugins/pluginManager.js');
@@ -223,91 +225,27 @@ plugins.connectToAllDatabases().then(function() {
 
     plugins.dispatch("/master", {}); // init hook
 
-    const server = http.Server((req, res) => {
-        const params = {
-            qstring: {},
-            res: res,
-            req: req
+    const serverOptions = {
+        port: common.config.api.port,
+        host: common.config.api.host || ''
+    };
+
+    let server;
+    if (common.config.api.ssl && common.config.api.ssl.enabled) {
+        const sslOptions = {
+            key: fs.readFileSync(common.config.api.ssl.key),
+            cert: fs.readFileSync(common.config.api.ssl.cert)
         };
-
-        res.setHeader('Connection', 'keep-alive');
-        res.setHeader('Keep-Alive', 'timeout=5, max=1000');
-
-        if (req.method.toLowerCase() === 'post') {
-            const formidableOptions = {};
-            if (countlyConfig.api.maxUploadFileSize) {
-                formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
-            }
-
-            const form = new formidable.IncomingForm(formidableOptions);
-            if (/crash_symbols\/(add_symbol|upload_symbol)/.test(req.url)) {
-                req.body = [];
-                req.on('data', (data) => {
-                    req.body.push(data);
-                });
-            }
-            else {
-                req.body = '';
-                req.on('data', (data) => {
-                    req.body += data;
-                });
-            }
-
-            let multiFormData = false;
-            // Check if we have 'multipart/form-data'
-            if (req.headers['content-type']?.startsWith('multipart/form-data')) {
-                multiFormData = true;
-            }
-
-            form.parse(req, (err, fields, files) => {
-                //handle bakcwards compatability with formiddble v1
-                for (let i in files) {
-                    if (files[i].filepath) {
-                        files[i].path = files[i].filepath;
-                    }
-                    if (files[i].mimetype) {
-                        files[i].type = files[i].mimetype;
-                    }
-                    if (files[i].originalFilename) {
-                        files[i].name = files[i].originalFilename;
-                    }
-                }
-                params.files = files;
-                if (multiFormData) {
-                    let formDataUrl = [];
-                    for (const i in fields) {
-                        params.qstring[i] = fields[i];
-                        formDataUrl.push(`${i}=${fields[i]}`);
-                    }
-                    params.formDataUrl = formDataUrl.join('&');
-                }
-                else {
-                    for (const i in fields) {
-                        params.qstring[i] = fields[i];
-                    }
-                }
-                if (!params.apiPath) {
-                    processRequest(params);
-                }
-            });
+        if (common.config.api.ssl.ca) {
+            sslOptions.ca = fs.readFileSync(common.config.api.ssl.ca);
         }
-        else if (req.method.toLowerCase() === 'options') {
-            const headers = {};
-            headers["Access-Control-Allow-Origin"] = "*";
-            headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
-            headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type";
-            res.writeHead(200, headers);
-            res.end();
-        }
-        //attempt process GET request
-        else if (req.method.toLowerCase() === 'get') {
-            processRequest(params);
-        }
-        else {
-            common.returnMessage(params, 405, "Method not allowed");
-        }
-    });
-    server.listen(common.config.api.port, common.config.api.host || '');
+        server = https.createServer(sslOptions, handleRequest);
+    }
+    else {
+        server = http.createServer(handleRequest);
+    }
+
+    server.listen(serverOptions.port, serverOptions.host);
     server.timeout = common.config.api.timeout || 120000;
     server.keepAliveTimeout = common.config.api.timeout || 120000;
     server.headersTimeout = (common.config.api.timeout || 120000) + 1000; // Slightly higher
@@ -315,3 +253,93 @@ plugins.connectToAllDatabases().then(function() {
 
     plugins.loadConfigs(common.db);
 });
+
+/**
+ * Handle incoming HTTP/HTTPS requests
+ * @param {http.IncomingMessage} req - The request object
+ * @param {http.ServerResponse} res - The response object
+ */
+function handleRequest(req, res) {
+    const params = {
+        qstring: {},
+        res: res,
+        req: req
+    };
+
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Keep-Alive', 'timeout=5, max=1000');
+
+    if (req.method.toLowerCase() === 'post') {
+        const formidableOptions = {};
+        if (countlyConfig.api.maxUploadFileSize) {
+            formidableOptions.maxFileSize = countlyConfig.api.maxUploadFileSize;
+        }
+
+        const form = new formidable.IncomingForm(formidableOptions);
+        if (/crash_symbols\/(add_symbol|upload_symbol)/.test(req.url)) {
+            req.body = [];
+            req.on('data', (data) => {
+                req.body.push(data);
+            });
+        }
+        else {
+            req.body = '';
+            req.on('data', (data) => {
+                req.body += data;
+            });
+        }
+
+        let multiFormData = false;
+        // Check if we have 'multipart/form-data'
+        if (req.headers['content-type']?.startsWith('multipart/form-data')) {
+            multiFormData = true;
+        }
+
+        form.parse(req, (err, fields, files) => {
+            //handle bakcwards compatability with formiddble v1
+            for (let i in files) {
+                if (files[i].filepath) {
+                    files[i].path = files[i].filepath;
+                }
+                if (files[i].mimetype) {
+                    files[i].type = files[i].mimetype;
+                }
+                if (files[i].originalFilename) {
+                    files[i].name = files[i].originalFilename;
+                }
+            }
+            params.files = files;
+            if (multiFormData) {
+                let formDataUrl = [];
+                for (const i in fields) {
+                    params.qstring[i] = fields[i];
+                    formDataUrl.push(`${i}=${fields[i]}`);
+                }
+                params.formDataUrl = formDataUrl.join('&');
+            }
+            else {
+                for (const i in fields) {
+                    params.qstring[i] = fields[i];
+                }
+            }
+            if (!params.apiPath) {
+                processRequest(params);
+            }
+        });
+    }
+    else if (req.method.toLowerCase() === 'options') {
+        const headers = {};
+        headers["Access-Control-Allow-Origin"] = "*";
+        headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
+        headers["Access-Control-Allow-Headers"] = "countly-token, Content-Type";
+        res.writeHead(200, headers);
+        res.end();
+    }
+    //attempt process GET request
+    else if (req.method.toLowerCase() === 'get') {
+        processRequest(params);
+    }
+    else {
+        common.returnMessage(params, 405, "Method not allowed");
+    }
+}

@@ -6,14 +6,14 @@
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
  * @typedef {import('mongodb').ObjectId} ObjectId
- * typedef {import('moment-timezone').Moment} MomentTimezone
+ * @typedef {import('moment-timezone').Moment} MomentTimezone
  */
 
 /** @lends module:api/utils/common **/
-/** @type(import('../../types/common').Common) */
+/** @type {import('../../types/common').Common} */
 const common = {};
 
-/** @type(import('moment-timezone')) */
+/** @type {import('moment-timezone')} */
 const moment = require('moment-timezone');
 const crypto = require('crypto');
 const logger = require('./log.js');
@@ -3737,5 +3737,5 @@ common.trimWhitespaceStartEnd = function(value) {
     return value;
 };
 
-/** @type(import('../../types/common').Common) */
+/** @type {import('../../types/common').Common} */
 module.exports = common;

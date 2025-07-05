@@ -217,7 +217,7 @@ const processRequest = (params) => {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
                     catch (SyntaxError) {
-                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                        console.log('Parse %s JSON failed. URL: %s, Body: %s', apiPath, params.req.url, JSON.stringify(params.req.body));
                     }
                 }
 
@@ -353,7 +353,7 @@ const processRequest = (params) => {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
                     catch (SyntaxError) {
-                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                        console.log('Parse %s JSON failed %s', apiPath, params.req.url, params.req.body);
                     }
                 }
                 switch (paths[3]) {
@@ -657,7 +657,7 @@ const processRequest = (params) => {
                         params.qstring.args = JSON.parse(params.qstring.args);
                     }
                     catch (SyntaxError) {
-                        console.log('Parse ' + apiPath + ' JSON failed', params.req.url, params.req.body);
+                        console.log('Parse %s JSON failed %s', apiPath, params.req.url, params.req.body);
                     }
                 }
 

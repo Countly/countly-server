@@ -151,6 +151,12 @@ var countlyConfig = {
         max_sockets: 1024,
         timeout: 120000,
         maxUploadFileSize: 200 * 1024 * 1024, // 200MB
+        ssl: {
+            enabled: false,
+            key: "/path/to/ssl/private.key",
+            cert: "/path/to/ssl/certificate.crt",
+            ca: "/path/to/ssl/ca_bundle.crt" // Optional: for client certificate verification
+        }
     },
     /**
     * Default Ingestor configuration

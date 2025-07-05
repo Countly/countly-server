@@ -1,17 +1,78 @@
-## Version 25.03.x
+## 25.xx
+Dependencies:
+- Remove SQLite
+
+## Version 25.03.8
+Fixes:
+- [core] Fix adding llm observability to cly-event-select component
+- [crashes] Derive crash name from crash stracktrace for drill event
+- [data-manager] Fix frontend component attribute name
+- [star-rating] Fix rating not appearing when app version contains space ' '
+
+Enterprise Features:
+- [journey-engine] Added default translations to prevent an error when languages are not yet defined, and visually indicate the browser language as the default
+
+## Version 25.03.7
+Enterprise Features:
+- [funnels] Added explanatory tooltip for filters section on Funnel Detail page
+
+Fixes:
+- [core] Applied some fixes to user-merge, togetExportScripts, sharding, delete_old_drill_events, add_indexes script
+- [core] Fix/docker python vulnerabilities
+- [core] Allow chrome to launch multiple instances to fix blank dashboard emails
+- [formulas] Fix loading state when selecting event count
+
+Enterprise Fixes:
+- [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set
+- [journey-engine] Undefined value check for cooldown in Engagement Queue
+- [star-rating] Fix consent text limit counter
+
+Dependencies:
+- Bump sass from 1.89.1 to 1.89.2
+- Bump puppeteer from 24.10.0 to 24.10.1
+- Bump countly-sdk-nodejs from 24.10.1 to 24.10.2
+- Bump sass-embedded in /plugins/content from 1.89.1 to 1.89.2
+- Bump @vue-flow/node-resizer  in /plugins/content from 1.4.0 to 1.5.0
+- Bump @vue-flow/core in /plugins/content from 1.44.0 to 1.45.0
+- Bump vue-i18n in /plugins/content from 11.1.5 to 11.1.6 
+- Bump terser in /plugins/content from 5.42.0 to 5.43.0 
+- Bump mockttp in /plugins/crash_symbolication from 3.17.1 to 4.0.0
+
+## Version 25.03.6
+Enterprise Features:
+- [journey_engine] Publish toggle is converted into button and rearranged
+- [journey_engine] Record Event block added
+- [llm interaction] Add LLM interaction event
+- [oidc] PKCE Flow support added
+
+Fixes:
+- [core] Fix auto refresh frontend component
+- [core] Unifying alphabetical order for dropdowns with dashboard apps
+- [formulas] Fix loading state when selecting event count
+- [hooks] Added null check for incoming data
+- [push] Fix external drawer initialization
+- [times-of-day] Fix chart component
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
 - [ab-testing] Updates
     - Do not wait for result calculation when requesting experiments
     - Do not calculate result for completed experiments
+- [drill] [license] Shorten warning period from 14 days to 3 days
+- [drill] Fix query for users in drill that leads to severe server slowdown
+- [license] Fix chart legend
 
 Dependencies:
+- Bump eslint-plugin-vue from 9.33.0 to 10.1.0
 - Bump lint-staged from 15.5.2 to 16.0.0
+- Bump moment-timezone from 0.5.48 to 0.6.0
+- Bump mongodb from 6.16.0 to 6.17.0
 - Bump nodemailer from 6.10.1 to 7.0.3
-- Bump puppeteer from 24.8.0 to 24.8.2
-- Bump sass from 1.87.0 to 1.88.0
+- Bump puppeteer from 24.8.0 to 24.10.0
+- Bump sass from 1.87.0 to 1.89.0
 - Bump semver from 7.7.1 to 7.7.2
+- Bump sharp from 0.33.5 to 0.34.2
 - Bump supertest from 7.1.0 to 7.1.1
+- Bump tar-fs
 
 ## Version 25.03.5
 Fixes:
