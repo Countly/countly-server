@@ -1,0 +1,78 @@
+FROM node:24-bookworm-slim
+
+#no ab-testing and no python support
+
+# Unified image for all Countly services
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,dashboards,sdk,data-manager,guides,clickhouse
+# Countly Enterprise plugins (commented for reference):
+#ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk,guides,journey_engine,content,clickhouse
+
+ARG GEOIP=empty
+
+# Expose ports for different services
+# 3001 - API, Aggregator
+# 3010 - Ingestor
+# 6001 - Frontend
+# Note: JobServer, ClickHouse Writer/Updater are background services (no HTTP ports)
+EXPOSE 3001 3010 6001
+
+USER root
+
+# Core dependencies and environment setup
+ENV COUNTLY_DEFAULT_PLUGINS="${COUNTLY_PLUGINS}" \
+    COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
+    COUNTLY_CONFIG_FRONTEND_HOST="0.0.0.0" \
+    NODE_OPTIONS="--max-old-space-size=2048" \
+    PUPPETEER_CACHE_DIR=/opt/countly/.cache/puppeteer
+
+WORKDIR /opt/countly
+COPY . .
+
+# Install required system dependencies
+RUN apt-get update && \
+    apt-get install -y \
+        iputils-ping \
+        procps \
+        net-tools \
+        curl \
+        wget \
+        git \
+        make \
+        gcc \
+        g++ \
+        build-essential \
+        zlib1g-dev \
+        libssl3 \
+        libssl-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+
+
+# Remove plugins unsupported in Docker distribution and set timezone
+RUN rm -rf /opt/countly/plugins/data_migration && \
+    rm -rf /opt/countly/plugins/errorlogs && \
+    echo "Etc/UTC" > /etc/timezone
+
+# Install Node.js dependencies
+# Skip prepare scripts (husky) in Docker environment
+ENV HUSKY=0
+RUN npm install --omit=dev --ignore-scripts && \
+    npm run prepare --if-present || true && \
+    npm cache clean --force
+
+# Plugin installation and configuration
+RUN cp -n ./api/config.sample.js ./api/config.js && \
+    cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
+    ./bin/docker/preinstall.sh
+
+# Create necessary directories and set permissions
+RUN mkdir -p /opt/countly/log /opt/countly/data /opt/countly/.cache
+
+# Create a non-root user for security (optional, can be uncommented)
+# RUN groupadd -r countly && useradd -r -g countly countly && \
+#     chown -R countly:countly /opt/countly
+# USER countly
+
+# Default command - can be overridden by Kubernetes
+CMD ["npm", "run", "start:api"]

@@ -198,8 +198,7 @@ const createLogFunction = (logger, name, level) => {
                     logger[LEVELS[level]](args[0]);
                 }
                 else {
-                    const msg = args.shift();
-                    logger[LEVELS[level]](msg, ...args);
+                    logger[LEVELS[level]](args[0], ...args.slice(1));
                 }
 
                 // Record metrics

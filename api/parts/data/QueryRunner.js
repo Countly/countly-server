@@ -202,6 +202,10 @@ class QueryRunner {
         const comparisonData = {
             queryName,
             timestamp: new Date().toISOString(),
+            notes: {
+                fieldMapping: "MongoDB 'n' field (event name) is mapped to ClickHouse 'e' field during data ingestion. Query discrepancies may be due to this field mapping difference.",
+                dataConsistency: "Ensure both adapters are querying equivalent data. MongoDB and ClickHouse may have different field schemas."
+            },
             adapters: {}
         };
 
