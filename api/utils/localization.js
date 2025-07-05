@@ -3,7 +3,7 @@
 * @module api/utils/localization
 */
 
-/** @type(import('../../types/localization').Locale) */
+/** @type {import('../../types/localization').Locale} */
 var locale = {},
     fs = require('fs'),
     path = require('path'),
@@ -91,5 +91,5 @@ locale.getProperties = function(lang, callback) {
     }
 };
 
-/** @type(import('../../types/localization').Locale) */
+/** @type {import('../../types/localization').Locale} */
 module.exports = locale;
