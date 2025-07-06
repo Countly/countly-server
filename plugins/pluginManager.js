@@ -1880,14 +1880,20 @@ var pluginManager = function pluginManager() {
         var dbList = [];
 
         var useConfig = JSON.parse(JSON.stringify(countlyConfig));
-        if (process.argv[1] && process.argv[1].endsWith('api/api.js')) {
+        if (process.argv[1] && (process.argv[1].endsWith('api/api.js') ||
+                                process.argv[1].endsWith('api/ingestor.js') ||
+                                process.argv[1].endsWith('api/aggregator.js') ||
+                                process.argv[1].includes('/api/'))) {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
         }
 
         // TEMPORARY DEBUG LOGGING - MONGODB CONNECTION
         console.log('=== PLUGIN MANAGER DB CONNECTION DEBUG ===');
         console.log('Process argv[1]:', process.argv[1]);
-        console.log('Using API config:', process.argv[1] && process.argv[1].endsWith('api/api.js'));
+        console.log('Using API config:', process.argv[1] && (process.argv[1].endsWith('api/api.js') ||
+                                process.argv[1].endsWith('api/ingestor.js') ||
+                                process.argv[1].endsWith('api/aggregator.js') ||
+                                process.argv[1].includes('/api/')));
         console.log('countlyConfig.mongodb:', JSON.stringify(countlyConfig.mongodb, null, 2));
         console.log('apiCountlyConfig.mongodb:', JSON.stringify(apiCountlyConfig.mongodb, null, 2));
         console.log('useConfig.mongodb:', JSON.stringify(useConfig.mongodb, null, 2));
