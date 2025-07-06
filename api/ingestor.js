@@ -15,6 +15,16 @@ process.title = t.join(' ');
 
 console.log("Connecting to databases");
 
+// TEMPORARY DEBUG LOGGING - INGESTOR
+console.log('=== INGESTOR CONFIG DEBUG ===');
+console.log('countlyConfig:', JSON.stringify(countlyConfig, null, 2));
+console.log('Process ENV:', {
+    NODE_ENV: process.env.NODE_ENV,
+    SERVICE_TYPE: process.env.SERVICE_TYPE,
+    COUNTLY_CONFIG_PATH: process.env.COUNTLY_CONFIG_PATH
+});
+console.log('=== END INGESTOR CONFIG DEBUG ===');
+
 //Overriding function
 plugins.loadConfigs = plugins.loadConfigsIngestor;
 
