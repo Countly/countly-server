@@ -198,7 +198,22 @@ const createLogFunction = (logger, name, level) => {
                     logger[LEVELS[level]](args[0]);
                 }
                 else {
-                    logger[LEVELS[level]](args[0], ...args.slice(1));
+                    // For backward compatibility: if no format specifiers found, concatenate args
+                    const firstArg = String(args[0]);
+                    if (!firstArg.includes('%')) {
+                        // No format specifiers, concatenate all arguments
+                        const msg = args.map(arg => {
+                            if (typeof arg === 'object') {
+                                return JSON.stringify(arg);
+                            }
+                            return String(arg);
+                        }).join(' ');
+                        logger[LEVELS[level]](msg);
+                    }
+                    else {
+                        // Format specifiers present, use Pino's formatting
+                        logger[LEVELS[level]](args[0], ...args.slice(1));
+                    }
                 }
 
                 // Record metrics

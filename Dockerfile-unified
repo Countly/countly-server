@@ -3,7 +3,7 @@ FROM node:24-bookworm-slim
 #no ab-testing and no python support
 
 # Unified image for all Countly services
-ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,populator,reports,crashes,star-rating,slipping-away-users,compare,server-stats,dbviewer,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,dashboards,sdk,data-manager,guides,clickhouse
+ARG COUNTLY_PLUGINS=mobile,web,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,alerts,times-of-day,onboarding,active_users,config-transfer,consolidate,data-manager,dashboards,sdk,guides,journey_engine,content,clickhouse,desktop
 # Countly Enterprise plugins (commented for reference):
 #ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,populator,reports,crashes,push,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps,sdk,guides,journey_engine,content,clickhouse
 
@@ -65,6 +65,13 @@ RUN npm install --omit=dev --ignore-scripts && \
 RUN cp -n ./api/config.sample.js ./api/config.js && \
     cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
     ./bin/docker/preinstall.sh
+
+# Create plugins.json from COUNTLY_PLUGINS ARG (after preinstall removes it)
+RUN echo "Creating plugins.json from COUNTLY_PLUGINS..." && \
+    echo "${COUNTLY_PLUGINS}" | tr ',' '\n' | \
+    awk 'BEGIN{print "["} {if(NR>1) printf ","; printf "\"%s\"", $0} END{print "]"}' > /opt/countly/plugins/plugins.json && \
+    echo "plugins.json created:" && \
+    cat /opt/countly/plugins/plugins.json
 
 # Create necessary directories and set permissions
 RUN mkdir -p /opt/countly/log /opt/countly/data /opt/countly/.cache
