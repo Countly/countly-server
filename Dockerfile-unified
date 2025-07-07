@@ -64,6 +64,7 @@ RUN npm install --omit=dev --ignore-scripts && \
 # Plugin installation and configuration
 RUN cp -n ./api/config.sample.js ./api/config.js && \
     cp -n ./frontend/express/config.sample.js ./frontend/express/config.js && \
+    cp -n ./frontend/express/public/javascripts/countly/countly.config.sample.js ./frontend/express/public/javascripts/countly/countly.config.js && \
     ./bin/docker/preinstall.sh
 
 # Create plugins.json from COUNTLY_PLUGINS ARG (after preinstall removes it)
