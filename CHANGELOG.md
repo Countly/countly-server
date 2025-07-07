@@ -2,6 +2,11 @@
 Fixes:
 - [active_directory] Fix for reading azure application tenant id from config
 - [core] Set up default headers for common return methods
+- [star-rating] Fix widget close button
+
+Enterprise Fixes:
+- [surveys] Fix widget close button
+
 
 ## Version 25.03.8
 Fixes:
