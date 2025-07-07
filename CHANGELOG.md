@@ -1,3 +1,7 @@
+## Version 24.05.XX
+Enterprise Fixes:
+- [drill] Fixed typo issue while getting segment values in drill widgets
+
 ## Version 24.05.33
 Fixes:
 - [emails] [puppeteer] [fix] Allow chrome to launch multiple instances
