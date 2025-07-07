@@ -1,5 +1,6 @@
 ## Version 25.03.XX
 Fixes:
+- [active_directory] Fix for reading azure application tenant id from config
 - [core] Set up default headers for common return methods
 
 Enterprise Fixes:
