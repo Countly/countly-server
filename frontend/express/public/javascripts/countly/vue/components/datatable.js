@@ -65,7 +65,21 @@
                     return self.availableDynamicColsLookup[val];
                 }).filter(function(val) {
                     return !!val;
+                }).sort(function(a, b) {
+                    if (!a?.ord && !b?.ord) {
+                        return 0;
+                    }
+
+                    if (a?.ord && !b?.ord) {
+                        return a.ord;
+                    }
+                    if (!a?.ord && b?.ord) {
+                        return b.ord;
+                    }
+
+                    return a.ord - b.ord;
                 });
+
                 return cols;
             },
             localSearchedRows: function() {
