@@ -968,7 +968,7 @@ countlyCommon.getPeriodRange = function(period, timezone, offset) {
         startTimestamp = __currMoment.clone().startOf("day").subtract(nDays - 1, "days");
     }
     if (!offset) {
-        offset = fromDate.utcOffset();
+        offset = moment.tz(timezone).utcOffset();
         offset = offset * -1;
     }
 
