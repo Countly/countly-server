@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Fixes:
+- [core] Set up default headers for common return methods
+
 ## Version 25.03.8
 Fixes:
 - [core] Fix adding llm observability to cly-event-select component
