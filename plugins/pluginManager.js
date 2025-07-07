@@ -1883,7 +1883,9 @@ var pluginManager = function pluginManager() {
         if (process.argv[1] && (process.argv[1].endsWith('api/api.js') ||
                                 process.argv[1].endsWith('api/ingestor.js') ||
                                 process.argv[1].endsWith('api/aggregator.js') ||
-                                process.argv[1].includes('/api/'))) {
+                                process.argv[1].includes('/api/') ||
+                                process.argv[1].includes('clickhouse/api/writer/') ||
+                                process.argv[1].includes('jobServer/index.js'))) {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
         }
 
@@ -1893,7 +1895,9 @@ var pluginManager = function pluginManager() {
         console.log('Using API config:', process.argv[1] && (process.argv[1].endsWith('api/api.js') ||
                                 process.argv[1].endsWith('api/ingestor.js') ||
                                 process.argv[1].endsWith('api/aggregator.js') ||
-                                process.argv[1].includes('/api/')));
+                                process.argv[1].includes('/api/') ||
+                                process.argv[1].includes('clickhouse/api/writer/') ||
+                                process.argv[1].includes('jobServer/index.js')));
         console.log('countlyConfig.mongodb:', JSON.stringify(countlyConfig.mongodb, null, 2));
         console.log('apiCountlyConfig.mongodb:', JSON.stringify(apiCountlyConfig.mongodb, null, 2));
         console.log('useConfig.mongodb:', JSON.stringify(useConfig.mongodb, null, 2));
