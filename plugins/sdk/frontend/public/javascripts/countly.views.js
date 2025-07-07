@@ -337,14 +337,40 @@
 
                     var params = self.$store.getters["countlySDK/sdk/all"];
                     var data = params || {};
+
                     for (var key in self.configs) {
-                        self.configs[key].value = self.configs[key].default;
-                        data[key] = self.configs[key].value;
+                        var current = self.configs[key].value;
+                        var def = self.configs[key].default;
+
+                        // Reset only if not already default
+                        if (current !== def) {
+                            self.configs[key].value = def;
+
+                            if (self.diff.indexOf(key) === -1) {
+                                self.diff.push(key);
+                            }
+
+                            // Clean up diff if value matches SDK or default
+                            if (typeof data[key] !== "undefined") {
+                                if (data[key] === def) {
+                                    self.diff.splice(
+                                        self.diff.indexOf(key),
+                                        1
+                                    );
+                                }
+                            }
+                            else if (def === self.configs[key].default) {
+                                self.diff.splice(self.diff.indexOf(key), 1);
+                            }
+                        }
                     }
-                    self.$store.dispatch("countlySDK/sdk/update", data).then(function() {
-                        self.$store.dispatch("countlySDK/initialize");
-                    });
-                }, ["No, don't reset", "Yes, reset"], {title: helper_title});
+                    if (self.diff.length !== 0) {
+                        self.save();
+                    }
+                },
+                ["No, don't reset", "Yes, reset"],
+                { title: helper_title }
+                );
             },
             save: function() {
                 var params = this.$store.getters["countlySDK/sdk/all"];
