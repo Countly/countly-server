@@ -5,7 +5,7 @@ const plugins = require("../../plugins/pluginManager.js");
 const log = require('../utils/log.js')('core:ingestor');
 const crypto = require('crypto');
 const { ignorePossibleDevices, checksumSaltVerification, validateRedirect} = require('../utils/requestProcessorCommon.js');
-const {ObjectID} = require("mongodb");
+const {ObjectId} = require("mongodb");
 const countlyApi = {
     mgmt: {
         appUsers: require('../parts/mgmt/app_users.js'),
@@ -805,7 +805,7 @@ const validateAppForWriteAPI = (params, done) => {
             common.readBatcher.updateCacheOne("apps", {'key': params.qstring.app_key + ""}, {"last_data": time});
             //set new value in database
             try {
-                common.db.collection("apps").findOneAndUpdate({"_id": new ObjectID(params.app._id)}, {"$set": {"last_data": time}});
+                common.db.collection("apps").findOneAndUpdate({"_id": new ObjectId(params.app._id)}, {"$set": {"last_data": time}});
                 params.app.last_data = time;
             }
             catch (err3) {
