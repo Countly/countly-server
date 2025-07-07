@@ -3,6 +3,9 @@ Fixes:
 - [active_directory] Fix for reading azure application tenant id from config
 - [core] Set up default headers for common return methods
 
+Enterprise Fixes:
+- [journeys] Fixed the issue where events added in Journey couldn't have their visibility updated in Data Manager plugin
+
 ## Version 25.03.8
 Fixes:
 - [core] Fix adding llm observability to cly-event-select component
