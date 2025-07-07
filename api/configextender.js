@@ -60,6 +60,11 @@ const OVERRIDES = {
         }
     },
 
+    CLICKHOUSE: {
+        REQUEST_TIMEOUT: 'request_timeout',
+        MAX_OPEN_CONNECTIONS: 'max_open_connections'
+    },
+
     IGNOREPROXIES: 'ignoreProxies',
     FILESTORAGE: 'fileStorage',
     RELOADCONFIGAFTER: 'reloadConfigAfter',
