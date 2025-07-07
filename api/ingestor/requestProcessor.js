@@ -1049,6 +1049,17 @@ const processRequest = (params) => {
     params.fullPath = paths.join("/");
 
     switch (apiPath) {
+    case '/o/ping': {
+        common.db.collection("plugins").findOne({_id: "plugins"}, {_id: 1}, (err) => {
+            if (err) {
+                return common.returnMessage(params, 404, 'DB Error');
+            }
+            else {
+                return common.returnMessage(params, 200, 'Success');
+            }
+        });
+        return true;
+    }
     case '/i': {
         if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
             params.qstring = common.trimWhitespaceStartEnd(params.qstring);
