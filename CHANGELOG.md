@@ -4,6 +4,7 @@ Fixes:
 - [core] Set up default headers for common return methods
 
 Enterprise Fixes:
+- [drill] Disabling the view user profiles button on drill for queries going to the report manager
 - [journeys] Fixed the issue where events added in Journey couldn't have their visibility updated in Data Manager plugin
 
 ## Version 25.03.8
