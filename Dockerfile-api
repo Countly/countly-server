@@ -30,7 +30,7 @@ COPY . .
 
 # install required dependencies which slim image doesn't have
 RUN apt-get update && \
-	apt-get install -y iputils-ping procps net-tools telnet apt-transport-https curl wget git make gcc g++ unzip xz-utils
+	apt-get install -y iputils-ping procps net-tools python3 telnet apt-transport-https curl wget git make gcc g++ unzip xz-utils
 
 RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" && \
 	dpkg -i /tmp/tini.deb && \
