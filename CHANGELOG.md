@@ -2,6 +2,9 @@
 Fixes:
 - [core] Set up default headers for common return methods
 
+Enterprise Fixes:
+- [drill] Disabling the view user profiles button on drill for queries going to the report manager
+
 ## Version 25.03.8
 Fixes:
 - [core] Fix adding llm observability to cly-event-select component
