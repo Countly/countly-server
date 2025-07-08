@@ -1,3 +1,6 @@
+## Version 25.03.XX
+Enterprise Fixes:
+- [okta] Fix body parser middleware version mismatch causing OKTA authentication break
 ## Version 25.03.9
 Features:
 - [core] Added support for prerelease and build fields in app version parsing
