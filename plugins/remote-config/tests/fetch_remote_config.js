@@ -199,6 +199,17 @@ describe('Fetch remote config', () => {
             should(remoteConfig.processFilter(targettedUser, query)).equal(true);
         });
 
+        it('Should not match non targetted user (device id)', () => {
+            const nonTargettedUser = {
+                _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
+                uid: '13',
+                did: 'non_targetted_user',
+            };
+            const query = { did: { $in: ['targetted_user'] } };
+
+            should(remoteConfig.processFilter(nonTargettedUser, query)).equal(false);
+        });
+
         it('Should match targetted user (country)', () => {
             const targettedUser = {
                 _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
@@ -247,15 +258,123 @@ describe('Fetch remote config', () => {
             should(remoteConfig.processFilter(nonTargettedUser, queryLte)).equal(false);
         });
 
-        it('Should not match non targetted user', () => {
-            const nonTargettedUser = {
+        it('Should match targetted user ($and query)', () => {
+            const targettedUser = {
                 _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
                 uid: '13',
-                did: 'non_targetted_user',
+                did: 'targetted_user',
+                cc: 'UK',
             };
-            const query = { did: { $in: ['targetted_user'] } };
+            const query = { 'up.cc': { $exists: true }, did: { $in: ['targetted_user'] } };
+            const altQuery = {
+                $and: [
+                    { 'up.cc': { $exists: true } },
+                    { did: { $in: ['targetted_user'] } },
+                ],
+            };
 
-            should(remoteConfig.processFilter(nonTargettedUser, query)).equal(false);
+            should(remoteConfig.processFilter(targettedUser, query)).equal(true);
+            should(remoteConfig.processFilter(targettedUser, altQuery)).equal(true);
+        });
+
+        it('Should not match targetted user ($and query)', () => {
+            const targettedUser = {
+                _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
+                uid: '13',
+                did: 'targetted_user',
+                cc: 'UK',
+            };
+            const query = { 'up.cc': { $exists: true }, did: { $nin: ['targetted_user'] } };
+            const altQuery = {
+                $and: [
+                    { 'up.cc': { $exists: true } },
+                    { did: { $nin: ['targetted_user'] } },
+                ],
+            };
+
+            should(remoteConfig.processFilter(targettedUser, query)).equal(false);
+            should(remoteConfig.processFilter(targettedUser, altQuery)).equal(false);
+        });
+
+        it('Should match targetted user ($or query)', () => {
+            const targettedUser = {
+                _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
+                uid: '13',
+                did: 'targetted_user',
+                cc: 'UK',
+            };
+            const query = {
+                $or: [
+                    { 'up.cc': { $exists: true }},
+                    { did: { $nin: ['targetted_user'] } },
+                ],
+            };
+
+            should(remoteConfig.processFilter(targettedUser, query)).equal(true);
+        });
+
+        it('Should not match targetted user ($or query)', () => {
+            const targettedUser = {
+                _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
+                uid: '13',
+                did: 'targetted_user',
+                cc: 'UK',
+            };
+            const query = {
+                $or: [
+                    { 'up.cc': { $exists: false }},
+                    { did: { $nin: ['targetted_user'] } },
+                ],
+            };
+
+            should(remoteConfig.processFilter(targettedUser, query)).equal(false);
+        });
+
+        it('Should match targetted user (combination query)', () => {
+            const targettedUser = {
+                _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
+                uid: '13',
+                did: 'targetted_user',
+                cc: 'UK',
+                chr: {
+                    'chr_id': {
+                        i: 123,
+                        in: 'true',
+                    },
+                },
+            };
+            const query = {
+                $or: [
+                    { 'up.cc': { $in: ['UK'] }, chr: { $in: ['chr_id'] } },
+                    { did: { $nin: ['targetted_user'] } },
+                ],
+            };
+
+            should(remoteConfig.processFilter(targettedUser, query)).equal(true);
+        });
+
+        it('Should not match targetted user (combination query)', () => {
+            const targettedUser = {
+                _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
+                uid: '13',
+                did: 'targetted_user',
+                cc: 'UK',
+                av: '1:0:0',
+                chr: {
+                    'chr_id': {
+                        i: 123,
+                        in: 'true',
+                    },
+                },
+            };
+            const query = {
+                $or: [
+                    { 'up.cc': { $nin: ['UK'] }, chr: { $nin: ['chr_id'] } },
+                    { did: { $nin: ['targetted_user'] }, 'up.av': { $gt: '2:0:0' } },
+                ],
+            };
+
+            should(remoteConfig.processFilter(targettedUser, query)).equal(false);
         });
 
         it('Should fetch remote config with default value', async() => {
