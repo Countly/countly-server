@@ -591,6 +591,7 @@ var processToDrill = async function(params, drill_updates, callback) {
     if (eventsToInsert.length > 0) {
         try {
             await common.drillDb.collection("drill_events").bulkWrite(eventsToInsert, {ordered: false});
+            // write to clickhouse
             callback(null);
             if (Object.keys(viewUpdate).length) {
                 //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
