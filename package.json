@@ -19,13 +19,13 @@
   "scripts": {
     "test": "grunt --verbose",
     "prepare": "husky",
-    "start:api": "node --preserve-symlinks --preserve-symlinks-main api/api.js",
-    "start:frontend": "node --preserve-symlinks --preserve-symlinks-main frontend/express/app.js",
-    "start:aggregator": "node --preserve-symlinks --preserve-symlinks-main api/aggregator.js",
-    "start:ingestor": "node --preserve-symlinks --preserve-symlinks-main api/ingestor.js",
-    "start:jobserver": "node --preserve-symlinks --preserve-symlinks-main jobServer/index.js",
-    "start:clickhouse-writer": "node --preserve-symlinks --preserve-symlinks-main plugins/clickhouse/api/writer/index.js",
-    "start:clickhouse-updater": "node --preserve-symlinks --preserve-symlinks-main plugins/clickhouse/api/writer/updater.js"
+    "start:api": "node api/api.js",
+    "start:frontend": "node frontend/express/app.js",
+    "start:aggregator": "node api/aggregator.js",
+    "start:ingestor": "node api/ingestor.js",
+    "start:jobserver": "node jobServer/index.js",
+    "start:clickhouse-writer": "node plugins/clickhouse/api/writer/index.js",
+    "start:clickhouse-updater": "node plugins/clickhouse/api/writer/updater.js"
   },
   "lint-staged": {
     "*.{js,vue}": [
