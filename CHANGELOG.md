@@ -1,4 +1,4 @@
-## Version 24.05.XX
+## Version 24.05.34
 Enterprise Fixes:
 - [drill] Fixed typo issue while getting segment values in drill widgets
 
