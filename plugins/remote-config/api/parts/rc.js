@@ -51,21 +51,21 @@ remoteConfig.processFilter = function(inpUser, inpQuery) {
                     }
 
                     if (parts[0] !== 'chr') {
-                        if (prop === 'up.av') {
-                            if ('av' in user) {
+                        if (typeof (value) !== 'undefined') {
+                            if (prop === 'up.av') {
                                 qResult = qResult && processAppVersionValues(user.av, { [prop]: query[prop] }, prop);
                             }
-                        }
-                        else if (typeof (value) !== 'undefined') {
-                            qResult = qResult && processPropertyValues(value, { [prop]: query[prop] }, prop);
+                            else {
+                                qResult = qResult && processPropertyValues(value, { [prop]: query[prop] }, prop);
+                            }
                         }
                         else {
                             //If data is not available, check for $nin and $exists operator since they can be true 
-                            if (query[prop] && (query[prop].$nin || '$exists' in query[prop])) {
+                            if (query[prop] && ('$nin' in query[prop] || '$exists' in query[prop])) {
                                 qResult = qResult && processPropertyValues(value, { [prop]: query[prop] }, prop);
                             } // Otherwise return false
                             else {
-                                qResult = false;
+                                qResult = qResult && false;
                             }
                         }
                     }
