@@ -1,18 +1,18 @@
-## Version 25.03.XX
+## Version 25.03.9
+Features:
+- [core] Added support for prerelease and build fields in app version parsing
+
 Fixes:
-- [active_directory] Fix for reading azure application tenant id from config
-- [active_directory] Fix for handling azure ad callback properly when request body empty
 - [core] Set up default headers for common return methods
 - [star-rating] Fix widget close button
 
 Enterprise Fixes:
-- [surveys] Fix widget close button
-
-
-Enterprise Fixes:
+- [active_directory] Fix for reading azure application tenant id from config
+- [active_directory] Fix for handling azure ad callback properly when request body empty
 - [drill] Disabling the view user profiles button on drill for queries going to the report manager
 - [drill] Fixed typo issue while getting segment values in drill widgets
 - [journeys] Fixed the issue where events added in Journey couldn't have their visibility updated in Data Manager plugin
+- [surveys] Fix widget close button
 
 ## Version 25.03.8
 Fixes:
