@@ -1,6 +1,7 @@
 ## Version 25.03.XX
 Fixes:
 - [active_directory] Fix for reading azure application tenant id from config
+- [active_directory] Fix for handling azure ad callback properly when request body empty
 - [core] Set up default headers for common return methods
 - [star-rating] Fix widget close button
 
