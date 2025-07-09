@@ -41,4 +41,6 @@ export interface Locale {
   getProperties(lang: string, callback: (err: Error | null, properties: Record<string, string>) => void): void;
 }
 
-export default Locale;
+/** Default export instance of localization module */
+declare const locale: Locale;
+export default locale;

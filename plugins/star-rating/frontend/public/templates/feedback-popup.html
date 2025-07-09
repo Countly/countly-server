@@ -461,7 +461,7 @@
                 try {
                     custom = JSON.parse(custom) ;
                     isFullscreenWidget = !!custom.rw;
-                    isCloseButtonVisible = !!custom.xb;
+                    isCloseButtonVisible = platform === 'Web' || !!custom.xb;
 
                     if (custom && custom.sg) {
                         custom = custom.sg;
@@ -472,6 +472,7 @@
                 }
                 catch (error) {
                     custom = {};
+                    isCloseButtonVisible = platform === 'Web';
                 }
 
                 if (!isCloseButtonVisible) {

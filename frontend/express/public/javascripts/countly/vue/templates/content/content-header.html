@@ -89,7 +89,7 @@
                     isToggleDisabled ? 'is-disabled' : '',
                     toggleLocalValue ? 'el-button--warning' : 'el-button--success'
                 ]"
-                test-id="journey-publish"
+                :data-test-id="'journey-' + (toggleLocalValue ? 'Pause' : 'Publish').toLowerCase() + '-button'"
                 :disabled="false"
                 @click="onPublishButtonClick"
             >
