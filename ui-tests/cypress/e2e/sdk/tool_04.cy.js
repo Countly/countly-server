@@ -15,6 +15,6 @@ describe('4.Mixed tooltip (old Android SDK version)', () => {
     it('4.3-Test', function() {
         goToConfigTab(true);
         checkTooltipAppears('success', 2, true);
-        checkTooltipAppears('warning', 19, true);
+        checkTooltipAppears('warning', 20, true);
     });
 });

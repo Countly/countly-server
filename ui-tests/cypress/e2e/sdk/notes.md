@@ -16,10 +16,21 @@
 - Tests are not checking tooltip text. This should be added.
 - No RN and Flutter tests yet. They should be added.
 - There can be more tests with bad conditions (like weird sdk versions).
-- For local tests you might want to change this command:
+- For local tests:
+     - change lib/sdk/setup.js
+     
+```javascript
+cy.dropMongoDatabase(true);
+```
+
+     - change this command and add port to cypress.config.js:
 
 ```javascript
 Cypress.Commands.add('dropMongoDatabase', ({ local }) => {
      cy.exec(`mongosh ${local ? 'mongodb' : 'localhost'}/countly --eval 'db.dropDatabase()'`);
 });
+```
+In wsl you might use Xvfb:
+```bash
+xvfb-run -a npx cypress run
 ```
