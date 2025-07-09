@@ -65,6 +65,7 @@
 
         <el-button
             v-if="!hideSaveButton"
+            id="journey-save-button"
             class="cly-vue-content-builder-header__save-button"
             data-test-id="content-header-save-button"
             :disabled="disableSaveButton"
@@ -75,21 +76,29 @@
         >
             {{ saveButtonLabel }}
         </el-button>
-        <el-button
+        <div
             v-if="toggle"
-            v-tooltip.down="toggleTooltip"
-            :disabled="isToggleDisabled"
-            class="cly-vue-content-builder-header__save-button"
-            test-id="journey-publish"
-            :type="toggleLocalValue ? 'warning' : 'success'"
-            size="small"
-            @click="onPublishButtonClick"
+            style="display: inline-block; margin-left: 8px;"
         >
-            <template v-if="toggleLocalValue">
-                <i class="cly-is cly-is-pause" style="margin-right: 4px;"></i>
-            </template>
-            {{ toggleLocalValue ? 'Pause': 'Publish' }}
-        </el-button>
+            <button
+                v-tooltip.down="toggleTooltip"
+                :class="[
+                    'cly-vue-content-builder-header__save-button',
+                    'el-button',
+                    'el-button--small',
+                    isToggleDisabled ? 'is-disabled' : '',
+                    toggleLocalValue ? 'el-button--warning' : 'el-button--success'
+                ]"
+                :data-test-id="'journey-' + (toggleLocalValue ? 'Pause' : 'Publish').toLowerCase() + '-button'"
+                :disabled="false"
+                @click="onPublishButtonClick"
+            >
+                <template v-if="toggleLocalValue">
+                    <i class="cly-is cly-is-pause" style="margin-right: 4px;"></i>
+                </template>
+                {{ toggleLocalValue ? 'Pause': 'Publish' }}
+            </button>
+        </div>
         <cly-more-options
             v-if="isOptionsButtonVisible"
             class="cly-vue-content-builder-header__options-button"
