@@ -60,6 +60,13 @@ const OVERRIDES = {
         }
     },
 
+    CLICKHOUSE: {
+        REQUEST_TIMEOUT: 'request_timeout',
+        MAX_OPEN_CONNECTIONS: 'max_open_connections'
+    },
+
+    DRILL_CLICKHOUSE_DEBUG: 'drill_clickhouse_debug',
+
     IGNOREPROXIES: 'ignoreProxies',
     FILESTORAGE: 'fileStorage',
     RELOADCONFIGAFTER: 'reloadConfigAfter',

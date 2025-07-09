@@ -5,6 +5,8 @@ const plugins = require("../../plugins/pluginManager.js");
 const log = require('../utils/log.js')('core:ingestor');
 const crypto = require('crypto');
 const { ignorePossibleDevices, checksumSaltVerification, validateRedirect} = require('../utils/requestProcessorCommon.js');
+const {ObjectId} = require("mongodb");
+const { Readable } = require('stream');
 const countlyApi = {
     mgmt: {
         appUsers: require('../parts/mgmt/app_users.js'),
@@ -12,6 +14,81 @@ const countlyApi = {
 };
 
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
+
+// Initialize ClickHouse client
+const clickhouseClientSingleton = require('../../plugins/clickhouse/api/ClickhouseClient');
+let clickhouseClient = null;
+
+/**
+ * Initialize ClickHouse client asynchronously
+ */
+async function initializeClickhouseClient() {
+    if (clickhouseClientSingleton && clickhouseClientSingleton.getInstance) {
+        try {
+            clickhouseClient = await clickhouseClientSingleton.getInstance();
+        }
+        catch (error) {
+            log.e('Failed to initialize ClickHouse client:', error);
+        }
+    }
+}
+
+/**
+ * Transform MongoDB document to ClickHouse format
+ * @param {object} doc - MongoDB document
+ * @returns {object|null} - Transformed document or null if invalid
+ */
+function transformToClickhouseFormat(doc) {
+    if (!doc || !doc.a || !doc.e || !doc.ts || !doc._id) {
+        return null;
+    }
+
+    const result = {};
+
+    // Required fields
+    result.a = doc.a;
+    result.e = doc.n || doc.e;
+    result.uid = doc.uid;
+    result.did = doc.did;
+    result._id = doc._id;
+
+    // Timestamp handling
+    const ts = doc.ts;
+    result.ts = typeof ts === 'number' ? ts : (ts instanceof Date ? ts.getTime() : new Date(ts).getTime());
+
+    // Numeric fields
+    if (doc.c !== undefined && doc.c !== null) {
+        result.c = typeof doc.c === 'number' ? doc.c : +doc.c;
+    }
+    if (doc.s !== undefined && doc.s !== null) {
+        result.s = typeof doc.s === 'number' ? doc.s : +doc.s;
+    }
+    if (doc.dur !== undefined && doc.dur !== null) {
+        result.dur = typeof doc.dur === 'number' ? doc.dur : +doc.dur;
+    }
+
+    // JSON fields
+    if (doc.up && typeof doc.up === 'object') {
+        result.up = doc.up;
+    }
+    if (doc.custom && typeof doc.custom === 'object') {
+        result.custom = doc.custom;
+    }
+    if (doc.cmp && typeof doc.cmp === 'object') {
+        result.cmp = doc.cmp;
+    }
+    if (doc.sg && typeof doc.sg === 'object') {
+        result.sg = doc.sg;
+    }
+
+    // Optional date field
+    if (doc.lu !== undefined && doc.lu !== null) {
+        const lu = doc.lu;
+        result.lu = typeof lu === 'number' ? lu : (lu instanceof Date ? lu.getTime() : new Date(lu).getTime());
+    }
+
+    return result;
+}
 
 
 //Do not restart. If fails to creating, ail request.
@@ -590,6 +667,41 @@ var processToDrill = async function(params, drill_updates, callback) {
     if (eventsToInsert.length > 0) {
         try {
             await common.drillDb.collection("drill_events").bulkWrite(eventsToInsert, {ordered: false});
+
+            // write to clickhouse
+            if (!clickhouseClient) {
+                await initializeClickhouseClient();
+            }
+
+            if (clickhouseClient) {
+                try {
+                    const clickhouseData = [];
+                    for (const bulkOp of eventsToInsert) {
+                        if (bulkOp.insertOne && bulkOp.insertOne.document) {
+                            const transformed = transformToClickhouseFormat(bulkOp.insertOne.document);
+                            if (transformed) {
+                                clickhouseData.push(transformed);
+                            }
+                        }
+                    }
+
+                    if (clickhouseData.length > 0) {
+                        const startTime = Date.now();
+                        await clickhouseClient.insert({
+                            table: 'drill_events',
+                            values: Readable.from(clickhouseData, { objectMode: true }),
+                            format: 'JSONEachRow',
+                        });
+                        const insertTime = Date.now() - startTime;
+                        log.d(`Successfully wrote ${clickhouseData.length} events to ClickHouse in ${insertTime}ms`);
+                    }
+                }
+                catch (chError) {
+                    log.e('Error writing to ClickHouse:', chError);
+                    // Continue execution - don't fail the entire request for ClickHouse errors
+                }
+            }
+
             callback(null);
             if (Object.keys(viewUpdate).length) {
                 //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
@@ -616,6 +728,40 @@ var processToDrill = async function(params, drill_updates, callback) {
                     callback(realError);
                 }
                 else {
+                    // write to clickhouse for successful duplicate key inserts
+                    if (!clickhouseClient) {
+                        await initializeClickhouseClient();
+                    }
+
+                    if (clickhouseClient) {
+                        try {
+                            const clickhouseData = [];
+                            for (const bulkOp of eventsToInsert) {
+                                if (bulkOp.insertOne && bulkOp.insertOne.document) {
+                                    const transformed = transformToClickhouseFormat(bulkOp.insertOne.document);
+                                    if (transformed) {
+                                        clickhouseData.push(transformed);
+                                    }
+                                }
+                            }
+
+                            if (clickhouseData.length > 0) {
+                                const startTime = Date.now();
+                                await clickhouseClient.insert({
+                                    table: 'drill_events',
+                                    values: Readable.from(clickhouseData, { objectMode: true }),
+                                    format: 'JSONEachRow',
+                                });
+                                const insertTime = Date.now() - startTime;
+                                log.d(`Successfully wrote ${clickhouseData.length} events to ClickHouse in ${insertTime}ms (duplicate key recovery)`);
+                            }
+                        }
+                        catch (chError) {
+                            log.e('Error writing to ClickHouse during duplicate key recovery:', chError);
+                            // Continue execution - don't fail the entire request for ClickHouse errors
+                        }
+                    }
+
                     callback(null);
                     if (Object.keys(viewUpdate).length) {
                         //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
@@ -804,7 +950,7 @@ const validateAppForWriteAPI = (params, done) => {
             common.readBatcher.updateCacheOne("apps", {'key': params.qstring.app_key + ""}, {"last_data": time});
             //set new value in database
             try {
-                common.db.collection("apps").findOneAndUpdate({"_id": common.db.ObjectID(params.app._id)}, {"$set": {"last_data": time}});
+                common.db.collection("apps").findOneAndUpdate({"_id": new ObjectId(params.app._id)}, {"$set": {"last_data": time}});
                 params.app.last_data = time;
             }
             catch (err3) {
@@ -1049,6 +1195,14 @@ const processRequest = (params) => {
     params.fullPath = paths.join("/");
 
     switch (apiPath) {
+    case '/o/ping': {
+        common.db.collection("plugins").findOne({_id: "plugins"}, {_id: 1}).then(() => {
+            common.returnMessage(params, 200, 'Success');
+        }).catch(() => {
+            common.returnMessage(params, 404, 'DB Error');
+        });
+        return;
+    }
     case '/i': {
         if ([true, "true"].includes(plugins.getConfig("api", params.app && params.app.plugins, true).trim_trailing_ending_spaces)) {
             params.qstring = common.trimWhitespaceStartEnd(params.qstring);

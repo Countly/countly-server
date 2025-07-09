@@ -221,10 +221,11 @@ class changeStreamReader {
             }
             else {
                 this.stream.on('change', (change) => {
-                    var my_token = {token: self.stream.resumeToken};
-                    my_token._id = change.__id;
-                    if (change.cd) {
-                        my_token.cd = change.cd;
+                    const my_token = {token: self.stream.resumeToken};
+                    my_token._id = change.__id || change.fullDocument?._id;
+                    const cd = change.cd || change.fullDocument?.cd;
+                    if (cd) {
+                        my_token.cd = cd;
                         onData(my_token, change);
                     }
                     else {
