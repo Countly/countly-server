@@ -1,0 +1,192 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: countly-ingress
+  namespace: countly
+  labels:
+    app: countly-ingress
+    branch: newarchitecture
+  annotations:
+    # NGINX Ingress Controller annotations
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/client-max-body-size: "50m"
+    # Forward real IP and headers for Countly analytics
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header Host $http_host;
+    # Block ping requests similar to nginx config
+    nginx.ingress.kubernetes.io/server-snippet: |
+      if ($http_content_type = "text/ping") {
+        return 404;
+      }
+    # Rate limiting (optional)
+    # nginx.ingress.kubernetes.io/rate-limit: "100"
+    # nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - newarchitecture.count.ly
+    secretName: countly-tls
+  rules:
+  - host: newarchitecture.count.ly
+    http:
+      paths:
+      # Ingestor specific paths (high-volume data ingestion) - MUST come before /i/ prefix
+      - path: /i/bulk
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      - path: /i/feedback/input
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      - path: /i
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      # API endpoints - route to API service (other /i/ paths)
+      - path: /i/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /o
+        pathType: Exact
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /o/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      # API specific paths
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      # Frontend - all other paths route to frontend
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001
+---
+# Alternative Ingress without TLS (for testing)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: countly-ingress-http
+  namespace: countly
+  labels:
+    app: countly-ingress-http
+    branch: newarchitecture
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/client-max-body-size: "50m"
+    # Forward real IP and headers for Countly analytics
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header Host $http_host;
+    # Block ping requests similar to nginx config
+    nginx.ingress.kubernetes.io/server-snippet: |
+      if ($http_content_type = "text/ping") {
+        return 404;
+      }
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: newarchitecture.count.ly
+    http:
+      paths:
+      # Ingestor specific paths (high-volume data ingestion) - MUST come before /i/ prefix
+      - path: /i/bulk
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      - path: /i/feedback/input
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      - path: /i
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      # API endpoints - route to API service (other /i/ paths)
+      - path: /i/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /o
+        pathType: Exact
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /o/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      # Frontend
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001

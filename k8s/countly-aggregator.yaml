@@ -1,0 +1,172 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: countly-aggregator
+  namespace: countly
+  labels:
+    app: countly-aggregator
+    branch: newarchitecture
+    component: aggregator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: countly-aggregator
+  template:
+    metadata:
+      labels:
+        app: countly-aggregator
+        branch: newarchitecture
+        component: aggregator
+    spec:
+      tolerations:
+      - key: countly
+        operator: Equal
+        value: dedicated
+        effect: NoSchedule
+      containers:
+      - name: countly-aggregator
+        image: gcr.io/countly-dev-313620/newarch/countly-unified:test-25
+        imagePullPolicy: Always
+        command: ["npm", "run", "start:aggregator"]
+        env:
+        - name: COUNTLY_CONTAINER
+          value: "aggregator"
+        - name: COUNTLY_PLUGINS
+          value: "mobile,web,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,alerts,times-of-day,onboarding,active_users,config-transfer,consolidate,data-manager,dashboards,sdk,guides,journey_engine,content,clickhouse,desktop"
+        - name: COUNTLY_CONFIG_API_MONGODB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: host
+        - name: COUNTLY_CONFIG_API_MONGODB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: port
+        - name: COUNTLY_CONFIG_API_MONGODB_DB
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: db
+        - name: COUNTLY_CONFIG_API_MONGODB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: username
+        - name: COUNTLY_CONFIG_API_MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: password
+        - name: COUNTLY_CONFIG_API_MONGODB_MAX_POOL_SIZE
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: max_pool_size
+        - name: COUNTLY_CONFIG_API_CLICKHOUSE_URL
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: url
+        - name: COUNTLY_CONFIG_API_CLICKHOUSE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: username
+        - name: COUNTLY_CONFIG_API_CLICKHOUSE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: password
+        - name: COUNTLY_CONFIG_API_CLICKHOUSE_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: database
+        - name: COUNTLY_CONFIG_API_CLICKHOUSE_REQUEST_TIMEOUT
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: request_timeout
+        - name: COUNTLY_CONFIG_API_CLICKHOUSE_MAX_OPEN_CONNECTIONS
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: max_open_connections
+        - name: COUNTLY_CONFIG_API_HOSTNAME
+          value: "newarchitecture.count.ly"
+        - name: COUNTLY_CONFIG_API_DRILL_EVENTS_DRIVER
+          value: "clickhouse"
+        - name: COUNTLY_CONFIG_API_DRILL_CLICKHOUSE_DEBUG
+          value: "true"
+        - name: COUNTLY_CONFIG_API_QUERYRUNNER_ADAPTERPREFERENCE
+          value: '["clickhouse","mongodb"]'
+        - name: COUNTLY_CONFIG_API_QUERYRUNNER_ADAPTERS_MONGODB_ENABLED
+          value: "true"
+        - name: COUNTLY_CONFIG_API_QUERYRUNNER_ADAPTERS_CLICKHOUSE_ENABLED
+          value: "true"
+        - name: COUNTLY_CONFIG_API_LOGGING_DEBUG
+          value: '["aggregator-core:api"]'
+        - name: COUNTLY_CONFIG_API_LOGGING_INFO
+          value: '["jobs","push"]'
+        - name: COUNTLY_CONFIG_API_LOGGING_DEFAULT
+          value: "error"
+        - name: COUNTLY_CONFIG_API_FILESTORAGE
+          value: "gridfs"
+        - name: COUNTLY_CONFIG_API_SHARED_CONNECTION
+          value: "false"
+        - name: NODE_OPTIONS
+          value: "--max-old-space-size=2048 --max-semi-space-size=256"
+        - name: NODE_ENV
+          value: "production"
+        resources:
+          requests:
+            memory: "2.5Gi"
+            cpu: "1"
+          limits:
+            memory: "2.5Gi"
+            cpu: "1"
+        # Aggregator doesn't have HTTP endpoints, so we use exec probes
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "ps aux | grep -v grep | grep aggregator.js"
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "ps aux | grep -v grep | grep aggregator.js"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "ps aux | grep -v grep | grep aggregator.js"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: logs
+          mountPath: /opt/countly/log
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
