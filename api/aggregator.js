@@ -351,7 +351,7 @@ plugins.connectToAllDatabases(true).then(function() {
 
     plugins.init({"skipDependencies": true, "filename": "aggregator"});
     plugins.loadConfigs(common.db, function() {
-        plugins.dispatch("/aggregator", {common: common});
+        plugins.dispatch("/aggregator2", {common: common});
     });
 });
 

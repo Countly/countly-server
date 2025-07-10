@@ -1,45 +1,40 @@
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js'),
     stats = require('./parts/stats.js');
-const { changeStreamReader } = require('../../../api/parts/data/changeStreamReader');
+const { dataBatchReader } = require('../../../api/parts/data/dataBatchReader');
 
 (function() {
-    plugins.register("/aggregator", function() {
-        var changeStream = new changeStreamReader(common.drillDb, {
-            pipeline: [
-                {"$match": {"operationType": "insert"}},
-                {"$project": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e"}}
-            ],
+    plugins.register("/aggregator2", function() {
+        //I should register all to common manager which makes sure it is alive from time to time.
+        new dataBatchReader(common.drillDb, {
+            pipeline: [{"$group": {"_id": {"a": "$a", "e": "$e"}, "count": {"$sum": 1}}}],
+            "interval": 10000, //10 seconds
             "name": "server-stats",
             "collection": "drill_events",
-            "fallback": {
-                "pipeline": []
-            },
             "onClose": async function(callback) {
                 await common.writeBatcher.flush("countly", "server_stats_data_points");
                 if (callback) {
                     callback();
                 }
+            },
+        }, async function(token, results) {
+            for (var z = 0; z < results.length; z++) {
+                if (results[z]._id && results[z]._id.a && results[z]._id.e) {
+                    if (results[z]._id.e === "[CLY]_session") {
+                        stats.updateDataPoints(common.writeBatcher, results[z]._id.a, results[z].count, 0, false, token);
+                    }
+                    else if (results[z]._id.e in stats.internalEventsEnum) {
+                        var uu = {"e": results[z].count};
+                        uu[stats.internalEventsEnum[results[z]._id.e]] = results[z].count;
+                        stats.updateDataPoints(common.writeBatcher, results[z]._id.a, 0, uu, false, token);
+                    }
+                    else {
+                        stats.updateDataPoints(common.writeBatcher, results[z]._id.a, 0, {"e": results[z].count, "ce": results[z].count}, false, token);
+                    }
+                }
             }
-        }, (token, next) => {
-            if (next.e === "[CLY]_session") {
-                stats.updateDataPoints(common.writeBatcher, next.a, 1, 0, false, token);
-            }
-            else if (stats.internalEventsEnum[next.e]) {
-                var uu = {"e": 1};
-                uu[stats.internalEventsEnum[next.e]] = 1;
-                stats.updateDataPoints(common.writeBatcher, next.a, 0, uu, false, token);
-                //if it is internal event, then we need to update the event count
-            }
-            else {
-                stats.updateDataPoints(common.writeBatcher, next.a, 0, {"e": 1, "ce": 1}, false, token);
-            }
+            await common.writeBatcher.flush("countly", "server_stats_data_points", token);
             // process next document
         });
-
-        common.writeBatcher.addFlushCallback("server_stats_data_points", function(token) {
-            changeStream.acknowledgeToken(token);
-        });
-
     });
 }());
