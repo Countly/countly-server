@@ -10,7 +10,7 @@ import {
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         labelElement: requestStatsPageElements.PAGE_TITLE,
-        labelText: "Request stats",
+        labelText: "Request Stats",
     });
 
     cy.scrollPageToTop();
