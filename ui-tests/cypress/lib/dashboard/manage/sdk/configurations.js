@@ -18,12 +18,12 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         element: sdkConfiguratonsPageElements.TAB_SDK_CONFIGURATION,
-        elementText: "SDK Configuration",
+        elementText: "SDK Behavior Settings",
     });
 
     cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.PAGE_TITLE,
-        labelText: "SDK Configuration",
+        labelText: "SDK Behavior Settings",
         tooltipElement: sdkConfiguratonsPageElements.PAGE_TITLE_TOOLTIP,
         tooltipText: "This is experimental feature and not all SDKs and SDK versions yet support it. Refer to the SDK documentation for more information"
     });
