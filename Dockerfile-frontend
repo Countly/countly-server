@@ -43,6 +43,7 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	HOME=/tmp npm install -g npm@latest && \
 	HOME=/tmp npm install --unsafe-perm=true --allow-root && \
 	HOME=/tmp npm install argon2 --build-from-source --unsafe-perm=true --allow-root && \
+        HOME=/tmp npm install global-agent --unsafe-perm=true --allow-root && \
 	./bin/docker/preinstall.sh && \
 	bash /opt/countly/bin/scripts/detect.init.sh && \
         countly update sdk-web && \
