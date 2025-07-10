@@ -211,7 +211,8 @@
                     value: 1,
                     label: "#6C47FF"
                 },
-                colorTag: COLOR_TAG
+                colorTag: COLOR_TAG,
+                modifyPropType: { 'up.av': countlyQueryBuilder.PropertyType.NUMERIC_STRING_LIST },
             };
         },
         computed: {
@@ -631,7 +632,6 @@
                 name: CV.i18n("remote-config.conditions.random.percentile"),
                 type: countlyQueryBuilder.PropertyType.NUMBER,
                 group: 'User Properties',
-
             }));
             return {
                 remoteConfigFilterRules: remoteConfigFilterRules,
@@ -646,7 +646,8 @@
                     value: 1,
                     label: "#6C47FF"
                 },
-                colorTag: COLOR_TAG
+                colorTag: COLOR_TAG,
+                modifyPropType: { 'up.av': countlyQueryBuilder.PropertyType.NUMERIC_STRING_LIST },
             };
         },
         methods: {
