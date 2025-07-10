@@ -9,7 +9,7 @@ import {
 const verifyStaticElementsOfPage = () => {
     cy.verifyElement({
         labelElement: sdkStatsPageElements.PAGE_TITLE,
-        labelText: "SDK stats",
+        labelText: "SDK Stats",
     });
 
     cy.scrollPageToTop();
