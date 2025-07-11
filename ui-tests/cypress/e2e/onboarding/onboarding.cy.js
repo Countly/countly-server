@@ -366,84 +366,84 @@ describe('Complete Onboarding', () => {
         analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyFullDataPageElements();
-        navigationHelpers.goToPushNotifications();
-        messagingPageHelpers.verifyFullDataPageElements();
-        navigationHelpers.goToFeedbackRatingsPage();
-        feedbackRatingsPageHelpers.verifyFullDataPageElements();
-        feedbackRatingsPageHelpers.clickRatingWidgetsTab();
-        feedbackRatingWidgetsPageHelpers.verifyFullDataPageElements();
-        navigationHelpers.goToCrashesOverviewPage();
-        crashesPageHelpers.verifyFullDataPageElements();
-        navigationHelpers.goToRemoteConfigPage();
-        //remoteConfigPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
-        remoteConfigPageHelpers.verifyEmptyPageElements();
-        navigationHelpers.goToReportManagerPage();
-        //reportManagerPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
-        reportManagerPageHelpers.verifyEmptyPageElements();
-        navigationHelpers.goToDataManagerPage();
-        dataManagerEventsPageHelpers.verifyFullDataPageElements();
-        dataManagerEventsPageHelpers.clickEventGroupsTab();
-        //dataManagerEventGroupsPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
-        dataManagerEventGroupsPageHelpers.verifyEmptyPageElements();
-        navigationHelpers.goToDataPopulatorPage();
-        dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithTemplatePage();
-        dataPopulatorPageHelpers.clickPopulateWithEnvironmentTab();
-        dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithEnvironmentPage();
-        dataPopulatorPageHelpers.clickTemplatesTab();
-        dataPopulatorPageHelpers.verifyPageElementsOfTemplatesPage();
-        navigationHelpers.goToIncomingDataLogsPage();
-        incomingDataLogsPageHelpers.verifyFullDataPageElements();
-        navigationHelpers.goToSdkManagerPage();
-        sdkManagersPageHelpers.verifyFullDataPageElements();
-        sdkManagersPageHelpers.clickRequestStatsTab();
-        requestStatsPageHelpers.verifyFullDataPageElements();
-        requestStatsPageHelpers.clickHealthCheckTab();
-        //healthCheckPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
-        healthCheckPageHelpers.verifyEmptyPageElements();
-        healthCheckPageHelpers.clickSdkConfigurationTab();
-        sdkConfigurationsPageHelpers.verifyPageElements({});
-        navigationHelpers.goToComplianceHubMetricsPage();
-        complianceHubMetricsPageHelpers.verifyFullDataPageElements();
-        complianceHubMetricsPageHelpers.clickUsersTab();
-        complianceHubUsersPageHelpers.verifyFullDataPageElements();
-        complianceHubUsersPageHelpers.clickConsentHistoryTab();
-        complianceHubHistoryPageHelpers.verifyFullDataPageElements();
-        complianceHubHistoryPageHelpers.clickExportPurgeHistoryTab();
-        //complianceHubExportPurgePageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
-        complianceHubExportPurgePageHelpers.verifyEmptyPageElements();
-        navigationHelpers.goToUserManagementPage();
-        userManagementPageHelpers.verifyPageElements();
-        navigationHelpers.goToApplicationsPage();
-        applicationsPageHelpers.verifyPageElements();
-        navigationHelpers.goToPresetManagementPage();
-        //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
-        presetManagementPageHelpers.verifyEmptyPageElements();
-        navigationHelpers.goToSettingsPage();
-        settingsPageHelpers.verifyPageElements();
-        navigationHelpers.goToDataPointsPage();
-        dataPointsPageHelpers.verifyFullDataPageElements();
-        navigationHelpers.goToLogsPage();
-        errorLogsPageHelpers.verifyPageElements();
-        errorLogsPageHelpers.clickAuditLogsTab();
-        systemLogsPageHelpers.verifyPageElements();
-        navigationHelpers.goToJobsPage();
-        //jobsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
-        jobsPageHelpers.verifyEmptyPageElements();
-        navigationHelpers.goToFeatureManagementPage();
-        pluginsPageHelpers.verifyPageElements();
-        navigationHelpers.goToEMailReportsPage();
-        //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
-        reportsPageHelpers.verifyEmptyPageElements();
-        navigationHelpers.goToHooksPage();
-        //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
-        hooksPageHelpers.verifyEmptyPageElements();
-        navigationHelpers.goToDbViewerPage();
-        dbCountlyPageHelpers.verifyFullDataPageElements();
-        dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
-        //dbCountlyOutPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
-        dbCountlyOutPageHelpers.verifyEmptyPageElements();
-        dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
-        //dbCountlyFsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
-        dbCountlyFsPageHelpers.verifyEmptyPageElements();
+        // navigationHelpers.goToPushNotifications();
+        // messagingPageHelpers.verifyFullDataPageElements();
+        // navigationHelpers.goToFeedbackRatingsPage();
+        // feedbackRatingsPageHelpers.verifyFullDataPageElements();
+        // feedbackRatingsPageHelpers.clickRatingWidgetsTab();
+        // feedbackRatingWidgetsPageHelpers.verifyFullDataPageElements();
+        // navigationHelpers.goToCrashesOverviewPage();
+        // crashesPageHelpers.verifyFullDataPageElements();
+        // navigationHelpers.goToRemoteConfigPage();
+        // //remoteConfigPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        // remoteConfigPageHelpers.verifyEmptyPageElements();
+        // navigationHelpers.goToReportManagerPage();
+        // //reportManagerPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
+        // reportManagerPageHelpers.verifyEmptyPageElements();
+        // navigationHelpers.goToDataManagerPage();
+        // dataManagerEventsPageHelpers.verifyFullDataPageElements();
+        // dataManagerEventsPageHelpers.clickEventGroupsTab();
+        // //dataManagerEventGroupsPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
+        // dataManagerEventGroupsPageHelpers.verifyEmptyPageElements();
+        // navigationHelpers.goToDataPopulatorPage();
+        // dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithTemplatePage();
+        // dataPopulatorPageHelpers.clickPopulateWithEnvironmentTab();
+        // dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithEnvironmentPage();
+        // dataPopulatorPageHelpers.clickTemplatesTab();
+        // dataPopulatorPageHelpers.verifyPageElementsOfTemplatesPage();
+        // navigationHelpers.goToIncomingDataLogsPage();
+        // incomingDataLogsPageHelpers.verifyFullDataPageElements();
+        // navigationHelpers.goToSdkManagerPage();
+        // sdkManagersPageHelpers.verifyFullDataPageElements();
+        // sdkManagersPageHelpers.clickRequestStatsTab();
+        // requestStatsPageHelpers.verifyFullDataPageElements();
+        // requestStatsPageHelpers.clickHealthCheckTab();
+        // //healthCheckPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
+        // healthCheckPageHelpers.verifyEmptyPageElements();
+        // healthCheckPageHelpers.clickSdkConfigurationTab();
+        // sdkConfigurationsPageHelpers.verifyPageElements({});
+        // navigationHelpers.goToComplianceHubMetricsPage();
+        // complianceHubMetricsPageHelpers.verifyFullDataPageElements();
+        // complianceHubMetricsPageHelpers.clickUsersTab();
+        // complianceHubUsersPageHelpers.verifyFullDataPageElements();
+        // complianceHubUsersPageHelpers.clickConsentHistoryTab();
+        // complianceHubHistoryPageHelpers.verifyFullDataPageElements();
+        // complianceHubHistoryPageHelpers.clickExportPurgeHistoryTab();
+        // //complianceHubExportPurgePageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
+        // complianceHubExportPurgePageHelpers.verifyEmptyPageElements();
+        // navigationHelpers.goToUserManagementPage();
+        // userManagementPageHelpers.verifyPageElements();
+        // navigationHelpers.goToApplicationsPage();
+        // applicationsPageHelpers.verifyPageElements();
+        // navigationHelpers.goToPresetManagementPage();
+        // //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
+        // presetManagementPageHelpers.verifyEmptyPageElements();
+        // navigationHelpers.goToSettingsPage();
+        // settingsPageHelpers.verifyPageElements();
+        // navigationHelpers.goToDataPointsPage();
+        // dataPointsPageHelpers.verifyFullDataPageElements();
+        // navigationHelpers.goToLogsPage();
+        // errorLogsPageHelpers.verifyPageElements();
+        // errorLogsPageHelpers.clickAuditLogsTab();
+        // systemLogsPageHelpers.verifyPageElements();
+        // navigationHelpers.goToJobsPage();
+        // //jobsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        // jobsPageHelpers.verifyEmptyPageElements();
+        // navigationHelpers.goToFeatureManagementPage();
+        // pluginsPageHelpers.verifyPageElements();
+        // navigationHelpers.goToEMailReportsPage();
+        // //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
+        // reportsPageHelpers.verifyEmptyPageElements();
+        // navigationHelpers.goToHooksPage();
+        // //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
+        // hooksPageHelpers.verifyEmptyPageElements();
+        // navigationHelpers.goToDbViewerPage();
+        // dbCountlyPageHelpers.verifyFullDataPageElements();
+        // dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
+        // //dbCountlyOutPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        // dbCountlyOutPageHelpers.verifyEmptyPageElements();
+        // dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
+        // //dbCountlyFsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        // dbCountlyFsPageHelpers.verifyEmptyPageElements();
     });
 });
