@@ -50,7 +50,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.SDK_NETWORKING_DESCRIPTION,
-        labelText: "Enable or disable all networking calls from SDK except SDK config call. Does not effect tracking of data (default: enabled)",
+        labelText: "Enable or disable all networking calls from SDK except SDK behavior call. Does not effect tracking of data (default: enabled)",
     });
 };
 
