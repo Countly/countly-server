@@ -18,14 +18,14 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         element: sdkConfiguratonsPageElements.TAB_SDK_CONFIGURATION,
-        elementText: "SDK Configuration",
+        elementText: "SDK Behavior Settings",
     });
 
     cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.PAGE_TITLE,
-        labelText: "SDK Configuration (Experimental)",
+        labelText: "SDK Behavior Settings",
         tooltipElement: sdkConfiguratonsPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "This is experimental feature and not all SDKs and SDK versions yet support it. Refer to the SDK documentation for more information"
+        tooltipText: "Not all SDKs and SDK versions yet support this feature. Refer to respective SDK documentation for more information"
     });
 
     cy.verifyElement({
@@ -50,7 +50,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.SDK_NETWORKING_DESCRIPTION,
-        labelText: "Enable or disable all networking calls from SDK except SDK config call. Does not effect tracking of data (default: enabled)",
+        labelText: "Enable or disable all networking calls from SDK except SDK behavior call. Does not effect tracking of data (default: enabled)",
     });
 };
 
