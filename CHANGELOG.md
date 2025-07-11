@@ -9,6 +9,7 @@ Features:
 Fixes:
 - [core] Set up default headers for common return methods
 - [star-rating] Fix widget close button
+- [remote-config] Fix condition matching with complex conditions
 
 Enterprise Fixes:
 - [active_directory] Fix for reading azure application tenant id from config
