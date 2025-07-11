@@ -393,29 +393,29 @@ describe('Complete Onboarding', () => {
         dataPopulatorPageHelpers.verifyPageElementsOfTemplatesPage();
         navigationHelpers.goToIncomingDataLogsPage();
         incomingDataLogsPageHelpers.verifyFullDataPageElements();
-        // navigationHelpers.goToSdkManagerPage();
-        // sdkManagersPageHelpers.verifyFullDataPageElements();
-        // sdkManagersPageHelpers.clickRequestStatsTab();
-        // requestStatsPageHelpers.verifyFullDataPageElements();
-        // requestStatsPageHelpers.clickHealthCheckTab();
-        // //healthCheckPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
-        // healthCheckPageHelpers.verifyEmptyPageElements();
-        // healthCheckPageHelpers.clickSdkConfigurationTab();
-        // sdkConfigurationsPageHelpers.verifyPageElements({});
-        // navigationHelpers.goToComplianceHubMetricsPage();
-        // complianceHubMetricsPageHelpers.verifyFullDataPageElements();
-        // complianceHubMetricsPageHelpers.clickUsersTab();
-        // complianceHubUsersPageHelpers.verifyFullDataPageElements();
-        // complianceHubUsersPageHelpers.clickConsentHistoryTab();
-        // complianceHubHistoryPageHelpers.verifyFullDataPageElements();
-        // complianceHubHistoryPageHelpers.clickExportPurgeHistoryTab();
-        // //complianceHubExportPurgePageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
-        // complianceHubExportPurgePageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToUserManagementPage();
-        // userManagementPageHelpers.verifyPageElements();
-        // navigationHelpers.goToApplicationsPage();
-        // applicationsPageHelpers.verifyPageElements();
-        // navigationHelpers.goToPresetManagementPage();
+        navigationHelpers.goToSdkManagerPage();
+        sdkManagersPageHelpers.verifyFullDataPageElements();
+        sdkManagersPageHelpers.clickRequestStatsTab();
+        requestStatsPageHelpers.verifyFullDataPageElements();
+        requestStatsPageHelpers.clickHealthCheckTab();
+        //healthCheckPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data 
+        healthCheckPageHelpers.verifyEmptyPageElements();
+        healthCheckPageHelpers.clickSdkConfigurationTab();
+        sdkConfigurationsPageHelpers.verifyPageElements({});
+        navigationHelpers.goToComplianceHubMetricsPage();
+        complianceHubMetricsPageHelpers.verifyFullDataPageElements();
+        complianceHubMetricsPageHelpers.clickUsersTab();
+        complianceHubUsersPageHelpers.verifyFullDataPageElements();
+        complianceHubUsersPageHelpers.clickConsentHistoryTab();
+        complianceHubHistoryPageHelpers.verifyFullDataPageElements();
+        complianceHubHistoryPageHelpers.clickExportPurgeHistoryTab();
+        //complianceHubExportPurgePageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
+        complianceHubExportPurgePageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToUserManagementPage();
+        userManagementPageHelpers.verifyPageElements();
+        navigationHelpers.goToApplicationsPage();
+        applicationsPageHelpers.verifyPageElements();
+        navigationHelpers.goToPresetManagementPage();
         // //presetManagementPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data 
         // presetManagementPageHelpers.verifyEmptyPageElements();
         // navigationHelpers.goToSettingsPage();
