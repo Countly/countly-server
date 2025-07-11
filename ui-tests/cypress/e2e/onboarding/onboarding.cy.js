@@ -440,9 +440,9 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToDbViewerPage();
         dbCountlyPageHelpers.verifyFullDataPageElements();
         dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
-        // //dbCountlyOutPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
-        // dbCountlyOutPageHelpers.verifyEmptyPageElements();
-        // dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
+        //dbCountlyOutPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        dbCountlyOutPageHelpers.verifyEmptyPageElements();
+        dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
         // //dbCountlyFsPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
         // dbCountlyFsPageHelpers.verifyEmptyPageElements();
     });
