@@ -366,33 +366,33 @@ describe('Complete Onboarding', () => {
         analyticsEventsOverviewPageHelpers.verifyEmptyPageElements();
         navigationHelpers.goToAnalyticsAllEvents();
         analyticsEventsPageHelpers.verifyFullDataPageElements();
-        // navigationHelpers.goToPushNotifications();
-        // messagingPageHelpers.verifyFullDataPageElements();
-        // navigationHelpers.goToFeedbackRatingsPage();
-        // feedbackRatingsPageHelpers.verifyFullDataPageElements();
-        // feedbackRatingsPageHelpers.clickRatingWidgetsTab();
-        // feedbackRatingWidgetsPageHelpers.verifyFullDataPageElements();
-        // navigationHelpers.goToCrashesOverviewPage();
-        // crashesPageHelpers.verifyFullDataPageElements();
-        // navigationHelpers.goToRemoteConfigPage();
-        // //remoteConfigPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
-        // remoteConfigPageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToReportManagerPage();
-        // //reportManagerPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
-        // reportManagerPageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToDataManagerPage();
-        // dataManagerEventsPageHelpers.verifyFullDataPageElements();
-        // dataManagerEventsPageHelpers.clickEventGroupsTab();
-        // //dataManagerEventGroupsPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
-        // dataManagerEventGroupsPageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToDataPopulatorPage();
-        // dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithTemplatePage();
-        // dataPopulatorPageHelpers.clickPopulateWithEnvironmentTab();
-        // dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithEnvironmentPage();
-        // dataPopulatorPageHelpers.clickTemplatesTab();
-        // dataPopulatorPageHelpers.verifyPageElementsOfTemplatesPage();
-        // navigationHelpers.goToIncomingDataLogsPage();
-        // incomingDataLogsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToPushNotifications();
+        messagingPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToFeedbackRatingsPage();
+        feedbackRatingsPageHelpers.verifyFullDataPageElements();
+        feedbackRatingsPageHelpers.clickRatingWidgetsTab();
+        feedbackRatingWidgetsPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToCrashesOverviewPage();
+        crashesPageHelpers.verifyFullDataPageElements();
+        navigationHelpers.goToRemoteConfigPage();
+        //remoteConfigPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
+        remoteConfigPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToReportManagerPage();
+        //reportManagerPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
+        reportManagerPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToDataManagerPage();
+        dataManagerEventsPageHelpers.verifyFullDataPageElements();
+        dataManagerEventsPageHelpers.clickEventGroupsTab();
+        //dataManagerEventGroupsPageHelpers.verifyFullDataPageElements();  //TODO: Data is not being generated with the populator. Need to generate the data
+        dataManagerEventGroupsPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToDataPopulatorPage();
+        dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithTemplatePage();
+        dataPopulatorPageHelpers.clickPopulateWithEnvironmentTab();
+        dataPopulatorPageHelpers.verifyPageElementsOfDataPopulatorWithEnvironmentPage();
+        dataPopulatorPageHelpers.clickTemplatesTab();
+        dataPopulatorPageHelpers.verifyPageElementsOfTemplatesPage();
+        navigationHelpers.goToIncomingDataLogsPage();
+        incomingDataLogsPageHelpers.verifyFullDataPageElements();
         // navigationHelpers.goToSdkManagerPage();
         // sdkManagersPageHelpers.verifyFullDataPageElements();
         // sdkManagersPageHelpers.clickRequestStatsTab();
