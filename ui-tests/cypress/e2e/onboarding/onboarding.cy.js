@@ -432,14 +432,14 @@ describe('Complete Onboarding', () => {
         navigationHelpers.goToFeatureManagementPage();
         pluginsPageHelpers.verifyPageElements();
         navigationHelpers.goToEMailReportsPage();
-        // //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
-        // reportsPageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToHooksPage();
-        // //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
-        // hooksPageHelpers.verifyEmptyPageElements();
-        // navigationHelpers.goToDbViewerPage();
-        // dbCountlyPageHelpers.verifyFullDataPageElements();
-        // dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
+        //reportsPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data 
+        reportsPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToHooksPage();
+        //hooksPageHelpers.verifyFullDataPageElements();   //TODO: Data is not being generated with the populator. Need to generate the data
+        hooksPageHelpers.verifyEmptyPageElements();
+        navigationHelpers.goToDbViewerPage();
+        dbCountlyPageHelpers.verifyFullDataPageElements();
+        dbCountlyPageHelpers.clickCountlyOutDatabaseTab();
         // //dbCountlyOutPageHelpers.verifyFullDataPageElements(); //TODO: Data is not being generated with the populator. Need to generate the data
         // dbCountlyOutPageHelpers.verifyEmptyPageElements();
         // dbCountlyOutPageHelpers.clickCountlyFileSystemDatabaseTab();
