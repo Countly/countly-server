@@ -173,7 +173,7 @@ function transformAppVersion(inpVersion) {
                     });
                 }
 
-                if (isPercent && ["crses", "crnfses", "crfses", "crau", "craunf", "crauf"].includes(metric)) {
+                if (isPercent && ["crses", "crnfses", "crfses", "crau", "craunf", "crauf", 'crinv', 'crfinv', 'crnfinv', 'crauinv', 'craufinv', 'craunfinv'].includes(metric)) {
                     ["total", "prev-total"].forEach(function(prop) {
                         dashboard[metric][prop] = dashboard[metric][prop].toFixed(2) + '%';
                     });
@@ -195,7 +195,7 @@ function transformAppVersion(inpVersion) {
                 });
             });
 
-            ["cr-session", "crtf", "crtnf", "crau", "crses"].forEach(function(metric) {
+            ["cr-session", "crtf", "crtnf", "crau", "crses", 'crinv', 'crfinv', 'crnfinv', 'crauinv', 'craufinv', 'craunfinv'].forEach(function(metric) {
                 dashboard[metric] = {};
             });
 
@@ -214,6 +214,10 @@ function transformAppVersion(inpVersion) {
                 if (dashboard.cr_u[prop] < (dashboard.crauf[prop] + dashboard.craunf[prop])) {
                     dashboard.cr_u[prop] += dashboard.crauf[prop] + dashboard.craunf[prop];
                 }
+
+                dashboard.crinv[prop] = Math.max(0, dashboard.cr_s[prop] - dashboard.cr[prop]);
+                dashboard.crfinv[prop] = Math.max(0, dashboard.cr_s[prop] - dashboard.crf[prop]);
+                dashboard.crnfinv[prop] = Math.max(0, dashboard.cr_s[prop] - dashboard.crnf[prop]);
             });
 
             ["cr-session", "crtf", "crtnf"].forEach(function(metric) {
@@ -249,6 +253,22 @@ function transformAppVersion(inpVersion) {
                 populateMetric(name, true);
             });
 
+            ['crinv', 'crfinv', 'crnfinv'].forEach(function(name) {
+                ["total", "prev-total"].forEach(function(prop) {
+                    var propValue = 0;
+
+                    if (dashboard.cr_s[prop] === 0) {
+                        propValue = 100;
+                    }
+                    else {
+                        propValue = dashboard[name][prop] / dashboard.cr_s[prop] * 100;
+                    }
+
+                    dashboard[name][prop] = Math.min(100, propValue);
+                });
+                populateMetric(name, true);
+            });
+
             return dashboard;
         };
 
@@ -277,7 +297,8 @@ function transformAppVersion(inpVersion) {
                     "crses": {labelKey: "crashes.free-sessions", colorIndex: 1},
                     "crau": {labelKey: "crashes.free-users", colorIndex: 1},
                     "cr": {labelKey: "crashes.total", colorIndex: 1},
-                    "cru": {labelKey: "crashes.unique", colorIndex: 1}
+                    "cru": {labelKey: "crashes.unique", colorIndex: 1},
+                    "crinv": {labelKey: "crashes.free-sessions", colorIndex: 1},
                 }[metric];
 
                 if (typeof metricChartConfig !== "undefined") {
@@ -298,7 +319,8 @@ function transformAppVersion(inpVersion) {
                     "crses": {"fatal": "crfses", "nonfatal": "crnfses"},
                     "crau": {"fatal": "crauf", "nonfatal": "craunf"},
                     "cr": {"fatal": "crf", "nonfatal": "crnf"},
-                    "cru": {"fatal": "cruf", "nonfatal": "crunf"}
+                    "cru": {"fatal": "cruf", "nonfatal": "crunf"},
+                    "crinv": {"fatal": "crfinv", "nonfatal": "crnfinv"},
                 };
 
                 name = name || ((metric in metricNames && state.activeFilter.fatality !== "both") ? metricNames[metric][state.activeFilter.fatality] : metric);
@@ -327,7 +349,19 @@ function transformAppVersion(inpVersion) {
                     },
                     "^craun?f$": function(obj) {
                         return (obj.cr_s === 0 || obj[name] === 0) ? 100 : Math.round(Math.min(obj[name] / obj.cr_u, 1) * 10000) / 100;
-                    }
+                    },
+                    '^crinv$': function(obj) {
+                        var value = (obj.cr_s === 0) ? 0 : (obj.cr_s - (obj.crf + obj.crnf)) / obj.cr_s * 100;
+                        return Math.round(value * 100) / 100;
+                    },
+                    '^crfinv$': function(obj) {
+                        var value = (obj.cr_s === 0) ? 0 : (obj.cr_s - obj.crf) / obj.cr_s * 100;
+                        return Math.round(value * 100) / 100;
+                    },
+                    '^crnfinv$': function(obj) {
+                        var value = (obj.cr_s === 0) ? 0 : (obj.cr_s - obj.crnf) / obj.cr_s * 100;
+                        return Math.round(value * 100) / 100;
+                    },
                 };
 
                 dataProps = [
