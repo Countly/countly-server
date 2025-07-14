@@ -24,16 +24,17 @@ remoteConfig.processFilter = function(inpUser, inpQuery) {
      */
     function matchesQuery(user, query) {
         for (let key in query) {
-            if (key === '$or') {
-                return query[key].some((subQuery) => matchesQuery(user, subQuery));
-            }
-            else if (key === '$and') {
-                return query[key].every((subQuery) => matchesQuery(user, subQuery));
-            }
-            else if (typeof query[key] === 'object' && query[key] !== null && !Array.isArray(query[key])) {
+            if (typeof query[key] === 'object' && query[key] !== null && !Array.isArray(query[key])) {
                 let qResult = true;
 
                 for (let prop in query) {
+                    if (prop === '$or') {
+                        return qResult && query[prop].some((subQuery) => matchesQuery(user, subQuery));
+                    }
+                    else if (prop === '$and') {
+                        return qResult && query[prop].every((subQuery) => matchesQuery(user, subQuery));
+                    }
+
                     let parts = prop.split(".");
                     let value;
 
@@ -75,6 +76,12 @@ remoteConfig.processFilter = function(inpUser, inpQuery) {
                 }
 
                 return qResult;
+            }
+            else if (key === '$or') {
+                return query[key].some((subQuery) => matchesQuery(user, subQuery));
+            }
+            else if (key === '$and') {
+                return query[key].every((subQuery) => matchesQuery(user, subQuery));
             }
             else {
                 return false;
