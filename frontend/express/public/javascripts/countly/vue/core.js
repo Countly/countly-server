@@ -542,6 +542,7 @@
                 state: {
                     selectedMenuItem: {},
                     guidesButton: '',
+                    showMainMenu: true,
                 },
                 getters: {
                     getSelectedMenuItem: function(state) {
@@ -557,6 +558,14 @@
                     },
                     setGuidesButton: function(state, payload) {
                         state.guidesButton = payload;
+                    },
+                    toggleMainMenu(state, show) {
+                        if (typeof show === "boolean") {
+                            state.showMainMenu = show;
+                        }
+                        else {
+                            state.showMainMenu = !state.showMainMenu;
+                        }
                     }
                 },
                 actions: {
@@ -881,7 +890,7 @@
             /*
                 Some 3rd party components such as echarts, use Composition API.
                 It is not clear why, but when a view with those components destroyed,
-                they leave some memory leaks. Instantiating DummyCompAPI triggers memory cleanups. 
+                they leave some memory leaks. Instantiating DummyCompAPI triggers memory cleanups.
             */
             self.vm = new Vue({
                 el: el,

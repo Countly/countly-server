@@ -630,7 +630,6 @@
                     selectedMenuOptionLocal: null,
                     versionInfo: countlyGlobal.countlyTypeName,
                     countlySidebarVersionPath: '/dashboard#/' + countlyCommon.ACTIVE_APP_ID + '/versions',
-                    showMainMenu: true,
                     redirectHomePage: 'dashboard#/' + countlyCommon.ACTIVE_APP_ID,
                     onOptionsMenu: false,
                     onMainMenu: false,
@@ -667,6 +666,7 @@
                 };
             },
             computed: {
+                ...Vuex.mapState("countlySidebar", ["showMainMenu"]),
                 components: function() {
                     var menuOptions = [];
 
@@ -696,42 +696,6 @@
 
                     return menuOptions;
                 },
-                // otherMenuOptions: function() {
-                //     var menuOptions = [
-                //         {
-                //             name: this.enableGuides ? "countly-guides" : "help-center",
-                //             icon: this.enableGuides ? "cly-icon-sidebar-countly-guides" : "cly-icon-sidebar-help-center",
-                //             noSelect: true,
-                //             tooltip: this.enableGuides ? "Countly Guides" : "Help Center"
-                //         },
-                //         {
-                //             name: "user",
-                //             noSelect: true,
-                //             member: this.member,
-                //             tooltip: CV.i18n("sidebar.my-profile")
-                //         },
-                //         {
-                //             name: "language",
-                //             noSelect: true,
-                //             tooltip: "Language"
-                //         },
-                //         {
-                //             name: "toggle",
-                //             icon: "cly-icon-sidebar-toggle-left",
-                //             noSelect: true
-                //         }
-                //     ];
-
-                //     var otherMenuOptions = this.otherMenuOptions;
-
-                //     if (otherMenuOptions && otherMenuOptions.length) {
-                //         for (var i = 0; i < otherMenuOptions.length; i++) {
-                //             menuOptions.splice(3, 0, otherMenuOptions[i]);
-                //         }
-                //     }
-
-                //     return menuOptions;
-                // },
                 pseudoSelectedMenuOption: function() {
                     var selected = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
@@ -780,6 +744,7 @@
                 }
             },
             methods: {
+                ...Vuex.mapMutations("countlySidebar", ["toggleMainMenu"]),
                 guidesMouseOver: function() {
                     var state = this.$store.getters["countlySidebar/getGuidesButton"];
                     if (state !== 'selected' && state !== 'highlighted') {
@@ -795,19 +760,16 @@
                 onClick: function(option) {
                     if (!option.noSelect) {
                         this.selectedMenuOptionLocal = option.name;
-                        this.showMainMenu = true;
+                        this.toggleMainMenu(true);
                         this.$store.dispatch("countlySidebar/deselectGuidesButton");
                     }
 
                     if (option.name === "toggle") {
-                        this.onToggleClick();
+                        this.toggleMainMenu();
                     }
                     else if (option.name === "countly-guides") {
                         this.$store.dispatch("countlySidebar/selectGuidesButton");
                     }
-                },
-                onToggleClick: function() {
-                    this.showMainMenu = !this.showMainMenu;
                 },
                 identifySelected: function() {
                     for (var ref in this.$refs) {
@@ -836,7 +798,7 @@
                         /**
                          * If the selected menu in vuex is dashboards, the sidebar should be floating.
                          */
-                        this.showMainMenu = false;
+                        this.toggleMainMenu(false);
                     }
                 },
                 onOptionsMenuMouseOver: function() {
@@ -845,7 +807,7 @@
                     var selectedOption = this.$store.getters["countlySidebar/getSelectedMenuItem"];
 
                     if (selectedOption && selectedOption.menu === "dashboards" && !this.showMainMenu) {
-                        this.showMainMenu = true;
+                        this.toggleMainMenu(true);
                     }
                 },
                 onOptionsMenuMouseLeave: function() {
@@ -877,7 +839,7 @@
                                         /**
                                          * If not on the main menu, hide the main menu.
                                          */
-                                        self.showMainMenu = false;
+                                        self.toggleMainMenu(false);
                                     }
                                 }
                             }, 0);
@@ -909,7 +871,7 @@
                                         /**
                                          * If not on the options menu, hide the main menu.
                                          */
-                                        self.showMainMenu = false;
+                                        self.toggleMainMenu(false);
                                     }
                                 }
                             }, 0);
