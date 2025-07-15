@@ -11,7 +11,6 @@ var pluginDependencies = require('./pluginDependencies.js'),
     apiCountlyConfig = require('../api/config', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
     fs = require('fs'),
-    url = require('url'),
     querystring = require('querystring'),
     cp = require('child_process'),
     async = require("async"),
@@ -1869,9 +1868,12 @@ var pluginManager = function pluginManager() {
         }
 
         if (config && typeof config.mongodb === "string") {
-            var urlParts = url.parse(config.mongodb, true);
-            if (urlParts && urlParts.query && urlParts.query.maxPoolSize) {
-                maxPoolSize = urlParts.query.maxPoolSize;
+            const urlParts = config.mongodb.split('?');
+
+            if (urlParts.length > 1) {
+                const queryParams = new URLSearchParams(urlParts[1]);
+
+                maxPoolSize = queryParams.get('maxPoolSize') || maxPoolSize;
             }
         }
         else {
