@@ -1,3 +1,10 @@
+## Version 25.03.XX
+Fixes:
+- [remote-config] Fix condition matching with complex conditions
+
+Features:
+- [remote-config] Add support for comparing newer/older app version in conditions
+
 ## Version 25.03.10
 Enterprise Fixes:
 - [okta] Fix body parser middleware version mismatch causing OKTA authentication break
@@ -9,7 +16,6 @@ Features:
 Fixes:
 - [core] Set up default headers for common return methods
 - [star-rating] Fix widget close button
-- [remote-config] Fix condition matching with complex conditions
 
 Enterprise Fixes:
 - [active_directory] Fix for reading azure application tenant id from config
