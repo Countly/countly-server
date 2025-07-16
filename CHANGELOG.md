@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Fixes:
+- [core] Fix user analytics widget chart
+
 ## Version 25.03.10
 Enterprise Fixes:
 - [okta] Fix body parser middleware version mismatch causing OKTA authentication break
