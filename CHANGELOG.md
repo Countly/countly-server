@@ -1,9 +1,12 @@
 ## Version 25.03.XX
 Fixes:
+- [core] Fix user analytics widget chart
+- [core] Fix mongo connection url parsing
 - [remote-config] Fix condition matching with complex conditions
 
 Features:
 - [remote-config] Add support for comparing newer/older app version in conditions
+
 
 ## Version 25.03.10
 Enterprise Fixes:
