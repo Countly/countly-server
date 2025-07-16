@@ -1093,30 +1093,53 @@ plugins.setConfigs("dashboards", {
                 filterCond.owner_id = memberId;
             }
 
-            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, function(err, dashboard) {
+            common.db.collection("dashboards").findOne({_id: common.db.ObjectID(dashboardId)}, async function(err, dashboard) {
                 if (err || !dashboard) {
                     common.returnMessage(params, 400, "Dashboard with the given id doesn't exist");
                 }
                 else {
-                    hasViewAccessToDashboard(params.member, dashboard, function(er, status) {
+                    hasViewAccessToDashboard(params.member, dashboard, async function(er, status) {
                         if (er || !status) {
                             return common.returnOutput(params, {error: true, dashboard_access_denied: true});
                         }
 
-                        common.db.collection("dashboards").remove(
-                            filterCond,
-                            function(error, result) {
-                                if (!error && result) {
-                                    if (result && result.result && result.result.n === 1) {
-                                        plugins.dispatch("/systemlogs", {params: params, action: "dashboard_deleted", data: dashboard});
+                        try {
+                            // Remove the dashboard
+                            const result = await common.db.collection("dashboards").deleteOne(filterCond);
+
+                            if (result && result.deletedCount > 0) {
+                                // Collect widget IDs from the dashboard
+                                const widgetIds = (dashboard.widgets || []).map(w => common.db.ObjectID(w.$oid || w));
+
+                                // Delete widgets from the widgets collection
+                                if (widgetIds.length) {
+                                    const widgets = await common.db.collection("widgets").find({_id: {$in: widgetIds}}).toArray();
+                                    const drillReportIds = widgets.reduce((acc, widget) => {
+                                        if (Array.isArray(widget.drill_report)) {
+                                            acc.push(...widget.drill_report);
+                                        }
+                                        return acc;
+                                    }, []);
+
+                                    await common.db.collection("widgets").deleteMany({_id: {$in: widgetIds}});
+
+                                    // Delete drill_reports from the long_tasks collection
+                                    if (drillReportIds.length) {
+                                        await common.db.collection("long_tasks").deleteMany({_id: {$in: drillReportIds}});
                                     }
-                                    common.returnOutput(params, result);
                                 }
-                                else {
-                                    common.returnMessage(params, 500, "Failed to delete dashboard");
-                                }
+
+                                plugins.dispatch("/systemlogs", {params: params, action: "dashboard_deleted", data: dashboard});
+                                common.returnOutput(params, result);
                             }
-                        );
+                            else {
+                                common.returnMessage(params, 500, "Failed to delete dashboard");
+                            }
+                        }
+                        catch (error) {
+                            console.error("Error during dashboard deletion:", error);
+                            common.returnMessage(params, 500, "An error occurred while deleting the dashboard");
+                        }
                     });
                 }
             });
