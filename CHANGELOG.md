@@ -1,3 +1,8 @@
+## Version 24.05.XX
+Fixes:
+  -[dashboards] Delete associated widgets and reports when a dashboard is removed
+
+
 ## Version 24.05.34
 Enterprise Fixes:
 - [drill] Fixed typo issue while getting segment values in drill widgets
