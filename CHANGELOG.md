@@ -2,6 +2,7 @@
 Fixes:
 - [core] Fix user analytics widget chart
 - [core] Fix mongo connection url parsing
+- [dashboards] Delete associated widgets and reports when a dashboard is removed
 
 ## Version 25.03.10
 Enterprise Fixes:
