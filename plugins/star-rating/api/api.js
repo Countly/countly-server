@@ -474,7 +474,7 @@ function uploadFile(myfile, id, callback) {
             params.app_user = params.app_user || {};
 
             var user = JSON.parse(JSON.stringify(params.app_user));
-            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, popup_header_text: 1, cohortID: 1, type: 1, appearance: 1, showPolicy: 1, trigger_position: 1, hide_sticker: 1, trigger_bg_color: 1, trigger_font_color: 1, trigger_button_text: 1, trigger_size: 1, target_pages: 1}).toArray(function(err, widgets) {
+            common.db.collection('feedback_widgets').find({"app_id": params.app_id + "", "status": true, type: "rating"}, {_id: 1, popup_header_text: 1, cohortID: 1, type: 1, appearance: 1, showPolicy: 1, trigger_position: 1, hide_sticker: 1, trigger_bg_color: 1, trigger_font_color: 1, trigger_button_text: 1, trigger_size: 1, target_pages: 1, wv: 1}).toArray(function(err, widgets) {
                 if (err) {
                     log.e(err);
                     reject(err);
@@ -492,6 +492,7 @@ function uploadFile(myfile, id, callback) {
                     }
                     widget.tg = widget.target_pages;
                     widget.name = widget.popup_header_text;
+                    widget.wv = widget.wv?.toString() || null;
                     // remove this props from response
                     delete widget.hide_sticker;
                     delete widget.trigger_position;
@@ -565,6 +566,11 @@ function uploadFile(myfile, id, callback) {
             phone: true,
             tablet: true
         };
+        /**
+         * NOTE: This property is used to help SDK identify if the widget has the new handling for close button and
+         * allows widget to be fullscreen. Since the server will support this from here on, it can be hardcoded.
+         */
+        widget.wv = 1;
 
         //widget.created_by = common.db.ObjectID(obParams.member._id);
         validateCreate(obParams, FEATURE_NAME, function(params) {
@@ -920,6 +926,72 @@ function uploadFile(myfile, id, callback) {
             });
         }
     });
+
+    /**
+     * @api {post} /i/feedback/widgets/status Bulk update feedback widgets
+     * @apiName BulkUpdateWidgetStatus
+     * @apiGroup Ratings
+     * 
+     * @apiDescription Update the status (active/inactive) of multiple feedback widgets in a single operation
+     * @apiPermission Update permission for star_rating feature
+     * @apiBody {Object} data JSON object where keys are widget IDs and values are boolean status values
+     * 
+     * @apiSuccessExample {json} Success Response:
+     * HTTP/1.1 200 OK
+     * {
+     *   "result": "Success"
+     * }
+     * 
+     * @apiErrorExample {json} Error - Invalid Data Format:
+     * HTTP/1.1 500 Internal Server Error
+     * {
+     *   "result": "Invalid parameter 'data'"
+     * }
+     */
+    plugins.register('/i/feedback/widgets/status', function(ob) {
+        const { params } = ob || {};
+
+        validateUpdate(params, FEATURE_NAME, function() {
+            let data = {};
+
+            try {
+                data = JSON.parse(params.qstring.data);
+            }
+            catch (error) {
+                common.returnMessage(params, 500, "Invalid parameter 'data'");
+                return false;
+            }
+
+            const hasToUpdate = data && Object.keys(data).length > 0;
+
+            if (!hasToUpdate) {
+                common.returnMessage(params, 400, 'Nothing to update');
+                return false;
+            }
+
+            const bulk = common.db.collection('feedback_widgets').initializeUnorderedBulkOp();
+
+            for (const key in data) {
+                const newStatusValue = data[key] === true || data[key] === 'true' ? true : false;
+
+                bulk.find({ _id: common.db.ObjectID(key) }).updateOne({ $set: { 'status': newStatusValue } });
+            }
+
+            bulk.execute(function(error) {
+                if (error) {
+                    log.e(error);
+                    common.returnMessage(params, 400, error);
+                }
+                else {
+                    common.returnMessage(params, 200, 'Success');
+                    plugins.dispatch('/systemlogs', { params: params, action: 'surveys_widget_status', data: data });
+                }
+            });
+        });
+
+        return true;
+    });
+
     /**
      * @api {post} /i/feedback/widgets/create Create new widget
      * @apiName CreateRatingsWidget

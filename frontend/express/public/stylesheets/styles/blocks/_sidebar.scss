@@ -143,6 +143,11 @@ $bg-color: #24292e;
         height: 100%;
         overflow: hidden;
         position: relative;
+
+        /* .cly-vue-sidebar__menu--with-banner */
+        &--with-banner .__view {
+            padding-bottom: 200px;
+        }
     }
 
     &__menu-items,
@@ -378,26 +383,41 @@ $bg-color: #24292e;
         font-size: 10px;
         background-color: #24292e;
 
+        /* .cly-vue-sidebar__version__banner */
         &__banner {
-            background-color: #191C20;
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            right: 12px;
+
+            z-index: 2001;
+            
+            cursor: default;
+            box-sizing: border-box;
+        
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+        
+            background-color: #191C20;
             border-radius: 4px;
             padding: 16px;
-            margin-bottom: 30%;
-            cursor: default;
-            .text {
-                font-size: 14px;
-                color: #fff;
-            }
+        
+            /* .cly-vue-sidebar__version__banner .button */
             .button {
                 width: 100%;
                 margin-top: 12px;
             }
+        
+            /* .cly-vue-sidebar__version__banner .text */
+            .text {
+                font-size: 14px;
+                color: #fff;
+            }
         }
     }
+
 
     .cly-icon {
         &-sidebar{
