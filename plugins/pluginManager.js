@@ -1876,12 +1876,21 @@ var pluginManager = function pluginManager() {
         }
 
         if (config && typeof config.mongodb === "string") {
-            const urlParts = config.mongodb.split('?');
+            try {
+                const urlObj = new URL(config.mongodb);
+                // mongo connection string with multiple host like 'mongodb://localhost:30000,localhost:30001' will cause an error
 
-            if (urlParts.length > 1) {
-                const queryParams = new URLSearchParams(urlParts[1]);
+                maxPoolSize = urlObj.searchParams.get('maxPoolSize') !== null ? urlObj.searchParams.get('maxPoolSize') : maxPoolSize;
+            }
+            catch (_err) {
+                // we catch the error here and try to process only the query params part
+                const urlParts = config.mongodb.split('?');
 
-                maxPoolSize = queryParams.get('maxPoolSize') || maxPoolSize;
+                if (urlParts.length > 1) {
+                    const queryParams = new URLSearchParams(urlParts[1]);
+
+                    maxPoolSize = queryParams.get('maxPoolSize') !== null ? queryParams.get('maxPoolSize') : maxPoolSize;
+                }
             }
         }
         else {
