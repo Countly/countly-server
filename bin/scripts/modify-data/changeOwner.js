@@ -11,6 +11,7 @@ var OLD_ID = "59832c06c5e80024b5e1fa1f"; //Id for old user
 var pluginManager = require('./../../../plugins/pluginManager');
 var common = require('./../../../api/utils/common');
 var async = require('async');
+const Promise = require('bluebird');
 
 pluginManager.dbConnection("countly").then((db) => {
     common.db = db;
