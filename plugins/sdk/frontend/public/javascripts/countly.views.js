@@ -1,35 +1,48 @@
 /*global app, countlyVue, countlySDK, CV, countlyCommon, CountlyHelpers*/
 (function() {
-    var SC_VER = 1; // check/update sdk/api/api.js for this
+    var SC_VER = 2; // check/update sdk/api/api.js for this
+    // Initial SDKs that supported tracking and networking options
     var v0_android = "22.09.4";
     var v0_ios = "23.02.2";
+    // Initial SDKs that supported all options except SC
     var v1_android = "25.4.0";
     var v1_ios = "25.4.0";
     var v1_web = "25.4.0";
+    // Initial SDKs that support all + backoff mechanism
+    var v2_android = "25.4.1";
+    var v2_ios = "25.4.2";
+    var v2_web = "25.4.1";
+    var v2_flutter = "25.4.1";
+    var v2_react_native = "25.4.0";
     // Supporting SDK Versions for the SC options
     var supportedSDKVersion = {
-        tracking: { android: v0_android, ios: v0_ios, web: v1_web },
-        networking: { android: v0_android, ios: v0_ios, web: v1_web },
-        crt: { android: v1_android, ios: v1_ios, web: v1_web },
-        vt: { android: v1_android, ios: v1_ios, web: v1_web },
-        st: { android: v1_android, ios: v1_ios, web: v1_web },
-        cet: { android: v1_android, ios: v1_ios, web: v1_web },
-        ecz: { android: v1_android, ios: v1_ios, web: v1_web },
-        cr: { android: v1_android, ios: v1_ios, web: v1_web },
-        sui: { android: v1_android, ios: v1_ios, web: v1_web },
-        eqs: { android: v1_android, ios: v1_ios, web: v1_web },
-        rqs: { android: v1_android, ios: v1_ios, web: v1_web },
-        czi: { android: v1_android, ios: v1_ios, web: v1_web },
-        dort: { android: v1_android, ios: v1_ios, web: v1_web },
-        scui: { android: v1_android, ios: v1_ios, web: v1_web },
-        lkl: { android: v1_android, ios: v1_ios, web: v1_web },
-        lvs: { android: v1_android, ios: v1_ios, web: v1_web },
-        lsv: { android: v1_android, ios: v1_ios, web: v1_web },
-        lbc: { android: v1_android, ios: v1_ios, web: v1_web },
-        ltlpt: { android: v1_android, ios: v1_ios, web: v1_web },
-        ltl: { android: v1_android, ios: v1_ios, web: v1_web },
-        lt: { android: v1_android, ios: v1_ios, web: v1_web },
-        rcz: { android: v1_android, ios: v1_ios, web: v1_web }
+        tracking: { android: v0_android, ios: v0_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        networking: { android: v0_android, ios: v0_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        crt: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        vt: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        st: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        cet: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        ecz: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        cr: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        sui: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        eqs: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        rqs: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        czi: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        dort: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        scui: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        lkl: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        lvs: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        lsv: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        lbc: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        ltlpt: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        ltl: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        lt: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        rcz: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        bom: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
+        bom_at: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
+        bom_rqp: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
+        bom_ra: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
+        bom_d: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native }
     };
 
     var FEATURE_NAME = "sdk";
@@ -117,6 +130,10 @@
                     settings: {
                         label: "SDK Settings",
                         list: ["sui", "eqs", "rqs", "czi", "dort", "scui"]
+                    },
+                    backoff: {
+                        label: "Backoff Settings",
+                        list: ["bom", "bom_at", "bom_rqp", "bom_ra", "bom_d"]
                     },
                     limits: {
                         label: "SDK Limits",
@@ -277,6 +294,41 @@
                         description: "Enable or disable refreshing Journey content (default: enabled)",
                         default: true,
                         value: null
+                    },
+                    bom: {
+                        type: "switch",
+                        name: "Enable Backoff Mechanism",
+                        description: "Enable or disable backoff mechanism for requests (default: enabled)",
+                        default: true,
+                        value: null
+                    },
+                    bom_at: {
+                        type: "number",
+                        name: "Backoff Timeout Limit",
+                        description: "Maximum server delay acceptable before backoff mechanism can kick in (default: 10)",
+                        default: 10,
+                        value: null
+                    },
+                    bom_rqp: {
+                        type: "number",
+                        name: "Backoff Requests Queue Percentage",
+                        description: "Percentage of fullness that is acceptable for backoff mechanism to work (default: 50)",
+                        default: 50,
+                        value: null
+                    },
+                    bom_ra: {
+                        type: "number",
+                        name: "Backoff Requests Age",
+                        description: "Maximum amount of request age(in hours) that is allowed in backoff (default: 24)",
+                        default: 24,
+                        value: null
+                    },
+                    bom_d: {
+                        type: "number",
+                        name: "Backoff Delay",
+                        description: "Delay in seconds that would be applied to requests in backoff (default: 60)",
+                        default: 60,
+                        value: null
                     }
                 },
                 diff: [],
@@ -310,6 +362,10 @@
             },
             downloadConfig: function() {
                 var params = this.$store.getters["countlySDK/sdk/all"];
+                // we change bom_rqp to decimal percentage for sdk
+                if (typeof params.bom_rqp !== "undefined") {
+                    params.bom_rqp = params.bom_rqp / 100;
+                }
                 var data = {};
                 data.v = SC_VER;
                 data.t = Date.now();
@@ -477,6 +533,34 @@
                 if (latestVersions["objc-native-ios"]) {
                     viableSDKCount++;
                 }
+                // flutter and RN has push and no push variants for both platforms
+                if (latestVersions["dart-flutterb-android"]) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["dart-flutterbnp-android"]) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["dart-flutterb-web"]) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["dart-flutterb-ios"]) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["dart-flutterbnp-ios"]) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["js-rnb-android"]) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["js-rnb-ios"]) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["js-rnb-android-np"]) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["js-rnbnp-ios"]) {
+                    viableSDKCount++;
+                }
 
                 const configKeyList = Object.keys(this.configs);
                 configKeyList.forEach(configKey => {
@@ -489,6 +573,15 @@
                     this.compareVersions(context, latestVersions.javascript_native_web, configSupportedVersions.web, "Web SDK");
                     this.compareVersions(context, latestVersions["java-native-android"], configSupportedVersions.android, "Android SDK");
                     this.compareVersions(context, latestVersions["objc-native-ios"], configSupportedVersions.ios, "iOS SDK");
+                    // this.compareVersions(context, latestVersions["dart-flutterb-android"], configSupportedVersions.flutter, "Flutter SDK (Android)");
+                    // this.compareVersions(context, latestVersions["dart-flutterbnp-android"], configSupportedVersions.flutter, "Flutter SDK (Android no push)");
+                    // this.compareVersions(context, latestVersions["dart-flutterb-web"], configSupportedVersions.flutter, "Flutter SDK (Web)");
+                    // this.compareVersions(context, latestVersions["dart-flutterb-ios"], configSupportedVersions.flutter, "Flutter SDK (iOS)");
+                    // this.compareVersions(context, latestVersions["dart-flutterbnp-ios"], configSupportedVersions.flutter, "Flutter SDK (iOS no push)");
+                    // this.compareVersions(context, latestVersions["js-rnb-android"], configSupportedVersions.react_native, "React Native SDK (Android)");
+                    // this.compareVersions(context, latestVersions["js-rnbnp-android"], configSupportedVersions.react_native, "React Native SDK (Android no push)");
+                    // this.compareVersions(context, latestVersions["js-rnb-ios"], configSupportedVersions.react_native, "React Native SDK (iOS)");
+                    // this.compareVersions(context, latestVersions["js-rnbnp-ios"], configSupportedVersions.react_native, "React Native SDK (iOS no push)");
 
                     if (viableSDKCount > 0 && context.supportLevel === viableSDKCount) { // all correct version
                         this.configs[configKey].tooltipMessage = 'You are using SDKs that support this option.';

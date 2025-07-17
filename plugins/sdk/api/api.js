@@ -63,9 +63,14 @@ plugins.register("/permissions/features", function(ob) {
         return new Promise(function(resolve) {
             getSDKConfig(params).then(function(config) {
                 delete config._id;
-                config.v = 1;
+                var cc = config.config || {};
+                // change bom_rqp to decimal percentage
+                if (typeof cc.bom_rqp !== "undefined") {
+                    cc.bom_rqp = cc.bom_rqp / 100;
+                }
+                config.v = 2;
                 config.t = Date.now();
-                config.c = config.config || {};
+                config.c = cc;
                 delete config.config;
                 common.returnOutput(params, config);
             })
