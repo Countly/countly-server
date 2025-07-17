@@ -14,6 +14,21 @@
         return str;
     }
 
+    var defaultLinks = [
+        {
+            "text": "Terms and Conditions",
+            "link": "https://termsandconditions.com",
+            "textValue": "Terms and Conditions",
+            "linkValue": "https://termsandconditions.com"
+        },
+        {
+            "text": "Privacy Policy",
+            "link": "https://privacyPolicy.com",
+            "textValue": "Privacy Policy",
+            "linkValue": "https://privacyPolicy.com"
+        },
+    ];
+
     var consentLink = countlyVue.views.create({
         template: CV.T("/star-rating/templates/star-consent-link.html"),
         props: {
@@ -38,12 +53,12 @@
                 this.$delete(this.links, index);
             },
             onDelete: function(id) {
-                if (this.value.link.length > 1 && this.value.link.length <= this.maxLinks) {
-                    this.value.link.splice(id, 1);
+                if (this.value.links.length > 1 && this.value.links.length <= this.maxLinks) {
+                    this.value.links.splice(id, 1);
                 }
             },
             add: function() {
-                this.value.link.push({
+                this.value.links.push({
                     "text": "Another Link",
                     "link": "https://otherlink.com",
                     "textValue": "Another Link",
@@ -53,7 +68,7 @@
         },
         computed: {
             newLinkAllowed: function() {
-                return !this.readOnly && this.value.link.length < this.maxLinks;
+                return !this.readOnly && this.value.links.length < this.maxLinks;
             }
         }
     });
@@ -102,7 +117,7 @@
                 },
                 logoFile: "",
                 stamp: 0,
-                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1
+                cohortsEnabled: countlyGlobal.plugins.indexOf('cohorts') > -1,
             };
         },
         watch: {
@@ -117,32 +132,21 @@
         // drawer event handlers
             onConsentCheckbox: function(ev) {
                 if (!ev.links || ev.links.length < 1) {
-                    ev.links = {
-                        "link": [
-                            {
-                                "text": "Terms and Conditions",
-                                "link": "https://termsandconditions.com",
-                                "textValue": "Terms and Conditions",
-                                "linkValue": "https://termsandconditions.com"
-                            },
-                            {
-                                "text": "Privacy Policy",
-                                "link": "https://privacyPolicy.com",
-                                "textValue": "Privacy Policy",
-                                "linkValue": "https://privacyPolicy.com"
-                            }
-                        ],
-                        "finalText": "I agree to the Terms and Conditions and Privacy Policy.",
-                    };
+                    ev.links = defaultLinks;
                 }
             },
-            finalTxt: function(links) {
-                let finalText = links.finalText;
+            finalTxt: function(links, inpFinalText) {
+                var finalText = inpFinalText;
 
-                links.link.forEach(link => {
-                    const regex = new RegExp(`\\b${link.textValue}\\b`, 'g');
-                    finalText = finalText.replace(regex, `<a href="${link.linkValue}" target="_blank">${link.textValue}</a>`);
-                });
+                if ('finalText' in links) {
+                    finalText = links.finalText;
+                }
+                else {
+                    links.forEach(link => {
+                        const regex = new RegExp(`\\b${link.textValue}\\b`, 'g');
+                        finalText = finalText.replace(regex, `<a href="${link.linkValue}" target="_blank">${link.textValue}</a>`);
+                    });
+                }
 
                 return finalText;
             },
@@ -163,8 +167,10 @@
             onSubmit: function(submitted, done) {
                 var self = this;
                 if (submitted.links) {
-                    submitted.finalText = submitted.links.finalText;
-                    submitted.links = submitted.links.link;
+                    if (submitted.links.finalText) {
+                        submitted.finalText = submitted.links.finalText;
+                        submitted.links = submitted.links.link;
+                    }
                     submitted.links.forEach(function(link) {
                         var separator = link.linkValue.indexOf('?') !== -1 ? '&' : '?';
                         link.linkValue = link.linkValue + separator + CLY_X_INT + '=1';
@@ -861,6 +867,8 @@
                 }
                 this.openDrawer("widget", {
                     consent: false,
+                    finalText: "I agree to the Terms and Conditions and Privacy Policy.",
+                    links: defaultLinks,
                     popup_header_text: 'What\'s your opinion about this page?',
                     popup_thanks_message: 'Thanks for your feedback!',
                     popup_button_callout: 'Submit Feedback',

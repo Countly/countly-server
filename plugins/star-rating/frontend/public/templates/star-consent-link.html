@@ -21,7 +21,7 @@
         {{i18n('rating.drawer.consent.links')}}
         <cly-tooltip-icon :tooltip="i18n('rating.drawer.links.tooltip')" icon="ion-help-circled"></cly-tooltip-icon>
     </div>
-    <div style="gap:8px" class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center bu-py-1" :key="idx" v-for="(item, idx) in value.link">
+    <div style="gap:8px" class="bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center bu-py-1" :key="idx" v-for="(item, idx) in value.links">
       <div class="cly-vue-surveys-drawer__consent__basis-text">
         <validation-provider :name="item.text" rules="required" v-slot="v">
           <el-input
