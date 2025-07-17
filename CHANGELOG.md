@@ -1,3 +1,7 @@
+## Version 24.05.XX
+Fixes:
+- [core] Fix mongo connection url parsing
+
 ## Version 24.05.34
 Enterprise Fixes:
 - [drill] Fixed typo issue while getting segment values in drill widgets
