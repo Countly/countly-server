@@ -4,6 +4,9 @@ Fixes:
 - [core] Fix mongo connection url parsing
 - [crashes] Fix free session and free user calculation
 
+Enterprise Fixes:
+- [crash_symbolication] Remove auto symbolication setting
+
 ## Version 25.03.10
 Enterprise Fixes:
 - [okta] Fix body parser middleware version mismatch causing OKTA authentication break
