@@ -2,6 +2,7 @@
 Fixes:
 - [core] Fix user analytics widget chart
 - [core] Fix mongo connection url parsing
+- [crashes] Fix free session and free user calculation
 
 ## Version 25.03.10
 Enterprise Fixes:
