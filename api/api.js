@@ -107,7 +107,7 @@ plugins.connectToAllDatabases().then(function() {
         password_symbol: true,
         password_expiration: 0,
         password_rotation: 3,
-        password_autocomplete: true,
+        password_autocomplete: false,
         robotstxt: "User-agent: *\nDisallow: /",
         dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
         api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
