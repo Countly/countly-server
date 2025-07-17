@@ -15,26 +15,28 @@ const Promise = require('bluebird');
 
 pluginManager.dbConnection("countly").then((db) => {
     common.db = db;
+    const NEW_OID = common.db.ObjectID(NEW_ID);
+    const OLD_OID = common.db.ObjectID(OLD_ID);
 
     function changeOwner(NEW_ID, OLD_ID, done) {
         changeOwnerDashboard(NEW_ID, OLD_ID, function() {
-            common.db.collection("alerts").update({createdBy: OLD_ID}, {$set: {createdBy: NEW_ID}}, function(err, res) {
+            common.db.collection("alerts").update({createdBy: OLD_OID}, {$set: {createdBy: NEW_OID}}, function(err, res) {
                 console.log("alerts", err, res && res.result);
                 common.db.collection("auth_tokens").update({owner: OLD_ID}, {$set: {owner: NEW_ID}}, function(err, res) {
                     console.log("auth_tokens", err, res && res.result);
                     common.db.collection("calculated_metrics").update({owner_id: OLD_ID}, {$set: {owner_id: NEW_ID}}, function(err, res) {
                         console.log("calculated_metrics", err, res && res.result);
-                        common.db.collection("concurrent_users_alerts").update({created_by: OLD_ID}, {$set: {created_by: NEW_ID}}, function(err, res) {
+                        common.db.collection("concurrent_users_alerts").update({created_by: OLD_OID}, {$set: {created_by: NEW_OID}}, function(err, res) {
                             console.log("concurrent_users_alerts", err, res && res.result);
-                            common.db.collection("data_migrations").update({userid: OLD_ID}, {$set: {userid: NEW_ID}}, function(err, res) {
+                            common.db.collection("data_migrations").update({userid: OLD_OID}, {$set: {userid: NEW_OID}}, function(err, res) {
                                 console.log("data_migrations", err, res && res.result);
                                 changeOwnerLongTasks(NEW_ID, OLD_ID, function(err, res) {
-                                    console.log("messages", err, res && res.result);
-                                    common.db.collection("messages").update({creator: OLD_ID}, {$set: {creator: NEW_ID}}, function(err, res) {
+                                    console.log("messages", err, res && res.result); // "createdBy": { "$oid": "63442fa1ec94a1edb60f2453"}
+                                    common.db.collection("messages").update({"info.createdBy": OLD_ID}, {$set: {"info.createdBy": NEW_ID}}, function(err, res) {
                                         console.log("messages", err, res && res.result);
                                         common.db.collection("notes").update({owner: OLD_ID}, {$set: {owner: NEW_ID}}, function(err, res) {
                                             console.log("notes", err, res && res.result);
-                                            common.db.collection("reports").update({user: OLD_ID}, {$set: {user: NEW_ID}}, function(err, res) {
+                                            common.db.collection("reports").update({user: OLD_OID}, {$set: {user: NEW_OID}}, function(err, res) {
                                                 console.log("reports", err, res && res.result);
                                                 done();
                                             });
