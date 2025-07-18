@@ -48,11 +48,6 @@ plugins.setConfigs("recaptcha", {
                 req.template.js += "$(document).ready(function() {" +
                     "$('body').addClass('recaptcha-enabled');" +
                     "});";
-                if (plugins.isPluginEnabled("enterpriseinfo")) {
-                    req.template.js += "$(document).ready(function() {" +
-                        "$('body').addClass('enterpriseinfo-enabled');" +
-                        "});";
-                }
                 req.template.form += recaptcha.render();
             }
             next();

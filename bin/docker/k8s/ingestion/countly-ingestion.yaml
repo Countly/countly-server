@@ -41,7 +41,7 @@ spec:
           timeoutSeconds: 30
         env:
           - name: COUNTLY_PLUGINS
-            value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,enterpriseinfo,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards"
+            value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,logger,systemlogs,errorlogs,populator,reports,crashes,push,star-rating,slipping-away-users,compare,server-stats,dbviewer,assistant,times-of-day,compliance-hub,alerts,onboarding,consolidate,remote-config,hooks,dashboards"
             # Countly Enterprise: value: "mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,revenue,logger,systemlogs,errorlogs,populator,reports,crashes,push,geo,block,restrict,users,star-rating,slipping-away-users,compare,server-stats,assistant,dbviewer,crash_symbolication,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,performance-monitoring,config-transfer,consolidate,data-manager,hooks,dashboards,heatmaps"
           - name: COUNTLY_CONFIG_API_FILESTORAGE
             value: "gridfs"

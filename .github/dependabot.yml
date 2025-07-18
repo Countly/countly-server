@@ -175,15 +175,6 @@ updates:
     versioning-strategy: increase-if-necessary
 
   - package-ecosystem: npm
-    directory: "/plugins/enterpriseinfo"
-    schedule:
-      interval: daily
-    open-pull-requests-limit: 10
-    labels:
-      - dependencies
-    versioning-strategy: increase-if-necessary
-
-  - package-ecosystem: npm
     directory: "/plugins/errorlogs"
     schedule:
       interval: daily
