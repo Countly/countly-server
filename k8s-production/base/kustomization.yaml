@@ -1,0 +1,79 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: countly
+
+resources:
+- namespace-and-secrets.yaml
+- nginx-ingress-config.yaml
+- countly-api.yaml
+- countly-frontend.yaml
+- countly-ingestor.yaml
+- countly-aggregator.yaml
+- countly-jobserver.yaml
+- countly-clickhouse-writer.yaml
+- countly-clickhouse-updater.yaml
+- countly-ingress.yaml
+
+labels:
+- includeSelectors: true
+  pairs:
+    branch: newarchitecture
+
+images:
+- name: countly-unified
+  newName: gcr.io/countly-dev-313620/newarch/countly-unified@sha256:placeholder
+
+# Generator options for predictable names and overwrite protection
+generatorOptions:
+  disableNameSuffixHash: true
+  immutable: true
+  labels:
+    app: countly
+    managed-by: kustomize
+
+configMapGenerator:
+- name: countly-config
+  envs:
+  - configs/common.env
+- name: countly-api-config
+  envs:
+  - configs/api.env
+- name: countly-frontend-config
+  envs:
+  - configs/frontend.env
+- name: countly-ingestor-config
+  envs:
+  - configs/ingestor.env
+- name: countly-aggregator-config
+  envs:
+  - configs/aggregator.env
+- name: countly-jobserver-config
+  envs:
+  - configs/jobserver.env
+- name: countly-clickhouse-writer-config
+  envs:
+  - configs/clickhouse-writer.env
+- name: countly-clickhouse-updater-config
+  envs:
+  - configs/clickhouse-updater.env
+- name: countly-mongodb-config
+  envs:
+  - configs/mongodb.env
+- name: countly-clickhouse-config
+  envs:
+  - configs/clickhouse.env
+
+secretGenerator:
+- name: common-config
+  behavior: create
+  envs:
+  - secrets/common.env
+- name: mongodb-config
+  behavior: create
+  envs:
+  - secrets/mongodb.env
+- name: clickhouse-config
+  behavior: create
+  envs:
+  - secrets/clickhouse.env

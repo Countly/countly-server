@@ -1,0 +1,159 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: countly-api
+  namespace: countly
+  labels:
+    app: countly-api
+    branch: newarchitecture
+    component: api
+spec:
+  selector:
+    app: countly-api
+  ports:
+    - name: http
+      port: 3001
+      targetPort: 3001
+      protocol: TCP
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: countly-api
+  namespace: countly
+  labels:
+    app: countly-api
+    branch: newarchitecture
+    component: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: countly-api
+  template:
+    metadata:
+      labels:
+        app: countly-api
+        branch: newarchitecture
+        component: api
+    spec:
+      tolerations:
+      - key: countly
+        operator: Equal
+        value: dedicated
+        effect: NoSchedule
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - countly-api
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: countly-api
+        image: countly-unified
+        imagePullPolicy: Always
+        command: ["npm", "run", "start:api"]
+        ports:
+        - containerPort: 3001
+          name: http
+          protocol: TCP
+        
+        # Load all configuration from ConfigMaps and Secrets
+        envFrom:
+        - configMapRef:
+            name: countly-config
+        - configMapRef:
+            name: countly-api-config
+        - secretRef:
+            name: common-config
+        - secretRef:
+            name: mongodb-config
+        - secretRef:
+            name: clickhouse-config
+        
+        resources:
+          requests:
+            memory: "2.5Gi"
+            cpu: "1"
+          limits:
+            memory: "2.5Gi"
+            cpu: "1"
+        
+        # Keep original health checks
+        livenessProbe:
+          httpGet:
+            path: /o/ping
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 120
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /o/ping
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /o/ping
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        
+        # Keep original volume mounts
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: logs
+          mountPath: /opt/countly/log
+      
+      # Keep original volumes
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 120
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: countly-api-hpa
+  namespace: countly
+  labels:
+    app: countly-api
+    component: hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: countly-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

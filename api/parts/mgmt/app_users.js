@@ -6,7 +6,8 @@
 /** @lends module:api/parts/mgmt/app_users */
 var usersApi = {},
     common = require('./../../utils/common.js'),
-    plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.js'),
+    { ObjectId } = require('mongodb');
 var path = require('path');
 const fs = require('fs');
 var countlyFs = require('./../../utils/countlyFs.js');
@@ -447,7 +448,7 @@ usersApi.count = function(app_id, query, callback) {
 */
 usersApi.getUid = async function(app_id, callback) {
     try {
-        var result = await common.db.collection('apps').findOneAndUpdate({_id: common.db.ObjectID(app_id + "")}, {$inc: {seq: 1}}, {
+        var result = await common.db.collection('apps').findOneAndUpdate({_id: new ObjectId(app_id + "")}, {$inc: {seq: 1}}, {
             returnDocument: 'after',
             upsert: false
         });

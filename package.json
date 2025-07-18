@@ -18,7 +18,14 @@
   },
   "scripts": {
     "test": "grunt --verbose",
-    "prepare": "husky"
+    "prepare": "husky",
+    "start:api": "node api/api.js",
+    "start:frontend": "node frontend/express/app.js",
+    "start:aggregator": "node api/aggregator.js",
+    "start:ingestor": "node api/ingestor.js",
+    "start:jobserver": "node jobServer/index.js",
+    "start:clickhouse-writer": "node plugins/clickhouse/api/writer/index.js",
+    "start:clickhouse-updater": "node plugins/clickhouse/api/writer/updater.js"
   },
   "lint-staged": {
     "*.{js,vue}": [
@@ -29,7 +36,6 @@
     "@stylistic/eslint-plugin": "^3.1.0",
     "docdash": "^2.0.1",
     "eslint": "^8.56.0",
-    "eslint-plugin-vue": "^10.2.0",
     "grunt-contrib-watch": "1.1.0",
     "grunt-eslint": "24.3.0",
     "grunt-mocha-nyc": "1.0.3",

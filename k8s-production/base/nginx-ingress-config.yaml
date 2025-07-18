@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-ingress-config
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+data:
+  worker-processes: "auto"
+  worker-connections: "65535"
+  worker-rlimit-nofile: "131072"
+  keepalive-timeout: "120s"
+  keepalive-requests: "10000"
+  proxy-connect-timeout: "10s"
+  proxy-send-timeout: "120s"
+  proxy-read-timeout: "120s"
+  
+  proxy-buffering: "on"
+  proxy-buffers: "32 32k"
+  proxy-buffer-size: "64k"
+  proxy-max-temp-file-size: "2048m"
+  
+  upstream-keepalive-connections: "100"
+  upstream-keepalive-requests: "1000"
+  upstream-keepalive-timeout: "60s"
+  
+  client-max-body-size: "50m"
+  client-body-buffer-size: "1m"
+  client-body-timeout: "120s"
+  client-header-timeout: "120s"
+
+  server-name-hash-bucket-size: "256"
+  server-name-hash-max-size: "2048"
+  variables-hash-bucket-size: "512"
+  variables-hash-max-size: "4096"
+  map-hash-bucket-size: "512"
+  map-hash-max-size: "4096"
+  
+  log-format: '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $request_time $upstream_response_time $upstream_connect_time $upstream_header_time'
+  
+  access-log-off: "false"
+  
+  use-http2: "true"

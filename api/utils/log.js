@@ -164,6 +164,61 @@ const createLogger = (name, level) => {
         name,
         level: level || deflt,
         timestamp: pino.stdTimeFunctions.isoTime,
+        hooks: {
+            logMethod(args, method) {
+                if (args.length > 1) {
+                    // Create an object with all arguments in order
+                    const logObj = {};
+                    let messageArg = null;
+
+                    for (let i = 0; i < args.length; i++) {
+                        const arg = args[i];
+                        const key = `arg${i}`;
+
+                        if (typeof arg === 'object' && arg !== null) {
+                            if (arg instanceof Error) {
+                                // Store error with full stack trace
+                                logObj[key] = {
+                                    name: arg.name,
+                                    message: arg.message,
+                                    stack: arg.stack,
+                                    // Include any custom properties
+                                    ...Object.getOwnPropertyNames(arg).reduce((acc, prop) => {
+                                        if (!['name', 'message', 'stack'].includes(prop)) {
+                                            acc[prop] = arg[prop];
+                                        }
+                                        return acc;
+                                    }, {})
+                                };
+                            }
+                            else {
+                                // Store object natively
+                                logObj[key] = arg;
+                            }
+                        }
+                        else {
+                            // Store primitive values
+                            logObj[key] = arg;
+                        }
+
+                        // Use first string-like argument as message, or first argument if no strings
+                        if (messageArg === null && (typeof arg === 'string' || typeof arg === 'number')) {
+                            messageArg = String(arg);
+                        }
+                    }
+
+                    // If no string found, use the first argument as message
+                    if (messageArg === null && args.length > 0) {
+                        messageArg = String(args[0]);
+                    }
+
+                    method.apply(this, [logObj, messageArg || '']);
+                }
+                else {
+                    method.apply(this, args);
+                }
+            }
+        },
         formatters: {
             level: (label) => {
                 return { level: label.toUpperCase() };
@@ -194,13 +249,8 @@ const createLogFunction = (logger, name, level) => {
             const span = createLoggingSpan(name, LEVELS[level], message);
 
             try {
-                if (args.length === 1) {
-                    logger[LEVELS[level]](args[0]);
-                }
-                else {
-                    const msg = args.shift();
-                    logger[LEVELS[level]](msg, ...args);
-                }
+                // Pass all arguments directly to Pino - the logMethod hook will handle them
+                logger[LEVELS[level]](...args);
 
                 // Record metrics
                 recordMetrics(name, LEVELS[level]);
