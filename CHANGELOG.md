@@ -2,6 +2,10 @@
 Fixes:
 - [core] Fix user analytics widget chart
 - [core] Fix mongo connection url parsing
+- [crashes] Fix free session and free user calculation
+
+Enterprise Fixes:
+- [crash_symbolication] Remove auto symbolication setting
 
 ## Version 25.03.10
 Enterprise Fixes:
