@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: countly-clickhouse-updater
+  namespace: countly
+  labels:
+    app: countly-clickhouse-updater
+    branch: newarchitecture
+    component: clickhouse-updater
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: countly-clickhouse-updater
+  template:
+    metadata:
+      labels:
+        app: countly-clickhouse-updater
+        branch: newarchitecture
+        component: clickhouse-updater
+    spec:
+      tolerations:
+      - key: countly
+        operator: Equal
+        value: dedicated
+        effect: NoSchedule
+      containers:
+      - name: countly-clickhouse-updater
+        image: countly-unified
+        imagePullPolicy: Always
+        command: ["npm", "run", "start:clickhouse-updater"]
+        
+        # Load all configuration from ConfigMaps and Secrets
+        envFrom:
+        - configMapRef:
+            name: countly-config
+        - configMapRef:
+            name: countly-clickhouse-updater-config
+        - secretRef:
+            name: common-config
+        - secretRef:
+            name: mongodb-config
+        - secretRef:
+            name: clickhouse-config
+        
+        resources:
+          requests:
+            memory: "5Gi"
+            cpu: "1"
+          limits:
+            memory: "5Gi"
+            cpu: "1"
+        
+        # ClickHouse Updater doesn't have HTTP endpoints, so we use exec probes
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "ps aux | grep -v grep | grep 'clickhouse/api/writer/updater.js'"
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "ps aux | grep -v grep | grep 'clickhouse/api/writer/updater.js'"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "ps aux | grep -v grep | grep 'clickhouse/api/writer/updater.js'"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: logs
+          mountPath: /opt/countly/log
+      
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: countly-clickhouse-updater-hpa
+  namespace: countly
+  labels:
+    app: countly-clickhouse-updater
+    component: hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: countly-clickhouse-updater
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 85
