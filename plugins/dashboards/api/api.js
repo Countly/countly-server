@@ -1104,31 +1104,28 @@ plugins.setConfigs("dashboards", {
                         }
 
                         try {
+                            const dashboardToDelete = await common.db.collection("dashboards").findOne(filterCond);
+
+                            if (!dashboardToDelete) {
+                                return common.returnMessage(params, 404, "Dashboard not found");
+                            }
+
+                            // Collect widget IDs from the dashboard
+                            const widgetIds = (dashboardToDelete.widgets || []).map(w => common.db.ObjectID(w.$oid || w));
+
+                            // Delete widgets and linked reports
+                            for (const wid of widgetIds) {
+                                const widget = await common.db.collection("widgets").findOneAndDelete({ _id: wid });
+
+                                if (widget && widget.value) {
+                                    plugins.dispatch("/dashboard/widget/deleted", { params, widget: widget.value });
+                                }
+                            }
+
                             // Remove the dashboard
                             const result = await common.db.collection("dashboards").deleteOne(filterCond);
 
-                            if (result && result.deletedCount > 0) {
-                                // Collect widget IDs from the dashboard
-                                const widgetIds = (dashboard.widgets || []).map(w => common.db.ObjectID(w.$oid || w));
-
-                                // Delete widgets from the widgets collection
-                                if (widgetIds.length) {
-                                    const widgets = await common.db.collection("widgets").find({_id: {$in: widgetIds}}).toArray();
-                                    const drillReportIds = widgets.reduce((acc, widget) => {
-                                        if (Array.isArray(widget.drill_report)) {
-                                            acc.push(...widget.drill_report);
-                                        }
-                                        return acc;
-                                    }, []);
-
-                                    await common.db.collection("widgets").deleteMany({_id: {$in: widgetIds}});
-
-                                    // Delete drill_reports from the long_tasks collection
-                                    if (drillReportIds.length) {
-                                        await common.db.collection("long_tasks").deleteMany({_id: {$in: drillReportIds}});
-                                    }
-                                }
-
+                            if (result && result.deletedCount) {
                                 plugins.dispatch("/systemlogs", {params: params, action: "dashboard_deleted", data: dashboard});
                                 common.returnOutput(params, result);
                             }
