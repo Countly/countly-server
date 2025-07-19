@@ -1,3 +1,6 @@
+# TODO: cache geoip,
+# TODO: cache geocoder
+# TODO: if plugins grep hoooks compile v8-sandbox hooks with base as parent and then later copy to plugins/hooks/node_modules
 ###############################################################################
 # Stage 0 – base toolchain & node_modules (no full source tree)               #
 ###############################################################################
@@ -8,10 +11,10 @@ ARG GEOIP=empty
 ENV HUSKY=0
 
 # 0.1  core build & runtime libs (single APT layer for better cache)
-RUN --mount=type=cache,target=/var/cache/apt  \
+RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt  \
     apt-get update
 
-RUN --mount=type=cache,target=/var/cache/apt  \
+RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt  \
     apt-get install -y --no-install-recommends \
         # ── build toolchain ──
         ca-certificates wget gnupg git make gcc g++ build-essential sudo xz-utils curl \
@@ -29,7 +32,8 @@ RUN --mount=type=cache,target=/var/cache/apt  \
     rm -rf /var/lib/apt/lists/*
 
 # 0.2  build & install CPython 3.8.
-RUN set -eux; \
+RUN --mount=type=cache,id=python-src,target=/usr/src,sharing=locked \
+    set -eux; \
     cd /usr/src && \
     wget -q https://www.python.org/ftp/python/3.8.20/Python-3.8.20.tar.xz && \
     tar -xf Python-3.8.20.tar.xz && cd Python-3.8.20 && \
@@ -53,7 +57,7 @@ WORKDIR /opt/countly
 COPY plugins/ab-testing/api/bayesian/ ./plugins/ab-testing/api/bayesian/
 
 # 1.2 compile models only if plugin present in the list (with pip cache mount)
-RUN --mount=type=cache,target=/root/.cache/pip set -eux; \
+RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip set -eux; \
     # 0. Bail out if ab‑testing plugin is disabled
     echo "$COUNTLY_PLUGINS" | tr ',' '\n' | grep -qx ab-testing \
       || { echo "AB‑testing disabled"; \
@@ -94,11 +98,11 @@ COPY --from=ab-models /opt/countly/plugins/ab-testing/api/bayesian \
 # 2.2 node modules (core + plugins) – BuildKit cache for ~/.npm
 COPY package*.json ./
 COPY plugins/ ./plugins/
-RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --ignore-scripts && \
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm npm ci --omit=dev --ignore-scripts && \
     npm run prepare --if-present || true
-RUN --mount=type=cache,target=/root/.npm \
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
     find ./plugins -mindepth 1 -maxdepth 1 -type d -exec sh -c 'echo "Installing deps for {}" && cd "{}" && npm install --omit=dev --unsafe-perm=true' \;
-RUN --mount=type=cache,target=/root/.npm npm install argon2 --build-from-source --unsafe-perm=true
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm npm install argon2 --build-from-source --unsafe-perm=true
 
 # NOTE: No COPY . . here! JS source files aren't copied yet to keep cache tight
 
