@@ -686,6 +686,7 @@ var processToDrill = async function(params, drill_updates, callback) {
                     }
 
                     if (clickhouseData.length > 0) {
+                        //todo: start queue building here
                         const startTime = Date.now();
                         await clickhouseClient.insert({
                             table: 'drill_events',
