@@ -1,11 +1,13 @@
 # TODO: if plugins grep hoooks compile v8-sandbox hooks with base as parent and then later copy to plugins/hooks/node_modules
+
+# Global ARGs - available in all stages
+ARG COUNTLY_PLUGINS=mobile,web,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,alerts,times-of-day,onboarding,active_users,config-transfer,consolidate,data-manager,dashboards,sdk,guides,journey_engine,content,clickhouse,desktop,ab-testing
+ARG GEOIP=empty
+
 ###############################################################################
 # Stage 0 – base toolchain & node_modules (no full source tree)               #
 ###############################################################################
 FROM node:24-bookworm-slim AS base
-
-ARG COUNTLY_PLUGINS=mobile,web,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,alerts,times-of-day,onboarding,active_users,config-transfer,consolidate,data-manager,dashboards,sdk,guides,journey_engine,content,clickhouse,desktop,ab-testing
-ARG GEOIP=empty
 ENV HUSKY=0
 
 # 0.1  core build & runtime libs (single APT layer for better cache)
@@ -82,7 +84,7 @@ RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip set -eux; \
 # Stage 2 – node modules with compiled models                                 #
 ###############################################################################
 FROM base AS node-modules
-ARG GEOIP=empty
+ARG GEOIP
 WORKDIR /opt/countly
 
 # 1)copy compiled models first (before npm operations)
