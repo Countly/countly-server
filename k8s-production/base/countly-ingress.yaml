@@ -25,7 +25,8 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
 
-    # === CONNECTION POOLING & PERFORMANCE ===
+    # === SOCKET KEEPALIVE & CONNECTION REUSE ===
+    nginx.org/keepalive: "256"
     nginx.ingress.kubernetes.io/upstream-keepalive-connections: "256"
     nginx.ingress.kubernetes.io/upstream-keepalive-requests: "100000"
     nginx.ingress.kubernetes.io/upstream-keepalive-timeout: "60"
@@ -40,103 +41,17 @@ metadata:
     nginx.ingress.kubernetes.io/enable-metrics: "true"
     nginx.ingress.kubernetes.io/use-regex: "true"
     
-    # === GKE SPECIFIC OPTIMIZATIONS ===
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      # GKE Load Balancer headers
-      proxy_set_header X-Forwarded-Proto $scheme;
-      proxy_set_header X-Forwarded-Port $server_port;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Real-IP $remote_addr;
-      
-      # Additional performance headers
-      proxy_set_header Host $host;
-      proxy_set_header X-Original-URI $request_uri;
-      proxy_set_header X-Scheme $scheme;
-      
-      # Connection optimization
-      proxy_http_version 1.1;
-      proxy_set_header Connection "";
-      
-      # Cache control for dynamic content
-      add_header Cache-Control "no-cache, no-store, must-revalidate" always;
-      add_header Pragma "no-cache" always;
-      add_header Expires "0" always;
+    # === ADDITIONAL PERFORMANCE ===
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/proxy-set-headers: "ingress-nginx/custom-headers"
     
-
-    # === THROUGHPUT-OPTIMIZED SERVER CONFIGURATION ===
-    nginx.ingress.kubernetes.io/server-snippet: |
-      # High-volume ingestion optimization
-      location ~* ^/i/(bulk|feedback/input)$ {
-        # Disable access logging for high-volume endpoints to reduce I/O
-        access_log off;
-        
-        # Massive buffers for bulk operations
-        client_body_buffer_size 5m;
-        client_body_timeout 30s;
-        client_body_in_single_buffer on;
-        
-        # Aggressive proxy buffering
-        proxy_buffering on;
-        proxy_request_buffering on;
-        proxy_buffer_size 512k;
-        proxy_buffers 32 512k;
-        proxy_busy_buffers_size 1m;
-        proxy_temp_file_write_size 2m;
-        
-        # Fast upstream connections
-        proxy_connect_timeout 2s;
-        proxy_send_timeout 30s;
-        proxy_read_timeout 30s;
-        
-        # Connection optimization
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_socket_keepalive on;
-        
-        # Additional GKE optimizations for bulk
-        proxy_next_upstream error timeout http_502 http_503 http_504;
-        proxy_next_upstream_timeout 5s;
-        proxy_next_upstream_tries 2;
-      }
-      
-      # Standard ingestion endpoint optimization  
-      location = /i {
-        # Optimized buffers for single events
-        client_body_buffer_size 2m;
-        client_body_in_single_buffer on;
-        
-        proxy_buffering on;
-        proxy_request_buffering on;
-        proxy_buffer_size 256k;
-        proxy_buffers 32 256k;
-        proxy_busy_buffers_size 512k;
-        
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_socket_keepalive on;
-      }
-      
-      # API endpoint optimization
-      location ~* ^/(o|api) {
-        # Optimized for read operations
-        proxy_buffering on;
-        proxy_buffer_size 128k;
-        proxy_buffers 8 128k;
-        proxy_busy_buffers_size 256k;
-        
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_socket_keepalive on;
-      }
-      
-      # Block ping requests
-      if ($http_content_type = "text/ping") {
-        return 404;
-      }
+    # === BULK ENDPOINT OPTIMIZATION ===
+    nginx.ingress.kubernetes.io/client-body-timeout: "30"
+    nginx.ingress.kubernetes.io/client-header-timeout: "10"
 spec:
   ingressClassName: nginx
   rules:
-  - host: countly.example.com
+  - host: newarchitecture.count.ly
     http:
       paths:
       # Ingestor specific paths (high-volume data ingestion) - MUST come before /i/ prefix
