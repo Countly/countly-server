@@ -133,7 +133,7 @@ RUN rm -rf plugins/data_migration plugins/errorlogs && \
 
 # 3.3 build plugins.json and frontend assets
 RUN echo "$COUNTLY_PLUGINS" | tr ',' '\n' | awk 'BEGIN{print "["} {if(NR>1) printf ","; printf "\"%s\"", $0} END{print "]"}' > plugins/plugins.json && \
-    npx grunt dist-all && rm plugins/plugins.json
+    npx grunt dist-all
 
 # 3.4 strip test artefacts & caches
 RUN npm remove -y --no-save mocha nyc should supertest && \
