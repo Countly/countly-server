@@ -109,7 +109,7 @@ RUN --mount=type=cache,id=geonames-cache,target=/opt/countly/bin/offline-geocode
     node ./bin/offline-geocoder/scripts/download_geonames_data.js || true
 
 # 4) plugin manifests → deps
-COPY plugins/*/package*.json ./plugins/
+COPY plugins ./plugins
 RUN --mount=type=cache,id=npm-plugin-cache,target=/root/.npm,sharing=locked \
     find plugins -mindepth 2 -maxdepth 2 -name package.json \
          -execdir npm install --omit=dev --unsafe-perm=true \;
