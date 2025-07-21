@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongo-debug
+  namespace: countly
+spec:
+  restartPolicy: Never
+  containers:
+  - name: mongo-shell
+    image: mongo:8
+    command: ["sleep", "3600"]
+    env:
+    # MongoDB connection variables from the secret
+    - name: MONGO_HOST
+      value: "localhost"
+    - name: MONGO_PORT
+      value: "27017"
+    - name: MONGO_USER
+      value: "admin"
+    - name: MONGO_PASSWORD
+      value: ""
+    - name: MONGO_DB
+      value: "countly"
+    - name: REPLICA_SET
+      value: "rs0"

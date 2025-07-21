@@ -4,6 +4,9 @@ kind: Kustomization
 namespace: countly
 
 resources:
+# Custom headers for ingress
+- custom-headers-configmap.yaml
+# Countly resources
 - namespace-and-secrets.yaml
 - nginx-ingress-config.yaml
 - countly-api.yaml
@@ -22,12 +25,10 @@ labels:
 
 images:
 - name: countly-unified
-  newName: gcr.io/countly-dev-313620/newarch/countly-unified@sha256:placeholder
+  newName: gcr.io/countly-dev-313620/newarch/countly-unified@sha256:b2ec10b6943c5c7dc726d41c37111c4a5a9df17d0119dd4fe3f496103b04ce93
 
-# Generator options for predictable names and overwrite protection
+# Generator options  
 generatorOptions:
-  disableNameSuffixHash: true
-  immutable: true
   labels:
     app: countly
     managed-by: kustomize
@@ -64,16 +65,18 @@ configMapGenerator:
   envs:
   - configs/clickhouse.env
 
-secretGenerator:
-- name: common-config
-  behavior: create
-  envs:
-  - secrets/common.env
-- name: mongodb-config
-  behavior: create
-  envs:
-  - secrets/mongodb.env
-- name: clickhouse-config
-  behavior: create
-  envs:
-  - secrets/clickhouse.env
+# Secrets are created manually to have full control over environment variable names
+# uncomment for the first run
+#secretGenerator:
+# - name: common-config
+#   behavior: create
+#   envs:
+#   - secrets/common.env
+# - name: mongodb-config
+#   behavior: create
+#   envs:
+#   - secrets/mongodb.env
+# - name: clickhouse-config
+#   behavior: create
+#   envs:
+#   - secrets/clickhouse.env

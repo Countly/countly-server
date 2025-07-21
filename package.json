@@ -14,10 +14,11 @@
     "url": "git://github.com/countly/countly-server.git"
   },
   "engines": {
-    "node": "^20.0.0 || ^24.0.0"
+    "node": "^22.0.0 || ^24.0.0"
   },
   "scripts": {
     "test": "grunt --verbose",
+    "test:unit": "TODO_ADD_UNIT_TESTS",
     "prepare": "husky",
     "start:api": "node api/api.js",
     "start:frontend": "node frontend/express/app.js",

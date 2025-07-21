@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-headers
+  namespace: ingress-nginx
+  labels:
+    app: nginx-ingress
+    component: custom-headers
+data:
+  X-Forwarded-Proto: $scheme
+  X-Forwarded-Port: $server_port
+  X-Real-IP: $remote_addr
+  X-Scheme: $scheme
+  Connection: ""
