@@ -30,6 +30,8 @@ spec:
         imagePullPolicy: Always
         command: ["npm", "run", "start:clickhouse-writer"]
         
+        # This service runs in API mode. It loads API-specific environment variables
+        # (e.g., COUNTLY_CONFIG_API_*) in addition to global ones (COUNTLY_CONFIG__*).
         # Load all configuration from ConfigMaps and Secrets
         envFrom:
         - configMapRef:
