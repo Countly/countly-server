@@ -3,6 +3,7 @@ Fixes:
 - [core] Fix user analytics widget chart
 - [core] Fix mongo connection url parsing
 - [crashes] Fix free session and free user calculation
+- [dashboards] Delete associated widgets and reports when a dashboard is removed
 
 Enterprise Fixes:
 - [crash_symbolication] Remove auto symbolication setting
