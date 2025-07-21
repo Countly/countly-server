@@ -542,7 +542,7 @@
                 state: {
                     selectedMenuItem: {},
                     guidesButton: '',
-                    showMainMenu: true,
+                    showMainMenu: window.localStorage.getItem('countlySidebarMenuVisible') === "false" ? false : true,
                 },
                 getters: {
                     getSelectedMenuItem: function(state) {
@@ -560,12 +560,11 @@
                         state.guidesButton = payload;
                     },
                     toggleMainMenu(state, show) {
-                        if (typeof show === "boolean") {
-                            state.showMainMenu = show;
+                        if (typeof show !== "boolean") {
+                            show = !state.showMainMenu;
                         }
-                        else {
-                            state.showMainMenu = !state.showMainMenu;
-                        }
+                        state.showMainMenu = show;
+                        window.localStorage.setItem('countlySidebarMenuVisible', show);
                     }
                 },
                 actions: {
