@@ -4,6 +4,9 @@ kind: Kustomization
 namespace: countly
 
 resources:
+# Custom headers for ingress
+- custom-headers-configmap.yaml
+# Countly resources
 - namespace-and-secrets.yaml
 - nginx-ingress-config.yaml
 - countly-api.yaml
@@ -22,7 +25,7 @@ labels:
 
 images:
 - name: countly-unified
-  newName: gcr.io/countly-dev-313620/newarch/countly-unified@sha256:placeholder
+  newName: gcr.io/countly-dev-313620/newarch/countly-unified@sha256:b874a556410648e070fd22e0292fd5dcb12569795c086b9d419b297e526750de
 
 # Generator options for predictable names and overwrite protection
 generatorOptions:
