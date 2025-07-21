@@ -112,7 +112,7 @@ RUN --mount=type=cache,id=geonames-cache,target=/opt/countly/bin/offline-geocode
 COPY plugins/*/package*.json ./plugins/
 RUN --mount=type=cache,id=npm-plugin-cache,target=/root/.npm,sharing=locked \
     find plugins -mindepth 2 -maxdepth 2 -name package.json \
-         -execdir npm install --omit=dev --unsafe-perm=true;
+         -execdir npm install --omit=dev --unsafe-perm=true \;
 
  # NOTE: No COPY . . here! JS source files aren't copied yet to keep cache tight
 
