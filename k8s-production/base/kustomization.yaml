@@ -8,6 +8,7 @@ resources:
 - custom-headers-configmap.yaml
 # Countly resources
 - namespace-and-secrets.yaml
+- docker-registry-secret.yaml
 - nginx-ingress-config.yaml
 - countly-api.yaml
 - countly-frontend.yaml
@@ -64,6 +65,13 @@ configMapGenerator:
 - name: countly-clickhouse-config
   envs:
   - configs/clickhouse.env
+- name: observability-config-otlp
+  envs:
+  - configs/countly-otlp.env
+
+# Apply observability patches to deployments
+patches:
+- path: observability-patches.yaml
 
 # Secrets are created manually to have full control over environment variable names
 # uncomment for the first run
@@ -80,3 +88,8 @@ configMapGenerator:
 #   behavior: create
 #   envs:
 #   - secrets/clickhouse.env
+# - name: docker-pull-secret
+#   type: kubernetes.io/dockerconfigjson
+#   behavior: create
+#   envs:
+#   - secrets/docker-registry.env
