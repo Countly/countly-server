@@ -108,6 +108,27 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
 RUN --mount=type=cache,id=geonames-cache,target=/opt/countly/bin/offline-geocoder/data \
     node ./bin/offline-geocoder/scripts/download_geonames_data.js || true
 
+# 3.1) OpenTelemetry setup - Always install for production readiness
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
+    echo "Installing OpenTelemetry dependencies..." && \
+    npm install --omit=dev \
+        @opentelemetry/api \
+        @opentelemetry/sdk-node \
+        @opentelemetry/auto-instrumentations-node \
+        @opentelemetry/exporter-trace-otlp-http \
+        @opentelemetry/exporter-metrics-otlp-http \
+        @opentelemetry/instrumentation-http \
+        @opentelemetry/instrumentation-express \
+        @opentelemetry/instrumentation-mongodb \
+        @opentelemetry/instrumentation-fs \
+        @opentelemetry/instrumentation-pino \
+        @opentelemetry/instrumentation-runtime-node \
+        @opentelemetry/resources \
+        @opentelemetry/semantic-conventions \
+        @opentelemetry/sdk-metrics \
+        @opentelemetry/sdk-trace-base \
+        @opentelemetry/core
+
 # 4) plugin manifests → deps
 COPY plugins ./plugins
 RUN --mount=type=cache,id=npm-plugin-cache,target=/root/.npm,sharing=locked \
@@ -125,6 +146,15 @@ WORKDIR /opt/countly
 
 # 3.1 copy the rest of the source tree *now* (after model compilation)
 COPY . .
+
+# 3.1.1 copy OpenTelemetry files from build context
+RUN if [ -f observability_scripts/otel.js ]; then \
+        echo "Copying OpenTelemetry files..."; \
+        cp observability_scripts/otel.js api/utils/otel.js; \
+        cp observability_scripts/otelexpress.js frontend/express/otel.js; \
+    else \
+        echo "Observability files not found, skipping..."; \
+    fi
 
 # 3.2 remove unsupported plugins & copy default configs
 RUN rm -rf plugins/data_migration plugins/errorlogs && \
@@ -178,5 +208,17 @@ ENV COUNTLY_CONFIG_API_API_HOST="0.0.0.0" \
 RUN mkdir -p log data .cache && chown -R 1001:0 . && chmod -R g=u .
 
 EXPOSE 3001 3010 6001
+
+# Create entrypoint script for proper NODE_OPTIONS handling
+RUN echo '#!/bin/sh\n\
+# Prepend OTEL require if script exists and OTEL is not disabled\n\
+if [ -f /opt/countly/api/utils/otel.js ] && [ "${OTEL_ENABLED}" != "false" ]; then\n\
+  export NODE_OPTIONS="--require=/opt/countly/api/utils/otel.js ${NODE_OPTIONS}"\n\
+fi\n\
+# Execute the original command\n\
+exec "$@"' > /usr/local/bin/docker-entrypoint.sh && \
+chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 USER 1001:0
 CMD ["npm", "run", "start:api"]

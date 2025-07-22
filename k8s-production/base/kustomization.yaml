@@ -8,6 +8,7 @@ resources:
 - custom-headers-configmap.yaml
 # Countly resources
 - namespace-and-secrets.yaml
+- docker-registry-secret.yaml
 - nginx-ingress-config.yaml
 - countly-api.yaml
 - countly-frontend.yaml
@@ -80,3 +81,8 @@ configMapGenerator:
 #   behavior: create
 #   envs:
 #   - secrets/clickhouse.env
+# - name: docker-pull-secret
+#   type: kubernetes.io/dockerconfigjson
+#   behavior: create
+#   envs:
+#   - secrets/docker-registry.env
