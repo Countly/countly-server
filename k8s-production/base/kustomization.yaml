@@ -65,13 +65,6 @@ configMapGenerator:
 - name: countly-clickhouse-config
   envs:
   - configs/clickhouse.env
-- name: observability-config-otlp
-  envs:
-  - configs/countly-otlp.env
-
-# Apply observability patches to deployments
-patches:
-- path: observability-patches.yaml
 
 # Secrets are created manually to have full control over environment variable names
 # uncomment for the first run
