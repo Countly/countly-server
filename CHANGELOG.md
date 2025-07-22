@@ -4,9 +4,11 @@ Fixes:
 - [core] Fix mongo connection url parsing
 - [crashes] Fix free session and free user calculation
 - [dashboards] Delete associated widgets and reports when a dashboard is removed
+- [star-rating] Fix widget close post message
 
 Enterprise Fixes:
 - [crash_symbolication] Remove auto symbolication setting
+- [surveys] Fix widget close post message
 
 ## Version 25.03.10
 Enterprise Fixes:
