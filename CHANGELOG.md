@@ -4,9 +4,14 @@ Fixes:
 - [core] Fix mongo connection url parsing
 - [crashes] Fix free session and free user calculation
 - [dashboards] Delete associated widgets and reports when a dashboard is removed
+- [star-rating] Fix widget close post message
 
 Enterprise Fixes:
 - [crash_symbolication] Remove auto symbolication setting
+- [surveys] Fix widget close post message
+- [drill] Fix drill meta get filter
+- [flows] Nullchecks on $size when calculating flows.
+
 
 Dependencies:
 - Bump nodemailer from 7.0.3 to 7.0.5
