@@ -2,10 +2,15 @@
 Fixes:
 - [core] Fix user analytics widget chart
 - [core] Fix mongo connection url parsing
+- [crashes] Fix free session and free user calculation
+- [dashboards] Delete associated widgets and reports when a dashboard is removed
 - [remote-config] Fix condition matching with complex conditions
 
 Features:
 - [remote-config] Add support for comparing newer/older app version in conditions
+
+Enterprise Fixes:
+- [crash_symbolication] Remove auto symbolication setting
 
 
 ## Version 25.03.10
