@@ -1,11 +1,32 @@
 ## Version 25.03.XX
 Fixes:
-- [active_directory] Fix for reading azure application tenant id from config
-- [core] Set up default headers for common return methods
+- [core] Fix user analytics widget chart
+- [core] Fix mongo connection url parsing
+- [crashes] Fix free session and free user calculation
+- [dashboards] Delete associated widgets and reports when a dashboard is removed
 
 Enterprise Fixes:
+- [crash_symbolication] Remove auto symbolication setting
+
+## Version 25.03.10
+Enterprise Fixes:
+- [okta] Fix body parser middleware version mismatch causing OKTA authentication break
+
+## Version 25.03.9
+Features:
+- [core] Added support for prerelease and build fields in app version parsing
+
+Fixes:
+- [core] Set up default headers for common return methods
+- [star-rating] Fix widget close button
+
+Enterprise Fixes:
+- [active_directory] Fix for reading azure application tenant id from config
+- [active_directory] Fix for handling azure ad callback properly when request body empty
 - [drill] Disabling the view user profiles button on drill for queries going to the report manager
+- [drill] Fixed typo issue while getting segment values in drill widgets
 - [journeys] Fixed the issue where events added in Journey couldn't have their visibility updated in Data Manager plugin
+- [surveys] Fix widget close button
 
 ## Version 25.03.8
 Fixes:
