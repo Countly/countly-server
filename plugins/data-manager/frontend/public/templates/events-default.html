@@ -43,7 +43,7 @@
                         <a v-bind:href="'#/manage/data-manager/events/events/' + JSON.stringify(rowScope.row.key)" @click="onRowClick(rowScope.row)" class="cly-vue-data-manager__clickable bu-is-clickable color-dark-blue-100">
                             <div :data-test-id="'datatable-manage-events-events-event-name-' + rowScope.$index">{{unescapeHtml(rowScope.row.name || rowScope.row.key || rowScope.row.e)}}</div>
                         </a>
-                        <div v-if="rowScope.row.audit && rowScope.row.audit.userName" class="text-small color-cool-gray-50">Last modified by {{rowScope.row.audit.userName}}</div>
+                        <div v-if="rowScope.row.audit && rowScope.row.audit.userName" :data-test-id="'datatable-manage-events-last-modified-by-label-' + rowScope.$index" class="text-small color-cool-gray-50">Last modified by {{rowScope.row.audit.userName}}</div>
                         <div>
                             <span v-if="isDrill" class="tag-container">
                                 <span v-bind:class="statusClassObject(rowScope.row.status)" class="bu-tag bu-mt-1"> 
@@ -51,10 +51,10 @@
                                     <span :data-test-id="'datatable-manage-events-events-status-' + rowScope.$index">{{rowScope.row.status}}</span>
                                 </span>
                             </span>
-                            <span v-if="rowScope.row.is_visible === false" class="cly-vue-data-manager__hidden-icon">
+                            <span v-if="rowScope.row.is_visible === false" :data-test-id="'datatable-manage-events-events-icon-eye-hidden-' + rowScope.$index" class="cly-vue-data-manager__hidden-icon">
                                 <i class="ion-eye-disabled"></i>
                             </span>
-                            <span v-else class="cly-vue-data-manager__hidden-icon"><i class="ion-eye" :data-test-id="'datatable-manage-events-events-ion-eye-' + rowScope.$index"></i></ion-icon></span>
+                            <span v-else class="cly-vue-data-manager__hidden-icon"><i class="ion-eye" :data-test-id="'datatable-manage-events-events-icon-eye-visible-' + rowScope.$index"></i></ion-icon></span>
                             <span v-if="eventTransformationMap && eventTransformationMap[rowScope.row.key]" class="cly-vue-data-manager__transform-icon">
                                 <svg width="12px" height="10px" viewBox="0 0 12 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                                     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -99,7 +99,7 @@
                             <div v-if="rowScope.row && rowScope.row.lts">
                                 <div>{{rowScope.row.lastTriggerDate || i18n('data-manager.empty-placeholder') }}</div>
                             </div>
-                            <div v-else>
+                            <div v-else :data-test-id="'datatable-manage-events-events-last-triggered-value-' + rowScope.$index">
                                 {{ i18n('data-manager.empty-placeholder') }}
                             </div>
                         </template>
@@ -186,10 +186,10 @@
     :cancelButtonLabel="i18n('common.no-dont-delete')" 
     :title="i18n('data-manager.delete-events')">
         <template slot-scope="scope">
-            {{i18n('data-manager.delete-event-permanently')}}<br/> 
-            <small class="color-red-100">{{ i18n('data-manager.delete-event-warning') }}</small>
+            <div data-test-id="delete-event-popup-delete-event-permanently-question-label">{{i18n('data-manager.delete-event-permanently')}}<br/></div>
+            <small data-test-id="delete-popup-delete-event-warning-label" class="color-red-100">{{ i18n('data-manager.delete-event-warning') }}</small>
             <ul>
-             <li v-for="ev in deleteQueue"> {{ev.key || ev.e || ev.name}}</li>
+             <li v-for="ev in deleteQueue" data-test-id="delete-event-popup-event-key"> {{ev.key || ev.e || ev.name}}</li>
             </ul>
         </template>
     </cly-confirm-dialog>

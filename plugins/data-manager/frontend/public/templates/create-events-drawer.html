@@ -8,15 +8,17 @@
     <template v-slot:default="drawerScope">
         <cly-form-step id="create-event-form" name="First Step">
 
-            <cly-form-field :label="i18n('data-manager.event.name')">
+            <cly-form-field test-id="event-drawer-event-name-label" :label="i18n('data-manager.event.name')">
                     <el-input
+                        test-id="event-drawer-event-name-input"
                         v-model="drawerScope.editedObject.name"
                         :placeholder="i18n('data-manager.event.name')">
                     </el-input>
             </cly-form-field>
 
-            <cly-form-field :label="i18n('data-manager.events.key')" rules="required">
+            <cly-form-field test-id="event-drawer-event-key-label" :label="i18n('data-manager.events.key')" rules="required">
                 <el-input
+                test-id="event-drawer-event-key-input"
                 :disabled="drawerScope.editedObject.isEditMode"
                 class="bu-mb-3" 
                 v-model="drawerScope.editedObject.key" 
@@ -24,10 +26,11 @@
 			    </el-input>
             </cly-form-field>
 
-            <div class="text-big text-heading bu-mt-2 bu-mb-1">{{i18n('data-manager.events.event-details')}}</div>
+            <div data-test-id="event-drawer-event-details-label" class="text-big text-heading bu-mt-2 bu-mb-1">{{i18n('data-manager.events.event-details')}}</div>
 
-            <cly-form-field :label="i18n('data-manager.events.event-description')" :optional="true">
+            <cly-form-field test-id="event-drawer-event-desc-label" :label="i18n('data-manager.events.event-description')" :optional="true">
                 <el-input
+                data-test-id="event-drawer-event-desc-input"
                 type="textarea"
                 :rows="2"
                 :placeholder="i18n('data-manager.events.enter-event-description')"
@@ -36,8 +39,9 @@
             </cly-form-field>
 
             <div v-if="isDrill">
-                <cly-form-field :label="i18n('data-manager.category')" :optional="true">
+                <cly-form-field test-id="event-drawer-category-label" :label="i18n('data-manager.category')" :optional="true">
                     <cly-select-x
+                        test-id="event-drawer-category-dropdown"
                         class="bu-pt-1"
                         :search-placeholder="i18n('data-manager.search-category')"
                         :placeholder="i18n('data-manager.uncategorized')" 
@@ -52,41 +56,44 @@
 
             <div v-if='drawerScope.editedObject.isEditMode'>
                 <div v-if="isDrill">
-                    <cly-form-field :label="i18n('data-manager.status')">
-                        <el-select class="bu-pt-1" v-model="drawerScope.editedObject.status" >
-                            <el-option v-for="item in statusList" :key="item.value" :value="item.value">
+                    <cly-form-field test-id="event-drawer-status-dropdown-label" :label="i18n('data-manager.status')">
+                        <el-select test-id="event-drawer-status-dropdown" class="bu-pt-1" v-model="drawerScope.editedObject.status" >
+                            <el-option v-for="item in statusList" test-id="event-drawer-status-dropdown" :key="item.value" :value="item.value">
                             </el-option>
                         </el-select>
                     </cly-form-field>
                 </div>
 
-                <cly-form-field :label="i18n('data-manager.visibility')">
-                    <el-select class="bu-pt-1" v-model="drawerScope.editedObject.is_visible" >
-                        <el-option :value=true :label="i18n('data-manager.visible')">
+                <cly-form-field test-id="event-drawer-visibility-dropdown-label" :label="i18n('data-manager.visibility')">
+                    <el-select test-id="event-drawer-visibility-dropdown" class="bu-pt-1" v-model="drawerScope.editedObject.is_visible" >
+                        <el-option test-id="event-drawer-visibility-dropdown" :value=true :label="i18n('data-manager.visible')">
                         </el-option>
-                        <el-option :value=false :label="i18n('data-manager.hidden')">
+                        <el-option test-id="event-drawer-visibility-dropdown" :value=false :label="i18n('data-manager.hidden')">
                         </el-option>
                     </el-select>
                 </cly-form-field>
 
-                <div class="text-big text-heading bu-mt-4 bu-pt-1">{{i18n('data-manager.events.event-properties')}}</div>
+                <div data-test-id="event-drawer-event-properties-label" class="text-big text-heading bu-mt-4 bu-pt-1">{{i18n('data-manager.events.event-properties')}}</div>
 
-                <cly-form-field class="bu-pt-0" :label="i18n('data-manager.display-name-for-count')" :optional="true" :subheading="i18n('data-manager.display-name-for-count-subheading')">
+                <cly-form-field test-id="event-drawer-display-name-for-count-label" class="bu-pt-0" :label="i18n('data-manager.display-name-for-count')" :optional="true" :subheading="i18n('data-manager.display-name-for-count-subheading')">
                     <el-input
+                    test-id="event-drawer-display-name-for-count-input"
                     v-model="drawerScope.editedObject.count" 
 			        :placeholder="i18n('data-manager.count')">
 			        </el-input>
                 </cly-form-field>
 
-                <cly-form-field :label="i18n('data-manager.display-name-for-sum')" :optional="true" :subheading="i18n('data-manager.display-name-for-sum')">
+                <cly-form-field test-id="event-drawer-display-name-for-sum-label" :label="i18n('data-manager.display-name-for-sum')" :optional="true" :subheading="i18n('data-manager.display-name-for-sum')">
                     <el-input
+                    test-id="event-drawer-display-name-for-sum-input"
                     v-model="drawerScope.editedObject.sum" 
                     :placeholder="i18n('data-manager.sum')">
                     </el-input>
                 </cly-form-field>
 
-                <cly-form-field :label="i18n('data-manager.display-name-for-duration')" :optional="true" :subheading="i18n('data-manager.display-name-for-duration')">
+                <cly-form-field test-id="event-drawer-display-name-for-duration-label" :label="i18n('data-manager.display-name-for-duration')" :optional="true" :subheading="i18n('data-manager.display-name-for-duration')">
                     <el-input
+                    test-id="event-drawer-display-name-for-duration-input"
                     v-model="drawerScope.editedObject.dur" 
                     :placeholder="i18n('data-manager.duration')">
                     </el-input>
@@ -94,17 +101,17 @@
             </div>
 
             <div v-if="drawerScope.editedObject.isEditMode">
-                <cly-form-field :label="i18n('data-manager.omit-segments')" 
+                <cly-form-field test-id="event-drawer-omit-segments-dropdown-label" :label="i18n('data-manager.omit-segments')" 
                 :tooltip="i18n('data-manager.omit-segments.tooltip')">
-                    <el-select multiple v-model="omitList" >
-                        <el-option v-for="item in drawerScope.editedObject.segments" :key="item.name" :value="item.name">
+                    <el-select test-id="event-drawer-omit-segments-dropdown" multiple v-model="omitList" >
+                        <el-option v-for="item in drawerScope.editedObject.segments" test-id="event-drawer-omit-segments-dropdown" :key="item.name" :value="item.name">
                         </el-option>
                     </el-select>
                 </cly-form-field>
             </div>
 
             <div v-if="isDrill" class="bu-mt-1">
-                <div class="text-big text-heading bu-pt-4">{{i18n('data-manager.event-segmentation')}}</div>
+                <div data-test-id="event-drawer-event-segmentation-label" class="text-big text-heading bu-pt-4">{{i18n('data-manager.event-segmentation')}}</div>
                 <data-manager-create-segment
                 ref="segments"
 			    :max-segments="20"
