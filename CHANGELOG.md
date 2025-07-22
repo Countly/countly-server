@@ -9,6 +9,8 @@ Fixes:
 Enterprise Fixes:
 - [crash_symbolication] Remove auto symbolication setting
 - [surveys] Fix widget close post message
+- [drill] Fix drill meta get filter
+
 
 ## Version 25.03.10
 Enterprise Fixes:
