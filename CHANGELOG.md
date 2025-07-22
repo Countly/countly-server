@@ -8,6 +8,17 @@ Fixes:
 Enterprise Fixes:
 - [crash_symbolication] Remove auto symbolication setting
 
+Dependencies:
+- Bump nodemailer from 7.0.3 to 7.0.5
+- Bump supertest from 7.1.1 to 7.1.3
+- Bump sharp from 0.34.2 to 0.34.3
+- Bump puppeteer from 24.10.1 to 24.14.0
+- Bump form-data from 4.0.0 to 4.0.4 in /plugins/hooks
+- Bump eslint-plugin-vue from 10.2.0 to 10.3.0
+- Bump on-headers and express-session
+
+
+
 ## Version 25.03.10
 Enterprise Fixes:
 - [okta] Fix body parser middleware version mismatch causing OKTA authentication break
