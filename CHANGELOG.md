@@ -7,6 +7,7 @@ Fixes:
 
 Enterprise Fixes:
 - [crash_symbolication] Remove auto symbolication setting
+- [drill] Fix drill meta get filter
 
 ## Version 25.03.10
 Enterprise Fixes:
