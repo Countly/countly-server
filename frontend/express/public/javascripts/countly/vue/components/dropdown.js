@@ -580,7 +580,7 @@
             handleMenuItemClick: function(command, instance) {
                 if (!this.disabled) {
                     this.$emit('command', command, instance);
-                    this.$refs.dropdown.handleClose();
+                    this.$refs?.dropdown?.handleClose();
                 }
             }
         },

@@ -160,10 +160,11 @@ class Trigger extends Validatable {
 class PlainTrigger extends Trigger {
     /**
      * Constructor
-     * 
+     *
      * @param {object}              data        filter data
      * @param {boolean}             data.tz     in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
      * @param {number}              data.sctz   scheduler's timezone offset in minutes (GMT +3 is "-180")
+     * @param {boolean}             data.reschedule allow rescheduling to next day when sending on "time" is not an option
      * @param {boolean}             delayed     true if audience calculation should be done right before sending the message
      */
     constructor(data) {
@@ -180,12 +181,13 @@ class PlainTrigger extends Trigger {
             tz: {type: 'Boolean', required: false},
             sctz: {type: 'Number', required: false},
             delayed: {type: 'Boolean', required: false},
+            reschedule: {type: 'Boolean', required: false},
         });
     }
 
     /**
      * Getter for sctz
-     * 
+     *
      * @returns {number|undefined} in case tz = true, this is scheduler's timezone offset in minutes (GMT +3 is "-180")
      */
     get sctz() {
@@ -194,7 +196,7 @@ class PlainTrigger extends Trigger {
 
     /**
      * Set scheduler's timezone offset, effectively setting `tz` prop as well
-     * 
+     *
      * @param {number|undefined}  sctz  scheduler's timezone offset in seconds (GMT +3 = `-180`)
      */
     set sctz(sctz) {
@@ -240,6 +242,29 @@ class PlainTrigger extends Trigger {
             delete this._data.delayed;
         }
     }
+
+    /**
+     * Getter for reschedule
+     *
+     * @returns {boolean} allow rescheduling to next day when sending on "time" is not an option
+     */
+    get reschedule() {
+        return this._data.reschedule || false;
+    }
+
+    /**
+     * Setter for reschedule
+     *
+     * @param {boolean|undefined} reschedule allow rescheduling to next day when sending on "time" is not an option
+     */
+    set reschedule(reschedule) {
+        if (reschedule !== null && reschedule !== undefined) {
+            this._data.reschedule = reschedule;
+        }
+        else {
+            delete this._data.reschedule;
+        }
+    }
 }
 
 /**
@@ -248,7 +273,7 @@ class PlainTrigger extends Trigger {
 class AutoTrigger extends Trigger {
     /**
      * Constructor
-     * 
+     *
      * @param {object|null}     data            filter data
      * @param {Date}            data.end        message end date (don't send anything after this date, set status to Stopped)
      * @param {boolean}         data.actuals    whether to use server calculation date (false) or event/cohort entry date for scheduling (true)

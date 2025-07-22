@@ -6,6 +6,7 @@
   row-class-name="bu-is-clickable"
   :rows="widgets"
   test-id="ratings-widgets-data-table"
+  :tracked-fields="widgetTableTrackedFields"
   width="100%"
   @row-click="goWidgetDetail"
 >
@@ -24,7 +25,7 @@
           :disabled="!canUserUpdate"
           :test-id="'ratings-widgets-data-table-status-' + rowScope.$index"
           :value="rowScope.row.status"
-          @change="$emit('set-status', rowScope.row, !rowScope.row.status)"
+          @click.native.stop
           @input="scope.patch(rowScope.row, { status: !rowScope.row.status})"
         />
       </template>
@@ -98,7 +99,7 @@
         column-key="ratingsCount"
         :label="i18n('feedback.responses')"
         min-width="130"
-        prop="responses"
+        prop="ratingsCount"
         sortable="true"
       >
         <template
@@ -119,7 +120,7 @@
         column-key="ratingScore"
         :label="i18n('feedback.rating-score')"
         min-width="150"
-        prop="rating_score"
+        prop="ratingScore"
         sortable="true"
       >
         <template
@@ -155,5 +156,13 @@
         </template>
       </el-table-column>
     </template>
+  </template>
+  <template  v-slot:bottomline="scope">
+    <cly-diff-helper
+      v-loading=loading
+      :diff="scope.diff"
+      @discard="scope.unpatch()"
+      @save="bulkUpdateTableData(scope)"
+    />
   </template>
 </cly-datatable-n>

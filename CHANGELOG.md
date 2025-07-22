@@ -1,5 +1,33 @@
-## Version 24.05.x
+## Version 24.05.XX
+Fixes:
+- [core] Fix mongo connection url parsing
+- [dashboards] Delete associated widgets and reports when a dashboard is removed
+
+## Version 24.05.34
+Enterprise Fixes:
+- [drill] Fixed typo issue while getting segment values in drill widgets
+
+## Version 24.05.33
+Fixes:
+- [emails] [puppeteer] [fix] Allow chrome to launch multiple instances
+
+
+## Version 24.05.32
+Enterprise Fixes:
+- [active-users] Fixed bug related to selecting calculation ranges. As a result, some dates were previously calculated on incomplete data set.
+
+
+## Version 24.05.31
+Fixes:
 - [feedback] Uniformize drawer internal name input texts
+- [feedback] Uniformize feedback widgets status tag
+- [star-rating] Allow bulk update of widget status
+- [star-rating] Fix rating score and responses table sorting
+- [UI] Remove white background from input character amount suffix
+
+Enterprise Fixes:
+ -  [retention] Fixed report loading 
+
 
 ## Version 24.05.30
 Features:
@@ -18,7 +46,7 @@ Fixes:
 ## Version 24.05.28
 Enterprise Fixes:
 - [cohorts] Fixed issue with combining multiple cohorts
-  
+
 ## Version 24.05.27
 Fixes:
 - [crashes] Remove memory addresses from stack trace grouping
@@ -78,7 +106,7 @@ Enterprise fixes:
 - [drill] [license] Update license loader to enable supplying db client
 - [users] Format data points displayed in user sidebar
 - [cohorts] Unescape drill texts in cohort component
-   
+
 Dependencies:
 - Bump fs-extra from 11.2.0 to 11.3.0
 - Bump nodemailer from 6.9.16 to 6.10.0
