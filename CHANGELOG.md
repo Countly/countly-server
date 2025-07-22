@@ -10,6 +10,7 @@ Enterprise Fixes:
 - [crash_symbolication] Remove auto symbolication setting
 - [surveys] Fix widget close post message
 - [drill] Fix drill meta get filter
+- [flows] Nullchecks on $size when calculating flows.
 
 
 ## Version 25.03.10
