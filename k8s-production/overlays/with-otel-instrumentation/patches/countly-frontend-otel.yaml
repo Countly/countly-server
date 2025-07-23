@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: countly-frontend
+  namespace: countly
+spec:
+  template:
+    spec:
+      containers:
+      - name: countly-frontend
+        envFrom:
+        - configMapRef:
+            name: observability-config-otlp
+        env:
+        - name: OTEL_SERVICE_NAME
+          value: "countly-frontend"
+        # Common OTEL configuration
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          value: "http/protobuf"
+        - name: OTEL_TRACES_EXPORTER
+          value: "otlp"
+        - name: OTEL_METRICS_EXPORTER
+          value: "otlp"
+        - name: OTEL_LOGS_EXPORTER
+          value: "otlp"
+        - name: OTEL_NODE_RESOURCE_DETECTORS
+          value: "env,host,os,process,container"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.namespace=countly,deployment.environment=production"
+        - name: OTEL_TRACES_SAMPLER
+          value: "parentbased_traceidratio"
+        - name: OTEL_TRACES_SAMPLER_ARG
+          value: "1"
+        - name: OTEL_METRIC_EXPORT_INTERVAL_MILLIS
+          value: "15000"
+        - name: OTEL_EXPORTER_OTLP_TIMEOUT
+          value: "10000"
+        - name: OTEL_DEBUG
+          value: "false"
+        - name: KUBERNETES_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
