@@ -5,6 +5,8 @@ Fixes:
 - [crashes] Fix free session and free user calculation
 - [dashboards] Delete associated widgets and reports when a dashboard is removed
 - [star-rating] Fix widget close post message
+- [core] Adjust level and update content of app version log
+- [populator] Update getVersion to generate valid semantic version
 
 Enterprise Fixes:
 - [crash_symbolication] Remove auto symbolication setting
