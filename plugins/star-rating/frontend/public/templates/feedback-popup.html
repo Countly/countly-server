@@ -461,7 +461,7 @@
                 try {
                     custom = JSON.parse(custom) ;
                     isFullscreenWidget = !!custom.rw;
-                    isCloseButtonVisible = !!custom.xb;
+                    isCloseButtonVisible = platform === 'Web' || !!custom.xb;
 
                     if (custom && custom.sg) {
                         custom = custom.sg;
@@ -472,6 +472,7 @@
                 }
                 catch (error) {
                     custom = {};
+                    isCloseButtonVisible = platform === 'Web';
                 }
 
                 if (!isCloseButtonVisible) {
@@ -642,7 +643,7 @@
                         }
                         else if (window.parent && typeof window.parent.postMessage === 'function') {
                             var payload = JSON.stringify({
-                                close: 1,
+                                close: true,
                                 cly_widget_command: 1
                             });
     
