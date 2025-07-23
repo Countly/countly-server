@@ -2,6 +2,49 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.11
+Fixes:
+- [core] Fix mongo connection url parsing
+- [core] Fix user analytics widget chart
+- [crashes] Fix free session and free user calculation
+- [dashboards] Delete associated widgets and reports when a dashboard is removed
+- [star-rating] Fix widget close post message
+
+Enterprise Fixes:
+- [crash_symbolication] Remove auto symbolication setting
+- [drill] Fix drill meta get filter
+- [flows] Null checks on $size when calculating flows.
+- [surveys] Fix widget close post message
+
+Dependencies:
+- Bump eslint-plugin-vue from 10.2.0 to 10.3.0
+- Bump form-data from 4.0.0 to 4.0.4 in /plugins/hooks
+- Bump nodemailer from 7.0.3 to 7.0.5
+- Bump on-headers and express-session
+- Bump puppeteer from 24.10.1 to 24.14.0
+- Bump sharp from 0.34.2 to 0.34.3
+- Bump supertest from 7.1.1 to 7.1.3
+
+## Version 25.03.10
+Enterprise Fixes:
+- [okta] Fix body parser middleware version mismatch causing OKTA authentication break
+
+## Version 25.03.9
+Features:
+- [core] Added support for prerelease and build fields in app version parsing
+
+Fixes:
+- [core] Set up default headers for common return methods
+- [star-rating] Fix widget close button
+
+Enterprise Fixes:
+- [active_directory] Fix for reading azure application tenant id from config
+- [active_directory] Fix for handling azure ad callback properly when request body empty
+- [drill] Disabling the view user profiles button on drill for queries going to the report manager
+- [drill] Fixed typo issue while getting segment values in drill widgets
+- [journeys] Fixed the issue where events added in Journey couldn't have their visibility updated in Data Manager plugin
+- [surveys] Fix widget close button
+
 ## Version 25.03.8
 Fixes:
 - [core] Fix adding llm observability to cly-event-select component
