@@ -1,9 +1,10 @@
-## Version 24.05.XX
+## Version 24.05.35
 Fixes:
 - [core] Fix mongo connection url parsing
 - [dashboards] Delete associated widgets and reports when a dashboard is removed
+
 Enterprise Fixes:
-- [flows] Nullchecks on $size when calculating flows.
+- [flows] Null checks on $size when calculating flows.
 
 ## Version 24.05.34
 Enterprise Fixes:
