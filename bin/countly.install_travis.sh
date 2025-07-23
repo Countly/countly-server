@@ -19,7 +19,7 @@ apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
 #update package index
 apt-get update
 
-apt-get install -y build-essential git sqlite3 unzip shellcheck
+apt-get install -y build-essential git unzip shellcheck
 
 if apt-cache pkgnames | grep -q python-software-properties; then
     apt-get install -y python-software-properties
@@ -116,6 +116,8 @@ bash "$DIR/scripts/countly.install.plugins.sh"
 
 #load city data into database
 nodejs "$DIR/scripts/loadCitiesInDb.js"
+nodejs "$DIR/offline-geocoder/scripts/download_geonames_data.js"
+nodejs "$DIR/offline-geocoder/scripts/import_geonames_mongodb.js"
 
 #compile scripts for production
 countly task dist-all

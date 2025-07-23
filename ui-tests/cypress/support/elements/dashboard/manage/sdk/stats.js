@@ -14,7 +14,7 @@ export const sdkStatsPageElements = {
     TAB_SDK_STATS: 'tab-sdk-stats-title',
     TAB_REQUEST_STATS: 'tab-request-stats-title',
     TAB_HEALTH_CHECK: 'tab-health-check-title',
-    TAB_SDK_CONFIGURATION: 'tab-sdk-configuration-title',
+    TAB_SDK_CONFIGURATION: 'tab-sdk-behavior-settings-title',
 
     TAB_SDK_S: 'tab-sdks-title',
     TAB_SDK_VERSIONS: 'tab-sdk-versions-title',

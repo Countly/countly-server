@@ -18,39 +18,39 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         element: sdkConfiguratonsPageElements.TAB_SDK_CONFIGURATION,
-        elementText: "SDK Configuration",
+        elementText: "SDK Behavior Settings",
     });
 
     cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.PAGE_TITLE,
-        labelText: "SDK Configuration (Experimental)",
+        labelText: "SDK Behavior Settings",
         tooltipElement: sdkConfiguratonsPageElements.PAGE_TITLE_TOOLTIP,
-        tooltipText: "This is experimental feature and not all SDKs and SDK versions yet support it. Refer to the SDK documentation for more information"
+        tooltipText: "Not all SDKs and SDK versions yet support this feature. Refer to respective SDK documentation for more information"
     });
 
     cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.SDK_CONTROL_LABEL,
-        labelText: "SDK control",
+        labelText: "Global Controls",
     });
 
     cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.SDK_TRACKING_LABEL,
-        labelText: "SDK Tracking",
+        labelText: "Allow Tracking",
     });
 
     cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.SDK_TRACKING_DESCRIPTION,
-        labelText: "Enable or disable tracking any data in the SDK. If disabled, tracking new data will stop, but already collected data will be sent as long as networking is enabled",
+        labelText: "Enable or disable any tracking (gathering) of data in the SDK (default: enabled)",
     });
 
     cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.SDK_NETWORKING_LABEL,
-        labelText: "SDK Networking",
+        labelText: "Allow Networking",
     });
 
     cy.verifyElement({
         labelElement: sdkConfiguratonsPageElements.SDK_NETWORKING_DESCRIPTION,
-        labelText: "Enable or disable networking calls within SDK. If disabled no network requests will come from SDK (except SDK config call), but data would still be recorded and preserved on device up to the SDK limits",
+        labelText: "Enable or disable all networking calls from SDK except SDK behavior call. Does not effect tracking of data (default: enabled)",
     });
 };
 

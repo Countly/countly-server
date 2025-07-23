@@ -15,6 +15,8 @@ plugins="${plugins::-1}]"
 
 node ./node_modules/geoip-lite/scripts/updatedb.js license_key="$GEOIP"
 
+node "./bin/offline-geocoder/scripts/download_geonames_data.js"
+
 echo "$plugins" > /opt/countly/plugins/plugins.json
 
 (cd /opt/countly && npx grunt dist-all && rm -rf /opt/countly/plugins/plugins.json)

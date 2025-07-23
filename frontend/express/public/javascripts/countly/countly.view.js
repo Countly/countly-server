@@ -1,4 +1,4 @@
-/* global countlyCommon, countlyEvent, $, Backbone, app, CountlyHelpers, _, Handlebars */
+/* global countlyCommon, countlyEvent, $, Backbone, app, _ */
 
 var initializeOnce = _.once(function() {
     return $.when(countlyEvent.initialize()).then(function() { });
@@ -62,7 +62,6 @@ window.countlyView = Backbone.View.extend({
     * @instance
     */
     initialize: function() { //compile view template
-        this.template = Handlebars.compile($("#template-analytics-common").html());
     },
     _removeMyRequests: function() {
         for (var url in this._myRequests) {
@@ -125,7 +124,7 @@ window.countlyView = Backbone.View.extend({
     * @instance
     */
     afterRender: function() {
-        CountlyHelpers.makeSelectNative();
+
     },
     /**
     * Main render method, better not to over write it, but use {@link countlyView.renderCommon} instead
@@ -149,9 +148,6 @@ window.countlyView = Backbone.View.extend({
         //     $("#analytics-main-view").addClass("active");
         //     $("#app-navigation").addClass("active");
         // }
-
-        $("#content-top").html("");
-        this.el.html('');
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;

@@ -1,4 +1,3 @@
-
 <transition :name="toggleTransition" @enter="onViewEntered">
     <div class="cly-vue-drawer" tabindex="0" v-show="isOpened" @keydown.esc="escKeyEvent" ref="rootEl" :id="id"
         :class="rootClasses">
@@ -108,6 +107,10 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="cly-vue-drawer__right-sidecar" v-show="hasRightSidecar">
+            <slot name="right-sidecar" v-bind="passedScope">
+            </slot>
         </div>
     </div>
 </transition>

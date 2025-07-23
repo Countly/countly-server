@@ -32,7 +32,7 @@ const verifyStaticElementsOfPage = () => {
 
     cy.verifyElement({
         element: healthCheckPageElements.TAB_SDK_CONFIGURATION,
-        elementText: "SDK Configuration",
+        elementText: "SDK Behavior Settings",
     });
 
     cy.verifyElement({

@@ -1838,11 +1838,39 @@
             position: absolute;
             left: 0;
         }
+        &__right-sidecar {
+            height: 100%;
+            right: 0;
+        }
         &__steps-view {
             box-sizing: border-box;
             position: absolute;
             right: 0;
             background-color: white;
+        }
+
+        &.has-right-sidecar {
+            display: flex;
+            flex-direction: row;
+
+            .cly-vue-drawer__steps-view {
+                position: relative;
+                flex-grow: 1;
+                display: flex;
+                justify-content: center;
+            }
+
+            .cly-vue-drawer__steps-container {
+                position: relative;
+            }
+
+            .cly-vue-drawer__steps-wrapper {
+                max-width: 840px;
+            }
+
+            .cly-vue-drawer__right-sidecar {
+                max-width: 480px;
+            }
         }
 
         &__steps-view,

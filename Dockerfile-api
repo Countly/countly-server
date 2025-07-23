@@ -49,7 +49,6 @@ RUN curl -s -L -o /tmp/tini.deb "https://github.com/krallin/tini/releases/downlo
 	dpkg -i /tmp/tini.deb && \
 	\
 	# modify standard distribution
-	apt-get update && apt-get install -y sqlite3 && \
 	./bin/docker/modify.sh && \
 	\
 	# preinstall

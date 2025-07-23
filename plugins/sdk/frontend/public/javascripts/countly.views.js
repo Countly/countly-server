@@ -1,5 +1,37 @@
-/*global app, countlyVue, countlySDK, CV, countlyCommon*/
+/*global app, countlyVue, countlySDK, CV, countlyCommon, CountlyHelpers*/
 (function() {
+    var SC_VER = 1; // check/update sdk/api/api.js for this
+    var v0_android = "22.09.4";
+    var v0_ios = "23.02.2";
+    var v1_android = "25.4.0";
+    var v1_ios = "25.4.0";
+    var v1_web = "25.4.0";
+    // Supporting SDK Versions for the SC options
+    var supportedSDKVersion = {
+        tracking: { android: v0_android, ios: v0_ios, web: v1_web },
+        networking: { android: v0_android, ios: v0_ios, web: v1_web },
+        crt: { android: v1_android, ios: v1_ios, web: v1_web },
+        vt: { android: v1_android, ios: v1_ios, web: v1_web },
+        st: { android: v1_android, ios: v1_ios, web: v1_web },
+        cet: { android: v1_android, ios: v1_ios, web: v1_web },
+        ecz: { android: v1_android, ios: v1_ios, web: v1_web },
+        cr: { android: v1_android, ios: v1_ios, web: v1_web },
+        sui: { android: v1_android, ios: v1_ios, web: v1_web },
+        eqs: { android: v1_android, ios: v1_ios, web: v1_web },
+        rqs: { android: v1_android, ios: v1_ios, web: v1_web },
+        czi: { android: v1_android, ios: v1_ios, web: v1_web },
+        dort: { android: v1_android, ios: v1_ios, web: v1_web },
+        scui: { android: v1_android, ios: v1_ios, web: v1_web },
+        lkl: { android: v1_android, ios: v1_ios, web: v1_web },
+        lvs: { android: v1_android, ios: v1_ios, web: v1_web },
+        lsv: { android: v1_android, ios: v1_ios, web: v1_web },
+        lbc: { android: v1_android, ios: v1_ios, web: v1_web },
+        ltlpt: { android: v1_android, ios: v1_ios, web: v1_web },
+        ltl: { android: v1_android, ios: v1_ios, web: v1_web },
+        lt: { android: v1_android, ios: v1_ios, web: v1_web },
+        rcz: { android: v1_android, ios: v1_ios, web: v1_web }
+    };
+
     var FEATURE_NAME = "sdk";
     var SDK = countlyVue.views.create({
         template: CV.T('/sdk/templates/sdk-main.html'),
@@ -49,7 +81,10 @@
         template: CV.T('/sdk/templates/config.html'),
         created: function() {
             var self = this;
-            this.$store.dispatch("countlySDK/initialize").then(function() {
+            Promise.all([
+                this.$store.dispatch("countlySDK/initialize"),
+                this.$store.dispatch("countlySDK/fetchSDKStats") // fetch sdk version data for tooltips
+            ]).then(function() {
                 self.$store.dispatch("countlySDK/sdk/setTableLoading", false);
             });
         },
@@ -72,72 +107,187 @@
             return {
                 groups: {
                     global: {
-                        label: "SDK control",
+                        label: "Global Controls",
                         list: ["tracking", "networking"]
                     },
-                    /*features: {
-                        label: "SDK features",
-                        list: ["crashes", "views"]
+                    features: {
+                        label: "SDK Features",
+                        list: ["crt", "vt", "st", "cet", "lt", "ecz", "cr", "rcz"]
                     },
                     settings: {
-                        label: "SDK settings",
-                        list: ["heartbeat", "event_queue","request_queue"]
-                    }*/
+                        label: "SDK Settings",
+                        list: ["sui", "eqs", "rqs", "czi", "dort", "scui"]
+                    },
+                    limits: {
+                        label: "SDK Limits",
+                        list: ["lkl", "lvs", "lsv", "lbc", "ltlpt", "ltl"]
+                    },
                 },
                 configs: {
                     tracking: {
                         type: "switch",
-                        name: "SDK Tracking",
-                        description: "Enable or disable tracking any data in the SDK. If disabled, tracking new data will stop, but already collected data will be sent as long as networking is enabled",
+                        name: "Allow Tracking",
+                        description: "Enable or disable any tracking (gathering) of data in the SDK (default: enabled)",
                         default: true,
                         value: null
                     },
                     networking: {
                         type: "switch",
-                        name: "SDK Networking",
-                        description: "Enable or disable networking calls within SDK. If disabled no network requests will come from SDK (except SDK config call), but data would still be recorded and preserved on device up to the SDK limits",
+                        name: "Allow Networking",
+                        description: "Enable or disable all networking calls from SDK except SDK behavior call. Does not effect tracking of data (default: enabled)",
                         default: true,
                         value: null
                     },
-                    /*crashes: {
+                    crt: {
                         type: "switch",
-                        name: "Crashes",
-                        description: "Enable or disable automatic tracking of unhandled crashes",
+                        name: "Allow Crash Tracking",
+                        description: "Enable or disable tracking of crashes (default: enabled)",
                         default: true,
                         value: null
                     },
-                    views: {
+                    vt: {
                         type: "switch",
-                        name: "Views",
-                        description: "Enable or disable automatic tracking of views",
+                        name: "Allow View Tracking",
+                        description: "Enable or disable tracking of views (default: enabled)",
                         default: true,
                         value: null
                     },
-                    heartbeat: {
+                    st: {
+                        type: "switch",
+                        name: "Allow Session Tracking",
+                        description: "Enable or disable tracking of sessions (default: enabled)",
+                        default: true,
+                        value: null
+                    },
+                    sui: {
                         type: "number",
-                        name: "Heartbeat",
-                        description: "How often to send heartbeat to server in seconds",
+                        name: "Session Update Interval",
+                        description: "How often to send session update information to server in seconds (default: 60)",
                         default: 60,
                         value: null
                     },
-                    request_queue: {
+                    cet: {
+                        type: "switch",
+                        name: "Allow Custom Event Tracking",
+                        description: "Enable or disable tracking of custom events (default: enabled)",
+                        default: true,
+                        value: null
+                    },
+                    lt: {
+                        type: "switch",
+                        name: "Allow Location Tracking",
+                        description: "Enable or disable tracking of location (default: enabled)",
+                        default: true,
+                        value: null
+                    },
+                    ecz: {
+                        type: "switch",
+                        name: "Enable Content Zone",
+                        description: "Enable or disable listening to Journey related contents (default: disabled)",
+                        default: false,
+                        value: null
+                    },
+                    cr: {
+                        type: "switch",
+                        name: "Require Consent",
+                        description: "Enable or disable requiring consent for tracking (default: disabled)",
+                        default: false,
+                        value: null
+                    },
+                    rqs: {
                         type: "number",
                         name: "Request Queue Size",
-                        description: "How many requests to store in queue, if SDK cannot connect to server",
+                        description: "How many requests to store in queue, if SDK cannot connect to server (default: 1000)",
                         default: 1000,
                         value: null
                     },
-                    event_queue: {
+                    eqs: {
                         type: "number",
                         name: "Event Queue Size",
-                        description: "How many events to store in queue before they would be batched and sent to server",
-                        default: 10,
+                        description: "How many events to store in queue before they would be batched and sent to server (default: 100)",
+                        default: 100,
                         value: null
-                    }*/
+                    },
+                    czi: {
+                        type: "number",
+                        name: "Content Zone Interval",
+                        description: "How often to check for new Journey content in seconds (default: 30, min: 15)",
+                        default: 30,
+                        value: null
+                    },
+                    dort: {
+                        type: "number",
+                        name: "Request Drop Age",
+                        description: "Provide time in hours after which an old request should be dropped if they are not sent to server (default: 0 = disabled)",
+                        default: 0,
+                        value: null
+                    },
+                    lkl: {
+                        type: "number",
+                        name: "Max Key Length",
+                        description: "Maximum length of Event and segment keys (including name) (default: 128)",
+                        default: 128,
+                        value: null
+                    },
+                    lvs: {
+                        type: "number",
+                        name: "Max Value Size",
+                        description: "Maximum length of an Event's segment value (default: 256)",
+                        default: 256,
+                        value: null
+                    },
+                    lsv: {
+                        type: "number",
+                        name: "Max Number of Segments",
+                        description: "Maximum amount of segmentation key/value pairs per Event (default: 100)",
+                        default: 100,
+                        value: null
+                    },
+                    lbc: {
+                        type: "number",
+                        name: "Max Breadcrumb Count",
+                        description: "Maximum breadcrumb count that can be provided by the developer (default: 100)",
+                        default: 100,
+                        value: null
+                    },
+                    ltlpt: {
+                        type: "number",
+                        name: "Max Trace Line Per Thread",
+                        description: "Maximum stack trace lines that would be recorded per thread (default: 30)",
+                        default: 30,
+                        value: null
+                    },
+                    ltl: {
+                        type: "number",
+                        name: "Max Trace Length Per Line",
+                        description: "Maximum length of a stack trace line to be recorded (default: 200)",
+                        default: 200,
+                        value: null
+                    },
+                    scui: {
+                        type: "number",
+                        name: "SDK Behavior Update Interval",
+                        description: "How often to check for new behavior settings in hours (default: 4)",
+                        default: 4,
+                        value: null
+                    },
+                    rcz: {
+                        type: "switch",
+                        name: "Allow Refresh Content Zone",
+                        description: "Enable or disable refreshing Journey content (default: enabled)",
+                        default: true,
+                        value: null
+                    }
                 },
                 diff: [],
-                description: "This is experimental feature and not all SDKs and SDK versions yet support it. Refer to the SDK documentation for more information"
+                description: "Not all SDKs and SDK versions yet support this feature. Refer to respective SDK documentation for more information"
             };
+        },
+        mounted: function() {
+            var self = this;
+            this.$nextTick(function() {
+                self.checkSdkSupport();
+            });
         },
         methods: {
             onChange: function(key, value) {
@@ -158,6 +308,70 @@
                     }
                 }
             },
+            downloadConfig: function() {
+                var params = this.$store.getters["countlySDK/sdk/all"];
+                var data = {};
+                data.v = SC_VER;
+                data.t = Date.now();
+                data.c = params || {};
+                var configData = JSON.stringify(data, null, 2);
+                var blob = new Blob([configData], { type: 'application/json' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'sdk-config.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            },
+            resetSDKConfiguration: function() {
+                var helper_msg = "You are about to reset your SDK behavior to default state. This would override all these settings if set in your SDK. Do you want to continue?";
+                var helper_title = "Reset Behavior?";
+                var self = this;
+
+                CountlyHelpers.confirm(helper_msg, "red", function(result) {
+                    if (!result) {
+                        return true;
+                    }
+
+                    var params = self.$store.getters["countlySDK/sdk/all"];
+                    var data = params || {};
+
+                    for (var key in self.configs) {
+                        var current = self.configs[key].value;
+                        var def = self.configs[key].default;
+
+                        // Reset only if not already default
+                        if (current !== def) {
+                            self.configs[key].value = def;
+
+                            if (self.diff.indexOf(key) === -1) {
+                                self.diff.push(key);
+                            }
+
+                            // Clean up diff if value matches SDK or default
+                            if (typeof data[key] !== "undefined") {
+                                if (data[key] === def) {
+                                    self.diff.splice(
+                                        self.diff.indexOf(key),
+                                        1
+                                    );
+                                }
+                            }
+                            else if (def === self.configs[key].default) {
+                                self.diff.splice(self.diff.indexOf(key), 1);
+                            }
+                        }
+                    }
+                    if (self.diff.length !== 0) {
+                        self.save();
+                    }
+                },
+                ["No, don't reset", "Yes, reset"],
+                { title: helper_title }
+                );
+            },
             save: function() {
                 var params = this.$store.getters["countlySDK/sdk/all"];
                 var data = params || {};
@@ -177,6 +391,120 @@
                 for (var key in this.configs) {
                     this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
                 }
+            },
+            semverToNumber: function(version) {
+                if (typeof version !== 'string') {
+                    return -1;
+                }
+
+                version = version.split("-")[0];
+                var letterIndex = version.search(/[a-zA-Z]/);
+                if (letterIndex !== -1) {
+                    version = version.substring(0, letterIndex);
+                }
+
+                const semverRegex = /^(\d+)\.(\d+)\.(\d+)$/;
+                const match = version.match(semverRegex);
+
+                if (!match) {
+                    return -1;
+                }
+
+                const major = parseInt(match[1], 10);
+                const minor = parseInt(match[2], 10);
+                const patch = parseInt(match[3], 10);
+
+                return major * 1000000 + minor * 1000 + patch;
+            },
+            compareVersions: function(context, a, b, text) {
+                if (!a) {
+                    return;
+                }
+
+                const aValue = this.semverToNumber(a);
+                const bValue = this.semverToNumber(b);
+
+                if (aValue === -1 || bValue === -1) {
+                    context.unsupportedList.push(text);
+                    return;
+                }
+
+                if (aValue >= bValue) {
+                    context.supportLevel += 1;
+                }
+                else {
+                    context.unsupportedList.push(text);
+                }
+            },
+            checkSdkSupport: function() {
+                for (var key in this.configs) {
+                    this.configs[key].tooltipMessage = "No SDK data present. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this option.";
+                    this.configs[key].tooltipClass = 'tooltip-neutral';
+                }
+
+                if (!this.$store.state.countlySDK ||
+                    !this.$store.state.countlySDK.stats ||
+                    !this.$store.state.countlySDK.stats.sdk ||
+                    !this.$store.state.countlySDK.stats.sdk.versions ||
+                    this.$store.state.countlySDK.stats.sdk.versions.length === 0) {
+                    setTimeout(() => {
+                        this.checkSdkSupport();
+                    }, 500);
+                    return;
+                }
+
+                const availableData = this.$store.state.countlySDK.stats.sdk.versions;
+                const latestVersions = availableData.reduce((acc, sdk) => {
+                    if (!sdk.data || sdk.data.length === 0) {
+                        return acc;
+                    }
+                    acc[sdk.label] = sdk.data[0].sdk_version;
+                    for (var i = 1; i < sdk.data.length; i++) {
+                        if (this.semverToNumber(acc[sdk.label]) < this.semverToNumber(sdk.data[i].sdk_version)) {
+                            acc[sdk.label] = sdk.data[i].sdk_version;
+                        }
+                    }
+                    return acc;
+                }, {});
+
+                var viableSDKCount = 0;
+                if (latestVersions.javascript_native_web) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["java-native-android"]) {
+                    viableSDKCount++;
+                }
+                if (latestVersions["objc-native-ios"]) {
+                    viableSDKCount++;
+                }
+
+                const configKeyList = Object.keys(this.configs);
+                configKeyList.forEach(configKey => {
+                    const configSupportedVersions = supportedSDKVersion[configKey];
+                    if (!configSupportedVersions) {
+                        return;
+                    }
+
+                    var context = { supportLevel: 0, unsupportedList: [] };
+                    this.compareVersions(context, latestVersions.javascript_native_web, configSupportedVersions.web, "Web SDK");
+                    this.compareVersions(context, latestVersions["java-native-android"], configSupportedVersions.android, "Android SDK");
+                    this.compareVersions(context, latestVersions["objc-native-ios"], configSupportedVersions.ios, "iOS SDK");
+
+                    if (viableSDKCount > 0 && context.supportLevel === viableSDKCount) { // all correct version
+                        this.configs[configKey].tooltipMessage = 'You are using SDKs that support this option.';
+                        this.configs[configKey].tooltipClass = 'tooltip-success';
+                    }
+                    else if (context.unsupportedList.length > 0) { // some/all wrong version
+                        this.configs[configKey].tooltipMessage = 'Some SDKs you use do not support this option: ' + context.unsupportedList.join(', ') + '. Try upgrading to the latest version.';
+                        this.configs[configKey].tooltipClass = 'tooltip-warning';
+                    }
+                    else { // none supported
+                        this.configs[configKey].tooltipMessage = 'None of the SDKs you use support this option. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this option.';
+                        this.configs[configKey].tooltipClass = 'tooltip-danger';
+                    }
+
+                });
+                this.$forceUpdate();
             }
         }
     });
@@ -184,7 +512,7 @@
         priority: 2,
         route: "#/manage/sdk/configurations",
         component: SDKConfigurationView,
-        title: "SDK Configuration",
+        title: "SDK Behavior Settings",
         name: "configurations",
         permission: FEATURE_NAME,
         vuex: [
@@ -634,4 +962,5 @@
         permission: FEATURE_NAME,
         vuex: []
     });
+
 })();

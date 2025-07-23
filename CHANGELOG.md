@@ -1,3 +1,7 @@
+## 25.xx
+Dependencies:
+- Remove SQLite
+
 ## Version 25.03.11
 Fixes:
 - [core] Fix mongo connection url parsing
@@ -91,7 +95,6 @@ Fixes:
 - [hooks] Added null check for incoming data
 - [push] Fix external drawer initialization
 - [times-of-day] Fix chart component
-
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
 - [ab-testing] Updates
