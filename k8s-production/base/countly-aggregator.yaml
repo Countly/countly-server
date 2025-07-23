@@ -19,6 +19,7 @@ spec:
         branch: newarchitecture
         component: aggregator
     spec:
+      serviceAccountName: default
       tolerations:
       - key: countly
         operator: Equal
