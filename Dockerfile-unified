@@ -111,7 +111,7 @@ RUN --mount=type=cache,id=geonames-cache,target=/opt/countly/bin/offline-geocode
 # 3.1) OpenTelemetry setup - Always install for production readiness
 RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
     echo "Installing OpenTelemetry dependencies..." && \
-    npm install --omit=dev \
+    npm install \
         @opentelemetry/api \
         @opentelemetry/sdk-node \
         @opentelemetry/auto-instrumentations-node \
@@ -211,11 +211,14 @@ EXPOSE 3001 3010 6001
 
 # Create entrypoint script for proper NODE_OPTIONS handling
 RUN echo '#!/bin/sh\n\
-# Prepend OTEL require if script exists and OTEL is not disabled\n\
-if [ -f /opt/countly/api/utils/otel.js ] && [ "${OTEL_ENABLED}" != "false" ]; then\n\
-  export NODE_OPTIONS="--require=/opt/countly/api/utils/otel.js ${NODE_OPTIONS}"\n\
+# Set OTEL script based on service type - frontend uses different script\n\
+if [ "${OTEL_ENABLED}" != "false" ]; then\n\
+  if [ "$OTEL_SERVICE_NAME" = "countly-frontend" ] && [ -f /opt/countly/frontend/express/otel.js ]; then\n\
+    export NODE_OPTIONS="--require=/opt/countly/frontend/express/otel.js ${NODE_OPTIONS}"\n\
+  elif [ -f /opt/countly/api/utils/otel.js ]; then\n\
+    export NODE_OPTIONS="--require=/opt/countly/api/utils/otel.js ${NODE_OPTIONS}"\n\
+  fi\n\
 fi\n\
-# Execute the original command\n\
 exec "$@"' > /usr/local/bin/docker-entrypoint.sh && \
 chmod +x /usr/local/bin/docker-entrypoint.sh
 
