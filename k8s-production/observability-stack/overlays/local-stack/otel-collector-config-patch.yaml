@@ -57,6 +57,66 @@ data:
                   target_label: pod
                 - source_labels: [__meta_kubernetes_namespace]
                   target_label: namespace
+            
+            - job_name: 'countly-ingestor'
+              kubernetes_sd_configs:
+                - role: endpoints
+                  namespaces:
+                    names:
+                      - countly
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_service_name]
+                  action: keep
+                  regex: countly-ingestor
+                - source_labels: [__meta_kubernetes_endpoint_port_name]
+                  action: keep
+                  regex: http
+                - target_label: __metrics_path__
+                  replacement: /o/metrics
+                - source_labels: [__meta_kubernetes_pod_name]
+                  target_label: pod
+                - source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
+            
+            - job_name: 'countly-aggregator'
+              kubernetes_sd_configs:
+                - role: endpoints
+                  namespaces:
+                    names:
+                      - countly
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_service_name]
+                  action: keep
+                  regex: countly-aggregator
+                - source_labels: [__meta_kubernetes_endpoint_port_name]
+                  action: keep
+                  regex: http
+                - target_label: __metrics_path__
+                  replacement: /o/metrics
+                - source_labels: [__meta_kubernetes_pod_name]
+                  target_label: pod
+                - source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
+            
+            - job_name: 'jobserver'
+              kubernetes_sd_configs:
+                - role: endpoints
+                  namespaces:
+                    names:
+                      - countly
+              relabel_configs:
+                - source_labels: [__meta_kubernetes_service_name]
+                  action: keep
+                  regex: jobserver
+                - source_labels: [__meta_kubernetes_endpoint_port_name]
+                  action: keep
+                  regex: http
+                - target_label: __metrics_path__
+                  replacement: /o/metrics
+                - source_labels: [__meta_kubernetes_pod_name]
+                  target_label: pod
+                - source_labels: [__meta_kubernetes_namespace]
+                  target_label: namespace
 
 
       # Collect host metrics from nodes
