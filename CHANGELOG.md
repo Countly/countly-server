@@ -1,4 +1,4 @@
-## Version 24.05.XX
+## Version 24.05.35
 Fixes:
 - [core] Fix mongo connection url parsing
 - [dashboards] Delete associated widgets and reports when a dashboard is removed
