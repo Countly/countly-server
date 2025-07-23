@@ -39,10 +39,6 @@ secretGenerator:
   - PROMETHEUS_BEARER_TOKEN=""
   - LOKI_BEARER_TOKEN=""
   - TEMPO_AUTH_HEADER=""
-  - LOKI_BASIC_AUTH_USERNAME=""
-  - LOKI_BASIC_AUTH_PASSWORD=""
-  - PROMETHEUS_BASIC_AUTH_USERNAME=""
-  - PROMETHEUS_BASIC_AUTH_PASSWORD=""
 
 patches:
 # Replace OTEL collector config with local endpoints

@@ -108,7 +108,25 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
 RUN --mount=type=cache,id=geonames-cache,target=/opt/countly/bin/offline-geocoder/data \
     node ./bin/offline-geocoder/scripts/download_geonames_data.js || true
 
-# 3.1) OpenTelemetry setup - Always install for production readiness
+# 4) plugin manifests → deps
+COPY plugins ./plugins
+RUN --mount=type=cache,id=npm-plugin-cache,target=/root/.npm,sharing=locked \
+    find plugins -mindepth 2 -maxdepth 2 -name package.json \
+         -execdir npm install --omit=dev --unsafe-perm=true \;
+
+ # NOTE: No COPY . . here! JS source files aren't copied yet to keep cache tight
+
+###############################################################################
+# Stage 3 – bring in the rest of the code, build assets                       #
+###############################################################################
+FROM node-modules AS builder
+ARG COUNTLY_PLUGINS
+WORKDIR /opt/countly
+
+# 3.1 copy the rest of the source tree *now* (after model compilation)
+COPY . .
+
+# 3.1.1 OpenTelemetry setup - Install after source copy to avoid lockfile overwrite
 RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
     echo "Installing OpenTelemetry dependencies..." && \
     npm install \
@@ -129,25 +147,7 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
         @opentelemetry/sdk-trace-base \
         @opentelemetry/core
 
-# 4) plugin manifests → deps
-COPY plugins ./plugins
-RUN --mount=type=cache,id=npm-plugin-cache,target=/root/.npm,sharing=locked \
-    find plugins -mindepth 2 -maxdepth 2 -name package.json \
-         -execdir npm install --omit=dev --unsafe-perm=true \;
-
- # NOTE: No COPY . . here! JS source files aren't copied yet to keep cache tight
-
-###############################################################################
-# Stage 3 – bring in the rest of the code, build assets                       #
-###############################################################################
-FROM node-modules AS builder
-ARG COUNTLY_PLUGINS
-WORKDIR /opt/countly
-
-# 3.1 copy the rest of the source tree *now* (after model compilation)
-COPY . .
-
-# 3.1.1 copy OpenTelemetry files from build context
+# 3.1.2 copy OpenTelemetry files from build context
 RUN if [ -f observability_scripts/otel.js ]; then \
         echo "Copying OpenTelemetry files..."; \
         cp observability_scripts/otel.js api/utils/otel.js; \
