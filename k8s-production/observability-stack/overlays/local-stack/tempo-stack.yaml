@@ -20,7 +20,6 @@ data:
     
     ingester:
       max_block_duration: 5m
-      max_block_bytes: 1_000_000
       complete_block_timeout: 15m
     
     compactor:
@@ -37,31 +36,9 @@ data:
           path: /tmp/tempo/blocks
         wal:
           path: /tmp/tempo/wal
-        pool:
-          max_workers: 100
-          queue_depth: 10000
     
     querier:
       max_concurrent_queries: 20
-      search:
-        external_endpoints: []
-        query_timeout: 30s
-    
-    frontend:
-      search:
-        concurrent_jobs: 1000
-        target_bytes_per_job: 104857600
-    
-    overrides:
-      defaults:
-        metrics:
-          generator:
-            processors: [service-graphs, span-metrics]
-            storage:
-              path: /tmp/tempo/generator/wal
-              remote_write:
-                - url: http://prometheus.countly-observability.svc.cluster.local:9090/api/v1/write
-                  send_exemplars: true
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
