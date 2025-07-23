@@ -4,7 +4,7 @@
         :tooltip="{description}">
         <template v-slot:header-right>
             <div class="bu-level-item">
-                <el-button @click="resetSDKConfiguration" type="default" size="small" icon="cly-icon-btn fas fa-lock">
+                <el-button @click="enforce" type="default" size="small" icon="cly-icon-btn fas fa-lock">
                     Enforce All
                 </el-button>
             </div>
@@ -35,10 +35,6 @@
                                 v-for="key in group.list" :key="key"
                                 class="bu-columns bu-is-vcentered bu-p-5 config-section">
                                     <div class="bu-column bu-is-7">
-                                        <el-button v-if="isLocked === false" @click="enforce(key)" type="default" size="small" icon="fas fa-lock">
-                                        </el-button>
-                                        <el-button v-if="isLocked === true" @click="enforce(key)" type="default" size="small" icon="fas fa-unlock">
-                                        </el-button>
                                         <p class="bu-has-text-weight-medium" :data-test-id="getData[key].name.toLowerCase().replaceAll(' ', '-') + '-title-label'">
                                             {{getData[key].name}}
                                             <cly-tooltip-icon 
@@ -46,6 +42,14 @@
                                                 placement="right" 
                                                 :tooltip-class="getData[key].tooltipClass">
                                             </cly-tooltip-icon>
+                                            <el-button v-if="getData[key].enforced === false" @click="enforce(key)" type="default" size="small" icon="fas fa-unlock"
+                                            >
+                                                Not Enforced
+                                            </el-button>
+                                            <el-button v-if="getData[key].enforced === true" @click="reverseEnforce(key)" type="default" size="small" type="success"
+                                                icon="fas fa-lock">
+                                                Enforced
+                                            </el-button>
                                         </p>
                                         <p class="bu-has-text-weight-normal bu-mt-2" :data-test-id="getData[key].name.toLowerCase().replaceAll(' ', '-') + '-description-label'" v-html="getData[key].description" v-if="getData[key].description"></p>
                                     </div>

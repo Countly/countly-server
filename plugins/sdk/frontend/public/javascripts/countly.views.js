@@ -143,7 +143,7 @@
                     },
                     backoff: {
                         label: "Backoff Settings",
-                        list: ["bop", "bom", "bom_at", "bom_rqp", "bom_ra", "bom_d"]
+                        list: ["bom", "bom_at", "bom_rqp", "bom_ra", "bom_d"]
                     },
                     limits: {
                         label: "SDK Limits",
@@ -449,6 +449,9 @@
                 console.log('Button 3 clicked');
             },
             enforce(key) {
+                if (key && !this.configs[key]) {
+                    key = null; // if key is not valid, enforce all
+                }
                 var helper_msg = "You are about to enforce all current settings. This would override these settings in your SDK. Do you want to continue?";
                 var helper_title = "Enforce all current settings?";
                 if (key) {
@@ -457,26 +460,65 @@
                 }
                 var self = this;
                 // eslint-disable-next-line no-console
-                console.log("enforce", key, this.configs[key].value);
+                console.log(`enforce:[${key}]`);
 
                 CountlyHelpers.confirm(helper_msg, "green", function(result) {
                     if (!result) {
                         return true;
                     }
-                    self.diff.push(key);
-                    self.save();
-                    // change enforced state
                     if (key) {
+                        log(`enforcing key ${key}`);
+                        self.diff.push(key);
                         self.configs[key].enforced = true;
                     }
                     else {
-                        // if no key is provided, enforce all configs
                         for (var k in self.configs) {
-                            self.configs[k].enforced = true;
+                            log(`2enforcing all ${k}`);
+                            if (self.diff.indexOf(k) === -1) {
+                                self.diff.push(k);
+                                self.configs[k].enforced = true;
+                            }
                         }
                     }
+                    self.save();
                 },
                 ["No, don't enforce", "Yes, enforce"],
+                { title: helper_title }
+                );
+            },
+            reverseEnforce: function(key) {
+                if (key && !this.configs[key]) {
+                    key = null; // if key is not valid, enforce all
+                }
+                var helper_msg = "You are about to reverse the enforcement of the current setting. This would allow this setting to be changed in your SDK. Do you want to continue?";
+                var helper_title = "Reverse Enforced Setting?";
+                if (!key) {
+                    helper_msg = "You are about to reverse the enforcement od all settings. This would allow these settings to be changed in your SDK. Do you want to continue?";
+                    helper_title = "Reverse Enforcement of All Settings?";
+                }
+                var self = this;
+                // eslint-disable-next-line no-console
+                console.log("reverseEnforce", key);
+
+                CountlyHelpers.confirm(helper_msg, "red", function(result) {
+                    if (!result) {
+                        return true;
+                    }
+                    if (key) {
+                        self.diff.push(key);
+                        self.configs[key].enforced = false;
+                    }
+                    else {
+                        for (var k in self.configs) {
+                            if (self.diff.indexOf(k) === -1) {
+                                self.diff.push(k);
+                                self.configs[k].enforced = false;
+                            }
+                        }
+                    }
+                    // TODO: remove from send values
+                },
+                ["No, don't reverse enforce", "Yes, reverse enforce"],
                 { title: helper_title }
                 );
             },
@@ -529,9 +571,10 @@
             },
             save: function() {
                 var params = this.$store.getters["countlySDK/sdk/all"];
-                log("save", params, this.diff);
+                log(`save: ${JSON.stringify(params)} and diff: ${JSON.stringify(this.diff)}`);
                 var data = params || {};
                 for (var i = 0; i < this.diff.length; i++) {
+                    log(`save: ${this.diff[i]} = ${this.configs[this.diff[i]].value}`);
                     data[this.diff[i]] = this.configs[this.diff[i]].value;
                 }
                 this.diff = [];
@@ -550,7 +593,7 @@
                 }
             },
             semverToNumber: function(version) {
-                log("semverToNumber", version);
+                // log("semverToNumber", version);
                 if (typeof version !== 'string') {
                     return -1;
                 }
@@ -575,7 +618,7 @@
                 return major * 1000000 + minor * 1000 + patch;
             },
             compareVersions: function(context, a, b, text) {
-                log("compareVersions", context, a, b, text);
+                // log("compareVersions", context, a, b, text);
                 if (!a) {
                     return;
                 }
