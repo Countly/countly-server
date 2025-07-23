@@ -38,6 +38,7 @@ spec:
         branch: newarchitecture
         component: frontend
     spec:
+      serviceAccountName: default
       tolerations:
       - key: countly
         operator: Equal
