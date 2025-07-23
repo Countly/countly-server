@@ -1,4 +1,4 @@
-## Version 25.03.XX
+## Version 25.03.11
 Fixes:
 - [core] Fix user analytics widget chart
 - [core] Fix mongo connection url parsing
