@@ -1,0 +1,53 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: countly-observability
+
+resources:
+# Base configuration
+- ../../base
+# Local observability stack components
+- loki-stack.yaml
+- prometheus-stack.yaml
+- grafana.yaml
+- tempo-stack.yaml
+
+configMapGenerator:
+# Override base observability config with local endpoints
+- name: observability-config
+  behavior: replace
+  envs:
+  - configs/observability.env
+# Grafana configuration
+- name: grafana-config
+  envs:
+  - configs/grafana.env
+# Grafana dashboards
+- name: grafana-dashboards
+  files:
+  - dashboards/countly-overview.json
+  - dashboards/countly-traces.json
+  options:
+    labels:
+      grafana_dashboard: "1"
+
+# No auth needed for local stack
+secretGenerator:
+- name: observability-auth
+  behavior: replace
+  literals:
+  - PROMETHEUS_BEARER_TOKEN=""
+  - LOKI_BEARER_TOKEN=""
+  - TEMPO_AUTH_HEADER=""
+  - LOKI_BASIC_AUTH_USERNAME=""
+  - LOKI_BASIC_AUTH_PASSWORD=""
+  - PROMETHEUS_BASIC_AUTH_USERNAME=""
+  - PROMETHEUS_BASIC_AUTH_PASSWORD=""
+
+patches:
+# Replace OTEL collector config with local endpoints
+- path: otel-collector-config-patch.yaml
+  target:
+    kind: ConfigMap
+    name: otel-collector-config
+    namespace: countly-observability

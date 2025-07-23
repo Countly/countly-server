@@ -1,0 +1,214 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  
+  # Collect host metrics from nodes
+  hostmetrics:
+    collection_interval: 30s
+    scrapers:
+      cpu:
+      memory:
+      load:
+      disk:
+      filesystem:
+      network:
+
+processors:
+  batch:
+    timeout: ${env:OTEL_BATCH_TIMEOUT_MS}
+    send_batch_size: ${env:OTEL_BATCH_SEND_SIZE}
+
+  memory_limiter:
+    check_interval: ${env:OTEL_MEMORY_LIMITER_CHECK_INTERVAL}
+    limit_mib: ${env:OTEL_MEMORY_LIMITER_LIMIT_MIB}
+    spike_limit_mib: ${env:OTEL_MEMORY_LIMITER_SPIKE_LIMIT_MIB}
+
+  # Add Kubernetes metadata
+  k8sattributes:
+    passthrough: false
+    auth_type: "serviceAccount"
+    pod_association:
+      - sources:
+          - from: resource_attribute
+            name: k8s.pod.ip
+      - sources:
+          - from: resource_attribute
+            name: k8s.pod.uid
+      - sources:
+          - from: connection
+    extract:
+      metadata:
+        - k8s.pod.name
+        - k8s.pod.uid
+        - k8s.deployment.name
+        - k8s.namespace.name
+        - k8s.node.name
+        - k8s.pod.start_time
+        - k8s.replicaset.name
+        - k8s.replicaset.uid
+        - k8s.daemonset.name
+        - k8s.daemonset.uid
+        - k8s.job.name
+        - k8s.job.uid
+        - k8s.statefulset.name
+        - k8s.statefulset.uid
+        - k8s.container.name
+        - k8s.cronjob.name
+        - containers
+      annotations:
+        - tag_name: component
+          key: app.kubernetes.io/component
+          from: pod
+      labels:
+        - tag_name: app_name
+          key: app
+          from: pod
+        - tag_name: component
+          key: component
+          from: pod
+
+  # Resource detection for cloud/k8s attributes
+  resourcedetection:
+    detectors: [${env:OTEL_RESOURCE_DETECTORS}]
+    timeout: ${env:OTEL_RESOURCE_TIMEOUT}
+    override: false
+
+  # Add custom attributes
+  resource:
+    attributes:
+      - key: service.namespace
+        value: countly
+        action: upsert
+      - key: deployment.environment
+        value: production
+        action: insert
+
+  # Transform processor for metrics
+  transform:
+    metric_statements:
+      - context: datapoint
+        statements:
+          - set(attributes["deployment.environment"], "production")
+
+exporters:
+  # Export metrics to external Prometheus via remote write
+  prometheusremotewrite:
+    endpoint: ${env:OTEL_EXPORTER_PROMETHEUS_ENDPOINT}${env:PROMETHEUS_REMOTE_WRITE_PATH}
+    headers:
+      Authorization: Bearer ${env:PROMETHEUS_BEARER_TOKEN}
+    tls:
+      insecure: ${env:OTEL_EXPORTER_TLS_INSECURE}
+      insecure_skip_verify: ${env:OTEL_EXPORTER_TLS_INSECURE}
+      ca_file: ${env:OTEL_EXPORTER_TLS_CA_FILE}
+      cert_file: ${env:OTEL_EXPORTER_TLS_CERT_FILE}
+      key_file: ${env:OTEL_EXPORTER_TLS_KEY_FILE}
+    timeout: ${env:OTEL_EXPORTER_TIMEOUT}
+    retry_on_failure:
+      enabled: ${env:OTEL_EXPORTER_RETRY_ENABLED}
+      initial_interval: ${env:OTEL_EXPORTER_RETRY_INITIAL_INTERVAL}
+      max_interval: ${env:OTEL_EXPORTER_RETRY_MAX_INTERVAL}
+      max_elapsed_time: ${env:OTEL_EXPORTER_RETRY_MAX_ELAPSED_TIME}
+    sending_queue:
+      enabled: ${env:OTEL_QUEUE_ENABLED}
+      num_consumers: ${env:OTEL_QUEUE_NUM_CONSUMERS}
+      queue_size: ${env:OTEL_QUEUE_QUEUE_SIZE}
+
+  # Export traces to external Tempo
+  otlp/tempo:
+    endpoint: ${env:OTEL_EXPORTER_TEMPO_ENDPOINT}/v1/traces
+    headers:
+      Authorization: ${env:TEMPO_AUTH_HEADER}
+    compression: ${env:OTEL_EXPORTER_COMPRESSION}
+    tls:
+      insecure: ${env:OTEL_EXPORTER_TLS_INSECURE}
+      insecure_skip_verify: ${env:OTEL_EXPORTER_TLS_INSECURE}
+      ca_file: ${env:OTEL_EXPORTER_TLS_CA_FILE}
+      cert_file: ${env:OTEL_EXPORTER_TLS_CERT_FILE}
+      key_file: ${env:OTEL_EXPORTER_TLS_KEY_FILE}
+    timeout: ${env:OTEL_EXPORTER_TIMEOUT}
+    retry_on_failure:
+      enabled: ${env:OTEL_EXPORTER_RETRY_ENABLED}
+      initial_interval: ${env:OTEL_EXPORTER_RETRY_INITIAL_INTERVAL}
+      max_interval: ${env:OTEL_EXPORTER_RETRY_MAX_INTERVAL}
+      max_elapsed_time: ${env:OTEL_EXPORTER_RETRY_MAX_ELAPSED_TIME}
+
+  # Export logs to external Loki via HTTP
+  loki:
+    endpoint: ${env:OTEL_EXPORTER_LOKI_ENDPOINT}${env:LOKI_PUSH_PATH}
+    headers:
+      Authorization: Bearer ${env:LOKI_BEARER_TOKEN}
+      X-Scope-OrgID: ${env:LOKI_TENANT_ID}
+    labels:
+      attributes:
+        service.name: "service_name"
+        service.namespace: "service_namespace"
+        k8s.namespace.name: "namespace"
+        k8s.pod.name: "pod"
+        k8s.container.name: "container"
+      resource:
+        host.name: "hostname"
+        job: "job"
+      record:
+        level: "level"
+    tls:
+      insecure: ${env:OTEL_EXPORTER_TLS_INSECURE}
+      insecure_skip_verify: ${env:OTEL_EXPORTER_TLS_INSECURE}
+      ca_file: ${env:OTEL_EXPORTER_TLS_CA_FILE}
+      cert_file: ${env:OTEL_EXPORTER_TLS_CERT_FILE}
+      key_file: ${env:OTEL_EXPORTER_TLS_KEY_FILE}
+    timeout: ${env:OTEL_EXPORTER_TIMEOUT}
+    retry_on_failure:
+      enabled: ${env:OTEL_EXPORTER_RETRY_ENABLED}
+      initial_interval: ${env:OTEL_EXPORTER_RETRY_INITIAL_INTERVAL}
+      max_interval: ${env:OTEL_EXPORTER_RETRY_MAX_INTERVAL}
+      max_elapsed_time: ${env:OTEL_EXPORTER_RETRY_MAX_ELAPSED_TIME}
+
+  # Debug exporter
+  logging:
+    loglevel: ${env:OTEL_LOG_LEVEL}
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+service:
+  telemetry:
+    logs:
+      level: ${env:OTEL_SERVICE_TELEMETRY_LOGS_LEVEL}
+      encoding: ${env:OTEL_SERVICE_TELEMETRY_LOGS_ENCODING}
+    metrics:
+      level: ${env:OTEL_SERVICE_TELEMETRY_METRICS_LEVEL}
+      address: ${env:OTEL_SERVICE_TELEMETRY_METRICS_ADDRESS}
+
+  extensions: [health_check, pprof, zpages]
+
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, memory_limiter, k8sattributes, resourcedetection, resource]
+      exporters: [otlp/tempo, logging]
+
+    metrics:
+      receivers: [otlp, hostmetrics]
+      processors: [batch, memory_limiter, k8sattributes, resourcedetection, resource, transform]
+      exporters: [prometheusremotewrite, logging]
+
+    logs:
+      receivers: [otlp]
+      processors: [batch, memory_limiter, k8sattributes, resourcedetection, resource]
+      exporters: [loki, logging]
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+    path: "/health"
+    check_collector_pipeline:
+      enabled: true
+      interval: "5m"
+      exporter_failure_threshold: 5
+  pprof:
+    endpoint: 0.0.0.0:1777
+  zpages:
+    endpoint: 0.0.0.0:55679
