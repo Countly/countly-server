@@ -29,7 +29,7 @@ spec:
       - name: countly-jobserver
         image: countly-unified
         imagePullPolicy: Always
-        command: ["npm", "run", "start:jobserver"]
+        args: ["npm", "run", "start:jobserver"]
         
         # This service runs in API mode. It loads API-specific environment variables
         # (e.g., COUNTLY_CONFIG_API_*) in addition to global ones (COUNTLY_CONFIG__*).

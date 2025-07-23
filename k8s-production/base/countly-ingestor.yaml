@@ -60,7 +60,7 @@ spec:
       - name: countly-ingestor
         image: countly-unified
         imagePullPolicy: Always
-        command: ["npm", "run", "start:ingestor"]
+        args: ["npm", "run", "start:ingestor"]
         ports:
         - containerPort: 3010
           name: http
