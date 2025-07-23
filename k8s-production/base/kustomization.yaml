@@ -67,23 +67,31 @@ configMapGenerator:
   - configs/clickhouse.env
   name: countly-clickhouse-config
 
-# Secrets are created manually to have full control over environment variable names
-# uncomment for the first run
+# Secrets with fixed names (no suffixes) so they persist across deployments
+# ConfigMaps keep suffixes for automatic deployment restarts
+# NOTE: Uncomment the secretGenerator section on the first run.
+#       after the first run, they will not auto update deployments because disableNameSuffixHash is set to true.
+#       this is by design to manage sensitive secrets manually/other strategy and not in plain text.
+#       Refer to README.md for more details on secret management.
 #secretGenerator:
-# - name: common-config
-#   behavior: create
-#   envs:
-#   - secrets/common.env
-# - name: mongodb-config
-#   behavior: create
-#   envs:
-#   - secrets/mongodb.env
-# - name: clickhouse-config
-#   behavior: create
-#   envs:
-#   - secrets/clickhouse.env
-# - name: docker-pull-secret
-#   type: kubernetes.io/dockerconfigjson
-#   behavior: create
-#   envs:
-#   - secrets/docker-registry.env
+#- name: common-config
+#  envs:
+#  - secrets/common.env
+#  options:
+#    disableNameSuffixHash: true
+#- name: mongodb-config
+#  envs:
+#  - secrets/mongodb.env
+#  options:
+#    disableNameSuffixHash: true
+#- name: clickhouse-config
+#  envs:
+#  - secrets/clickhouse.env
+#  options:
+#    disableNameSuffixHash: true
+#- name: docker-pull-secret
+#  type: kubernetes.io/dockerconfigjson
+#  envs:
+#  - secrets/docker-registry.env
+#  options:
+#    disableNameSuffixHash: true
