@@ -72,13 +72,13 @@ data:
 
     processors:
       batch:
-        timeout: ${env:OTEL_BATCH_TIMEOUT_MS}
-        send_batch_size: ${env:OTEL_BATCH_SEND_SIZE}
+        timeout: 5s
+        send_batch_size: 1024
 
       memory_limiter:
-        check_interval: ${env:OTEL_MEMORY_LIMITER_CHECK_INTERVAL}
-        limit_mib: ${env:OTEL_MEMORY_LIMITER_LIMIT_MIB}
-        spike_limit_mib: ${env:OTEL_MEMORY_LIMITER_SPIKE_LIMIT_MIB}
+        check_interval: 5s
+        limit_mib: 2048
+        spike_limit_mib: 512
 
       # Add Kubernetes metadata
       k8sattributes:
@@ -111,7 +111,6 @@ data:
             - k8s.statefulset.uid
             - k8s.container.name
             - k8s.cronjob.name
-            - containers
           annotations:
             - tag_name: component
               key: app.kubernetes.io/component
@@ -126,8 +125,8 @@ data:
 
       # Resource detection for cloud/k8s attributes
       resourcedetection:
-        detectors: [${env:OTEL_RESOURCE_DETECTORS}]
-        timeout: ${env:OTEL_RESOURCE_TIMEOUT}
+        detectors: [env, system]
+        timeout: 2s
         override: false
 
       # Add custom attributes
@@ -161,61 +160,37 @@ data:
 
       # Export traces to local Tempo
       otlp/tempo:
-        endpoint: ${env:OTEL_EXPORTER_TEMPO_ENDPOINT}/v1/traces
-        headers:
-          Authorization: ${env:TEMPO_AUTH_HEADER}
-        compression: ${env:OTEL_EXPORTER_COMPRESSION}
+        endpoint: tempo.countly-observability.svc.cluster.local:4317
         tls:
-          insecure: ${env:OTEL_EXPORTER_TLS_INSECURE}
-          insecure_skip_verify: ${env:OTEL_EXPORTER_TLS_INSECURE}
-        timeout: ${env:OTEL_EXPORTER_TIMEOUT}
+          insecure: true
+        timeout: 30s
         retry_on_failure:
-          enabled: ${env:OTEL_EXPORTER_RETRY_ENABLED}
-          initial_interval: ${env:OTEL_EXPORTER_RETRY_INITIAL_INTERVAL}
-          max_interval: ${env:OTEL_EXPORTER_RETRY_MAX_INTERVAL}
-          max_elapsed_time: ${env:OTEL_EXPORTER_RETRY_MAX_ELAPSED_TIME}
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 300s
 
       # Export logs to local Loki via HTTP
       loki:
-        endpoint: ${env:OTEL_EXPORTER_LOKI_ENDPOINT}${env:LOKI_PUSH_PATH}
+        endpoint: http://loki.countly-observability.svc.cluster.local:3100/loki/api/v1/push
         headers:
-          X-Scope-OrgID: ${env:LOKI_TENANT_ID}
-        labels:
-          attributes:
-            service.name: "service_name"
-            service.namespace: "service_namespace"
-            k8s.namespace.name: "namespace"
-            k8s.pod.name: "pod"
-            k8s.container.name: "container"
-          resource:
-            host.name: "hostname"
-            job: "job"
-          record:
-            level: "level"
-        tls:
-          insecure: ${env:OTEL_EXPORTER_TLS_INSECURE}
-          insecure_skip_verify: ${env:OTEL_EXPORTER_TLS_INSECURE}
-        timeout: ${env:OTEL_EXPORTER_TIMEOUT}
-        retry_on_failure:
-          enabled: ${env:OTEL_EXPORTER_RETRY_ENABLED}
-          initial_interval: ${env:OTEL_EXPORTER_RETRY_INITIAL_INTERVAL}
-          max_interval: ${env:OTEL_EXPORTER_RETRY_MAX_INTERVAL}
-          max_elapsed_time: ${env:OTEL_EXPORTER_RETRY_MAX_ELAPSED_TIME}
+          X-Scope-OrgID: countly
+        timeout: 30s
 
       # Debug exporter
       logging:
-        loglevel: ${env:OTEL_LOG_LEVEL}
+        loglevel: info
         sampling_initial: 5
         sampling_thereafter: 200
 
     service:
       telemetry:
         logs:
-          level: ${env:OTEL_SERVICE_TELEMETRY_LOGS_LEVEL}
-          encoding: ${env:OTEL_SERVICE_TELEMETRY_LOGS_ENCODING}
+          level: info
+          encoding: json
         metrics:
-          level: ${env:OTEL_SERVICE_TELEMETRY_METRICS_LEVEL}
-          address: ${env:OTEL_SERVICE_TELEMETRY_METRICS_ADDRESS}
+          level: detailed
+          address: 0.0.0.0:8888
 
       extensions: [health_check, pprof, zpages]
 

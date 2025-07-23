@@ -64,7 +64,7 @@ spec:
       - name: countly-frontend
         image: countly-unified
         imagePullPolicy: Always
-        command: ["npm", "run", "start:frontend"]
+        args: ["npm", "run", "start:frontend"]
         ports:
         - containerPort: 6001
           name: http

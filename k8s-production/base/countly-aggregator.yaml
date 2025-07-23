@@ -29,7 +29,7 @@ spec:
       - name: countly-aggregator
         image: countly-unified
         imagePullPolicy: Always
-        command: ["npm", "run", "start:aggregator"]
+        args: ["npm", "run", "start:aggregator"]
         
         # This service runs in API mode. It loads API-specific environment variables
         # (e.g., COUNTLY_CONFIG_API_*) in addition to global ones (COUNTLY_CONFIG__*).

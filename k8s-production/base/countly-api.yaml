@@ -60,7 +60,7 @@ spec:
       - name: countly-api
         image: countly-unified
         imagePullPolicy: Always
-        command: ["npm", "run", "start:api"]
+        args: ["npm", "run", "start:api"]
         ports:
         - containerPort: 3001
           name: http
