@@ -1,3 +1,8 @@
+## Version 25.03.XX
+
+Features:
+- [plugins] Add configuration warning tags to settings UI
+
 ## Version 25.03.11
 Fixes:
 - [core] Fix mongo connection url parsing
