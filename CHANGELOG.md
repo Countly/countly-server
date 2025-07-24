@@ -1,17 +1,27 @@
-## Version 25.03.XX
+## Version 25.03.11
 Fixes:
-- [core] Fix user analytics widget chart
 - [core] Fix mongo connection url parsing
+- [core] Fix user analytics widget chart
 - [crashes] Fix free session and free user calculation
 - [dashboards] Delete associated widgets and reports when a dashboard is removed
 - [star-rating] Fix widget close post message
+- [core] Adjust level and update content of app version log
+- [populator] Update getVersion to generate valid semantic version
 
 Enterprise Fixes:
 - [crash_symbolication] Remove auto symbolication setting
-- [surveys] Fix widget close post message
 - [drill] Fix drill meta get filter
-- [flows] Nullchecks on $size when calculating flows.
+- [flows] Null checks on $size when calculating flows.
+- [surveys] Fix widget close post message
 
+Dependencies:
+- Bump eslint-plugin-vue from 10.2.0 to 10.3.0
+- Bump form-data from 4.0.0 to 4.0.4 in /plugins/hooks
+- Bump nodemailer from 7.0.3 to 7.0.5
+- Bump on-headers and express-session
+- Bump puppeteer from 24.10.1 to 24.14.0
+- Bump sharp from 0.34.2 to 0.34.3
+- Bump supertest from 7.1.1 to 7.1.3
 
 ## Version 25.03.10
 Enterprise Fixes:
