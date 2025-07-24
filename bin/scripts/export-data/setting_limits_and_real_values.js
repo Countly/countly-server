@@ -4,7 +4,6 @@
  *  Path: $(countly dir)/bin/scripts/export-data
  *  Command: node setting_limits_and_real_values.js
  */
-
 const fs = require('fs');
 const crypto = require('crypto');
 const common = require('../../../api/utils/common.js');
@@ -20,10 +19,10 @@ const DEFAULT_LIMITS = {
     view_name_limit: 128,
     view_segment_limit: 100,
     view_segment_value_limit: 10,
-    custom_prop_limit: 20,
+    //custom_prop_limit: 20,
+    custom_property_limit:20,
     custom_prop_value_limit: 50,
 };
-
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
     console.log("Connected to databases...");
     common.db = countlyDb;
@@ -36,21 +35,17 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
         else {
             // WRITE START OF ARRAY
             WriteStream.write('[\n', 'utf8');
-
             // GETTING DATA FOR SET LIMITS FOR EVENTS, VIEWS, AND CUSTOM PROPERTIES
             var pluginsCollectionPlugins = await countlyDb.collection("plugins").findOne({"_id": 'plugins'});
-
             // LOOP APPS FOR EACH REQUIREMENT
             for (let i = 0; i < apps.length; i++) {
                 var app = apps[i];
                 console.log(i + 1, ") Processing app:", app.name);
-
                 try {
                     var app_results = { "App Name": app.name },
                         defaultVal,
                         realVal,
                         currentVal;
-
                     // SETTING UP CURRENT SET LIMITS PER APP
                     var appsCollectionPerApp = await countlyDb.collection("apps").findOne({"_id": common.db.ObjectID(app._id)});
                     var CURRENT_LIMITS = {
@@ -61,10 +56,10 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         view_name_limit: pluginsCollectionPlugins?.views?.view_name_limit || DEFAULT_LIMITS.view_name_limit,
                         view_segment_limit: pluginsCollectionPlugins?.views?.segment_limit || DEFAULT_LIMITS.view_segment_limit,
                         view_segment_value_limit: pluginsCollectionPlugins?.views?.segment_value_limit || DEFAULT_LIMITS.view_segment_value_limit,
-                        custom_prop_limit: pluginsCollectionPlugins?.users?.custom_prop_limit || DEFAULT_LIMITS.custom_prop_limit,
+                        //custom_prop_limit: pluginsCollectionPlugins?.users?.custom_prop_limit || DEFAULT_LIMITS.custom_prop_limit,
+                        custom_property_limit: pluginsCollectionPlugins?.drill?.custom_property_limit || DEFAULT_LIMITS.custom_property_limit,
                         custom_prop_value_limit: pluginsCollectionPlugins?.users?.custom_set_limit || DEFAULT_LIMITS.custom_prop_value_limit,
                     };
-
                     // GETTING REAL DATA PER APP
                     var eventsCollectionPerApp = await countlyDb.collection("events").findOne({"_id": common.db.ObjectID(app._id)});
                     var viewsCountsPerApp = await countlyDb.collection("app_viewsmeta" + app._id).countDocuments();
@@ -140,22 +135,15 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                 catch (err) {
                     console.log("Mongodb operation failed for app: ", app.name, err);
                 }
-
                 // EVENT KEYS
                 defaultVal = DEFAULT_LIMITS.event_limit;
-
                 currentVal = CURRENT_LIMITS.event_limit;
-
                 let realEvents = eventsCollectionPerApp?.list || [];
                 realVal = realEvents.length;
-
                 app_results['Event Keys'] = {"default": defaultVal, "set": currentVal, "real": realVal};
-
                 // SEGMENTS IN ONE EVENT
                 defaultVal = DEFAULT_LIMITS.event_segment_limit;
-
                 currentVal = CURRENT_LIMITS.event_segment_limit;
-
                 let eventSegments = eventsCollectionPerApp && eventsCollectionPerApp.segments || {};
                 realVal = Object.entries(eventSegments)
                     .sort((a, b) => b[1].length - a[1].length)
@@ -163,23 +151,18 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                         acc[key] = value.length;
                         return acc;
                     }, {});
-
                 app_results['Event Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
-
                 // UNIQUE EVENT SEGMENT VALUES FOR 1 SEGMENT
                 defaultVal = DEFAULT_LIMITS.event_segment_value_limit;
-
                 currentVal = CURRENT_LIMITS.event_segment_value_limit;
-
                 realVal = {};
                 await Promise.all(realEvents.map(async(event) => {
                     var shortEventName = common.fixEventKey(event);
-                    var eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + app._id).digest('hex');
-
+                    var hash = crypto.createHash('sha1').update(shortEventName + app._id).digest('hex');
+                    var eventCollectionName = "events_data";
                     try {
                         var regexes = [
-                            "^no-segment_2023:0.*",
-                            "^no-segment_2024:0.*"
+                            "^"+app._id+"_"+hash+"_no-segment_2025:0.*"
                         ];
                         var eventsSegmentsValues = await countlyDb.collection(eventCollectionName).aggregate([
                             {
@@ -218,7 +201,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                                 }
                             }
                         ]).toArray();
-
                         // Use reduce to transform array
                         eventsSegmentsValues = eventsSegmentsValues.reduce((acc, item) => {
                             const key = item.meta_v2.k;
@@ -228,7 +210,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                             acc[key] += item.meta_v2.v;
                             return acc;
                         }, {});
-
                         if (Object.keys(eventsSegmentsValues).length > 0) {
                             realVal[event] = eventsSegmentsValues;
                         }
@@ -238,41 +219,26 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     }
                 }));
                 app_results['Unique Event Segment Values'] = {"default": defaultVal, "set": currentVal, "real": realVal};
-
                 // UNIQUE VIEV NAMES
                 defaultVal = DEFAULT_LIMITS.view_limit;
-
                 currentVal = CURRENT_LIMITS.view_limit;
-
                 realVal = viewsCountsPerApp;
-
                 app_results['Unique View Names'] = {"default": defaultVal, "set": currentVal, "real": realVal};
-
                 // VIEW NAME LENGTH LIMIT
                 defaultVal = DEFAULT_LIMITS.view_name_limit;
-
                 currentVal = CURRENT_LIMITS.view_name_limit;
-
                 realVal = {longestViewName: "", longestViewLength: 0};
                 realVal.longestViewName = viewsCollectionPerApp && viewsCollectionPerApp[0] && viewsCollectionPerApp[0]?.view;
                 realVal.longestViewLength = viewsCollectionPerApp && viewsCollectionPerApp[0] && viewsCollectionPerApp[0]?.max_length;
-
                 app_results['View Name Length Limit'] = {"default": defaultVal, "set": currentVal, "real": realVal};
-
                 // SEGMENTS IN ONE VIEW
                 defaultVal = DEFAULT_LIMITS.view_segment_limit;
-
                 currentVal = CURRENT_LIMITS.view_segment_limit;
-
                 realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0]?.numberOfSegments || 0;
-
                 app_results['View Segments'] = {"default": defaultVal, "set": currentVal, "real": realVal};
-
                 // VIEW SEGMENT'S UNIQUE VALUES
                 defaultVal = DEFAULT_LIMITS.view_segment_value_limit;
-
                 currentVal = CURRENT_LIMITS.view_segment_value_limit;
-
                 realVal = viewsSegmentsPerApp && viewsSegmentsPerApp[0]?.segments || 0;
                 Object.keys(realVal).forEach(key => {
                     if (realVal[key] === 0) {
@@ -280,23 +246,18 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     }
                 });
                 app_results['View Segments Unique Values'] = {"default": defaultVal, "set": currentVal, "real": realVal};
-
                 // USER PROPERTIES
-                defaultVal = DEFAULT_LIMITS.custom_prop_limit;
-
-                currentVal = CURRENT_LIMITS.custom_prop_limit;
-
+                //defaultVal = DEFAULT_LIMITS.custom_prop_limit;
+                //currentVal = CURRENT_LIMITS.custom_prop_limit;
+                defaultVal = DEFAULT_LIMITS.custom_property_limit;
+                currentVal = CURRENT_LIMITS.custom_property_limit;
                 realVal = customPropsPerApp && customPropsPerApp[0]?.customPropertiesCount || 0;
-                app_results['Custom User Properties'] = {"default": defaultVal, "set": currentVal, "real": realVal};
-
+                app_results['Max user custom properties'] = {"default": defaultVal, "set": currentVal, "real": realVal};
                 // VALUES IN AN ARRAY FOR ONE USER PROPERTY
                 defaultVal = DEFAULT_LIMITS.custom_prop_value_limit;
-
                 currentVal = CURRENT_LIMITS.custom_prop_value_limit;
-
                 realVal = valueFieldCounts || undefined;
                 app_results['Values In Array For One User Property'] = {"default": defaultVal, "set": currentVal, "real": realVal};
-
                 // WRITE RESULTS PER APP TO FILE
                 WriteStream.write(JSON.stringify(app_results, null, 2), 'utf8');
                 if (i + 1 < apps.length) {
@@ -315,7 +276,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
     finally {
         close();
     }
-
     async function getAppList(options) {
         var query = {};
         if (app_list && app_list.length > 0) {
@@ -325,7 +285,6 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             }
             query = {_id: {$in: listed}};
         }
-
         try {
             let apps = await options.db.collection("apps").find(query).toArray();
             return apps;
@@ -334,9 +293,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
             console.log("Error getting apps: ", err);
             return [];
         }
-
     }
-
     function close(err) {
         if (err) {
             console.log("Error: ", err);
