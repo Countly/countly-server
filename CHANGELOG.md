@@ -1,3 +1,5 @@
+## Version 24.10.XX
+-[core] Use correct rights validation for loyality
 
 ## Version 24.10.11
 Enterprise Fixes:
