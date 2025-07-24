@@ -39,6 +39,7 @@
         ltl: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
         lt: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
         rcz: { android: v1_android, ios: v1_ios, web: v1_web, flutter: v2_flutter, react_native: v2_react_native },
+        bom_preset: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
         bom: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
         bom_at: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
         bom_rqp: { android: v2_android, ios: v2_ios, web: v2_web, flutter: v2_flutter, react_native: v2_react_native },
@@ -143,7 +144,7 @@
                     },
                     backoff: {
                         label: "Backoff Settings",
-                        list: ["bom", "bom_at", "bom_rqp", "bom_ra", "bom_d"]
+                        list: ["bom_preset", "bom", "bom_at", "bom_rqp", "bom_ra", "bom_d"]
                     },
                     limits: {
                         label: "SDK Limits",
@@ -327,6 +328,32 @@
                         enforced: false,
                         value: null
                     },
+                    bom_preset: {
+                        type: "preset",
+                        name: "Backoff Preset",
+                        description: "Choose a preset for backoff settings or customize manually",
+                        default: "Default",
+                        enforced: false,
+                        disable_enforce: true,
+                        value: null,
+                        presets: [
+                            {
+                                name: "Default",
+                                values: { bom: true, bom_at: 10, bom_rqp: 50, bom_ra: 24, bom_d: 60 }
+                            },
+                            {
+                                name: "Aggressive",
+                                values: { bom: true, bom_at: 5, bom_rqp: 80, bom_ra: 12, bom_d: 30 }
+                            },
+                            {
+                                name: "Relaxed",
+                                values: { bom: true, bom_at: 20, bom_rqp: 20, bom_ra: 48, bom_d: 120 }
+                            },
+                            {
+                                name: "Custom",
+                            }
+                        ]
+                    },
                     bom: {
                         type: "switch",
                         name: "Enable Backoff Mechanism",
@@ -382,6 +409,12 @@
             onChange: function(key, value) {
                 log("onChange", key, value);
                 this.configs[key].value = value;
+                if (key.startsWith("bom")) {
+                    this.getData.bom_preset.value = "Custom";
+                    if (this.diff.indexOf("bom_preset") === -1) {
+                        this.diff.push("bom_preset");
+                    }
+                }
                 if (this.diff.indexOf(key) === -1) {
                     this.diff.push(key);
                 }
@@ -405,6 +438,13 @@
                 if (typeof params.bom_rqp !== "undefined") {
                     params.bom_rqp = params.bom_rqp / 100;
                 }
+                for (var key in params) {
+                    if (this.configs[key] && this.configs[key].type === "preset") {
+                        // remove presets from params
+                        delete params[key];
+                    }
+                }
+
                 var data = {};
                 data.v = SC_VER;
                 data.t = Date.now();
@@ -420,33 +460,20 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             },
-            onBackoffPreset: function(preset) {
-                this.configs.backoff_mode.value = preset;
-                const presets = {
-                    aggressive: { bom: true, bom_at: 5, bom_rqp: 80, bom_ra: 12, bom_d: 30 },
-                    normal: { bom: true, bom_at: 10, bom_rqp: 50, bom_ra: 24, bom_d: 60 },
-                    reluctant: { bom: true, bom_at: 20, bom_rqp: 20, bom_ra: 48, bom_d: 120 }
-                };
-                if (preset !== "customize" && presets[preset]) {
-                    Object.keys(presets[preset]).forEach(key => {
-                        this.configs[key].value = presets[preset][key];
-                        if (this.diff.indexOf(key) === -1) {
-                            this.diff.push(key);
+            onPresetChange(key, preset) {
+                this.getData[key].value = preset.name;
+                if (this.diff.indexOf(key) === -1) {
+                    this.diff.push(key);
+                }
+
+                if (preset.values) {
+                    Object.keys(preset.values).forEach(param => {
+                        this.configs[param].value = preset.values[param];
+                        if (this.diff.indexOf(param) === -1) {
+                            this.diff.push(param);
                         }
                     });
                 }
-            },
-            onButtonClick1() {
-                // eslint-disable-next-line no-console
-                console.log('Button 1 clicked');
-            },
-            onButtonClick2() {
-                // eslint-disable-next-line no-console
-                console.log('Button 2 clicked');
-            },
-            onButtonClick3() {
-                // eslint-disable-next-line no-console
-                console.log('Button 3 clicked');
             },
             enforce(key) {
                 if (key && !this.configs[key]) {
