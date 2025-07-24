@@ -47,6 +47,15 @@ exporters:
       X-Scope-OrgID: ${env:LOKI_TENANT_ID}
     timeout: 30s
   
+  pyroscope:
+    endpoint: ${env:OTEL_EXPORTER_PYROSCOPE_ENDPOINT}
+    headers:
+      X-Scope-OrgID: ${env:PYROSCOPE_TENANT_ID}
+      Authorization: ${env:PYROSCOPE_AUTH_HEADER}
+    timeout: 30s
+    tls:
+      insecure: ${env:OTEL_EXPORTER_TLS_INSECURE}
+  
   logging:
 
 service:
@@ -66,6 +75,11 @@ service:
       receivers: [otlp]
       processors: [batch, memory_limiter, k8sattributes, resource]
       exporters: [loki, logging]
+    
+    profiles:
+      receivers: [otlp]
+      processors: [batch, memory_limiter, k8sattributes, resource]
+      exporters: [pyroscope, logging]
 
 extensions:
   health_check:

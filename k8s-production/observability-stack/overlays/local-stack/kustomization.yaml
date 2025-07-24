@@ -11,6 +11,7 @@ resources:
 - prometheus-stack.yaml
 - grafana.yaml
 - tempo-stack.yaml
+- pyroscope-stack.yaml
 
 configMapGenerator:
 # Override base observability config with local endpoints
@@ -39,6 +40,7 @@ secretGenerator:
   - PROMETHEUS_BEARER_TOKEN=""
   - LOKI_BEARER_TOKEN=""
   - TEMPO_AUTH_HEADER=""
+  - PYROSCOPE_AUTH_HEADER=""
 
 patches:
 # Replace OTEL collector config with local endpoints

@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pyroscope-config
+  namespace: countly-observability
+data:
+  config.yaml: |
+    analytics:
+      opt_out: true
+    
+    server:
+      http_listen_port: 4040
+      log_level: info
+    
+    limits_config:
+      max_query_lookback: 720h
+      max_query_length: 0h
+      max_label_names_per_series: 30
+      max_label_value_length: 2048
+      ingestion_rate: 50000000
+      ingestion_burst_size: 100000000
+    
+    distributor:
+      pool_config:
+        health_check_ingesters: true
+    
+    memberlist:
+      join_members: []
+    
+    storage:
+      backend: filesystem
+      filesystem:
+        directory: /data
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pyroscope-data
+  namespace: countly-observability
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pyroscope
+  namespace: countly-observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pyroscope
+  template:
+    metadata:
+      labels:
+        app: pyroscope
+    spec:
+      containers:
+      - name: pyroscope
+        image: grafana/pyroscope:1.7.0
+        args:
+          - -config.file=/etc/pyroscope/config.yaml
+          - -target=all
+        ports:
+        - containerPort: 4040
+          name: http
+        volumeMounts:
+        - name: config
+          mountPath: /etc/pyroscope
+        - name: data
+          mountPath: /data
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 100m
+          limits:
+            memory: 1Gi
+            cpu: 1000m
+      volumes:
+      - name: config
+        configMap:
+          name: pyroscope-config
+      - name: data
+        persistentVolumeClaim:
+          claimName: pyroscope-data
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pyroscope
+  namespace: countly-observability
+spec:
+  selector:
+    app: pyroscope
+  ports:
+  - name: http
+    port: 4040
+    targetPort: 4040
