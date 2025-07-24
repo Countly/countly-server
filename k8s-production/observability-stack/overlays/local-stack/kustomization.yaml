@@ -43,9 +43,22 @@ secretGenerator:
   - PYROSCOPE_AUTH_HEADER=""
 
 patches:
-# Replace OTEL collector config with local endpoints
-- path: otel-collector-config-patch.yaml
+# Replace Alloy config with full configuration
+- path: alloy-config-patch.yaml
   target:
     kind: ConfigMap
-    name: otel-collector-config
+    name: alloy-config
     namespace: countly-observability
+
+# Replace Alloy ConfigMap with generated name
+replacements:
+- source:
+    kind: ConfigMap
+    name: alloy-config
+    fieldPath: metadata.name
+  targets:
+  - select:
+      kind: DaemonSet
+      name: alloy
+    fieldPaths:
+    - spec.template.spec.volumes.[name=config].configMap.name

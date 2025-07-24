@@ -106,7 +106,9 @@ spec:
         runAsUser: 10001
       containers:
       - name: tempo
-        image: grafana/tempo:2.3.1
+        image: grafana/tempo:2.8.1
+        # Updated to latest version 2.8.1
+        # changelog: https://raw.githubusercontent.com/grafana/tempo/refs/heads/main/CHANGELOG.md
         args:
           - -config.file=/etc/tempo/tempo.yaml
         ports:

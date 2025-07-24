@@ -6,8 +6,8 @@ namespace: countly-observability
 resources:
 # Observability namespace
 - namespace.yaml
-# OpenTelemetry Collector deployment
-- otel-collector-deployment.yaml
+# Grafana Alloy deployment (replaces OTEL Collector and Promtail)
+- alloy.yaml
 
 generatorOptions:
   labels:
@@ -18,24 +18,9 @@ configMapGenerator:
 - name: observability-config
   envs:
   - configs/observability.env
-- name: otel-collector-config
-  files:
-  - otel-collector.yaml=configs/otel-collector.yaml
 
 secretGenerator:
 - name: observability-auth
   envs:
   - secrets/observability-auth.env
 
-# Automatically replace ConfigMap references with generated names
-replacements:
-- source:
-    kind: ConfigMap
-    name: otel-collector-config
-    fieldPath: metadata.name
-  targets:
-  - select:
-      kind: Deployment
-      name: otel-collector
-    fieldPaths:
-    - spec.template.spec.volumes.[name=config].configMap.name

@@ -23,100 +23,9 @@ data:
     rule_files:
       - /etc/prometheus/rules/*.yml
     
-    scrape_configs:
-      # Scrape OpenTelemetry Collector metrics
-      - job_name: 'otel-collector'
-        static_configs:
-        - targets: ['otel-collector.countly-observability.svc.cluster.local:8889']
-        relabel_configs:
-        - source_labels: [__address__]
-          target_label: instance
-          replacement: otel-collector
-      
-      # Kubernetes API server
-      - job_name: 'kubernetes-apiservers'
-        kubernetes_sd_configs:
-        - role: endpoints
-        scheme: https
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        relabel_configs:
-        - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
-          action: keep
-          regex: default;kubernetes;https
-      
-      # Kubernetes nodes
-      - job_name: 'kubernetes-nodes'
-        scheme: https
-        tls_config:
-          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-        kubernetes_sd_configs:
-        - role: node
-        relabel_configs:
-        - action: labelmap
-          regex: __meta_kubernetes_node_label_(.+)
-        - target_label: __address__
-          replacement: kubernetes.default.svc:443
-        - source_labels: [__meta_kubernetes_node_name]
-          regex: (.+)
-          target_label: __metrics_path__
-          replacement: /api/v1/nodes/${1}/proxy/metrics
-      
-      # Kubernetes pods
-      - job_name: 'kubernetes-pods'
-        kubernetes_sd_configs:
-        - role: pod
-        relabel_configs:
-        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-          action: keep
-          regex: true
-        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-          action: replace
-          target_label: __metrics_path__
-          regex: (.+)
-        - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
-          action: replace
-          regex: ([^:]+)(?::\d+)?;(\d+)
-          replacement: $1:$2
-          target_label: __address__
-        - action: labelmap
-          regex: __meta_kubernetes_pod_label_(.+)
-        - source_labels: [__meta_kubernetes_namespace]
-          action: replace
-          target_label: kubernetes_namespace
-        - source_labels: [__meta_kubernetes_pod_name]
-          action: replace
-          target_label: kubernetes_pod_name
-      
-      # Kubernetes services
-      - job_name: 'kubernetes-services'
-        kubernetes_sd_configs:
-        - role: endpoints
-        relabel_configs:
-        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
-          action: keep
-          regex: true
-        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
-          action: replace
-          target_label: __scheme__
-          regex: (https?)
-        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
-          action: replace
-          target_label: __metrics_path__
-          regex: (.+)
-        - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
-          action: replace
-          target_label: __address__
-          regex: ([^:]+)(?::\d+)?;(\d+)
-          replacement: $1:$2
-        - action: labelmap
-          regex: __meta_kubernetes_service_label_(.+)
-        - source_labels: [__meta_kubernetes_namespace]
-          target_label: kubernetes_namespace
-        - source_labels: [__meta_kubernetes_service_name]
-          target_label: kubernetes_name
+    # Remote write API is enabled for receiving metrics from Alloy
+    # All scraping is now handled by Alloy
+    scrape_configs: []
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -271,7 +180,13 @@ spec:
         runAsUser: 65534
       containers:
       - name: prometheus
-        image: prom/prometheus:v2.48.1
+        image: prom/prometheus:v3.5.0
+        # Updated to v3.5.0 (from v2.48.1)
+        # NOTE: Scraping functionality has been migrated to Alloy
+        # Prometheus now serves only as TSDB, query API, and alerting engine
+        # All metric collection is handled by Alloy which sends data via remote write
+        # Remote write receiver is enabled with --web.enable-remote-write-receiver
+        # See: https://grafana.com/docs/alloy/latest/set-up/migrate/from-prometheus/
         args:
           - --config.file=/etc/prometheus/prometheus.yml
           - --storage.tsdb.path=/prometheus
@@ -280,6 +195,7 @@ spec:
           - --web.console.libraries=/usr/share/prometheus/console_libraries
           - --web.console.templates=/usr/share/prometheus/consoles
           - --web.enable-lifecycle
+          - --web.enable-remote-write-receiver
         ports:
         - containerPort: 9090
           name: http

@@ -1,0 +1,43 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: countly-observability
+
+resources:
+# Base configuration (only Alloy for remote endpoints)
+- ../../base
+
+configMapGenerator:
+# Override base observability config with remote endpoints
+- name: observability-config
+  behavior: replace
+  envs:
+  - configs/observability-remote.env
+
+# Remote auth credentials
+secretGenerator:
+- name: observability-auth
+  behavior: replace
+  envs:
+  - secrets/observability-auth.env
+
+patches:
+# Replace Alloy config with remote configuration
+- path: alloy-config-patch.yaml
+  target:
+    kind: ConfigMap
+    name: alloy-config
+    namespace: countly-observability
+
+# Replace Alloy ConfigMap with generated name
+replacements:
+- source:
+    kind: ConfigMap
+    name: alloy-config
+    fieldPath: metadata.name
+  targets:
+  - select:
+      kind: DaemonSet
+      name: alloy
+    fieldPaths:
+    - spec.template.spec.volumes.[name=config].configMap.name

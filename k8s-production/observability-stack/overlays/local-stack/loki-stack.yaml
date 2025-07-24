@@ -44,15 +44,11 @@ data:
       alertmanager_url: http://alertmanager.countly-observability.svc.cluster.local:9093
     
     limits_config:
-      enforce_metric_name: false
       reject_old_samples: true
       reject_old_samples_max_age: 168h
       max_entries_limit_per_query: 5000
       retention_period: 720h
       
-    table_manager:
-      retention_deletes_enabled: true
-      retention_period: 720h
     
     ingester:
       chunk_idle_period: 30m
@@ -132,7 +128,9 @@ spec:
         runAsUser: 10001
       containers:
       - name: loki
-        image: grafana/loki:2.9.3
+        image: grafana/loki:3.5.3
+        # Updated to latest version 3.5.3 (major version upgrade)
+        # changelog: https://raw.githubusercontent.com/grafana/loki/refs/heads/main/CHANGELOG.md
         args:
           - -config.file=/etc/loki/loki.yaml
         ports:
@@ -173,183 +171,4 @@ spec:
       - name: storage
         persistentVolumeClaim:
           claimName: loki-pvc
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: promtail-config
-  namespace: countly-observability
-data:
-  promtail.yaml: |
-    server:
-      http_listen_port: 9080
-      grpc_listen_port: 0
-    
-    positions:
-      filename: /tmp/positions.yaml
-    
-    clients:
-      - url: http://loki.countly-observability.svc.cluster.local:3100/loki/api/v1/push
-    
-    scrape_configs:
-    - job_name: kubernetes-pods
-      kubernetes_sd_configs:
-      - role: pod
-        namespaces:
-          names:
-          - countly
-      relabel_configs:
-      - source_labels:
-        - __meta_kubernetes_pod_controller_name
-        regex: ([0-9a-z-.]+?)(-[0-9a-f]{8,10})?
-        action: replace
-        target_label: __tmp_controller_name
-      - source_labels:
-        - __meta_kubernetes_pod_label_app
-        - __meta_kubernetes_pod_label_component
-        - __tmp_controller_name
-        - __meta_kubernetes_pod_name
-        regex: ^;*([^;]+)(;.*)?$
-        action: replace
-        target_label: app
-      - source_labels:
-        - __meta_kubernetes_pod_label_app
-        - __meta_kubernetes_pod_label_component
-        - __tmp_controller_name
-        - __meta_kubernetes_pod_name
-        regex: ^([^;]+);*.*$
-        action: replace
-        target_label: component
-      - source_labels:
-        - __meta_kubernetes_pod_node_name
-        action: replace
-        target_label: node_name
-      - source_labels:
-        - __meta_kubernetes_namespace
-        action: replace
-        target_label: namespace
-      - action: replace
-        replacement: $1
-        separator: /
-        source_labels:
-        - namespace
-        - app
-        target_label: job
-      - action: replace
-        source_labels:
-        - __meta_kubernetes_pod_name
-        target_label: pod
-      - action: replace
-        source_labels:
-        - __meta_kubernetes_pod_container_name
-        target_label: container
-      - replacement: /var/log/pods/*$1/*.log
-        separator: /
-        source_labels:
-        - __meta_kubernetes_pod_uid
-        - __meta_kubernetes_pod_container_name
-        target_label: __path__
-      pipeline_stages:
-      - json:
-          expressions:
-            level: level
-            msg: msg
-            timestamp: time
-            trace_id: trace.id
-            span_id: span.id
-      - labels:
-          level:
-      - timestamp:
-          source: timestamp
-          format: RFC3339
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: promtail
-  namespace: countly-observability
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: promtail
-rules:
-- apiGroups: [""]
-  resources:
-  - nodes
-  - nodes/proxy
-  - services
-  - endpoints
-  - pods
-  verbs: ["get", "watch", "list"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: promtail
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: promtail
-subjects:
-- kind: ServiceAccount
-  name: promtail
-  namespace: countly-observability
----
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: promtail
-  namespace: countly-observability
-  labels:
-    app: promtail
-spec:
-  selector:
-    matchLabels:
-      app: promtail
-  template:
-    metadata:
-      labels:
-        app: promtail
-    spec:
-      serviceAccountName: promtail
-      containers:
-      - name: promtail
-        image: grafana/promtail:2.9.3
-        args:
-          - -config.file=/etc/promtail/promtail.yaml
-        ports:
-        - containerPort: 9080
-          name: http
-          protocol: TCP
-        volumeMounts:
-        - name: config
-          mountPath: /etc/promtail
-        - name: varlog
-          mountPath: /var/log
-          readOnly: true
-        - name: varlibdockercontainers
-          mountPath: /var/lib/docker/containers
-          readOnly: true
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 200m
-            memory: 256Mi
-        env:
-        - name: HOSTNAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-      volumes:
-      - name: config
-        configMap:
-          name: promtail-config
-      - name: varlog
-        hostPath:
-          path: /var/log
-      - name: varlibdockercontainers
-        hostPath:
-          path: /var/lib/docker/containers
+# Promtail has been replaced by Alloy - see alloy-config-patch.yaml for log collection configuration

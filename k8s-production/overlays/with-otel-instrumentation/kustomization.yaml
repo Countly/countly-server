@@ -8,6 +8,8 @@ resources:
 - ../../base
 
 # Additional ConfigMaps for observability
+# NOTE: OTEL telemetry is now sent to Alloy instead of OTEL Collector
+# Alloy handles OTLP ingestion on the same ports (4317 gRPC, 4318 HTTP)
 configMapGenerator:
 - name: observability-config-otlp
   envs:

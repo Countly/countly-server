@@ -5,32 +5,15 @@ metadata:
   namespace: countly-observability
 data:
   config.yaml: |
-    analytics:
-      opt_out: true
+    # Minimal Pyroscope configuration for v1.14.0
+    target: all
     
     server:
       http_listen_port: 4040
       log_level: info
     
-    limits_config:
-      max_query_lookback: 720h
-      max_query_length: 0h
-      max_label_names_per_series: 30
-      max_label_value_length: 2048
-      ingestion_rate: 50000000
-      ingestion_burst_size: 100000000
-    
-    distributor:
-      pool_config:
-        health_check_ingesters: true
-    
-    memberlist:
-      join_members: []
-    
-    storage:
-      backend: filesystem
-      filesystem:
-        directory: /data
+    pyroscopedb:
+      data_path: /data
 
 ---
 apiVersion: v1
@@ -61,15 +44,32 @@ spec:
       labels:
         app: pyroscope
     spec:
+      securityContext:
+        fsGroup: 10001
+      initContainers:
+      - name: init-data-dir
+        image: busybox:1.35
+        command: ['sh', '-c', 'chown -R 10001:10001 /data && chmod -R 755 /data']
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        securityContext:
+          runAsUser: 0
       containers:
       - name: pyroscope
-        image: grafana/pyroscope:1.7.0
+        image: grafana/pyroscope:1.14.0
+        # Updated to latest version 1.14.0
+        # changelog: https://raw.githubusercontent.com/grafana/pyroscope/refs/heads/main/CHANGELOG.md
         args:
           - -config.file=/etc/pyroscope/config.yaml
           - -target=all
         ports:
         - containerPort: 4040
           name: http
+        securityContext:
+          runAsUser: 10001
+          runAsGroup: 10001
+          runAsNonRoot: true
         volumeMounts:
         - name: config
           mountPath: /etc/pyroscope

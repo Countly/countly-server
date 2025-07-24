@@ -1,0 +1,157 @@
+- op: replace
+  path: /data/config.alloy
+  value: |
+    // ===== Log Collection (Kubernetes Pods) =====
+    discovery.kubernetes "pods" {
+      role = "pod"
+      namespaces {
+        names = ["countly", "countly-observability"]
+      }
+    }
+    
+    discovery.relabel "pods" {
+      targets = discovery.kubernetes.pods.targets
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_controller_name"]
+        regex         = "([0-9a-z-.]+?)(-[0-9a-f]{8,10})?"
+        target_label  = "__tmp_controller_name"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app", "__meta_kubernetes_pod_label_component", "__tmp_controller_name", "__meta_kubernetes_pod_name"]
+        regex         = "^;*([^;]+)(;.*)?$"
+        target_label  = "app"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node_name"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+      
+      rule {
+        source_labels = ["namespace", "app"]
+        separator     = "/"
+        target_label  = "job"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        target_label  = "container"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+        separator     = "/"
+        target_label  = "__path__"
+        replacement   = "/var/log/pods/*$1/*.log"
+      }
+    }
+    
+    local.file_match "pods" {
+      path_targets = discovery.relabel.pods.output
+    }
+    
+    // ===== Loki Components =====
+    loki.write "default" {
+      endpoint {
+        url = "http://loki.countly-observability.svc.cluster.local:3100/loki/api/v1/push"
+      }
+      external_labels = {}
+    }
+    
+    loki.process "pods" {
+      forward_to = [loki.write.default.receiver]
+      
+      stage.json {
+        expressions = {
+          level     = "level",
+          msg       = "msg",
+          timestamp = "time",
+        }
+      }
+      
+      stage.labels {
+        values = {
+          level = null,
+        }
+      }
+      
+      stage.timestamp {
+        source = "timestamp"
+        format = "RFC3339"
+      }
+    }
+    
+    loki.source.file "pods" {
+      targets               = local.file_match.pods.targets
+      forward_to            = [loki.process.pods.receiver]
+      legacy_positions_file = "/tmp/alloy/positions.yaml"
+    }
+    
+    // ===== Prometheus Remote Write =====
+    prometheus.remote_write "default" {
+      endpoint {
+        url = "http://prometheus.countly-observability.svc.cluster.local:9090/api/v1/write"
+      }
+    }
+    
+    // ===== OTLP Simple Pipeline =====
+    otelcol.exporter.prometheus "default" {
+      forward_to = [prometheus.remote_write.default.receiver]
+    }
+    
+    otelcol.exporter.otlp "tempo" {
+      client {
+        endpoint = "tempo.countly-observability.svc.cluster.local:4317"
+        tls {
+          insecure = true
+        }
+      }
+    }
+    
+    otelcol.processor.batch "default" {
+      timeout = "5s"
+      send_batch_size = 1024
+      
+      output {
+        metrics = [otelcol.exporter.prometheus.default.input]
+        traces  = [otelcol.exporter.otlp.tempo.input]
+      }
+    }
+    
+    otelcol.receiver.otlp "default" {
+      grpc {
+        endpoint = "0.0.0.0:4317"
+      }
+      
+      http {
+        endpoint = "0.0.0.0:4318"
+      }
+      
+      output {
+        metrics = [otelcol.processor.batch.default.input]
+        traces  = [otelcol.processor.batch.default.input]
+      }
+    }
+    
+    // ===== Prometheus Self Monitoring =====
+    prometheus.exporter.self "alloy" {
+    }
+    
+    prometheus.scrape "alloy" {
+      targets    = prometheus.exporter.self.alloy.targets
+      forward_to = [prometheus.remote_write.default.receiver]
+      job_name   = "alloy"
+      scrape_interval = "10s"
+    }

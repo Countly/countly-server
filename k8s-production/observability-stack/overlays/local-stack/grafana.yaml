@@ -49,6 +49,11 @@ data:
         spanBar:
           type: 'Tag'
           tag: 'http.method'
+    - name: Pyroscope
+      type: grafana-pyroscope-datasource
+      access: proxy
+      url: http://pyroscope.countly-observability.svc.cluster.local:4040
+      editable: true
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -124,7 +129,9 @@ spec:
         runAsNonRoot: true
       containers:
       - name: grafana
-        image: grafana/grafana:10.2.2
+        image: grafana/grafana:12.1.0
+        # Updated to latest version 12.1.0 (major version upgrade)
+        # changelog https://raw.githubusercontent.com/grafana/grafana/refs/heads/main/CHANGELOG.md
         ports:
         - containerPort: 3000
           name: http
