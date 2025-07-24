@@ -116,9 +116,11 @@
             getData: function() {
                 var params = this.$store.getters["countlySDK/sdk/all"];
                 var data = params || {};
+                log(`getData data: ${JSON.stringify(data)}`);
                 for (var key in this.configs) {
                     if (this.diff.indexOf(key) === -1) {
                         this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
+                        this.configs[key].enforced = typeof data[key] !== "undefined" ? true : false;
                     }
                 }
                 return this.configs;
@@ -515,37 +517,30 @@
             },
             reverseEnforce: function(key) {
                 if (key && !this.configs[key]) {
-                    key = null; // if key is not valid, enforce all
+                    return;
                 }
-                var helper_msg = "You are about to reverse the enforcement of the current setting. This would allow this setting to be changed in your SDK. Do you want to continue?";
-                var helper_title = "Reverse Enforced Setting?";
-                if (!key) {
-                    helper_msg = "You are about to reverse the enforcement od all settings. This would allow these settings to be changed in your SDK. Do you want to continue?";
-                    helper_title = "Reverse Enforcement of All Settings?";
-                }
+                var helper_msg = "You are about to revert the enforcement of the current setting. Your SDK would use default or developer set value if exist. Do you want to continue?";
+                var helper_title = "Revert Enforced Setting?";
                 var self = this;
-                // eslint-disable-next-line no-console
-                console.log("reverseEnforce", key);
-
                 CountlyHelpers.confirm(helper_msg, "red", function(result) {
                     if (!result) {
                         return true;
                     }
                     if (key) {
-                        self.diff.push(key);
                         self.configs[key].enforced = false;
                     }
-                    else {
-                        for (var k in self.configs) {
-                            if (self.diff.indexOf(k) === -1) {
-                                self.diff.push(k);
-                                self.configs[k].enforced = false;
-                            }
-                        }
+                    var params = self.$store.getters["countlySDK/sdk/all"];
+                    var data = params || {};
+                    log(`reverseEnforce data: ${JSON.stringify(data)}`);
+                    if (key) {
+                        log(`reverseEnforce key ${key}`);
+                        delete data[key];
                     }
-                    // TODO: remove from send values
+                    self.$store.dispatch("countlySDK/sdk/update", data).then(function() {
+                        self.$store.dispatch("countlySDK/initialize");
+                    });
                 },
-                ["No, don't reverse enforce", "Yes, reverse enforce"],
+                ["No, don't revert", "Yes, revert"],
                 { title: helper_title }
                 );
             },

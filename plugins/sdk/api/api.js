@@ -52,6 +52,11 @@ plugins.register("/permissions/features", function(ob) {
             "ltl":true,
             "lt":true,
             "rcz":true
+            "bom": true,
+            "bom_at": 10,
+            "bom_rqp": 0.5,
+            "bom_ra": 24,
+            "bom_d": 60
         }
      * }
      */
@@ -158,7 +163,12 @@ plugins.register("/permissions/features", function(ob) {
                         "ltlpt",
                         "ltl",
                         "lt",
-                        "rcz"
+                        "rcz",
+                        "bom",
+                        "bom_at",
+                        "bom_rqp",
+                        "bom_ra",
+                        "bom_d"
                     ];
                     for (var key in configToSave) {
                         if (validOptions.indexOf(key) === -1) {
