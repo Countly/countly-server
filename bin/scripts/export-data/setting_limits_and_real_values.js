@@ -20,7 +20,7 @@ const DEFAULT_LIMITS = {
     view_segment_limit: 100,
     view_segment_value_limit: 10,
     //custom_prop_limit: 20,
-    custom_property_limit:20,
+    custom_property_limit: 20,
     custom_prop_value_limit: 50,
 };
 Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("countly_drill")]).then(async function([countlyDb, drillDb]) {
@@ -162,7 +162,7 @@ Promise.all([pluginManager.dbConnection("countly"), pluginManager.dbConnection("
                     var eventCollectionName = "events_data";
                     try {
                         var regexes = [
-                            "^"+app._id+"_"+hash+"_no-segment_2025:0.*"
+                            "^" + app._id + "_" + hash + "_no-segment_2025:0.*"
                         ];
                         var eventsSegmentsValues = await countlyDb.collection(eventCollectionName).aggregate([
                             {
