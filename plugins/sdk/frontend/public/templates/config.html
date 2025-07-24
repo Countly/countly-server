@@ -37,17 +37,15 @@
                                     <div class="bu-column bu-is-7">
                                         <p class="bu-has-text-weight-medium" :data-test-id="getData[key].name.toLowerCase().replaceAll(' ', '-') + '-title-label'">
                                             {{getData[key].name}}
-                                            <cly-tooltip-icon 
+                                            <cly-tooltip-icon v-if="getData[key].type !== 'preset'"
                                                 :tooltip="getData[key].tooltipMessage" 
                                                 placement="right" 
                                                 :tooltip-class="getData[key].tooltipClass">
                                             </cly-tooltip-icon>
-                                            <el-button v-if="getData[key].enforced === false" @click="enforce(key)" type="default" size="small" icon="fas fa-unlock"
-                                            >
+                                            <el-button v-if="getData[key].enforced === false && !getData[key].disable_enforce" @click="enforce(key)" type="default" size="small" icon="fas fa-unlock">
                                                 Not Enforced
                                             </el-button>
-                                            <el-button v-if="getData[key].enforced === true" @click="reverseEnforce(key)" type="default" size="small" type="success"
-                                                icon="fas fa-lock">
+                                            <el-button v-if="getData[key].enforced === true && !getData[key].disable_enforce" @click="reverseEnforce(key)" type="success" size="small" icon="fas fa-lock">
                                                 Enforced
                                             </el-button>
                                         </p>
@@ -56,16 +54,19 @@
                                     <div class="bu-column bu-is-2"></div>
                                     <div class="bu-column bu-is-3 bu-is-flex bu-is-justify-content-end">
                                             <div v-if="getData[key].type === 'preset'">
-                                                <div class="button-group bu-is-flex bu-is-justify-content-space-between bu-is-vcentered bu-p-5 config-section"
-                                                    style="padding-left: 20px; padding-right: 20px;">
-                                                    <el-button type="success" @click="onButtonClick1">Relaxed</el-button>
-                                                    <el-button type="success" @click="onButtonClick2">Default</el-button>
-                                                    <el-button type="success" @click="onButtonClick3">Aggressive</el-button>
-                                                    <el-button type="success" @click="onButtonClick4">Custom</el-button>
+                                                <div class="button-group bu-is-flex bu-is-justify-content-start bu-is-vcentered bu-p-5 config-section"
+                                                    style="padding-left: 20px; padding-right: 20px; gap: 10px;">
+                                                    <el-button
+                                                        v-for="preset in getData[key].presets"
+                                                        :key="preset.name"
+                                                        @click="onPresetChange(key, preset)"
+                                                        :class="['preset-button', { active: getData[key].value === preset.name }]">
+                                                        {{ preset.name }}
+                                                        </el-button>
                                                 </div>
                                             </div>
                                             <div 
-                                                v-if="getData[key].type === 'function'" 
+                                                v-else-if="getData[key].type === 'function'" 
                                                 v-html="getData[key].render(getData[key])">
                                             </div>
                                             <el-input
