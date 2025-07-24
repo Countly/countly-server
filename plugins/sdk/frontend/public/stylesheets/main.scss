@@ -99,9 +99,9 @@
   transition: all 0.2s ease;
 
   &.active {
-    background-color: #67c23a; // Element UI's "success"
+    background-color: #12AF51; // Element UI's "success"
     color: #fff;
-    border-color: #67c23a;
+    border-color: #12AF51;
   }
 
   &:hover:not(.active) {
