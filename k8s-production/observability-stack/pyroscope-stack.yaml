@@ -73,7 +73,7 @@ spec:
       initContainers:
       - name: init-data-dir
         image: busybox:1.35
-        command: ['sh', '-c', 'mkdir -p /data && chmod -R 755 /data || true']
+        command: ['sh', '-c', 'mkdir -p /data && chown -R 10001:10001 /data && chmod -R 755 /data']
         volumeMounts:
         - name: data
           mountPath: /data

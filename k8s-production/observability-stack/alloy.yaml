@@ -164,6 +164,31 @@ data:
     prometheus.remote_write "default" {
       endpoint {
         url = "http://prometheus.countly-observability.svc.cluster.local:9090/api/v1/write"
+        
+        queue_config {
+          capacity = 15000
+          max_shards = 1
+          min_shards = 1
+          max_samples_per_send = 300
+          batch_send_deadline = "45s"
+          min_backoff = "1s"
+          max_backoff = "60s"
+        }
+        
+        metadata_config {
+          send = false
+        }
+        
+        // Disable exemplars and native histograms to prevent out-of-order errors
+        // See: https://github.com/grafana/alloy/issues/1117
+        send_exemplars = false
+        send_native_histograms = false
+      }
+      
+      wal {
+        truncate_frequency = "2h"
+        min_keepalive_time = "5m"
+        max_keepalive_time = "8h"
       }
     }
     
@@ -197,8 +222,9 @@ data:
     
     // Step 3: Batch Processor (depends on memory limiter)
     otelcol.processor.batch "default" {
-      timeout = "5s"
-      send_batch_size = 1024
+      timeout = "10s"
+      send_batch_size = 2048
+      send_batch_max_size = 4096
       
       output {
         metrics = [otelcol.processor.memory_limiter.default.input]
@@ -296,8 +322,8 @@ data:
     prometheus.scrape "alloy" {
       targets    = prometheus.exporter.self.alloy.targets
       forward_to = [prometheus.remote_write.default.receiver]
-      job_name   = "alloy"
-      scrape_interval = "10s"
+      job_name   = "alloy-internal"
+      scrape_interval = "30s"
     }
 ---
 apiVersion: v1
@@ -330,13 +356,14 @@ spec:
     protocol: TCP
 ---
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: alloy
   namespace: countly-observability
   labels:
     app: alloy
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: alloy
@@ -346,6 +373,9 @@ spec:
         app: alloy
     spec:
       serviceAccountName: alloy
+      # Run on any available node (single pod will only see logs from its node)
+      nodeSelector:
+        kubernetes.io/os: linux
       containers:
       - name: alloy
         image: grafana/alloy:v1.10.0
