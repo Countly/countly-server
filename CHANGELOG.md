@@ -1,7 +1,16 @@
-## Version 25.03.XX
+## Version 25.03.XX
+
+Features:
+- [plugins] Add configuration warning tags to settings UI
+
 Fixes:
 - [remote-config] Fix condition matching with complex conditions
 - [core] Use correct rights validation for loyality
+- [crashes] Fix free session for home widget
+- [crashes] Use na for free session and free user when there's no data
+
+Enterprise Fixes:
+- [ldap] Error handling in ldap plugin on search error
 
 Features:
 - [remote-config] Add support for comparing newer/older app version in conditions
