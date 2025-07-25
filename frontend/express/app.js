@@ -422,6 +422,14 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         app.loadThemeFiles(curTheme);
         app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;
 
+        var overriddenCountlyNamedType = COUNTLY_NAMED_TYPE;
+        var whiteLabelingConfig = plugins.getConfig("white-labeling");
+        if (whiteLabelingConfig && whiteLabelingConfig.footerLabel && whiteLabelingConfig.footerLabel.length) {
+            overriddenCountlyNamedType = whiteLabelingConfig.footerLabel;
+        }
+
+        COUNTLY_NAMED_TYPE = overriddenCountlyNamedType;
+
         if (typeof plugins.getConfig('frontend').countly_tracking !== 'boolean' && plugins.isPluginEnabled('tracker')) {
             plugins.updateConfigs(countlyDb, 'frontend', { countly_tracking: true });
         }
@@ -929,6 +937,12 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             licenseNotification, licenseError;
         var isLocked = false;
         configs.export_limit = plugins.getConfig("api").export_limit;
+
+        var currentWhiteLabelingConfig = plugins.getConfig("white-labeling");
+        var overriddenCountlyNamedType = COUNTLY_NAMED_TYPE;
+        if (currentWhiteLabelingConfig && currentWhiteLabelingConfig.footerLabel && currentWhiteLabelingConfig.footerLabel.length) {
+            overriddenCountlyNamedType = currentWhiteLabelingConfig.footerLabel;
+        }
         app.loadThemeFiles(configs.theme, async function(theme) {
             if (configs._user.theme) {
                 res.cookie("theme", configs.theme);
@@ -1004,7 +1018,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     licenseError,
                     ssr: serverSideRendering,
                     timezones: timezones,
-                    countlyTypeName: COUNTLY_NAMED_TYPE,
+                    countlyTypeName: overriddenCountlyNamedType,
                     countlyTypeTrack: COUNTLY_TRACK_TYPE,
                     countlyTypeCE: COUNTLY_TYPE_CE,
                     countly_tracking,
@@ -1037,7 +1051,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     countlyVersion: req.countly.version,
                     countlyType: COUNTLY_TYPE_CE,
                     countlyTrial: COUNTLY_TRIAL,
-                    countlyTypeName: COUNTLY_NAMED_TYPE,
+                    countlyTypeName: overriddenCountlyNamedType,
                     feedbackLink: COUNTLY_FEEDBACK_LINK,
                     documentationLink: COUNTLY_DOCUMENTATION_LINK,
                     helpCenterLink: COUNTLY_HELPCENTER_LINK,

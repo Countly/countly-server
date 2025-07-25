@@ -2,6 +2,7 @@
 
 Features:
 - [plugins] Add configuration warning tags to settings UI
+- [white-labeling] Add sidebar footer label setting to white labeling
 
 Fixes:
 - [core] Use correct rights validation for loyality
