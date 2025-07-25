@@ -212,7 +212,7 @@
                     label: "#6C47FF"
                 },
                 colorTag: COLOR_TAG,
-                modifyPropType: { 'up.av': countlyQueryBuilder.PropertyType.NUMERIC_STRING_LIST },
+                modifyPropType: { 'up.av': countlyQueryBuilder.PropertyType.APP_VERSION_LIST },
             };
         },
         computed: {
@@ -647,7 +647,7 @@
                     label: "#6C47FF"
                 },
                 colorTag: COLOR_TAG,
-                modifyPropType: { 'up.av': countlyQueryBuilder.PropertyType.NUMERIC_STRING_LIST },
+                modifyPropType: { 'up.av': countlyQueryBuilder.PropertyType.APP_VERSION_LIST },
             };
         },
         methods: {
