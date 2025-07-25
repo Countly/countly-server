@@ -42,10 +42,10 @@
                                                 placement="right" 
                                                 :tooltip-class="getData[key].tooltipClass">
                                             </cly-tooltip-icon>
-                                            <el-button v-if="getData[key].enforced === false" @click="enforce(key)" type="default" size="small" icon="fas fa-unlock">
+                                            <el-button v-if="getData[key].enforced === false && key !== 'bom_preset'" @click="enforce(key)" type="default" size="small" icon="fas fa-unlock">
                                                 Not Enforced
                                             </el-button>
-                                            <el-button v-if="getData[key].enforced === true" @click="reverseEnforce(key)" type="success" size="small" icon="fas fa-lock">
+                                            <el-button v-if="getData[key].enforced === true && key !== 'bom_preset'" @click="reverseEnforce(key)" type="success" size="small" icon="fas fa-lock">
                                                 Enforced
                                             </el-button>
                                         </p>
