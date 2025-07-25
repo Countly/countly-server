@@ -27,7 +27,7 @@ metadata:
     branch: newarchitecture
     component: ingestor
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: countly-ingestor
@@ -74,12 +74,21 @@ spec:
             name: countly-config
         - configMapRef:
             name: countly-ingestor-config
+        - configMapRef:
+            name: observability-config-otlp
         - secretRef:
             name: common-config
         - secretRef:
             name: mongodb-config
         - secretRef:
             name: clickhouse-config
+        
+        # OpenTelemetry service-specific configuration
+        env:
+        - name: OTEL_SERVICE_NAME
+          value: "countly-ingestor"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.namespace=countly,deployment.environment=production"
         
         resources:
           requests:
@@ -145,8 +154,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: countly-ingestor
-  minReplicas: 2
-  maxReplicas: 8
+  minReplicas: 1
+  maxReplicas: 16
   metrics:
   - type: Resource
     resource:

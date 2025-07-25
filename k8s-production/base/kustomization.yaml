@@ -8,7 +8,6 @@ resources:
 - custom-headers-configmap.yaml
 # Countly resources
 - namespace-and-secrets.yaml
-- docker-registry-secret.yaml
 - nginx-ingress-config.yaml
 - countly-api.yaml
 - countly-frontend.yaml
@@ -67,6 +66,9 @@ configMapGenerator:
 - envs:
   - configs/clickhouse.env
   name: countly-clickhouse-config
+- envs:
+  - configs/otel.env
+  name: observability-config-otlp
 
 # Secrets with fixed names (no suffixes) so they persist across deployments
 # ConfigMaps keep suffixes for automatic deployment restarts
@@ -88,11 +90,5 @@ configMapGenerator:
 #- name: clickhouse-config
 #  envs:
 #  - secrets/clickhouse.env
-#  options:
-#    disableNameSuffixHash: true
-#- name: docker-pull-secret
-#  type: kubernetes.io/dockerconfigjson
-#  envs:
-#  - secrets/docker-registry.env
 #  options:
 #    disableNameSuffixHash: true

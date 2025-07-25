@@ -82,6 +82,15 @@ spec:
             name: mongodb-config
         - secretRef:
             name: clickhouse-config
+        - configMapRef:
+            name: observability-config-otlp
+        
+        # OpenTelemetry service-specific configuration
+        env:
+        - name: OTEL_SERVICE_NAME
+          value: "countly-frontend"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.namespace=countly,deployment.environment=production"
         
         resources:
           requests:
