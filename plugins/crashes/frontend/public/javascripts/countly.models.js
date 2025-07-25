@@ -226,8 +226,11 @@ function transformAppVersion(inpVersion) {
                 // derive user count from whole users
                 if (dashboard.crau[prop] > dashboard.cr_u[prop] && 'users' in state.rawData && wholeUsers.total > 0) {
                     dashboard.crauf[prop] = dashboard.cr_u[prop] * ((wholeUsers.fatal / wholeUsers.total) - (dashboard.crf[prop] / dashboard.cr_s[prop]));
+                    dashboard.crauf.isEstimate = true;
                     dashboard.craunf[prop] = dashboard.cr_u[prop] * ((wholeUsers.nonfatal / wholeUsers.total) - (dashboard.crnf[prop] / dashboard.cr_s[prop]));
+                    dashboard.craunf.isEstimate = true;
                     dashboard.crau[prop] = dashboard.crauf[prop] + dashboard.craunf[prop];
+                    dashboard.crau.isEstimate = true;
                 }
 
                 dashboard.crinv[prop] = Math.max(0, dashboard.cr_s[prop] - dashboard.cr[prop]);
