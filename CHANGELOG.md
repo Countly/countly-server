@@ -8,6 +8,8 @@ Fixes:
 - [crashes] Fix free session for home widget
 - [crashes] Use na for free session and free user when there's no data
 
+Enterprise Fixes:
+- [ldap] Error handling in ldap plugin on search error
 
 ## Version 25.03.11
 Fixes:
