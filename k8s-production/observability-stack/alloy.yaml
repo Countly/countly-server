@@ -58,7 +58,7 @@ data:
     discovery.kubernetes "pods" {
       role = "pod"
       namespaces {
-        names = ["countly", "countly-observability"]
+        names = ["countly", "countly-observability", "ingress-nginx"]
       }
     }
     
