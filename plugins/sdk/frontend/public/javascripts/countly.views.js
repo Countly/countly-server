@@ -436,7 +436,7 @@
             },
             downloadConfig: function() {
                 log("downloadConfig");
-                var params = this.$store.getters["countlySDK/sdk/all"];
+                var params = this.$store.getters["countlySDK/sdk/all"] || {};
                 // we change bom_rqp to decimal percentage for sdk
                 if (typeof params.bom_rqp !== "undefined") {
                     params.bom_rqp = params.bom_rqp / 100;
@@ -454,7 +454,7 @@
                 var data = {};
                 data.v = SC_VER;
                 data.t = Date.now();
-                data.c = params || {};
+                data.c = params;
                 var configData = JSON.stringify(data, null, 2);
                 var blob = new Blob([configData], { type: 'application/json' });
                 var url = URL.createObjectURL(blob);
