@@ -534,6 +534,17 @@
             getConfigType: function(id) {
                 return this.coreDefaults.includes(id) ? "Core" : "Plugins";
             },
+            getWarningTags(configGroup, key) {
+                var warnings = countlyPlugins.getConfigWarnings(configGroup, key);
+                var tooltipColors = countlyPlugins.getTooltipColors();
+                return warnings.map(function(warning) {
+                    return {
+                        tooltipText: CV.i18n(warning.text),
+                        color: tooltipColors[warning.type],
+                        label: countlyPlugins.getTooltipLabel(warning.type)
+                    };
+                });
+            },
             checkIfOverwritten: function(id, ns) {
                 ns = ns || this.selectedConfig;
                 var configsData = countlyPlugins.getConfigsData();
