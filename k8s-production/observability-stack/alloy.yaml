@@ -385,14 +385,13 @@ spec:
     protocol: TCP
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: alloy
   namespace: countly-observability
   labels:
     app: alloy
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: alloy
