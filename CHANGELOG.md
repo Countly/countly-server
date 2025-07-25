@@ -1,3 +1,6 @@
+##Version 24.10.XX
+Features:
+- [plugins] Add configuration warning tags to settings UI
 
 ## Version 24.10.11
 Enterprise Fixes:
