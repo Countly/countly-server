@@ -12,6 +12,9 @@ Fixes:
 Enterprise Fixes:
 - [ldap] Error handling in ldap plugin on search error
 
+Enterprise Fixes:
+- [license] Display notification for non global admin user
+
 ## Version 25.03.11
 Fixes:
 - [core] Fix mongo connection url parsing
