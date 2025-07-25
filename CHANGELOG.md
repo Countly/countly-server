@@ -3,6 +3,9 @@
 Features:
 - [plugins] Add configuration warning tags to settings UI
 
+Fixes:
+- [core] Use correct rights validation for loyality
+
 ## Version 25.03.11
 Fixes:
 - [core] Fix mongo connection url parsing
