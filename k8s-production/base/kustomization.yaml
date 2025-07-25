@@ -4,11 +4,8 @@ kind: Kustomization
 namespace: countly
 
 resources:
-# Custom headers for ingress
-- custom-headers-configmap.yaml
 # Countly resources
 - namespace-and-secrets.yaml
-- nginx-ingress-config.yaml
 - countly-api.yaml
 - countly-frontend.yaml
 - countly-ingestor.yaml
