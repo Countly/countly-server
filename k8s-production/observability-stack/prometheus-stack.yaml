@@ -49,14 +49,8 @@ data:
       external_labels:
         cluster: 'countly-local'
         
-    scrape_configs:
-    - job_name: 'prometheus'
-      static_configs:
-        - targets: ['localhost:9090']
-
-    - job_name: 'alloy'
-      static_configs:
-        - targets: ['alloy:12345']
+    # No scrape_configs - Prometheus receives all metrics via remote write from Alloy
+    # Prometheus will still collect its own internal metrics by default
 ---
 apiVersion: v1
 kind: Service
