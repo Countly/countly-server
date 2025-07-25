@@ -1,6 +1,7 @@
 ## Version 25.03.XX
 Fixes:
 - [remote-config] Fix condition matching with complex conditions
+- [core] Use correct rights validation for loyality
 
 Features:
 - [remote-config] Add support for comparing newer/older app version in conditions
