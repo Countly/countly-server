@@ -181,7 +181,7 @@ app.route("/analytics/users/*tab", "user-analytics-tab", function(tab) {
 });
 //Analytics->User analytics - overview widget
 var GridComponent = countlyVue.views.create({
-    template: CV.T('/dashboards/templates/widgets/analytics/widget.html'), //using core dashboard widget template
+    template: CV.T('/core/user-analytics-overview/templates/widget.html'),
     mixins: [countlyVue.mixins.customDashboards.global, countlyVue.mixins.customDashboards.widget, countlyVue.mixins.customDashboards.apps, countlyVue.mixins.zoom, countlyVue.mixins.hasDrawers("annotation"), countlyVue.mixins.graphNotesCommand],
     components: {
         "drawer": countlyGraphNotesCommon.drawer
@@ -292,11 +292,8 @@ var GridComponent = countlyVue.views.create({
         stackedBarTimeSeriesOptions: function() {
             return this.timelineGraph.lineOptions;
         },
-        stackedBarOptions: function() {
+        barOptions: function() {
             var data = this.timelineGraph;
-            for (var k = 0; k < data.lineOptions.series.length; k++) {
-                data.lineOptions.series[k].stack = "A";
-            }
             return data.lineOptions;
         },
         number: function() {
