@@ -4,3 +4,4 @@ metadata:
   name: countly-observability
   labels:
     name: countly-observability
+    app: countly-observability

@@ -80,6 +80,15 @@ spec:
             name: mongodb-config
         - secretRef:
             name: clickhouse-config
+        - configMapRef:
+            name: observability-config-otlp
+        
+        # OpenTelemetry service-specific configuration
+        env:
+        - name: OTEL_SERVICE_NAME
+          value: "countly-api"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.namespace=countly,deployment.environment=production"
         
         resources:
           requests:
@@ -145,7 +154,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: countly-api
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 10
   metrics:
   - type: Resource

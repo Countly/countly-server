@@ -12,3 +12,9 @@ data:
   X-Real-IP: $remote_addr
   X-Scheme: $scheme
   Connection: ""
+  # Request correlation headers
+  X-Request-ID: $req_id
+  X-Request-Start: $msec
+  # Forward W3C trace context if present
+  traceparent: $http_traceparent
+  tracestate: $http_tracestate

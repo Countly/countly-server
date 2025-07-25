@@ -145,7 +145,10 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
         @opentelemetry/semantic-conventions \
         @opentelemetry/sdk-metrics \
         @opentelemetry/sdk-trace-base \
-        @opentelemetry/core
+        @opentelemetry/core \
+        @opentelemetry/resource-detector-container \
+        @opentelemetry/resource-detector-gcp \
+        @opentelemetry/instrumentation-profiling
 
 # 3.1.2 copy OpenTelemetry files from build context
 RUN if [ -f observability_scripts/otel.js ]; then \

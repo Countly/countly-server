@@ -4,12 +4,8 @@ kind: Kustomization
 namespace: countly
 
 resources:
-# Custom headers for ingress
-- custom-headers-configmap.yaml
 # Countly resources
 - namespace-and-secrets.yaml
-- docker-registry-secret.yaml
-- nginx-ingress-config.yaml
 - countly-api.yaml
 - countly-frontend.yaml
 - countly-ingestor.yaml
@@ -27,7 +23,8 @@ labels:
 # Dynamic image replacement handled by workflow
 images:
   - name: countly-unified
-  # newName and digest will be set dynamically by kustomize edit set image
+    newName: gcr.io/countly-01/countly-unified
+    digest: sha256:444704d699af9179c1e4f0f53b37fab92cdba1e6ad3a725dd4b52fca677e86dc
 
 # Generator options  
 generatorOptions:
@@ -66,6 +63,9 @@ configMapGenerator:
 - envs:
   - configs/clickhouse.env
   name: countly-clickhouse-config
+- envs:
+  - configs/otel.env
+  name: observability-config-otlp
 
 # Secrets with fixed names (no suffixes) so they persist across deployments
 # ConfigMaps keep suffixes for automatic deployment restarts
@@ -87,11 +87,5 @@ configMapGenerator:
 #- name: clickhouse-config
 #  envs:
 #  - secrets/clickhouse.env
-#  options:
-#    disableNameSuffixHash: true
-#- name: docker-pull-secret
-#  type: kubernetes.io/dockerconfigjson
-#  envs:
-#  - secrets/docker-registry.env
 #  options:
 #    disableNameSuffixHash: true
