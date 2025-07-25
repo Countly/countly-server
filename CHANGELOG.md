@@ -1,6 +1,9 @@
 ## Version 25.03.XX
 Fixes:
 - [core] Use correct rights validation for loyality
+- [crashes] Fix free session for home widget
+- [crashes] Use na for free session and free user when there's no data
+
 
 ## Version 25.03.11
 Fixes:
