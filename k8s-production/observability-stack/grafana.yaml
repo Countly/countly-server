@@ -4,7 +4,7 @@ metadata:
   name: grafana-datasources
   namespace: countly-observability
 data:
-  datasources.yaml: |
+  datasource.yaml: |
     apiVersion: 1
     datasources:
     - name: Prometheus
@@ -12,48 +12,21 @@ data:
       access: proxy
       url: http://prometheus.countly-observability.svc.cluster.local:9090
       isDefault: true
-      editable: true
-      jsonData:
-        httpMethod: POST
+      
     - name: Loki
       type: loki
       access: proxy
       url: http://loki.countly-observability.svc.cluster.local:3100
-      editable: true
+      
     - name: Tempo
       type: tempo
       access: proxy
       url: http://tempo.countly-observability.svc.cluster.local:3200
-      editable: true
-      jsonData:
-        httpMethod: GET
-        tracesToLogs:
-          datasourceUid: loki
-          tags: ['job', 'instance', 'pod', 'namespace']
-          mappedTags: [{ key: 'service.name', value: 'service_name' }]
-          mapTagNamesEnabled: true
-          spanStartTimeShift: '1h'
-          spanEndTimeShift: '1h'
-          filterByTraceID: true
-          filterBySpanID: true
-        serviceMap:
-          datasourceUid: prometheus
-        search:
-          hide: false
-        nodeGraph:
-          enabled: true
-        traceQuery:
-          timeShiftEnabled: true
-          spanStartTimeShift: '1h'
-          spanEndTimeShift: '1h'
-        spanBar:
-          type: 'Tag'
-          tag: 'http.method'
+      
     - name: Pyroscope
-      type: grafana-pyroscope-datasource
+      type: pyroscope
       access: proxy
       url: http://pyroscope.countly-observability.svc.cluster.local:4040
-      editable: true
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -66,28 +39,14 @@ data:
     providers:
     - name: 'default'
       orgId: 1
-      folder: ''
+      folder: 'Countly'
       type: file
       disableDeletion: false
+      editable: true
       updateIntervalSeconds: 10
       allowUiUpdates: true
       options:
         path: /var/lib/grafana/dashboards
-        defaultFolderName: "General"
-        foldersFromFilesStructure: true
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: grafana-pvc
-  namespace: countly-observability
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-  storageClassName: standard-rwo
 ---
 apiVersion: v1
 kind: Service
@@ -106,6 +65,18 @@ spec:
     targetPort: 3000
     protocol: TCP
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+  namespace: countly-observability
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -123,22 +94,16 @@ spec:
       labels:
         app: grafana
     spec:
-      securityContext:
-        fsGroup: 472
-        runAsUser: 472
-        runAsNonRoot: true
       containers:
       - name: grafana
         image: grafana/grafana:12.1.0
-        # Updated to latest version 12.1.0 (major version upgrade)
-        # changelog https://raw.githubusercontent.com/grafana/grafana/refs/heads/main/CHANGELOG.md
+        envFrom:
+        - configMapRef:
+            name: grafana-config
         ports:
         - containerPort: 3000
           name: http
           protocol: TCP
-        envFrom:
-        - configMapRef:
-            name: grafana-config
         volumeMounts:
         - name: storage
           mountPath: /var/lib/grafana
@@ -148,6 +113,13 @@ spec:
           mountPath: /etc/grafana/provisioning/dashboards
         - name: dashboards
           mountPath: /var/lib/grafana/dashboards
+        resources:
+          requests:
+            cpu: 250m
+            memory: 750Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
         livenessProbe:
           httpGet:
             path: /api/health
@@ -160,13 +132,10 @@ spec:
             port: 3000
           initialDelaySeconds: 30
           periodSeconds: 10
-        resources:
-          requests:
-            cpu: 250m
-            memory: 750Mi
-          limits:
-            cpu: 1000m
-            memory: 1Gi
+      securityContext:
+        fsGroup: 472
+        runAsNonRoot: true
+        runAsUser: 472
       volumes:
       - name: storage
         persistentVolumeClaim:

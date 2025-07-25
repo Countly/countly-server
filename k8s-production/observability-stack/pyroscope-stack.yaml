@@ -1,0 +1,134 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pyroscope-config
+  namespace: countly-observability
+data:
+  pyroscope.yaml: |
+    pyroscopedb:
+      data_path: /data
+      
+    server:
+      http_listen_port: 4040
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pyroscope
+  namespace: countly-observability
+  labels:
+    app: pyroscope
+spec:
+  type: ClusterIP
+  selector:
+    app: pyroscope
+  ports:
+  - name: http
+    port: 4040
+    targetPort: 4040
+    protocol: TCP
+  - name: grpc
+    port: 4041
+    targetPort: 4041
+    protocol: TCP
+  - name: otlp-grpc-profiles
+    port: 4317
+    targetPort: 4317
+    protocol: TCP
+  - name: otlp-http-profiles
+    port: 4318
+    targetPort: 4318
+    protocol: TCP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pyroscope-pvc
+  namespace: countly-observability
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pyroscope
+  namespace: countly-observability
+  labels:
+    app: pyroscope
+spec:
+  serviceName: pyroscope
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pyroscope
+  template:
+    metadata:
+      labels:
+        app: pyroscope
+    spec:
+      initContainers:
+      - name: init-data-dir
+        image: busybox:1.35
+        command: ['sh', '-c', 'mkdir -p /data && chmod -R 755 /data || true']
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: pyroscope
+        image: grafana/pyroscope:1.14.0
+        args:
+          - '-config.file=/etc/pyroscope/pyroscope.yaml'
+        volumeMounts:
+        - name: config
+          mountPath: /etc/pyroscope
+        - name: data
+          mountPath: /data
+        ports:
+        - containerPort: 4040
+          name: http
+          protocol: TCP
+        - containerPort: 4041
+          name: grpc
+          protocol: TCP
+        - containerPort: 4317
+          name: otlp-grpc
+          protocol: TCP
+        - containerPort: 4318
+          name: otlp-http
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 4040
+          initialDelaySeconds: 45
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 4040
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      volumes:
+      - name: config
+        configMap:
+          name: pyroscope-config
+      - name: data
+        persistentVolumeClaim:
+          claimName: pyroscope-pvc

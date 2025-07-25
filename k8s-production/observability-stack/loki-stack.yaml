@@ -6,78 +6,49 @@ metadata:
 data:
   loki.yaml: |
     auth_enabled: false
+    
     server:
       http_listen_port: 3100
       grpc_listen_port: 9096
-      log_level: info
-    
+      
     common:
-      path_prefix: /loki
+      path_prefix: /tmp/loki
       storage:
         filesystem:
-          chunks_directory: /loki/chunks
-          rules_directory: /loki/rules
+          chunks_directory: /tmp/loki/chunks
+          rules_directory: /tmp/loki/rules
       replication_factor: 1
       ring:
         instance_addr: 127.0.0.1
         kvstore:
           store: inmemory
-    
+          
     query_range:
       results_cache:
         cache:
           embedded_cache:
             enabled: true
             max_size_mb: 100
-    
+            
     schema_config:
       configs:
-        - from: 2023-01-01
+        - from: 2020-10-24
           store: tsdb
           object_store: filesystem
           schema: v13
           index:
             prefix: index_
             period: 24h
-    
+            
     ruler:
-      alertmanager_url: http://alertmanager.countly-observability.svc.cluster.local:9093
-    
-    limits_config:
-      reject_old_samples: true
-      reject_old_samples_max_age: 168h
-      max_entries_limit_per_query: 5000
-      retention_period: 720h
+      alertmanager_url: http://localhost:9093
       
-    
-    ingester:
-      chunk_idle_period: 30m
-      chunk_block_size: 262144
-      chunk_target_size: 1536000
-      chunk_retain_period: 30s
-      max_chunk_age: 1h
-      autoforget_unhealthy: true
-    
-    compactor:
-      working_directory: /loki/compactor
-      compaction_interval: 10m
-      retention_enabled: true
-      retention_delete_delay: 2h
-      retention_delete_worker_count: 150
-      delete_request_store: filesystem
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: loki-pvc
-  namespace: countly-observability
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 50Gi
-  storageClassName: standard-rwo
+    limits_config:
+      retention_period: 30d
+      
+    table_manager:
+      retention_deletes_enabled: true
+      retention_period: 30d
 ---
 apiVersion: v1
 kind: Service
@@ -100,6 +71,18 @@ spec:
     targetPort: 9096
     protocol: TCP
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: loki-pvc
+  namespace: countly-observability
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -117,22 +100,26 @@ spec:
     metadata:
       labels:
         app: loki
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "3100"
-        prometheus.io/path: "/metrics"
     spec:
-      securityContext:
-        fsGroup: 10001
-        runAsNonRoot: true
-        runAsUser: 10001
+      initContainers:
+      - name: init-data-dir
+        image: busybox:1.35
+        command: ['sh', '-c', 'mkdir -p /tmp/loki/chunks /tmp/loki/rules /tmp/loki/tsdb-shipper-cache /tmp/loki/wal && chown -R 10001:10001 /tmp/loki && chmod -R 755 /tmp/loki']
+        volumeMounts:
+        - name: data
+          mountPath: /tmp/loki
+        securityContext:
+          runAsUser: 0
       containers:
       - name: loki
         image: grafana/loki:3.5.3
-        # Updated to latest version 3.5.3 (major version upgrade)
-        # changelog: https://raw.githubusercontent.com/grafana/loki/refs/heads/main/CHANGELOG.md
         args:
-          - -config.file=/etc/loki/loki.yaml
+          - '-config.file=/etc/loki/loki.yaml'
+        volumeMounts:
+        - name: config
+          mountPath: /etc/loki
+        - name: data
+          mountPath: /tmp/loki
         ports:
         - containerPort: 3100
           name: http
@@ -140,11 +127,13 @@ spec:
         - containerPort: 9096
           name: grpc
           protocol: TCP
-        volumeMounts:
-        - name: config
-          mountPath: /etc/loki
-        - name: storage
-          mountPath: /loki
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
         livenessProbe:
           httpGet:
             path: /ready
@@ -157,18 +146,13 @@ spec:
             port: 3100
           initialDelaySeconds: 45
           periodSeconds: 10
-        resources:
-          requests:
-            cpu: 500m
-            memory: 1Gi
-          limits:
-            cpu: 2
-            memory: 2Gi
+        securityContext:
+          runAsUser: 10001
+          runAsGroup: 10001
       volumes:
       - name: config
         configMap:
           name: loki-config
-      - name: storage
+      - name: data
         persistentVolumeClaim:
           claimName: loki-pvc
-# Promtail has been replaced by Alloy - see alloy-config-patch.yaml for log collection configuration

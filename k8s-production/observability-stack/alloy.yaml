@@ -1,0 +1,414 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: alloy
+  namespace: countly-observability
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: alloy
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/proxy
+  - services
+  - endpoints
+  - pods
+  verbs: ["get", "watch", "list"]
+- apiGroups: [""]
+  resources:
+  - configmaps
+  verbs: ["get"]
+- apiGroups: ["apps"]
+  resources:
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources:
+  - cronjobs
+  - jobs
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: alloy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: alloy
+subjects:
+- kind: ServiceAccount
+  name: alloy
+  namespace: countly-observability
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alloy-config
+  namespace: countly-observability
+data:
+  config.alloy: |
+    // ===== Log Collection (Kubernetes Pods) =====
+    discovery.kubernetes "pods" {
+      role = "pod"
+      namespaces {
+        names = ["countly", "countly-observability"]
+      }
+    }
+    
+    discovery.relabel "pods" {
+      targets = discovery.kubernetes.pods.targets
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_controller_name"]
+        regex         = "([0-9a-z-.]+?)(-[0-9a-f]{8,10})?"
+        target_label  = "__tmp_controller_name"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app", "__meta_kubernetes_pod_label_component", "__tmp_controller_name", "__meta_kubernetes_pod_name"]
+        regex         = "^;*([^;]+)(;.*)?$"
+        target_label  = "app"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app", "__meta_kubernetes_pod_label_component", "__tmp_controller_name", "__meta_kubernetes_pod_name"]
+        regex         = "^([^;]+);*.*$"
+        target_label  = "component"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node_name"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+      
+      rule {
+        source_labels = ["namespace", "app"]
+        separator     = "/"
+        target_label  = "job"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        target_label  = "container"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+        separator     = "/"
+        target_label  = "__path__"
+        replacement   = "/var/log/pods/*$1/*.log"
+      }
+    }
+    
+    local.file_match "pods" {
+      path_targets = discovery.relabel.pods.output
+    }
+    
+    // ===== Loki Components =====
+    loki.write "default" {
+      endpoint {
+        url = "http://loki.countly-observability.svc.cluster.local:3100/loki/api/v1/push"
+      }
+      external_labels = {}
+    }
+    
+    loki.process "pods" {
+      forward_to = [loki.write.default.receiver]
+      
+      stage.json {
+        expressions = {
+          level     = "level",
+          msg       = "msg",
+          span_id   = "span.id",
+          timestamp = "time",
+          trace_id  = "trace.id",
+        }
+      }
+      
+      stage.labels {
+        values = {
+          level = null,
+        }
+      }
+      
+      stage.timestamp {
+        source = "timestamp"
+        format = "RFC3339"
+      }
+    }
+    
+    loki.source.file "pods" {
+      targets               = local.file_match.pods.targets
+      forward_to            = [loki.process.pods.receiver]
+      legacy_positions_file = "/tmp/alloy/positions.yaml"
+    }
+    
+    // ===== Prometheus Remote Write =====
+    prometheus.remote_write "default" {
+      endpoint {
+        url = "http://prometheus.countly-observability.svc.cluster.local:9090/api/v1/write"
+      }
+    }
+    
+    // ===== OTLP Pipeline with Advanced Features =====
+    
+    // Step 1: Define Exporters (no dependencies)
+    otelcol.exporter.prometheus "default" {
+      forward_to = [prometheus.remote_write.default.receiver]
+    }
+    
+    otelcol.exporter.otlp "tempo" {
+      client {
+        endpoint = "tempo.countly-observability.svc.cluster.local:4317"
+        tls {
+          insecure = true
+        }
+      }
+    }
+    
+    // Step 2: Memory Limiter (depends on exporters)
+    otelcol.processor.memory_limiter "default" {
+      check_interval = "5s"
+      limit = "1024MiB"
+      spike_limit = "256MiB"
+      
+      output {
+        metrics = [otelcol.exporter.prometheus.default.input]
+        traces  = [otelcol.exporter.otlp.tempo.input]
+      }
+    }
+    
+    // Step 3: Batch Processor (depends on memory limiter)
+    otelcol.processor.batch "default" {
+      timeout = "5s"
+      send_batch_size = 1024
+      
+      output {
+        metrics = [otelcol.processor.memory_limiter.default.input]
+        traces  = [otelcol.processor.memory_limiter.default.input]
+      }
+    }
+    
+    // Step 4: K8s Attributes Processor (depends on batch processor)
+    otelcol.processor.k8sattributes "default" {
+      extract {
+        metadata = [
+          "k8s.pod.name",
+          "k8s.pod.uid",
+          "k8s.deployment.name",
+          "k8s.namespace.name",
+          "k8s.node.name",
+          "k8s.pod.start_time",
+          "k8s.replicaset.name",
+          "k8s.replicaset.uid",
+          "k8s.daemonset.name",
+          "k8s.daemonset.uid",
+          "k8s.job.name",
+          "k8s.job.uid",
+          "k8s.statefulset.name",
+          "k8s.statefulset.uid",
+          "k8s.container.name",
+          "k8s.cronjob.name",
+        ]
+        
+        annotation {
+          tag_name = "component"
+          key      = "app.kubernetes.io/component"
+          from     = "pod"
+        }
+        
+        label {
+          tag_name = "app_name"
+          key      = "app"
+          from     = "pod"
+        }
+        
+        label {
+          tag_name = "component"
+          key      = "component"
+          from     = "pod"
+        }
+      }
+      
+      pod_association {
+        source {
+          from = "resource_attribute"
+          name = "k8s.pod.ip"
+        }
+      }
+      
+      pod_association {
+        source {
+          from = "resource_attribute"
+          name = "k8s.pod.uid"
+        }
+      }
+      
+      pod_association {
+        source {
+          from = "connection"
+        }
+      }
+      
+      output {
+        metrics = [otelcol.processor.batch.default.input]
+        traces  = [otelcol.processor.batch.default.input]
+      }
+    }
+    
+    // Step 5: OTLP Receiver (entry point, depends on k8s attributes processor)
+    otelcol.receiver.otlp "default" {
+      grpc {
+        endpoint = "0.0.0.0:4317"
+      }
+      
+      http {
+        endpoint = "0.0.0.0:4318"
+      }
+      
+      output {
+        metrics = [otelcol.processor.k8sattributes.default.input]
+        traces  = [otelcol.processor.k8sattributes.default.input]
+      }
+    }
+    
+    // ===== Prometheus Self Monitoring =====
+    prometheus.exporter.self "alloy" {
+    }
+    
+    prometheus.scrape "alloy" {
+      targets    = prometheus.exporter.self.alloy.targets
+      forward_to = [prometheus.remote_write.default.receiver]
+      job_name   = "alloy"
+      scrape_interval = "10s"
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alloy
+  namespace: countly-observability
+  labels:
+    app: alloy
+spec:
+  type: ClusterIP
+  selector:
+    app: alloy
+  ports:
+  - name: http-metrics
+    port: 12345
+    targetPort: 12345
+    protocol: TCP
+  - name: otlp-grpc
+    port: 4317
+    targetPort: 4317
+    protocol: TCP
+  - name: otlp-http
+    port: 4318
+    targetPort: 4318
+    protocol: TCP
+  - name: prom-compat
+    port: 8889
+    targetPort: 8889
+    protocol: TCP
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: alloy
+  namespace: countly-observability
+  labels:
+    app: alloy
+spec:
+  selector:
+    matchLabels:
+      app: alloy
+  template:
+    metadata:
+      labels:
+        app: alloy
+    spec:
+      serviceAccountName: alloy
+      containers:
+      - name: alloy
+        image: grafana/alloy:v1.10.0
+        args:
+          - run
+          - /etc/alloy/config.alloy
+          - --storage.path=/tmp/alloy
+          - --server.http.listen-addr=0.0.0.0:12345
+        ports:
+        - containerPort: 12345
+          name: http-metrics
+          protocol: TCP
+        - containerPort: 4317
+          name: otlp-grpc
+          protocol: TCP
+        - containerPort: 4318
+          name: otlp-http
+          protocol: TCP
+        - containerPort: 8889
+          name: prom-compat
+          protocol: TCP
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: ALLOY_DEPLOY_MODE
+          value: "helm"
+        volumeMounts:
+        - name: config
+          mountPath: /etc/alloy
+        - name: varlog
+          mountPath: /var/log
+          readOnly: true
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 12345
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 12345
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: config
+        configMap:
+          name: alloy-config
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
