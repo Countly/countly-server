@@ -2,6 +2,9 @@
 Fixes:
 - [core] Use correct rights validation for loyality
 
+Enterprise Fixes:
+- [license] Display notification for non global admin user
+
 ## Version 25.03.11
 Fixes:
 - [core] Fix mongo connection url parsing
