@@ -7,7 +7,7 @@
             return {
                 selectLog: this.query || "api",
                 downloadLink: countlyGlobal.path + "/o/errorlogs?download=true&log=" + this.query || "api",
-                logList: [{name: "Api Log", value: "api"}],
+                logList: [{name: jQuery.i18n.map["errorlogs.api-log"] || "Api Log", value: "api"}],
                 authToken: countlyGlobal.auth_token,
                 cachedLog: {}
             };
@@ -71,7 +71,7 @@
             priority: 1,
             route: "#/manage/logs/errorlogs",
             component: ErrorLogsView,
-            title: "Server Logs",
+            title: jQuery.i18n.map["errorlogs.server-logs"] || "Server Logs",
             name: "errorlogs",
             permission: FEATURE_NAME,
             vuex: []

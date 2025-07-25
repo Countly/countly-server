@@ -50,22 +50,22 @@
                 defaultAlertDefine: {
                     events: {
                         target: [
-                            { value: "count", label: "count" },
-                            { value: "sum", label: "sum" },
-                            { value: "duration", label: "duration" },
-                            { value: "average sum", label: "average sum" },
+                            { value: "count", label: jQuery.i18n.map["alert.count"] || "count" },
+                            { value: "sum", label: jQuery.i18n.map["alert.sum"] || "sum" },
+                            { value: "duration", label: jQuery.i18n.map["alert.duration"] || "duration" },
+                            { value: "average sum", label: jQuery.i18n.map["alert.average-sum"] || "average sum" },
                             {
                                 value: "average duration",
-                                label: "average duration",
+                                label: jQuery.i18n.map["alert.average-duration"] || "average duration",
                             },
                         ],
                     },
                     views: {
                         target: [
-                            { value: "bounce rate", label: "bounce rate" },
+                            { value: "bounce rate", label: jQuery.i18n.map["alert.bounce-rate"] || "bounce rate" },
                             {
                                 value: "# of page views",
-                                label: "# of page views",
+                                label: jQuery.i18n.map["alert.page-views"] || "# of page views",
                             },
                         ],
                     },
@@ -73,17 +73,17 @@
                         target: [
                             {
                                 value: "average session duration",
-                                label: "average session duration",
+                                label: jQuery.i18n.map["alert.average-session-duration"] || "average session duration",
                             },
-                            { value: "# of sessions", label: "# of sessions" },
+                            { value: "# of sessions", label: jQuery.i18n.map["alert.sessions-count"] || "# of sessions" },
                         ],
                     },
                     users: {
                         target: [
-                            { value: "# of users", label: "# of users" },
+                            { value: "# of users", label: jQuery.i18n.map["alert.users-count"] || "# of users" },
                             {
                                 value: "# of new users",
-                                label: "# of new users",
+                                label: jQuery.i18n.map["alert.new-users-count"] || "# of new users",
                             },
                         ],
                     },
@@ -91,19 +91,19 @@
                         target: [
                             {
                                 value: "# of crashes/errors",
-                                label: "# of crashes/errors",
+                                label: jQuery.i18n.map["alert.crashes-count"] || "# of crashes/errors",
                             },
                             {
                                 value: "non-fatal crashes/errors per session",
-                                label: "non-fatal crashes/errors per session",
+                                label: jQuery.i18n.map["alert.non-fatal-crashes"] || "non-fatal crashes/errors per session",
                             },
                             {
                                 value: "fatal crashes/errors per session",
-                                label: "fatal crashes/errors per session",
+                                label: jQuery.i18n.map["alert.fatal-crashes"] || "fatal crashes/errors per session",
                             },
                             {
                                 value: "new crash/error",
-                                label: "new crash/error",
+                                label: jQuery.i18n.map["alert.new-crash"] || "new crash/error",
                             },
                         ],
                     },
@@ -111,11 +111,11 @@
                         target: [
                             {
                                 value: "# of survey responses",
-                                label: "# of survey responses",
+                                label: jQuery.i18n.map["alert.survey-responses-count"] || "# of survey responses",
                             },
                             {
                                 value: "new survey response",
-                                label: "new survey response",
+                                label: jQuery.i18n.map["alert.new-survey-response"] || "new survey response",
                             },
                         ],
                     },
@@ -123,11 +123,11 @@
                         target: [
                             {
                                 value: "# of responses",
-                                label: "# of responses",
+                                label: jQuery.i18n.map["alert.nps-responses-count"] || "# of responses",
                             },
                             {
                                 value: "new NPS response",
-                                label: "new NPS response",
+                                label: jQuery.i18n.map["alert.new-nps-response"] || "new NPS response",
                             },
                         ],
                     },
@@ -135,11 +135,11 @@
                         target: [
                             {
                                 value: "# of responses",
-                                label: "# of responses",
+                                label: jQuery.i18n.map["alert.rating-responses-count"] || "# of responses",
                             },
                             {
                                 value: "new rating response",
-                                label: "new rating response",
+                                label: jQuery.i18n.map["alert.new-rating-response"] || "new rating response",
                             },
                         ],
                     },
@@ -147,7 +147,7 @@
                         target: [
                             {
                                 value: "total data points",
-                                label: "total data points",
+                                label: jQuery.i18n.map["alert.total-data-points"] || "total data points",
                             },
                         ],
                     },
@@ -155,20 +155,20 @@
                         target: [
                             {
                                 value: "t",
-                                label: "# of online users",
+                                label: jQuery.i18n.map["alert.online-users-count"] || "# of online users",
                             },
                             {
                                 value: "o",
-                                label: "overall record",
+                                label: jQuery.i18n.map["alert.overall-record"] || "overall record",
                             },
-                            { value: "m", label: "30-day record" },
+                            { value: "m", label: jQuery.i18n.map["alert.30day-record"] || "30-day record" },
                         ],
                     },
                     cohorts: {
                         target: [
                             {
                                 value: "# of users in the cohort",
-                                label: "# of users in the cohort",
+                                label: jQuery.i18n.map["alert.cohort-users-count"] || "# of users in the cohort",
                             },
                         ],
                     },
@@ -176,24 +176,24 @@
                         target: [
                             {
                                 value: "# of users in the profile group",
-                                label: "# of users in the profile group",
+                                label: jQuery.i18n.map["alert.profile-group-users-count"] || "# of users in the profile group",
                             },
                         ],
                     },
                     revenue: {
                         target: [
-                            { value: "total revenue", label: "total revenue" },
+                            { value: "total revenue", label: jQuery.i18n.map["alert.total-revenue"] || "total revenue" },
                             {
                                 value: "average revenue per user",
-                                label: "average revenue per user",
+                                label: jQuery.i18n.map["alert.average-revenue-per-user"] || "average revenue per user",
                             },
                             {
                                 value: "average revenue per paying user",
-                                label: "average revenue per paying user",
+                                label: jQuery.i18n.map["alert.average-revenue-per-paying-user"] || "average revenue per paying user",
                             },
                             {
                                 value: "# of paying users",
-                                label: "# of paying users",
+                                label: jQuery.i18n.map["alert.paying-users-count"] || "# of paying users",
                             },
                         ],
                     },
