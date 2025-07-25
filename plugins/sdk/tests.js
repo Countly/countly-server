@@ -8,7 +8,7 @@ const request = spt(testUtils.url);
 let API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
 let APP_KEY = testUtils.get('APP_KEY');
 let APP_ID = testUtils.get("APP_ID");
-const config_ver = 1;
+const config_ver = 2;
 
 describe('SDK Plugin', function() {
     //==================================================================================================================
