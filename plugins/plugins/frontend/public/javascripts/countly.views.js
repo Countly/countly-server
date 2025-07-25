@@ -540,7 +540,8 @@
                 return warnings.map(function(warning) {
                     return {
                         tooltipText: CV.i18n(warning.text),
-                        color: tooltipColors[warning.type],
+                        bgColor: tooltipColors[warning.type].bgColor,
+                        textColor: tooltipColors[warning.type].textColor,
                         label: countlyPlugins.getTooltipLabel(warning.type)
                     };
                 });

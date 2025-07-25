@@ -318,9 +318,9 @@
 
     // Tooltip color mappings
     var TOOLTIP_COLORS = {
-        dataIngestion: "color-yellow-100",
-        uiFiltering: "color-blue-100",
-        serverPerformance: "color-red-100"
+        dataIngestion: { bgColor: '#FCF5E5', textColor: '#E49700' },
+        serverPerformance: { bgColor: '#FBECE5', textColor: '#D23F00' },
+        uiFiltering: { bgColor: '#E1EFFF', textColor: '#0166D6' }
     };
 
     /**
