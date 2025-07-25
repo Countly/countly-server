@@ -23,8 +23,7 @@ labels:
 # Dynamic image replacement handled by workflow
 images:
   - name: countly-unified
-    newName: gcr.io/countly-01/countly-unified
-    digest: sha256:444704d699af9179c1e4f0f53b37fab92cdba1e6ad3a725dd4b52fca677e86dc
+    # newName and digest will be set dynamically by kustomize edit set image
 
 # Generator options  
 generatorOptions:
