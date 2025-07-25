@@ -126,30 +126,6 @@ WORKDIR /opt/countly
 # 3.1 copy the rest of the source tree *now* (after model compilation)
 COPY . .
 
-# 3.1.1 OpenTelemetry setup - Install after source copy to avoid lockfile overwrite
-RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
-    echo "Installing OpenTelemetry dependencies..." && \
-    npm install \
-        @opentelemetry/api \
-        @opentelemetry/sdk-node \
-        @opentelemetry/auto-instrumentations-node \
-        @opentelemetry/exporter-trace-otlp-http \
-        @opentelemetry/exporter-metrics-otlp-http \
-        @opentelemetry/instrumentation-http \
-        @opentelemetry/instrumentation-express \
-        @opentelemetry/instrumentation-mongodb \
-        @opentelemetry/instrumentation-fs \
-        @opentelemetry/instrumentation-pino \
-        @opentelemetry/instrumentation-runtime-node \
-        @opentelemetry/resources \
-        @opentelemetry/semantic-conventions \
-        @opentelemetry/sdk-metrics \
-        @opentelemetry/sdk-trace-base \
-        @opentelemetry/core \
-        @opentelemetry/resource-detector-container \
-        @opentelemetry/resource-detector-gcp \
-        @opentelemetry/instrumentation-profiling
-
 # 3.1.2 copy OpenTelemetry files from build context
 RUN if [ -f observability_scripts/otel.js ]; then \
         echo "Copying OpenTelemetry files..."; \

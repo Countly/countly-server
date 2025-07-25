@@ -325,6 +325,31 @@ data:
       job_name   = "alloy-internal"
       scrape_interval = "30s"
     }
+
+    //////////////////////////////////////////////////////////////
+    // === Profiles pipeline (Pyroscope Push API) ================
+    //////////////////////////////////////////////////////////////
+
+    // 1. Receive profiles from the SDK over HTTP
+    pyroscope.receive_http "apps" {
+      http {
+        listen_address = "0.0.0.0"
+        listen_port    = 9999
+      }
+
+      // 2. Forward every profile to the writer below
+      forward_to = [pyroscope.write.default.receiver]
+    }
+
+    // 3. Push the profiles into the Pyroscope backend
+    pyroscope.write "default" {
+      endpoint {
+        url = "http://pyroscope.countly-observability.svc.cluster.local:4040"
+      }
+      external_labels = {
+        cluster = "countly-prod",
+      }
+    }
 ---
 apiVersion: v1
 kind: Service
@@ -353,6 +378,10 @@ spec:
   - name: prom-compat
     port: 8889
     targetPort: 8889
+    protocol: TCP
+  - name: pyroscope-http
+    port: 9999
+    targetPort: 9999
     protocol: TCP
 ---
 apiVersion: apps/v1
@@ -396,6 +425,9 @@ spec:
           protocol: TCP
         - containerPort: 8889
           name: prom-compat
+          protocol: TCP
+        - containerPort: 9999
+          name: pyroscope-http
           protocol: TCP
         env:
         - name: HOSTNAME
