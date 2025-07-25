@@ -131,12 +131,19 @@ function transformAppVersion(inpVersion) {
             var realSession = state.realSession;
             var realTotalSession = (realSession.usage && realSession.usage['total-sessions'].total) || 0;
             var dashboard = {};
+            var wholeUsers = {};
 
             if ("data" in state.rawData) {
                 dashboard = countlyCommon.getDashboardData(state.filteredData.data, ["cr", "crnf", "crf", "cru", "cruf", "crunf", "crru", "crau", "crauf", "craunf", "crses", "crfses", "crnfses", "cr_s", "cr_u"], ["cru", "crau", "cruf", "crunf", "crauf", "craunf", "cr_u"], null, countlyCrashes.clearObject);
             }
             else {
                 return dashboard;
+            }
+
+            if ('users' in state.rawData) {
+                wholeUsers.total = state.rawData.users.total;
+                wholeUsers.fatal = state.rawData.users.fatal;
+                wholeUsers.nonfatal = state.rawData.users.nonfatal;
             }
 
             /**
@@ -173,7 +180,7 @@ function transformAppVersion(inpVersion) {
                     });
                 }
 
-                if (isPercent && ["crses", "crnfses", "crfses", "crau", "craunf", "crauf"].includes(metric)) {
+                if (isPercent && ["crses", "crnfses", "crfses", "crau", "craunf", "crauf", 'crinv', 'crfinv', 'crnfinv', 'crauinv', 'craufinv', 'craunfinv'].includes(metric)) {
                     ["total", "prev-total"].forEach(function(prop) {
                         dashboard[metric][prop] = dashboard[metric][prop].toFixed(2) + '%';
                     });
@@ -195,7 +202,7 @@ function transformAppVersion(inpVersion) {
                 });
             });
 
-            ["cr-session", "crtf", "crtnf", "crau", "crses"].forEach(function(metric) {
+            ["cr-session", "crtf", "crtnf", "crau", "crses", 'crinv', 'crfinv', 'crnfinv', 'crauinv', 'craufinv', 'craunfinv'].forEach(function(metric) {
                 dashboard[metric] = {};
             });
 
@@ -211,9 +218,16 @@ function transformAppVersion(inpVersion) {
                     dashboard.cr_s[prop] += dashboard.crfses[prop] + dashboard.crnfses[prop];
                 }
 
-                if (dashboard.cr_u[prop] < (dashboard.crauf[prop] + dashboard.craunf[prop])) {
-                    dashboard.cr_u[prop] += dashboard.crauf[prop] + dashboard.craunf[prop];
+                // derive user count from whole users
+                if (dashboard.crau[prop] > dashboard.cr_u[prop] && 'users' in state.rawData) {
+                    dashboard.crauf[prop] = dashboard.cr_u[prop] * ((wholeUsers.fatal / wholeUsers.total) - (dashboard.crf[prop] / dashboard.cr_s[prop]));
+                    dashboard.craunf[prop] = dashboard.cr_u[prop] * ((wholeUsers.nonfatal / wholeUsers.total) - (dashboard.crnf[prop] / dashboard.cr_s[prop]));
+                    dashboard.crau[prop] = dashboard.crauf[prop] + dashboard.craunf[prop];
                 }
+
+                dashboard.crinv[prop] = Math.max(0, dashboard.cr_s[prop] - dashboard.cr[prop]);
+                dashboard.crfinv[prop] = Math.max(0, dashboard.cr_s[prop] - dashboard.crf[prop]);
+                dashboard.crnfinv[prop] = Math.max(0, dashboard.cr_s[prop] - dashboard.crnf[prop]);
             });
 
             ["cr-session", "crtf", "crtnf"].forEach(function(metric) {
@@ -222,7 +236,7 @@ function transformAppVersion(inpVersion) {
 
             ["crau", "craunf", "crauf"].forEach(function(name) {
                 ["total", "prev-total"].forEach(function(prop) {
-                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : ((dashboard.cr_u[prop] - dashboard[name][prop]) / dashboard.cr_u[prop] * 100));
+                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : (Math.abs(dashboard.cr_u[prop] - dashboard[name][prop]) / dashboard.cr_u[prop] * 100));
                 });
                 populateMetric(name, true);
             });
@@ -242,6 +256,22 @@ function transformAppVersion(inpVersion) {
                             // Use real total session if cr_s value is too low
                             propValue = ((realTotalSession - dashboard[name][prop]) / realTotalSession * 100);
                         }
+                    }
+
+                    dashboard[name][prop] = Math.min(100, propValue);
+                });
+                populateMetric(name, true);
+            });
+
+            ['crinv', 'crfinv', 'crnfinv'].forEach(function(name) {
+                ["total", "prev-total"].forEach(function(prop) {
+                    var propValue = 0;
+
+                    if (dashboard.cr_s[prop] === 0) {
+                        propValue = 100;
+                    }
+                    else {
+                        propValue = dashboard[name][prop] / dashboard.cr_s[prop] * 100;
                     }
 
                     dashboard[name][prop] = Math.min(100, propValue);
@@ -270,6 +300,13 @@ function transformAppVersion(inpVersion) {
                     return {};
                 }
 
+                var wholeUsers = {};
+                if ('users' in state.rawData) {
+                    wholeUsers.total = state.rawData.users.total;
+                    wholeUsers.fatal = state.rawData.users.fatal;
+                    wholeUsers.nonfatal = state.rawData.users.nonfatal;
+                }
+
                 var chartData, dataProps;
 
                 var metricChartConfig = {
@@ -277,7 +314,8 @@ function transformAppVersion(inpVersion) {
                     "crses": {labelKey: "crashes.free-sessions", colorIndex: 1},
                     "crau": {labelKey: "crashes.free-users", colorIndex: 1},
                     "cr": {labelKey: "crashes.total", colorIndex: 1},
-                    "cru": {labelKey: "crashes.unique", colorIndex: 1}
+                    "cru": {labelKey: "crashes.unique", colorIndex: 1},
+                    "crinv": {labelKey: "crashes.free-sessions", colorIndex: 1},
                 }[metric];
 
                 if (typeof metricChartConfig !== "undefined") {
@@ -298,7 +336,8 @@ function transformAppVersion(inpVersion) {
                     "crses": {"fatal": "crfses", "nonfatal": "crnfses"},
                     "crau": {"fatal": "crauf", "nonfatal": "craunf"},
                     "cr": {"fatal": "crf", "nonfatal": "crnf"},
-                    "cru": {"fatal": "cruf", "nonfatal": "crunf"}
+                    "cru": {"fatal": "cruf", "nonfatal": "crunf"},
+                    "crinv": {"fatal": "crfinv", "nonfatal": "crnfinv"},
                 };
 
                 name = name || ((metric in metricNames && state.activeFilter.fatality !== "both") ? metricNames[metric][state.activeFilter.fatality] : metric);
@@ -311,7 +350,15 @@ function transformAppVersion(inpVersion) {
                         return (obj.cr_s === 0 || obj.crfses + obj.crnfses === 0) ? 100 : Math.round(Math.min(Math.max((obj.crfses + obj.crnfses - obj.cr_s) / obj.cr_s, 0), 1) * 10000) / 100;
                     },
                     "^crau$": function(obj) {
-                        return (obj.cr_u === 0 || obj.crauf + obj.craunf === 0) ? 100 : Math.round(Math.min(Math.max((obj.crauf + obj.craunf - obj.cr_u) / obj.cr_u, 0), 1) * 10000) / 100;
+                        if (obj.cr_u === 0 || obj.crauf + obj.craunf === 0) {
+                            return 100;
+                        }
+                        else if (obj.crauf + obj.craunf > obj.cr_u && obj.cr_s !== 0 && 'users' in state.rawData) {
+                            var value = (obj.cr_u - (obj.cr_u * ((wholeUsers.fatal / wholeUsers.total) - (obj.crf / obj.cr_s))) - (obj.cr_u * ((wholeUsers.nonfatal / wholeUsers.total) - (obj.crnf / obj.cr_s)))) / obj.cr_u * 100;
+                            return Math.round(value * 100) / 100;
+                        }
+
+                        return Math.round(Math.min(Math.max((obj.crauf + obj.craunf - obj.cr_u) / obj.cr_u, 0), 1) * 10000) / 100;
                     },
                     "^cr$": function(obj) {
                         return obj.crf + obj.crnf;
@@ -325,9 +372,40 @@ function transformAppVersion(inpVersion) {
                     "^crn?fses$": function(obj) {
                         return (obj.cr_s === 0 || obj[name] === 0) ? 100 : Math.round(Math.min(obj[name] / obj.cr_s, 1) * 10000) / 100;
                     },
-                    "^craun?f$": function(obj) {
-                        return (obj.cr_s === 0 || obj[name] === 0) ? 100 : Math.round(Math.min(obj[name] / obj.cr_u, 1) * 10000) / 100;
-                    }
+                    "^crauf$": function(obj) {
+                        if (obj.cr_u === 0 || obj[name] === 0) {
+                            return 100;
+                        }
+                        else if (obj.crauf + obj.craunf > obj.cr_u && obj.cr_s !== 0 && 'users' in state.rawData) {
+                            var value = (obj.cr_u - (obj.cr_u * ((wholeUsers.fatal / wholeUsers.total) - (obj.crf / obj.cr_s)))) / obj.cr_u * 100;
+                            return Math.round(value * 100) / 100;
+                        }
+
+                        return Math.round(Math.min(obj[name] / obj.cr_u, 1) * 10000) / 100;
+                    },
+                    "^craunf$": function(obj) {
+                        if (obj.cr_u === 0 || obj[name] === 0) {
+                            return 100;
+                        }
+                        else if (obj.crauf + obj.craunf > obj.cr_u && obj.cr_s !== 0 && 'users' in state.rawData) {
+                            var value = (obj.cr_u - (obj.cr_u * ((wholeUsers.nonfatal / wholeUsers.total) - (obj.crnf / obj.cr_s)))) / obj.cr_u * 100;
+                            return Math.round(value * 100) / 100;
+                        }
+
+                        return Math.round(Math.min(obj[name] / obj.cr_u, 1) * 10000) / 100;
+                    },
+                    '^crinv$': function(obj) {
+                        var value = (obj.cr_s === 0) ? 100 : (obj.cr_s - (obj.crf + obj.crnf)) / obj.cr_s * 100;
+                        return Math.round(value * 100) / 100;
+                    },
+                    '^crfinv$': function(obj) {
+                        var value = (obj.cr_s === 0) ? 100 : (obj.cr_s - obj.crf) / obj.cr_s * 100;
+                        return Math.round(value * 100) / 100;
+                    },
+                    '^crnfinv$': function(obj) {
+                        var value = (obj.cr_s === 0) ? 100 : (obj.cr_s - obj.crnf) / obj.cr_s * 100;
+                        return Math.round(value * 100) / 100;
+                    },
                 };
 
                 dataProps = [
@@ -370,6 +448,7 @@ function transformAppVersion(inpVersion) {
                 state.isLoading = false;
                 return chartOptions;
             };
+
         };
 
         _overviewSubmodule.getters.statistics = function(state) {
