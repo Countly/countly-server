@@ -1,6 +1,6 @@
 /*global app, countlyVue, countlySDK, CV, countlyCommon, CountlyHelpers*/
 (function() {
-    var enable_logs = true;
+    var enable_logs = false;
     var SC_VER = 2; // check/update sdk/api/api.js for this
     // Initial SDKs that supported tracking and networking options
     var v0_android = "22.09.4";
@@ -107,6 +107,7 @@
             var self = this;
             Promise.all([
                 this.$store.dispatch("countlySDK/initialize"),
+                this.$store.dispatch("countlySDK/initializeEnforcement"),
                 this.$store.dispatch("countlySDK/fetchSDKStats") // fetch sdk version data for tooltips
             ]).then(function() {
                 self.$store.dispatch("countlySDK/sdk/setTableLoading", false);
@@ -115,12 +116,13 @@
         computed: {
             getData: function() {
                 var params = this.$store.getters["countlySDK/sdk/all"];
+                var enforcement = this.$store.getters["countlySDK/sdk/enforcement"];
                 var data = params || {};
-                log(`getData data: ${JSON.stringify(data)}`);
+                var enforceData = enforcement || {};
                 for (var key in this.configs) {
                     if (this.diff.indexOf(key) === -1) {
                         this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
-                        this.configs[key].enforced = typeof data[key] !== "undefined" ? true : false;
+                        this.configs[key].enforced = !!enforceData[key];
                     }
                 }
                 return this.configs;
@@ -336,7 +338,6 @@
                         description: "Choose a preset for backoff settings or customize manually",
                         default: "Default",
                         enforced: false,
-                        disable_enforce: true,
                         value: null,
                         presets: [
                             {
@@ -445,6 +446,9 @@
                         // remove presets from params
                         delete params[key];
                     }
+                    if (this.configs[key] && this.configs[key].enforced === false) {
+                        delete params[key];
+                    }
                 }
 
                 var data = {};
@@ -495,21 +499,24 @@
                     if (!result) {
                         return true;
                     }
+                    var enforcement = Object.assign({}, self.$store.getters["countlySDK/sdk/enforcement"]);
                     if (key) {
                         log(`enforcing key ${key}`);
                         self.diff.push(key);
                         self.configs[key].enforced = true;
+                        enforcement[key] = true;
                     }
                     else {
                         for (var k in self.configs) {
-                            log(`2enforcing all ${k}`);
+                            log(`enforcing all ${k}`);
                             if (self.diff.indexOf(k) === -1) {
                                 self.diff.push(k);
                                 self.configs[k].enforced = true;
+                                enforcement[k] = true;
                             }
                         }
                     }
-                    self.save();
+                    self.save(enforcement);
                 },
                 ["No, don't enforce", "Yes, enforce"],
                 { title: helper_title }
@@ -528,17 +535,15 @@
                     }
                     if (key) {
                         self.configs[key].enforced = false;
+
+                        var enforcement = Object.assign({}, self.$store.getters["countlySDK/sdk/enforcement"]);
+
+                        log(`reversing enforce key ${key}`);
+                        enforcement[key] = false;
+                        self.$store.dispatch("countlySDK/sdk/updateEnforcement", enforcement).then(function() {
+                            self.$store.dispatch("countlySDK/initializeEnforcement");
+                        });
                     }
-                    var params = self.$store.getters["countlySDK/sdk/all"];
-                    var data = params || {};
-                    log(`reverseEnforce data: ${JSON.stringify(data)}`);
-                    if (key) {
-                        log(`reverseEnforce key ${key}`);
-                        delete data[key];
-                    }
-                    self.$store.dispatch("countlySDK/sdk/update", data).then(function() {
-                        self.$store.dispatch("countlySDK/initialize");
-                    });
                 },
                 ["No, don't revert", "Yes, revert"],
                 { title: helper_title }
@@ -591,16 +596,27 @@
                 { title: helper_title }
                 );
             },
-            save: function() {
+            save: function(enforcement) {
                 var params = this.$store.getters["countlySDK/sdk/all"];
+                log(`save with enforcement: ${JSON.stringify(enforcement)}`);
                 log(`save: ${JSON.stringify(params)} and diff: ${JSON.stringify(this.diff)}`);
                 var data = params || {};
                 for (var i = 0; i < this.diff.length; i++) {
                     log(`save: ${this.diff[i]} = ${this.configs[this.diff[i]].value}`);
                     data[this.diff[i]] = this.configs[this.diff[i]].value;
+                    this.configs[this.diff[i]].enforced = true;
+                }
+                if (!enforcement) {
+                    enforcement = {};
+                    for (var key in this.configs) {
+                        enforcement[key] = this.configs[key].enforced;
+                    }
                 }
                 this.diff = [];
                 var self = this;
+                this.$store.dispatch("countlySDK/sdk/updateEnforcement", enforcement).then(() => {
+                    this.$store.dispatch("countlySDK/initializeEnforcement");
+                });
                 this.$store.dispatch("countlySDK/sdk/update", data).then(function() {
                     self.$store.dispatch("countlySDK/initialize");
                 });
