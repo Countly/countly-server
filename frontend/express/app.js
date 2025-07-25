@@ -425,7 +425,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         var overriddenCountlyNamedType = COUNTLY_NAMED_TYPE;
         var whiteLabelingConfig = plugins.getConfig("white-labeling");
         if (whiteLabelingConfig && whiteLabelingConfig.footerLabel && whiteLabelingConfig.footerLabel.length) {
-            overriddenCountlyNamedType = whiteLabelingConfig.footerLabel + " v" + COUNTLY_VERSION;
+            overriddenCountlyNamedType = whiteLabelingConfig.footerLabel;
         }
 
         COUNTLY_NAMED_TYPE = overriddenCountlyNamedType;
@@ -941,7 +941,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
         var currentWhiteLabelingConfig = plugins.getConfig("white-labeling");
         var overriddenCountlyNamedType = COUNTLY_NAMED_TYPE;
         if (currentWhiteLabelingConfig && currentWhiteLabelingConfig.footerLabel && currentWhiteLabelingConfig.footerLabel.length) {
-            overriddenCountlyNamedType = currentWhiteLabelingConfig.footerLabel + " v" + COUNTLY_VERSION;
+            overriddenCountlyNamedType = currentWhiteLabelingConfig.footerLabel;
         }
         app.loadThemeFiles(configs.theme, async function(theme) {
             if (configs._user.theme) {
