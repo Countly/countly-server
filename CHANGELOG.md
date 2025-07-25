@@ -1,4 +1,8 @@
-## Version 25.03.XX
+## Version 25.03.XX
+
+Features:
+- [plugins] Add configuration warning tags to settings UI
+
 Fixes:
 - [core] Use correct rights validation for loyality
 
