@@ -13,6 +13,8 @@ resources:
 - grafana.yaml
 - tempo-stack.yaml
 - pyroscope-stack.yaml
+# Ingress for external access
+- observability-ingress.yaml
 
 generatorOptions:
   labels:
