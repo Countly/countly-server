@@ -1,7 +1,7 @@
 # TODO: if plugins grep hoooks compile v8-sandbox hooks with base as parent and then later copy to plugins/hooks/node_modules
 
 # Global ARGs - available in all stages
-ARG COUNTLY_PLUGINS=mobile,web,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,alerts,times-of-day,onboarding,active_users,config-transfer,consolidate,data-manager,dashboards,sdk,guides,journey_engine,content,clickhouse,desktop,ab-testing
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,config-transfer,consolidate,data-manager,hooks,dashboards,journey_engine,content,clickhouse,guides,sdk
 ARG GEOIP=empty
 
 ###############################################################################
@@ -120,6 +120,7 @@ RUN --mount=type=cache,id=npm-plugin-cache,target=/root/.npm,sharing=locked \
 # Stage 3 – bring in the rest of the code, build assets                       #
 ###############################################################################
 FROM node-modules AS builder
+# Redeclare ARG in this stage to ensure it's available
 ARG COUNTLY_PLUGINS
 WORKDIR /opt/countly
 
