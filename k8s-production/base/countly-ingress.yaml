@@ -51,7 +51,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: newarchitecture.count.ly
+  - host: v2.count.ly
     http:
       paths:
       # Ingestor specific paths (high-volume data ingestion) - MUST come before /i/ prefix
