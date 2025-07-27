@@ -169,12 +169,18 @@ function transformAppVersion(inpVersion) {
                 else if (dashboard[metric].total !== 0 && dashboard[metric]["prev-total"] === 0) {
                     dashboard[metric].change = "∞";
                 }
+                else if (dashboard[metric].total === dashboard[metric]["prev-total"]) {
+                    dashboard[metric].change = "0";
+                }
 
                 if (dashboard[metric].total === dashboard[metric]["prev-total"]) {
                     dashboard[metric].trend = "n";
                 }
                 else {
-                    dashboard[metric].trend = dashboard[metric].total >= dashboard[metric]["prev-total"] ? "u" : "d";
+                    var totl = dashboard[metric].total === 'NA' ? -1 : dashboard[metric].total;
+                    var prevTotl = dashboard[metric]['prev-total'] === 'NA' ? -1 : dashboard[metric]['prev-total'];
+
+                    dashboard[metric].trend = totl >= prevTotl ? 'u' : 'd';
                 }
 
                 if (metric in derivations) {
