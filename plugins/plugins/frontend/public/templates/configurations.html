@@ -51,8 +51,33 @@
                                     v-for="key in group.list" :key="key" 
                                     class="bu-columns bu-is-vcentered bu-p-5 config-section">
                                     <div class="bu-column bu-is-7">
-                                        <p class="bu-has-text-weight-medium" :data-test-id="'settings-title-label-' + key.toLowerCase().replaceAll('_', '-')">{{getLabelName(key)}}</p>
-                                        <p class="bu-has-text-weight-normal bu-mt-2" v-html="getHelperLabel(key)" v-if="getHelperLabel(key)" :data-test-id="'settings-description-label-' + key.toLowerCase().replaceAll('_', '-')"></p>
+                                        <div class="bu-has-text-weight-medium bu-is-flex bu-is-align-items-center config-section__header" :data-test-id="'settings-title-label-' + key.toLowerCase().replaceAll('_', '-')">
+                                            <div>
+                                                <span class="bu-mr-2"> {{ getLabelName(key) }} </span>
+                                            </div>
+                                            <div class="bu-is-flex bu-is-align-items-center">
+                                                <div
+                                                    v-for="(tag, index) in getWarningTags(selectedConfig, key)"
+                                                    :key="index"
+                                                    class="bu-is-flex bu-is-align-items-center bu-is-justify-content-center bu-mr-2"
+                                                >
+                                                    <div
+                                                        :style="{ backgroundColor: tag.bgColor }"
+                                                        v-tooltip="tag.tooltipText"
+                                                        class="configuration-warning-container"
+
+                                                    >
+                                                        <span
+                                                            class="configuration-warning-container__text"
+                                                            :style="{ color: tag.textColor }"
+                                                        > 
+                                                            {{ tag.label }} 
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="bu-has-text-weight-normal bu-mt-2 bu-mb-0" v-html="getHelperLabel(key)" v-if="getHelperLabel(key)" :data-test-id="'settings-description-label-' + key.toLowerCase().replaceAll('_', '-')"></p>
                                         <div v-if="checkIfOverwritten(key)" class="config-section-overwritten">
                                             <a :href="checkIfOverwritten(key).href" target="_blank">{{checkIfOverwritten(key).label}}</a>
                                         </div>
