@@ -6,11 +6,28 @@ metadata:
   annotations:
     kustomize.config.k8s.io/behavior: merge
 data:
-  # Enhanced logging with request correlation
+  # Enable OpenTelemetry tracing
+  enable-opentelemetry: "true"
+  
+  # OpenTelemetry collector endpoint
+  otlp-collector-host: "alloy.countly-observability.svc.cluster.local"
+  otlp-collector-port: "4317"
+  
+  # OpenTelemetry service configuration
+  otel-service-name: "nginx-ingress"
+  otel-max-queuesize: "2048"
+  otel-sampler: "AlwaysOn"  # No sampling - trace all requests
+  otel-sampler-ratio: "1.0"  # 100% sampling
+  
+  # Trust incoming spans to maintain trace continuity
+  opentelemetry-trust-incoming-span: "true"
+  
+  # Enhanced logging with request correlation and trace context
   log-format-upstream: >
     $remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent
     "$http_referer" "$http_user_agent" $request_time $upstream_response_time
-    request_id=$req_id trace_context=$http_traceparent
+    request_id=$req_id trace_context=$http_traceparent traceId=$opentelemetry_trace_id
+    spanId=$opentelemetry_span_id
   
   # Generate unique request IDs for correlation
   generate-request-id: "true"
@@ -18,6 +35,7 @@ data:
   # Forward trace context headers to upstream
   proxy-set-headers: "ingress-nginx/custom-headers"
 
+  # Performance tuning settings
   worker-processes: "auto"
   worker-connections: "65535"
   worker-rlimit-nofile: "131072"
