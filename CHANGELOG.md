@@ -2,13 +2,14 @@
 
 Features:
 - [plugins] Add configuration warning tags to settings UI
+- [white-labeling] Add sidebar footer label setting to white labeling
 - [remote-config] Add support for comparing newer/older app version in conditions
 
 Fixes:
-- [remote-config] Fix condition matching with complex conditions
 - [core] Use correct rights validation for loyality
 - [crashes] Fix free session for home widget
 - [crashes] Use na for free session and free user when there's no data
+- [remote-config] Fix condition matching with complex conditions
 
 Enterprise Fixes:
 - [ldap] Error handling in ldap plugin on search error
