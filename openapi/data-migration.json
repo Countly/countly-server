@@ -11,95 +11,64 @@
     }
   ],
   "paths": {
-    "/i/datamigration/export": {
-      "post": {
-        "summary": "Export data",
-        "description": "Export data from a Countly server for migration",
+    "/i/datamigration/report_import": {
+      "get": {
+        "summary": "Report import status",
+        "description": "Report import status from remote server",
         "tags": [
           "Data Migration"
         ],
         "parameters": [
           {
-            "name": "api_key",
-            "in": "query",
-            "required": false,
-            "description": "API key",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "auth_token",
-            "in": "query",
-            "required": false,
-            "description": "Authentication token",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "app_id",
+            "name": "exportid",
             "in": "query",
             "required": true,
-            "description": "App ID for permission check",
+            "description": "Export ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "description": "Server token for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Import status",
+            "schema": {
+              "type": "string",
+              "enum": ["finished", "failed", "progress"]
+            }
+          },
+          {
+            "name": "message",
+            "in": "query",
+            "required": false,
+            "description": "Status message or error message",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": false,
+            "description": "Additional arguments in JSON format",
             "schema": {
               "type": "string"
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "apps": {
-                    "type": "array",
-                    "description": "Array of app IDs to export",
-                    "required": true,
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "server_address": {
-                    "type": "string",
-                    "description": "Address of the target server",
-                    "required": false
-                  },
-                  "server_token": {
-                    "type": "string",
-                    "description": "Authentication token for the target server",
-                    "required": false
-                  },
-                  "email": {
-                    "type": "string",
-                    "description": "Email to notify when export is complete",
-                    "required": false
-                  },
-                  "redirect_traffic": {
-                    "type": "boolean",
-                    "description": "Whether to redirect traffic to the target server",
-                    "required": false
-                  },
-                  "aditional_files": {
-                    "type": "boolean",
-                    "description": "Whether to include additional files",
-                    "required": false
-                  },
-                  "only_export": {
-                    "type": "boolean",
-                    "description": "Whether to only export data without sending to target server",
-                    "required": false
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "Export initiated successfully",
+            "description": "Status reported successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -107,16 +76,7 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "Success"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "exportid": {
-                          "type": "string",
-                          "description": "ID of the export job"
-                        }
-                      }
+                      "example": "ok"
                     }
                   }
                 }
@@ -127,49 +87,70 @@
       }
     },
     "/i/datamigration/import": {
-      "post": {
+      "get": {
         "summary": "Import data",
-        "description": "Import data from a source Countly server",
+        "description": "Import data from an export file",
         "tags": [
           "Data Migration"
         ],
         "parameters": [
           {
-            "name": "api_key",
+            "name": "exportid",
             "in": "query",
             "required": false,
-            "description": "API key",
+            "description": "Export ID for naming the import",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "auth_token",
+            "name": "existing_file",
             "in": "query",
             "required": false,
-            "description": "Authentication token",
+            "description": "Path to existing file to import on server",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "test_con",
+            "in": "query",
+            "required": false,
+            "description": "Test connection flag - returns 'valid' if connection is valid",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ts",
+            "in": "query",
+            "required": false,
+            "description": "Timestamp parameter",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": false,
+            "description": "Additional arguments in JSON format",
             "schema": {
               "type": "string"
             }
           }
         ],
         "requestBody": {
-          "required": true,
+          "required": false,
           "content": {
             "multipart/form-data": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "exportid": {
-                    "type": "string",
-                    "description": "ID of the export job",
-                    "required": true
-                  },
-                  "archive": {
+                  "import_file": {
                     "type": "string",
                     "format": "binary",
-                    "description": "Exported data archive file",
-                    "required": true
+                    "description": "Import file (.tar.gz)"
                   }
                 }
               }
@@ -178,7 +159,7 @@
         },
         "responses": {
           "200": {
-            "description": "Import initiated successfully",
+            "description": "Import started successfully or test connection valid",
             "content": {
               "application/json": {
                 "schema": {
@@ -186,81 +167,69 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "Success"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "importid": {
-                          "type": "string",
-                          "description": "ID of the import job"
-                        }
-                      }
+                      "enum": ["data-migration.import-started", "valid"],
+                      "example": "data-migration.import-started"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error in import process",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "data-migration.import-file-missing",
+                        "data-migration.could-not-find-file",
+                        "data-migration.import-process-exist"
+                      ]
                     }
                   }
                 }
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AuthToken": []
+          },
+          {
+            "CountlyToken": []
+          }
+        ]
       }
     },
-    "/i/datamigration/stop_export": {
-      "post": {
-        "summary": "Stop export",
-        "description": "Stop an ongoing data export",
+    "/i/datamigration/delete_all": {
+      "get": {
+        "summary": "Delete all exports and imports",
+        "description": "Delete all export and import files and folders",
         "tags": [
           "Data Migration"
         ],
         "parameters": [
           {
-            "name": "api_key",
+            "name": "args",
             "in": "query",
             "required": false,
-            "description": "API key",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "auth_token",
-            "in": "query",
-            "required": false,
-            "description": "Authentication token",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID for permission check",
+            "description": "Additional arguments in JSON format",
             "schema": {
               "type": "string"
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "exportid": {
-                    "type": "string",
-                    "description": "ID of the export job to stop",
-                    "required": true
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "Export stopped successfully",
+            "description": "All files deleted successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -268,63 +237,15 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "Success"
+                      "example": "ok"
                     }
                   }
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/i/datamigration/stop_import": {
-      "post": {
-        "summary": "Stop import",
-        "description": "Stop an ongoing data import",
-        "tags": [
-          "Data Migration"
-        ],
-        "parameters": [
-          {
-            "name": "api_key",
-            "in": "query",
-            "required": false,
-            "description": "API key",
-            "schema": {
-              "type": "string"
-            }
           },
-          {
-            "name": "auth_token",
-            "in": "query",
-            "required": false,
-            "description": "Authentication token",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "importid": {
-                    "type": "string",
-                    "description": "ID of the import job to stop",
-                    "required": true
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Import stopped successfully",
+          "401": {
+            "description": "Unauthorized - invalid or missing authentication",
             "content": {
               "application/json": {
                 "schema": {
@@ -332,7 +253,7 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "Success"
+                      "example": "Token not valid"
                     }
                   }
                 }
@@ -343,58 +264,32 @@
       }
     },
     "/i/datamigration/delete_export": {
-      "post": {
+      "get": {
         "summary": "Delete export",
-        "description": "Delete an export job and its data",
+        "description": "Delete a specific export job and its data",
         "tags": [
           "Data Migration"
         ],
         "parameters": [
           {
-            "name": "api_key",
-            "in": "query",
-            "required": false,
-            "description": "API key",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "auth_token",
-            "in": "query",
-            "required": false,
-            "description": "Authentication token",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "app_id",
+            "name": "exportid",
             "in": "query",
             "required": true,
-            "description": "App ID for permission check",
+            "description": "Export ID to delete",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": false,
+            "description": "Additional arguments in JSON format",
             "schema": {
               "type": "string"
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "exportid": {
-                    "type": "string",
-                    "description": "ID of the export job to delete",
-                    "required": true
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Export deleted successfully",
@@ -405,7 +300,7 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "Success"
+                      "example": "ok"
                     }
                   }
                 }
@@ -416,49 +311,32 @@
       }
     },
     "/i/datamigration/delete_import": {
-      "post": {
+      "get": {
         "summary": "Delete import",
-        "description": "Delete an import job and its data",
+        "description": "Delete a specific import job and its data",
         "tags": [
           "Data Migration"
         ],
         "parameters": [
           {
-            "name": "api_key",
+            "name": "exportid",
             "in": "query",
-            "required": false,
-            "description": "API key",
+            "required": true,
+            "description": "Export ID of the import to delete",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "auth_token",
+            "name": "args",
             "in": "query",
             "required": false,
-            "description": "Authentication token",
+            "description": "Additional arguments in JSON format",
             "schema": {
               "type": "string"
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "importid": {
-                    "type": "string",
-                    "description": "ID of the import job to delete",
-                    "required": true
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Import deleted successfully",
@@ -469,7 +347,23 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "Success"
+                      "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error in delete process",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": ["data-migration.exportid-missing"]
                     }
                   }
                 }
@@ -479,46 +373,28 @@
         }
       }
     },
-    "/i/datamigration/download": {
+    "/i/datamigration/stop_export": {
       "get": {
-        "summary": "Download export",
-        "description": "Download an exported data archive",
+        "summary": "Stop export",
+        "description": "Stop an ongoing export job",
         "tags": [
           "Data Migration"
         ],
         "parameters": [
           {
-            "name": "api_key",
-            "in": "query",
-            "required": false,
-            "description": "API key",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "auth_token",
-            "in": "query",
-            "required": false,
-            "description": "Authentication token",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "exportid",
             "in": "query",
             "required": true,
-            "description": "ID of the export job to download",
+            "description": "Export ID to stop",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "app_id",
+            "name": "args",
             "in": "query",
-            "required": true,
-            "description": "App ID for permission check",
+            "required": false,
+            "description": "Additional arguments in JSON format",
             "schema": {
               "type": "string"
             }
@@ -526,13 +402,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Export archive downloaded successfully",
+            "description": "Export stopped successfully",
             "content": {
-              "application/octet-stream": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "format": "binary",
-                  "description": "Export archive file"
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "data-migration.export-already-stopped"
+                    }
+                  }
                 }
               }
             }
@@ -540,37 +420,19 @@
         }
       }
     },
-    "/o/datamigration/export_list": {
+    "/o/datamigration/getmyexports": {
       "get": {
-        "summary": "Get exports list",
+        "summary": "Get my exports",
         "description": "Get a list of all export jobs",
         "tags": [
           "Data Migration"
         ],
         "parameters": [
           {
-            "name": "api_key",
+            "name": "args",
             "in": "query",
             "required": false,
-            "description": "API key",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "auth_token",
-            "in": "query",
-            "required": false,
-            "description": "Authentication token",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID for permission check",
+            "description": "Additional arguments in JSON format",
             "schema": {
               "type": "string"
             }
@@ -582,54 +444,74 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "_id": {
-                        "type": "string",
-                        "description": "Export job ID"
-                      },
-                      "app_ids": {
-                        "type": "array",
-                        "description": "App IDs included in export",
-                        "items": {
-                          "type": "string"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "string",
+                          "enum": ["data-migration.no-exports"],
+                          "description": "No exports found"
                         }
-                      },
-                      "app_names": {
-                        "type": "array",
-                        "description": "App names included in export",
-                        "items": {
-                          "type": "string"
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string",
+                                "description": "Export job ID"
+                              },
+                              "apps": {
+                                "type": "array",
+                                "description": "App IDs included in export",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "ts": {
+                                "type": "integer",
+                                "description": "Timestamp"
+                              },
+                              "status": {
+                                "type": "string",
+                                "description": "Export status"
+                              },
+                              "step": {
+                                "type": "string",
+                                "description": "Current step in export process"
+                              },
+                              "progress": {
+                                "type": "integer",
+                                "description": "Export progress percentage"
+                              },
+                              "can_download": {
+                                "type": "boolean",
+                                "description": "Whether the export can be downloaded"
+                              },
+                              "have_folder": {
+                                "type": "boolean",
+                                "description": "Whether export folder exists"
+                              },
+                              "log": {
+                                "type": "string",
+                                "description": "Log file name"
+                              },
+                              "export_path": {
+                                "type": "string",
+                                "description": "Export file path"
+                              }
+                            }
+                          }
                         }
-                      },
-                      "status": {
-                        "type": "integer",
-                        "description": "Export status code"
-                      },
-                      "step": {
-                        "type": "integer",
-                        "description": "Current step in export process"
-                      },
-                      "created_at": {
-                        "type": "integer",
-                        "description": "Creation timestamp"
-                      },
-                      "stopped": {
-                        "type": "boolean",
-                        "description": "Whether the export was stopped"
-                      },
-                      "only_export": {
-                        "type": "boolean",
-                        "description": "Whether this is an export-only job"
-                      },
-                      "server_address": {
-                        "type": "string",
-                        "description": "Target server address"
                       }
                     }
-                  }
+                  ]
                 }
               }
             }
@@ -637,28 +519,19 @@
         }
       }
     },
-    "/o/datamigration/import_list": {
+    "/o/datamigration/getmyimports": {
       "get": {
-        "summary": "Get imports list",
+        "summary": "Get my imports",
         "description": "Get a list of all import jobs",
         "tags": [
           "Data Migration"
         ],
         "parameters": [
           {
-            "name": "api_key",
+            "name": "args",
             "in": "query",
             "required": false,
-            "description": "API key",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "auth_token",
-            "in": "query",
-            "required": false,
-            "description": "Authentication token",
+            "description": "Additional arguments in JSON format",
             "schema": {
               "type": "string"
             }
@@ -670,44 +543,492 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "_id": {
-                        "type": "string",
-                        "description": "Import job ID"
-                      },
-                      "app_ids": {
-                        "type": "array",
-                        "description": "App IDs included in import",
-                        "items": {
-                          "type": "string"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "string",
+                          "enum": ["data-migration.no-imports"],
+                          "description": "No imports found"
                         }
-                      },
-                      "app_names": {
-                        "type": "array",
-                        "description": "App names included in import",
-                        "items": {
-                          "type": "string"
-                        }
-                      },
-                      "status": {
-                        "type": "integer",
-                        "description": "Import status code"
-                      },
-                      "step": {
-                        "type": "integer",
-                        "description": "Current step in import process"
-                      },
-                      "created_at": {
-                        "type": "integer",
-                        "description": "Creation timestamp"
-                      },
-                      "stopped": {
-                        "type": "boolean",
-                        "description": "Whether the import was stopped"
                       }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "description": "Import type (archive or folder)"
+                              },
+                              "log": {
+                                "type": "string",
+                                "description": "Log file name"
+                              },
+                              "last_update": {
+                                "type": "string",
+                                "description": "Last update timestamp"
+                              },
+                              "app_list": {
+                                "type": "array",
+                                "description": "List of app names",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/datamigration/createimporttoken": {
+      "get": {
+        "summary": "Create import token",
+        "description": "Create an authentication token for importing data",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "ttl",
+            "in": "query",
+            "required": false,
+            "description": "Time to live in minutes (default: 1440 minutes = 1 day)",
+            "schema": {
+              "type": "integer",
+              "default": 1440
+            }
+          },
+          {
+            "name": "multi",
+            "in": "query",
+            "required": false,
+            "description": "Whether token can be used multiple times",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": false,
+            "description": "Additional arguments in JSON format",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Authentication token"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/datamigration/getstatus": {
+      "get": {
+        "summary": "Get export status",
+        "description": "Get the status of a specific export job",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "exportid",
+            "in": "query",
+            "required": true,
+            "description": "Export ID to get status for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": false,
+            "description": "Additional arguments in JSON format",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Export job ID"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Export status"
+                    },
+                    "step": {
+                      "type": "string",
+                      "description": "Current step"
+                    },
+                    "progress": {
+                      "type": "integer",
+                      "description": "Progress percentage"
+                    },
+                    "apps": {
+                      "type": "array",
+                      "description": "App IDs",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "ts": {
+                      "type": "integer",
+                      "description": "Timestamp"
+                    },
+                    "server_address": {
+                      "type": "string",
+                      "description": "Target server address"
+                    },
+                    "server_token": {
+                      "type": "string",
+                      "description": "Server token"
+                    },
+                    "redirect_traffic": {
+                      "type": "boolean",
+                      "description": "Whether traffic is redirected"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/datamigration/get_config": {
+      "get": {
+        "summary": "Get configuration",
+        "description": "Get data migration configuration including default export path and file size limits",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "args",
+            "in": "query",
+            "required": false,
+            "description": "Additional arguments in JSON format",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Configuration retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "def_path": {
+                      "type": "string",
+                      "description": "Default export path"
+                    },
+                    "fileSizeLimit": {
+                      "type": "integer",
+                      "description": "File size limit in KB"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/datamigration/export": {
+      "get": {
+        "summary": "Export data",
+        "description": "Export data from applications for migration",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "apps",
+            "in": "query",
+            "required": true,
+            "description": "Comma-separated list of app IDs to export",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "only_export",
+            "in": "query",
+            "required": false,
+            "description": "1=only export data, 2=export commands only, 0=export and send to remote server",
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1, 2]
+            }
+          },
+          {
+            "name": "server_address",
+            "in": "query",
+            "required": false,
+            "description": "Remote server address (required if only_export != 1)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "server_token",
+            "in": "query",
+            "required": false,
+            "description": "Token generated on remote server (required if only_export != 1)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "aditional_files",
+            "in": "query",
+            "required": false,
+            "description": "Whether to include additional files (1=yes, 0=no)",
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1]
+            }
+          },
+          {
+            "name": "redirect_traffic",
+            "in": "query",
+            "required": false,
+            "description": "Whether to redirect traffic to target server (1=yes, 0=no)",
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1]
+            }
+          },
+          {
+            "name": "target_path",
+            "in": "query",
+            "required": false,
+            "description": "Custom path where to save the export file",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": false,
+            "description": "Additional arguments in JSON format",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "description": "Export ID or success message"
+                    }
+                  }
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "description": "Export commands (when only_export=2)"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error in export process",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "data-migration.no_app_ids",
+                        "data-migration.token_missing",
+                        "data-migration.address_missing",
+                        "data-migration.some_bad_ids"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/datamigration/validateconnection": {
+      "get": {
+        "summary": "Validate connection",
+        "description": "Validate if given token and address can be used for data import",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "server_address",
+            "in": "query",
+            "required": true,
+            "description": "Remote server address",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "server_token",
+            "in": "query",
+            "required": true,
+            "description": "Token generated on remote server",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": false,
+            "description": "Additional arguments in JSON format",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Connection is valid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "data-migration.connection-is-valid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/datamigration/sendexport": {
+      "get": {
+        "summary": "Send export",
+        "description": "Send an exported file to a remote server",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "exportid",
+            "in": "query",
+            "required": true,
+            "description": "Export ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "server_address",
+            "in": "query",
+            "required": true,
+            "description": "Remote server address",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "server_token",
+            "in": "query",
+            "required": true,
+            "description": "Token generated on remote server",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect_traffic",
+            "in": "query",
+            "required": false,
+            "description": "Whether to redirect traffic to target server (1=yes, 0=no)",
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1]
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": false,
+            "description": "Additional arguments in JSON format",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
                     }
                   }
                 }
@@ -729,6 +1050,12 @@
         "type": "apiKey",
         "in": "query",
         "name": "auth_token"
+      },
+      "CountlyToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "countly-token",
+        "description": "Import token for data migration operations"
       }
     }
   },
