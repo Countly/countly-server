@@ -11,10 +11,162 @@
     }
   ],
   "paths": {
+    "/o/crashes/download_stacktrace": {
+      "get": {
+        "summary": "Download crash stacktrace",
+        "description": "Download the stacktrace file for a specific crash",
+        "tags": [
+          "Crash Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with read access",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "crash_id",
+            "in": "query",
+            "required": true,
+            "description": "Crash ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stacktrace file downloaded successfully",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "description": "Attachment filename",
+                "schema": {
+                  "type": "string",
+                  "example": "attachment;filename=CRASH_ID_stacktrace.txt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing crash_id or crash not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Please provide crash_id parameter"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/crashes/download_binary": {
+      "get": {
+        "summary": "Download crash binary dump",
+        "description": "Download the binary crash dump file for a specific crash",
+        "tags": [
+          "Crash Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with read access",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "crash_id",
+            "in": "query",
+            "required": true,
+            "description": "Crash ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary dump file downloaded successfully",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "description": "Attachment filename",
+                "schema": {
+                  "type": "string",
+                  "example": "attachment;filename=CRASH_ID_bin.dmp"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing crash_id or crash not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Please provide crash_id parameter"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/i/crashes/resolve": {
       "get": {
         "summary": "Resolve crash",
-        "description": "Mark a crash group as resolved",
+        "description": "Mark one or more crash groups as resolved",
         "tags": [
            "Crash Analytics"
         ],
@@ -41,7 +193,7 @@
             "name": "args",
             "in": "query",
             "required": true,
-            "description": "JSON object containing the crash_id",
+            "description": "JSON object containing crash_id or crashes array",
             "schema": {
               "type": "string",
               "example": "{\"crash_id\":\"CRASH_ID\"}"
@@ -50,7 +202,21 @@
         ],
         "responses": {
           "200": {
-            "description": "Crash resolved successfully",
+            "description": "Crash(es) resolved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string",
+                    "description": "Latest version for each resolved crash"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing args parameter",
             "content": {
               "application/json": {
                 "schema": {
@@ -58,7 +224,23 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "Success"
+                      "example": "Please provide args parameter"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Crash group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Not found"
                     }
                   }
                 }
@@ -71,7 +253,7 @@
     "/i/crashes/unresolve": {
       "get": {
         "summary": "Unresolve crash",
-        "description": "Mark a crash group as unresolved",
+        "description": "Mark one or more crash groups as unresolved",
         "tags": [
            "Crash Analytics"
         ],
@@ -98,7 +280,7 @@
             "name": "args",
             "in": "query",
             "required": true,
-            "description": "JSON object containing the crash_id",
+            "description": "JSON object containing crash_id or crashes array",
             "schema": {
               "type": "string",
               "example": "{\"crash_id\":\"CRASH_ID\"}"
@@ -107,7 +289,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Crash unresolved successfully",
+            "description": "Crash(es) unresolved successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -121,6 +303,38 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request - missing args parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Please provide args parameter"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Crash group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Not found"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -128,7 +342,7 @@
     "/i/crashes/view": {
       "get": {
         "summary": "Mark crash as viewed",
-        "description": "Mark a crash group as viewed",
+        "description": "Mark one or more crash groups as viewed (removes new flag)",
         "tags": [
            "Crash Analytics"
         ],
@@ -155,7 +369,7 @@
             "name": "args",
             "in": "query",
             "required": true,
-            "description": "JSON object containing the crash_id",
+            "description": "JSON object containing crash_id or crashes array",
             "schema": {
               "type": "string",
               "example": "{\"crash_id\":\"CRASH_ID\"}"
@@ -164,7 +378,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Crash marked as viewed successfully",
+            "description": "Crash(es) marked as viewed successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -173,6 +387,111 @@
                     "result": {
                       "type": "string",
                       "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing args parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Please provide args parameter"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Crash group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/crashes/resolving": {
+      "get": {
+        "summary": "Mark crash as resolving",
+        "description": "Mark one or more crash groups as being resolved (in progress)",
+        "tags": [
+           "Crash Analytics"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with write access",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "JSON object containing crash_id or crashes array",
+            "schema": {
+              "type": "string",
+              "example": "{\"crash_id\":\"CRASH_ID\"}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Crash(es) marked as resolving successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing args parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Please provide args parameter"
                     }
                   }
                 }
@@ -360,7 +679,7 @@
     "/i/crashes/hide": {
       "get": {
         "summary": "Hide crash",
-        "description": "Hide a crash group",
+        "description": "Hide one or more crash groups from the dashboard",
         "tags": [
            "Crash Analytics"
         ],
@@ -387,7 +706,7 @@
             "name": "args",
             "in": "query",
             "required": true,
-            "description": "JSON object containing the crash_id",
+            "description": "JSON object containing crash_id or crashes array",
             "schema": {
               "type": "string",
               "example": "{\"crash_id\":\"CRASH_ID\"}"
@@ -396,7 +715,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Crash hidden successfully",
+            "description": "Crash(es) hidden successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -410,6 +729,22 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request - missing args parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Please provide args parameter"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -417,7 +752,7 @@
     "/i/crashes/show": {
       "get": {
         "summary": "Show crash",
-        "description": "Unhide a crash group",
+        "description": "Unhide one or more crash groups (make them visible in dashboard)",
         "tags": [
            "Crash Analytics"
         ],
@@ -444,7 +779,7 @@
             "name": "args",
             "in": "query",
             "required": true,
-            "description": "JSON object containing the crash_id",
+            "description": "JSON object containing crash_id or crashes array",
             "schema": {
               "type": "string",
               "example": "{\"crash_id\":\"CRASH_ID\"}"
@@ -453,7 +788,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Crash unhidden successfully",
+            "description": "Crash(es) unhidden successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -462,6 +797,22 @@
                     "result": {
                       "type": "string",
                       "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing args parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Please provide args parameter"
                     }
                   }
                 }
@@ -501,10 +852,10 @@
             "name": "args",
             "in": "query",
             "required": true,
-            "description": "JSON object containing the crash_id and comment",
+            "description": "JSON object containing crash_id, text, and optional time",
             "schema": {
               "type": "string",
-              "example": "{\"crash_id\":\"CRASH_ID\",\"comment\":\"Your comment text here\"}"
+              "example": "{\"crash_id\":\"CRASH_ID\",\"text\":\"Your comment text here\",\"time\":1234567890}"
             }
           }
         ],
@@ -519,6 +870,22 @@
                     "result": {
                       "type": "string",
                       "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing args parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Please provide args parameter"
                     }
                   }
                 }
@@ -558,10 +925,10 @@
             "name": "args",
             "in": "query",
             "required": true,
-            "description": "JSON object containing the crash_id, comment_id and new comment text",
+            "description": "JSON object containing crash_id, comment_id, text, and optional time",
             "schema": {
               "type": "string",
-              "example": "{\"crash_id\":\"CRASH_ID\",\"comment_id\":\"COMMENT_ID\",\"comment\":\"Updated comment text\"}"
+              "example": "{\"crash_id\":\"CRASH_ID\",\"comment_id\":\"COMMENT_ID\",\"text\":\"Updated comment text\",\"time\":1234567890}"
             }
           }
         ],
@@ -576,6 +943,22 @@
                     "result": {
                       "type": "string",
                       "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing args parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Please provide args parameter"
                     }
                   }
                 }
@@ -615,7 +998,7 @@
             "name": "args",
             "in": "query",
             "required": true,
-            "description": "JSON object containing the crash_id and comment_id",
+            "description": "JSON object containing crash_id and comment_id",
             "schema": {
               "type": "string",
               "example": "{\"crash_id\":\"CRASH_ID\",\"comment_id\":\"COMMENT_ID\"}"
@@ -638,6 +1021,22 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request - missing args parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Please provide args parameter"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -645,7 +1044,7 @@
     "/i/crashes/delete": {
       "get": {
         "summary": "Delete crash",
-        "description": "Delete a crash group",
+        "description": "Delete one or more crash groups and all associated crash reports",
         "tags": [
            "Crash Analytics"
         ],
@@ -672,7 +1071,7 @@
             "name": "args",
             "in": "query",
             "required": true,
-            "description": "JSON object containing the crash_id",
+            "description": "JSON object containing crash_id or crashes array",
             "schema": {
               "type": "string",
               "example": "{\"crash_id\":\"CRASH_ID\"}"
@@ -681,7 +1080,34 @@
         ],
         "responses": {
           "200": {
-            "description": "Crash deleted successfully",
+            "description": "Crash(es) deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "string",
+                          "example": "Success"
+                        }
+                      }
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Array of failed crash names if some deletions failed"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing args parameter",
             "content": {
               "application/json": {
                 "schema": {
@@ -689,7 +1115,23 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "Success"
+                      "example": "Please provide args parameter"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Crash group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Not found"
                     }
                   }
                 }

@@ -1402,8 +1402,7 @@ plugins.setConfigs("crashes", {
                 common.returnMessage(obParams, 400, 'Please provide args parameter');
                 return true;
             }
-            console.log("before validating");
-            validateUpdate(obParams, function(params) {
+            validateUpdate(obParams, FEATURE_NAME, function(params) {
                 var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
                 common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in: crashes}}).toArray(function(crashGroupsErr, groups) {
                     if (groups) {
