@@ -11,128 +11,12 @@
     }
   ],
   "paths": {
-    "/i/populator/generate": {
-      "post": {
-        "summary": "Generate data",
-        "description": "Generate test data for an app",
-        "tags": [
-          "Data Population"
-        ],
-        "parameters": [
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "template_id": {
-                    "type": "string",
-                    "description": "Template ID to use for data generation"
-                  },
-                  "sample_size": {
-                    "type": "integer",
-                    "description": "Number of users to generate"
-                  },
-                  "start_ts": {
-                    "type": "integer",
-                    "description": "Start timestamp for data"
-                  },
-                  "end_ts": {
-                    "type": "integer",
-                    "description": "End timestamp for data"
-                  },
-                  "environment_id": {
-                    "type": "string",
-                    "description": "Environment ID for generated data"
-                  },
-                  "environment_name": {
-                    "type": "string",
-                    "description": "Environment name for generated data"
-                  },
-                  "bulk_period": {
-                    "type": "integer",
-                    "description": "Time period for bulk data generation"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Data generation initiated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "example": "Success"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/i/populator/stop": {
-      "post": {
-        "summary": "Stop data generation",
-        "description": "Stop an ongoing data generation process",
-        "tags": [
-          "Data Population"
-        ],
-        "parameters": [
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Data generation stopped successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "example": "Success"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/i/populator/status": {
+    "/i/populator/templates/create": {
       "get": {
-        "summary": "Get population status",
-        "description": "Get status of data population for an app",
+        "summary": "Create populator template",
+        "description": "Create a new data population template. Note: Parameter validation occurs before authentication checks.",
         "tags": [
-          "Data Population"
+          "Templates"
         ],
         "parameters": [
           {
@@ -143,27 +27,382 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "Name of template",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isDefault",
+            "in": "query",
+            "required": false,
+            "description": "Is this template default?",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "lastEditedBy",
+            "in": "query",
+            "required": false,
+            "description": "Last edited by user",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "users",
+            "in": "query",
+            "required": false,
+            "description": "Users configuration array",
+            "schema": {
+              "type": "array"
+            }
+          },
+          {
+            "name": "events",
+            "in": "query",
+            "required": false,
+            "description": "Events configuration array",
+            "schema": {
+              "type": "array"
+            }
+          },
+          {
+            "name": "views",
+            "in": "query",
+            "required": false,
+            "description": "Views configuration array",
+            "schema": {
+              "type": "array"
+            }
+          },
+          {
+            "name": "sequences",
+            "in": "query",
+            "required": false,
+            "description": "Sequences configuration array",
+            "schema": {
+              "type": "array"
+            }
+          },
+          {
+            "name": "behavior",
+            "in": "query",
+            "required": false,
+            "description": "Behavior configuration object",
+            "schema": {
+              "type": "object"
+            }
+          },
+          {
+            "name": "uniqueUserCount",
+            "in": "query",
+            "required": true,
+            "description": "Number of unique users",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "platformType",
+            "in": "query",
+            "required": true,
+            "description": "Platform types array. Note: Array parameters may require special formatting in query strings.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["web", "mobile", "desktop"]
+              }
+            },
+            "style": "form",
+            "explode": true
           }
         ],
         "responses": {
-          "200": {
-            "description": "Population status retrieved successfully",
+          "201": {
+            "description": "Template created successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": {
-                      "type": "boolean",
-                      "description": "Whether population is currently running"
-                    },
-                    "message": {
+                    "result": {
                       "type": "string",
-                      "description": "Status message"
-                    },
-                    "process": {
-                      "type": "object",
-                      "description": "Process information"
+                      "example": "Successfully created 60fa8d8c42e89a8a0d94a15b"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid parameters, missing required fields, or template name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Invalid params: Missing name argument,Missing uniqueUserCount argument,Missing platformType argument"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/populator/templates/remove": {
+      "get": {
+        "summary": "Remove populator template",
+        "description": "Remove a data population template",
+        "tags": [
+          "Templates"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "template_id",
+            "in": "query",
+            "required": true,
+            "description": "ID of template to be removed",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "example": "60fa8d8c42e89a8a0d94a15b"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Template removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error - invalid template ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Invalid template id."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/populator/templates/edit": {
+      "get": {
+        "summary": "Edit populator template",
+        "description": "Edit an existing data population template. Note: Parameter validation occurs before template ID validation.",
+        "tags": [
+          "Templates"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "template_id",
+            "in": "query",
+            "required": true,
+            "description": "ID of template to be edited",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "example": "60fa8d8c42e89a8a0d94a15b"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "Name of template",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isDefault",
+            "in": "query",
+            "required": false,
+            "description": "Is this template default?",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "lastEditedBy",
+            "in": "query",
+            "required": false,
+            "description": "Last edited by user",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "users",
+            "in": "query",
+            "required": false,
+            "description": "Users configuration array",
+            "schema": {
+              "type": "array"
+            }
+          },
+          {
+            "name": "events",
+            "in": "query",
+            "required": false,
+            "description": "Events configuration array",
+            "schema": {
+              "type": "array"
+            }
+          },
+          {
+            "name": "views",
+            "in": "query",
+            "required": false,
+            "description": "Views configuration array",
+            "schema": {
+              "type": "array"
+            }
+          },
+          {
+            "name": "sequences",
+            "in": "query",
+            "required": false,
+            "description": "Sequences configuration array",
+            "schema": {
+              "type": "array"
+            }
+          },
+          {
+            "name": "behavior",
+            "in": "query",
+            "required": false,
+            "description": "Behavior configuration object",
+            "schema": {
+              "type": "object"
+            }
+          },
+          {
+            "name": "uniqueUserCount",
+            "in": "query",
+            "required": true,
+            "description": "Number of unique users",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "platformType",
+            "in": "query",
+            "required": true,
+            "description": "Platform types array",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["web", "mobile", "desktop"]
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "generated_on",
+            "in": "query",
+            "required": false,
+            "description": "Generation timestamp",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Template edited successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid parameters or template name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Invalid params: Invalid type for uniqueUserCount,Invalid type for platformType"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Invalid template ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Invalid template id."
                     }
                   }
                 }
@@ -178,7 +417,7 @@
         "summary": "Get templates",
         "description": "Get available data population templates",
         "tags": [
-          "Data Population"
+          "Templates"
         ],
         "parameters": [
           {
@@ -215,35 +454,258 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "_id": {
-                        "type": "string",
-                        "description": "Template ID"
-                      },
-                      "name": {
-                        "type": "string",
-                        "description": "Template name"
-                      },
-                      "isDefault": {
-                        "type": "boolean",
-                        "description": "Whether this is a default template"
-                      },
-                      "up": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "description": "Array of templates when no template_id is specified",
+                      "items": {
                         "type": "object",
-                        "description": "User properties configuration"
-                      },
-                      "events": {
-                        "type": "object",
-                        "description": "Events configuration"
-                      },
-                      "platformType": {
-                        "type": "array",
-                        "description": "Platform types",
-                        "items": {
-                          "type": "string"
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "Template ID"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Template name"
+                          },
+                          "isDefault": {
+                            "type": "boolean",
+                            "description": "Whether this is a default template"
+                          },
+                          "lastEditedBy": {
+                            "type": "string",
+                            "description": "Last edited by user"
+                          },
+                          "users": {
+                            "type": "array",
+                            "description": "Users configuration"
+                          },
+                          "events": {
+                            "type": "array",
+                            "description": "Events configuration"
+                          },
+                          "views": {
+                            "type": "array",
+                            "description": "Views configuration"
+                          },
+                          "sequences": {
+                            "type": "array",
+                            "description": "Sequences configuration"
+                          },
+                          "behavior": {
+                            "type": "object",
+                            "description": "Behavior configuration"
+                          },
+                          "uniqueUserCount": {
+                            "type": "number",
+                            "description": "Number of unique users"
+                          },
+                          "platformType": {
+                            "type": "array",
+                            "description": "Platform types",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "generatedOn": {
+                            "type": "number",
+                            "description": "Generation timestamp"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "description": "Single template object when template_id is specified",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "description": "Template ID"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Template name"
+                        },
+                        "isDefault": {
+                          "type": "boolean",
+                          "description": "Whether this is a default template"
+                        },
+                        "lastEditedBy": {
+                          "type": "string",
+                          "description": "Last edited by user"
+                        },
+                        "users": {
+                          "type": "array",
+                          "description": "Users configuration"
+                        },
+                        "events": {
+                          "type": "array",
+                          "description": "Events configuration"
+                        },
+                        "views": {
+                          "type": "array",
+                          "description": "Views configuration"
+                        },
+                        "sequences": {
+                          "type": "array",
+                          "description": "Sequences configuration"
+                        },
+                        "behavior": {
+                          "type": "object",
+                          "description": "Behavior configuration"
+                        },
+                        "uniqueUserCount": {
+                          "type": "number",
+                          "description": "Number of unique users"
+                        },
+                        "platformType": {
+                          "type": "array",
+                          "description": "Platform types",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "generatedOn": {
+                          "type": "number",
+                          "description": "Generation timestamp"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Template not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Could not find template with id \"{template_id}\""
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Invalid template ID or platform type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Invalid template id."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/populator/environment/save": {
+      "get": {
+        "summary": "Save environment",
+        "description": "Save environment users data. Note: Validates required parameters before checking authentication or app_id.",
+        "tags": [
+          "Environment"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "users",
+            "in": "query",
+            "required": true,
+            "description": "JSON string of users array with deviceId, templateId, appId, environmentName, userName, platform, device, appVersion, custom",
+            "schema": {
+              "type": "string",
+              "format": "json",
+              "example": "[{\"deviceId\":\"user1\",\"templateId\":\"60fa8d8c42e89a8a0d94a15b\",\"appId\":\"test\",\"environmentName\":\"Production\",\"userName\":\"User 1\",\"platform\":\"android\",\"device\":\"Samsung Galaxy\",\"appVersion\":\"1.0\",\"custom\":{}}]"
+            }
+          },
+          {
+            "name": "setEnviromentInformationOnce",
+            "in": "query",
+            "required": false,
+            "description": "Whether to set environment information only once",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Environment saved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Successfully created"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing authentication when all required parameters are provided, or bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "examples": {
+                        "missing_auth": {
+                          "value": "Missing parameter \"api_key\" or \"auth_token\""
+                        },
+                        "missing_users": {
+                          "value": "Missing params: users"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing required parameters (checked before authentication)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "examples": {
+                        "missing_app_id": {
+                          "value": "Missing parameter app_id"
+                        },
+                        "missing_users": {
+                          "value": "Missing parameter users"
                         }
                       }
                     }
@@ -255,12 +717,12 @@
         }
       }
     },
-    "/i/populator/template": {
-      "post": {
-        "summary": "Create template",
-        "description": "Create a new data population template",
+    "/o/populator/environment/check": {
+      "get": {
+        "summary": "Check environment name",
+        "description": "Check if environment name already exists for application. Note: Validates required parameters before checking authentication or app_id.",
         "tags": [
-          "Data Population"
+          "Environment"
         ],
         "parameters": [
           {
@@ -271,98 +733,41 @@
             "schema": {
               "type": "string"
             }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "description": "Template name",
-                    "required": true
-                  },
-                  "up": {
-                    "type": "object",
-                    "description": "User properties configuration"
-                  },
-                  "events": {
-                    "type": "object",
-                    "description": "Events configuration"
-                  },
-                  "platformType": {
-                    "type": "array",
-                    "description": "Platform types",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
+          },
+          {
+            "name": "environment_name",
+            "in": "query",
+            "required": true,
+            "description": "Environment name to check",
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "Template created successfully",
+            "description": "Environment name check result",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "_id": {
+                    "result": {
+                      "type": "boolean",
+                      "description": "True if name is available"
+                    },
+                    "errorMsg": {
                       "type": "string",
-                      "description": "Created template ID"
+                      "description": "Error message if name is duplicated",
+                      "example": "Duplicated environment name detected for this application! Please try with an another name"
                     }
                   }
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/i/populator/template/delete": {
-      "post": {
-        "summary": "Delete template",
-        "description": "Delete a data population template",
-        "tags": [
-          "Data Population"
-        ],
-        "parameters": [
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "template_id": {
-                    "type": "string",
-                    "description": "Template ID to delete",
-                    "required": true
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Template deleted successfully",
+          },
+          "401": {
+            "description": "Missing required parameters (checked before authentication)",
             "content": {
               "application/json": {
                 "schema": {
@@ -370,7 +775,30 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "Success"
+                      "examples": {
+                        "missing_app_id": {
+                          "value": "Missing parameter app_id"
+                        },
+                        "missing_environment_name": {
+                          "value": "Missing parameter environment_name"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing authentication when all required parameters are provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
                     }
                   }
                 }
@@ -380,12 +808,12 @@
         }
       }
     },
-    "/o/populator/environments": {
+    "/o/populator/environment/list": {
       "get": {
-        "summary": "Get environments",
-        "description": "Get available data population environments",
+        "summary": "List environments",
+        "description": "Get list of environments for an application. Note: Validates required parameters before checking authentication or app_id.",
         "tags": [
-          "Data Population"
+          "Environment"
         ],
         "parameters": [
           {
@@ -393,6 +821,209 @@
             "in": "query",
             "required": true,
             "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Environments list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "Environment ID"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Environment name"
+                      },
+                      "templateId": {
+                        "type": "string",
+                        "description": "Template ID",
+                        "pattern": "^[0-9a-fA-F]{24}$"
+                      },
+                      "appId": {
+                        "type": "string",
+                        "description": "Application ID"
+                      },
+                      "createdAt": {
+                        "type": "number",
+                        "description": "Creation timestamp"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing required parameters (checked before authentication)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter app_id"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing authentication when all required parameters are provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/populator/environment/get": {
+      "get": {
+        "summary": "Get environment",
+        "description": "Get specific environment details. Note: Validates required parameters before checking authentication or app_id.",
+        "tags": [
+          "Environment"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "environment_id",
+            "in": "query",
+            "required": true,
+            "description": "Environment ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "template_id",
+            "in": "query",
+            "required": true,
+            "description": "Template ID",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$",
+              "example": "60fa8d8c42e89a8a0d94a15b"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Environment details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Environment ID"
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Environment name"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing required parameters (checked before authentication)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "examples": {
+                        "missing_environment_id": {
+                          "value": "Missing parameter environment_id"
+                        },
+                        "missing_template_id": {
+                          "value": "Missing parameter template_id"
+                        },
+                        "missing_app_id": {
+                          "value": "Missing parameter app_id"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing authentication when all required parameters are provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"api_key\" or \"auth_token\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/populator/environment/remove": {
+      "get": {
+        "summary": "Remove environment",
+        "description": "Delete an environment and its associated data",
+        "tags": [
+          "Environment"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "environment_id",
+            "in": "query",
+            "required": true,
+            "description": "Environment ID",
             "schema": {
               "type": "string"
             }
@@ -409,138 +1040,23 @@
         ],
         "responses": {
           "200": {
-            "description": "Environments retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "_id": {
-                        "type": "string",
-                        "description": "Environment ID"
-                      },
-                      "name": {
-                        "type": "string",
-                        "description": "Environment name"
-                      },
-                      "created_at": {
-                        "type": "integer",
-                        "description": "Creation timestamp"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/i/populator/environment/create": {
-      "post": {
-        "summary": "Create environment",
-        "description": "Create a new data population environment",
-        "tags": [
-          "Data Population"
-        ],
-        "parameters": [
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "template_id": {
-                    "type": "string",
-                    "description": "Template ID",
-                    "required": true
-                  },
-                  "name": {
-                    "type": "string",
-                    "description": "Environment name",
-                    "required": true
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Environment created successfully",
+            "description": "Environment removed successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "_id": {
-                      "type": "string",
-                      "description": "Created environment ID"
+                    "result": {
+                      "type": "boolean",
+                      "example": true
                     }
                   }
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/i/populator/environment/delete": {
-      "post": {
-        "summary": "Delete environment",
-        "description": "Delete a data population environment",
-        "tags": [
-          "Data Population"
-        ],
-        "parameters": [
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "environment_id": {
-                    "type": "string",
-                    "description": "Environment ID to delete",
-                    "required": true
-                  },
-                  "template_id": {
-                    "type": "string",
-                    "description": "Template ID",
-                    "required": true
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Environment deleted successfully",
+          },
+          "401": {
+            "description": "Missing required parameters",
             "content": {
               "application/json": {
                 "schema": {
@@ -548,7 +1064,7 @@
                   "properties": {
                     "result": {
                       "type": "string",
-                      "example": "Success"
+                      "example": "Missing parameter environment_id"
                     }
                   }
                 }
