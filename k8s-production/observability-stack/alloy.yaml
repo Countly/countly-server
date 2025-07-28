@@ -58,12 +58,19 @@ data:
     discovery.kubernetes "pods" {
       role = "pod"
       namespaces {
-        names = ["countly", "countly-observability", "ingress-nginx"]
+        names = ["countly", "ingress-nginx"]
       }
     }
     
     discovery.relabel "pods" {
       targets = discovery.kubernetes.pods.targets
+      
+      // Exclude observability infrastructure pods to prevent recursive log collection
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app"]
+        regex         = "(grafana|loki|prometheus|tempo|pyroscope|alloy)"
+        action        = "drop"
+      }
       
       rule {
         source_labels = ["__meta_kubernetes_pod_controller_name"]
@@ -78,17 +85,6 @@ data:
       }
       
       rule {
-        source_labels = ["__meta_kubernetes_pod_label_app", "__meta_kubernetes_pod_label_component", "__tmp_controller_name", "__meta_kubernetes_pod_name"]
-        regex         = "^([^;]+);*.*$"
-        target_label  = "component"
-      }
-      
-      rule {
-        source_labels = ["__meta_kubernetes_pod_node_name"]
-        target_label  = "node_name"
-      }
-      
-      rule {
         source_labels = ["__meta_kubernetes_namespace"]
         target_label  = "namespace"
       }
@@ -97,11 +93,6 @@ data:
         source_labels = ["namespace", "app"]
         separator     = "/"
         target_label  = "job"
-      }
-      
-      rule {
-        source_labels = ["__meta_kubernetes_pod_name"]
-        target_label  = "pod"
       }
       
       rule {
@@ -131,26 +122,48 @@ data:
     
     loki.process "pods" {
       forward_to = [loki.write.default.receiver]
-      
+
+      // 1. Strip CRI prelude (stdout/stderr wrappers)
+      stage.cri {}
+
+      // 2. Drop blank/whitespace-only lines
+      stage.drop { expression = "^\\s*$" }
+
+      // 3. Attempt JSON parse (keeps non-JSON lines automatically)
       stage.json {
+        source           = "log"
+        drop_malformed   = false
         expressions = {
           level     = "level",
           msg       = "msg",
-          span_id   = "span.id",
-          timestamp = "time",
-          trace_id  = "trace.id",
+          log_time  = "time",
+          trace_id  = "traceId",
+          span_id   = "spanId",
         }
       }
-      
+
+      // 4. Fallback for NGINX access logs
+      stage.regex {
+        expression = "traceId=(?P<trace_id>[A-Fa-f0-9]{32}).*spanId=(?P<span_id>[A-Fa-f0-9]{16})"
+      }
+
+      // 5. Low-cardinality labels
       stage.labels {
         values = {
-          level = null,
+          traceID = "trace_id",
+          spanID  = "span_id",
+          level   = null,
         }
       }
-      
+
+      // 6. Timestamps - prefer app time, fall back to CRI time
+      stage.timestamp {
+        source = "log_time"
+        format = "RFC3339Nano"
+      }
       stage.timestamp {
         source = "timestamp"
-        format = "RFC3339"
+        format = "RFC3339Nano"
       }
     }
     
@@ -179,9 +192,7 @@ data:
           send = false
         }
         
-        // Disable exemplars and native histograms to prevent out-of-order errors
-        // See: https://github.com/grafana/alloy/issues/1117
-        send_exemplars = false
+        send_exemplars = true
         send_native_histograms = false
       }
       
