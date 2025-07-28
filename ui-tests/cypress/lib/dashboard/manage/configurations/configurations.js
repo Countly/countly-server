@@ -180,7 +180,7 @@ const verifyPageElements = () => {
     });
 
     cy.scrollPageToCenter();
-    
+
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.DATA_LIMITS.EVENT_SEGMENTATION_VALUE_LIMIT}).SELECTED_SUBFEATURE_TITLE,
         labelText: "Max unique values in each segmentation",
