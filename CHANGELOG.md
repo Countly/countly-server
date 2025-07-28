@@ -2,6 +2,7 @@
 
 Features:
 - [plugins] Add configuration warning tags to settings UI
+- [remote-config] Add support for comparing newer/older app version in conditions
 
 Fixes:
 - [remote-config] Fix condition matching with complex conditions
@@ -12,9 +13,6 @@ Fixes:
 Enterprise Fixes:
 - [ldap] Error handling in ldap plugin on search error
 
-Features:
-- [remote-config] Add support for comparing newer/older app version in conditions
-
 
 ## Version 25.03.11
 Fixes:
@@ -22,12 +20,9 @@ Fixes:
 - [core] Fix user analytics widget chart
 - [crashes] Fix free session and free user calculation
 - [dashboards] Delete associated widgets and reports when a dashboard is removed
-
-Features:
 - [star-rating] Fix widget close post message
 - [core] Adjust level and update content of app version log
 - [populator] Update getVersion to generate valid semantic version
-
 
 Enterprise Fixes:
 - [crash_symbolication] Remove auto symbolication setting
@@ -43,7 +38,6 @@ Dependencies:
 - Bump puppeteer from 24.10.1 to 24.14.0
 - Bump sharp from 0.34.2 to 0.34.3
 - Bump supertest from 7.1.1 to 7.1.3
-
 
 ## Version 25.03.10
 Enterprise Fixes:
