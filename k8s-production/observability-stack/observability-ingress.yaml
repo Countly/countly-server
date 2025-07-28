@@ -16,8 +16,8 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
 
     # === MONITORING ===
-    nginx.ingress.kubernetes.io/enable-access-log: "true"
-    nginx.ingress.kubernetes.io/enable-metrics: "true"
+    nginx.ingress.kubernetes.io/enable-access-log: "false"
+    nginx.ingress.kubernetes.io/enable-metrics: "false"
     
     # === ADDITIONAL PERFORMANCE ===
     nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
