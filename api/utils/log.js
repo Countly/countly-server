@@ -80,9 +80,9 @@ function getTraceContext() {
 
     const spanContext = currentSpan.spanContext();
     return {
-        'trace.id': spanContext.traceId,
-        'span.id': spanContext.spanId,
-        'trace.flags': spanContext.traceFlags.toString(16)
+        'traceId': spanContext.traceId,
+        'spanId': spanContext.spanId,
+        'traceFlags': spanContext.traceFlags.toString(16)
     };
 }
 
