@@ -6,7 +6,7 @@
  * 2. Generate Swagger UI HTML documentation
  */
 
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const path = require('path');
 
 console.log('🚀 Starting API documentation generation process...');
@@ -19,11 +19,11 @@ const swaggerScript = path.join(scriptsDir, 'generate-swagger-ui.js');
 try {
     // Step 1: Merge OpenAPI specs
     console.log('\n📑 Step 1: Merging OpenAPI specifications...');
-    execSync(`node ${mergeScript}`, { stdio: 'inherit' });
+    execFileSync('node', [mergeScript], { stdio: 'inherit' });
 
     // Step 2: Generate Swagger UI documentation
     console.log('\n📙 Step 2: Generating Swagger UI documentation...');
-    execSync(`node ${swaggerScript}`, { stdio: 'inherit' });
+    execFileSync('node', [swaggerScript], { stdio: 'inherit' });
 
     console.log('\n✅ API documentation generation completed successfully!');
     console.log('📊 Documentation is available in the doc/api directory:');
