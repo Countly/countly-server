@@ -2,8 +2,8 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Countly Compliance Hub API",
-    "description": "API for GDPR compliance and data privacy management in Countly Server",
-    "version": "1.0.0"
+    "description": "API for GDPR compliance and data privacy management in Countly Server. Provides endpoints for retrieving user consent data, searching consent history, and managing compliance requirements. All endpoints require appropriate API key permissions for the compliance_hub feature.\n\nAll endpoints support both GET and POST methods with identical functionality.\n\nNote: Consent data is created and updated through the main Countly SDK data ingestion endpoint '/i' with consent parameters. This specification covers the read/query endpoints for consent data retrieval and analysis.",
+    "version": "1.2.0"
   },
   "servers": [
     {
@@ -11,14 +11,23 @@
     }
   ],
   "paths": {
-    "/o/consent/current": {
+    "/o": {
       "get": {
-        "summary": "Get current consent",
-        "description": "Get current consent status for a user",
+        "summary": "Get consents data using fetch method",
+        "description": "Retrieve consent metrics and analytics data with method=consents",
         "tags": [
           "Compliance Management"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with read access to compliance_hub feature",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -29,10 +38,79 @@
             }
           },
           {
+            "name": "method",
+            "in": "query",
+            "required": true,
+            "description": "Must be 'consents' to access consent data",
+            "schema": {
+              "type": "string",
+              "enum": ["consents"]
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Time period for data retrieval",
+            "schema": {
+              "type": "string",
+              "example": "30days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consent analytics data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Consent metrics and time series data"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters or missing required method parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter or method not supported"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/consent/current": {
+      "get": {
+        "summary": "Get current consent",
+        "description": "Get current consent status for a user",
+        "tags": [
+          "Compliance Management"
+        ],
+        "parameters": [
+          {
             "name": "api_key",
             "in": "query",
             "required": true,
-            "description": "API key",
+            "description": "API key with read access to compliance_hub feature",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
             "schema": {
               "type": "string"
             }
@@ -88,18 +166,43 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Missing required parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/o/consent/search": {
       "get": {
-        "summary": "Search consents",
-        "description": "Search for users with specific consent configurations",
+        "summary": "Search consent history",
+        "description": "Search consent history records with filtering, sorting, and pagination support",
         "tags": [
           "Compliance Management"
         ],
         "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with read access to compliance_hub feature",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
@@ -110,61 +213,346 @@
             }
           },
           {
-            "name": "api_key",
+            "name": "query",
             "in": "query",
-            "required": true,
-            "description": "API key",
+            "required": false,
+            "description": "MongoDB query filter as a JSON string",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "{\"type\":\"i\"}"
             }
           },
           {
-            "name": "filter",
+            "name": "project",
             "in": "query",
             "required": false,
-            "description": "Filter criteria as a JSON string",
+            "description": "MongoDB projection as a JSON string",
             "schema": {
               "type": "string",
-              "example": "{\"sessions\":true}"
+              "example": "{\"device_id\":1,\"ts\":1,\"type\":1}"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "MongoDB sort criteria as a JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"ts\":-1}"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of records to return",
+            "schema": {
+              "type": "integer",
+              "example": 100
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "description": "Number of records to skip for pagination",
+            "schema": {
+              "type": "integer",
+              "example": 0
             }
           },
           {
             "name": "period",
             "in": "query",
             "required": false,
-            "description": "Time period for consent history",
+            "description": "Time period filter",
             "schema": {
               "type": "string",
               "example": "30days"
+            }
+          },
+          {
+            "name": "sSearch",
+            "in": "query",
+            "required": false,
+            "description": "Search term for device_id (regex search)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sEcho",
+            "in": "query",
+            "required": false,
+            "description": "DataTables echo parameter for AJAX requests",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "iDisplayLength",
+            "in": "query",
+            "required": false,
+            "description": "DataTables display length parameter",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "iDisplayStart",
+            "in": "query",
+            "required": false,
+            "description": "DataTables display start parameter",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "iSortCol_0",
+            "in": "query",
+            "required": false,
+            "description": "DataTables sort column index",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sSortDir_0",
+            "in": "query",
+            "required": false,
+            "description": "DataTables sort direction",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"]
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Consent search results retrieved successfully",
+            "description": "Consent history search results retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "uid": {
-                        "type": "string",
-                        "description": "User ID"
-                      },
-                      "device_id": {
-                        "type": "string",
-                        "description": "Device ID"
-                      },
-                      "consent": {
-                        "type": "object",
-                        "description": "Consent settings"
-                      },
-                      "last_updated": {
-                        "type": "integer",
-                        "description": "Last consent update timestamp"
+                  "type": "object",
+                  "properties": {
+                    "sEcho": {
+                      "type": "string",
+                      "description": "Echo parameter from request"
+                    },
+                    "iTotalRecords": {
+                      "type": "integer",
+                      "description": "Total number of records in collection"
+                    },
+                    "iTotalDisplayRecords": {
+                      "type": "integer",
+                      "description": "Total number of records after filtering"
+                    },
+                    "aaData": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConsentHistoryRecord"
                       }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required parameters or database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/app_users/consents": {
+      "get": {
+        "summary": "Get app users with consent data",
+        "description": "Search and retrieve app users with their consent information, supporting filtering, sorting, and pagination",
+        "tags": [
+          "Compliance Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key with read access to compliance_hub feature",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "description": "MongoDB query filter as a JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"consent.sessions\":true}"
+            }
+          },
+          {
+            "name": "project",
+            "in": "query",
+            "required": false,
+            "description": "MongoDB projection as a JSON string. Default includes did, d, av, consent, lac, uid, appUserExport",
+            "schema": {
+              "type": "string",
+              "example": "{\"did\":1,\"consent\":1,\"lac\":1}"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "MongoDB sort criteria as a JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"lac\":-1}"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of records to return",
+            "schema": {
+              "type": "integer",
+              "example": 100
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "description": "Number of records to skip for pagination",
+            "schema": {
+              "type": "integer",
+              "example": 0
+            }
+          },
+          {
+            "name": "sSearch",
+            "in": "query",
+            "required": false,
+            "description": "Search term for device_id (regex search)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sEcho",
+            "in": "query",
+            "required": false,
+            "description": "DataTables echo parameter for AJAX requests",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "iDisplayLength",
+            "in": "query",
+            "required": false,
+            "description": "DataTables display length parameter",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "iDisplayStart",
+            "in": "query",
+            "required": false,
+            "description": "DataTables display start parameter",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "iSortCol_0",
+            "in": "query",
+            "required": false,
+            "description": "DataTables sort column index (0=did, 1=d, 2=av, 3=consent, 4=lac)",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            }
+          },
+          {
+            "name": "sSortDir_0",
+            "in": "query",
+            "required": false,
+            "description": "DataTables sort direction",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "App users with consent data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sEcho": {
+                      "type": "string",
+                      "description": "Echo parameter from request"
+                    },
+                    "iTotalRecords": {
+                      "type": "integer",
+                      "description": "Total number of users"
+                    },
+                    "iTotalDisplayRecords": {
+                      "type": "integer",
+                      "description": "Total number of users after filtering"
+                    },
+                    "aaData": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AppUserWithConsent"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required parameters or database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Missing parameter \"app_id\""
                     }
                   }
                 }
@@ -176,6 +564,154 @@
     }
   },
   "components": {
+    "schemas": {
+      "ConsentHistoryRecord": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Record ID"
+          },
+          "before": {
+            "type": "object",
+            "description": "Consent state before change",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "after": {
+            "type": "object",
+            "description": "Consent state after change",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "app_id": {
+            "type": "string",
+            "description": "Application ID"
+          },
+          "change": {
+            "type": "object",
+            "description": "Specific consent changes made",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "type": {
+            "type": ["string", "array"],
+            "description": "Type of change: 'i' for opt-in, 'o' for opt-out, or array of both",
+            "example": "i"
+          },
+          "ts": {
+            "type": "integer",
+            "description": "Timestamp of the change"
+          },
+          "cd": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Change date"
+          },
+          "device_id": {
+            "type": "string",
+            "description": "Device ID"
+          },
+          "uid": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "p": {
+            "type": "string",
+            "description": "Platform"
+          },
+          "pv": {
+            "type": "string",
+            "description": "Platform version"
+          },
+          "d": {
+            "type": "string",
+            "description": "Device"
+          },
+          "av": {
+            "type": "string",
+            "description": "App version"
+          },
+          "sc": {
+            "type": "integer",
+            "description": "Session count"
+          }
+        }
+      },
+      "AppUserWithConsent": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "User record ID"
+          },
+          "did": {
+            "type": "string",
+            "description": "Device ID"
+          },
+          "d": {
+            "type": "string",
+            "description": "Device name"
+          },
+          "av": {
+            "type": "string",
+            "description": "App version"
+          },
+          "consent": {
+            "type": "object",
+            "description": "User's consent settings",
+            "properties": {
+              "sessions": {
+                "type": "boolean",
+                "description": "Consent for session tracking"
+              },
+              "events": {
+                "type": "boolean",
+                "description": "Consent for event tracking"
+              },
+              "views": {
+                "type": "boolean",
+                "description": "Consent for view tracking"
+              },
+              "crashes": {
+                "type": "boolean",
+                "description": "Consent for crash reporting"
+              },
+              "push": {
+                "type": "boolean",
+                "description": "Consent for push notifications"
+              },
+              "users": {
+                "type": "boolean",
+                "description": "Consent for user profiles"
+              },
+              "star-rating": {
+                "type": "boolean",
+                "description": "Consent for star ratings"
+              }
+            },
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "lac": {
+            "type": "integer",
+            "description": "Last activity timestamp"
+          },
+          "uid": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "appUserExport": {
+            "type": "object",
+            "description": "Export information"
+          }
+        }
+      }
+    },
     "securitySchemes": {
       "ApiKeyAuth": {
         "type": "apiKey",
