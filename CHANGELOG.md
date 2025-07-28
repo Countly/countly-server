@@ -9,6 +9,7 @@ Fixes:
 - [core] Use correct rights validation for loyality
 - [crashes] Fix free session for home widget
 - [crashes] Use na for free session and free user when there's no data
+- [crashes] Fix trend and change calculation for crash stats
 - [remote-config] Fix condition matching with complex conditions
 
 Enterprise Fixes:

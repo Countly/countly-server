@@ -563,7 +563,7 @@ const verifyCrashStatisticsEChartElements = ({
 
         cy.verifyElement({
             labelElement: crashStatisticsEChartElements.TOTAL_OCCURENCES_CHANGE_VALUE_LABEL,
-            labelText: "NA",
+            labelText: "0",
         });
 
         cy.verifyElement({
@@ -573,7 +573,7 @@ const verifyCrashStatisticsEChartElements = ({
 
         cy.verifyElement({
             labelElement: crashStatisticsEChartElements.TOTAL_OCCURENCES_CHANGE_VALUE_LABEL,
-            labelText: "NA",
+            labelText: "0",
         });
 
         cy.verifyElement({
@@ -583,22 +583,22 @@ const verifyCrashStatisticsEChartElements = ({
 
         cy.verifyElement({
             labelElement: crashStatisticsEChartElements.CRASH_FREE_USERS_NUMBER_LABEL,
-            labelText: "100.00%",
+            labelText: "NA",
         });
 
         cy.verifyElement({
             labelElement: crashStatisticsEChartElements.CRASH_FREE_USERS_CHANGE_VALUE_LABEL,
-            labelText: "0.0%",
+            labelText: "NA",
         });
 
         cy.verifyElement({
             labelElement: crashStatisticsEChartElements.CRASH_FREE_SESSIONS_NUMBER_LABEL,
-            labelText: "100.00%",
+            labelText: "NA",
         });
 
         cy.verifyElement({
             labelElement: crashStatisticsEChartElements.CRASH_FREE_SESSIONS_CHANGE_VALUE_LABEL,
-            labelText: "0.0%",
+            labelText: "NA",
         });
         return;
     }
