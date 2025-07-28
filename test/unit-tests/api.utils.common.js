@@ -317,4 +317,70 @@ describe("Common API utility functions", function() {
 
         });
     });
+
+    describe('Parsing app version', () => {
+        it('should not parse invalid semver', () => {
+            should.deepEqual(common.parseAppVersion('abcd'), { original: 'abcd', success: false });
+        });
+
+        it('should parse semver into its parts', () => {
+            should.deepEqual(common.parseAppVersion('1.0.0'), {
+                major: 1,
+                minor: 0,
+                patch: 0,
+                prerelease: [],
+                build: [],
+                original: '1.0.0',
+                success: true,
+            });
+        });
+
+        it('should coerce incomplete semver', () => {
+            should.deepEqual(common.parseAppVersion('1'), {
+                major: 1,
+                minor: 0,
+                patch: 0,
+                prerelease: [],
+                build: [],
+                original: '1',
+                success: true,
+            });
+        });
+
+        it('should parse semver prerelease', () => {
+            should.deepEqual(common.parseAppVersion('1.0.0-prerelease'), {
+                major: 1,
+                minor: 0,
+                patch: 0,
+                prerelease: ['prerelease'],
+                build: [],
+                original: '1.0.0-prerelease',
+                success: true,
+            });
+        });
+
+        it('should parse semver build', () => {
+            should.deepEqual(common.parseAppVersion('1.0.0+build'), {
+                major: 1,
+                minor: 0,
+                patch: 0,
+                prerelease: [],
+                build: ['build'],
+                original: '1.0.0+build',
+                success: true,
+            });
+        });
+
+        it('should parse semver prerelease and build', () => {
+            should.deepEqual(common.parseAppVersion('1.0.0-prerelease+build'), {
+                major: 1,
+                minor: 0,
+                patch: 0,
+                prerelease: ['prerelease'],
+                build: ['build'],
+                original: '1.0.0-prerelease+build',
+                success: true,
+            });
+        });
+    });
 });
