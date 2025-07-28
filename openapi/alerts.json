@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Countly Alerts API",
-    "description": "API for managing alerts in Countly Server",
+    "description": "API for managing alerts in Countly Server. Note: The API supports creating minimal alerts with only basic required fields (alertName, alertDataType, alertDataSubType, selectedApps). Optional fields like compareType, period, alertBy etc. can be omitted and will be stored as null.",
     "version": "1.0.0"
   },
   "servers": [
@@ -13,17 +13,17 @@
   "paths": {
     "/i/alert/save": {
       "get": {
-        "summary": "Create or update an alert",
-        "description": "Creates a new alert or updates an existing alert configuration.",
+        "summary": "Save new or update alert data",
+        "description": "Create or update alert. If alert_config contains '_id' will update related alert in DB. Supports creating minimal alerts with only required fields (alertName, alertDataType, alertDataSubType, selectedApps). Optional fields like compareType, period, alertBy etc. can be omitted.",
         "tags": [
-          "Alerts Management"
+          "alerts"
         ],
         "parameters": [
           {
             "name": "api_key",
             "in": "query",
             "required": true,
-            "description": "API key with admin access",
+            "description": "API key with create access to alerts feature",
             "schema": {
               "type": "string"
             }
@@ -41,100 +41,79 @@
             "name": "alert_config",
             "in": "query",
             "required": true,
-            "description": "Alert configuration as a properly escaped JSON string. If it contains '_id' it will update the related alert in the database.",
+            "description": "Alert Configuration JSON object string. If contains '_id' will update related alert in DB. Can be a full alert configuration or minimal with just required fields.",
             "schema": {
               "type": "string",
-              "example": "{\"alertName\":\"Test Alert\",\"alertDataType\":\"metric\",\"alertDataSubType\":\"sessions\",\"compareType\":\"increased by at least\",\"compareValue\":\"10\",\"selectedApps\":[\"app_id\"],\"period\":\"every 1 hour\",\"alertBy\":\"email\",\"enabled\":true,\"compareDescribe\":\"increased by at least 10%\",\"alertValues\":[\"test@example.com\"]}"
+              "example": "{\"alertName\":\"test\",\"alertDataType\":\"metric\",\"alertDataSubType\":\"Total users\",\"alertDataSubType2\":null,\"compareType\":\"increased by at least\",\"compareValue\":\"2\",\"selectedApps\":[\"60a94dce686d3eea363ac325\"],\"period\":\"hourly\",\"alertBy\":\"email\",\"enabled\":true,\"compareDescribe\":\"Total users increased by at least 2%\",\"alertValues\":[\"a@abc.com\"]}",
+              "examples": {
+                "full_alert": {
+                  "summary": "Full alert configuration",
+                  "value": "{\"alertName\":\"Test Alert\",\"alertDataType\":\"metric\",\"alertDataSubType\":\"Total users\",\"compareType\":\"increased by at least\",\"compareValue\":\"10\",\"selectedApps\":[\"60a94dce686d3eea363ac325\"],\"period\":\"hourly\",\"alertBy\":\"email\",\"enabled\":true,\"compareDescribe\":\"Total users increased by at least 10%\",\"alertValues\":[\"test@example.com\"]}"
+                },
+                "minimal_alert": {
+                  "summary": "Minimal alert configuration",
+                  "value": "{\"alertName\":\"Minimal Alert\",\"alertDataType\":\"metric\",\"alertDataSubType\":\"Total users\",\"selectedApps\":[\"60a94dce686d3eea363ac325\"]}"
+                }
+              }
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Alert created or updated successfully",
+            "description": "Alert created or updated successfully, or validation error",
             "content": {
               "application/json": {
                 "schema": {
                   "oneOf": [
                     {
                       "type": "string",
-                      "description": "ID of the newly created alert (when creating a new alert)"
+                      "description": "ID of the newly created alert (when creating a new alert)",
+                      "example": "626270afbf7392a8bfd8c1f3"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Alert"
                     },
                     {
                       "type": "object",
                       "properties": {
-                        "_id": {
+                        "result": {
                           "type": "string",
-                          "description": "ID of the created/updated alert"
-                        },
-                        "alertName": {
-                          "type": "string",
-                          "description": "Name of the alert"
-                        },
-                        "alertDataType": {
-                          "type": "string",
-                          "description": "Data type to monitor",
-                          "enum": ["metric", "crash", "event", "session"]
-                        },
-                        "alertDataSubType": {
-                          "type": "string",
-                          "description": "Sub type of data to monitor"
-                        },
-                        "alertDataSubType2": {
-                          "type": "string",
-                          "nullable": true,
-                          "description": "Additional sub type data"
-                        },
-                        "compareType": {
-                          "type": "string",
-                          "description": "Comparison type (e.g., 'increased by at least')",
-                          "enum": ["increased by at least", "decreased by at least", "equal to"]
-                        },
-                        "compareValue": {
-                          "type": "string",
-                          "description": "Value to compare against"
-                        },
-                        "selectedApps": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "description": "List of app IDs this alert applies to"
-                        },
-                        "period": {
-                          "type": "string",
-                          "description": "Alert check period"
-                        },
-                        "alertBy": {
-                          "type": "string",
-                          "description": "Alert notification method (e.g., 'email')",
-                          "enum": ["email", "webhook"]
-                        },
-                        "enabled": {
-                          "type": "boolean",
-                          "description": "Whether the alert is enabled"
-                        },
-                        "compareDescribe": {
-                          "type": "string",
-                          "description": "Human-readable description of comparison"
-                        },
-                        "alertValues": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "description": "Email addresses to notify"
-                        },
-                        "createdBy": {
-                          "type": "string",
-                          "description": "ID of the user who created the alert"
-                        },
-                        "createdAt": {
-                          "type": "integer",
-                          "description": "Timestamp when the alert was created"
+                          "example": "Not enough args"
                         }
                       }
                     }
                   ]
+                },
+                "examples": {
+                  "newAlert": {
+                    "summary": "Successfully created new alert",
+                    "value": "626270afbf7392a8bfd8c1f3"
+                  },
+                  "updatedAlert": {
+                    "summary": "Successfully updated existing alert",
+                    "value": {
+                      "_id": "626270afbf7392a8bfd8c1f3",
+                      "alertName": "test",
+                      "alertDataType": "metric",
+                      "alertDataSubType": "Total users",
+                      "alertDataSubType2": null,
+                      "compareType": "increased by at least",
+                      "compareValue": "2",
+                      "selectedApps": ["60a94dce686d3eea363ac325"],
+                      "period": "hourly",
+                      "alertBy": "email",
+                      "enabled": true,
+                      "compareDescribe": "Total users increased by at least 2%",
+                      "alertValues": ["a@abc.com"],
+                      "createdBy": "60afbaa84723f369db477fee"
+                    }
+                  },
+                  "validationError": {
+                    "summary": "Validation error response",
+                    "value": {
+                      "result": "Not enough args"
+                    }
+                  }
                 }
               }
             }
@@ -149,7 +128,7 @@
                     "result": {
                       "type": "string",
                       "description": "Error message",
-                      "example": "Not enough args"
+                      "example": "Failed to create an alert"
                     }
                   }
                 }
@@ -161,17 +140,17 @@
     },
     "/i/alert/delete": {
       "get": {
-        "summary": "Delete an alert",
-        "description": "Deletes an alert by alert ID",
+        "summary": "Delete alert by alert ID",
+        "description": "Delete alert by id.",
         "tags": [
-          "Alerts Management"
+          "alerts"
         ],
         "parameters": [
           {
             "name": "api_key",
             "in": "query",
             "required": true,
-            "description": "API key with admin access",
+            "description": "API key with update access to alerts feature",
             "schema": {
               "type": "string"
             }
@@ -189,7 +168,7 @@
             "name": "alertID",
             "in": "query",
             "required": true,
-            "description": "ID of the alert to delete",
+            "description": "Target alert id from db",
             "schema": {
               "type": "string"
             }
@@ -233,18 +212,18 @@
       }
     },
     "/i/alert/status": {
-      "get": {
+      "post": {
         "summary": "Change alert status",
-        "description": "Change the enabled status of multiple alerts by boolean flag",
+        "description": "Change alerts status by boolean flag.",
         "tags": [
-          "Alerts Management"
+          "alerts"
         ],
         "parameters": [
           {
             "name": "api_key",
             "in": "query",
             "required": true,
-            "description": "API key with admin access",
+            "description": "API key with update access to alerts feature",
             "schema": {
               "type": "string"
             }
@@ -253,7 +232,7 @@
             "name": "app_id",
             "in": "query",
             "required": true,
-            "description": "Target app ID",
+            "description": "Target app ID of the alert",
             "schema": {
               "type": "string"
             }
@@ -262,10 +241,10 @@
             "name": "status",
             "in": "query",
             "required": true,
-            "description": "Properly escaped JSON string of status object for alerts to update",
+            "description": "JSON string of status object for alerts record want to update. For example: {\"626270afbf7392a8bfd8c1f3\":false, \"42dafbf7392a8bfd8c1e1\": true}",
             "schema": {
               "type": "string",
-              "example": "{\"alert_id_1\":false,\"alert_id_2\":true}"
+              "example": "{\"626270afbf7392a8bfd8c1f3\":false,\"42dafbf7392a8bfd8c1e1\":true}"
             }
           }
         ],
@@ -310,18 +289,18 @@
       }
     },
     "/o/alert/list": {
-      "get": {
+      "post": {
         "summary": "Get alert list",
-        "description": "Get list of alerts that the current user can view",
+        "description": "Get Alert List user can view.",
         "tags": [
-          "Alerts Management"
+          "alerts"
         ],
         "parameters": [
           {
             "name": "api_key",
             "in": "query",
             "required": true,
-            "description": "API key with read access",
+            "description": "API key with read access to alerts feature",
             "schema": {
               "type": "string"
             }
@@ -330,7 +309,7 @@
             "name": "app_id",
             "in": "query",
             "required": true,
-            "description": "Target app ID",
+            "description": "Target app ID of the alert",
             "schema": {
               "type": "string"
             }
@@ -347,113 +326,7 @@
                     "alertsList": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "properties": {
-                          "_id": {
-                            "type": "string",
-                            "description": "Alert ID"
-                          },
-                          "alertName": {
-                            "type": "string",
-                            "description": "Name of the alert"
-                          },
-                          "alertDataType": {
-                            "type": "string",
-                            "description": "Data type being monitored",
-                            "enum": ["metric", "crash", "event", "session"]
-                          },
-                          "alertDataSubType": {
-                            "type": "string",
-                            "description": "Sub type of data being monitored"
-                          },
-                          "alertDataSubType2": {
-                            "type": "string",
-                            "nullable": true,
-                            "description": "Additional sub type data"
-                          },
-                          "compareType": {
-                            "type": "string",
-                            "description": "Comparison type",
-                            "enum": ["increased by at least", "decreased by at least", "equal to"]
-                          },
-                          "compareValue": {
-                            "type": "string",
-                            "description": "Value to compare against"
-                          },
-                          "selectedApps": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            },
-                            "description": "List of app IDs"
-                          },
-                          "period": {
-                            "type": "string",
-                            "description": "Alert check period"
-                          },
-                          "alertBy": {
-                            "type": "string",
-                            "description": "Alert notification method",
-                            "enum": ["email", "webhook"]
-                          },
-                          "enabled": {
-                            "type": "boolean",
-                            "description": "Whether the alert is enabled"
-                          },
-                          "compareDescribe": {
-                            "type": "string",
-                            "description": "Human-readable comparison description"
-                          },
-                          "alertValues": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            },
-                            "description": "Email addresses to notify"
-                          },
-                          "createdBy": {
-                            "type": "string",
-                            "description": "ID of the user who created the alert"
-                          },
-                          "appNameList": {
-                            "type": "string",
-                            "description": "Comma-separated list of app names"
-                          },
-                          "app_id": {
-                            "type": "string",
-                            "description": "App ID"
-                          },
-                          "condtionText": {
-                            "type": "string",
-                            "description": "Human-readable alert condition"
-                          },
-                          "createdByUser": {
-                            "type": "string",
-                            "description": "Name of the user who created the alert"
-                          },
-                          "createdAt": {
-                            "type": "integer",
-                            "description": "Timestamp when the alert was created"
-                          },
-                          "type": {
-                            "type": "string",
-                            "description": "Type of alert"
-                          }
-                        },
-                        "required": [
-                          "_id",
-                          "alertName",
-                          "alertDataType",
-                          "alertDataSubType",
-                          "compareType",
-                          "compareValue",
-                          "selectedApps",
-                          "period",
-                          "alertBy",
-                          "enabled",
-                          "compareDescribe",
-                          "alertValues"
-                        ]
+                        "$ref": "#/components/schemas/Alert"
                       }
                     },
                     "count": {
@@ -463,9 +336,9 @@
                           "type": "integer",
                           "description": "Number of running/enabled alerts"
                         },
-                        "total": {
+                        "t": {
                           "type": "integer",
-                          "description": "Total number of alerts"
+                          "description": "Total number of alerts triggered"
                         },
                         "today": {
                           "type": "integer",
@@ -476,6 +349,34 @@
                     }
                   },
                   "required": ["alertsList", "count"]
+                },
+                "example": {
+                  "alertsList": [
+                    {
+                      "_id": "626270afbf7392a8bfd8c1f3",
+                      "alertName": "test",
+                      "alertDataType": "metric",
+                      "alertDataSubType": "Total users",
+                      "alertDataSubType2": null,
+                      "compareType": "increased by at least",
+                      "compareValue": "2",
+                      "selectedApps": ["60a94dce686d3eea363ac325"],
+                      "period": "hourly",
+                      "alertBy": "email",
+                      "enabled": false,
+                      "compareDescribe": "Total users increased by at least 2%",
+                      "alertValues": ["a@abc.com"],
+                      "createdBy": "60afbaa84723f369db477fee",
+                      "appNameList": "Mobile Test",
+                      "app_id": "60a94dce686d3eea363ac325",
+                      "condtionText": "Total users increased by at least 2%",
+                      "createdByUser": "abc",
+                      "type": "Total users"
+                    }
+                  ],
+                  "count": {
+                    "r": 0
+                  }
                 }
               }
             }
@@ -502,6 +403,132 @@
   },
   "components": {
     "schemas": {
+      "Alert": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Alert ID"
+          },
+          "alertName": {
+            "type": "string",
+            "description": "Name of the alert"
+          },
+          "alertDataType": {
+            "type": "string",
+            "description": "Data type being monitored",
+            "enum": ["metric", "crash", "event", "session", "users", "views", "revenue", "cohorts", "dataPoints", "rating", "survey", "nps"]
+          },
+          "alertDataSubType": {
+            "type": "string",
+            "description": "Sub type of data being monitored",
+            "example": "Total users"
+          },
+          "alertDataSubType2": {
+            "type": ["string", "null"],
+            "description": "Additional sub type data"
+          },
+          "compareType": {
+            "type": ["string", "null"],
+            "description": "Comparison type (optional for minimal alerts)",
+            "enum": ["increased by at least", "decreased by at least", "more than"],
+            "default": null
+          },
+          "compareValue": {
+            "type": ["string", "null"],
+            "description": "Value to compare against (optional for minimal alerts)",
+            "default": null
+          },
+          "filterKey": {
+            "type": "string",
+            "description": "For filtering events"
+          },
+          "filterValue": {
+            "type": "string",
+            "description": "For filtering events"
+          },
+          "selectedApps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of app IDs this alert applies to"
+          },
+          "period": {
+            "type": ["string", "null"],
+            "description": "Alert check period (optional for minimal alerts)",
+            "enum": ["hourly", "daily", "monthly"],
+            "default": null
+          },
+          "alertBy": {
+            "type": ["string", "null"],
+            "description": "Alert notification method (optional for minimal alerts)",
+            "enum": ["email", "hook"],
+            "default": null
+          },
+          "enabled": {
+            "type": ["boolean", "null"],
+            "description": "Whether the alert is enabled (optional for minimal alerts)",
+            "default": null
+          },
+          "compareDescribe": {
+            "type": ["string", "null"],
+            "description": "Human-readable comparison description (optional for minimal alerts)",
+            "example": "Total users increased by at least 2%",
+            "default": null
+          },
+          "alertValues": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "string"
+            },
+            "description": "Email addresses or webhook URLs to notify (optional for minimal alerts)",
+            "default": null
+          },
+          "allGroups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "User groups to notify"
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "ID of the user who created the alert"
+          },
+          "createdAt": {
+            "type": "integer",
+            "description": "Timestamp when the alert was created"
+          },
+          "appNameList": {
+            "type": "string",
+            "description": "Comma-separated list of app names (populated in list response)"
+          },
+          "app_id": {
+            "type": "string",
+            "description": "App ID (populated in list response)"
+          },
+          "condtionText": {
+            "type": "string",
+            "description": "Human-readable alert condition (populated in list response)"
+          },
+          "createdByUser": {
+            "type": "string",
+            "description": "Name of the user who created the alert (populated in list response)"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of alert (populated in list response)"
+          }
+        },
+        "required": [
+          "_id",
+          "alertName",
+          "alertDataType",
+          "alertDataSubType",
+          "selectedApps"
+        ]
+      },
       "AlertConfig": {
         "type": "object",
         "properties": {
@@ -512,21 +539,33 @@
           "alertDataType": {
             "type": "string",
             "description": "Data type to monitor",
-            "enum": ["metric", "crash", "event", "session"]
+            "enum": ["metric", "crash", "event", "session", "users", "views", "revenue", "cohorts", "dataPoints", "rating", "survey", "nps"]
           },
           "alertDataSubType": {
             "type": "string",
             "description": "Sub type of data to monitor",
             "example": "Total users"
           },
+          "alertDataSubType2": {
+            "type": ["string", "null"],
+            "description": "Additional sub type data"
+          },
           "compareType": {
-            "type": "string",
-            "description": "Comparison type",
-            "enum": ["increased by at least", "decreased by at least", "equal to"]
+            "type": ["string", "null"],
+            "description": "Comparison type (optional)",
+            "enum": ["increased by at least", "decreased by at least", "more than"]
           },
           "compareValue": {
-            "type": "string",
-            "description": "Value to compare against"
+            "type": ["string", "null"],
+            "description": "Value to compare against (optional)"
+          },
+          "filterKey": {
+            "type": ["string", "null"],
+            "description": "For filtering events (optional)"
+          },
+          "filterValue": {
+            "type": ["string", "null"],
+            "description": "For filtering events (optional)"
           },
           "selectedApps": {
             "type": "array",
@@ -536,44 +575,44 @@
             "description": "List of app IDs this alert applies to"
           },
           "period": {
-            "type": "string",
-            "description": "Alert check period",
-            "example": "every 1 hour on the 59th min"
+            "type": ["string", "null"],
+            "description": "Alert check period (optional)",
+            "enum": ["hourly", "daily", "monthly"]
           },
           "alertBy": {
-            "type": "string",
-            "description": "Alert notification method",
-            "enum": ["email", "webhook"]
+            "type": ["string", "null"],
+            "description": "Alert notification method (optional)",
+            "enum": ["email", "hook"]
           },
           "enabled": {
-            "type": "boolean",
-            "description": "Whether the alert is enabled"
+            "type": ["boolean", "null"],
+            "description": "Whether the alert is enabled (optional)"
           },
           "compareDescribe": {
-            "type": "string",
-            "description": "Human-readable description of comparison",
+            "type": ["string", "null"],
+            "description": "Human-readable description of comparison (optional)",
             "example": "Total users increased by at least 10%"
           },
           "alertValues": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "string"
+            },
+            "description": "Email addresses or webhook URLs to notify (optional)"
+          },
+          "allGroups": {
             "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "Email addresses or webhook URLs to notify"
+            "description": "User groups to notify"
           }
         },
         "required": [
           "alertName",
           "alertDataType",
           "alertDataSubType",
-          "compareType",
-          "compareValue",
-          "selectedApps",
-          "period",
-          "alertBy",
-          "enabled",
-          "compareDescribe",
-          "alertValues"
+          "selectedApps"
         ]
       }
     }
