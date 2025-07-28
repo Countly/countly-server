@@ -1,0 +1,447 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Remote Config API",
+    "description": "API for remote configuration management in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/remote-config/create": {
+      "post": {
+        "summary": "Create remote config",
+        "description": "Create a new remote configuration",
+        "tags": [
+          "Remote Configuration"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the configuration",
+                    "required": true
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "description": "Configuration parameters as key-value pairs",
+                    "required": true
+                  },
+                  "conditions": {
+                    "type": "array",
+                    "description": "Targeting conditions for this configuration",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "description": "Condition type (e.g., 'event', 'user', 'device')"
+                        },
+                        "operator": {
+                          "type": "string",
+                          "description": "Comparison operator (e.g., 'eq', 'gt', 'lt')"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Value to compare against"
+                        },
+                        "key": {
+                          "type": "string",
+                          "description": "Key to check in user properties"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Remote config created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "ID of the created configuration"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/remote-config/update": {
+      "post": {
+        "summary": "Update remote config",
+        "description": "Update an existing remote configuration",
+        "tags": [
+          "Remote Configuration"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "config_id": {
+                    "type": "string",
+                    "description": "ID of the configuration to update",
+                    "required": true
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Updated name of the configuration"
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "description": "Updated configuration parameters as key-value pairs"
+                  },
+                  "conditions": {
+                    "type": "array",
+                    "description": "Updated targeting conditions",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "operator": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "string"
+                        },
+                        "key": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "description": "Whether the configuration is active"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Remote config updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/remote-config/delete": {
+      "post": {
+        "summary": "Delete remote config",
+        "description": "Delete an existing remote configuration",
+        "tags": [
+          "Remote Configuration"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "config_id": {
+                    "type": "string",
+                    "description": "ID of the configuration to delete",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Remote config deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/remote-config/toggle": {
+      "post": {
+        "summary": "Toggle remote config",
+        "description": "Toggle the active state of a remote configuration",
+        "tags": [
+          "Remote Configuration"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "config_id": {
+                    "type": "string",
+                    "description": "ID of the configuration to toggle",
+                    "required": true
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                    "description": "New active state",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Remote config toggled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/remote-config/list": {
+      "get": {
+        "summary": "List remote configs",
+        "description": "Get a list of all remote configurations for an app",
+        "tags": [
+          "Remote Configuration"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remote configs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "Configuration ID"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Name of the configuration"
+                      },
+                      "parameters": {
+                        "type": "object",
+                        "description": "Configuration parameters"
+                      },
+                      "conditions": {
+                        "type": "array",
+                        "description": "Targeting conditions"
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                        "description": "Whether the configuration is active"
+                      },
+                      "created_at": {
+                        "type": "integer",
+                        "description": "Creation timestamp"
+                      },
+                      "updated_at": {
+                        "type": "integer",
+                        "description": "Last update timestamp"
+                      },
+                      "last_modified_by": {
+                        "type": "string",
+                        "description": "ID of the user who last modified the configuration"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/remote-config/lookup": {
+      "post": {
+        "summary": "Lookup remote configs",
+        "description": "Get applicable remote configurations for a user",
+        "tags": [
+          "Remote Configuration"
+        ],
+        "parameters": [
+          {
+            "name": "app_key",
+            "in": "query",
+            "required": true,
+            "description": "App key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "device_id",
+            "in": "query",
+            "required": true,
+            "description": "Device ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Applicable remote configs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "description": "Configuration parameters"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      },
+      "AppKey": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "app_key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    },
+    {
+      "AppKey": []
+    }
+  ]
+}

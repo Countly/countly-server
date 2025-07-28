@@ -1,0 +1,192 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Compliance Hub API",
+    "description": "API for GDPR compliance and data privacy management in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/o/consent/current": {
+      "get": {
+        "summary": "Get current consent",
+        "description": "Get current consent status for a user",
+        "tags": [
+          "Compliance Management"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "description": "Query to find the user, as a JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"uid\":\"test_user_123\"}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consent information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessions": {
+                      "type": "boolean",
+                      "description": "Consent for session tracking"
+                    },
+                    "events": {
+                      "type": "boolean",
+                      "description": "Consent for event tracking"
+                    },
+                    "views": {
+                      "type": "boolean",
+                      "description": "Consent for view tracking"
+                    },
+                    "crashes": {
+                      "type": "boolean",
+                      "description": "Consent for crash reporting"
+                    },
+                    "push": {
+                      "type": "boolean",
+                      "description": "Consent for push notifications"
+                    },
+                    "users": {
+                      "type": "boolean",
+                      "description": "Consent for user profiles"
+                    },
+                    "star-rating": {
+                      "type": "boolean",
+                      "description": "Consent for star ratings"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/consent/search": {
+      "get": {
+        "summary": "Search consents",
+        "description": "Search for users with specific consent configurations",
+        "tags": [
+          "Compliance Management"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": false,
+            "description": "Filter criteria as a JSON string",
+            "schema": {
+              "type": "string",
+              "example": "{\"sessions\":true}"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "description": "Time period for consent history",
+            "schema": {
+              "type": "string",
+              "example": "30days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consent search results retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "uid": {
+                        "type": "string",
+                        "description": "User ID"
+                      },
+                      "device_id": {
+                        "type": "string",
+                        "description": "Device ID"
+                      },
+                      "consent": {
+                        "type": "object",
+                        "description": "Consent settings"
+                      },
+                      "last_updated": {
+                        "type": "integer",
+                        "description": "Last consent update timestamp"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}
