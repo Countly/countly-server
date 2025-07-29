@@ -91,9 +91,9 @@ spec:
         - name: GF_SECURITY_ADMIN_PASSWORD
           value: admin
         - name: GF_PLUGINS_PREINSTALL
-          value: grafana-pyroscope-app,grafana-exploretraces-app,grafana-lokiexplore-app,grafana-metricsdrilldown-app
+          value: grafana-pyroscope-datasource,grafana-tempo-app,grafana-loki-app,grafana-prometheus-app
         - name: GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS
-          value: grafana-pyroscope-app,grafana-exploretraces-app,grafana-metricsdrilldown-app
+          value: grafana-pyroscope-datasource
         ports:
         - containerPort: 3000
           name: http

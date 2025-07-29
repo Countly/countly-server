@@ -108,7 +108,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service\"}[$__rate_interval]))",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"}[${__rate_interval}]))",
           "refId": "A"
         }
       ],
@@ -177,7 +177,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service\"} |= \"ERROR\"[$__rate_interval]))",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} |= \"ERROR\"[${__rate_interval}]))",
           "refId": "A"
         }
       ],
@@ -261,7 +261,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service\"}[$__rate_interval])) by (app)",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"}[${__rate_interval}])) by (app)",
           "legendFormat": "{{app}}",
           "refId": "A"
         }
@@ -382,7 +382,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(count_over_time({namespace=\"countly\", app=~\"$service\"} | json | level != \"\" [$__interval])) by (level)",
+          "expr": "sum(count_over_time({namespace=\"countly\", app=~\"$service_name\"} | json | __error__=\"\" [${__interval}])) by (level)",
           "legendFormat": "{{level}}",
           "refId": "A"
         }
@@ -498,7 +498,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service\"} |= \"ERROR\"[$__rate_interval])) by (app)",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} |= \"ERROR\"[${__rate_interval}])) by (app)",
           "legendFormat": "{{app}} ERROR",
           "refId": "A"
         },
@@ -507,7 +507,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service\"} |= \"WARN\"[$__rate_interval])) by (app)",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} |= \"WARN\"[${__rate_interval}])) by (app)",
           "legendFormat": "{{app}} WARN",
           "refId": "B"
         },
@@ -516,7 +516,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service\"} |= \"INFO\"[$__rate_interval])) by (app)",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} |= \"INFO\"[${__rate_interval}])) by (app)",
           "legendFormat": "{{app}} INFO",
           "refId": "C"
         }
@@ -614,7 +614,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service\"} | json | trace_id != \"\"[$__rate_interval])) by (app)",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} | json | traceId != \"\"[${__rate_interval}])) by (app)",
           "legendFormat": "{{app}} with traces",
           "refId": "A"
         },
@@ -623,7 +623,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service\"} | json | trace_id = \"\"[$__rate_interval])) by (app)",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} | json | traceId = \"\"[${__rate_interval}])) by (app)",
           "legendFormat": "{{app}} without traces",
           "refId": "B"
         }
@@ -710,21 +710,12 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"countly\", app=~\"$service\"} | json | trace_id != \"\" | level = \"ERROR\" | line_format \"{{.app}} | {{.level}} | {{.msg}} | Trace: {{.trace_id}}\"",
+          "expr": "{namespace=\"countly\", app=~\"$service_name\"} | json | traceId != \"\" | level = \"ERROR\"",
           "refId": "A"
         }
       ],
       "title": "🔍 Correlated Error Logs",
-      "transformations": [
-        {
-          "id": "extractFields",
-          "options": {
-            "format": "auto",
-            "source": "Line"
-          }
-        }
-      ],
-      "type": "table"
+      "type": "logs"
     },
     {
       "collapsed": false,
@@ -800,7 +791,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "topk(10, sum(count_over_time({namespace=\"countly\", app=~\"$service\"} | json | name != \"\" [$__interval])) by (name, app))",
+          "expr": "topk(10, sum(count_over_time({namespace=\"countly\", app=~\"$service_name\"} | json | __error__=\"\" [${__interval}])) by (name, app))",
           "refId": "A"
         }
       ],
@@ -907,7 +898,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({app=\"countly-jobserver\"} | json | msg =~ \".*Completed successfully.*\"[$__rate_interval]))",
+          "expr": "sum(rate({app=\"countly-jobserver\"} |~ \"Completed successfully\"[${__rate_interval}]))",
           "legendFormat": "Jobs Completed",
           "refId": "A"
         },
@@ -916,7 +907,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({app=\"countly-jobserver\"} | json | level = \"ERROR\"[$__rate_interval]))",
+          "expr": "sum(rate({app=\"countly-jobserver\", level=\"ERROR\"}[${__rate_interval}]) or rate({app=\"countly-jobserver\"} |= \"ERROR\"[${__rate_interval}]))",
           "legendFormat": "Job Errors",
           "refId": "B"
         }
@@ -973,7 +964,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"countly\", app=~\"$service\"} |= \"$search\" | json | line_format \"[{{.level}}] {{.time}} {{.app}}: {{.msg}} {{if .trace_id}}[trace:{{.trace_id}}]{{end}}\"",
+          "expr": "{namespace=\"countly\", app=~\"$service_name\"} |= \"$search\"",
           "refId": "A"
         }
       ],
@@ -1070,7 +1061,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service\"} |= \"ERROR\" | json | arg1_message =~ \".*[Dd]atabase.*\"[$__rate_interval])) by (app)",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} |= \"ERROR\" |~ \"[Dd]atabase|[Mm]ongo\"[${__rate_interval}])) by (app)",
           "legendFormat": "{{app}} DB Errors",
           "refId": "A"
         },
@@ -1079,7 +1070,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service\"} |= \"ERROR\" | json | arg1_message =~ \".*[Cc]lick[Hh]ouse.*\"[$__rate_interval])) by (app)",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} |= \"ERROR\" |~ \"[Cc]lick[Hh]ouse\"[${__rate_interval}])) by (app)",
           "legendFormat": "{{app}} ClickHouse Errors",
           "refId": "B"
         }
@@ -1123,7 +1114,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"countly\", app=~\"$service\"} |= \"ERROR\" | json | arg1_message =~ \".*[Dd]atabase.*\" or arg1_message =~ \".*[Mm]ongo.*\" or arg1_message =~ \".*[Cc]lick[Hh]ouse.*\"",
+          "expr": "{namespace=\"countly\", app=~\"$service_name\"} |= \"ERROR\" |~ \"[Dd]atabase|[Mm]ongo|[Cc]lick[Hh]ouse\"",
           "refId": "A"
         }
       ],
@@ -1152,7 +1143,7 @@
         "includeAll": true,
         "label": "Service",
         "multi": true,
-        "name": "service",
+        "name": "service_name",
         "options": [],
         "query": {
           "label": "app",
@@ -1176,7 +1167,7 @@
           "type": "loki",
           "uid": "loki"
         },
-        "definition": "label_values({app=~\"$service\"}, level)",
+        "definition": "label_values({app=~\"$service_name\"}, level)",
         "hide": 0,
         "includeAll": true,
         "label": "Log Level",
@@ -1186,7 +1177,7 @@
         "query": {
           "label": "level",
           "refId": "LokiVariableQueryEditor-VariableQuery",
-          "stream": "{app=~\"$service\"}",
+          "stream": "{app=~\"$service_name\"}",
           "type": 1
         },
         "refresh": 2,
