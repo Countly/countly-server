@@ -215,7 +215,7 @@ Cypress.Commands.add("scrollPageToTop", (element = '.main-view', index = 0) => {
 });
 
 Cypress.Commands.add("scrollPageToCenter", (element = '.main-view', index = 0) => {
-    cy.get(element).eq(index).scrollTo('center', { ensureScrollable: true });
+    cy.get(element).eq(index).scrollTo('center', { ensureScrollable: false });
 });
 
 Cypress.Commands.add("scrollDataTableToRight", (element = '.el-table__body-wrapper', index = 0) => {
