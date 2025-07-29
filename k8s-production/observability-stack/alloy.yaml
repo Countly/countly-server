@@ -13,6 +13,7 @@ rules:
   resources:
   - nodes
   - nodes/proxy
+  - nodes/metrics
   - services
   - endpoints
   - pods
@@ -21,6 +22,11 @@ rules:
   resources:
   - configmaps
   verbs: ["get"]
+- apiGroups: ["metrics.k8s.io"]
+  resources:
+  - nodes
+  - pods
+  verbs: ["get", "list"]
 - apiGroups: ["apps"]
   resources:
   - daemonsets
@@ -152,7 +158,7 @@ data:
         values = {
           traceID = "trace_id",
           spanID  = "span_id",
-          level   = null,
+          level   = "level",
         }
       }
 
@@ -192,7 +198,7 @@ data:
           send = false
         }
         
-        send_exemplars = true
+        send_exemplars = false 
         send_native_histograms = false
       }
       
@@ -336,6 +342,151 @@ data:
       job_name   = "alloy-internal"
       scrape_interval = "30s"
     }
+    
+    // ===== Kubernetes Infrastructure Monitoring =====
+    
+    // kube-state-metrics discovery
+    discovery.kubernetes "kube_state_metrics" {
+      role = "service"
+      namespaces {
+        names = ["countly-observability"]
+      }
+    }
+    
+    discovery.relabel "kube_state_metrics" {
+      targets = discovery.kubernetes.kube_state_metrics.targets
+      
+      rule {
+        source_labels = ["__meta_kubernetes_service_name"]
+        regex         = "kube-state-metrics"
+        action        = "keep"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_service_port_name"]
+        regex         = "http-metrics"
+        action        = "keep"
+      }
+      
+      rule {
+        source_labels = ["__address__"]
+        target_label  = "__address__"
+        replacement   = "${1}:8080"
+        regex         = "([^:]+)(?::\\d+)?"
+      }
+    }
+    
+    prometheus.scrape "kube_state_metrics" {
+      targets         = discovery.relabel.kube_state_metrics.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "kube-state-metrics"
+      scrape_interval = "30s"
+      scrape_timeout  = "10s"
+      honor_labels    = true
+    }
+    
+    // node-exporter discovery
+    discovery.kubernetes "node_exporter" {
+      role = "pod"
+      namespaces {
+        names = ["countly-observability"]
+      }
+    }
+    
+    discovery.relabel "node_exporter" {
+      targets = discovery.kubernetes.node_exporter.targets
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app"]
+        regex         = "node-exporter"
+        action        = "keep"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_port_name"]
+        regex         = "http-metrics"
+        action        = "keep"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_pod_host_ip"]
+        target_label  = "__address__"
+        replacement   = "${1}:9100"
+      }
+    }
+    
+    prometheus.scrape "node_exporter" {
+      targets         = discovery.relabel.node_exporter.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "node-exporter"
+      scrape_interval = "30s"
+      scrape_timeout  = "29s"
+      
+      // Limit metrics to reduce timeout issues
+      metric_relabel_configs = [
+        // Drop detailed filesystem metrics for docker/k8s internal mounts
+        {
+          source_labels = ["__name__", "mountpoint"]
+          regex         = "node_filesystem.*;/var/lib/docker/.*"
+          action        = "drop"
+        },
+        {
+          source_labels = ["__name__", "mountpoint"]
+          regex         = "node_filesystem.*;/var/lib/kubelet/.*"
+          action        = "drop"
+        }
+      ]
+    }
+    
+    // cAdvisor metrics from kubelet
+    discovery.kubernetes "kubelet" {
+      role = "node"
+    }
+    
+    discovery.relabel "kubelet_cadvisor" {
+      targets = discovery.kubernetes.kubelet.targets
+      
+      rule {
+        source_labels = ["__address__"]
+        regex         = "([^:]+):?(\\d+)?"
+        target_label  = "__address__"
+        replacement   = "${1}:10250"
+      }
+      
+      rule {
+        source_labels = ["__meta_kubernetes_node_name"]
+        target_label  = "node"
+      }
+      
+      rule {
+        target_label = "__metrics_path__"
+        replacement  = "/metrics/cadvisor"
+      }
+      
+      rule {
+        target_label = "__scheme__"
+        replacement  = "https"
+      }
+    }
+    
+    prometheus.scrape "kubelet_cadvisor" {
+      targets         = discovery.relabel.kubelet_cadvisor.output
+      forward_to      = [prometheus.remote_write.default.receiver]
+      job_name        = "kubelet-cadvisor"
+      scrape_interval = "30s"
+      scrape_timeout  = "10s"
+      
+      tls_config {
+        insecure_skip_verify = true
+      }
+      
+      bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+    }
 
     //////////////////////////////////////////////////////////////
     // === Profiles pipeline (Pyroscope Push API) ================
@@ -455,6 +606,8 @@ spec:
         - name: varlibdockercontainers
           mountPath: /var/lib/docker/containers
           readOnly: true
+        - name: alloy-storage
+          mountPath: /tmp/alloy
         resources:
           requests:
             cpu: 200m
@@ -484,3 +637,5 @@ spec:
       - name: varlibdockercontainers
         hostPath:
           path: /var/lib/docker/containers
+      - name: alloy-storage
+        emptyDir: {}

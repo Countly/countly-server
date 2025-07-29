@@ -13,6 +13,9 @@ resources:
 - grafana.yaml
 - tempo-stack.yaml
 - pyroscope-stack.yaml
+# Kubernetes infrastructure monitoring
+- kube-state-metrics.yaml
+- node-exporter.yaml
 # Ingress for external access
 - observability-ingress.yaml
 
