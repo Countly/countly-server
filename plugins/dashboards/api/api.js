@@ -12,7 +12,7 @@ var pluginOb = {},
     localize = require('../../../api/utils/localization.js'),
     async = require('async'),
     mail = require("../../../api/parts/mgmt/mail"),
-    { validateUser } = require('../../../api/utils/rights.js');
+    { validateUser, getUserApps, hasReadRight } = require('../../../api/utils/rights.js');
 
 var ejs = require("ejs");
 
@@ -219,13 +219,42 @@ plugins.setConfigs("dashboards", {
 
                             var widgets = meta[0] || [];
                             var apps = meta[1] || [];
+                            var hasGlobalAdmin = params.member.global_admin;
+                            var userApps = getUserApps(params.member);
+                            var filteredWidgets = [];
 
-                            if (!widgets.length) {
-                                return callback(null, {widgets: widgets, apps: apps});
+                            widgets.forEach(function(widget) {
+                                if (hasGlobalAdmin) {
+                                    filteredWidgets.push(widget);
+                                    return;
+                                }
+
+                                if (!Array.isArray(widget.apps)) {
+                                    return;
+                                }
+
+                                var hasAccess = widget.apps.some(function(appId) {
+                                    return userApps.includes(appId) && hasReadRight(widget.feature, appId, params.member);
+                                });
+
+                                if (hasAccess) {
+                                    filteredWidgets.push(widget);
+                                }
+                            });
+
+                            var filteredApps = [];
+                            apps.forEach(function(app) {
+                                if (hasGlobalAdmin || userApps.includes(app._id)) {
+                                    filteredApps.push(app);
+                                }
+                            });
+
+                            if (!filteredWidgets.length) {
+                                return callback(null, {widgets: filteredWidgets, apps: filteredApps});
                             }
 
-                            customDashboards.fetchAllWidgetsData(params, widgets, function(data) {
-                                var output = { widgets: data || [], apps: apps || [] };
+                            customDashboards.fetchAllWidgetsData(params, filteredWidgets, function(data) {
+                                var output = { widgets: data || [], apps: filteredApps || [] };
                                 return callback(null, output);
                             });
                         });
