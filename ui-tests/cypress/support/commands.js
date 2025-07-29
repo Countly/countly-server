@@ -226,13 +226,6 @@ Cypress.Commands.add("scrollDataTableToLeft", (element = '.el-table__body-wrappe
     cy.get(element).eq(index).scrollTo('left', { ensureScrollable: false });
 });
 
-Cypress.Commands.add("scrollPageSlightly", (element = '.main-view', index = 0, offset = 100) => {
-  cy.get(element)
-    .eq(index)
-    .scrollTo('top', { ensureScrollable: false })
-    .scrollTo(0, offset, { ensureScrollable: false }); // x=0, y=offset
-});
-
 Cypress.Commands.add('verifyElement', ({
     labelElement,
     labelText,
