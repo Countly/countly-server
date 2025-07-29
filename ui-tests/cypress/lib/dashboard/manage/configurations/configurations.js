@@ -179,6 +179,7 @@ const verifyPageElements = () => {
         attrText: "100"
     });
 
+    cy.scrollPageSlightly();
     cy.scrollPageToCenter();
 
     cy.verifyElement({
