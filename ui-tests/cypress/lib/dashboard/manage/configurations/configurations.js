@@ -837,7 +837,8 @@ const verifyPageElements = () => {
         isChecked: true
     });
 
-    cy.scrollPageToBottom();
+   // cy.scrollPageToBottom();
+    cy.scrollPageToCenter();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.PASSWORD_EXPIRATION }).SELECTED_SUBFEATURE_TITLE,
@@ -911,6 +912,8 @@ const verifyPageElements = () => {
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.PASSWORD_SYMBOL }).SELECTED_SUBFEATURE_DESCRIPTION,
         labelText: "If enabled, provided passwords must contain at least one special symbol (not a number or latin character)",
     });
+
+    cy.scrollPageToBottom();
 
     cy.verifyElement({
         element: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.PASSWORD_SYMBOL }).SELECTED_SUBFEATURE_CHECKBOX,
