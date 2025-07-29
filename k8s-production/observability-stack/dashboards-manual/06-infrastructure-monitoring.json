@@ -1071,7 +1071,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(container_cpu_usage_seconds_total{namespace=\"countly\", container!=\"POD\", container!=\"\"}[5m])",
+          "expr": "rate(container_cpu_usage_seconds_total{namespace=\"countly\", container!=\"POD\", container!=\"\"}[5m]) / on(pod, container) group_left() kube_pod_container_resource_requests{namespace=\"countly\", resource=\"cpu\"}",
           "legendFormat": "{{pod}}/{{container}} Usage",
           "refId": "A"
         },
@@ -1603,7 +1603,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "container_memory_working_set_bytes{namespace=\"countly\", container!=\"POD\", container!=\"\"} / on(pod, container) kube_pod_container_resource_limits{namespace=\"countly\", resource=\"memory\"}",
+          "expr": "container_memory_working_set_bytes{namespace=\"countly\", container!=\"POD\", container!=\"\"} / on(pod, container) group_left() kube_pod_container_resource_limits{namespace=\"countly\", resource=\"memory\"}",
           "legendFormat": "{{pod}}/{{container}}",
           "refId": "A"
         }

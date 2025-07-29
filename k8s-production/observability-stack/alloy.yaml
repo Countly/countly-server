@@ -378,12 +378,27 @@ data:
     
     prometheus.scrape "kube_state_metrics" {
       targets         = discovery.relabel.kube_state_metrics.output
-      forward_to      = [prometheus.remote_write.default.receiver]
+      forward_to      = [prometheus.relabel.kube_state_metrics_relabel.receiver]
       job_name        = "kube-state-metrics"
       scrape_interval = "30s"
       scrape_timeout  = "10s"
       honor_labels    = true
     }
+
+    prometheus.relabel "kube_state_metrics_relabel" {
+        forward_to = [prometheus.remote_write.default.receiver]
+
+        rule {
+            source_labels = ["__address__"]
+            target_label  = "__tmp_hash"
+            action        = "hashmod"
+            modulus       = 1000
+        }
+    }
+
+
+
+
     
     // node-exporter discovery
     discovery.kubernetes "node_exporter" {
@@ -422,25 +437,25 @@ data:
     
     prometheus.scrape "node_exporter" {
       targets         = discovery.relabel.node_exporter.output
-      forward_to      = [prometheus.remote_write.default.receiver]
+      forward_to      = [prometheus.relabel.node_exporter_relabel.receiver]
       job_name        = "node-exporter"
-      scrape_interval = "30s"
-      scrape_timeout  = "29s"
-      
-      // Limit metrics to reduce timeout issues
-      metric_relabel_configs = [
-        // Drop detailed filesystem metrics for docker/k8s internal mounts
-        {
-          source_labels = ["__name__", "mountpoint"]
-          regex         = "node_filesystem.*;/var/lib/docker/.*"
-          action        = "drop"
-        },
-        {
-          source_labels = ["__name__", "mountpoint"]
-          regex         = "node_filesystem.*;/var/lib/kubelet/.*"
-          action        = "drop"
+      scrape_interval = "60s"
+      scrape_timeout  = "45s"
+    }
+
+    prometheus.relabel "node_exporter_relabel" {
+        forward_to = [prometheus.remote_write.default.receiver]
+
+        rule {
+            source_labels = ["__name__", "mountpoint"]
+            regex         = "node_filesystem.*;/var/lib/docker/.*"
+            action        = "drop"
         }
-      ]
+        rule {
+            source_labels = ["__name__", "mountpoint"]
+            regex         = "node_filesystem.*;/var/lib/kubelet/.*"
+            action        = "drop"
+        }
     }
     
     // cAdvisor metrics from kubelet

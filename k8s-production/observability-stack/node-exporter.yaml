@@ -117,6 +117,7 @@ spec:
           - --no-collector.udp_queues
           - --no-collector.xfs
           - --no-collector.zfs
+          - --no-collector.diskstats
         ports:
         - containerPort: 9100
           name: http-metrics
@@ -138,6 +139,9 @@ spec:
         - name: root
           mountPath: /host/root
           mountPropagation: HostToContainer
+          readOnly: true
+        - name: run
+          mountPath: /run
           readOnly: true
         readinessProbe:
           httpGet:
@@ -169,3 +173,6 @@ spec:
       - name: root
         hostPath:
           path: /
+      - name: run
+        hostPath:
+          path: /run
