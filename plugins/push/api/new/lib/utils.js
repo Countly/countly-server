@@ -90,6 +90,21 @@ function loadDrillAPI() {
     }
 }
 
+/**
+ * Sanitize a MongoDB path by escaping dots, dollar signs, and backslashes.
+ * This is necessary to prevent issues with MongoDB queries that use these characters.
+ * @param {string} path - The MongoDB path to sanitize.
+ * @returns {string} - The sanitized MongoDB path.
+ * @example
+ * // Returns "user\uff0e.name"
+ * sanitizeMongoPath("user.name");
+ */
+function sanitizeMongoPath(path) {
+    // escape dots and dollar signs in the path
+    return path.replace(/\./g, '\uff0e')
+        .replace(/\$/g, '\uff04')
+        .replace(/\\/g, '\uff3c');
+}
 
 /**
  * Emits [CLY]_push_sent events for each messageId in the results.
@@ -152,4 +167,5 @@ module.exports = {
     parseKeyPair,
     loadDrillAPI,
     updateInternalsWithResults,
+    sanitizeMongoPath
 }

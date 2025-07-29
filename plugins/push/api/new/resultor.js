@@ -14,7 +14,7 @@
 
 const { ObjectId } = require("mongodb");
 const { InvalidDeviceToken } = require('./lib/error.js');
-const { updateInternalsWithResults } = require("./lib/utils.js");
+const { updateInternalsWithResults, sanitizeMongoPath } = require("./lib/utils.js");
 
 /** @type {LogObject} */
 const log = require('../../../../api/utils/common').log('push:resultor');
@@ -292,18 +292,19 @@ function increaseResultStat(
     resultObject.subs[platform][stat] += amount;
     resultObject.subs[platform].subs[language][stat] += amount;
     if (stat === "failed" && typeof error === "string") {
-        if (!(error in resultObject.errors)) {
-            resultObject.errors[error] = 0;
+        const errorKey = sanitizeMongoPath(error);
+        if (!(errorKey in resultObject.errors)) {
+            resultObject.errors[errorKey] = 0;
         }
-        if (!(error in resultObject.subs[platform].errors)) {
-            resultObject.subs[platform].errors[error] = 0;
+        if (!(errorKey in resultObject.subs[platform].errors)) {
+            resultObject.subs[platform].errors[errorKey] = 0;
         }
-        if (!(error in resultObject.subs[platform].subs[language].errors)) {
-            resultObject.subs[platform].subs[language].errors[error] = 0;
+        if (!(errorKey in resultObject.subs[platform].subs[language].errors)) {
+            resultObject.subs[platform].subs[language].errors[errorKey] = 0;
         }
-        resultObject.errors[error] += amount;
-        resultObject.subs[platform].errors[error] += amount;
-        resultObject.subs[platform].subs[language].errors[error] += amount;
+        resultObject.errors[errorKey] += amount;
+        resultObject.subs[platform].errors[errorKey] += amount;
+        resultObject.subs[platform].subs[language].errors[errorKey] += amount;
     }
 }
 
