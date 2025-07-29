@@ -91,50 +91,17 @@ plugins.internalDrillEvents.push('[CLY]_push_sent');
  * @param {MongoDb} db
  */
 async function queueInitializer(db) {
-    const queueLogs = {
-        push: common.log("push:queue:push-event"),
-        schedule: common.log("push:queue:schedule-event"),
-        result: common.log("push:queue:result-event"),
-        auto: common.log("push:queue:auto-trigger-event"),
-    };
+    const logError = common.log("push:queue").e;
     try {
         await initPushQueue(
-            async function(pushes) {
-                try {
-                    // console.log("PUSH EVENTS", JSON.stringify(pushes, null, 2));
-                    await sendAllPushes(pushes);
-                }
-                catch (err) {
-                    queueLogs.push.e(err);
-                }
-            },
-            async function(schedules) {
-                try {
-                    // console.log("SCHEDULE EVENTS", JSON.stringify(schedules, null, 2));
-                    await composeAllScheduledPushes(db, schedules);
-                }
-                catch (err) {
-                    queueLogs.schedule.e(err);
-                }
-            },
-            async function(results) {
-                try {
-                    // console.log("RESULT EVENTS", JSON.stringify(results, null, 2));
-                    await saveResults(db, results);
-                }
-                catch(err) {
-                    queueLogs.result.e(err);
-                }
-            },
-            async function(autoTriggerEvents) {
-                try {
-                    // console.log("AUTO TRIGGER EVENTS", JSON.stringify(autoTriggerEvents, null, 2));
-                    await scheduleMessageByAutoTriggers(db, autoTriggerEvents);
-                }
-                catch (err) {
-                    queueLogs.auto.e(err);
-                }
-            }
+            (pushes) => sendAllPushes(pushes)
+                .catch(e => logError("Error while processing PushEvents", e)),
+            (schedules) => composeAllScheduledPushes(db, schedules)
+                .catch(e => logError("Error while processing ScheduleEvents", e)),
+            (results) => saveResults(db, results)
+                .catch(e => logError("Error while processing ResultEvents", e)),
+            (autoTriggerEvents) => scheduleMessageByAutoTriggers(db, autoTriggerEvents)
+                .catch(e => logError("Error while processing AutoTriggerEvents", e)),
         );
     }
     catch(err) {

@@ -87,17 +87,13 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
                     .filter(value => !!value);
                 switch (topic) {
                 case config.topics.SEND.name:
-                    await onPushMessages(parsed.map(pushEventDTOToObject));
-                    break;
+                    return await onPushMessages(parsed.map(pushEventDTOToObject));
                 case config.topics.COMPOSE.name:
-                    await onMessageSchedules(parsed.map(scheduleEventDTOToObject));
-                    break;
+                    return await onMessageSchedules(parsed.map(scheduleEventDTOToObject));
                 case config.topics.RESULT.name:
-                    await onMessageResults(parsed.map(resultEventDTOToObject));
-                    break;
+                    return await onMessageResults(parsed.map(resultEventDTOToObject));
                 case config.topics.AUTO_TRIGGER.name:
-                    await onAutoTriggerEvents(parsed.map(autoTriggerEventDTOToObject));
-                    break;
+                    return await onAutoTriggerEvents(parsed.map(autoTriggerEventDTOToObject));
                 }
             } catch(err) {
                 log.e("Error while consuming. topic:", topic, err);

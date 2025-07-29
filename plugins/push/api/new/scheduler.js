@@ -232,7 +232,7 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
  * @param {boolean}           timezoneAware      - set true if this is going to be scheduled for each timezone
  * @param {number=}           schedulerTimezone  - timezone of the scheduler
  * @param {boolean=}          rescheduleIfPassed - true if we want to reschedule to next day if the date is in the past
- * @param {AudienceFilter=}  audienceFilter    - user ids from app_users{appId} collection
+ * @param {AudienceFilter=}   audienceFilter     - user ids from app_users{appId} collection
  * @param {MessageOverrides=} messageOverrides   - overrides for the message (content, parameters, etc.)
  * @returns {Promise<Schedule>} created Schedule document from message_schedules collection
  */
