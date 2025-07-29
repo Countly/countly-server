@@ -9,9 +9,11 @@ Fixes:
 - [crashes] Fix free session for home widget
 - [crashes] Use na for free session and free user when there's no data
 - [crashes] Fix trend and change calculation for crash stats
+- [push] Show segmentation, geo and cohorts related components in push drawer on editing draft. 
 
 Enterprise Fixes:
 - [ldap] Error handling in ldap plugin on search error
+- [users] Load table data from report if user table calculation goes to report manager
 
 Dependencies:
 - Bump puppeteer from 24.14.0 to 24.15.0
