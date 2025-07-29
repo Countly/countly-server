@@ -108,7 +108,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"[45]..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}]))",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"[45]..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval]))",
           "refId": "A"
         }
       ],
@@ -271,7 +271,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"4..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name)",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"4..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name)",
           "legendFormat": "{{service_name}} 4xx",
           "refId": "A"
         },
@@ -280,7 +280,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"5..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name)",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"5..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name)",
           "legendFormat": "{{service_name}} 5xx",
           "refId": "B"
         }
@@ -386,7 +386,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (http_status_code)",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (http_status_code)",
           "legendFormat": "{{http_status_code}}",
           "refId": "A"
         }
@@ -472,7 +472,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"[45]..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name, http_route, http_status_code)",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"[45]..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name, http_route, http_status_code)",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -483,7 +483,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name, http_route)",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name, http_route)",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -623,7 +623,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} |= \"ERROR\" |~ \"[Dd]atabase|[Mm]ongo|[Cc]lick[Hh]ouse\"[${__rate_interval}])) by (app)",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} |= \"ERROR\" |~ \"[Dd]atabase|[Mm]ongo|[Cc]lick[Hh]ouse\"[$__interval])) by (app)",
           "legendFormat": "{{app}}",
           "refId": "A"
         }
@@ -708,7 +708,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} |= \"ERROR\"[${__rate_interval}])) by (app)",
+          "expr": "sum(rate({namespace=\"countly\", app=~\"$service_name\"} |= \"ERROR\"[$__interval])) by (app)",
           "legendFormat": "{{app}}",
           "refId": "A"
         }
@@ -812,7 +812,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"countly\", app=~\"$service_name\"} |= \"ERROR\" | json | line_format \"{{.time}} [{{.level}}] {{.app}} {{.name | default .msg | default \"\"}} {{if .traceId}}[trace:{{.traceId}}]{{end}}\"",
+          "expr": "{namespace=\"countly\", app=~\"$service_name\"} |= \"ERROR\" | json | line_format \"{{.time}} [{{.level}}] {{.app}} {{.name | default .msg}} {{if .traceId}}[trace:{{.traceId}}]{{end}}\"",
           "refId": "A"
         }
       ],
@@ -917,7 +917,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_http_server_duration_milliseconds_bucket{http_status_code=~\"[45]..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name, le))",
+          "expr": "histogram_quantile(0.95, sum(rate(countly_http_server_duration_milliseconds_bucket{http_status_code=~\"[45]..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name, le))",
           "legendFormat": "{{service_name}} Error P95",
           "refId": "A"
         },
@@ -926,7 +926,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_http_server_duration_milliseconds_bucket{http_status_code=~\"2..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name, le))",
+          "expr": "histogram_quantile(0.95, sum(rate(countly_http_server_duration_milliseconds_bucket{http_status_code=~\"2..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name, le))",
           "legendFormat": "{{service_name}} Success P95",
           "refId": "B"
         }
