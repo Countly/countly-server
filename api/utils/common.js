@@ -6,14 +6,14 @@
  * @typedef {import('../../types/requestProcessor').Params} Params
  * @typedef {import('../../types/common').TimeObject} TimeObject
  * @typedef {import('mongodb').ObjectId} ObjectId
- * typedef {import('moment-timezone').Moment} MomentTimezone
+ * @typedef {import('moment-timezone').Moment} MomentTimezone
  */
 
 /** @lends module:api/utils/common **/
-/** @type(import('../../types/common').Common) */
+/** @type {import('../../types/common').Common} */
 const common = {};
 
-/** @type(import('moment-timezone')) */
+/** @type {import('moment-timezone')} */
 const moment = require('moment-timezone');
 const crypto = require('crypto');
 const logger = require('./log.js');
@@ -176,6 +176,7 @@ function escape_html_entities(key, value, more) {
 common.getJSON = getJSON;
 
 common.log = logger;
+const log = logger('api:utils:common');
 
 common.dbMap = {
     'events': 'e',
@@ -463,8 +464,8 @@ common.fillTimeObject = function(params, object, property, increment) {
 /**
 * Creates a time object from request's milisecond or second timestamp in provided app's timezone
 * @param {string} appTimezone - app's timezone
-* @param {number=} reqTimestamp - timestamp in the request
-* @returns {timeObject} Time object for current request
+* @param {string?} reqTimestamp - timestamp in the request
+* @returns {TimeObject} Time object for current request
 */
 common.initTimeObj = function(appTimezone, reqTimestamp) {
     var currTimestamp,
@@ -1313,8 +1314,9 @@ common.returnRaw = function(params, returnCode, body, heads) {
         }
         return;
     }
+    const defaultHeaders = {};
     //set provided in configuration headers
-    var headers = {};
+    let headers = {};
     if (heads) {
         for (var i in heads) {
             headers[i] = heads[i];
@@ -1322,7 +1324,13 @@ common.returnRaw = function(params, returnCode, body, heads) {
     }
     if (params && params.res && params.res.writeHead && !params.blockResponses) {
         if (!params.res.finished) {
-            params.res.writeHead(returnCode, headers);
+            try {
+                params.res.writeHead(returnCode, headers);
+            }
+            catch (err) {
+                log.e(`Error writing header in 'returnRaw' ${err}`);
+                params.res.writeHead(returnCode, defaultHeaders);
+            }
             if (body) {
                 params.res.write(body);
             }
@@ -1353,9 +1361,10 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
         return;
     }
     //set provided in configuration headers
-    var headers = {
+    const defaultHeaders = {
         'Content-Type': 'application/json; charset=utf-8'
     };
+    let headers = { ...defaultHeaders };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
     for (let i = 0; i < add_headers.length; i++) {
@@ -1379,7 +1388,13 @@ common.returnMessage = function(params, returnCode, message, heads, noResult = f
     }
     if (params && params.res && params.res.writeHead && !params.blockResponses) {
         if (!params.res.finished) {
-            params.res.writeHead(returnCode, headers);
+            try {
+                params.res.writeHead(returnCode, headers);
+            }
+            catch (err) {
+                log.e(`Error writing header in 'returnMessage' ${err}`);
+                params.res.writeHead(returnCode, defaultHeaders);
+            }
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
             }
@@ -1421,9 +1436,10 @@ common.returnOutput = function(params, output, noescape, heads) {
         return;
     }
     //set provided in configuration headers
-    var headers = {
+    const defaultHeaders = {
         'Content-Type': 'application/json; charset=utf-8'
     };
+    let headers = { ...defaultHeaders };
     var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n/g, "\n").split("\n");
     var parts;
     for (let i = 0; i < add_headers.length; i++) {
@@ -1448,7 +1464,13 @@ common.returnOutput = function(params, output, noescape, heads) {
     }
     if (params && params.res && params.res.writeHead && !params.blockResponses) {
         if (!params.res.finished) {
-            params.res.writeHead(200, headers);
+            try {
+                params.res.writeHead(200, headers);
+            }
+            catch (err) {
+                log.e(`Error writing header in 'returnMessage' ${err}`);
+                params.res.writeHead(200, defaultHeaders);
+            }
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
             }
@@ -2075,19 +2097,16 @@ common.parseAppVersion = function(version) {
             version = String(version);
         }
 
-        // Ensure version has at least one decimal point
-        if (version.indexOf('.') === -1) {
-            version += '.0';
-        }
-
-        const parsedVersion = semver.valid(semver.coerce(version));
-        if (parsedVersion) {
-            const versionObj = semver.parse(parsedVersion);
+        const isValid = semver.valid(semver.coerce(version, {includePrerelease: true}));
+        if (isValid) {
+            const versionObj = semver.parse(semver.coerce(version, {includePrerelease: true}));
             if (versionObj) {
                 return {
                     major: versionObj.major,
                     minor: versionObj.minor,
                     patch: versionObj.patch,
+                    prerelease: versionObj.prerelease,
+                    build: versionObj.build,
                     original: version,
                     success: true
                 };
@@ -2503,7 +2522,7 @@ common.updateAppUser = function(params, update, no_meta, callback) {
             });
         }
         else {
-            // using updateOne costs less than findAndModify, so we should use this 
+            // using updateOne costs less than findAndModify, so we should use this
             // when acknowledging writes and updated information is not relevant (aka callback is not passed)
             common.db.collection('app_users' + params.app_id).updateOne({'_id': params.app_user_id}, common.clearClashingQueryOperations(update), {upsert: true}, function() {});
         }
@@ -2737,7 +2756,7 @@ common.checkDatabaseConfigMatch = (apiConfig, frontendConfig) => {
              * {
              *  mongodb: {
              *      host: 'localhost',
-             *      
+             *
              *  }
              * }
              */
@@ -3080,7 +3099,7 @@ common.dbext = {
 
     /**
      * Check if passed value is an ObjectId
-     * 
+     *
      * @param {any} id value
      * @returns {boolean} true if id is instance of ObjectId
      */
@@ -3090,7 +3109,7 @@ common.dbext = {
 
     /**
      * Decode string to ObjectId if needed
-     * 
+     *
      * @param {string|ObjectId|null|undefined} id string or object id, empty string is invalid input
      * @returns {ObjectId} id
      */
@@ -3099,9 +3118,9 @@ common.dbext = {
     },
 
     /**
-     * Create ObjectId with given timestamp. Uses current ObjectId random/server parts, meaning the 
+     * Create ObjectId with given timestamp. Uses current ObjectId random/server parts, meaning the
      * object id returned still has same uniquness guarantees as random ones.
-     * 
+     *
      * @param {Date|number} date Date object or timestamp in seconds, current date by default
      * @returns {ObjectId} with given timestamp
      */
@@ -3114,7 +3133,7 @@ common.dbext = {
     /**
      * Create blank ObjectId with given timestamp. Everything except for date part is zeroed.
      * For use in queries like {_id: {$gt: oidBlankWithDate()}}
-     * 
+     *
      * @param {Date|number} date Date object or timestamp in seconds, current date by default
      * @returns {ObjectId} with given timestamp and zeroes in the rest of the bytes
      */
@@ -3125,17 +3144,17 @@ common.dbext = {
 };
 
 /**
- * DataTable is a helper class for data tables in the UI which have bServerSide: true. It provides 
- * abstraction for server side pagination, searching and column based sorting. The class relies 
- * on MongoDB's aggregation for all operations. This doesn't include making db calls though. Since 
- * there can be many different execution scenarios, db left to the users of the class. 
- * 
+ * DataTable is a helper class for data tables in the UI which have bServerSide: true. It provides
+ * abstraction for server side pagination, searching and column based sorting. The class relies
+ * on MongoDB's aggregation for all operations. This doesn't include making db calls though. Since
+ * there can be many different execution scenarios, db left to the users of the class.
+ *
  * There are two main methods of the class:
- * 
- * 1) getAggregationPipeline: Creates a pipeline which can be executed by MongoDB. The pipeline 
- * can be customized, please see its description. 
- *  
- * 2) getProcessedResult: Processes the aggregation result. Returns an object, which is ready to be 
+ *
+ * 1) getAggregationPipeline: Creates a pipeline which can be executed by MongoDB. The pipeline
+ * can be customized, please see its description.
+ *
+ * 2) getProcessedResult: Processes the aggregation result. Returns an object, which is ready to be
  * served as a response directly.
  */
 class DataTable {
@@ -3143,22 +3162,22 @@ class DataTable {
     /**
      * Constructor
      * @param {object} queryString This object should contain the datatable arguments like iDisplayStart,
-     * iDisplayEnd, etc. These are added to request by DataTables automatically. If you have a different 
+     * iDisplayEnd, etc. These are added to request by DataTables automatically. If you have a different
      * use-case, please make sure that the object has necessary fields.
-     * @param {('full'|'rows')} queryString.outputFormat The default output of getProcessedResult is a 
-     * DataTable compatible object ("full"). However, some consumers of the API may require simple, array-like 
+     * @param {('full'|'rows')} queryString.outputFormat The default output of getProcessedResult is a
+     * DataTable compatible object ("full"). However, some consumers of the API may require simple, array-like
      * results too ("rows"). In order to allow consumers to specify expected output, the field can be used.
      * @param {object} options Wraps options
-     * @param {Array<string>} options.columnOrder If there are sortable columns in the table, then you need to 
-     * specify a column list in order to make it work (e.g. ["name", "status"]). 
-     * @param {object} options.defaultSorting When there is no sorting provided in query string, sorting 
-     * falls back to this object, if you provide any (e.g. {"name": "asc"}). 
-     * @param {Array<string>} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]). 
+     * @param {Array<string>} options.columnOrder If there are sortable columns in the table, then you need to
+     * specify a column list in order to make it work (e.g. ["name", "status"]).
+     * @param {object} options.defaultSorting When there is no sorting provided in query string, sorting
+     * falls back to this object, if you provide any (e.g. {"name": "asc"}).
+     * @param {Array<string>} options.searchableFields Specify searchable fields of a record/item (e.g. ["name", "description"]).
      * @param {('regex'|'hard')} options.searchStrategy Specify searching method. If "regex", then a regex
      * search is performed on searchableFields. Other values will be considered as hard match.
-     * @param {object} options.outputProjection Adds a $project stage to the output rows using the object passed. 
-     * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat. 
-     * @param {string} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it 
+     * @param {object} options.outputProjection Adds a $project stage to the output rows using the object passed.
+     * @param {('full'|'rows')} options.defaultOutputFormat This is the default value for queryString.outputFormat.
+     * @param {string} options.uniqueKey A generic-purpose unique key for records. Default is _id, as it
      * is the default identifier of MongoDB docs. Please make sure that this key is in the output of initial pipeline.
      * @param {boolean} options.disableUniqueSorting When sorting is done, the uniqueKey is automatically
      * injected to the sorting expression, in order to mitigate possible duplicate records in pages. This is
@@ -3251,26 +3270,26 @@ class DataTable {
     /**
      * Creates an aggregation pipeline based on the query string and additional stages/facets
      * if provided any. Data flow between stages are not checked, so please do check manually.
-     * 
+     *
      * @param {object} options Wraps options
-     * @param {Array<object>} options.initialPipeline If you need to select a subset, to add new fields or 
+     * @param {Array<object>} options.initialPipeline If you need to select a subset, to add new fields or
      * anything else involving aggregation stages, you can pass an array of stages using options.initialPipeline.
      * Initial pipeline is basically used for counting the total number of documents without pagination and search.
-     * 
+     *
      * # of output rows = total number of docs.
-     * 
-     * @param {Array<object>} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a 
-     * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no 
+     *
+     * @param {Array<object>} options.filteredPipeline Filtered pipeline will contain the remaining rows tested against a
+     * search query (if any). That is, this pipeline will get only the filtered docs as its input. If there is no
      * query, then this will be another stage after initialPipeline. Paging and sorting are added after filteredPipeline.
-     * 
+     *
      * # of output rows = filtered number of docs.
-     * 
-     * @param {object} options.customFacets You can add facets to your results using option.customFacets. 
-     * Custom facets will use initial pipeline's output as its input. If the documents you're 
+     *
+     * @param {object} options.customFacets You can add facets to your results using option.customFacets.
+     * Custom facets will use initial pipeline's output as its input. If the documents you're
      * looking for are included by initial pipeline's output, you can use this to avoid extra db calls.
-     * You can obtain outputs of your custom facets via getProcessedResult. Please note that custom facets will only be 
+     * You can obtain outputs of your custom facets via getProcessedResult. Please note that custom facets will only be
      * available when the output format is "full".
-     * 
+     *
      * @returns {object} Pipeline object
      */
     getAggregationPipeline({
@@ -3298,7 +3317,7 @@ class DataTable {
             $facetFilteredTotal.push({$match: matcher});
         }
         $facetPagedData.push(...filteredPipeline);
-        $facetFilteredTotal.push(...filteredPipeline); // TODO: optimize (no need to do pipeline operations unless there is match) 
+        $facetFilteredTotal.push(...filteredPipeline); // TODO: optimize (no need to do pipeline operations unless there is match)
         $facetFilteredTotal.push({$group: {"_id": null, "value": {$sum: 1}}});
         if (this.sorting !== null) {
             $facetPagedData.push({$sort: this.sorting});
@@ -3329,7 +3348,7 @@ class DataTable {
      * @param {object} queryResult Aggregation result returned by the MongoDB.
      * @param {Function} processFn A callback function that has a single argument 'rows'.
      * As the name implies, it is an array of returned rows. The function can be used as
-     * a final stage to do modifications to fetched items before completing the response. 
+     * a final stage to do modifications to fetched items before completing the response.
      * @returns {object|Array<string>} Returns the final response
      */
     getProcessedResult(queryResult, processFn) {
@@ -3471,5 +3490,5 @@ common.trimWhitespaceStartEnd = function(value) {
     return value;
 };
 
-/** @type(import('../../types/common').Common) */
+/** @type {import('../../types/common').Common} */
 module.exports = common;

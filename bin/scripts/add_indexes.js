@@ -29,8 +29,6 @@ pluginManager.dbConnection().then((countlyDb) => {
                 () => countlyDb.collection('app_users' + app._id).ensureIndex({"tsd": 1}, { background: true }, cb),
                 () => countlyDb.collection('app_users' + app._id).ensureIndex({"did": 1}, { background: true }, cb),
                 () => countlyDb.collection('app_users' + app._id).dropIndex("lac_1_ls_1", cb),
-                () => countlyDb.collection('app_user_merges' + app._id).ensureIndex({cd: 1}, {expireAfterSeconds: 60 * 60 * 3, background: true}, cb),
-                () => countlyDb.collection('metric_changes' + app._id).ensureIndex({ts: -1}, { background: true }, cb),
                 () => countlyDb.collection('metric_changes' + app._id).ensureIndex({ts: 1, "cc.o": 1}, { background: true }, cb),
                 () => countlyDb.collection('metric_changes' + app._id).ensureIndex({uid: 1}, { background: true }, cb)
             ];

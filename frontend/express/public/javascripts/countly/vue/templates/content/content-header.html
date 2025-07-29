@@ -13,14 +13,7 @@
                 :class="closeButtonIcon"
             />
         </div>
-        <el-switch
-            v-if="toggle"
-            v-tooltip.right="toggleTooltip"
-            v-model="toggleLocalValue"
-            class="cly-vue-content-builder-header__toggle"
-            test-id="journey-publish"
-            :disabled="isToggleDisabled"
-        />
+
         <div class="cly-vue-content-builder-header__info">
             <div
                 v-tooltip="inputTooltip"
@@ -69,17 +62,43 @@
             :label="status.label"
             :mode="status.mode"
         />
+
         <el-button
             v-if="!hideSaveButton"
+            id="journey-save-button"
             class="cly-vue-content-builder-header__save-button"
             data-test-id="content-header-save-button"
             :disabled="disableSaveButton"
             size="small"
             type="success"
+            v-tooltip="saveButtonTooltip"
             @click="onSaveButtonClick"
         >
             {{ saveButtonLabel }}
         </el-button>
+        <div
+            v-if="toggle"
+            style="display: inline-block; margin-left: 8px;"
+        >
+            <button
+                v-tooltip.down="toggleTooltip"
+                :class="[
+                    'cly-vue-content-builder-header__save-button',
+                    'el-button',
+                    'el-button--small',
+                    isToggleDisabled ? 'is-disabled' : '',
+                    toggleLocalValue ? 'el-button--warning' : 'el-button--success'
+                ]"
+                :data-test-id="'journey-' + (toggleLocalValue ? 'Pause' : 'Publish').toLowerCase() + '-button'"
+                :disabled="false"
+                @click="onPublishButtonClick"
+            >
+                <template v-if="toggleLocalValue">
+                    <i class="cly-is cly-is-pause" style="margin-right: 4px;"></i>
+                </template>
+                {{ toggleLocalValue ? 'Pause': 'Publish' }}
+            </button>
+        </div>
         <cly-more-options
             v-if="isOptionsButtonVisible"
             class="cly-vue-content-builder-header__options-button"
@@ -87,13 +106,14 @@
             size="small"
             @command="onCommand"
         >
-          <el-dropdown-item
-              v-for="(option, idx) in options"
-              :key="`cly-vue-content-builder-header-option-${idx}`"
-              class="cly-vue-content-builder-header__option"
-              :data-test-id="'more-button-option-' + option.value"
-              :command="option.value"
-              :disabled="option.disabled"
+
+            <el-dropdown-item
+                v-for="(option, idx) in options"
+                :key="`cly-vue-content-builder-header-option-${idx}`"
+                class="cly-vue-content-builder-header__option"
+                :data-test-id="'more-button-option-' + option.value"
+                :command="option.value"
+                :disabled="option.disabled"
             >
                 <span class="cly-vue-content-builder-header__option-label">
                     {{ option.label }}

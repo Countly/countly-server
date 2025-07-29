@@ -11,7 +11,6 @@ var pluginDependencies = require('./pluginDependencies.js'),
     apiCountlyConfig = require('../api/config', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
     fs = require('fs'),
-    url = require('url'),
     querystring = require('querystring'),
     cp = require('child_process'),
     async = require("async"),
@@ -61,7 +60,7 @@ var pluginManager = function pluginManager() {
     /**
      *  Events prefixed with [CLY]_ that should be recorded in drill
      */
-    this.internalDrillEvents = ["[CLY]_session"];
+    this.internalDrillEvents = ["[CLY]_session", "[CLY]_llm_interaction", "[CLY]_llm_interaction_feedback", "[CLY]_llm_tool_used", "[CLY]_llm_tool_usage_parameter"];
     /**
      *  Segments for events prefixed with [CLY]_ that should be omitted
      */
@@ -1877,9 +1876,21 @@ var pluginManager = function pluginManager() {
         }
 
         if (config && typeof config.mongodb === "string") {
-            var urlParts = url.parse(config.mongodb, true);
-            if (urlParts && urlParts.query && urlParts.query.maxPoolSize) {
-                maxPoolSize = urlParts.query.maxPoolSize;
+            try {
+                const urlObj = new URL(config.mongodb);
+                // mongo connection string with multiple host like 'mongodb://localhost:30000,localhost:30001' will cause an error
+
+                maxPoolSize = urlObj.searchParams.get('maxPoolSize') !== null ? urlObj.searchParams.get('maxPoolSize') : maxPoolSize;
+            }
+            catch (_err) {
+                // we catch the error here and try to process only the query params part
+                const urlParts = config.mongodb.split('?');
+
+                if (urlParts.length > 1) {
+                    const queryParams = new URLSearchParams(urlParts[1]);
+
+                    maxPoolSize = queryParams.get('maxPoolSize') !== null ? queryParams.get('maxPoolSize') : maxPoolSize;
+                }
             }
         }
         else {

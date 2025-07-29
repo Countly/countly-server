@@ -32,11 +32,11 @@
                     }]" data-test-id="sidebar-menuoptions-toogleleft"></i>
                 <a v-else-if="item.name === 'help-center'" :href="helpCenterLink" :target="helpCenterTarget"><i :class="['cly-icon-btn', item.icon]" data-test-id="sidebar-menu-helpcenter"></i></a>
                 <a v-else-if="item.name === 'countly-guides'" @click="onClick(item)" :href="helpCenterLink" :target="helpCenterTarget"><i class="cly-io-16 cly-is cly-is-book-open" :style="guidesButtonDynamicClass" @mouseover='guidesMouseOver' @mouseleave='guidesMouseLeave' data-test-id="sidebar-menu-countlyguides"></i></a>
+                <component v-else-if="item.component" :is="item.component"></component>
                 <i v-else :class="['cly-icon-btn', item.icon, {'cly-vue-sidebar__menu-option--selected': item.name === pseudoSelectedMenuOption}]"></i>
             </li>
         </ul>
     </div>
-
     <transition name="cly-vue-sidebar__slide-transition">
         <div
             :class="[
@@ -67,4 +67,10 @@
             </a>
         </div>
     </transition>
+
+    <component
+        v-if="customSidebarComponents"
+        v-for="customComponent in customSidebarComponents"
+        :key="customComponent.name"
+        :is="customComponent.component" />
 </div>

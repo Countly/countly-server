@@ -477,6 +477,8 @@ plugins.setConfigs("crashes", {
                             report.app_version_major = versionComponents.major;
                             report.app_version_minor = versionComponents.minor;
                             report.app_version_patch = versionComponents.patch;
+                            report.app_version_prerelease = versionComponents.prerelease;
+                            report.app_version_build = versionComponents.build;
                         }
                     }
 
@@ -526,6 +528,8 @@ plugins.setConfigs("crashes", {
                                     { name: "app_version_major", type: "n" },
                                     { name: "app_version_minor", type: "n" },
                                     { name: "app_version_patch", type: "n" },
+                                    { name: "app_version_prerelease", type: "l" },
+                                    { name: "app_version_build", type: "l" },
                                     { name: "ram_current", type: "n" },
                                     { name: "ram_total", type: "n" },
                                     { name: "disk_current", type: "n" },
@@ -549,6 +553,9 @@ plugins.setConfigs("crashes", {
                                             data[drillP[i].name] = report[drillP[i].name];
                                         }
                                     }
+                                }
+                                if (!('name' in report) && 'error' in report) {
+                                    data.name = (report.error.split('\n')[0] + "").trim();
                                 }
                                 if (report.custom) {
                                     for (let i in report.custom) {

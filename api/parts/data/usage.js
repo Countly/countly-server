@@ -7,7 +7,7 @@
 var usage = {},
     common = require('./../../utils/common.js'),
     geoip = require('geoip-lite'),
-    geocoder = require('offline-geocoder')(),
+    geocoder = require('./../../../bin/offline-geocoder/src/index.js')(),
     log = require('../../utils/log.js')('api:usage'),
     async = require('async'),
     plugins = require('../../../plugins/pluginManager.js'),
@@ -1117,6 +1117,16 @@ plugins.register("/sdk/user_properties", async function(ob) {
                 userProps.av_major = versionComponents.major;
                 userProps.av_minor = versionComponents.minor;
                 userProps.av_patch = versionComponents.patch;
+                userProps.av_prerel = versionComponents.prerelease;
+                userProps.av_build = versionComponents.build;
+            }
+            else {
+                log.w("Invalid app version format: %s", params.qstring.metrics._app_version);
+                userProps.av_major = null;
+                userProps.av_minor = null;
+                userProps.av_patch = null;
+                userProps.av_rel = null;
+                userProps.av_build = null;
             }
         }
     }

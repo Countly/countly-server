@@ -2,23 +2,25 @@
 	<div class="data-manager-create-event__segment bu-my-4 bg-cool-gray-10">
         <div class="bu-px-4 bu-py-5">
             <div class="bu-level">
-                <div class="text-small text-heading bu-level-left bu-level-item text-uppercase bu-mb-3">{{i18n('data-manager.segmentation.details')}}</div>
-                <div @click="removeSegment" class="bu-is-clickable text-small bu-level-item bu-level-right color-red-100">{{i18n('data-manager.segmentation.delete')}}</div>
+                <div :data-test-id="'event-drawer-event-segmentation-segmentation-details-label-' + segmentIndex" class="text-small text-heading bu-level-left bu-level-item text-uppercase bu-mb-3">{{i18n('data-manager.segmentation.details')}}</div>
+                <div :data-test-id="'event-drawer-event-segmentation-delete-segmentation-button-' + segmentIndex" @click="removeSegment" class="bu-is-clickable text-small bu-level-item bu-level-right color-red-100">{{i18n('data-manager.segmentation.delete')}}</div>
             </div>
 
-            <cly-form-field :label="i18n('data-manager.segmentation.key')">
+            <cly-form-field :test-id= "'event-drawer-event-segmentation-segmentation-key-label-'+ segmentIndex" :label="i18n('data-manager.segmentation.key')">
                 <el-input
+                :test-id= "'event-drawer-event-segmentation-event-segmentation-key-input-' + segmentIndex"
                 class="bu-pt-1"
                 v-model="segment.name" 
 		        :placeholder="i18n('data-manager.segmentation.enter.key')">
 		        </el-input>
             </cly-form-field>
 
-            <cly-form-field class="bu-pt-1" :label="i18n('data-manager.segmentation.type')">
-                <el-select style="width: 280px;" v-model="segment.type" :placeholder="i18n('data-manager.segmentation.select.type')">
+            <cly-form-field :test-id= "'event-drawer-event-segmentation-segmentation-type-label-' + segmentIndex" class="bu-pt-1" :label="i18n('data-manager.segmentation.type')">
+                <el-select :test-id="'event-drawer-event-segmentation-segmentation-dropdown-' +segmentIndex" style="width: 280px;" v-model="segment.type" :placeholder="i18n('data-manager.segmentation.select.type')">
                     <el-option
+                      :test-id="'event-drawer-event-segmentation-event-segmentation-type-' + segmentIndex"
                       class="bu-pt-1"
-                      v-for="item in dataTypes"
+                      v-for="(item, idx) in dataTypes"
                       :key="item.value"
                       :label="item.label"
                       :value="item.value">
@@ -28,14 +30,15 @@
 
 
             <div class="bu-mt-3">
-                <el-checkbox v-model="segment.required" size="medium">
-                    <span class="text-smallish color-cool-gray-100">{{i18n('data-manager.segmentation.required')}}</span>
+                <el-checkbox :test-id="'event-drawer-event-segmentation-required-segmentation-checkbox-' + segmentIndex" v-model="segment.required" size="medium">
+                    <span :test-id="'event-drawer-event-segmentation-required-segmentation-checkbox-label-' + segmentIndex" class="text-smallish color-cool-gray-100">{{i18n('data-manager.segmentation.required')}}</span>
                 </el-checkbox>
             </div>
 
             <div v-if="segment.required" class="text-medium text-heading">
                 <cly-form-field :label="i18n('data-manager.segmentation.description')" class="bu-pb-0">
                     <el-input
+                    :data-test-id="'event-drawer-event-segmentation-required-segmentation-description-input-' + segmentIndex"
                     class="bu-pt-1"
                     v-if="segment.required"
                     type="textarea"
@@ -63,6 +66,7 @@
 			v-model="segments[i]">
 		</data-manager-create-segment-input>
 		<el-button
+            data-test-id="event-drawer-event-segmentation-add-event-segmentation-button"
             class="bg-light-blue-100 color-blue-100"
 			size="small"
 			type="text"

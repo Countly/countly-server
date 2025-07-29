@@ -443,6 +443,10 @@
             placement: {
                 type: String,
                 default: 'auto'
+            },
+            tooltipClass: {
+                type: String,
+                default: ''
             }
         },
         computed: {
@@ -453,7 +457,7 @@
                 };
             }
         },
-        template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon" v-tooltip="tooltipConf"></i>'
+        template: '<i v-if="tooltip" :class="\'cly-vue-tooltip-icon \' + icon + \' \' + tooltipClass" v-tooltip="tooltipConf"></i>'
     }));
 
     Vue.component("cly-remover", countlyBaseComponent.extend({
@@ -741,6 +745,33 @@
                     });
                 }
 
+                var llmEvents = [];
+                llmEvents.push(
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_interaction'),
+                        "value": "[CLY]_llm_interaction"
+                    },
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_interaction_feedback'),
+                        "value": "[CLY]_llm_interaction_feedback"
+                    },
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_tool_used'),
+                        "value": "[CLY]_llm_tool_used"
+                    },
+                    {
+                        "label": this.i18n('internal-events.[CLY]_llm_tool_usage_parameter'),
+                        "value": "[CLY]_llm_tool_usage_parameter"
+                    }
+                );
+                if (llmEvents.length > 0) {
+                    preparedEventList.push({
+                        "label": this.i18n("llm.events"),
+                        "name": "llm",
+                        "options": llmEvents
+                    });
+                }
+
 
                 if (countlyGlobal.plugins.indexOf('compliance-hub') !== -1) {
                     preparedEventList.push({
@@ -775,6 +806,19 @@
                     });
                 }
 
+                if (countlyGlobal.plugins.indexOf('journey_engine') !== -1) {
+                    preparedEventList.push({
+                        "label": this.i18n('internal-events.[CLY]_journey_engine'),
+                        "name": "Journey",
+                        "options": [
+                            { label: this.i18n('internal-events.[CLY]_journey_engine_start'), value: '[CLY]_journey_engine_start' },
+                            { label: this.i18n('internal-events.[CLY]_journey_engine_end'), value: '[CLY]_journey_engine_end' },
+                            { label: this.i18n('internal-events.[CLY]_content_shown'), value: '[CLY]_content_shown' },
+                            { label: this.i18n('internal-events.[CLY]_content_interacted'), value: '[CLY]_content_interacted' }
+                        ]
+                    });
+                }
+
                 // {
                 //     "label": this.i18n('internal-events.[CLY]_push_action'),
                 //     "name": "[CLY]_push_action",
@@ -798,6 +842,16 @@
                     else {
                         self.isLoading = true;
                         $.when(countlyEvent.refreshEvents()).then(function() {
+                            const events = countlyEvent.getEvents();
+                            preparedEventList[1].options = events.map(function(event) {
+                                return {label: countlyCommon.unescapeHtml(event.name), value: event.key};
+                            });
+                            preparedEventList = preparedEventList.filter(function(evt) {
+                                return !(self.blacklistedEvents.includes(evt.name));
+                            });
+                            self.isLoading = false;
+                            resolve(preparedEventList);
+                        }, function() {
                             const events = countlyEvent.getEvents();
                             preparedEventList[1].options = events.map(function(event) {
                                 return {label: countlyCommon.unescapeHtml(event.name), value: event.key};
@@ -1442,7 +1496,7 @@
                             <el-button @click='stopAutoRefresh()'><i class='bu-ml-2 fa fa-stop-circle' :data-test-id='testId + \"-auto-refresh-toggle-button\"'></i> {{i18n('auto-refresh.stop')}}\
                             </el-button>\
                         </div>\
-                        <div v-else-if='!autoRefresh' class='bu-level-item'>\
+                        <div class='bu-level-item' :class=\"{ 'bu-is-hidden': autoRefresh }\">\
                             <el-switch v-model='autoRefresh' :test-id='testId + \"-auto-refresh-toggle\"'>\
                             </el-switch>\
                             <span class='cly-vue-auto-refresh-toggle__refresh--disabled' :data-test-id='testId + \"-auto-refresh-toggle-disabled-label\"'>{{i18n('auto-refresh.enable')}}</span>\

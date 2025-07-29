@@ -16,7 +16,7 @@ bash "$DIR/scripts/logo.sh";
 #update package index
 sudo apt-get update
 
-sudo apt-get install -y wget build-essential libkrb5-dev git sqlite3 unzip bzip2 shellcheck curl gnupg2 ca-certificates lsb-release
+sudo apt-get install -y wget build-essential libkrb5-dev git unzip bzip2 shellcheck curl gnupg2 ca-certificates lsb-release
 
 if [[ "$UBUNTU_YEAR" = "22" ]]; then
     sudo apt-get install -y python2 python2-dev
@@ -93,7 +93,7 @@ sudo apt-get install -y sendmail
 
 #install npm modules
 npm config set prefix "$DIR/../.local/"
-( cd "$DIR/.."; npm install argon2; npm install sqlite3 --build-from-source; npm install; )
+( cd "$DIR/.."; npm install argon2; npm install; )
 
 #install mongodb
 if ! command -v mongod &> /dev/null; then
@@ -161,6 +161,8 @@ bash "$DIR/scripts/countly.install.plugins.sh"
 
 #load city data into database
 nodejs "$DIR/scripts/loadCitiesInDb.js"
+nodejs "$DIR/offline-geocoder/scripts/download_geonames_data.js"
+nodejs "$DIR/offline-geocoder/scripts/import_geonames_mongodb.js"
 
 #get web sdk
 sudo countly update sdk-web

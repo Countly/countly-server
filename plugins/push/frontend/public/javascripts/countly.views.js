@@ -824,7 +824,21 @@
                 }
                 this.updatePlatformsBasedOnAppConfig();
                 this.estimateIfNecessary();
-                this.setEnabledUsers(this.$store.state.countlyPushNotificationDashboard.enabledUsers);
+
+                if (this.$store.state.countlyPushNotificationDashboard) {
+                    this.setEnabledUsers(this.$store.state.countlyPushNotificationDashboard.enabledUsers);
+                }
+                else {
+                    var self = this;
+
+                    countlyPushNotification.service.fetchDashboard()
+                        .then(function(response) {
+                            self.setEnabledUsers(response.enabledUsers);
+                        })
+                        .catch(function(error) {
+                            console.error(error);
+                        });
+                }
             },
             addButton: function() {
                 this.pushNotificationUnderEdit.message[this.activeLocalization].buttons.push({label: "", url: ""});

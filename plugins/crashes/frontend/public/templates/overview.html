@@ -215,10 +215,10 @@
                         </el-tab-pane>
                         <el-tab-pane name="crashfree-sessions" style="border-top-right-radius: 4px;" data-test-id="crashfree-sessions-graph">
                             <div class="bu-p-5" slot="label">
-                                <crash-tab-label :title="i18n('crashes.free-sessions')" :tooltip="i18n('crashes.help-free-sessions')" :data="dashboardData[{'both': 'crses', 'fatal': 'crfses', 'nonfatal': 'crnfses'}[activeFilter.fatality]]">
+                                <crash-tab-label :title="i18n('crashes.free-sessions')" :tooltip="i18n('crashes.help-free-sessions')" :data="dashboardData[{'both': 'crinv', 'fatal': 'crfinv', 'nonfatal': 'crnfinv'}[activeFilter.fatality]]">
                                 </crash-tab-label>
                             </div>
-                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('crses')" category="crashes"></cly-chart-line>
+                            <cly-chart-line xAxisLabelOverflow="unset" :option="chartData('crinv')" category="crashes"></cly-chart-line>
                         </el-tab-pane>
                     </el-tabs>
                 </div>
