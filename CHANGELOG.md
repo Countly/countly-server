@@ -14,6 +14,7 @@ Fixes:
 
 Enterprise Fixes:
 - [ldap] Error handling in ldap plugin on search error
+- [license] Display notification for non global admin user
 
 Dependencies:
 - Bump puppeteer from 24.14.0 to 24.15.0
