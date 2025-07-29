@@ -1,6 +1,22 @@
-## Version 25.03.XX
+## Version 25.03.XX
+
+Features:
+- [plugins] Add configuration warning tags to settings UI
+- [white-labeling] Add sidebar footer label setting to white labeling
+
 Fixes:
 - [core] Use correct rights validation for loyality
+- [crashes] Fix free session for home widget
+- [crashes] Use na for free session and free user when there's no data
+- [crashes] Fix trend and change calculation for crash stats
+
+Enterprise Fixes:
+- [ldap] Error handling in ldap plugin on search error
+
+Dependencies:
+- Bump puppeteer from 24.14.0 to 24.15.0
+- Bump mongodb from 6.17.0 to 6.18.0
+- Bump supertest from 7.1.3 to 7.1.4
 
 ## Version 25.03.11
 Fixes:
