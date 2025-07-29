@@ -108,7 +108,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(kube_pod_status_phase{namespace=\"countly\", phase=\"Running\"}) by (namespace)",
+          "expr": "sum(kube_pod_status_phase{namespace=\"countly\", phase=\"Running\"})",
           "refId": "A"
         }
       ],
@@ -1713,7 +1713,34 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(kube_pod_info{namespace=\"countly\"}, pod)",
+        "definition": "label_values(container_memory_usage_bytes{namespace=\"countly\"}, pod)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Service",
+        "multi": true,
+        "name": "service_name",
+        "options": [],
+        "query": {
+          "query": "label_values(container_memory_usage_bytes{namespace=\"countly\"}, pod)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "/^(countly-[^-]+)-.*/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(kube_pod_info{namespace=\"countly\",pod=~\"$service_name.*\"}, pod)",
         "hide": 0,
         "includeAll": true,
         "label": "Pod",
@@ -1721,7 +1748,7 @@
         "name": "pod",
         "options": [],
         "query": {
-          "query": "label_values(kube_pod_info{namespace=\"countly\"}, pod)",
+          "query": "label_values(kube_pod_info{namespace=\"countly\",pod=~\"$service_name.*\"}, pod)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,

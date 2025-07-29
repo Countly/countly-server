@@ -124,18 +124,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name)",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name)",
           "legendFormat": "{{service_name}} (otel.js)",
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"countly-frontend\"}[$__rate_interval]))",
-          "legendFormat": "countly-frontend (otelexpress.js)",
-          "refId": "B"
         }
       ],
       "title": "🔄 Request Rate by Service",
@@ -239,7 +230,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(20, sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name, http_route))",
+          "expr": "topk(20, sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name, http_route))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -350,7 +341,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.50, sum(rate(countly_http_server_duration_milliseconds_bucket{service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name, le))",
+          "expr": "histogram_quantile(0.50, sum(rate(countly_http_server_duration_milliseconds_bucket{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name, le))",
           "legendFormat": "{{service_name}} P50",
           "refId": "A"
         },
@@ -359,7 +350,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_http_server_duration_milliseconds_bucket{service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name, le))",
+          "expr": "histogram_quantile(0.95, sum(rate(countly_http_server_duration_milliseconds_bucket{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name, le))",
           "legendFormat": "{{service_name}} P95",
           "refId": "B"
         },
@@ -368,18 +359,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.99, sum(rate(countly_http_server_duration_milliseconds_bucket{service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name, le))",
+          "expr": "histogram_quantile(0.99, sum(rate(countly_http_server_duration_milliseconds_bucket{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name, le))",
           "legendFormat": "{{service_name}} P99",
           "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_request_duration_seconds_bucket{job=\"countly-frontend\"}[$__rate_interval])) by (le)) * 1000",
-          "legendFormat": "countly-frontend P95",
-          "refId": "D"
         }
       ],
       "title": "⏱️ Response Time Percentiles",
@@ -475,7 +457,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (http_route, service_name)",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (http_route, service_name)",
           "legendFormat": "{{service_name}} {{http_route}}",
           "refId": "A"
         }
@@ -568,7 +550,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(countly_http_server_duration_milliseconds_bucket{service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (http_route, service_name, le))",
+          "expr": "histogram_quantile(0.95, sum(rate(countly_http_server_duration_milliseconds_bucket{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (http_route, service_name, le))",
           "legendFormat": "{{service_name}} {{http_route}} P95",
           "refId": "A"
         }
@@ -676,7 +658,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"4..\",service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name)",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"4..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name)",
           "legendFormat": "{{service_name}} 4xx",
           "refId": "A"
         },
@@ -685,27 +667,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"5..\",service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name)",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"5..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name)",
           "legendFormat": "{{service_name}} 5xx",
           "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"countly-frontend\",http_response_status_code=~\"4..\"}[$__rate_interval])) / sum(rate(http_server_request_duration_seconds_count{job=\"countly-frontend\"}[$__rate_interval]))",
-          "legendFormat": "countly-frontend 4xx",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum(rate(http_server_request_duration_seconds_count{job=\"countly-frontend\",http_response_status_code=~\"5..\"}[$__rate_interval])) / sum(rate(http_server_request_duration_seconds_count{job=\"countly-frontend\"}[$__rate_interval]))",
-          "legendFormat": "countly-frontend 5xx",
-          "refId": "D"
         }
       ],
       "title": "💥 Error Rate by Status Code",
@@ -766,7 +730,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"[45]..\",service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name, http_route, http_status_code) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[$__rate_interval])) by (service_name, http_route)",
+          "expr": "sum(rate(countly_http_server_duration_milliseconds_count{http_status_code=~\"[45]..\",service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name, http_route, http_status_code) / sum(rate(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\",http_route!~\".*/(v1|v2)/(traces|metrics|logs).*\"}[${__rate_interval}])) by (service_name, http_route)",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -891,7 +855,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "http_request_in_flight{service_name=~\"$service\"}",
+          "expr": "http_request_in_flight{service_name=~\"$service_name\"}",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }
@@ -976,7 +940,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_size_bytes_bucket{service_name=~\"$service\"}[$__rate_interval])) by (service_name, le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_size_bytes_bucket{service_name=~\"$service_name\"}[${__rate_interval}])) by (service_name, le))",
           "legendFormat": "{{service_name}} Request P95",
           "refId": "A"
         },
@@ -985,7 +949,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum(rate(http_response_size_bytes_bucket{service_name=~\"$service\"}[$__rate_interval])) by (service_name, le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_response_size_bytes_bucket{service_name=~\"$service_name\"}[${__rate_interval}])) by (service_name, le))",
           "legendFormat": "{{service_name}} Response P95",
           "refId": "B"
         }
@@ -1078,7 +1042,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "http_connections_total{service_name=~\"$service\"}",
+          "expr": "http_connections_total{service_name=~\"$service_name\"}",
           "legendFormat": "{{service_name}} Connections",
           "refId": "A"
         }
@@ -1108,14 +1072,14 @@
         "includeAll": true,
         "label": "Service",
         "multi": true,
-        "name": "service",
+        "name": "service_name",
         "options": [],
         "query": {
           "query": "label_values(countly_http_server_duration_milliseconds_count, service_name)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
-        "regex": "",
+        "regex": "/^countly-.*/",
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"
@@ -1130,7 +1094,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(countly_http_server_duration_milliseconds_count{service_name=~\"$service\"}, http_route)",
+        "definition": "label_values(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\"}, http_route)",
         "hide": 0,
         "includeAll": true,
         "label": "Route",
@@ -1138,7 +1102,7 @@
         "name": "route",
         "options": [],
         "query": {
-          "query": "label_values(countly_http_server_duration_milliseconds_count{service_name=~\"$service\"}, http_route)",
+          "query": "label_values(countly_http_server_duration_milliseconds_count{service_name=~\"$service_name\"}, http_route)",
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
