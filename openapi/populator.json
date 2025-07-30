@@ -1,0 +1,584 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Populator API",
+    "description": "API for generating test data in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/populator/generate": {
+      "post": {
+        "summary": "Generate data",
+        "description": "Generate test data for an app",
+        "tags": [
+          "Data Population"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "template_id": {
+                    "type": "string",
+                    "description": "Template ID to use for data generation"
+                  },
+                  "sample_size": {
+                    "type": "integer",
+                    "description": "Number of users to generate"
+                  },
+                  "start_ts": {
+                    "type": "integer",
+                    "description": "Start timestamp for data"
+                  },
+                  "end_ts": {
+                    "type": "integer",
+                    "description": "End timestamp for data"
+                  },
+                  "environment_id": {
+                    "type": "string",
+                    "description": "Environment ID for generated data"
+                  },
+                  "environment_name": {
+                    "type": "string",
+                    "description": "Environment name for generated data"
+                  },
+                  "bulk_period": {
+                    "type": "integer",
+                    "description": "Time period for bulk data generation"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data generation initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/populator/stop": {
+      "post": {
+        "summary": "Stop data generation",
+        "description": "Stop an ongoing data generation process",
+        "tags": [
+          "Data Population"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data generation stopped successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/populator/status": {
+      "get": {
+        "summary": "Get population status",
+        "description": "Get status of data population for an app",
+        "tags": [
+          "Data Population"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Population status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "boolean",
+                      "description": "Whether population is currently running"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Status message"
+                    },
+                    "process": {
+                      "type": "object",
+                      "description": "Process information"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/populator/templates": {
+      "get": {
+        "summary": "Get templates",
+        "description": "Get available data population templates",
+        "tags": [
+          "Data Population"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "template_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by template ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platform_type",
+            "in": "query",
+            "required": false,
+            "description": "Filter by platform type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Templates retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "Template ID"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Template name"
+                      },
+                      "isDefault": {
+                        "type": "boolean",
+                        "description": "Whether this is a default template"
+                      },
+                      "up": {
+                        "type": "object",
+                        "description": "User properties configuration"
+                      },
+                      "events": {
+                        "type": "object",
+                        "description": "Events configuration"
+                      },
+                      "platformType": {
+                        "type": "array",
+                        "description": "Platform types",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/populator/template": {
+      "post": {
+        "summary": "Create template",
+        "description": "Create a new data population template",
+        "tags": [
+          "Data Population"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Template name",
+                    "required": true
+                  },
+                  "up": {
+                    "type": "object",
+                    "description": "User properties configuration"
+                  },
+                  "events": {
+                    "type": "object",
+                    "description": "Events configuration"
+                  },
+                  "platformType": {
+                    "type": "array",
+                    "description": "Platform types",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Template created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Created template ID"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/populator/template/delete": {
+      "post": {
+        "summary": "Delete template",
+        "description": "Delete a data population template",
+        "tags": [
+          "Data Population"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "template_id": {
+                    "type": "string",
+                    "description": "Template ID to delete",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Template deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/populator/environments": {
+      "get": {
+        "summary": "Get environments",
+        "description": "Get available data population environments",
+        "tags": [
+          "Data Population"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "template_id",
+            "in": "query",
+            "required": true,
+            "description": "Template ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Environments retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "Environment ID"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Environment name"
+                      },
+                      "created_at": {
+                        "type": "integer",
+                        "description": "Creation timestamp"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/populator/environment/create": {
+      "post": {
+        "summary": "Create environment",
+        "description": "Create a new data population environment",
+        "tags": [
+          "Data Population"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "template_id": {
+                    "type": "string",
+                    "description": "Template ID",
+                    "required": true
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Environment name",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Environment created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Created environment ID"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/populator/environment/delete": {
+      "post": {
+        "summary": "Delete environment",
+        "description": "Delete a data population environment",
+        "tags": [
+          "Data Population"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "environment_id": {
+                    "type": "string",
+                    "description": "Environment ID to delete",
+                    "required": true
+                  },
+                  "template_id": {
+                    "type": "string",
+                    "description": "Template ID",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Environment deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    }
+  ]
+}

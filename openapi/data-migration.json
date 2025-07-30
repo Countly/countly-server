@@ -1,0 +1,743 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Data Migration API",
+    "description": "API for migrating data between Countly Server instances",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/datamigration/export": {
+      "post": {
+        "summary": "Export data",
+        "description": "Export data from a Countly server for migration",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "apps": {
+                    "type": "array",
+                    "description": "Array of app IDs to export",
+                    "required": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "server_address": {
+                    "type": "string",
+                    "description": "Address of the target server",
+                    "required": false
+                  },
+                  "server_token": {
+                    "type": "string",
+                    "description": "Authentication token for the target server",
+                    "required": false
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "Email to notify when export is complete",
+                    "required": false
+                  },
+                  "redirect_traffic": {
+                    "type": "boolean",
+                    "description": "Whether to redirect traffic to the target server",
+                    "required": false
+                  },
+                  "aditional_files": {
+                    "type": "boolean",
+                    "description": "Whether to include additional files",
+                    "required": false
+                  },
+                  "only_export": {
+                    "type": "boolean",
+                    "description": "Whether to only export data without sending to target server",
+                    "required": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Export initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "exportid": {
+                          "type": "string",
+                          "description": "ID of the export job"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/datamigration/import": {
+      "post": {
+        "summary": "Import data",
+        "description": "Import data from a source Countly server",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "exportid": {
+                    "type": "string",
+                    "description": "ID of the export job",
+                    "required": true
+                  },
+                  "archive": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Exported data archive file",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Import initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "importid": {
+                          "type": "string",
+                          "description": "ID of the import job"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/datamigration/stop_export": {
+      "post": {
+        "summary": "Stop export",
+        "description": "Stop an ongoing data export",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "exportid": {
+                    "type": "string",
+                    "description": "ID of the export job to stop",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Export stopped successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/datamigration/stop_import": {
+      "post": {
+        "summary": "Stop import",
+        "description": "Stop an ongoing data import",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "importid": {
+                    "type": "string",
+                    "description": "ID of the import job to stop",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Import stopped successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/datamigration/delete_export": {
+      "post": {
+        "summary": "Delete export",
+        "description": "Delete an export job and its data",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "exportid": {
+                    "type": "string",
+                    "description": "ID of the export job to delete",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Export deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/datamigration/delete_import": {
+      "post": {
+        "summary": "Delete import",
+        "description": "Delete an import job and its data",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "importid": {
+                    "type": "string",
+                    "description": "ID of the import job to delete",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Import deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/datamigration/download": {
+      "get": {
+        "summary": "Download export",
+        "description": "Download an exported data archive",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exportid",
+            "in": "query",
+            "required": true,
+            "description": "ID of the export job to download",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export archive downloaded successfully",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary",
+                  "description": "Export archive file"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/datamigration/export_list": {
+      "get": {
+        "summary": "Get exports list",
+        "description": "Get a list of all export jobs",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "Export job ID"
+                      },
+                      "app_ids": {
+                        "type": "array",
+                        "description": "App IDs included in export",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "app_names": {
+                        "type": "array",
+                        "description": "App names included in export",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "status": {
+                        "type": "integer",
+                        "description": "Export status code"
+                      },
+                      "step": {
+                        "type": "integer",
+                        "description": "Current step in export process"
+                      },
+                      "created_at": {
+                        "type": "integer",
+                        "description": "Creation timestamp"
+                      },
+                      "stopped": {
+                        "type": "boolean",
+                        "description": "Whether the export was stopped"
+                      },
+                      "only_export": {
+                        "type": "boolean",
+                        "description": "Whether this is an export-only job"
+                      },
+                      "server_address": {
+                        "type": "string",
+                        "description": "Target server address"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/datamigration/import_list": {
+      "get": {
+        "summary": "Get imports list",
+        "description": "Get a list of all import jobs",
+        "tags": [
+          "Data Migration"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": false,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "auth_token",
+            "in": "query",
+            "required": false,
+            "description": "Authentication token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Import list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "Import job ID"
+                      },
+                      "app_ids": {
+                        "type": "array",
+                        "description": "App IDs included in import",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "app_names": {
+                        "type": "array",
+                        "description": "App names included in import",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "status": {
+                        "type": "integer",
+                        "description": "Import status code"
+                      },
+                      "step": {
+                        "type": "integer",
+                        "description": "Current step in import process"
+                      },
+                      "created_at": {
+                        "type": "integer",
+                        "description": "Creation timestamp"
+                      },
+                      "stopped": {
+                        "type": "boolean",
+                        "description": "Whether the import was stopped"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    }
+  ]
+}

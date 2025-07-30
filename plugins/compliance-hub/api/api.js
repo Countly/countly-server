@@ -142,7 +142,7 @@ const FEATURE_NAME = 'compliance_hub';
                     }
                 }
                 common.db.collection("app_users" + params.qstring.app_id).findOne(query, function(err, res) {
-                    common.returnOutput(params, res.consent || {});
+                    common.returnOutput(params, res?.consent || {});
                 });
             });
             break;
