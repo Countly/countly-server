@@ -1,3 +1,7 @@
+## 25.xx
+Dependencies:
+- Remove SQLite
+
 ## Version 25.03.12
 Features:
 - [plugins] Add configuration warning tags to settings UI
@@ -19,7 +23,6 @@ Dependencies:
 - Bump mongodb from 6.17.0 to 6.18.0
 - Bump puppeteer from 24.14.0 to 24.15.0
 - Bump supertest from 7.1.3 to 7.1.4
-
 
 ## Version 25.03.11
 Fixes:
@@ -116,7 +119,6 @@ Fixes:
 - [hooks] Added null check for incoming data
 - [push] Fix external drawer initialization
 - [times-of-day] Fix chart component
-
 Enterprise Fixes:
 - [content] Asset URL was wrongly constructed when user switches between apps
 - [ab-testing] Updates

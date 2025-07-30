@@ -71,3 +71,42 @@
         margin-left: 8px;
     }
 }
+
+.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-success {
+    color: #6c3 !important;
+}
+
+.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-warning {
+    color: #fc0 !important;
+}
+
+.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-danger {
+    color: #f55 !important;
+}
+
+.cly-vue-tooltip-icon.ion.ion-help-circled.tooltip-neutral {
+    color: #A7AEB8 !important;
+}
+
+.preset-button {
+  border-radius: 20px; // pill shape
+  padding: 6px 18px;
+  font-weight: 500;
+  font-size: 14px;
+  background-color: #f0f0f0;
+  color: #606266;
+  border: 1px solid #dcdfe6;
+  transition: all 0.2s ease;
+
+  &.active {
+    background-color: #12AF51; // Element UI's "success"
+    color: #fff;
+    border-color: #12AF51;
+  }
+
+  &:hover:not(.active) {
+    background-color: #e6f7ff;
+    color: #409eff;
+    border-color: #c6e2ff;
+  }
+}
