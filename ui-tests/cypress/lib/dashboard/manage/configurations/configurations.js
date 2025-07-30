@@ -329,7 +329,7 @@ const verifyPageElements = () => {
         value: "every hour"
     });
 
-    cy.scrollPageToBottom();
+    cy.scrollPageBy10cm();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.REQUEST_THRESHOLD}).SELECTED_SUBFEATURE_TITLE,
@@ -396,6 +396,8 @@ const verifyPageElements = () => {
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.COUNTRY_DATA}).SELECTED_SUBFEATURE_TITLE,
         labelText: "Track country data",
     });
+    
+    cy.scrollPageBy10cm();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.COUNTRY_DATA}).SELECTED_SUBFEATURE_DESCRIPTION,
