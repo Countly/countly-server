@@ -90,7 +90,7 @@ export type PushEventDTO = Omit<DTO<PushEvent>,"credentials"> & { credentials: C
 export type ResultEventDTO = Omit<DTO<ResultEvent>,"credentials"> & { credentials: CredentialsDTO };
 export type AutoTriggerEventDTO = DTO<AutoTriggerEvent>;
 
-export type PushEventHandler = (pushes: PushEvent[]) => Promise<void>;
-export type ScheduleEventHandler = (schedules: ScheduleEvent[]) => Promise<void>;
-export type ResultEventHandler = (results: ResultEvent[]) => Promise<void>;
-export type AutoTriggerEventHandler = (autoTriggers: AutoTriggerEvent[]) => Promise<void>;
+export type PushEventHandler = (pushes: PushEvent[]) => Promise<any>;
+export type ScheduleEventHandler = (schedules: ScheduleEvent[]) => Promise<any>;
+export type ResultEventHandler = (results: ResultEvent[]) => Promise<any>;
+export type AutoTriggerEventHandler = (autoTriggers: AutoTriggerEvent[]) => Promise<any>;

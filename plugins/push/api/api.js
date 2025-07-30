@@ -7,18 +7,16 @@
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api'),
-    { Message, State, TriggerKind, fields, platforms, ValidationError, PushError, DBMAP, guess } = require('./send'),
+    { Message, TriggerKind, fields, platforms, ValidationError, PushError, DBMAP, guess } = require('./send'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
     { onTokenSession, onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push'),
     { autoOnCohort, /*autoOnCohortDeletion,*/ autoOnEvent } = require('./api-auto'),
-    { /*apiPop,*/ apiPush } = require('./api-tx'),
+    { apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
     { estimate, test, create, update, toggle, remove, all, one, mime, user, notificationsForUser, periodicStats } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
-    Sender = require('./send/sender'),
     FEATURE_NAME = 'push',
-    // PUSH_CACHE_GROUP = 'P',
     PUSH = {
         FEATURE_NAME
     },
@@ -43,9 +41,6 @@ const plugins = require('../../pluginManager'),
                 toggle: [validateUpdate, toggle],
                 remove: [validateDelete, remove],
                 push: [validateUpdate, apiPush],
-                // pop: [validateDelete, apiPop],
-                // PUT: [validateCreate, create],
-                // POST: [validateUpdate, update, '_id'],
             }
         }
     };
@@ -84,8 +79,8 @@ plugins.setConfigs(FEATURE_NAME, {
 
 plugins.internalEvents.push('[CLY]_push_sent');
 plugins.internalEvents.push('[CLY]_push_action');
-plugins.internalDrillEvents.push('[CLY]_push_action');
 plugins.internalDrillEvents.push('[CLY]_push_sent');
+plugins.internalDrillEvents.push('[CLY]_push_action');
 
 /**
  * @param {MongoDb} db
@@ -104,9 +99,8 @@ async function queueInitializer(db) {
                 .catch(e => logError("Error while processing AutoTriggerEvents", e)),
         );
     }
-    catch(err) {
-        console.error("ERROR ON KAFKA INITIALIZATION");
-        // TODO: log the error
+    catch(e) {
+        logError("Error while initializing Push queue", e);
     }
 }
 
