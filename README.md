@@ -119,7 +119,7 @@ If you like Countly, why not use one of our badges and give a link back to us?
 
 
 ## License
-This project is licensed under **AGPL v3** with modified Section 7., see the [LICENSE](LICENSE) file for more details.
+This project is licensed under **AGPL-3.0** with modified Section 7., see the [LICENSE](LICENSE) file for more details.
 
 ## 💚 Thanks
 
