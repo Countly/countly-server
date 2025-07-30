@@ -116,3 +116,7 @@ If you like Countly, why not use one of our badges and give a link back to us?
 <a href="https://countly.com/?utm_source=badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/light.svg?v2" alt="Countly - Product Analytics" /></a>
 
     <a href="https://countly.com/?utm_source=badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/light.svg" alt="Countly - Product Analytics" /></a>
+
+## 💚 Thanks
+
+This project is tested with BrowserStack.
