@@ -11,307 +11,206 @@
     }
   ],
   "paths": {
-    "/i/remote-config/create": {
-      "post": {
-        "summary": "Create remote config",
-        "description": "Create a new remote configuration",
-        "tags": [
-          "Remote Configuration"
-        ],
-        "parameters": [
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "description": "Name of the configuration",
-                    "required": true
-                  },
-                  "parameters": {
-                    "type": "object",
-                    "description": "Configuration parameters as key-value pairs",
-                    "required": true
-                  },
-                  "conditions": {
-                    "type": "array",
-                    "description": "Targeting conditions for this configuration",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string",
-                          "description": "Condition type (e.g., 'event', 'user', 'device')"
-                        },
-                        "operator": {
-                          "type": "string",
-                          "description": "Comparison operator (e.g., 'eq', 'gt', 'lt')"
-                        },
-                        "value": {
-                          "type": "string",
-                          "description": "Value to compare against"
-                        },
-                        "key": {
-                          "type": "string",
-                          "description": "Key to check in user properties"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Remote config created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "_id": {
-                      "type": "string",
-                      "description": "ID of the created configuration"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/i/remote-config/update": {
-      "post": {
-        "summary": "Update remote config",
-        "description": "Update an existing remote configuration",
-        "tags": [
-          "Remote Configuration"
-        ],
-        "parameters": [
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "config_id": {
-                    "type": "string",
-                    "description": "ID of the configuration to update",
-                    "required": true
-                  },
-                  "name": {
-                    "type": "string",
-                    "description": "Updated name of the configuration"
-                  },
-                  "parameters": {
-                    "type": "object",
-                    "description": "Updated configuration parameters as key-value pairs"
-                  },
-                  "conditions": {
-                    "type": "array",
-                    "description": "Updated targeting conditions",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string"
-                        },
-                        "operator": {
-                          "type": "string"
-                        },
-                        "value": {
-                          "type": "string"
-                        },
-                        "key": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  },
-                  "is_active": {
-                    "type": "boolean",
-                    "description": "Whether the configuration is active"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Remote config updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "example": "Success"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/i/remote-config/delete": {
-      "post": {
-        "summary": "Delete remote config",
-        "description": "Delete an existing remote configuration",
-        "tags": [
-          "Remote Configuration"
-        ],
-        "parameters": [
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "config_id": {
-                    "type": "string",
-                    "description": "ID of the configuration to delete",
-                    "required": true
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Remote config deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "example": "Success"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/i/remote-config/toggle": {
-      "post": {
-        "summary": "Toggle remote config",
-        "description": "Toggle the active state of a remote configuration",
-        "tags": [
-          "Remote Configuration"
-        ],
-        "parameters": [
-          {
-            "name": "app_id",
-            "in": "query",
-            "required": true,
-            "description": "App ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "config_id": {
-                    "type": "string",
-                    "description": "ID of the configuration to toggle",
-                    "required": true
-                  },
-                  "is_active": {
-                    "type": "boolean",
-                    "description": "New active state",
-                    "required": true
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Remote config toggled successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "example": "Success"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/o/remote-config/list": {
+    "/o/sdk": {
       "get": {
-        "summary": "List remote configs",
-        "description": "Get a list of all remote configurations for an app",
+        "summary": "Get remote configs in SDK",
+        "description": "Fetch remote config values for SDK based on the method parameter",
         "tags": [
-          "Remote Configuration"
+          "Remote Configuration SDK"
         ],
         "parameters": [
+          {
+            "name": "method",
+            "in": "query",
+            "required": true,
+            "description": "Method type (rc, ab, or fetch_remote_config)",
+            "schema": {
+              "type": "string",
+              "enum": ["rc", "ab", "fetch_remote_config"]
+            }
+          },
+          {
+            "name": "app_key",
+            "in": "query",
+            "required": true,
+            "description": "APP_KEY of an app for which to fetch remote config",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "device_id",
+            "in": "query",
+            "required": true,
+            "description": "Your generated or device specific unique device ID to identify user",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timestamp",
+            "in": "query",
+            "required": false,
+            "description": "10 digit UTC timestamp for recording past data",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "required": false,
+            "description": "Name of the user's city",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country_code",
+            "in": "query",
+            "required": false,
+            "description": "ISO Country code for the user's country",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "description": "Users lat, lng",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tz",
+            "in": "query",
+            "required": false,
+            "description": "Users timezone",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ip_address",
+            "in": "query",
+            "required": false,
+            "description": "IP address of user to determine user location, if not provided, countly will try to establish ip address based on connection data",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keys",
+            "in": "query",
+            "required": false,
+            "description": "JSON array of keys - only the values mentioned in the array will be fetched",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "omit_keys",
+            "in": "query",
+            "required": false,
+            "description": "JSON array of keys - only the values mentioned in the array will not be fetched",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "metrics",
+            "in": "query",
+            "required": false,
+            "description": "JSON object with key value pairs",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "oi",
+            "in": "query",
+            "required": false,
+            "description": "To indicate that user will be enrolled in the returned keys if eligible (for method=rc)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remote configs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "description": "Remote config values (for method=rc or fetch_remote_config)",
+                      "additionalProperties": true,
+                      "example": {
+                        "default_colors": {
+                          "button": "#f77a22",
+                          "buttonColor": "#ffffff",
+                          "titleColor": "#2eb52b"
+                        },
+                        "display_onboarding": true,
+                        "image_alt": "The image cannot be loaded"
+                      }
+                    },
+                    {
+                      "type": "string",
+                      "description": "Success message (for method=ab)",
+                      "example": "Successfully enrolled in ab tests"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error while fetching remote config data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Error while fetching remote config data."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o": {
+      "get": {
+        "summary": "Get remote configs",
+        "description": "Get all the remote configs and the conditions in the dashboard",
+        "tags": [
+          "Remote Configuration Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "method",
+            "in": "query",
+            "required": true,
+            "description": "Method type",
+            "schema": {
+              "type": "string",
+              "enum": ["remote-config"]
+            }
+          },
           {
             "name": "app_id",
             "in": "query",
             "required": true,
-            "description": "App ID",
+            "description": "Application ID",
             "schema": {
               "type": "string"
             }
@@ -323,42 +222,127 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "_id": {
-                        "type": "string",
-                        "description": "Configuration ID"
-                      },
-                      "name": {
-                        "type": "string",
-                        "description": "Name of the configuration"
-                      },
-                      "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "parameters": {
+                      "type": "array",
+                      "description": "All the parameter information",
+                      "items": {
                         "type": "object",
-                        "description": "Configuration parameters"
-                      },
-                      "conditions": {
-                        "type": "array",
-                        "description": "Targeting conditions"
-                      },
-                      "is_active": {
-                        "type": "boolean",
-                        "description": "Whether the configuration is active"
-                      },
-                      "created_at": {
-                        "type": "integer",
-                        "description": "Creation timestamp"
-                      },
-                      "updated_at": {
-                        "type": "integer",
-                        "description": "Last update timestamp"
-                      },
-                      "last_modified_by": {
-                        "type": "string",
-                        "description": "ID of the user who last modified the configuration"
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "Parameter ID"
+                          },
+                          "parameter_key": {
+                            "type": "string",
+                            "description": "Parameter key"
+                          },
+                          "default_value": {
+                            "description": "Default value of the parameter"
+                          },
+                          "conditions": {
+                            "type": "array",
+                            "description": "Conditions associated with parameter",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "condition_id": {
+                                  "type": "string",
+                                  "description": "Condition ID"
+                                },
+                                "value": {
+                                  "description": "Value for this condition"
+                                }
+                              }
+                            }
+                          },
+                          "description": {
+                            "type": "string",
+                            "description": "Parameter description"
+                          }
+                        }
                       }
+                    },
+                    "conditions": {
+                      "type": "array",
+                      "description": "All the condition information",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "description": "Condition ID"
+                          },
+                          "condition_name": {
+                            "type": "string",
+                            "description": "Condition name"
+                          },
+                          "condition_color": {
+                            "type": "number",
+                            "description": "Condition color"
+                          },
+                          "condition": {
+                            "type": "string",
+                            "description": "JSON string of condition criteria"
+                          },
+                          "condition_definition": {
+                            "type": "string",
+                            "description": "Human readable condition definition"
+                          },
+                          "seed_value": {
+                            "type": "string",
+                            "description": "Seed value for randomization"
+                          },
+                          "used_in_parameters": {
+                            "type": "number",
+                            "description": "Number of parameters using this condition"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "example": {
+                    "parameters": [
+                      {
+                        "_id": "5c3b064763c6920705d94e9b",
+                        "parameter_key": "button_color",
+                        "default_value": ["#000"],
+                        "conditions": [
+                          {
+                            "condition_id": "5c3f8d50a9c3f071cecc8b87",
+                            "value": ["#FFF"]
+                          }
+                        ],
+                        "description": "Button color of the apps"
+                      }
+                    ],
+                    "conditions": [
+                      {
+                        "_id": "5c3f8d50a9c3f071cecc8b87",
+                        "condition_name": "android",
+                        "condition_color": 2,
+                        "condition": "{\"up.d\":{\"$in\":[\"Asus Nexus 10\"]}}",
+                        "condition_definition": "Device = Asus Nexus 10",
+                        "seed_value": "",
+                        "used_in_parameters": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error while fetching remote config data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Error while fetching remote config data."
                     }
                   }
                 }
@@ -368,28 +352,201 @@
         }
       }
     },
-    "/i/remote-config/lookup": {
-      "post": {
-        "summary": "Lookup remote configs",
-        "description": "Get applicable remote configurations for a user",
+    "/i/remote-config/add-parameter": {
+      "get": {
+        "summary": "Add a parameter",
+        "description": "Add parameter to remote config",
         "tags": [
-          "Remote Configuration"
+          "Remote Configuration Parameters"
         ],
         "parameters": [
           {
-            "name": "app_key",
+            "name": "app_id",
             "in": "query",
             "required": true,
-            "description": "App key",
+            "description": "Application id",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "device_id",
+            "name": "parameter",
             "in": "query",
             "required": true,
-            "description": "Device ID",
+            "description": "Parameter information as JSON string",
+            "schema": {
+              "type": "string"
+            },
+            "example": "{\"parameter_key\":\"new_feature_enabled\",\"default_value\":false,\"conditions\":[]}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Parameter added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "number",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid parameter: parameter_key"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to add parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The parameter already exists"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/remote-config/update-parameter": {
+      "get": {
+        "summary": "Update a parameter",
+        "description": "Update remote config parameter",
+        "tags": [
+          "Remote Configuration Parameters"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "parameter_id",
+            "in": "query",
+            "required": true,
+            "description": "Id of the parameter which is to be updated",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "parameter",
+            "in": "query",
+            "required": true,
+            "description": "Parameter information as JSON string",
+            "schema": {
+              "type": "string"
+            },
+            "example": "{\"parameter_key\":\"feature_enabled\",\"default_value\":true,\"conditions\":[]}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Parameter updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "number",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid parameter: parameter_key"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to update parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The parameter already exists"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/remote-config/remove-parameter": {
+      "get": {
+        "summary": "Remove a parameter",
+        "description": "Remove a remote config parameter",
+        "tags": [
+          "Remote Configuration Parameters"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "parameter_id",
+            "in": "query",
+            "required": true,
+            "description": "Id of the parameter which is to be removed",
             "schema": {
               "type": "string"
             }
@@ -397,14 +554,349 @@
         ],
         "responses": {
           "200": {
-            "description": "Applicable remote configs retrieved successfully",
+            "description": "Parameter removed successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": {
-                    "type": "object",
-                    "description": "Configuration parameters"
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to remove parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Failed to remove parameter"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/remote-config/add-condition": {
+      "get": {
+        "summary": "Add a condition",
+        "description": "Add remote config condition",
+        "tags": [
+          "Remote Configuration Conditions"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "condition",
+            "in": "query",
+            "required": true,
+            "description": "Condition information as JSON string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Condition added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "description": "Condition ID"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "number",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid parameter: condition_name"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to add condition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The condition already exists"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/remote-config/update-condition": {
+      "get": {
+        "summary": "Update a condition",
+        "description": "Update remote config condition",
+        "tags": [
+          "Remote Configuration Conditions"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "condition_id",
+            "in": "query",
+            "required": true,
+            "description": "Id of the condition that is to be updated",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "condition",
+            "in": "query",
+            "required": true,
+            "description": "Condition information as JSON string",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Condition updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "number",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid parameter: condition_name"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to update condition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "The condition already exists"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/remote-config/remove-condition": {
+      "get": {
+        "summary": "Remove a condition",
+        "description": "Remove remote config condition",
+        "tags": [
+          "Remote Configuration Conditions"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "condition_id",
+            "in": "query",
+            "required": true,
+            "description": "Id of the condition that is to be removed",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Condition removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to remove condition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Failed to remove condition"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/remote-config/add-complete-config": {
+      "post": {
+        "summary": "Add complete config",
+        "description": "Add a complete remote configuration including parameters and conditions, used to publish experiment results. Replaces the default value of a parameter in remote config with the winning variant from AB Test",
+        "tags": [
+          "Remote Configuration"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "config",
+            "in": "query",
+            "required": true,
+            "description": "JSON string representing the complete config object",
+            "schema": {
+              "type": "string"
+            },
+            "example": "{\"parameters\":[{\"parameter_key\":\"feature_enabled\",\"exp_value\":true,\"description\":\"Enable new feature\"}],\"condition\":{\"condition_name\":\"New Users\",\"condition\":{\"user_properties.is_new\":true}}}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Complete config added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "number",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid config"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error while adding the config",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "number",
+                      "example": 500
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Error while adding the config."
+                    }
                   }
                 }
               }
