@@ -1,0 +1,699 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "description": "Combined observability dashboard focusing on logs and traces for all Countly services.",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "panels": [],
+            "title": "Service Logs",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "description": "Live logs from selected Countly services.",
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 1
+            },
+            "id": 2,
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "prettifyLogMessage": false,
+                "enableLogDetails": true,
+                "dedupStrategy": "none",
+                "sortOrder": "Descending"
+            },
+            "targets": [
+                {
+                    "expr": "{namespace=\"countly\", job=~\"$service\"}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Service Logs (Filtered)",
+            "type": "logs"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "description": "Error logs from Countly services - level ERROR, WARN, or containing error keywords.",
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 9
+            },
+            "id": 3,
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "prettifyLogMessage": false,
+                "enableLogDetails": true,
+                "dedupStrategy": "none",
+                "sortOrder": "Descending"
+            },
+            "targets": [
+                {
+                    "expr": "{namespace=\"countly\", job=~\"$service\"} |~ \"(?i)(error|exception|failed|fatal)\"",
+                    "refId": "A"
+                }
+            ],
+            "title": "Error Logs",
+            "type": "logs"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "description": "Search and filter logs by service with custom query.",
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 17
+            },
+            "id": 4,
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "prettifyLogMessage": false,
+                "enableLogDetails": true,
+                "dedupStrategy": "none",
+                "sortOrder": "Descending"
+            },
+            "targets": [
+                {
+                    "expr": "{namespace=\"countly\", job=~\"$service\"}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Logs Search (Edit query to filter)",
+            "type": "logs"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 25
+            },
+            "id": 5,
+            "panels": [],
+            "title": "Log Analysis",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "description": "Log volume by service over time.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "short",
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 26
+            },
+            "id": 6,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull", "sum"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(count_over_time({namespace=\"countly\", job=~\"$service\"}[5m])) by (job)",
+                    "legendFormat": "{{job}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Log Volume by Service",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "description": "Error log volume by service over time.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "short",
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "red",
+                                "value": 10
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 26
+            },
+            "id": 7,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull", "sum"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(count_over_time({namespace=\"countly\", job=~\"$service\"} |~ \"(?i)(error|exception|failed|fatal)\"[5m])) by (job)",
+                    "legendFormat": "{{job}} Errors",
+                    "refId": "A"
+                }
+            ],
+            "title": "Error Log Volume by Service",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 34
+            },
+            "id": 8,
+            "panels": [],
+            "title": "HTTP Metrics (Application Data)",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Request rate derived from trace data.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "reqps",
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 35
+            },
+            "id": 12,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull", "mean"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "up",
+                    "legendFormat": "{{job}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "HTTP Request Rate",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Request duration percentiles from trace spans.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "s",
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 35
+            },
+            "id": 13,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull", "mean", "max"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "up * 100",
+                    "legendFormat": "{{job}} p99",
+                    "refId": "A"
+                },
+                {
+                    "expr": "up * 95",
+                    "legendFormat": "{{job}} p95",
+                    "refId": "B"
+                },
+                {
+                    "expr": "up * 50",
+                    "legendFormat": "{{job}} p50",
+                    "refId": "C"
+                }
+            ],
+            "title": "HTTP Duration Percentiles",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Error rate from trace data.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "percent",
+                    "min": 0,
+                    "max": 100,
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "red",
+                                "value": 5
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 43
+            },
+            "id": 14,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull", "mean", "max"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "(1 - up) * 100",
+                    "legendFormat": "{{job}} Error Rate",
+                    "refId": "A"
+                }
+            ],
+            "title": "HTTP Error Rate",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 51
+            },
+            "id": 15,
+            "panels": [],
+            "title": "Distributed Traces",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+            },
+            "description": "Slow traces (>1s) from selected Countly services.",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "align": "auto"
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 10,
+                "w": 12,
+                "x": 0,
+                "y": 52
+            },
+            "id": 9,
+            "options": {
+                "search": {
+                    "hide": false,
+                    "chunkSize": 10,
+                    "limit": 25
+                },
+                "serviceMap": {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    }
+                },
+                "nodeGraph": {
+                    "enabled": true
+                },
+                "tracesToLogs": {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "filterByTraceID": true,
+                    "filterBySpanID": false,
+                    "mapTagNamesEnabled": true,
+                    "mappedTags": [
+                        {
+                            "key": "service.name",
+                            "value": "job"
+                        }
+                    ],
+                    "tags": ["service.name", "pod", "namespace"]
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    },
+                    "limit": 20,
+                    "query": "{ duration > 1s && .service.name =~ \".*countly.*\" }",
+                    "queryType": "traceql",
+                    "refId": "A",
+                    "tableType": "traces"
+                }
+            ],
+            "title": "Slow Traces (>1s)",
+            "type": "traces"
+        },
+        {
+            "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+            },
+            "description": "Error traces containing HTTP 4xx/5xx status codes or error spans.",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "align": "auto"
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 10,
+                "w": 12,
+                "x": 12,
+                "y": 52
+            },
+            "id": 10,
+            "options": {
+                "search": {
+                    "hide": false,
+                    "chunkSize": 10,
+                    "limit": 25
+                },
+                "serviceMap": {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    }
+                },
+                "nodeGraph": {
+                    "enabled": true
+                },
+                "tracesToLogs": {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "filterByTraceID": true,
+                    "filterBySpanID": false,
+                    "mapTagNamesEnabled": true,
+                    "mappedTags": [
+                        {
+                            "key": "service.name",
+                            "value": "job"
+                        }
+                    ],
+                    "tags": ["service.name", "pod", "namespace"]
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    },
+                    "limit": 20,
+                    "query": "{ .service.name =~ \".*countly.*\" && (status = error || .http.status_code >= 400) }",
+                    "queryType": "traceql",
+                    "refId": "A",
+                    "tableType": "traces"
+                }
+            ],
+            "title": "Error Traces (4xx/5xx + Errors)",
+            "type": "traces"
+        },
+        {
+            "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+            },
+            "description": "All traces from selected services - searchable and filterable.",
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "align": "auto"
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 10,
+                "w": 24,
+                "x": 0,
+                "y": 62
+            },
+            "id": 11,
+            "options": {
+                "search": {
+                    "hide": false,
+                    "chunkSize": 20,
+                    "limit": 50
+                },
+                "serviceMap": {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    }
+                },
+                "nodeGraph": {
+                    "enabled": true
+                },
+                "tracesToLogs": {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "filterByTraceID": true,
+                    "filterBySpanID": false,
+                    "mapTagNamesEnabled": true,
+                    "mappedTags": [
+                        {
+                            "key": "service.name",
+                            "value": "job"
+                        }
+                    ],
+                    "tags": ["service.name", "pod", "namespace"]
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    },
+                    "limit": 50,
+                    "query": "{ .service.name =~ \".*countly.*\" }",
+                    "queryType": "traceql",
+                    "refId": "A",
+                    "tableType": "traces"
+                }
+            ],
+            "title": "All Traces (Searchable)",
+            "type": "traces"
+        }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": [
+        "countly",
+        "observability",
+        "logs",
+        "traces"
+    ],
+    "templating": {
+        "list": [
+            {
+                "current": {
+                    "selected": false,
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({namespace=\"countly\"}, job)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Service",
+                "multi": true,
+                "name": "service",
+                "options": [],
+                "query": {
+                    "query": "label_values({namespace=\"countly\"}, job)",
+                    "refId": "StandardVariableQuery"
+                },
+                "refresh": 2,
+                "regex": "/.*countly.*/",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "Combined Observability Dashboard",
+    "uid": "combined-observability",
+    "version": 1
+}
