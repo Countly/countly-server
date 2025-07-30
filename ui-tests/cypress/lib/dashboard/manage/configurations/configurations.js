@@ -837,8 +837,7 @@ const verifyPageElements = () => {
         isChecked: true
     });
 
-   // cy.scrollPageToBottom();
-    cy.scrollPageToCenter();
+    cy.scrollPageToBottom();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.PASSWORD_EXPIRATION }).SELECTED_SUBFEATURE_TITLE,
