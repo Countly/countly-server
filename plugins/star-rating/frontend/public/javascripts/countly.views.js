@@ -78,14 +78,22 @@
                 consent: false,
                 ratingItem: [ { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }, { active: false, inactive: false }],
                 constants: {
-                // TODO: will be localized
-                    trigger_sizes: [{label: 'Small', value: 's'}, {label: 'Medium', value: 'm'}, {label: 'Large', value: 'l'}],
+                    trigger_sizes: [
+                        {label: this.i18n("star-rating.trigger-size.small") || 'Small', value: 's'},
+                        {label: this.i18n("star-rating.trigger-size.medium") || 'Medium', value: 'm'},
+                        {label: this.i18n("star-rating.trigger-size.large") || 'Large', value: 'l'}
+                    ],
                     logoOptions: [
                         { label: this.i18n("surveys.appearance.logo.option.default"), value: "default" },
                         { label: this.i18n("surveys.appearance.logo.option.custom"), value: "custom" },
                         { label: this.i18n("surveys.appearance.logo.option.no.logo"), value: "none" }
                     ],
-                    trigger_positions: [{value: 'mleft', label: 'Center left', key: 'middle-left'}, { value: 'mright', label: 'Center right', key: 'middle-right' }, { value: 'bleft', label: 'Bottom left', key: 'bottom-left'}, { value: 'bright', label: 'Bottom right', key: 'bottom-right' }]
+                    trigger_positions: [
+                        {value: 'mleft', label: this.i18n("star-rating.trigger-position.center-left") || 'Center left', key: 'middle-left'},
+                        {value: 'mright', label: this.i18n("star-rating.trigger-position.center-right") || 'Center right', key: 'middle-right'},
+                        {value: 'bleft', label: this.i18n("star-rating.trigger-position.bottom-left") || 'Bottom left', key: 'bottom-left'},
+                        {value: 'bright', label: this.i18n("star-rating.trigger-position.bottom-right") || 'Bottom right', key: 'bottom-right'}
+                    ]
                 },
                 ratingSymbols: ['emojis', 'thumbs', 'stars'],
                 logoDropzoneOptions: {

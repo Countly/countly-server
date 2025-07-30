@@ -8,11 +8,11 @@
     <cly-form-step id="first-step">
       <div class="cly-events-overview-drawer__subheading bu-mt-3 bu-pb-2">{{i18n('events.overview.add.item')}}</div>
       <div class="bu-mb-4 bu-mt-2 bu-is-flex bu-is-justify-content-space-between	bu-is-align-items-center">
-        <el-select class="cly-events-overview-drawer__dropdown bu-mr-1" v-model="selectedOverviewEvents" placeholder="Select event">
+        <el-select class="cly-events-overview-drawer__dropdown bu-mr-1" v-model="selectedOverviewEvents" :placeholder="i18n('events.overview.choose-event')">
           <el-option v-for="item in configureEventsList" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
-        <el-select class="cly-events-overview-drawer__dropdown bu-ml-1" v-model="selectProperty" placeholder="Select Property">
+        <el-select class="cly-events-overview-drawer__dropdown bu-ml-1" v-model="selectProperty" :placeholder="i18n('events.overview.choose-property')">
           <el-option v-for="item in eventProperties" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>

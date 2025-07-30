@@ -6,7 +6,7 @@
         data: function() {
             return {
                 scoreTableExportSettings: {
-                    title: "AllEvents",
+                    title: CV.i18n("events.all-events"),
                     timeDependent: true
                 }
             };
@@ -504,7 +504,7 @@
         priority: 1,
         name: "detail",
         permission: "events",
-        title: "Event Stats",
+        title: CV.i18n('events.stats'),
         route: "#/analytics/events",
         component: AllEventsView,
         dataTestId: "event-stats",
