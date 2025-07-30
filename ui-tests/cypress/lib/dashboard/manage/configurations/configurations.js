@@ -179,8 +179,8 @@ const verifyPageElements = () => {
         attrText: "100"
     });
 
-   // cy.scrollPageToCenter();
-   cy.scrollPageBy10cm();
+    // cy.scrollPageToCenter();
+    cy.scrollPageSlightly();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.DATA_LIMITS.EVENT_SEGMENTATION_VALUE_LIMIT}).SELECTED_SUBFEATURE_TITLE,
@@ -245,7 +245,7 @@ const verifyPageElements = () => {
         attr: "aria-valuenow",
         attrText: "10"
     });
-    cy.scrollPageBy10cm();
+    cy.scrollPageSlightly();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.OTHER_API_SETTINGS}).SELECTED_FEATURE_GROUP_NAME,
@@ -329,7 +329,7 @@ const verifyPageElements = () => {
         value: "every hour"
     });
 
-    cy.scrollPageBy10cm();
+    cy.scrollPageSlightly();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.REQUEST_THRESHOLD}).SELECTED_SUBFEATURE_TITLE,
@@ -396,8 +396,8 @@ const verifyPageElements = () => {
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.COUNTRY_DATA}).SELECTED_SUBFEATURE_TITLE,
         labelText: "Track country data",
     });
-    
-    cy.scrollPageBy10cm();
+
+    cy.scrollPageSlightly();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.COUNTRY_DATA}).SELECTED_SUBFEATURE_DESCRIPTION,
@@ -841,7 +841,7 @@ const verifyPageElements = () => {
         isChecked: true
     });
 
-    cy.scrollPageBy10cm();
+    cy.scrollPageSlightly();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.PASSWORD_EXPIRATION }).SELECTED_SUBFEATURE_TITLE,
