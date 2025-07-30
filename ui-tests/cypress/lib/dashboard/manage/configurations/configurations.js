@@ -179,7 +179,7 @@ const verifyPageElements = () => {
         attrText: "100"
     });
 
-    cy.scrollPageToCenter();
+    cy.scrollPageToCenter('.main-view');
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.DATA_LIMITS.EVENT_SEGMENTATION_VALUE_LIMIT}).SELECTED_SUBFEATURE_TITLE,
