@@ -1,5 +1,4 @@
-## Version 25.03.XX
-
+## Version 25.03.12
 Features:
 - [plugins] Add configuration warning tags to settings UI
 - [white-labeling] Add sidebar footer label setting to white labeling
@@ -7,9 +6,9 @@ Features:
 Fixes:
 - [core] Use correct rights validation for loyality
 - [crashes] Fix free session for home widget
-- [crashes] Use na for free session and free user when there's no data
 - [crashes] Fix trend and change calculation for crash stats
-- [push] Show segmentation, geo and cohorts related components in push drawer on editing draft. 
+- [crashes] Use na for free session and free user when there's no data
+- [push] Show segmentation, geo and cohorts related components in push drawer on editing draft.
 
 Enterprise Fixes:
 - [ldap] Error handling in ldap plugin on search error
@@ -17,8 +16,8 @@ Enterprise Fixes:
 - [users] Load table data from report if user table calculation goes to report manager
 
 Dependencies:
-- Bump puppeteer from 24.14.0 to 24.15.0
 - Bump mongodb from 6.17.0 to 6.18.0
+- Bump puppeteer from 24.14.0 to 24.15.0
 - Bump supertest from 7.1.3 to 7.1.4
 
 
