@@ -180,7 +180,7 @@ const verifyPageElements = () => {
     });
 
    // cy.scrollPageToCenter();
-   cy.get('.main-view').eq(0).scrollIntoView({ duration: 300 });
+   cy.scrollPageBy10cm();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.DATA_LIMITS.EVENT_SEGMENTATION_VALUE_LIMIT}).SELECTED_SUBFEATURE_TITLE,
@@ -245,6 +245,7 @@ const verifyPageElements = () => {
         attr: "aria-valuenow",
         attrText: "10"
     });
+    cy.scrollPageBy10cm();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.OTHER_API_SETTINGS}).SELECTED_FEATURE_GROUP_NAME,
@@ -838,7 +839,7 @@ const verifyPageElements = () => {
         isChecked: true
     });
 
-    cy.scrollPageToBottom();
+    cy.scrollPageBy10cm();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.PASSWORD_EXPIRATION }).SELECTED_SUBFEATURE_TITLE,
