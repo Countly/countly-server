@@ -1,6 +1,8 @@
 ## Version 24.10.12
 Features:
+- [core] Use correct rights validation for loyality
 - [plugins] Add configuration warning tags to settings UI
+
 
 ## Version 24.10.11
 Enterprise Fixes:
