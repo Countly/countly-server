@@ -53,7 +53,9 @@ remoteConfig.processFilter = function(inpUser, inpQuery) {
 
                     if (parts[0] !== 'chr') {
                         if (typeof (value) !== 'undefined') {
-                            if (prop === 'up.av') {
+                            const filterType = Object.keys(query[prop])[0];
+
+                            if (prop === 'up.av' && /^\$(gt|lt)/.test(filterType)) {
                                 qResult = qResult && processAppVersionValues(user.av, { [prop]: query[prop] }, prop);
                             }
                             else {
@@ -139,6 +141,8 @@ function processPropertyValues(value, query, prop) {
  * @returns {Boolean} property value status
  */
 function processAppVersionValues(inpUserAv, query, prop) {
+    // app version is stored in mongo like 1:1:0 instead of 1.1.0
+    // the colons have to be replaced with dots so that semver lib can compare the app version 
     const userAv = inpUserAv.replace(/:/g, '.');
     const filterType = Object.keys(query[prop])[0];
     const targetAv = query[prop] && query[prop][filterType] && query[prop][filterType].replace(/:/g, '.');

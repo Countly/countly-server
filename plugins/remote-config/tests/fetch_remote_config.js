@@ -233,29 +233,37 @@ describe('Fetch remote config', () => {
             const queryGte = { 'up.av': { $gte: '1:0:0' } };
             const queryLt = { 'up.av': { $lt: '2:0:0' } };
             const queryLte = { 'up.av': { $lte: '1:0:0' } };
+            const queryIn = { 'up.av': { $in: ['1:0:0'] } };
+            const queryNin = { 'up.av': { $nin: ['2:0:0'] } };
 
             should(remoteConfig.processFilter(targetedUser, queryGt)).equal(true);
             should(remoteConfig.processFilter(targetedUser, queryGte)).equal(true);
             should(remoteConfig.processFilter(targetedUser, queryLt)).equal(true);
             should(remoteConfig.processFilter(targetedUser, queryLte)).equal(true);
+            should(remoteConfig.processFilter(targetedUser, queryIn)).equal(true);
+            should(remoteConfig.processFilter(targetedUser, queryNin)).equal(true);
         });
 
         it('Should not match non targeted user (app version)', () => {
             const nonTargetedUser = {
                 _id: '1c5c91e1dd594d457a656fad1e55d0cf2a3f0601',
                 uid: '13',
-                did: 'targeted_user',
+                did: 'non_targeted_user',
                 av: '1:0:0',
             };
             const queryGt = { 'up.av': { $gt: '1:0:0' } };
             const queryGte = { 'up.av': { $gte: '2:0:0' } };
             const queryLt = { 'up.av': { $lt: '1:0:0' } };
             const queryLte = { 'up.av': { $lte: '0:0:0' } };
+            const queryIn = { 'up.av': { $in: ['2:0:0'] } };
+            const queryNin = { 'up.av': { $nin: ['1:0:0'] } };
 
             should(remoteConfig.processFilter(nonTargetedUser, queryGt)).equal(false);
             should(remoteConfig.processFilter(nonTargetedUser, queryGte)).equal(false);
             should(remoteConfig.processFilter(nonTargetedUser, queryLt)).equal(false);
             should(remoteConfig.processFilter(nonTargetedUser, queryLte)).equal(false);
+            should(remoteConfig.processFilter(nonTargetedUser, queryIn)).equal(false);
+            should(remoteConfig.processFilter(nonTargetedUser, queryNin)).equal(false);
         });
 
         it('Should match targeted user ($and query)', () => {
