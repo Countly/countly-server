@@ -516,6 +516,141 @@ plugins.register("/permissions/features", function(ob) {
         });
     });
 
+    plugins.register("/export", async function({ plugin, selectedIds, params }) {
+        if (plugin === "sdk") {
+            return await exportSDKBehaviorSettings(selectedIds, params);
+        }
+    });
+
+    plugins.register("/import", async function({ params, importData }) {
+        if (importData.name === 'sdk') {
+            return await importSDKBehaviorSettings(params, importData.data);
+        }
+        else {
+            return false;
+        }
+    });
+
+    plugins.register("/import/validate", function({ params, pluginData, pluginName }) {
+        if (pluginName === 'sdk') {
+            return validateImport(params, pluginData);
+        }
+        else {
+            return false;
+        }
+    });
+
+    /**
+     * Imports SDK Behavior Settings and Enforcement Settings
+     * @param {Object} params - request parameters
+     * @param {Object} data - data to import
+     * @returns {Promise<Object>} - resolves with success message or rejects with error
+     */
+    function importSDKBehaviorSettings(params, data) {
+        return new Promise((resolve, reject) => {
+            try {
+            // Validate presence
+                if (!data.sdkBehaviorSettings || !data.enforcement) {
+                    return reject("Invalid import data");
+                }
+
+                /** Helper: safely parse JSON if needed 
+                 * @param {any} value - value to parse
+                 * @param {string} name - name of the value for error messages
+                 * @returns {Object} - parsed object
+                */
+                const parseIfString = (value, name) => {
+                    if (typeof value === "string") {
+                        try {
+                            return JSON.parse(value);
+                        }
+                        catch (err) {
+                            throw new Error(`Error parsing ${name}: ${err.message}`);
+                        }
+                    }
+                    if (typeof value !== "object") {
+                        throw new Error(`Invalid ${name} format`);
+                    }
+                    return value;
+                };
+
+                // Parse values
+                const sdkBehaviorSettings = parseIfString(data.sdkBehaviorSettings, "SDK Behavior Settings");
+                const enforcement = parseIfString(data.enforcement, "Enforcement Settings");
+
+                // Update sdk_configs
+                common.outDb.collection("sdk_configs").updateOne(
+                    { _id: String(params.app_id) },
+                    { $set: { config: sdkBehaviorSettings } },
+                    { upsert: true }
+                );
+
+                // Update sdk_enforcement
+                common.outDb.collection("sdk_enforcement").updateOne(
+                    { _id: String(params.app_id) },
+                    { $set: { enforcement: enforcement } },
+                    { upsert: true }
+                );
+
+                resolve({ result: "Success" });
+            }
+            catch (err) {
+                reject(err.message);
+            }
+        });
+    }
+
+
+    /**
+     * Validation before import
+     *
+     * @param {Object} params params object
+     * @param {Object} sdkBehaviorSettings sdkBehaviorSettings Object
+     * @returns {Promise<Object>} validation result
+    */
+    function validateImport(params, sdkBehaviorSettings) {
+        return {
+            code: 200,
+            message: "success",
+            data: {
+                newId: params.app_id,
+                oldId: sdkBehaviorSettings._id
+            }
+        };
+    }
+
+    /**
+     * Export SDK Behavior Settings
+     * 
+     * @param {String[]} ids ids of documents to be exported
+     * @param {Object<params>} params params Object
+     */
+    async function exportSDKBehaviorSettings(ids, params) {
+        var data = {name: 'sdk', data: [], dependencies: []};
+
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return data;
+        }
+        var innerData = {"_id": params.app_id };
+
+        //if sdk_behavior_settings there load sdk configs
+        if (ids.includes("sdk_behavior_settings")) {
+            let sdkConfigs = await getSDKConfig(params);
+            innerData.sdkBehaviorSettings = sdkConfigs.config || {};
+        }
+
+        //if sdk_enforcement there load enforcement
+        if (ids.includes("sdk_enforcement_settings")) {
+            let enforcement = await getEnforcement(params);
+            innerData.enforcement = enforcement.enforcement || {};
+        }
+
+        if (Object.keys(innerData).length > 1) {
+            data.data.push(innerData);
+        }
+        return data;
+    }
+
     /**
      * Updates SDK config (used internally when configuration is changed in the dashboard)
      * @param {params} params - request params

@@ -54,12 +54,6 @@
             <analytics-menu ref="analytics" v-show="visibleSidebarMenu === 'analytics'"></analytics-menu>
             <management-menu ref="management" v-show="visibleSidebarMenu === 'management'" @management-menu-ready="onManagementMenuReady"></management-menu>
             <component :ref="item.name" v-for="item in components" :is="item.component" v-show="visibleSidebarMenu === item.name" :key="item.name"></component>
-            <div v-if="isCommunityEdition" class="cly-vue-sidebar__version" data-test-id="sidebar-menu-version">
-                <div class="cly-vue-sidebar__version__banner">
-                    <div class="text">{{i18n('sidebar.banner.text')}}</div>
-                    <el-button class="button" type="success" @click="handleButtonClick">{{i18n('sidebar.banner.upgrade-button')}}</el-button>
-                </div>
-            </div>
             <a v-else :href="countlySidebarVersionPath">
                 <div class="cly-vue-sidebar__version" data-test-id="sidebar-menu-version">
                     {{versionInfo}}

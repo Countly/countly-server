@@ -1213,4 +1213,33 @@
         vuex: []
     });
 
+    countlyVue.container.registerMixin("/manage/export/export-features", {
+        pluginName: "sdk",
+        beforeCreate: function() {
+            var self = this;
+            countlySDK.service.initialize().then(async function(params) {
+                var enforcementSettings = await countlySDK.service.getEnforcement() || {};
+                var sdkBehaviorSettings = params || {};
+
+                var children = [];
+
+                if (Object.keys(sdkBehaviorSettings).length) {
+                    children.push({ name: "SDK Behavior Settings", id: "sdk_behavior_settings" });
+                }
+
+                if (Object.keys(enforcementSettings).length) {
+                    children.push({ name: "SDK Enforcement Settings", id: "sdk_enforcement_settings" });
+                }
+
+                if (children.length !== 0) {
+                    var selectItem = {
+                        id: "sdk",
+                        name: "SDK Manager",
+                        children: children
+                    };
+                    self.$store.dispatch("countlyConfigTransfer/addConfigurations", selectItem);
+                }
+            });
+        }
+    });
 })();
