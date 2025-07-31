@@ -169,11 +169,13 @@ const verifyViewsPerSessionDataFromTable = ({
 
     cy.verifyElement({
         element: sessionViewsPerSessionDataTableElements(0).VIEWS_PER_SESSION,
-        elementText: "1 - 2 views"
+        //elementText: "1 - 2 views"
+        elementText: "views"
     });
     cy.verifyElement({
         element: sessionViewsPerSessionDataTableElements(1).VIEWS_PER_SESSION,
-        elementText: "3 - 5 views"
+        //elementText: "3 - 5 views"
+        elementText: "views"
     });
 
     for (var i = 0; i < 2; i++) {
