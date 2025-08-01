@@ -10,15 +10,13 @@ Fixes:
 Features:
 - [plugins] Add configuration warning tags to settings UI
 - [white-labeling] Add sidebar footer label setting to white labeling
-- [remote-config] Enable comparing newer/older app version in conditions
 
 Fixes:
 - [core] Use correct rights validation for loyality
 - [crashes] Fix free session for home widget
 - [crashes] Fix trend and change calculation for crash stats
-- [push] Show segmentation, geo and cohorts related components in push drawer on editing draft.
 - [crashes] Use na for free session and free user when there's no data
-- [remote-config] Fix condition matching with complex conditions
+- [push] Show segmentation, geo and cohorts related components in push drawer on editing draft.
 
 Enterprise Fixes:
 - [ldap] Error handling in ldap plugin on search error
