@@ -14,7 +14,6 @@ alerts/
      │    ├── events.js                         # events alert checker
      │    ├── nps.js                            # NPS alert checker
      │    ├── rating.js                         # rating alert checker
-     │    ├── revenue.js                        # revenue alert checker
      │    ├── sessions.js                       # sessions alert checker
      │    ├── survey.js                         # survey alert checker
      │    ├── users.js                          # users alert checker

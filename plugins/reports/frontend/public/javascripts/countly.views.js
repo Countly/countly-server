@@ -146,7 +146,6 @@
             var metricOptions = [
                 {label: jQuery.i18n.map["reports.analytics"], value: "analytics"},
                 {label: jQuery.i18n.map["reports.events"], value: "events"},
-                {label: jQuery.i18n.map["reports.revenue"], value: "revenue"},
                 {label: jQuery.i18n.map["reports.crash"], value: "crash"},
             ];
 

@@ -15,7 +15,6 @@
     var _metrics = [
         {name: jQuery.i18n.map["reports.analytics"], value: "analytics"},
         {name: jQuery.i18n.map["reports.events"], value: "events"},
-        {name: jQuery.i18n.map["reports.revenue"], value: "revenue"},
         {name: jQuery.i18n.map["reports.crash"], value: "crash"},
     ];
 
