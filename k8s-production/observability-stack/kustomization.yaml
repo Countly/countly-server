@@ -33,14 +33,13 @@ configMapGenerator:
 - name: grafana-config
   envs:
   - configs/grafana.env
-# Grafana dashboards (placeholder for future dashboard configs)
-# - name: grafana-dashboards
-#   files:
-#   - dashboards/countly-overview.json
-#   - dashboards/countly-traces.json
-#   options:
-#     labels:
-#       grafana_dashboard: "1"
+# Grafana dashboards
+- name: grafana-dashboards
+  files:
+  - dashboards-manual/combined-observability.json
+  - dashboards-manual/http-metrics.json
+  - dashboards-manual/infrastructure-metrics.json
+  - dashboards-manual/nodejs-metrics.json
 
 # No auth needed for local stack
 secretGenerator:

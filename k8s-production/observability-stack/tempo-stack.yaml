@@ -20,6 +20,18 @@ data:
               
     ingester:
       max_block_duration: 5m
+      trace_idle_period: 10s
+      
+    metrics_generator:
+      registry:
+        external_labels:
+          source: tempo
+          cluster: local
+      storage:
+        path: /tmp/tempo/generator/wal
+        remote_write:
+          - url: http://prometheus.countly-observability.svc.cluster.local:9090/api/v1/write
+            send_exemplars: true
       
     compactor:
       compaction:
@@ -38,6 +50,10 @@ data:
           
     usage_report:
       reporting_enabled: false
+      
+    querier:
+      frontend_worker:
+        frontend_address: 127.0.0.1:9095
 ---
 apiVersion: v1
 kind: Service
@@ -101,7 +117,7 @@ spec:
       initContainers:
       - name: init-data-dir
         image: busybox:1.35
-        command: ['sh', '-c', 'mkdir -p /tmp/tempo/traces /tmp/tempo/wal && chown -R 10001:10001 /tmp/tempo && chmod -R 755 /tmp/tempo']
+        command: ['sh', '-c', 'mkdir -p /tmp/tempo/traces /tmp/tempo/wal /tmp/tempo/generator/wal && chown -R 10001:10001 /tmp/tempo && chmod -R 755 /tmp/tempo']
         volumeMounts:
         - name: data
           mountPath: /tmp/tempo

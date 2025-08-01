@@ -61,7 +61,7 @@
             },
             "targets": [
                 {
-                    "expr": "{namespace=\"countly\", job=~\"$service\"}",
+                    "expr": "{namespace=\"countly\", app=~\"$service\"}",
                     "refId": "A"
                 }
             ],
@@ -73,7 +73,7 @@
                 "type": "loki",
                 "uid": "loki"
             },
-            "description": "Error logs from Countly services - level ERROR, WARN, or containing error keywords.",
+            "description": "All error logs from all Countly services (any app, any container).",
             "gridPos": {
                 "h": 8,
                 "w": 24,
@@ -93,11 +93,75 @@
             },
             "targets": [
                 {
-                    "expr": "{namespace=\"countly\", job=~\"$service\"} |~ \"(?i)(error|exception|failed|fatal)\"",
+                    "expr": "{namespace=\"countly\"} |~ \"(?i)(error|exception|failed|fatal)\"",
                     "refId": "A"
                 }
             ],
-            "title": "Error Logs",
+            "title": "All Error Logs (Global)",
+            "type": "logs"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "description": "Database-related errors from all Countly services.",
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 17
+            },
+            "id": 1001,
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "prettifyLogMessage": false,
+                "enableLogDetails": true,
+                "dedupStrategy": "none",
+                "sortOrder": "Descending"
+            },
+            "targets": [
+                {
+                    "expr": "{namespace=\"countly\"} |~ \"(?i)(mongo|clickhouse|database|db error)\"",
+                    "refId": "A"
+                }
+            ],
+            "title": "Database Errors",
+            "type": "logs"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "description": "Connection errors from all Countly services.",
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 25
+            },
+            "id": 1002,
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "prettifyLogMessage": false,
+                "enableLogDetails": true,
+                "dedupStrategy": "none",
+                "sortOrder": "Descending"
+            },
+            "targets": [
+                {
+                    "expr": "{namespace=\"countly\"} |~ \"(?i)(connect|timeout|unavailable|connection refused|ECONNREFUSED|ECONNRESET|EPIPE|socket hang up)\"",
+                    "refId": "A"
+                }
+            ],
+            "title": "Connection Errors",
             "type": "logs"
         },
         {
@@ -125,7 +189,7 @@
             },
             "targets": [
                 {
-                    "expr": "{namespace=\"countly\", job=~\"$service\"}",
+                    "expr": "{namespace=\"countly\", app=~\"$service\"}",
                     "refId": "A"
                 }
             ],
@@ -182,8 +246,8 @@
             },
             "targets": [
                 {
-                    "expr": "sum(count_over_time({namespace=\"countly\", job=~\"$service\"}[5m])) by (job)",
-                    "legendFormat": "{{job}}",
+                    "expr": "sum(count_over_time({namespace=\"countly\", app=~\"$service\"}[5m])) by (app)",
+                    "legendFormat": "{{app}}",
                     "refId": "A"
                 }
             ],
@@ -244,8 +308,8 @@
             },
             "targets": [
                 {
-                    "expr": "sum(count_over_time({namespace=\"countly\", job=~\"$service\"} |~ \"(?i)(error|exception|failed|fatal)\"[5m])) by (job)",
-                    "legendFormat": "{{job}} Errors",
+                    "expr": "sum(count_over_time({namespace=\"countly\", app=~\"$service\"} |~ \"(?i)(error|exception|failed|fatal)\"[5m])) by (app)",
+                    "legendFormat": "{{app}} Errors",
                     "refId": "A"
                 }
             ],
@@ -262,172 +326,8 @@
             },
             "id": 8,
             "panels": [],
-            "title": "HTTP Metrics (Application Data)",
+            "title": "Warnings",
             "type": "row"
-        },
-        {
-            "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-            },
-            "description": "Request rate derived from trace data.",
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "unit": "reqps",
-                    "custom": {
-                        "fillOpacity": 10,
-                        "lineWidth": 2
-                    }
-                }
-            },
-            "gridPos": {
-                "h": 8,
-                "w": 12,
-                "x": 0,
-                "y": 35
-            },
-            "id": 12,
-            "options": {
-                "legend": {
-                    "displayMode": "table",
-                    "placement": "right",
-                    "calcs": ["lastNotNull", "mean"]
-                },
-                "tooltip": {
-                    "mode": "multi"
-                }
-            },
-            "targets": [
-                {
-                    "expr": "up",
-                    "legendFormat": "{{job}}",
-                    "refId": "A"
-                }
-            ],
-            "title": "HTTP Request Rate",
-            "type": "timeseries"
-        },
-        {
-            "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-            },
-            "description": "Request duration percentiles from trace spans.",
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "unit": "s",
-                    "custom": {
-                        "fillOpacity": 10,
-                        "lineWidth": 2
-                    }
-                }
-            },
-            "gridPos": {
-                "h": 8,
-                "w": 12,
-                "x": 12,
-                "y": 35
-            },
-            "id": 13,
-            "options": {
-                "legend": {
-                    "displayMode": "table",
-                    "placement": "right",
-                    "calcs": ["lastNotNull", "mean", "max"]
-                },
-                "tooltip": {
-                    "mode": "multi"
-                }
-            },
-            "targets": [
-                {
-                    "expr": "up * 100",
-                    "legendFormat": "{{job}} p99",
-                    "refId": "A"
-                },
-                {
-                    "expr": "up * 95",
-                    "legendFormat": "{{job}} p95",
-                    "refId": "B"
-                },
-                {
-                    "expr": "up * 50",
-                    "legendFormat": "{{job}} p50",
-                    "refId": "C"
-                }
-            ],
-            "title": "HTTP Duration Percentiles",
-            "type": "timeseries"
-        },
-        {
-            "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-            },
-            "description": "Error rate from trace data.",
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "unit": "percent",
-                    "min": 0,
-                    "max": 100,
-                    "custom": {
-                        "fillOpacity": 10,
-                        "lineWidth": 2
-                    },
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            },
-                            {
-                                "color": "yellow",
-                                "value": 1
-                            },
-                            {
-                                "color": "red",
-                                "value": 5
-                            }
-                        ]
-                    }
-                }
-            },
-            "gridPos": {
-                "h": 8,
-                "w": 24,
-                "x": 0,
-                "y": 43
-            },
-            "id": 14,
-            "options": {
-                "legend": {
-                    "displayMode": "table",
-                    "placement": "right",
-                    "calcs": ["lastNotNull", "mean", "max"]
-                },
-                "tooltip": {
-                    "mode": "multi"
-                }
-            },
-            "targets": [
-                {
-                    "expr": "(1 - up) * 100",
-                    "legendFormat": "{{job}} Error Rate",
-                    "refId": "A"
-                }
-            ],
-            "title": "HTTP Error Rate",
-            "type": "timeseries"
         },
         {
             "collapsed": false,
@@ -488,7 +388,7 @@
                     "mappedTags": [
                         {
                             "key": "service.name",
-                            "value": "job"
+                            "value": "app"
                         }
                     ],
                     "tags": ["service.name", "pod", "namespace"]
@@ -501,10 +401,11 @@
                         "uid": "tempo"
                     },
                     "limit": 20,
-                    "query": "{ duration > 1s && .service.name =~ \".*countly.*\" }",
+                    "query": "{ duration > 1s && .service.name =~ \"$service\" }",
                     "queryType": "traceql",
                     "refId": "A",
-                    "tableType": "traces"
+                    "tableType": "traces",
+                    "type": "range"
                 }
             ],
             "title": "Slow Traces (>1s)",
@@ -556,7 +457,7 @@
                     "mappedTags": [
                         {
                             "key": "service.name",
-                            "value": "job"
+                            "value": "app"
                         }
                     ],
                     "tags": ["service.name", "pod", "namespace"]
@@ -569,10 +470,11 @@
                         "uid": "tempo"
                     },
                     "limit": 20,
-                    "query": "{ .service.name =~ \".*countly.*\" && (status = error || .http.status_code >= 400) }",
+                    "query": "{ .service.name =~ \"$service\" && (status = error || .http.status_code >= 400) }",
                     "queryType": "traceql",
                     "refId": "A",
-                    "tableType": "traces"
+                    "tableType": "traces",
+                    "type": "range"
                 }
             ],
             "title": "Error Traces (4xx/5xx + Errors)",
@@ -624,7 +526,7 @@
                     "mappedTags": [
                         {
                             "key": "service.name",
-                            "value": "job"
+                            "value": "app"
                         }
                     ],
                     "tags": ["service.name", "pod", "namespace"]
@@ -637,14 +539,79 @@
                         "uid": "tempo"
                     },
                     "limit": 50,
-                    "query": "{ .service.name =~ \".*countly.*\" }",
+                    "query": "{ .service.name =~ \"$service\" }",
                     "queryType": "traceql",
                     "refId": "A",
-                    "tableType": "traces"
+                    "tableType": "traces",
+                    "type": "range"
                 }
             ],
             "title": "All Traces (Searchable)",
             "type": "traces"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "description": "System signals and OOM events from all Countly services.",
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 33
+            },
+            "id": 2001,
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "prettifyLogMessage": false,
+                "enableLogDetails": true,
+                "dedupStrategy": "none",
+                "sortOrder": "Descending"
+            },
+            "targets": [
+                {
+                    "expr": "{namespace=\"countly\"} |~ \"(?i)(SIGINT|SIGTERM|SIGKILL|OOMKilled|OutOfMemory|Killed process)\"",
+                    "refId": "A"
+                }
+            ],
+            "title": "System Signals / OOM Events",
+            "type": "logs"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "description": "Node.js warnings and unhandled promise rejections.",
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 41
+            },
+            "id": 2002,
+            "options": {
+                "showTime": true,
+                "showLabels": true,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "prettifyLogMessage": false,
+                "enableLogDetails": true,
+                "dedupStrategy": "none",
+                "sortOrder": "Descending"
+            },
+            "targets": [
+                {
+                    "expr": "{namespace=\"countly\"} |~ \"(?i)(UnhandledPromiseRejection|DeprecationWarning)\"",
+                    "refId": "A"
+                }
+            ],
+            "title": "Node.js Warnings & Unhandled Rejections",
+            "type": "logs"
         }
     ],
     "refresh": "30s",
@@ -668,19 +635,20 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({namespace=\"countly\"}, job)",
+                "definition": "label_values({namespace=\"countly\"}, app)",
                 "hide": 0,
                 "includeAll": true,
+                "allValue": ".*",
                 "label": "Service",
                 "multi": true,
                 "name": "service",
                 "options": [],
                 "query": {
-                    "query": "label_values({namespace=\"countly\"}, job)",
+                    "query": "label_values({namespace=\"countly\"}, app)",
                     "refId": "StandardVariableQuery"
                 },
                 "refresh": 2,
-                "regex": "/.*countly.*/",
+                "regex": "/.*/",
                 "skipUrlSync": false,
                 "sort": 1,
                 "type": "query"
