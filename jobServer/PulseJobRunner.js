@@ -290,18 +290,20 @@ class PulseJobRunner {
      * Updates an existing job's schedule with new configuration
      * @param {string} jobName - Name of the job to update
      * @param {ScheduleConfig} schedule - New schedule configuration
+     * @param {JobData} [data={}] - Optional payload to pass to the job during execution
      * @returns {Promise<void>} Resolves when schedule is successfully updated
      * @throws {Error} If update fails or new configuration is invalid
      */
-    async updateSchedule(jobName, schedule) {
+    async updateSchedule(jobName, schedule, data = {}) {
         try {
-            this.#log.d(`Attempting to update schedule for job '${jobName}'`, { schedule });
+            this.#log.d(`Attempting to update schedule for job '${jobName}'`, { schedule, data });
 
             this.#validateScheduleConfig(schedule);
 
-            // First remove the existing job
-            let job = this.#pulseRunner.create(jobName);
-            await job.remove();
+            // First cancel/remove all existing scheduled jobs with this name that are still pending future execution.
+            // Jobs with nextRunAt: null (e.g. completed one-time jobs or fully completed repeating jobs) will be preserved.
+            await this.#pulseRunner.cancel({ name: jobName, nextRunAt: { $ne: null } });
+            this.#log.d(`Cancelled pending future schedules for job '${jobName}'`);
 
             // Then create a new schedule based on the type
             switch (schedule.type) {
@@ -309,23 +311,24 @@ class PulseJobRunner {
                 if (!isValidCron(schedule.value)) {
                     throw new Error('Invalid cron schedule');
                 }
-                await this.#pulseRunner.every(schedule.value, jobName);
+                await this.#pulseRunner.every(schedule.value, jobName, data);
                 break;
 
             case 'once':
                 if (!(schedule.value instanceof Date)) {
                     throw new Error('Invalid date for one-time schedule');
                 }
-                await this.#pulseRunner.schedule(schedule.value, jobName);
+                await this.#pulseRunner.schedule(schedule.value, jobName, data);
                 break;
 
             case 'now': {
                 const now = new Date();
-                await this.#pulseRunner.schedule(now, jobName);
+                await this.#pulseRunner.schedule(now, jobName, data);
                 break;
             }
             case 'manual':
-                // For manual jobs, we remove any existing schedule. They should be triggered manually.
+                // For manual jobs, existing pending schedules were removed above.
+                // No new schedule is created for 'manual' type, it requires explicit runJobNow.
                 this.#log.d(`Job '${jobName}' updated to manual schedule; not rescheduling automatically.`);
                 break;
             }
