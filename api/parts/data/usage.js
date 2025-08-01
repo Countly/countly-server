@@ -1121,7 +1121,7 @@ plugins.register("/sdk/user_properties", async function(ob) {
                 userProps.av_build = versionComponents.build;
             }
             else {
-                log.w("Invalid app version format: %s", params.qstring.metrics._app_version);
+                log.d("App version %s is not a valid semantic version. It cannot be separated into semantic version parts", params.qstring.metrics._app_version);
                 userProps.av_major = null;
                 userProps.av_minor = null;
                 userProps.av_patch = null;

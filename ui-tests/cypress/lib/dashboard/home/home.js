@@ -484,7 +484,7 @@ const verifyEmptyPageElements = () => {
 
     cy.verifyElement({
         element: homePageElements.CRASH_STATISTICS.TOTAL_CRASHES_TREND_VALUE,
-        elementText: "NA",
+        elementText: "0",
     });
 
     cy.verifyElement({
@@ -498,7 +498,7 @@ const verifyEmptyPageElements = () => {
 
     cy.verifyElement({
         element: homePageElements.CRASH_STATISTICS.UNIQUE_CRASHES_TREND_VALUE,
-        elementText: "NA",
+        elementText: "0",
     });
 
     cy.verifyElement({
@@ -512,7 +512,7 @@ const verifyEmptyPageElements = () => {
 
     cy.verifyElement({
         element: homePageElements.CRASH_STATISTICS.CRASH_FREE_USERS_NUMBER,
-        elementText: "100.00%",
+        elementText: "NA",
     });
 
     cy.verifyElement({
@@ -521,12 +521,12 @@ const verifyEmptyPageElements = () => {
 
     cy.verifyElement({
         element: homePageElements.CRASH_STATISTICS.CRASH_FREE_USERS_TREND_VALUE,
-        elementText: "0.0%",
+        elementText: "NA",
     });
 
     cy.verifyElement({
         element: homePageElements.CRASH_STATISTICS.CRASH_FREE_SESSIONS_NUMBER,
-        elementText: "100.00%",
+        elementText: "NA",
     });
 
     cy.verifyElement({
@@ -535,7 +535,7 @@ const verifyEmptyPageElements = () => {
 
     cy.verifyElement({
         element: homePageElements.CRASH_STATISTICS.CRASH_FREE_SESSIONS_TREND_VALUE,
-        elementText: "0.0%",
+        elementText: "NA",
     });
 };
 

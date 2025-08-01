@@ -274,13 +274,22 @@
                         options.onOverrideResponse(context, res);
                     }
                     var convertedResponse = _dataTableAdapters.toStandardResponse(res, requestOptions);
-                    if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
-                        convertedResponse.echo >= context.state[echoField]) {
-                        if (typeof options.onReady === 'function') {
-                            convertedResponse.rows = options.onReady(context, convertedResponse.rows);
+                    if (res.task_id) {
+                        if (typeof options.onTask === 'function') {
+                            options.onTask(context, res.task_id);
                         }
                         context.commit(_capitalized("set", resourceName), convertedResponse);
                         context.commit(_capitalized("set", lastSuccessfulRequestKey), requestOptions);
+                    }
+                    else {
+                        if (!Object.prototype.hasOwnProperty.call(convertedResponse, "echo") ||
+                            convertedResponse.echo >= context.state[echoField]) {
+                            if (typeof options.onReady === 'function') {
+                                convertedResponse.rows = options.onReady(context, convertedResponse.rows);
+                            }
+                            context.commit(_capitalized("set", resourceName), convertedResponse);
+                            context.commit(_capitalized("set", lastSuccessfulRequestKey), requestOptions);
+                        }
                     }
                 })
                 .catch(function(err) {

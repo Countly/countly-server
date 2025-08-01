@@ -73,6 +73,26 @@
     }
 }
 
+.config-section {
+    &__header {
+        width: max-content;
+    }
+}
+
+.configuration-warning-container {
+    border-radius: 4px;
+    display: flex;
+    height: 20px;
+    width: auto;
+
+    &__text {
+        font-size: 10px;
+        font-weight: 500;
+        margin: 4px 6px;
+        text-transform: uppercase;
+    }
+}
+
 .apikey {
     .el-input {
         width: 320px;

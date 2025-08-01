@@ -1338,7 +1338,7 @@
                     {"name": CV.i18n('crashes.unique'), "info": CV.i18n('crashes.home.unique'), "prop": "cru", "r": true},
                     {"name": CV.i18n('crashes.total-per-session'), "info": CV.i18n('crashes.home.per-session'), "prop": "cr-session", "r": true},
                     {"name": CV.i18n('crashes.free-users'), "info": CV.i18n('crashes.help-free-users'), "prop": "crau", "p": true},
-                    {"name": CV.i18n('crashes.free-sessions'), "info": CV.i18n('crashes.help-free-sessions'), "prop": "crses", "p": true}
+                    {"name": CV.i18n('crashes.free-sessions'), "info": CV.i18n('crashes.help-free-sessions'), "prop": "crinv", "p": true}
                 ];
 
                 for (var k = 0; k < getUs.length; k++) {

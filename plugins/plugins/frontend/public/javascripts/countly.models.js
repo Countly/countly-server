@@ -7,6 +7,7 @@
     var _userConfigsData = {};
     var _themeList = [];
     var _graph = {};
+    var _configWarnings = null;
 
     //Public Methods
     countlyPlugins.initialize = function() {
@@ -305,6 +306,239 @@
                 }
             }
         });
+    };
+
+    // Warning types and their associated colors
+    var WARNING_TYPES = {
+        DATA_INGESTION: 'dataIngestion',
+        UI_FILTERING: 'uiFiltering',
+        SERVER_PERFORMANCE: 'serverPerformance'
+        // SECURITY_IMPACT: 'securityImpact' // for the 2nd phase
+    };
+
+    // Tooltip color mappings
+    var TOOLTIP_COLORS = {
+        dataIngestion: { bgColor: '#FCF5E5', textColor: '#E49700' },
+        serverPerformance: { bgColor: '#FBECE5', textColor: '#D23F00' },
+        uiFiltering: { bgColor: '#E1EFFF', textColor: '#0166D6' }
+    };
+
+    /**
+     * Helper function to create warning objects
+     * @param {string} type - Warning type
+     * @param {string} textKey - Warning text key
+     * @returns {Object} Warning object with type and text
+     */
+    function createWarning(type, textKey) {
+        return {
+            type: type,
+            text: textKey
+        };
+    }
+
+    // Predefined warning combinations
+    var WARNING_COMBINATIONS = {
+        DATA_INGESTION: [
+            createWarning(WARNING_TYPES.DATA_INGESTION, "configs.tooltip.data-ingestion-warning")
+        ],
+        UI_FILTERING: [
+            createWarning(WARNING_TYPES.UI_FILTERING, "configs.tooltip.ui-filtering-warning")
+        ],
+        SERVER_PERFORMANCE: [
+            createWarning(WARNING_TYPES.SERVER_PERFORMANCE, "configs.tooltip.server-performance-warning")
+        ]
+    };
+
+    /**
+     * Initialize configuration warnings
+     * @returns {Object} Configuration warnings map
+     */
+    function initializeConfigWarnings() {
+        if (_configWarnings !== null) {
+            return _configWarnings;
+        }
+
+        var configWarnings = {
+            // API Core Configurations
+            "api.trim_trailing_ending_spaces": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "api.event_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "api.event_segmentation_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "api.event_segmentation_value_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "api.metric_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "api.session_duration_limit": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "api.array_list_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "api.city_data": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "api.country_data": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+
+            // Logging Configurations
+            "logs.default": WARNING_COMBINATIONS.UI_FILTERING,
+
+            // Plugin-specific Configurations
+            "attribution.segment_value_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+
+            "crashes.report_limit": [
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "crashes.max_custom_field_keys": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "crashes.smart_regexes": WARNING_COMBINATIONS.UI_FILTERING,
+
+            "drill.list_limit": [
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "drill.custom_property_limit": [
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "drill.projection_limit": [
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "drill.big_list_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+
+            "flows.maxDepth": [
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "flows.nodesCn": [
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+
+            "hooks.requestLimit": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION
+            ],
+
+            "logger.limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "logger.state": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+
+            "remote-config.conditions_per_paramaeters": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "remote-config.maximum_allowed_parameters": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+
+            "sources.sources_length_limit": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+
+            "users.custom_prop_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "users.custom_set_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+
+            "views.segment_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "views.segment_value_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "views.view_limit": [
+                ...WARNING_COMBINATIONS.SERVER_PERFORMANCE,
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "views.view_name_limit": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+
+            "data-manager.globalValidationAction": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "data-manager.segmentLevelValidationAction": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ],
+            "data-manager.enableDataMasking": [
+                ...WARNING_COMBINATIONS.DATA_INGESTION,
+                ...WARNING_COMBINATIONS.UI_FILTERING
+            ]
+        };
+
+        _configWarnings = configWarnings;
+        return _configWarnings;
+    }
+
+    countlyPlugins.getConfigWarnings = function(configGroup, key) {
+        var warnings = initializeConfigWarnings();
+        var mapKey = configGroup + "." + key;
+        return warnings[mapKey] || [];
+    };
+
+    countlyPlugins.getTooltipColors = function() {
+        return TOOLTIP_COLORS;
+    };
+
+    countlyPlugins.getTooltipLabel = function(type) {
+        var labels = {
+            dataIngestion: CV.i18n('configs.tooltip.data-ingestion'),
+            uiFiltering: CV.i18n('configs.tooltip.ui-filtering'),
+            serverPerformance: CV.i18n('configs.tooltip.server-performance')
+        };
+        return labels[type] || 'Unknown Type';
     };
 
 }(window.countlyPlugins = window.countlyPlugins || {}, jQuery));

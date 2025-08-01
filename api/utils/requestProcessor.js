@@ -1567,7 +1567,7 @@ const processRequest = (params) => {
                         common.returnMessage(params, 400, 'Missing parameter "app_id"');
                         return false;
                     }
-                    validateUserForMgmtReadAPI(countlyApi.mgmt.appUsers.loyalty, params);
+                    validateUserForRead(params, countlyApi.mgmt.appUsers.loyalty);
                     break;
                 }
                 /**
