@@ -55,7 +55,7 @@ plugins.dbConnection().then((countlyDb) => {
             for (var i = 0; i < res.length; i++) {
                 if (!res[i].global_admin) {
                     var adminApps = getAdminApps(res[i]);
-                    arr.push({emails: [res[i].email], apps: adminApps || [], metrics: {"analytics": true, "revenue": true, "push": true, "crash": true }, frequency: "daily", hour: 17, minute: 0, day: 1, timezone: "Etc/GMT", user: res[i]._id});
+                    arr.push({emails: [res[i].email], apps: adminApps || [], metrics: {"analytics": true, "push": true, "crash": true }, frequency: "daily", hour: 17, minute: 0, day: 1, timezone: "Etc/GMT", user: res[i]._id});
                 }
             }
             async.map(arr, function(report, done) {

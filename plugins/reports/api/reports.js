@@ -11,7 +11,6 @@ var reportsInstance = {},
     fetch = require("../../../api/parts/data/fetch"),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     localize = require('../../../api/utils/localization.js'),
-    common = require('../../../api/utils/common.js'),
     log = require('../../../api/utils/log')('reports:reports'),
     versionInfo = require('../../../frontend/express/version.info'),
     countlyConfig = require('../../../frontend/express/config.js'),
@@ -33,11 +32,6 @@ var metrics = {
         "new_users": true,
         "total_time": true,
         "avg_time": true,
-    },
-    "revenue": {
-        "paying_users": true,
-        "purchases_c": true,
-        "purchases_s": true,
     },
     "push": {
         "messaging_users": true,
@@ -193,11 +187,7 @@ var metricProps = {
                                 var parts = metric.split(".");
                                 var event = null;
                                 //replace with app's iap_key
-                                if (parts[1] === "purchases") {
-                                    event = common.dot(params.app, 'plugins.revenue.iap_events');
-                                    event = event && event.length ? event : null;
-                                }
-                                else if (parts[1] === "[CLY]_push_sent" || parts[1] === "[CLY]_push_open" || parts[1] === "[CLY]_push_action") {
+                                if (parts[1] === "[CLY]_push_sent" || parts[1] === "[CLY]_push_open" || parts[1] === "[CLY]_push_action") {
                                     if ((params.app.gcm && Object.keys(params.app.gcm).length) || (params.app.apn && Object.keys(params.app.apn).length)) {
                                         event = parts[1];
                                     }
@@ -241,7 +231,7 @@ var metricProps = {
                                 }
                                 else {
                                     // process in reports plugin
-                                    if (["users", "revenue"].indexOf(metric) >= 0) {
+                                    if (["users"].indexOf(metric) >= 0) {
                                         fetch.getTimeObj(metric, params, {db: db}, function(output) {
                                             fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj) {
                                                 output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
@@ -450,15 +440,6 @@ var metricProps = {
                                         apps[i].results.analytics = apps[i].results[j];
                                         delete apps[i].results[j];
 
-                                        let iap_events = common.dot(apps[i], 'plugins.revenue.iap_events');
-                                        if (iap_events && iap_events.length) {
-                                            if (!apps[i].results.revenue) {
-                                                apps[i].results.revenue = {};
-                                            }
-                                            apps[i].results.revenue.paying_users = apps[i].results.analytics.paying_users;
-                                        }
-                                        delete apps[i].results.analytics.paying_users;
-
                                         if ((apps[i].gcm && Object.keys(apps[i].gcm).length) || (apps[i].apn && Object.keys(apps[i].apn).length)) {
                                             if (!apps[i].results.push) {
                                                 apps[i].results.push = {};
@@ -476,15 +457,6 @@ var metricProps = {
                                             apps[i].results.push = {};
                                         }
                                         apps[i].results.push[j.replace("[CLY]_", "")] = getEventData(apps[i].results[j] || {});
-                                        delete apps[i].results[j];
-                                    }
-                                    else if (j === "purchases") {
-                                        if (!apps[i].results.revenue) {
-                                            apps[i].results.revenue = {};
-                                        }
-                                        var revenueData = getRevenueData(apps[i].results[j] || {});
-                                        apps[i].results.revenue[j + "_c"] = revenueData.c;
-                                        apps[i].results.revenue[j + "_s"] = revenueData.s;
                                         delete apps[i].results[j];
                                     }
                                     else {
@@ -748,9 +720,6 @@ var metricProps = {
                     collections["events.[CLY]_push_sent"] = true;
                     collections["events.[CLY]_push_action"] = true;
                 }
-                else if (i === "revenue") {
-                    collections["events.purchases"] = true;
-                }
                 else if (i === "events") {
                     for (let j = 0; j < events.length; j++) {
                         if (events[j].indexOf("[CLY]_") === -1 || events[j].startsWith('[CLY]_group_')) {
@@ -782,8 +751,6 @@ var metricProps = {
             tmp_y,
             currentTotal = 0,
             previousTotal = 0,
-            currentPayingTotal = 0,
-            previousPayingTotal = 0,
             currentMsgEnabledTotal = 0,
             previousMsgEnabledTotal = 0,
             currentNew = 0,
@@ -804,31 +771,22 @@ var metricProps = {
                 tmp_x = countlyCommon.getDescendantProp(_sessionDb, _periodObj.uniquePeriodArr[i]);
                 tmp_x = clearSessionObject(tmp_x);
                 currentUnique += tmp_x.u;
-                currentPayingTotal += tmp_x.p;
                 currentMsgEnabledTotal += tmp_x.m;
             }
 
             var tmpUniqObj,
                 tmpCurrentUniq = 0,
-                tmpCurrentPaying = 0,
                 tmpCurrentMsgEnabled = 0;
 
             for (let i = 0; i < (_periodObj.uniquePeriodCheckArr.length); i++) {
                 tmpUniqObj = countlyCommon.getDescendantProp(_sessionDb, _periodObj.uniquePeriodCheckArr[i]);
                 tmpUniqObj = clearSessionObject(tmpUniqObj);
                 tmpCurrentUniq += tmpUniqObj.u;
-                tmpCurrentPaying += tmpUniqObj.p;
                 tmpCurrentMsgEnabled += tmpUniqObj.m;
             }
 
-            //console.log(currentPayingTotal + " " + tmpCurrentPaying)
-
             if (currentUnique > tmpCurrentUniq) {
                 currentUnique = tmpCurrentUniq;
-            }
-
-            if (currentPayingTotal > tmpCurrentPaying) {
-                currentPayingTotal = tmpCurrentPaying;
             }
 
             if (currentMsgEnabledTotal > tmpCurrentMsgEnabled) {
@@ -839,27 +797,20 @@ var metricProps = {
                 tmp_y = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousUniquePeriodArr[i]);
                 tmp_y = clearSessionObject(tmp_y);
                 previousUnique += tmp_y.u;
-                previousPayingTotal += tmp_y.p;
                 previousMsgEnabledTotal += tmp_y.m;
             }
 
             var tmpUniqObj2,
-                tmpPreviousUniq = 0,
-                tmpPreviousPaying = 0;
+                tmpPreviousUniq = 0;
 
             for (let i = 0; i < (_periodObj.previousUniquePeriodCheckArr.length); i++) {
                 tmpUniqObj2 = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousUniquePeriodCheckArr[i]);
                 tmpUniqObj2 = clearSessionObject(tmpUniqObj2);
                 tmpPreviousUniq += tmpUniqObj2.u;
-                tmpPreviousPaying += tmpUniqObj2.p;
             }
 
             if (previousUnique > tmpPreviousUniq) {
                 previousUnique = tmpPreviousUniq;
-            }
-
-            if (previousPayingTotal > tmpPreviousPaying) {
-                previousPayingTotal = tmpPreviousPaying;
             }
 
             if (currentMsgEnabledTotal > tmpCurrentMsgEnabled) {
@@ -898,8 +849,6 @@ var metricProps = {
             previousDuration = tmp_y.d;
             currentEvents = tmp_x.e;
             previousEvents = tmp_y.e;
-            currentPayingTotal = tmp_x.p;
-            previousPayingTotal = tmp_y.p;
             currentMsgEnabledTotal = tmp_x.m;
             previousMsgEnabledTotal = tmp_y.m;
         }
@@ -934,7 +883,6 @@ var metricProps = {
             changeReturning = countlyCommon.getPercentChange((previousUnique - previousNew), (currentUnique - currentNew)),
             changeEvents = countlyCommon.getPercentChange(previousEvents, currentEvents),
             changeEventsPerUser = countlyCommon.getPercentChange(previousEventsPerUser, eventsPerUser),
-            changePaying = countlyCommon.getPercentChange(previousPayingTotal, currentPayingTotal),
             changeMsgEnabled = countlyCommon.getPercentChange(previousMsgEnabledTotal, currentMsgEnabledTotal);
 
         var timeSpentString = (sessionDuration.toFixed(1)) + " min";
@@ -957,13 +905,6 @@ var metricProps = {
                 "total": currentTotal,
                 "change": changeTotal.percent,
                 "trend": changeTotal.trend
-            },
-            "paying_users": {
-                "total": currentPayingTotal,
-                "prev-total": previousPayingTotal,
-                "change": changePaying.percent,
-                "trend": changePaying.trend,
-                "isEstimate": isEstimate
             },
             "total_users": {
                 "total": currentUnique,
@@ -1165,74 +1106,6 @@ var metricProps = {
             "total": currentTotal,
             "change": changeTotal.percent,
             "trend": changeTotal.trend
-        };
-    }
-
-    /**
-    * get revenue chart data
-    * @param {object} eventDb -  event data
-    * @return {object}  - return revenu data chart object
-    */
-    function getRevenueData(eventDb) {
-        _periodObj = countlyCommon.periodObj;
-
-        if (!eventDb) {
-            return {
-                c: {
-                    total: 0,
-                    change: 'NA',
-                    trend: 'u',
-                    sparkline: '0,0'
-                },
-                s: {
-                    total: 0,
-                    change: 'NA',
-                    trend: 'u',
-                    sparkline: '0,0'
-                }
-            };
-        }
-
-        var total = {
-            c: 0,
-            pc: 0,
-            s: 0,
-            ps: 0
-        };
-
-        if (_periodObj.isSpecialPeriod) {
-            for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
-                let tmpObj = countlyCommon.getDescendantProp(eventDb, _periodObj.currentPeriodArr[i]);
-                total.c += (tmpObj && tmpObj.c) ? tmpObj.c : 0;
-                total.s += (tmpObj && tmpObj.s) ? tmpObj.s : 0;
-                let tmpObj2 = countlyCommon.getDescendantProp(eventDb, _periodObj.previousPeriodArr[i]);
-                total.pc += (tmpObj2 && tmpObj2.c) ? tmpObj2.c : 0;
-                total.ps += (tmpObj2 && tmpObj2.s) ? tmpObj2.s : 0;
-            }
-        }
-        else {
-            let tmpObj = countlyCommon.getDescendantProp(eventDb, _periodObj.activePeriod);
-            total.c = (tmpObj && tmpObj.c) ? tmpObj.c : 0;
-            total.s = (tmpObj && tmpObj.s) ? tmpObj.s : 0;
-            let tmpObj2 = countlyCommon.getDescendantProp(eventDb, _periodObj.previousPeriod);
-            total.pc = (tmpObj2 && tmpObj2.c) ? tmpObj2.c : 0;
-            total.ps = (tmpObj2 && tmpObj2.s) ? tmpObj2.s : 0;
-        }
-
-        var changeTotalCount = countlyCommon.getPercentChange(total.pc, total.c);
-        var changeTotalSum = countlyCommon.getPercentChange(total.ps, total.s);
-
-        return {
-            c: {
-                "total": total.c,
-                "change": changeTotalCount.percent,
-                "trend": changeTotalCount.trend
-            },
-            s: {
-                "total": total.s.toFixed(2),
-                "change": changeTotalSum.percent,
-                "trend": changeTotalSum.trend
-            }
         };
     }
 

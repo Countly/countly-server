@@ -179,24 +179,7 @@
                                 label: "# of users in the profile group",
                             },
                         ],
-                    },
-                    revenue: {
-                        target: [
-                            { value: "total revenue", label: "total revenue" },
-                            {
-                                value: "average revenue per user",
-                                label: "average revenue per user",
-                            },
-                            {
-                                value: "average revenue per paying user",
-                                label: "average revenue per paying user",
-                            },
-                            {
-                                value: "# of paying users",
-                                label: "# of paying users",
-                            },
-                        ],
-                    },
+                    }
                 },
                 emailOptions: [
                     {
@@ -331,10 +314,6 @@
                     },
                     { label: jQuery.i18n.map["alert.Rating"], value: "rating" },
                     {
-                        label: jQuery.i18n.map["alert.Revenue"],
-                        value: "revenue",
-                    },
-                    {
                         label: jQuery.i18n.map["alert.Session"],
                         value: "sessions",
                     },
@@ -348,9 +327,6 @@
                 }
                 if (!countlyGlobal.plugins.includes("surveys")) {
                     alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "survey" && value !== "nps");
-                }
-                if (!countlyGlobal.plugins.includes("revenue")) {
-                    alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "revenue");
                 }
                 if (!countlyGlobal.plugins.includes("cohorts")) {
                     alertDataTypeOptions = alertDataTypeOptions.filter(({ value }) => value !== "cohorts" && value !== "profile_groups");
@@ -707,8 +683,6 @@
                     return "cly-io-16 cly-is cly-is-user-group";
                 case "rating":
                     return "cly-io-16 cly-is cly-is-star";
-                case "revenue":
-                    return "cly-io-16 cly-is cly-is-currency-dollar";
                 case "sessions":
                     return "cly-io-16 cly-is cly-is-clock";
                 case "survey":
