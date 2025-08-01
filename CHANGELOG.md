@@ -1,3 +1,11 @@
+## Version 25.03.XX
+Features:
+- [remote-config] Enable comparing newer/older app version in conditions
+
+Fixes:
+- [remote-config] Fix condition matching with compound conditions
+
+
 ## Version 25.03.12
 Features:
 - [plugins] Add configuration warning tags to settings UI
