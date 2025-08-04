@@ -8,6 +8,7 @@ $bg-color: #24292e;
     left: 0;
     height: 100%;
     user-select: none;
+    z-index: 2000;
     color: map.get(c.$colors, "warm-gray-40");
 }
 
