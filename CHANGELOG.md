@@ -4,6 +4,11 @@ Features:
 
 Fixes:
 - [remote-config] Fix condition matching with compound conditions
+- 
+Enterprise Fixes:
+- [flows] Showing correct state for disabled flows
+- [surveys] Move "not likely" label next to 0 on mobile screens
+
 
 
 ## Version 25.03.12
