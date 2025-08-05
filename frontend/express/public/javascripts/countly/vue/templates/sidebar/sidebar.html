@@ -67,10 +67,4 @@
             </a>
         </div>
     </transition>
-
-    <component
-        v-if="customSidebarComponents"
-        v-for="customComponent in customSidebarComponents"
-        :key="customComponent.name"
-        :is="customComponent.component" />
 </div>
