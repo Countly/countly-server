@@ -206,6 +206,18 @@ Cypress.Commands.add('checkPaceActive', () => {
         });
 });
 
+Cypress.Commands.add("scrollPageSlightly", (element = '.main-view', index = 0) => {
+    cy.get(element).eq(index).then(($el) => {
+        const currentScroll = $el[0].scrollTop;
+        const newScroll = currentScroll + 550;
+
+        cy.wrap($el).scrollTo(0, newScroll, {
+            duration: 1000,
+            ensureScrollable: false,
+        });
+    });
+});
+
 Cypress.Commands.add("scrollPageToBottom", (element = '.main-view', index = 0) => {
     cy.get(element).eq(index).scrollTo('bottom', { ensureScrollable: false });
 });
