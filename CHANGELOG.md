@@ -1,9 +1,20 @@
-## Version 25.03.XX
+## Version 25.03.xx
+
+Fixes:
+- [dashboard] Localized missing string in the dashboard
+- [localization] Added French translations
+
+
+## Version 25.03.13
 Features:
 - [remote-config] Enable comparing newer/older app version in conditions
 
 Fixes:
 - [remote-config] Fix condition matching with compound conditions
+
+Enterprise Fixes:
+- [flows] Showing correct state for disabled flows
+- [surveys] Move "not likely" label next to 0 on mobile screens
 
 
 ## Version 25.03.12

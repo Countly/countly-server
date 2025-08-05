@@ -699,7 +699,7 @@
                         this.estimateIfNecessary();
                         return;
                     }
-                    CountlyHelpers.notify({type: 'error', message: 'No push credentials found for ' + this.getPlatformLabel(platform) + ' platform' });
+                    CountlyHelpers.notify({type: 'error', message: CV.i18n('push-notification.no-credentials', this.getPlatformLabel(platform)) || ('No push credentials found for ' + this.getPlatformLabel(platform) + ' platform') });
                 }
                 else {
                     this.pushNotificationUnderEdit.platforms = this.pushNotificationUnderEdit.platforms.filter(function(item) {
