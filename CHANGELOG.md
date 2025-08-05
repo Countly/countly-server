@@ -5,6 +5,9 @@ Features:
 Fixes:
 - [remote-config] Fix condition matching with compound conditions
 
+Enterprise Fixes:
+- [ab-testing] Add debug log for bayesian script input
+
 
 ## Version 25.03.12
 Features:
