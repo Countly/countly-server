@@ -5,6 +5,7 @@ Fixes:
 - [localization] Added French translations
 
 Dependencies:
+- Bump eslint-plugin-vue from 10.3.0 to 10.4.0
 - Bump lint-staged from 16.1.2 to 16.1.4
 
 ## Version 25.03.13
