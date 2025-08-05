@@ -1,4 +1,4 @@
-## Version 25.03.XX
+## Version 25.03.13
 Features:
 - [remote-config] Enable comparing newer/older app version in conditions
 
@@ -6,6 +6,8 @@ Fixes:
 - [remote-config] Fix condition matching with compound conditions
 
 Enterprise Fixes:
+- [flows] Showing correct state for disabled flows
+- [surveys] Move "not likely" label next to 0 on mobile screens
 - [ab-testing] Add debug log for bayesian script input
 
 
