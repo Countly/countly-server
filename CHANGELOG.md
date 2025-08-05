@@ -1,3 +1,8 @@
+## Version 25.03.XX
+Enterprise Fixes:
+- [ab-testing] Add debug log for bayesian script input
+
+
 ## Version 25.03.13
 Features:
 - [remote-config] Enable comparing newer/older app version in conditions
