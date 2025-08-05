@@ -1,17 +1,9 @@
-/*global countlyCommon,CV,countlyVue,countlyEvent,moment,jQuery */
+/*global countlyCommon,CV,countlyVue,countlyEvent,moment*/
 (function(countlyTimesOfDay) {
 
     countlyTimesOfDay.service = {
         HOURS: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
-        WEEK_DAYS: [
-            jQuery.i18n.map["common.monday"] || "monday",
-            jQuery.i18n.map["common.tuesday"] || "tuesday",
-            jQuery.i18n.map["common.wednesday"] || "wednesday",
-            jQuery.i18n.map["common.thursday"] || "thursday",
-            jQuery.i18n.map["common.friday"] || "friday",
-            jQuery.i18n.map["common.saturday"] || "saturday",
-            jQuery.i18n.map["common.sunday"] || "sunday"
-        ],
+        WEEK_DAYS: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
         DateBucketEnum: {
             PREV_MONTH: "previous",
             THIS_MONTH: "current",
