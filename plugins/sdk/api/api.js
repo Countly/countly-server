@@ -12,31 +12,8 @@ plugins.register("/permissions/features", function(ob) {
 
 (function() {
 
-    plugins.register("/o/sdk", function(ob) {
-        var params = ob.params;
-        if (params.qstring.method !== "sc") {
-            return false;
-        }
-        return new Promise(function(resolve) {
-            getSDKConfig(params).then(function(config) {
-                delete config._id;
-                config.v = 1;
-                config.t = Date.now();
-                config.c = config.config || {};
-                delete config.config;
-                common.returnOutput(params, config);
-            })
-                .catch(function(err) {
-                    common.returnMessage(params, 400, 'Error: ' + err);
-                })
-                .finally(function() {
-                    resolve();
-                });
-        });
-    });
-
     /**
-     * @api {get} /o?method=sc Get SDK config
+     * @api {get} /o/sdk?method=sc Get SDK config
      * @apiName GetSDKConfig
      * @apiGroup SDK Config
      * @apiPermission app
@@ -53,22 +30,90 @@ plugins.register("/permissions/features", function(ob) {
         "v":1,
         "t":1682328445330,
         "c":{
-            "tracking":false,
-            "networking":false,
-            "crashes":false,
-            "views":false,
-            "heartbeat":61,
-            "event_queue":11,
-            "request_queue":1001
+            "tracking":true,
+            "networking":true,
+            "crt":true,
+            "vt":true,
+            "st":true,
+            "cet":true,
+            "ecz":true,
+            "cr":true,
+            "sui":true,
+            "eqs":true,
+            "rqs":true,
+            "czi":true,
+            "dort":true,
+            "scui":true,
+            "lkl":true,
+            "lvs":true,
+            "lsv":true,
+            "lbc":true,
+            "ltlpt":true,
+            "ltl":true,
+            "lt":true,
+            "rcz":true
+            "bom": true,
+            "bom_at": 10,
+            "bom_rqp": 0.5,
+            "bom_ra": 24,
+            "bom_d": 60
         }
+     * }
+     */
+    plugins.register("/o/sdk", function(ob) {
+        var params = ob.params;
+        if (params.qstring.method !== "sc") {
+            return false;
+        }
+        return getSDKConfig(params).then(function(config) {
+            delete config._id;
+            let cc = config.config || {};
+            if (typeof cc.bom_rqp !== "undefined") {
+                cc.bom_rqp = cc.bom_rqp / 100;
+            }
+            config.v = 2;
+            config.t = Date.now();
+            config.c = cc;
+
+            return getEnforcement(params).then(function(enforcement) {
+                if (enforcement && enforcement.enforcement) {
+                    for (let key in config.c) {
+                        if (enforcement.enforcement[key] === false) {
+                            delete config.c[key];
+                        }
+                    }
+                }
+                delete config.config;
+                common.returnOutput(params, config);
+            });
+        }).catch(function(err) {
+            common.returnMessage(params, 400, 'Error: ' + err);
+        });
+    });
+
+    /**
+     * @api {get} /o?method=config-upload Save SDK config
+     * @apiName SaveSDKConfig
+     * @apiGroup SDK Config
+     * @apiPermission admin
+     * @apiDescription Save SDK configuration for the given app
+     * 
+     * @apiQuery {String} app_id Application ID
+     * @apiQuery {String} config SDK config object
+     * 
+     * @apiSuccess {json} Success-Response:
+     * {
+     *     "result": "Success"
      * }
      */
     plugins.register("/o", function(ob) {
         var params = ob.params;
 
+        // returns server config for the given app
         if (params.qstring.method === "sdk-config") {
             validateRead(params, FEATURE_NAME, function() {
                 getSDKConfig(params).then(function(res) {
+                    // TODO: check if filtering is needed here too
                     common.returnOutput(params, res.config || {});
                 })
                     .catch(function(err) {
@@ -78,6 +123,93 @@ plugins.register("/permissions/features", function(ob) {
 
             return true;
         }
+
+        // saves the given server configuration for the given app
+        if (params.qstring.method === "config-upload") {
+            return new Promise(function(resolve) {
+                validateUpdate(params, FEATURE_NAME, function() {
+                    var uploadConfig = params.qstring.config;
+                    if (uploadConfig && typeof uploadConfig === "string") {
+                        try {
+                            uploadConfig = JSON.parse(uploadConfig);
+                        }
+                        catch (ex) {
+                            common.returnMessage(params, 400, 'Invalid config format');
+                            return resolve();
+                        }
+                    }
+
+                    if (!uploadConfig || typeof uploadConfig !== "object") {
+                        common.returnMessage(params, 400, 'Config must be a valid object');
+                        return resolve();
+                    }
+
+                    var configToSave = uploadConfig.c || uploadConfig; // incase they provide the config object directly
+                    var validOptions = [
+                        "tracking",
+                        "networking",
+                        "crt",
+                        "vt",
+                        "st",
+                        "cet",
+                        "ecz",
+                        "cr",
+                        "sui",
+                        "eqs",
+                        "rqs",
+                        "czi",
+                        "dort",
+                        "scui",
+                        "lkl",
+                        "lvs",
+                        "lsv",
+                        "lbc",
+                        "ltlpt",
+                        "ltl",
+                        "lt",
+                        "rcz",
+                        "bom",
+                        "bom_at",
+                        "bom_rqp",
+                        "bom_ra",
+                        "bom_d"
+                    ];
+                    for (var key in configToSave) {
+                        if (validOptions.indexOf(key) === -1) {
+                            delete configToSave[key];
+                        }
+                    }
+
+                    common.outDb.collection('sdk_configs').updateOne(
+                        {_id: params.qstring.app_id + ""},
+                        {$set: {config: configToSave}},
+                        {upsert: true},
+                        function(err) {
+                            if (err) {
+                                common.returnMessage(params, 500, 'Error saving config to database');
+                            }
+                            else {
+                                common.returnOutput(params, {result: 'Success'});
+                            }
+                            resolve();
+                        }
+                    );
+                });
+            });
+        }
+        if (params.qstring.method === "sdk-enforcement") {
+            validateRead(params, FEATURE_NAME, function() {
+                getEnforcement(params).then(function(res) {
+                    common.returnOutput(params, res.enforcement || {});
+                })
+                    .catch(function(err) {
+                        common.returnMessage(params, 400, 'Error: ' + err);
+                    });
+            });
+            return true;
+        }
+
+        return false;
     });
 
     plugins.register("/i/sdk-config", function(ob) {
@@ -86,6 +218,32 @@ plugins.register("/permissions/features", function(ob) {
 
         switch (paths[3]) {
         case 'update-parameter': validateUpdate(params, FEATURE_NAME, updateParameter);
+            break;
+        case 'update-enforcement':
+            validateUpdate(params, FEATURE_NAME, function() {
+                var enforcement = params.qstring.enforcement;
+                if (typeof enforcement === "string") {
+                    try {
+                        enforcement = JSON.parse(enforcement);
+                    }
+                    catch (SyntaxError) {
+                        return common.returnMessage(params, 400, 'Error parsing enforcement');
+                    }
+                }
+                common.outDb.collection('sdk_enforcement').updateOne(
+                    { _id: params.app_id + "" },
+                    { $set: { enforcement: enforcement } },
+                    { upsert: true },
+                    function(err) {
+                        if (err) {
+                            common.returnMessage(params, 500, 'Error saving enforcement to database');
+                        }
+                        else {
+                            common.returnOutput(params, { result: 'Success' });
+                        }
+                    }
+                );
+            });
             break;
         default: common.returnMessage(params, 404, 'Invalid endpoint');
             break;
@@ -359,7 +517,7 @@ plugins.register("/permissions/features", function(ob) {
     });
 
     /**
-     * Updated SDK config
+     * Updates SDK config (used internally when configuration is changed in the dashboard)
      * @param {params} params - request params
      * @returns {void}
      */
@@ -387,6 +545,23 @@ plugins.register("/permissions/features", function(ob) {
     function getSDKConfig(params) {
         return new Promise(function(resolve, reject) {
             common.outDb.collection('sdk_configs').findOne({_id: params.app_id + ""}, function(err, res) {
+                if (err) {
+                    console.log(err);
+                    return reject();
+                }
+                return resolve(res || {});
+            });
+        });
+    }
+
+    /**
+     * Function to get enforcement info for the given app
+     * @param  {Object} params - params object
+     * @returns {Promise} response
+     */
+    function getEnforcement(params) {
+        return new Promise(function(resolve, reject) {
+            common.outDb.collection('sdk_enforcement').findOne({ _id: params.app_id + ""}, function(err, res) {
                 if (err) {
                     console.log(err);
                     return reject();
