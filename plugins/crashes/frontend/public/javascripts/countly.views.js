@@ -47,7 +47,7 @@
                 filterProperties.push(
                     new countlyQueryBuilder.Property({
                         id: "nonfatal",
-                        name: jQuery.i18n.prop("crashes.fatality") || "Fatality",
+                        name: jQuery.i18n.prop("crashes.fatality-label") || "Fatality",
                         type: countlyQueryBuilder.PropertyType.LIST,
                         group: "Main",
                         getValueList: function() {
