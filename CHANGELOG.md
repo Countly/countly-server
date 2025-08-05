@@ -13,7 +13,6 @@ Fixes:
 Enterprise Fixes:
 - [flows] Showing correct state for disabled flows
 - [surveys] Move "not likely" label next to 0 on mobile screens
-- [ab-testing] Add debug log for bayesian script input
 
 
 ## Version 25.03.12
