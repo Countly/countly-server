@@ -1,3 +1,10 @@
+## Version 25.03.xx
+
+Fixes:
+- [dashboard] Localized missing string in the dashboard
+- [localization] Added French translations
+
+
 ## Version 25.03.13
 Features:
 - [remote-config] Enable comparing newer/older app version in conditions
