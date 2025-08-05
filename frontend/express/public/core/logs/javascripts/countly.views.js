@@ -53,5 +53,5 @@
         this.renderWhenReady(ViewWrapper);
     });
 
-    app.addMenu("management", {code: "logs", permission: "core", url: "#/manage/logs", text: "Logs", priority: 50, tabsPath: "/manage/logs"});
+    app.addMenu("management", {code: "logs", permission: "core", url: "#/manage/logs", text: CV.i18n("sidebar.management.logs"), priority: 50, tabsPath: "/manage/logs"});
 })();
