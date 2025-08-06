@@ -152,7 +152,10 @@ function transformAppVersion(inpVersion) {
             * @param {bool} isPercent - Flag to just format the metric's total values as percentages.
             */
             function populateMetric(metric, isPercent) {
-                if (dashboard[metric].total !== 0 && dashboard[metric]["prev-total"] !== 0) {
+                if (dashboard[metric].total === 'NA' || dashboard[metric]['prev-total'] === 'NA') {
+                    dashboard[metric].change = 'NA';
+                }
+                else if (dashboard[metric].total !== 0 && dashboard[metric]["prev-total"] !== 0) {
                     if (isPercent) {
                         dashboard[metric].change = (dashboard[metric].total - dashboard[metric]["prev-total"]).toFixed(1) + "%";
                     }
@@ -166,12 +169,18 @@ function transformAppVersion(inpVersion) {
                 else if (dashboard[metric].total !== 0 && dashboard[metric]["prev-total"] === 0) {
                     dashboard[metric].change = "∞";
                 }
+                else if (dashboard[metric].total === dashboard[metric]["prev-total"]) {
+                    dashboard[metric].change = "0";
+                }
 
                 if (dashboard[metric].total === dashboard[metric]["prev-total"]) {
                     dashboard[metric].trend = "n";
                 }
                 else {
-                    dashboard[metric].trend = dashboard[metric].total >= dashboard[metric]["prev-total"] ? "u" : "d";
+                    var totl = dashboard[metric].total === 'NA' ? -1 : dashboard[metric].total;
+                    var prevTotl = dashboard[metric]['prev-total'] === 'NA' ? -1 : dashboard[metric]['prev-total'];
+
+                    dashboard[metric].trend = totl >= prevTotl ? 'u' : 'd';
                 }
 
                 if (metric in derivations) {
@@ -182,7 +191,9 @@ function transformAppVersion(inpVersion) {
 
                 if (isPercent && ["crses", "crnfses", "crfses", "crau", "craunf", "crauf", 'crinv', 'crfinv', 'crnfinv', 'crauinv', 'craufinv', 'craunfinv'].includes(metric)) {
                     ["total", "prev-total"].forEach(function(prop) {
-                        dashboard[metric][prop] = dashboard[metric][prop].toFixed(2) + '%';
+                        if (dashboard[metric][prop] !== 'NA') {
+                            dashboard[metric][prop] = dashboard[metric][prop].toFixed(2) + '%';
+                        }
                     });
                 }
             }
@@ -219,10 +230,13 @@ function transformAppVersion(inpVersion) {
                 }
 
                 // derive user count from whole users
-                if (dashboard.crau[prop] > dashboard.cr_u[prop] && 'users' in state.rawData) {
+                if (dashboard.crau[prop] > dashboard.cr_u[prop] && 'users' in state.rawData && wholeUsers.total > 0) {
                     dashboard.crauf[prop] = dashboard.cr_u[prop] * ((wholeUsers.fatal / wholeUsers.total) - (dashboard.crf[prop] / dashboard.cr_s[prop]));
+                    dashboard.crauf.isEstimate = true;
                     dashboard.craunf[prop] = dashboard.cr_u[prop] * ((wholeUsers.nonfatal / wholeUsers.total) - (dashboard.crnf[prop] / dashboard.cr_s[prop]));
+                    dashboard.craunf.isEstimate = true;
                     dashboard.crau[prop] = dashboard.crauf[prop] + dashboard.craunf[prop];
+                    dashboard.crau.isEstimate = true;
                 }
 
                 dashboard.crinv[prop] = Math.max(0, dashboard.cr_s[prop] - dashboard.cr[prop]);
@@ -234,9 +248,14 @@ function transformAppVersion(inpVersion) {
                 populateMetric(metric);
             });
 
-            ["crau", "craunf", "crauf"].forEach(function(name) {
-                ["total", "prev-total"].forEach(function(prop) {
-                    dashboard[name][prop] = Math.min(100, (dashboard.cr_u[prop] === 0 || dashboard[name][prop] === 0) ? 100 : (Math.abs(dashboard.cr_u[prop] - dashboard[name][prop]) / dashboard.cr_u[prop] * 100));
+            ['crau', 'craunf', 'crauf'].forEach(function(name) {
+                ['total', 'prev-total'].forEach(function(prop) {
+                    if (dashboard.cr_u[prop] === 0 || !Number.isFinite(dashboard[name][prop])) {
+                        dashboard[name][prop] = 'NA';
+                    }
+                    else {
+                        dashboard[name][prop] = Math.abs(dashboard.cr_u[prop] - dashboard[name][prop]) / dashboard.cr_u[prop] * 100;
+                    }
                 });
                 populateMetric(name, true);
             });
@@ -264,17 +283,13 @@ function transformAppVersion(inpVersion) {
             });
 
             ['crinv', 'crfinv', 'crnfinv'].forEach(function(name) {
-                ["total", "prev-total"].forEach(function(prop) {
-                    var propValue = 0;
-
+                ['total', 'prev-total'].forEach(function(prop) {
                     if (dashboard.cr_s[prop] === 0) {
-                        propValue = 100;
+                        dashboard[name][prop] = 'NA';
                     }
                     else {
-                        propValue = dashboard[name][prop] / dashboard.cr_s[prop] * 100;
+                        dashboard[name][prop] = dashboard[name][prop] / dashboard.cr_s[prop] * 100;
                     }
-
-                    dashboard[name][prop] = Math.min(100, propValue);
                 });
                 populateMetric(name, true);
             });
