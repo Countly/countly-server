@@ -4,6 +4,9 @@ Fixes:
 - [dashboard] Localized missing string in the dashboard
 - [localization] Added French translations
 
+Enterprise Fixes:
+- [active_directory] Fix for body parser empty request body issue
+
 Dependencies:
 - Bump lint-staged from 16.1.2 to 16.1.4
 
