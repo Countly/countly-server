@@ -1,4 +1,4 @@
-## Version 25.03.xx
+## Version 25.03.14
 
 Fixes:
 - [dashboard] Localized missing string in the dashboard
@@ -9,6 +9,7 @@ Enterprise Fixes:
 
 Dependencies:
 - Bump lint-staged from 16.1.2 to 16.1.4
+
 
 ## Version 25.03.13
 Features:
