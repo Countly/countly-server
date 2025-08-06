@@ -1,12 +1,16 @@
-## Version 25.03.xx
+## Version 25.03.14
 
 Fixes:
 - [dashboard] Localized missing string in the dashboard
 - [localization] Added French translations
 
+Enterprise Fixes:
+- [active_directory] Fix for body parser empty request body issue
+
 Dependencies:
 - Bump eslint-plugin-vue from 10.3.0 to 10.4.0
 - Bump lint-staged from 16.1.2 to 16.1.4
+
 
 ## Version 25.03.13
 Features:
