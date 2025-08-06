@@ -1,6 +1,13 @@
 ## Version 25.03.XX
+Fixes:
+- [dashboard] Localized missing string in the dashboard
+- [localization] Added French translations
+
 Enterprise Fixes:
 - [ab-testing] Add debug log for bayesian script input
+
+Dependencies:
+- Bump lint-staged from 16.1.2 to 16.1.4
 
 
 ## Version 25.03.13
