@@ -8,7 +8,9 @@ Enterprise Fixes:
 - [active_directory] Fix for body parser empty request body issue
 
 Dependencies:
+- Bump eslint-plugin-vue from 10.3.0 to 10.4.0
 - Bump lint-staged from 16.1.2 to 16.1.4
+- Bump typescript from 5.8.3 to 5.9.2
 
 
 ## Version 25.03.13
