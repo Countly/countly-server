@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debug-api-env
+  namespace: countly
+spec:
+  restartPolicy: Never
+  containers:
+  - name: debug
+    image: busybox
+    command: ["sh", "-c", "env | grep COUNTLY | sort && sleep 3600"]
+    # Using exact same envFrom configuration as countly-api.yaml
+    envFrom:
+    - configMapRef:
+        name: countly-config
+    - configMapRef:
+        name: countly-api-config
+    - secretRef:
+        name: common-config
+    - secretRef:
+        name: mongodb-config
+    - secretRef:
+        name: clickhouse-config

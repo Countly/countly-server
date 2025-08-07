@@ -1,0 +1,198 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: countly-ingress
+  namespace: countly
+  labels:
+    app: countly-ingress
+    branch: newarchitecture
+  annotations:
+    # === BASIC CONFIGURATION ===
+    nginx.ingress.kubernetes.io/client-max-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
+    # === BUFFERING CONFIGURATION ===
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-request-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "16"
+    nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "512k"
+    nginx.ingress.kubernetes.io/proxy-temp-file-write-size: "1m"
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "2m"
+
+    # === TIMEOUT CONFIGURATION (consistent values) ===
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+
+    # === CONNECTION POOLING & PERFORMANCE ===
+    nginx.ingress.kubernetes.io/upstream-keepalive-connections: "256"
+    nginx.ingress.kubernetes.io/upstream-keepalive-requests: "100000"
+    nginx.ingress.kubernetes.io/upstream-keepalive-timeout: "60"
+
+    # === UPSTREAM OPTIMIZATION ===
+    nginx.ingress.kubernetes.io/proxy-next-upstream: "error timeout http_502 http_503 http_504"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "5"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: "3"
+
+    # === MONITORING ===
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-metrics: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+
+    # === GLOBAL NGINX OPTIMIZATIONS ===
+    nginx.ingress.kubernetes.io/main-snippet: |
+      # Worker process optimization (main context)
+      worker_processes auto;
+      worker_rlimit_nofile 65535;
+      
+      events {
+        worker_connections 8192;
+        use epoll;
+        multi_accept on;
+        accept_mutex off;
+      }
+
+    # === HTTP-LEVEL OPTIMIZATIONS ===
+    nginx.ingress.kubernetes.io/http-snippet: |
+      # Global HTTP performance settings
+      sendfile on;
+      tcp_nodelay on;
+      tcp_nopush off;
+      
+      # Connection optimization
+      keepalive_timeout 65;
+      keepalive_requests 1000;
+      
+      # Buffer optimization
+      large_client_header_buffers 4 32k;
+      client_header_buffer_size 8k;
+
+    # === THROUGHPUT-OPTIMIZED SERVER CONFIGURATION ===
+    nginx.ingress.kubernetes.io/server-snippet: |
+    
+      
+      # High-volume ingestion optimization
+      location ~* ^/i/(bulk|feedback/input)$ {
+        # Disable access logging for high-volume endpoints to reduce I/O
+        access_log off;
+        
+        # Massive buffers for bulk operations
+        client_body_buffer_size 5m;
+        client_body_timeout 30s;
+        client_body_in_single_buffer on;
+        
+        # Aggressive proxy buffering
+        proxy_buffering on;
+        proxy_request_buffering on;
+        proxy_buffer_size 512k;
+        proxy_buffers 32 512k;
+        proxy_busy_buffers_size 1m;
+        proxy_temp_file_write_size 2m;
+        
+        # Fast upstream connections
+        proxy_connect_timeout 2s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
+        
+        # Connection optimization
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_socket_keepalive on;
+      }
+      
+      # Standard ingestion endpoint optimization  
+      location = /i {
+        # Optimized buffers for single events
+        client_body_buffer_size 2m;
+        client_body_in_single_buffer on;
+        
+        proxy_buffering on;
+        proxy_request_buffering on;
+        proxy_buffer_size 256k;
+        proxy_buffers 32 256k;
+        proxy_busy_buffers_size 512k;
+        
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_socket_keepalive on;
+      }
+      
+      # API endpoint optimization
+      location ~* ^/(o|api) {
+        # Optimized for read operations
+        proxy_buffering on;
+        proxy_buffer_size 128k;
+        proxy_buffers 8 128k;
+        proxy_busy_buffers_size 256k;
+        
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_socket_keepalive on;
+      }
+
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: newarchitecture.count.ly
+    http:
+      paths:
+      # Ingestor specific paths (high-volume data ingestion) - MUST come before /i/ prefix
+      - path: /i/bulk
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      - path: /i/feedback/input
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      - path: /i
+        pathType: Exact
+        backend:
+          service:
+            name: countly-ingestor
+            port:
+              number: 3010
+      # API paths
+      - path: /i/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /o
+        pathType: Exact
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /o/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      # Default to frontend
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-frontend
+            port:
+              number: 6001

@@ -1,0 +1,177 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tempo-config
+  namespace: countly-observability
+data:
+  tempo.yaml: |
+    server:
+      http_listen_port: 3200
+      grpc_listen_port: 9095
+      
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+              
+    ingester:
+      max_block_duration: 5m
+      trace_idle_period: 10s
+      
+    metrics_generator:
+      registry:
+        external_labels:
+          source: tempo
+          cluster: local
+      storage:
+        path: /tmp/tempo/generator/wal
+        remote_write:
+          - url: http://prometheus.countly-observability.svc.cluster.local:9090/api/v1/write
+            send_exemplars: true
+      
+    compactor:
+      compaction:
+        block_retention: 24h
+        
+    storage:
+      trace:
+        backend: local
+        local:
+          path: /tmp/tempo/traces
+        wal:
+          path: /tmp/tempo/wal
+        pool:
+          max_workers: 100
+          queue_depth: 10000
+          
+    usage_report:
+      reporting_enabled: false
+      
+    querier:
+      frontend_worker:
+        frontend_address: 127.0.0.1:9095
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo
+  namespace: countly-observability
+  labels:
+    app: tempo
+spec:
+  type: ClusterIP
+  selector:
+    app: tempo
+  ports:
+  - name: http
+    port: 3200
+    targetPort: 3200
+    protocol: TCP
+  - name: grpc
+    port: 9095
+    targetPort: 9095
+    protocol: TCP
+  - name: otlp-grpc
+    port: 4317
+    targetPort: 4317
+    protocol: TCP
+  - name: otlp-http
+    port: 4318
+    targetPort: 4318
+    protocol: TCP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tempo-pvc
+  namespace: countly-observability
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tempo
+  namespace: countly-observability
+  labels:
+    app: tempo
+spec:
+  serviceName: tempo
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tempo
+  template:
+    metadata:
+      labels:
+        app: tempo
+    spec:
+      initContainers:
+      - name: init-data-dir
+        image: busybox:1.35
+        command: ['sh', '-c', 'mkdir -p /tmp/tempo/traces /tmp/tempo/wal /tmp/tempo/generator/wal && chown -R 10001:10001 /tmp/tempo && chmod -R 755 /tmp/tempo']
+        volumeMounts:
+        - name: data
+          mountPath: /tmp/tempo
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: tempo
+        image: grafana/tempo:2.8.1
+        args:
+          - '-config.file=/etc/tempo/tempo.yaml'
+        volumeMounts:
+        - name: config
+          mountPath: /etc/tempo
+        - name: data
+          mountPath: /tmp/tempo
+        ports:
+        - containerPort: 3200
+          name: http
+          protocol: TCP
+        - containerPort: 9095
+          name: grpc
+          protocol: TCP
+        - containerPort: 4317
+          name: otlp-grpc
+          protocol: TCP
+        - containerPort: 4318
+          name: otlp-http
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 3200
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3200
+          initialDelaySeconds: 15
+          periodSeconds: 5
+        securityContext:
+          runAsUser: 10001
+          runAsGroup: 10001
+      volumes:
+      - name: config
+        configMap:
+          name: tempo-config
+      - name: data
+        persistentVolumeClaim:
+          claimName: tempo-pvc

@@ -1,0 +1,199 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: countly-frontend
+  namespace: countly
+  labels:
+    app: countly-frontend
+    branch: newarchitecture
+    component: frontend
+spec:
+  selector:
+    app: countly-frontend
+  ports:
+    - name: http
+      port: 6001
+      targetPort: 6001
+      protocol: TCP
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: countly-frontend
+  namespace: countly
+  labels:
+    app: countly-frontend
+    branch: newarchitecture
+    component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: countly-frontend
+  template:
+    metadata:
+      labels:
+        app: countly-frontend
+        branch: newarchitecture
+        component: frontend
+    spec:
+      tolerations:
+      - key: countly
+        operator: Equal
+        value: dedicated
+        effect: NoSchedule
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                  - api
+                - key: branch
+                  operator: In
+                  values:
+                  - newarchitecture
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: countly-frontend
+        image: gcr.io/countly-dev-313620/newarch/countly-unified:test-25
+        imagePullPolicy: Always
+        command: ["npm", "run", "start:frontend"]
+        ports:
+        - containerPort: 6001
+          name: http
+          protocol: TCP
+        env:
+        - name: COUNTLY_CONTAINER
+          value: "frontend"
+        - name: COUNTLY_PLUGINS
+          value: "mobile,web,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,alerts,times-of-day,onboarding,active_users,config-transfer,consolidate,data-manager,dashboards,sdk,guides,journey_engine,content,clickhouse,desktop"
+        - name: COUNTLY_CONFIG_FRONTEND_MONGODB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: host
+        - name: COUNTLY_CONFIG_FRONTEND_MONGODB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: port
+        - name: COUNTLY_CONFIG_FRONTEND_MONGODB_DB
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: db
+        - name: COUNTLY_CONFIG_FRONTEND_MONGODB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: username
+        - name: COUNTLY_CONFIG_FRONTEND_MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: password
+        - name: COUNTLY_CONFIG_FRONTEND_MONGODB_MAX_POOL_SIZE
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-config
+              key: max_pool_size
+        - name: COUNTLY_CONFIG_FRONTEND_CLICKHOUSE_URL
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: url
+        - name: COUNTLY_CONFIG_FRONTEND_CLICKHOUSE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: username
+        - name: COUNTLY_CONFIG_FRONTEND_CLICKHOUSE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: password
+        - name: COUNTLY_CONFIG_FRONTEND_CLICKHOUSE_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: database
+        - name: COUNTLY_CONFIG_FRONTEND_CLICKHOUSE_REQUEST_TIMEOUT
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: request_timeout
+        - name: COUNTLY_CONFIG_FRONTEND_CLICKHOUSE_MAX_OPEN_CONNECTIONS
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-config
+              key: max_open_connections
+        - name: COUNTLY_CONFIG_FRONTEND_HOSTNAME
+          value: "newarchitecture.count.ly"
+        - name: COUNTLY_CONFIG_FRONTEND_FILESTORAGE
+          value: "gridfs"
+        - name: COUNTLY_CONFIG_FRONTEND_WEB_HOST
+          value: "0.0.0.0"
+        - name: COUNTLY_CONFIG_FRONTEND_WEB_PORT
+          value: "6001"
+        # Debug logging disabled to reduce noise
+        # - name: COUNTLY_CONFIG_FRONTEND_LOGGING_DEBUG
+        #   value: '["core:app"]'
+        - name: COUNTLY_CONFIG_FRONTEND_DRILL_CLICKHOUSE_DEBUG
+          value: "true"
+        - name: COUNTLY_CONFIG_API_DRILL_CLICKHOUSE_DEBUG
+          value: "true"
+        - name: COUNTLY_CONFIG_FRONTEND_LOGGING_DEFAULT
+          value: "error"
+        - name: NODE_OPTIONS
+          value: "--max-old-space-size=2048"
+        - name: NODE_ENV
+          value: "production"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 6001
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 6001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /ping
+            port: 6001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: logs
+          mountPath: /opt/countly/log
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

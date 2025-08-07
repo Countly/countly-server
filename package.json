@@ -14,11 +14,19 @@
     "url": "git://github.com/countly/countly-server.git"
   },
   "engines": {
-    "node": "^20.0.0 || ^24.0.0"
+    "node": "^22.0.0 || ^24.0.0"
   },
   "scripts": {
     "test": "grunt --verbose",
-    "prepare": "husky"
+    "test:unit": "TODO_ADD_UNIT_TESTS",
+    "prepare": "husky",
+    "start:api": "node api/api.js",
+    "start:frontend": "node frontend/express/app.js",
+    "start:aggregator": "node api/aggregator.js",
+    "start:ingestor": "node api/ingestor.js",
+    "start:jobserver": "node jobServer/index.js",
+    "start:clickhouse-writer": "node plugins/clickhouse/api/writer/index.js",
+    "start:clickhouse-updater": "node plugins/clickhouse/api/writer/updater.js"
   },
   "lint-staged": {
     "*.{js,vue}": [
@@ -29,7 +37,6 @@
     "@stylistic/eslint-plugin": "^3.1.0",
     "docdash": "^2.0.1",
     "eslint": "^8.56.0",
-    "eslint-plugin-vue": "^10.2.0",
     "grunt-contrib-watch": "1.1.0",
     "grunt-eslint": "24.3.0",
     "grunt-mocha-nyc": "1.0.3",
@@ -44,7 +51,26 @@
   },
   "dependencies": {
     "@breejs/later": "^4.2.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.62.0",
+    "@opentelemetry/core": "^2.0.1",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.203.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.203.0",
+    "@opentelemetry/instrumentation-express": "^0.52.0",
+    "@opentelemetry/instrumentation-fs": "^0.23.0",
+    "@opentelemetry/instrumentation-http": "^0.203.0",
+    "@opentelemetry/instrumentation-mongodb": "^0.56.0",
+    "@opentelemetry/instrumentation-pino": "^0.50.0",
+    "@opentelemetry/instrumentation-runtime-node": "^0.17.0",
+    "@opentelemetry/resource-detector-container": "^0.7.3",
+    "@opentelemetry/resource-detector-gcp": "^0.37.0",
+    "@opentelemetry/resources": "^2.0.1",
+    "@opentelemetry/sdk-metrics": "^2.0.1",
+    "@opentelemetry/sdk-node": "^0.203.0",
+    "@opentelemetry/sdk-trace-base": "^2.0.1",
+    "@opentelemetry/semantic-conventions": "^1.36.0",
     "@pulsecron/pulse": "^1.6.8",
+    "@pyroscope/nodejs": "^0.4.5",
     "all-the-cities": "3.1.0",
     "argon2": "0.41.1",
     "async": "3.2.6",
@@ -67,7 +93,7 @@
     "errorhandler": "1.5.1",
     "express": "4.21.2",
     "express-rate-limit": "7.5.0",
-    "express-session": "1.18.1",
+    "express-session": "^1.18.2",
     "form-data": "^4.0.0",
     "formidable": "^2.1.5",
     "fs-extra": "11.3.0",
