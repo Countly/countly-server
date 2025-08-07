@@ -4,7 +4,7 @@ var plugins = require('../../pluginManager.js'),
 const { dataBatchReader } = require('../../../api/parts/data/dataBatchReader');
 
 (function() {
-    plugins.register("/aggregator2", function() {
+    plugins.register("/aggregator", function() {
         //I should register all to common manager which makes sure it is alive from time to time.
         new dataBatchReader(common.drillDb, {
             pipeline: [{"$group": {"_id": {"a": "$a", "e": "$e"}, "count": {"$sum": 1}}}],
@@ -21,19 +21,19 @@ const { dataBatchReader } = require('../../../api/parts/data/dataBatchReader');
             for (var z = 0; z < results.length; z++) {
                 if (results[z]._id && results[z]._id.a && results[z]._id.e) {
                     if (results[z]._id.e === "[CLY]_session") {
-                        stats.updateDataPoints(common.writeBatcher, results[z]._id.a, results[z].count, 0, false, token);
+                        stats.updateDataPoints(common.manualWriteBatcher, results[z]._id.a, results[z].count, 0, false, token);
                     }
                     else if (results[z]._id.e in stats.internalEventsEnum) {
                         var uu = {"e": results[z].count};
                         uu[stats.internalEventsEnum[results[z]._id.e]] = results[z].count;
-                        stats.updateDataPoints(common.writeBatcher, results[z]._id.a, 0, uu, false, token);
+                        stats.updateDataPoints(common.manualWriteBatcher, results[z]._id.a, 0, uu, false, token);
                     }
                     else {
-                        stats.updateDataPoints(common.writeBatcher, results[z]._id.a, 0, {"e": results[z].count, "ce": results[z].count}, false, token);
+                        stats.updateDataPoints(common.manualWriteBatcher, results[z]._id.a, 0, {"e": results[z].count, "ce": results[z].count}, false, token);
                     }
                 }
             }
-            await common.writeBatcher.flush("countly", "server_stats_data_points", token);
+            await common.manualWriteBatcher.flush("countly", "server_stats_data_points", token.cd);
             // process next document
         });
     });

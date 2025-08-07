@@ -1,5 +1,6 @@
 const common = require("../../utils/common");
 const log = require('../../utils/log.js')("dataBatchReader");
+var plugins = require("../../../plugins/pluginManager.js");
 
 /**
  * Class to read/aggregate data in batches from mongodb and pass for processing.
@@ -22,6 +23,10 @@ class dataBatchReader {
         this.options = options.options;
         this.onData = onData;
         this.interval = options.interval || 10000;
+        if (plugins.getConfig("aggregator") && plugins.getConfig("aggregator").interval) {
+            log.e("Using aggregator config interval for dataBatchReader", plugins.getConfig("aggregator").interval);
+            this.interval = plugins.getConfig("aggregator").interval;
+        }
         this.reviveInterval = options.reviveInterval || 60000; //1 minute
         this.setUp();
 
@@ -77,8 +82,6 @@ class dataBatchReader {
                 match.cd = {$gte: new Date(cd), $lt: cd2};
             }
             pipeline.unshift({"$match": match});
-            log.e(this.name + "Running aggregation:" + JSON.stringify(pipeline));
-
             var data = await this.db.collection(this.collection).aggregate(pipeline).toArray();
 
             try {
@@ -89,7 +92,7 @@ class dataBatchReader {
                 //acknowledge 
             }
             catch (err) {
-                log.e(this.name + ": Error processing data for - " + cd2, err);
+                log.e(this.name + ": Error processing data for - " + cd2 + " " + JSON.stringify(err));
                 return; //exiting loop.
             }
             cd = cd2;
