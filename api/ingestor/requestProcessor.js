@@ -16,7 +16,12 @@ const countlyApi = {
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 
 // Initialize ClickHouse client
-const clickhouseClientSingleton = require('../../plugins/clickhouse/api/ClickhouseClient');
+try {
+    const clickhouseClientSingleton = require('../../plugins/clickhouse/api/ClickhouseClient');
+}
+catch (ee) {
+    log.e('ClickHouse client initialization failed:', ee);
+}
 let clickhouseClient = null;
 
 /**
