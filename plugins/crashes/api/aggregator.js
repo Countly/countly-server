@@ -2,7 +2,7 @@
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js');
 const { changeStreamReader } = require('../../../api/parts/data/changeStreamReader');
-const log = require('../../../api/utils/log.js')('surveys:aggregator');
+const log = require('../../../api/utils/log.js')('crashes:aggregator');
 const { WriteBatcher } = require('../../../api/parts/data/batcher.js');
 
 //Would make sense to create common file for those.
@@ -152,8 +152,6 @@ var props = [
                         var platform = next.up.p;
                         var version = next.up.av;
 
-                        log.e(JSON.stringify(next));
-
                         var groupSet = {};
                         var groupInsert = {};
                         var groupInc = {};
@@ -214,7 +212,6 @@ var props = [
                             }
                             AllUsersUpdate.$inc = inc;
                         }
-                        log.e("loaded user obj:" + JSON.stringify(user));
                         if (user && user.sessions && next.up.sc && next.up.sc > user.sessions) {
                             next.sg.session = next.up.sc - user.sessions;
                         }
@@ -361,9 +358,6 @@ var props = [
                             app_version_list: next.sg.app_version,
                         };
 
-                        log.e('app_crashgroups' + params.app_id);
-
-                        log.e(JSON.stringify(update));
                         var crashGroup = await common.db.collection('app_crashgroups' + params.app_id).findOneAndUpdate({"groups": {$elemMatch: {$eq: hash}}}, update, {upsert: true, new: false, returnDocument: "before", returnNewDocument: false});
                         if (!crashGroup) {
                             metaInc.isnew = 1;
@@ -408,7 +402,6 @@ var props = [
 
 
                         //total numbers
-                        log.e(JSON.stringify(metaInc));
                         localBatcher.add('app_crashgroups' + params.app_id, "meta", {$inc: metaInc}, "countly", {token: token});
                     }
                 });
@@ -456,7 +449,6 @@ var props = [
                         return;
                     }
                     if (app && app._id) {
-                        log.e(app.timezone, next.ts, next.sg.prev_start);
                         var params = {"app_id": next.a, "app": app, "time": common.initTimeObj(app.timezone, next.ts), "appTimezone": (app.timezone || "UTC")};
 
                         var metrics = ["cr_s", "cr_u"];

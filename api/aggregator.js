@@ -4,6 +4,7 @@ const log = require('./utils/log.js')('aggregator-core:api');
 const common = require('./utils/common.js');
 const {WriteBatcher} = require('./parts/data/batcher.js');
 const {Cacher} = require('./parts/data/cacher.js');
+const QueryRunner = require('./parts/data/QueryRunner.js');
 //Core aggregators
 require('./aggregator/processing.js');
 var t = ["countly:", "aggregator"];
@@ -34,7 +35,7 @@ plugins.connectToAllDatabases(true).then(function() {
     common.writeBatcher = new WriteBatcher(common.db);
     common.manualWriteBatcher = new WriteBatcher(common.db, true); //Manually trigerable batcher
     common.readBatcher = new Cacher(common.db); //Used for Apps info
-
+    common.queryRunner = new QueryRunner();
     common.readBatcher.transformationFunctions = {
         "event_object": function(data) {
             if (data && data.list) {

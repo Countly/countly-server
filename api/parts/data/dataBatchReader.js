@@ -1,6 +1,7 @@
 const common = require("../../utils/common");
 const log = require('../../utils/log.js')("dataBatchReader");
 var plugins = require("../../../plugins/pluginManager.js");
+var {fetchDataForAggregator} = require("../queries/aggregator.js");
 
 /**
  * Class to read/aggregate data in batches from mongodb and pass for processing.
@@ -26,6 +27,9 @@ class dataBatchReader {
         if (plugins.getConfig("aggregator") && plugins.getConfig("aggregator").interval) {
             log.e("Using aggregator config interval for dataBatchReader", plugins.getConfig("aggregator").interval);
             this.interval = plugins.getConfig("aggregator").interval;
+        }
+        else {
+            log.e("No interval set. Using default " + this.interval);
         }
         this.reviveInterval = options.reviveInterval || 60000; //1 minute
         this.setUp();
@@ -82,7 +86,9 @@ class dataBatchReader {
                 match.cd = {$gte: new Date(cd), $lt: cd2};
             }
             pipeline.unshift({"$match": match});
-            var data = await this.db.collection(this.collection).aggregate(pipeline).toArray();
+
+            //Reads from mongodb or clickhouse(if code is defined);
+            var data = await fetchDataForAggregator({pipeline: pipeline, name: this.name, cd1: cd, cd2: cd2});
 
             try {
                 if (data.length > 0) {
