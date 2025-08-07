@@ -675,7 +675,12 @@ var processToDrill = async function(params, drill_updates, callback) {
 
             // write to clickhouse
             if (!clickhouseClient) {
-                await initializeClickhouseClient();
+                try {
+                    await initializeClickhouseClient();
+                }
+                catch (error) {
+                    log.e('Failed to initialize ClickHouse client:', error);
+                }
             }
 
             if (clickhouseClient) {

@@ -68,7 +68,7 @@ var log = common.log('times-of-day:aggregator');
                                 }
                                 let id = next.a + "_" + setData.s + "_" + datestr;
                                 let incData = {};
-                                incData['d.' + next.dow + "." + next.hour + ".count"] = 1;
+                                incData['d.' + next.dow + "." + next.hour + ".count"] = next.c;
                                 setData._id = id;
                                 setData.m = datestr;
                                 common.manualWriteBatcher.add("times_of_day", id, {$set: setData, $inc: incData}, "countly", {token: token});
