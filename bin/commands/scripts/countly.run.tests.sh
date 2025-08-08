@@ -5,6 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 countly config "api.batch_processing" "false"
 countly config "api.batch_read_processing" "false"
 countly config "drill.record_meta" "true"
+countly config "aggregator.interval" 100
 
 countly restart
 

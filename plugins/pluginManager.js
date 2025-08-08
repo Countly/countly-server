@@ -342,7 +342,7 @@ var pluginManager = function pluginManager() {
 
     this.loadConfigsIngestor = async function(db, callback/*, api*/) {
         try {
-            var res = await db.collection("plugins").findOne({_id: "plugins"}, {"api": true, "plugins": true, "drill": true});
+            var res = await db.collection("plugins").findOne({_id: "plugins"}, {"api": true, "plugins": true, "drill": true,"aggregator":true});
             res = res || {};
             delete res._id;
             configs = res || {};

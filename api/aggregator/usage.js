@@ -3,9 +3,10 @@ var common = require('./../utils/common.js');
 var plugins = require('./../../plugins/pluginManager.js');
 var async = require('async');
 var crypto = require('crypto');
+var moment = require('moment-timezone');
 
 
-usage.processSessionDurationRange = function(writeBatcher, token, totalSessionDuration, did, params) {
+usage.processSessionDurationRange = async function(writeBatcher, token, totalSessionDuration, did, params) {
     var durationRanges = [
             [0, 10],
             [11, 30],
@@ -47,7 +48,6 @@ usage.processSessionDurationRange = function(writeBatcher, token, totalSessionDu
     };
     update.$set['meta_v2.d-ranges.' + calculatedDurationRange] = true;
     writeBatcher.add("users", params.app_id + "_" + dbDateIds.zero + "_" + postfix, update, "countly", {token: token});
-
 };
 
 usage.processSessionFromStream = function(token, currEvent, params) {
@@ -191,6 +191,107 @@ usage.processSessionFromStream = function(token, currEvent, params) {
         }, "countly", {token: token});
     }
     usage.processSessionMetricsFromStream(currEvent, uniqueLevelsZero, uniqueLevelsMonth, params);
+};
+
+usage.processEventTotalsFromStream = async function(token, currEventArray, writeBatcher) {
+    var rootUpdate = {};
+    for (var z = 0; z < currEventArray.length; z++) {
+        var eventColl = await common.readBatcher.getOne("events", common.db.ObjectID(currEventArray[z].a), {"transformation": "event_object"});
+        var appData = await common.readBatcher.getOne("apps", common.db.ObjectID(currEventArray[z].a), {timezone: 1, plugins: 1});
+        var conff = plugins.getConfig("api", appData.plugins, true);
+        //Get timezone offset in hours from timezone name
+        var appTimezone = appData.timezone || "UTC";
+
+        var d = moment();
+        if (appTimezone) {
+            d.tz(appTimezone);
+        }
+        var tmpEventObj = {};
+        var tmpTotalObj = {};
+
+        var shortEventName = currEventArray[z].e;
+        eventColl = eventColl || {};
+        if (!eventColl._list || eventColl._list[shortEventName] !== true) {
+            eventColl._list = eventColl._list || {};
+            eventColl._list_length = eventColl._list_length || 0;
+            if (eventColl._list_length <= conff.event_limit) {
+                eventColl._list[shortEventName] = true;
+                eventColl._list_length++;
+                rootUpdate.$addToSet = {list: shortEventName};
+            }
+            else {
+                return; //do not record this event in aggregated data
+            }
+        }
+        var eventCollectionName = crypto.createHash('sha1').update(shortEventName + currEventArray[z].a).digest('hex');
+        common.shiftHourlyData(currEventArray[z], Math.floor(d.utcOffset() / 60), "h");
+        var date = currEventArray[z].h.split(":");
+        var timeObj = {"yearly": date[0], "weekly": 1, "monthly": date[1], "month": date[1], "day": date[2], "hour": date[3]};
+        if (currEventArray[z].s && common.isNumber(currEventArray[z].s)) {
+            common.fillTimeObjectMonth({"time": timeObj}, tmpEventObj, common.dbMap.sum, currEventArray[z].s);
+            common.fillTimeObjectMonth({"time": timeObj}, tmpTotalObj, shortEventName + '.' + common.dbMap.sum, currEventArray[z].s);
+        }
+        else {
+            currEventArray[z].s = 0;
+        }
+        if (currEventArray[z].dur && common.isNumber(currEventArray[z].dur)) {
+            common.fillTimeObjectMonth({"time": timeObj}, tmpEventObj, common.dbMap.dur, currEventArray[z].dur);
+            common.fillTimeObjectMonth({"time": timeObj}, tmpTotalObj, shortEventName + '.' + common.dbMap.dur, currEventArray[z].dur);
+        }
+        else {
+            currEventArray[z].dur = 0;
+        }
+        currEventArray[z].c = currEventArray[z].c || 1;
+        if (currEventArray[z].c && common.isNumber(currEventArray[z].c)) {
+            currEventArray[z].c = parseInt(currEventArray[z].c, 10);
+        }
+
+        common.fillTimeObjectMonth({"time": timeObj}, tmpEventObj, common.dbMap.count, currEventArray[z].c);
+        common.fillTimeObjectMonth({"time": timeObj}, tmpTotalObj, shortEventName + '.' + common.dbMap.count, currEventArray[z].c);
+
+        var postfix2 = common.crypto.createHash("md5").update(shortEventName).digest('base64')[0];
+        var dateIds = common.getDateIds({"time": timeObj});
+
+        var _id = currEventArray[z].a + "_" + eventCollectionName + "_no-segment_" + dateIds.month;
+        //Current event
+        writeBatcher.add("events_data", _id, {
+            "$set": {
+                "m": dateIds.month,
+                "s": "no-segment",
+                "a": currEventArray[z].a + "",
+                "e": shortEventName
+            },
+            "$inc": tmpEventObj
+        }, "countly");
+
+        //Total event
+        writeBatcher.add("events_data", currEventArray[z].a + "_all_key_" + dateIds.month + "_" + postfix2, {
+            "$set": {
+                "m": dateIds.month,
+                "s": "key",
+                "a": currEventArray[z].a + "",
+                "e": "all"
+            },
+            "$inc": tmpTotalObj
+        }, "countly");
+
+        //Meta document for all events:
+        writeBatcher.add("events_data", currEventArray[z].a + "_all_" + "no-segment_" + dateIds.zero + "_" + postfix2, {
+            $set: {
+                m: dateIds.zero,
+                s: "no-segment",
+                a: currEventArray[z].a + "",
+                e: "all",
+                ["meta_v2.key." + shortEventName]: true,
+                "meta_v2.segments.key": true
+
+            }
+        }, "countly",
+        {token: token});
+        if (Object.keys(rootUpdate).length) {
+            await common.db.collection("events").updateOne({_id: common.db.ObjectID(currEventArray[z].a)}, rootUpdate, {upsert: true});
+        }
+    }
 };
 
 

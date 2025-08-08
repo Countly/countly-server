@@ -186,14 +186,17 @@ class WriteBatcher {
     /**
      *  Create batcher instance
      *  @param {Db} db - database object
+     *  @param {boolean} preventAutoFlush - if true, then auto flush will not be called
      */
-    constructor(db) {
+    constructor(db, preventAutoFlush) {
         this.dbs = {countly: db};
         this.data = {countly: {}};
         this.flushCallbacks = {};
         plugins.loadConfigs(db, () => {
             this.loadConfig();
-            this.schedule();
+            if (!preventAutoFlush) {
+                this.schedule();
+            }
         });
     }
 
@@ -230,8 +233,9 @@ class WriteBatcher {
      *  Writes data to database for specific collection
      *  @param {string} db - name of the database for which to write data
      *  @param {string} collection - name of the collection for which to write data
+     *  @param {number} lu - last used timestamp. Will be used to update only if new value is greater than last one
      */
-    async flush(db, collection) {
+    async flush(db, collection, lu) {
         var no_fallback_errors = [10334, 17419, 14, 56];
         var notify_errors = [10334, 17419];
         if (this.data[db] && this.data[db][collection] && this.data[db][collection].data && Object.keys(this.data[db][collection].data).length) {
@@ -243,9 +247,13 @@ class WriteBatcher {
                     if (typeof this.data[db][collection].data[key].upsert !== "undefined") {
                         upsert = this.data[db][collection].data[key].upsert;
                     }
+                    var filter = {_id: this.data[db][collection].data[key].id};
+                    if (lu) {
+                        filter.lu = {$lt: lu};
+                    }
                     queries.push({
                         updateOne: {
-                            filter: {_id: this.data[db][collection].data[key].id},
+                            filter: filter,
                             update: this.data[db][collection].data[key].value,
                             upsert: upsert
                         }
@@ -267,7 +275,7 @@ class WriteBatcher {
             }
             catch (ex) {
                 if (ex.code !== 11000) {
-                    log.e("Error updating documents into", db, collection, ex, ex.writeErrors);
+                    log.e("Error updating documents into" + db + collection + ex + ex.writeErrors);
                 }
 
                 //trying to rollback operations to try again on next iteration

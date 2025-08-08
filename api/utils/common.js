@@ -3446,17 +3446,29 @@ common.applyUniqueOnModel = function(model, uniqueData, prop) {
 /**
  * Shifts hourly data (To be in different timezone)
  * @param {*} data  array of data
- * @param {*} offset (integer)
+ * @param {*} offset (integer) - full hours
+ * @param {string} field - field to shift. Default is "_id"
  * @returns {Array} shifted data
  */
-common.shiftHourlyData = function(data, offset) {
+common.shiftHourlyData = function(data, offset, field = "_id") {
+    var dd, iid;
     if (typeof offset === "number") {
-        for (var z = 0; z < data.length; z++) {
-            var iid = data[z]._id.replace("h", "").split(":");
-            var dd = Date.UTC(parseInt(iid[0], 10), parseInt(iid[1]), parseInt(iid[2]), parseInt(iid[3]), 0, 0);
+        if (Array.isArray(data)) {
+            data = [data];
+            for (var z = 0; z < data.length; z++) {
+                iid = data[z][field].replace("h", "").split(":");
+                dd = Date.UTC(parseInt(iid[0], 10), parseInt(iid[1]), parseInt(iid[2]), parseInt(iid[3]), 0, 0);
+                dd = new Date(dd.valueOf() + offset * 60 * 60 * 1000);
+                iid = dd.getFullYear() + ":" + dd.getMonth() + ":" + dd.getDate() + ":" + dd.getHours();
+                data[z][field] = iid;
+            }
+        }
+        else {
+            iid = data[field].replace("h", "").split(":");
+            dd = Date.UTC(parseInt(iid[0], 10), parseInt(iid[1]), parseInt(iid[2]), parseInt(iid[3]), 0, 0);
             dd = new Date(dd.valueOf() + offset * 60 * 60 * 1000);
             iid = dd.getFullYear() + ":" + dd.getMonth() + ":" + dd.getDate() + ":" + dd.getHours();
-            data[z]._id = iid;
+            data[field] = iid;
         }
     }
     return data;

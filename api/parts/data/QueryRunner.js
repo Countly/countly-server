@@ -9,6 +9,14 @@ const log = require('../../utils/log.js')('query-runner');
 const fs = require('fs');
 const path = require('path');
 
+config.queryRunner = config.queryRunner || {};
+if (!config.queryRunner.adapters || Object.keys(config.queryRunner.adapters).length === 0) {
+    config.queryRunner.adapters = {
+        mongodb: {
+            enabled: true
+        }
+    };
+}
 /**
  * QueryRunner Class
  * 

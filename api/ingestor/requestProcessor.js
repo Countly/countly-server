@@ -16,7 +16,12 @@ const countlyApi = {
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 
 // Initialize ClickHouse client
-const clickhouseClientSingleton = require('../../plugins/clickhouse/api/ClickhouseClient');
+try {
+    const clickhouseClientSingleton = require('../../plugins/clickhouse/api/ClickhouseClient');
+}
+catch (ee) {
+    log.e('ClickHouse client initialization failed:', ee);
+}
 let clickhouseClient = null;
 
 /**
@@ -670,7 +675,12 @@ var processToDrill = async function(params, drill_updates, callback) {
 
             // write to clickhouse
             if (!clickhouseClient) {
-                await initializeClickhouseClient();
+                try {
+                    await initializeClickhouseClient();
+                }
+                catch (error) {
+                    log.e('Failed to initialize ClickHouse client:', error);
+                }
             }
 
             if (clickhouseClient) {
@@ -678,6 +688,10 @@ var processToDrill = async function(params, drill_updates, callback) {
                     const clickhouseData = [];
                     for (const bulkOp of eventsToInsert) {
                         if (bulkOp.insertOne && bulkOp.insertOne.document) {
+                            if (bulkOp.insertOne.document.e === "[CLY]_session_update") {
+                                bulkOp.insertOne.document.e = "[CLY]_session";
+                                bulkOp.insertOne.document._id = bulkOp.insertOne.document.lsid;
+                            }
                             const transformed = transformToClickhouseFormat(bulkOp.insertOne.document);
                             if (transformed) {
                                 clickhouseData.push(transformed);
