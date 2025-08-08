@@ -21,6 +21,7 @@ sed -i -e 's/APP_KEY: process.env.COUNTLY_TEST_APP_KEY || ""/APP_KEY: "b41e02136
 sed -i -e 's/API_KEY_ADMIN: process.env.COUNTLY_TEST_API_KEY_ADMIN || ""/API_KEY_ADMIN: "e6bfab40a224d55a2f5d40c83abc7ed4"/g' /opt/countly/test/testUtils.js
 
 # shellcheck disable=SC2016
+echo "Preparing Countly plugins tests"
 mongosh mongodb/countly --eval 'db.plugins.update({_id: "plugins"}, {$set:{"api.batch_processing":false, "api.batch_read_processing": false, "drill.record_meta": true, "funnels.funnel_caching": false,"aggregator.interval":100}}, {upsert:true})'
 
 #link nodejs correctly if needed
