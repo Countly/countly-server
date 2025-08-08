@@ -20,8 +20,10 @@ async function mongodbHandler(params) {
     //{ collection, name, pipeline, cd0, cd1}
     var { collection, pipeline} = params;
     collection = collection || "drill_events";
+
+    var db = common.drillDb;
     try {
-        var data = await common.db.collection(collection).aggregate(pipeline, {allowDiskUse: true}).toArray();
+        var data = await db.collection(collection).aggregate(pipeline, {allowDiskUse: true}).toArray();
         return {
             _queryMeta: {
                 adapter: 'mongodb',

@@ -110,8 +110,7 @@ var crypto = require('crypto');
     plugins.register("/aggregator", function() {
         var writeBatcher = new WriteBatcher(common.db, true);
         new dataBatchReader(common.drillDb, {
-            pipeline: [{"$match": {"e": {"$in": ["[CLY]_session"]}}}],
-            "timefield": "lu",
+            pipeline: [{"$match": {"e": {"$in": ["[CLY]_session_update"]}}}],
             "name": "session-updates",
             "collection": "drill_events",
         }, async function(token, docs) {
@@ -119,7 +118,7 @@ var crypto = require('crypto');
             if (docs.length > 0) {
                 for (var z = 0; z < docs.length; z++) {
                     var next = docs[z];
-                    if (next && next.a && next.e && next.e === "[CLY]_session" && next.n && next.ts) {
+                    if (next && next.a && next.e && next.e === "[CLY]_session_update" && next.ts) {
                         try {
                             var app = await common.readBatcher.getOne("apps", common.db.ObjectID(next.a));
                             if (app) {
@@ -143,7 +142,7 @@ var crypto = require('crypto');
     });
 
 
-    //Segmentation and events list aggregator:
+    //Drill meta aggregator
     plugins.register("/aggregator", function() {
         var drillMetaCache = new Cacher(common.drillDb); //Used for Apps info
         new dataBatchReader(common.drillDb, {

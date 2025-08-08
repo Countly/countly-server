@@ -2685,6 +2685,15 @@ const processRequest = (params) => {
                                 else {
                                     for (var k = 0; k < res.length; k++) {
                                         result.list.push(res[k].e);
+                                        if (res[k].sg && Object.keys(res[k].sg).length > 0) {
+                                            result.segments[res[k].e] = Object.keys(res[k].sg);
+                                        }
+                                    }
+                                    if (result.list.length === 0) {
+                                        delete result.list;
+                                    }
+                                    if (Object.keys(result.segments).length === 0) {
+                                        delete result.segments;
                                     }
                                     common.returnOutput(params, result);
                                 }

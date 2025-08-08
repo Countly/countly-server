@@ -688,6 +688,10 @@ var processToDrill = async function(params, drill_updates, callback) {
                     const clickhouseData = [];
                     for (const bulkOp of eventsToInsert) {
                         if (bulkOp.insertOne && bulkOp.insertOne.document) {
+                            if (bulkOp.insertOne.document.e === "[CLY]_session_update") {
+                                bulkOp.insertOne.document.e = "[CLY]_session";
+                                bulkOp.insertOne.document._id = bulkOp.insertOne.document.lsid;
+                            }
                             const transformed = transformToClickhouseFormat(bulkOp.insertOne.document);
                             if (transformed) {
                                 clickhouseData.push(transformed);
