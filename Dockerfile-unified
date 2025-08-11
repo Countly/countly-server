@@ -7,7 +7,7 @@ ARG GEOIP=empty
 ###############################################################################
 # Stage 0 – base toolchain & node_modules (no full source tree)               #
 ###############################################################################
-FROM node:24-bookworm-slim AS base
+FROM node:24.4.1-bookworm-slim AS base
 ENV HUSKY=0
 
 # 0.1  core build & runtime libs (single APT layer for better cache)
@@ -98,7 +98,6 @@ COPY bin/offline-geocoder/scripts ./bin/offline-geocoder/scripts
 
 RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
     npm ci --omit=dev --ignore-scripts && \
-    npm run prepare --if-present || true && \
     npm install argon2 --omit=dev --build-from-source --unsafe-perm=true && \
     if [ -n "$GEOIP" ] && [ "$GEOIP" != "empty" ]; then \
         node ./node_modules/geoip-lite/scripts/updatedb.js license_key="$GEOIP"; \
@@ -155,7 +154,7 @@ RUN npm remove -y --no-save mocha nyc should supertest && \
 ###############################################################################
 # Stage 4 – runtime (minimal, no compilers)                                    #
 ###############################################################################
-FROM node:24-bookworm-slim AS runtime
+FROM node:24.4.1-bookworm-slim AS runtime
 
 # 4.1 runtime libs (no -dev)
 RUN set -eux; apt-get update && apt-get install -y --no-install-recommends \
