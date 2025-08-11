@@ -1,3 +1,8 @@
+## Version 25.03.xx
+
+Enterprise Fixes:
+- [ldap] Connection timeout values are added to LDAP config
+
 ## Version 25.03.14
 
 Fixes:
