@@ -2658,11 +2658,13 @@ const processRequest = (params) => {
                 case 'get_events':
                     //validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
                     validateRead(params, 'core', function() {
-                        if (params.qstring.core) {
-                            validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
-                        }
-                        else {
-                            var result = {list: [], segments: {}};
+
+                        common.db.collection("events").findOne({ '_id': params.app_id }, function(err, result) {
+                            if (!result) {
+                                result = {};
+                            }
+                            result.list = [];
+                            result.segments = {};
                             const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
                             result.limits = {
                                 event_limit: pluginsGetConfig.event_limit,
@@ -2672,15 +2674,15 @@ const processRequest = (params) => {
 
                             var aggregation = [];
                             aggregation.push({$match: {"app_id": params.qstring.app_id, "type": "e", "biglist": {"$ne": true}}});
-                            aggregation.push({"$project": {e: 1, _id: 0}});
+                            aggregation.push({"$project": {e: 1, _id: 0, "sg": 1}});
                             //e does not start with [CLY]_
                             aggregation.push({$match: {"e": {"$not": /^(\[CLY\]_)/}}});
                             aggregation.push({"$sort": {"e": 1}});
                             aggregation.push({"$limit": pluginsGetConfig.event_limit || 500});
 
-                            common.drillDb.collection("drill_meta").aggregate(aggregation, function(err, res) {
-                                if (err) {
-                                    common.returnMessage(params, 400, err);
+                            common.drillDb.collection("drill_meta").aggregate(aggregation, function(err5, res) {
+                                if (err5) {
+                                    common.returnMessage(params, 400, err5);
                                 }
                                 else {
                                     for (var k = 0; k < res.length; k++) {
@@ -2698,7 +2700,7 @@ const processRequest = (params) => {
                                     common.returnOutput(params, result);
                                 }
                             });
-                        }
+                        });
                     }, 'events');
                     break;
                 case 'top_events':

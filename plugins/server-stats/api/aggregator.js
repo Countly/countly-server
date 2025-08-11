@@ -3,6 +3,7 @@ var plugins = require('../../pluginManager.js'),
     stats = require('./parts/stats.js');
 const { dataBatchReader } = require('../../../api/parts/data/dataBatchReader');
 
+const internalEventsSkipped = ["[CLY]_orientation", "[CLY]_session_update"];
 (function() {
     plugins.register("/aggregator", function() {
         //I should register all to common manager which makes sure it is alive from time to time.
@@ -20,7 +21,10 @@ const { dataBatchReader } = require('../../../api/parts/data/dataBatchReader');
         }, async function(token, results) {
             for (var z = 0; z < results.length; z++) {
                 if (results[z]._id && results[z]._id.a && results[z]._id.e) {
-                    if (results[z]._id.e === "[CLY]_session") {
+                    if (internalEventsSkipped.includes(results[z]._id.e)) {
+                        continue;
+                    }
+                    else if (results[z]._id.e === "[CLY]_session") {
                         stats.updateDataPoints(common.manualWriteBatcher, results[z]._id.a, results[z].count, 0, false, token);
                     }
                     else if (results[z]._id.e in stats.internalEventsEnum) {
