@@ -511,7 +511,8 @@
                 "plugins/pluginDependencies.js",
                 "plugins/*/api/**/*.js",
                 "plugins/*/frontend/**/*.js",
-                "plugins/*/extend/**/*.js"
+                "plugins/*/extend/**/*.js",
+                "observability/**/*.js"
             ],
             "excludedFiles": [
                 "plugins/*/frontend/public/**/*.js",
