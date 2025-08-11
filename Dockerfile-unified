@@ -96,11 +96,18 @@ COPY --from=ab-models \
 COPY package*.json ./
 COPY bin/offline-geocoder/scripts ./bin/offline-geocoder/scripts
 
+# Install base dependencies
 RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
-    npm ci --omit=dev --ignore-scripts && \
-    npm install argon2 --omit=dev --build-from-source --unsafe-perm=true && \
+    npm ci --omit=dev --ignore-scripts
+
+# Install argon2 separately (requires native compilation)
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
+    npm install argon2 --omit=dev --build-from-source --unsafe-perm=true
+
+# Update GeoIP database if license key provided
+RUN --mount=type=cache,id=geoip-cache,target=/tmp/geoip-cache,sharing=locked \
     if [ -n "$GEOIP" ] && [ "$GEOIP" != "empty" ]; then \
-        node ./node_modules/geoip-lite/scripts/updatedb.js license_key="$GEOIP"; \
+        GEOIP_CACHE_DIR=/tmp/geoip-cache node ./node_modules/geoip-lite/scripts/updatedb.js license_key="$GEOIP"; \
     fi
 
 # 3) offline geocoder data  (cached on its own)
