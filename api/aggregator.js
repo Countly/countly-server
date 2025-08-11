@@ -244,9 +244,6 @@ plugins.connectToAllDatabases(true).then(function() {
 
     plugins.init({"skipDependencies": true, "filename": "aggregator"});
     plugins.loadConfigs(common.db, async function() {
-        var current_conf = await common.db.collection("plugins").findOne({_id: "plugins"});
-        console.log(JSON.stringify(current_conf, null, 2));
-        console.log(JSON.stringify(plugins.getConfig("aggregator")));
         plugins.dispatch("/aggregator", {common: common});
     });
 });
