@@ -1,5 +1,10 @@
 {
     "extends": "eslint:recommended",
+    "ignorePatterns": [
+        "**/*.d.ts",
+        "types/**/*.d.ts",
+        "plugins/*/types/**/*.d.ts"
+    ],
     "rules": {
         //        "quotes": ["warn", "single", { "avoidEscape": true }],
         "require-atomic-updates": "off",

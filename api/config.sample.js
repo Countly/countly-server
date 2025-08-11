@@ -9,7 +9,7 @@ var countlyConfig = {
     /**
      * Database connection and adapter configuration
      * @type {object}
-     * @property {boolean} [failOnConnectionError=true] - whether to kill process if database adapters fail connection on startup (MongoDB fallback behavior unchanged)
+     * @property {boolean} [failOnConnectionError=true] - whether to kill process if non-MongoDB database adapters fail connection on startup (MongoDB fallback behavior unchanged)
      * @property {boolean} [debug=false] - enables db_override toggle and related debugging features in UI and backend for drill
      * @property {array} [adapterPreference=['mongodb', 'clickhouse']] - Adapter preference order for QueryRunner (first match wins)
      * @property {object} adapters - Adapter availability settings for QueryRunner
