@@ -9,7 +9,7 @@ node_modules
 plugins/*/node_modules
 
 # Package files (will be handled by npm install in Dockerfile)
-package-lock.json
+# package-lock.json  # REQUIRED for npm ci in Docker builds
 yarn.lock
 npm-debug.log*
 yarn-debug.log*
