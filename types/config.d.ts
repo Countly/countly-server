@@ -43,6 +43,27 @@ export interface EncryptionConfig {
     reports_key?: string; // key for report link encryption
 }
 
+/** Database adapter configuration */
+export interface DatabaseAdapterConfig {
+    /** Enable this adapter */
+    enabled?: boolean; // default: true
+}
+
+/** Database configuration */
+export interface DatabaseConfig {
+    /** Whether to kill process if database adapters fail connection on startup */
+    failOnConnectionError?: boolean; // default: true
+    /** Enable db_override toggle and related debugging features in UI and backend for drill */
+    debug?: boolean; // default: false
+    /** Adapter preference order for QueryRunner (first match wins) */
+    adapterPreference?: string[]; // default: ['mongodb', 'clickhouse']
+    /** Adapter availability settings for QueryRunner */
+    adapters?: {
+        mongodb?: DatabaseAdapterConfig;
+        clickhouse?: DatabaseAdapterConfig;
+    };
+}
+
 /** Mail configuration */
 export interface MailConfig {
     transport?: string; // e.g., 'nodemailer-smtp-transport'
@@ -96,6 +117,9 @@ export interface CountlyAPIConfig {
     
     /** API server settings */
     api: APIConfig;
+    
+    /** Database connection and adapter configuration */
+    database: DatabaseConfig;
     
     /** Path to use for countly directory, empty path if installed at root of website */
     path: string; // default: ""

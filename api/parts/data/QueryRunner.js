@@ -368,7 +368,7 @@ class QueryRunner {
         }
 
         // Use adapter preference from config
-        const adapterPreference = config.queryRunner?.adapterPreference || ['mongodb', 'clickhouse'];
+        const adapterPreference = config.database?.adapterPreference || ['mongodb', 'clickhouse'];
 
         // Find first available adapter in preference order
         for (const preferred of adapterPreference) {
@@ -388,7 +388,7 @@ class QueryRunner {
      * @private
      */
     isAdapterAvailable(adapterName) {
-        return config.queryRunner?.adapters?.[adapterName]?.enabled === true;
+        return config.database?.adapters?.[adapterName]?.enabled === true;
     }
 
 }
