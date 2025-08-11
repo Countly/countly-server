@@ -4,6 +4,7 @@ import { Params } from "./requestProcessor";
 import { PluginManager, Database } from "./pluginManager";
 import { Logger } from "./log";
 import { CountlyAPIConfig } from "./config";
+import { ClickHouseQueryService } from "../plugins/clickhouse/types/clickhouseQueryService";
 
 /** Node.js Request object */
 export interface req {
@@ -1021,6 +1022,9 @@ export interface Common {
             name: string;        // display name
         };
     };
+
+    /** ClickHouse query service instance */
+    clickhouseQueryService?: ClickHouseQueryService;
 
 }
 

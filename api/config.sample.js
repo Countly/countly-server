@@ -7,32 +7,20 @@
 var countlyConfig = {
 
     /**
-     * Drill events database driver configuration
-     * @type {string}
-     * @property {string} [drill_events_driver=mongodb] - database driver to use for drill events storage
-     * Possible values are: "mongodb", "clickhouse"
-     */
-    drill_events_driver: "mongodb",
-
-    /**
-     * Enable ClickHouse debug features for drill
-     * @type {boolean}
-     * @property {boolean} [drill_clickhouse_debug=false] - enables db_override toggle and related debugging features in UI and backend
-     * When false, the toggle is hidden and system falls back to drill_events_driver config
-     */
-    drill_clickhouse_debug: false,
-
-    /**
-     * Query Runner configuration for multi-database query execution
+     * Database connection and adapter configuration
      * @type {object}
-     * @property {array} [adapterPreference=['mongodb', 'clickhouse']] - Adapter preference order (first match wins)
-     * @property {object} adapters - Adapter availability settings
+     * @property {boolean} [failOnConnectionError=true] - whether to kill process if non-MongoDB database adapters fail connection on startup (MongoDB fallback behavior unchanged)
+     * @property {boolean} [debug=false] - enables db_override toggle and related debugging features in UI and backend for drill
+     * @property {array} [adapterPreference=['mongodb', 'clickhouse']] - Adapter preference order for QueryRunner (first match wins)
+     * @property {object} adapters - Adapter availability settings for QueryRunner
      * @property {object} adapters.mongodb - MongoDB adapter settings
      * @property {boolean} [adapters.mongodb.enabled=true] - Enable MongoDB adapter
      * @property {object} adapters.clickhouse - ClickHouse adapter settings
      * @property {boolean} [adapters.clickhouse.enabled=true] - Enable ClickHouse adapter
      */
-    queryRunner: {
+    database: {
+        failOnConnectionError: true,
+        debug: false,
         adapterPreference: ['mongodb', 'clickhouse'],
         adapters: {
             mongodb: {
