@@ -39,6 +39,50 @@
                 <form>
                     <h2 class="bu-mb-4" :data-test-id="'selected-config-name-label-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-')"> {{selectedConfigName}} </h2>
                     <div v-if="predefinedStructure[selectedConfig].description" class="bu-mb-4 text-medium" :data-test-id="'selected-config-description-label-' + selectedConfigName.toLowerCase().replaceAll(/\s/g, '-')">{{i18n(predefinedStructure[selectedConfig].description)}}</div>
+                    <div v-if="selectedConfig === 'subscription' && configsData.subscription">
+                        <cly-section class="bu-mr-5">
+                            <template v-slot="formScope">
+                                    <div>
+                                        <cly-inline-form-field :label="'Plan'" test-id="subscription-current-plan">
+                                            {{ configsData.subscription.currentPlan || 'Plan not found' }}
+                                        </cly-inline-form-field>
+                                    </div>
+                                    <div>
+                                        <cly-inline-form-field :label="'Region'" test-id="subscription-region">
+                                            {{ configsData.subscription.region || 'Region not found' }}
+                                        </cly-inline-form-field>
+                                    </div>
+                                    <div>
+                                        <cly-inline-form-field :label="'MAU'" test-id="subscription-capacity">
+                                            {{ configsData.subscription.used || 0 }} / {{ configsData.subscription.totalCapacity || 0 }}
+                                        </cly-inline-form-field>
+                                    </div>
+                                    <div>
+                                        <cly-inline-form-field :label="'Next Period Reset Date'" test-id="subscription-period">
+                                            {{ configsData.subscription.endsAt || 'N/A' }}
+                                        </cly-inline-form-field>
+                                    </div>
+                                    <div>
+                                        <cly-inline-form-field :label="'Add-ons'" test-id="subscription-addons">
+                                            <span v-if="configsData.subscription.addOns && configsData.subscription.addOns.length > 0">
+                                                {{ configsData.subscription.addOns.map(item => item).join(', ') }}
+                                            </span>
+                                            <span v-else>No add-ons</span>
+                                        </cly-inline-form-field>
+                                    </div>
+                                    <div>
+                                        <cly-inline-form-field :label="'Extras'" test-id="subscription-extras">
+                                            <span v-if="configsData.subscription.extras && configsData.subscription.extras.length > 0">
+                                                {{ configsData.subscription.extras.map(item => item).join(', ') }}
+                                            </span>
+                                            <span v-else>No extras</span>
+                                        </cly-inline-form-field>
+                                    </div>
+
+                                
+                            </template>
+                        </cly-section>
+                    </div>
                     <div :id="group.label" :key="index" v-for="(group, index) in predefinedStructure[selectedConfig].groups">
                         <h3 v-if="predefinedStructure[selectedConfig].groups.length > 1 || group.label" class="bu-my-4" :data-test-id="'selected-config-group-label-' + i18n(group.label).toLowerCase().replaceAll(/\s/g, '-')"> 
                             {{group.label && i18n(group.label)}}

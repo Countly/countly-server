@@ -152,6 +152,35 @@
                 success: function(json) {
                     _configsData = json;
                 }
+            }),
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/subscription/flex",
+                success: function(json) {
+                    // create subscription object if it doesn't exist
+                    if (!_configsData.subscription) {
+                        _configsData.subscription = {};
+                    }
+                    
+                    // add response data to subscription object
+                    _configsData.subscription.region = json.region || "";
+                    _configsData.subscription.startsAt = json.startsAt || "";
+                    _configsData.subscription.endsAt = json.endsAt || "";
+                    _configsData.subscription.totalCapacity = json.totalCapacity || 0;
+                    _configsData.subscription.used = json.used || 0;
+                    _configsData.subscription.available = json.available || 0;
+                    _configsData.subscription.currentPlan = json.currentPlan || "basic";
+                    _configsData.subscription.extras = json.extras || [];
+                    _configsData.subscription.addOns = json.addOns || [];
+                    
+                    console.log("Subscription data received:", json);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching subscription data:", error);
+                    if (!_configsData.subscription) {
+                        _configsData.subscription = {};
+                    }
+                }
             })
         ).then(function() {
             return true;

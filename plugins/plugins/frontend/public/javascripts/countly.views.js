@@ -299,9 +299,10 @@
                 configsData: {},
                 configsList: [],
                 coreDefaults: ['api', 'frontend', 'logs', 'security'],
+                countlyFlexDefaults: ['subscription'],
                 diff: [],
                 diff_: {},
-                selectedConfig: this.$route.params.namespace || "api",
+                selectedConfig: this.$route.params.namespace || "subscription",
                 searchPlaceholder: CV.i18n("configs.search-settings"),
                 predefinedLabels: app.configurationsView.predefinedLabels,
                 predefinedInputs: app.configurationsView.predefinedInputs,
@@ -373,6 +374,12 @@
                         if (!self.predefinedStructure[key]) {
                             self.predefinedStructure[key] = {groups: []};
                         }
+
+                        if (key === 'subscription') {
+                            self.predefinedStructure[key] = {groups: []};
+                            continue;
+                        }
+                        
                         var otherStructure = [];
                         for (var subkey in self.configsData[key]) {
                             if (!self.predefinedInputs[key + "." + subkey]) {
