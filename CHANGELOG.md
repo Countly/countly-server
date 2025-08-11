@@ -1,15 +1,60 @@
-## Version 25.03.XX
+## Version 25.03.xx
 
+Enterprise Fixes:
+- [ldap] Connection timeout values are added to LDAP config
+
+## Version 25.03.14
+
+Fixes:
+- [dashboard] Localized missing string in the dashboard
+- [localization] Added French translations
+
+Enterprise Fixes:
+- [active_directory] Fix for body parser empty request body issue
+
+Dependencies:
+- Bump eslint-plugin-vue from 10.3.0 to 10.4.0
+- Bump fs-extra from 11.3.0 to 11.3.1
+- Bump lint-staged from 16.1.2 to 16.1.4
+- Bump puppeteer from 24.15.0 to 24.16.0
+- Bump sass from 1.89.2 to 1.90.0
+- Bump typescript from 5.8.3 to 5.9.2
+
+
+## Version 25.03.13
+Features:
+- [remote-config] Enable comparing newer/older app version in conditions
+
+Fixes:
+- [remote-config] Fix condition matching with compound conditions
+
+Enterprise Fixes:
+- [flows] Showing correct state for disabled flows
+- [surveys] Move "not likely" label next to 0 on mobile screens
+
+
+## Version 25.03.12
 Features:
 - [plugins] Add configuration warning tags to settings UI
+- [white-labeling] Add sidebar footer label setting to white labeling
 
 Fixes:
 - [core] Use correct rights validation for loyality
 - [crashes] Fix free session for home widget
+- [crashes] Fix trend and change calculation for crash stats
 - [crashes] Use na for free session and free user when there's no data
+- [push] Show segmentation, geo and cohorts related components in push drawer on editing draft.
 
 Enterprise Fixes:
 - [ldap] Error handling in ldap plugin on search error
+- [license] Display notification for non global admin user
+- [users] Load table data from report if user table calculation goes to report manager
+
+Dependencies:
+- Bump mongodb from 6.17.0 to 6.18.0
+- Bump puppeteer from 24.14.0 to 24.15.0
+- Bump supertest from 7.1.3 to 7.1.4
+
 
 ## Version 25.03.11
 Fixes:

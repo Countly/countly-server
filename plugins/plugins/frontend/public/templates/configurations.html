@@ -51,25 +51,32 @@
                                     v-for="key in group.list" :key="key" 
                                     class="bu-columns bu-is-vcentered bu-p-5 config-section">
                                     <div class="bu-column bu-is-7">
-                                        <div 
-                                            v-if="getWarningTags(selectedConfig, key).length"
-                                            class="bu-is-flex bu-is-align-items-center bu-is-justify-content-start bu-mb-2">
-                                            <div
-                                                v-for="(tag, index) in getWarningTags(selectedConfig, key)"
-                                                :key="index"
-                                                class="bu-is-flex bu-is-align-items-center bu-is-justify-content-center"
-                                                v-tooltip="tag.tooltipText"
-                                            >
-                                                <i 
-                                                    class="cly-io cly-io-exclamation text-big"
-                                                    :class="tag.color"
-                                                />
-                                                <span class="bu-ml-1 bu-mr-4 text-smallest" :class="tag.color">{{ tag.label }}</span>
-                                            </div>
-                                        </div>
-                                        <div class="bu-has-text-weight-medium bu-is-flex bu-is-align-items-center" :data-test-id="'settings-title-label-' + key.toLowerCase().replaceAll('_', '-')">
+                                        <div class="bu-has-text-weight-medium bu-is-flex bu-is-align-items-center config-section__header">
                                             <div>
-                                                <span class="bu-mr-2"> {{ getLabelName(key) }} </span>
+                                                <span class="bu-mr-2" :data-test-id="'settings-title-label-' + key.toLowerCase().replaceAll('_', '-')"> {{ getLabelName(key) }} </span>
+                                            </div>
+                                            <div 
+                                                class="bu-is-flex bu-is-align-items-center"
+                                            >
+                                                <div
+                                                    v-for="(tag, index) in getWarningTags(selectedConfig, key)"
+                                                    :key="index"
+                                                    class="bu-is-flex bu-is-align-items-center bu-is-justify-content-center bu-mr-2"
+                                                >
+                                                    <div
+                                                        :style="{ backgroundColor: tag.bgColor }"
+                                                        v-tooltip="tag.tooltipText"
+                                                        class="configuration-warning-container"
+
+                                                    >
+                                                        <span
+                                                            class="configuration-warning-container__text"
+                                                            :style="{ color: tag.textColor }"
+                                                        > 
+                                                            {{ tag.label }} 
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         <p class="bu-has-text-weight-normal bu-mt-2 bu-mb-0" v-html="getHelperLabel(key)" v-if="getHelperLabel(key)" :data-test-id="'settings-description-label-' + key.toLowerCase().replaceAll('_', '-')"></p>

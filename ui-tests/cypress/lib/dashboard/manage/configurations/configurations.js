@@ -179,12 +179,13 @@ const verifyPageElements = () => {
         attrText: "100"
     });
 
+    // cy.scrollPageToCenter();
+    cy.scrollPageSlightly();
+
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.DATA_LIMITS.EVENT_SEGMENTATION_VALUE_LIMIT}).SELECTED_SUBFEATURE_TITLE,
         labelText: "Max unique values in each segmentation",
     });
-
-    cy.scrollPageToCenter();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.DATA_LIMITS.EVENT_SEGMENTATION_VALUE_LIMIT}).SELECTED_SUBFEATURE_DESCRIPTION,
@@ -244,6 +245,7 @@ const verifyPageElements = () => {
         attr: "aria-valuenow",
         attrText: "10"
     });
+    cy.scrollPageSlightly();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.OTHER_API_SETTINGS}).SELECTED_FEATURE_GROUP_NAME,
@@ -327,7 +329,7 @@ const verifyPageElements = () => {
         value: "every hour"
     });
 
-    cy.scrollPageToBottom();
+    cy.scrollPageSlightly();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.REQUEST_THRESHOLD}).SELECTED_SUBFEATURE_TITLE,
@@ -394,6 +396,8 @@ const verifyPageElements = () => {
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.COUNTRY_DATA}).SELECTED_SUBFEATURE_TITLE,
         labelText: "Track country data",
     });
+
+    cy.scrollPageSlightly();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({subFeature: SETTINGS.API.OTHER_API_SETTINGS.COUNTRY_DATA}).SELECTED_SUBFEATURE_DESCRIPTION,
@@ -837,7 +841,7 @@ const verifyPageElements = () => {
         isChecked: true
     });
 
-    cy.scrollPageToBottom();
+    cy.scrollPageSlightly();
 
     cy.verifyElement({
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.PASSWORD_EXPIRATION }).SELECTED_SUBFEATURE_TITLE,
@@ -911,6 +915,8 @@ const verifyPageElements = () => {
         labelElement: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.PASSWORD_SYMBOL }).SELECTED_SUBFEATURE_DESCRIPTION,
         labelText: "If enabled, provided passwords must contain at least one special symbol (not a number or latin character)",
     });
+
+    cy.scrollPageToBottom();
 
     cy.verifyElement({
         element: configurationsListBoxElements({ subFeature: SETTINGS.SECURITY.PASSWORD_SYMBOL }).SELECTED_SUBFEATURE_CHECKBOX,
