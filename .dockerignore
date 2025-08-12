@@ -69,11 +69,11 @@ docs/
 README*
 
 # Test files
-test/
-tests/
-__tests__
-*.test.js
-*.spec.js
+#test/
+#tests/
+#__tests__
+#*.test.js
+#*.spec.js
 
 # Miscellaneous
 *.tsbuildinfo

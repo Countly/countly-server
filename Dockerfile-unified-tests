@@ -1,0 +1,155 @@
+# Use the unified image as base (can be overridden at build time)
+ARG BASE_IMAGE=gcr.io/countly-01/countly-unified:latest
+FROM ${BASE_IMAGE}
+
+# Switch to root to install system packages
+USER root
+
+# Install supervisord, nginx, and netcat for process management and port checking
+RUN apt-get update && apt-get install -y \
+    supervisor \
+    nginx \
+    netcat-openbsd \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create supervisor directories
+RUN mkdir -p /etc/supervisor/conf.d /var/log/supervisor
+
+# Copy nginx configuration files
+COPY bin/config/nginx.conf /etc/nginx/nginx.conf
+COPY bin/config/nginx.server.conf /etc/nginx/sites-available/countly
+COPY bin/config/nginx.server.block.conf /etc/nginx/sites-available/countly-block
+
+# For testing, use the full server config (not the blocking one)
+# Enable the countly site and remove default
+RUN ln -sf /etc/nginx/sites-available/countly /etc/nginx/sites-enabled/countly && \
+    rm -f /etc/nginx/sites-enabled/default && \
+    nginx -t
+
+# Create comprehensive supervisor configuration with proper host binding
+RUN echo '[supervisord]\n\
+nodaemon=true\n\
+user=root\n\
+pidfile=/var/run/supervisord.pid\n\
+logfile=/var/log/supervisor/supervisord.log\n\
+\n\
+[program:nginx]\n\
+command=nginx -g "daemon off;"\n\
+autostart=true\n\
+autorestart=true\n\
+stdout_logfile=/var/log/supervisor/nginx-stdout.log\n\
+stderr_logfile=/var/log/supervisor/nginx-stderr.log\n\
+priority=100\n\
+\n\
+[program:countly-api]\n\
+command=npm run start:api\n\
+directory=/opt/countly\n\
+user=countly\n\
+autostart=true\n\
+autorestart=true\n\
+stdout_logfile=/var/log/supervisor/api-stdout.log\n\
+stderr_logfile=/var/log/supervisor/api-stderr.log\n\
+priority=200\n\
+environment=COUNTLY_CONFIG__API_HOST="0.0.0.0"\n\
+\n\
+[program:countly-frontend]\n\
+command=npm run start:frontend\n\
+directory=/opt/countly\n\
+user=countly\n\
+autostart=true\n\
+autorestart=true\n\
+stdout_logfile=/var/log/supervisor/frontend-stdout.log\n\
+stderr_logfile=/var/log/supervisor/frontend-stderr.log\n\
+priority=300\n\
+environment=COUNTLY_CONFIG__WEB_HOST="0.0.0.0"\n\
+\n\
+[program:countly-ingestor]\n\
+command=npm run start:ingestor\n\
+directory=/opt/countly\n\
+user=countly\n\
+autostart=true\n\
+autorestart=true\n\
+stdout_logfile=/var/log/supervisor/ingestor-stdout.log\n\
+stderr_logfile=/var/log/supervisor/ingestor-stderr.log\n\
+priority=400\n\
+environment=COUNTLY_CONFIG__INGESTOR_HOST="0.0.0.0"\n\
+\n\
+[program:countly-aggregator]\n\
+command=npm run start:aggregator\n\
+directory=/opt/countly\n\
+user=countly\n\
+autostart=true\n\
+autorestart=true\n\
+stdout_logfile=/var/log/supervisor/aggregator-stdout.log\n\
+stderr_logfile=/var/log/supervisor/aggregator-stderr.log\n\
+priority=500' > /etc/supervisor/conf.d/countly.conf
+
+# Create service startup script that waits for all services to be ready
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+echo "=== Starting Countly Services ==="\n\
+\n\
+# Function to check if a port is open\n\
+wait_for_port() {\n\
+    local port=$1\n\
+    local service=$2\n\
+    local timeout=${3:-120}\n\
+    local count=0\n\
+    \n\
+    echo "Waiting for $service on port $port..."\n\
+    while ! nc -z localhost $port; do\n\
+        if [ $count -ge $timeout ]; then\n\
+            echo "ERROR: $service failed to start within ${timeout}s"\n\
+            supervisorctl status\n\
+            tail -n 50 /var/log/supervisor/*\n\
+            exit 1\n\
+        fi\n\
+        if [ $((count % 10)) -eq 0 ]; then\n\
+            echo "  $service not ready yet... ($count/${timeout}s)"\n\
+        fi\n\
+        sleep 1\n\
+        count=$((count + 1))\n\
+    done\n\
+    echo "✓ $service is ready on port $port"\n\
+}\n\
+\n\
+# Start supervisord in background to get PID\n\
+supervisord -c /etc/supervisor/supervisord.conf &\n\
+SUPERVISOR_PID=$!\n\
+\n\
+# Wait a bit for supervisor to start services\n\
+sleep 5\n\
+\n\
+# Wait for all services to be ready\n\
+wait_for_port 3001 "API" 120\n\
+wait_for_port 6001 "Frontend" 120\n\
+wait_for_port 3010 "Ingestor" 120\n\
+wait_for_port 80 "Nginx" 30\n\
+# Note: Aggregator has no port, but we assume it started with supervisor\n\
+\n\
+echo "✓ All services are ready and accessible via nginx on port 80!"\n\
+echo "API: http://localhost/o/"\n\
+echo "Ingestor: http://localhost/i/"\n\
+echo "Frontend: http://localhost/"\n\
+echo "=== Supervisor Status ==="\n\
+supervisorctl status\n\
+echo "=== Services are running - ready for external test execution ==="\n\
+\n\
+# Wait for supervisor (keeps container running)\n\
+wait $SUPERVISOR_PID' > /usr/local/bin/service-entrypoint.sh
+
+# Make the script executable
+RUN chmod +x /usr/local/bin/service-entrypoint.sh
+
+# Create log directories and set permissions
+RUN mkdir -p /var/log/nginx /var/log/supervisor && \
+    chown -R countly:countly /opt/countly && \
+    chmod -R g+w /var/log
+
+# Expose nginx port
+EXPOSE 80
+
+# Set the service entrypoint (just runs services, no tests)
+ENTRYPOINT ["/usr/local/bin/service-entrypoint.sh"]
