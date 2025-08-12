@@ -184,17 +184,58 @@ export interface CountlyFrontendConfig {
 /** ClickHouse database configuration */
 export interface ClickHouseConfig {
   /** ClickHouse server URL */
-  url?: string;
-  /** Database name */
-  database?: string;
+  url?: string; // default: "http://localhost:8123"
   /** Username for authentication */
-  username?: string;
+  username?: string; // default: "default"
   /** Password for authentication */
-  password?: string;
-  /** Connection timeout in milliseconds */
-  connectTimeout?: number;
+  password?: string; // default: ""
+  /** Database name */
+  database?: string; // default: "countly_drill"
+  /** Compression settings */
+  compression?: {
+    /** Enable request compression */
+    request?: boolean; // default: false
+    /** Enable response compression */
+    response?: boolean; // default: false
+  };
+  /** Application name for connection */
+  application?: string; // default: "countly_drill"
   /** Request timeout in milliseconds */
-  requestTimeout?: number;
+  request_timeout?: number; // default: 1200000 (20 minutes)
+  /** Keep alive settings */
+  keep_alive?: {
+    /** Enable keep alive */
+    enabled?: boolean; // default: true
+    /** Idle socket TTL in milliseconds */
+    idle_socket_ttl?: number; // default: 10000
+  };
+  /** Maximum number of open connections */
+  max_open_connections?: number; // default: 10
+  /** ClickHouse specific settings */
+  clickhouse_settings?: {
+    /** Idle connection timeout */
+    idle_connection_timeout?: string;
+    /** Enable async inserts */
+    async_insert?: number;
+    /** Wait for async insert to complete */
+    wait_for_async_insert?: number;
+    /** Wait for query to complete */
+    wait_end_of_query?: number;
+    /** Optimize on insert */
+    optimize_on_insert?: number;
+    /** Allow suspicious types in GROUP BY */
+    allow_suspicious_types_in_group_by?: number;
+    /** Allow suspicious types in ORDER BY */
+    allow_suspicious_types_in_order_by?: number;
+    /** Optimize move to prewhere */
+    optimize_move_to_prewhere?: number;
+    /** Query plan optimize lazy materialization */
+    query_plan_optimize_lazy_materialization?: number;
+    /** Allow experimental object type (for JSON columns) */
+    allow_experimental_object_type?: number;
+    /** Additional ClickHouse settings */
+    [key: string]: any;
+  };
   /** Additional connection options */
   [key: string]: any;
 }
