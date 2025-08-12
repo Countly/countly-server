@@ -9,6 +9,7 @@ const log = require('../../utils/log.js')('query-runner');
 const fs = require('fs');
 const path = require('path');
 
+config.database = config.database || {};
 if (!config.database.adapters || Object.keys(config.database.adapters).length === 0) {
     config.database.adapters = {
         mongodb: {
