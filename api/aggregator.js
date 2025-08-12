@@ -33,6 +33,7 @@ plugins.connectToAllDatabases(true).then(function() {
     // common.writeBatcher = new WriteBatcher(common.db);
 
     common.writeBatcher = new WriteBatcher(common.db);
+    common.secondaryWriteBatcher = new WriteBatcher(common.db);//Remove once all plugins are updated
     common.manualWriteBatcher = new WriteBatcher(common.db, true); //Manually trigerable batcher
     common.readBatcher = new Cacher(common.db); //Used for Apps info
     common.queryRunner = new QueryRunner();

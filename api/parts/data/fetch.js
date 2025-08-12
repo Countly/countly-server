@@ -21,9 +21,25 @@ var fetch = {},
     crypto = require('crypto'),
     usage = require('./usage.js'),
     plugins = require('../../../plugins/pluginManager.js');
+const { fetchAggregatedSegmentedEventData } = require('../queries/events.js');
 
 
-
+fetch.fetchEventMetaData = async function(options) {
+    if (options.event) {
+        var eventHash = crypto.createHash("sha1").update(options.event + options.app_id).digest("hex");
+        var metaDrill = await common.drillDb.collection("drill_meta").findOne({_id: options.app_id + "_meta_" + eventHash});
+        var meta = {};
+        if (metaDrill && metaDrill.sg) {
+            for (var key in metaDrill.sg) {
+                meta.segments = meta.segments || [];
+                if (metaDrill.sg[key] && metaDrill.sg[key].t !== "a") {
+                    meta.segments.push(key);
+                }
+            }
+        }
+    }
+    return meta;
+};
 fetch.fetchFromGranuralData = async function(queryData, callback) {
     var data;
     if (queryData.queryName === "uniqueCount") {
@@ -71,7 +87,7 @@ fetch.fetchFromGranuralData = async function(queryData, callback) {
 * @param {string} collection - event key
 * @param {params} params - params object
 **/
-fetch.prefetchEventData = function(collection, params) {
+fetch.prefetchEventData = async function(collection, params) {
     if (!params.qstring.event) {
         common.readBatcher.getOne("events", { '_id': params.app_id }, (err, result) => {
             if (err) {
@@ -111,7 +127,41 @@ fetch.prefetchEventData = function(collection, params) {
     }
     else {
         var collectionName = crypto.createHash('sha1').update(params.qstring.event + params.app_id).digest('hex');
-        fetch.fetchTimeObj("events_data", params, true, {'id_prefix': params.app_id + "_" + collectionName + '_'});
+        if (params.qstring.segmentation) {
+
+            try {
+                var currentTimezone = countlyCommon.getTimezone(params);
+                if (!currentTimezone) {
+                    currentTimezone = 'UTC';
+                }
+                var rr = countlyCommon.getPeriodRange(params.qstring.period, currentTimezone);
+                //get range for selecting data
+                var data = await fetchAggregatedSegmentedEventData({
+                    "apps": [params.app_id + ""],
+                    "events": [params.qstring.event],
+                    "ts": rr,
+                    "segmentation": "sg." + params.qstring.segmentation,
+                });
+                if (data && data.length) {
+                    for (var i = 0; i < data.length; i++) {
+                        data[i].curr_segment = data[i]._id;
+                        delete data[i]._id;
+                    }
+                }
+                var meta = await fetch.fetchEventMetaData({
+                    app_id: params.app_id,
+                    event: params.qstring.event
+                });
+                common.returnOutput(params, {"eventName": params.qstring.event, "data": data, "mode": "granular", "meta": meta});
+            }
+            catch (ee) {
+                console.log(ee);
+                common.returnMessage(params, 500, "Error fetching segmented event data: " + ee.message);
+            }
+        }
+        else {
+            fetch.fetchTimeObj("events_data", params, true, {'id_prefix': params.app_id + "_" + collectionName + '_'});
+        }
     }
 };
 
@@ -1409,8 +1459,25 @@ fetch.fetchTimeObj = function(collection, params, isCustomEvent, options) {
     fetchTimeObj(collection, params, isCustomEvent, options, function(output) {
         if (params.qstring?.event) {
             output.eventName = params.qstring.event;
+            //Find based on event hash
+            let event_hash = crypto.createHash("sha1").update(params.qstring.event + params.qstring.app_id).digest("hex");
+            common.drillReadBatcher.getOne("drill_meta", {_id: params.qstring.app_id + "_meta_" + event_hash}, function(err, meta) {
+                if (meta && meta.sg) {
+                    for (var key in meta.sg) {
+                        if (meta.sg[key].type !== "a") {
+                            output.meta = output.meta || {};
+                            output.meta.segments = output.meta.segments || [];
+                            output.meta.segments.push(key);
+                        }
+                    }
+                }
+                common.returnOutput(params, output);
+            });
+            //get meta data for this event from drill_meta colletion
         }
-        common.returnOutput(params, output);
+        else {
+            common.returnOutput(params, output);
+        }
     });
 };
 
