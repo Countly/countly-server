@@ -10,6 +10,11 @@ const fs = require('fs');
 const path = require('path');
 
 config.queryRunner = config.queryRunner || {};
+config.database = config.database | {};
+config.database.adapterPreference = config.database.adapterPreference || ['mongodb', 'clickhouse'];
+if(config.database.adapterPreference.length === 0){
+    config.database.adapterPreference.push('mongodb');
+}
 if (!config.queryRunner.adapters || Object.keys(config.queryRunner.adapters).length === 0) {
     config.queryRunner.adapters = {
         mongodb: {
