@@ -5,7 +5,7 @@ FROM ${BASE_IMAGE}
 # Switch to root to install system packages
 USER root
 
-# Install supervisord, nginx, and netcat for process management and port checking
+# Install supervisord, nginx, curl, and netcat for process management and port checking
 # Use cache mounts for apt to speed up rebuilds
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -13,6 +13,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     supervisor \
     nginx \
     netcat-openbsd \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create supervisor directories
