@@ -106,6 +106,21 @@ spec:
             name: countly-api
             port:
               number: 3001
+      # Job server endpoints
+      - path: /jobs
+        pathType: Exact
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
+      - path: /jobs/
+        pathType: Prefix
+        backend:
+          service:
+            name: countly-api
+            port:
+              number: 3001
       # Static assets - directory paths that should be served by frontend
       - path: /appimages/
         pathType: Prefix
