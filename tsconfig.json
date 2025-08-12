@@ -20,6 +20,10 @@
         "types/usage.d.ts",         // Usage processing type definitions
         "api/utils/localization.js" // Include JS file for type checking
     ],
+    // Include all type definition files from plugin types directories
+    "include": [
+        "plugins/*/types/**/*.d.ts"  // All type definitions from plugin types directories
+    ],
     "compilerOptions": {
         // Language and Environment
         "target": "ES2022",                    // Set the JavaScript language version for emitted JavaScript
@@ -43,6 +47,6 @@
         "forceConsistentCasingInFileNames": true, // Ensure that casing is correct in imports
 
         // Completeness
-        "typeRoots": ["./types", "./node_modules/@types"] // Specify multiple folders that act like './node_modules/@types'
+        "typeRoots": ["./types", "./plugins/*/types", "./node_modules/@types"] // Specify multiple folders that act like './node_modules/@types'
     }
 }

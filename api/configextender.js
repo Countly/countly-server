@@ -61,11 +61,39 @@ const OVERRIDES = {
     },
 
     CLICKHOUSE: {
+        URL: 'url',
+        USERNAME: 'username',
+        PASSWORD: 'password',
+        DATABASE: 'database',
         REQUEST_TIMEOUT: 'request_timeout',
-        MAX_OPEN_CONNECTIONS: 'max_open_connections'
+        MAX_OPEN_CONNECTIONS: 'max_open_connections',
+        COMPRESSION: {
+            REQUEST: 'request',
+            RESPONSE: 'response'
+        },
+        APPLICATION: 'application',
+        KEEP_ALIVE: {
+            ENABLED: 'enabled',
+            IDLE_SOCKET_TTL: 'idle_socket_ttl'
+        },
+        // Mark CLICKHOUSE_SETTINGS as a passthrough object
+        // Any subkeys will be automatically mapped to lowercase
+        CLICKHOUSE_SETTINGS: 'clickhouse_settings'
     },
 
-    DRILL_CLICKHOUSE_DEBUG: 'drill_clickhouse_debug',
+    DATABASE: {
+        DEBUG: 'debug',
+        FAILONCONNECTIONERROR: 'failOnConnectionError',
+        ADAPTERPREFERENCE: 'adapterPreference',
+        ADAPTERS: {
+            MONGODB: {
+                ENABLED: 'enabled'
+            },
+            CLICKHOUSE: {
+                ENABLED: 'enabled'
+            }
+        }
+    },
 
     IGNOREPROXIES: 'ignoreProxies',
     FILESTORAGE: 'fileStorage',
