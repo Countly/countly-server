@@ -6,11 +6,13 @@ FROM ${BASE_IMAGE}
 USER root
 
 # Install supervisord, nginx, and netcat for process management and port checking
-RUN apt-get update && apt-get install -y \
+# Use cache mounts for apt to speed up rebuilds
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
     supervisor \
     nginx \
     netcat-openbsd \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Create supervisor directories
