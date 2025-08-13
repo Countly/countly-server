@@ -13,13 +13,19 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     supervisor \
     nginx \
     netcat-openbsd \
-    curl
+    curl \
 
 # Create supervisor directories
 RUN mkdir -p /etc/supervisor/conf.d /var/log/supervisor
 
 # Copy test directory that was removed from the unified image
 COPY test /opt/countly/test
+
+# Install test dependencies that were removed from the unified image
+# Set npm cache directory and install as root to avoid permission issues
+RUN cd /opt/countly && \
+    npm install --include=dev --no-save mockttp mocha nyc should supertest && \
+    chown -R countly:countly node_modules package*.json
 
 # Copy nginx configuration files
 COPY bin/config/nginx.conf /etc/nginx/nginx.conf
