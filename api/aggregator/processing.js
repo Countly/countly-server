@@ -109,7 +109,7 @@ var crypto = require('crypto');
 
     plugins.register("/aggregator", function() {
         var writeBatcher = new WriteBatcher(common.db, true);
-        new dataBatchReader(common.drillDb, {
+        new DataBatchReader(common.drillDb, {
             pipeline: [{"$match": {"e": {"$in": ["[CLY]_session_update"]}}}],
             "name": "session-updates",
             "collection": "drill_events",

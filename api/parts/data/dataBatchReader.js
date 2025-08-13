@@ -25,12 +25,10 @@ class DataBatchReader {
         this.onData = onData;
         this.interval = options.interval || 10000;
         if (plugins.getConfig("aggregator") && plugins.getConfig("aggregator").interval) {
-            log.e("Using aggregator config interval for dataBatchReader", plugins.getConfig("aggregator").interval);
+            log.w("Using aggregator config interval for dataBatchReader", plugins.getConfig("aggregator").interval);
             this.interval = plugins.getConfig("aggregator").interval;
         }
-        else {
-            log.e("No interval set. Using default " + this.interval);
-        }
+
         this.reviveInterval = options.reviveInterval || 60000; //1 minute
         this.setUp();
 
@@ -87,22 +85,23 @@ class DataBatchReader {
             pipeline.unshift({"$match": match});
             //Reads from mongodb or clickhouse(if code is defined);
             var data = await fetchDataForAggregator({pipeline: pipeline, name: this.name, cd1: cd, cd2: end_date});
+
             try {
                 if (data.length > 0) {
-                    await this.onData({"token": "timed", "cd": end_date, "_id": null}, data);
+                    await this.onData({"token": "timed", "cd": new Date(end_date), "_id": null}, data);
                 }
-                await this.acknowledgeToken({"token": "timed", "cd": end_date, "_id": null});
-                //acknowledge 
+                await this.acknowledgeToken({"token": "timed", "cd": new Date(end_date), "_id": null});
+                //acknowledge
             }
             catch (err) {
                 log.e(this.name + ": Error processing data for - " + end_date + " " + JSON.stringify(err));
                 return; //exiting loop.
             }
             cd = end_date;
-            end_date = new Date(end_date + this.interval);
+            end_date = end_date + this.interval;
             now = Date.now().valueOf();
         }
-        setTimeout(() => {
+        this.processTimeout = setTimeout(() => {
             this.processNextDateRange();
         }, this.interval);
 
@@ -190,8 +189,12 @@ class DataBatchReader {
             clearInterval(this.intervalRunner);
             this.intervalRunner = null;
         }
+        if (this.processTimeout) {
+            clearTimeout(this.processTimeout);
+            this.processTimeout = null;
+        }
     }
 
 }
 
-module.exports = {dataBatchReader};
+module.exports = {DataBatchReader};
