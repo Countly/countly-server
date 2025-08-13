@@ -4,7 +4,7 @@
 
 
 var common = require('../utils/common.js');
-const { dataBatchReader } = require('../parts/data/dataBatchReader');
+const { DataBatchReader } = require('../parts/data/dataBatchReader');
 const plugins = require('../../plugins/pluginManager.js');
 var usage = require('./usage.js');
 const log = require('../utils/log.js')('aggregator-core:api');
@@ -35,7 +35,7 @@ var crypto = require('crypto');
     }
     //Core events data aggregator
     plugins.register("/aggregator", function() {
-        new dataBatchReader(common.drillDb, {
+        new DataBatchReader(common.drillDb, {
             pipeline: [
                 {"$match": {"e": "[CLY]_custom"}},
                 {
@@ -78,7 +78,7 @@ var crypto = require('crypto');
 
     //processes session data and updates in aggregated data
     plugins.register("/aggregator", function() {
-        new dataBatchReader(common.drillDb, {
+        new DataBatchReader(common.drillDb, {
             pipeline: [
                 {"$match": {"e": "[CLY]_session"}},
             ],
@@ -145,7 +145,7 @@ var crypto = require('crypto');
     //Drill meta aggregator
     plugins.register("/aggregator", function() {
         var drillMetaCache = new Cacher(common.drillDb); //Used for Apps info
-        new dataBatchReader(common.drillDb, {
+        new DataBatchReader(common.drillDb, {
             pipeline: [
                 {
                     "$project": {

@@ -1,12 +1,12 @@
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js');
 var moment = require('moment-timezone');
-const { dataBatchReader } = require('../../../api/parts/data/dataBatchReader');
+const { DataBatchReader } = require('../../../api/parts/data/dataBatchReader');
 var log = common.log('times-of-day:aggregator');
 
 (function() {
     plugins.register("/aggregator", function() {
-        new dataBatchReader(common.drillDb, {
+        new DataBatchReader(common.drillDb, {
             "name": "times-of-day",
             pipeline: [{
                 "$match": {"e": {"$in": ["[CLY]_session", "[CLY]_custom"]}}

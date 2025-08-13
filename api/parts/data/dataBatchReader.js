@@ -6,7 +6,7 @@ var {fetchDataForAggregator} = require("../queries/aggregator.js");
 /**
  * Class to read/aggregate data in batches from mongodb and pass for processing.
  */
-class dataBatchReader {
+class DataBatchReader {
     /** 
     * @param {Object} db - Database object
     * @param {Object} options - Options object
@@ -72,37 +72,34 @@ class dataBatchReader {
     async processNextDateRange() {
         var lastToken = await common.db.collection("plugins").findOne({"_id": "_changeStreams"}, {projection: {[this.name]: 1}});
         var cd = lastToken && lastToken[this.name] ? lastToken[this.name].cd : Date.now();
-        var cd2 = cd.valueOf() + this.interval;
+        var end_date = cd.valueOf() + this.interval;
         var now = Date.now().valueOf();
-        while (cd2 < now) {
-            cd2 = new Date(cd2);
+        while (end_date < now) {
             var pipeline = JSON.parse(JSON.stringify(this.pipeline)) || [];
             var match = this.match || {};
 
             if (this.timefield) {
-                match[this.timefield] = {$gte: new Date(cd), $lt: cd2};
+                match[this.timefield] = {$gte: new Date(cd), $lt: new Date(end_date)};
             }
             else {
-                match.cd = {$gte: new Date(cd), $lt: cd2};
+                match.cd = {$gte: new Date(cd), $lt: new Date(end_date)};
             }
             pipeline.unshift({"$match": match});
-
             //Reads from mongodb or clickhouse(if code is defined);
-            var data = await fetchDataForAggregator({pipeline: pipeline, name: this.name, cd1: cd, cd2: cd2});
-
+            var data = await fetchDataForAggregator({pipeline: pipeline, name: this.name, cd1: cd, cd2: end_date});
             try {
                 if (data.length > 0) {
-                    await this.onData({"token": "timed", "cd": cd2, "_id": null}, data);
+                    await this.onData({"token": "timed", "cd": end_date, "_id": null}, data);
                 }
-                await this.acknowledgeToken({"token": "timed", "cd": cd2, "_id": null});
+                await this.acknowledgeToken({"token": "timed", "cd": end_date, "_id": null});
                 //acknowledge 
             }
             catch (err) {
-                log.e(this.name + ": Error processing data for - " + cd2 + " " + JSON.stringify(err));
+                log.e(this.name + ": Error processing data for - " + end_date + " " + JSON.stringify(err));
                 return; //exiting loop.
             }
-            cd = cd2;
-            cd2 = new Date(cd2.valueOf() + this.interval);
+            cd = end_date;
+            end_date = new Date(end_date + this.interval);
             now = Date.now().valueOf();
         }
         setTimeout(() => {

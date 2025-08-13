@@ -1,13 +1,13 @@
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js'),
     stats = require('./parts/stats.js');
-const { dataBatchReader } = require('../../../api/parts/data/dataBatchReader');
+const { DataBatchReader } = require('../../../api/parts/data/dataBatchReader');
 
 const internalEventsSkipped = ["[CLY]_orientation", "[CLY]_session_update"];
 (function() {
     plugins.register("/aggregator", function() {
         //I should register all to common manager which makes sure it is alive from time to time.
-        new dataBatchReader(common.drillDb, {
+        new DataBatchReader(common.drillDb, {
             pipeline: [{"$group": {"_id": {"a": "$a", "e": "$e"}, "count": {"$sum": 1}}}],
             "interval": 10000, //10 seconds
             "name": "server-stats",

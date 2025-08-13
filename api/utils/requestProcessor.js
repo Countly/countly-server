@@ -2657,9 +2657,9 @@ const processRequest = (params) => {
                     break;
                 case 'get_events':
                     //validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
-                    validateRead(params, 'core', function() {
-
-                        common.db.collection("events").findOne({ '_id': params.app_id }, function(err, result) {
+                    validateRead(params, 'core', async function() {
+                        try {
+                            var result = await common.db.collection("events").findOne({ '_id': params.app_id });
                             if (!result) {
                                 result = {};
                             }
@@ -2680,27 +2680,27 @@ const processRequest = (params) => {
                             aggregation.push({"$sort": {"e": 1}});
                             aggregation.push({"$limit": pluginsGetConfig.event_limit || 500});
 
-                            common.drillDb.collection("drill_meta").aggregate(aggregation, function(err5, res) {
-                                if (err5) {
-                                    common.returnMessage(params, 400, err5);
+                            var res = await common.drillDb.collection("drill_meta").aggregate(aggregation).toArray();
+
+                            for (var k = 0; k < res.length; k++) {
+                                result.list.push(res[k].e);
+                                if (res[k].sg && Object.keys(res[k].sg).length > 0) {
+                                    result.segments[res[k].e] = Object.keys(res[k].sg);
                                 }
-                                else {
-                                    for (var k = 0; k < res.length; k++) {
-                                        result.list.push(res[k].e);
-                                        if (res[k].sg && Object.keys(res[k].sg).length > 0) {
-                                            result.segments[res[k].e] = Object.keys(res[k].sg);
-                                        }
-                                    }
-                                    if (result.list.length === 0) {
-                                        delete result.list;
-                                    }
-                                    if (Object.keys(result.segments).length === 0) {
-                                        delete result.segments;
-                                    }
-                                    common.returnOutput(params, result);
-                                }
-                            });
-                        });
+                            }
+                            if (result.list.length === 0) {
+                                delete result.list;
+                            }
+                            if (Object.keys(result.segments).length === 0) {
+                                delete result.segments;
+                            }
+                            common.returnOutput(params, result);
+
+                        }
+                        catch (ex) {
+                            console.error("Error fetching events", ex);
+                            common.returnMessage(params, 500, "Error fetching events");
+                        }
                     }, 'events');
                     break;
                 case 'top_events':

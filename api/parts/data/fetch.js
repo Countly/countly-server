@@ -24,6 +24,11 @@ var fetch = {},
 const { fetchAggregatedSegmentedEventData } = require('../queries/events.js');
 
 
+/**
+ * Fetch event metadata for a specific event from drill_meta collection
+ * @param {object} options - Options object containing event and app_id
+ * @returns {Promise<Object>} - Promise resolving to the event metadata
+ */
 fetch.fetchEventMetaData = async function(options) {
     if (options.event) {
         var eventHash = crypto.createHash("sha1").update(options.event + options.app_id).digest("hex");
