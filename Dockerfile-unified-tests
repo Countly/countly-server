@@ -13,11 +13,13 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     supervisor \
     nginx \
     netcat-openbsd \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    curl
 
 # Create supervisor directories
 RUN mkdir -p /etc/supervisor/conf.d /var/log/supervisor
+
+# Copy test directory that was removed from the unified image
+COPY test /opt/countly/test
 
 # Copy nginx configuration files
 COPY bin/config/nginx.conf /etc/nginx/nginx.conf
@@ -149,7 +151,8 @@ RUN chmod +x /usr/local/bin/service-entrypoint.sh
 # Create log directories and set permissions
 RUN mkdir -p /var/log/nginx /var/log/supervisor && \
     chown -R countly:countly /opt/countly && \
-    chmod -R g+w /var/log
+    chmod -R g+w /var/log && \
+    chown -R countly:countly /opt/countly/test
 
 # Expose nginx port
 EXPOSE 80
