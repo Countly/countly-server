@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     supervisor \
     nginx \
     netcat-openbsd \
-    curl \
+    curl
 
 # Create supervisor directories
 RUN mkdir -p /etc/supervisor/conf.d /var/log/supervisor
