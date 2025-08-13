@@ -1,5 +1,4 @@
-## Version 25.03.xx
-
+## Version 25.03.15
 Enterprise Fixes:
 - [cohorts] Unescape segmentation properties options to prevent duplicated values
 - [ldap] Connection timeout values are added to LDAP config
