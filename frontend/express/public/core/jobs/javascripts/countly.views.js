@@ -129,6 +129,7 @@
                         return {
                             type: "GET",
                             url: countlyCommon.API_URL + "/jobs/o", // no ?name= param => list mode
+                            headers: { 'Countly-Token': countlyGlobal.auth_token },
                             data: {
                                 app_id: countlyCommon.ACTIVE_APP_ID,
                                 iDisplayStart: 0,
