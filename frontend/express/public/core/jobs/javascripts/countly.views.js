@@ -128,7 +128,8 @@
                         self.loaded = false;
                         return {
                             type: "GET",
-                            url: countlyCommon.API_URL + "/o/jobs", // no ?name= param => list mode
+                            url: countlyCommon.API_URL + "/jobs/o", // no ?name= param => list mode
+                            headers: { 'Countly-Token': countlyGlobal.auth_token },
                             data: {
                                 app_id: countlyCommon.ACTIVE_APP_ID,
                                 iDisplayStart: 0,
@@ -266,7 +267,7 @@
                         return;
                     }
 
-                    // For enable, disable, runNow, etc. => /i/jobs
+                    // For enable, disable, runNow, etc. => /jobs/i
                     var data = {
                         app_id: countlyCommon.ACTIVE_APP_ID,
                         jobName: row.name,
@@ -275,8 +276,9 @@
 
                     $.ajax({
                         type: "GET", // or POST if your server expects that
-                        url: countlyCommon.API_URL + "/i/jobs",
+                        url: countlyCommon.API_URL + "/jobs/i",
                         data: data,
+                        headers: { 'Countly-Token': countlyGlobal.auth_token },
                         success: function(res) {
                             if (res.result === "Success") {
                                 self.refresh(true);
@@ -310,7 +312,8 @@
 
                 $.ajax({
                     type: "GET",
-                    url: countlyCommon.API_URL + "/i/jobs",
+                    url: countlyCommon.API_URL + "/jobs/i",
+                    headers: { 'Countly-Token': countlyGlobal.auth_token },
                     data: {
                         app_id: countlyCommon.ACTIVE_APP_ID,
                         jobName: this.selectedJobConfig.name,
@@ -371,7 +374,7 @@
         },
         methods: {
             /**
-             * Fetches jobDetails + normal docs from /o/jobs?name=<jobName>
+             * Fetches jobDetails + normal docs from /jobs/o?name=<jobName>
              */
             fetchJobDetails: function() {
                 var self = this;
@@ -379,7 +382,8 @@
 
                 CV.$.ajax({
                     type: "GET",
-                    url: countlyCommon.API_PARTS.data.r + "/jobs",
+                    url: countlyCommon.API_URL + "/jobs/o",
+                    headers: { 'Countly-Token': countlyGlobal.auth_token },
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "name": self.job_name,

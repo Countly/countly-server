@@ -384,9 +384,9 @@ function buildListViewJob(mainDoc, jobConfig, statusInfo) {
 }
 
 // ----------------------------------
-// /i/jobs endpoint
+// /jobs/i endpoint
 // ----------------------------------
-plugins.register('/i/jobs', async function(ob) {
+plugins.register('/jobs/i', async function(ob) {
     validateGlobalAdmin(ob.params, async function() {
         const { jobName, schedule, retry } = ob.params.qstring || {};
         const action = ob.params.qstring?.action;
@@ -447,7 +447,7 @@ plugins.register('/i/jobs', async function(ob) {
             common.returnMessage(ob.params, 200, 'Success');
         }
         catch (error) {
-            log.e('Error in /i/jobs:', { error: error.message, stack: error.stack });
+            log.e('Error in /jobs/i:', { error: error.message, stack: error.stack });
             common.returnMessage(ob.params, 500, 'Internal server error');
         }
     });
@@ -455,9 +455,9 @@ plugins.register('/i/jobs', async function(ob) {
 });
 
 // ----------------------------------
-// /o/jobs endpoint
+// /jobs/o endpoint
 // ----------------------------------
-plugins.register('/o/jobs', async function(ob) {
+plugins.register('/jobs/o', async function(ob) {
     validateGlobalAdmin(ob.params, async function() {
         const db = common.db;
         const jobsCollection = db.collection('pulseJobs');
@@ -776,7 +776,7 @@ plugins.register('/o/jobs', async function(ob) {
             }
         }
         catch (error) {
-            log.e('Error in /o/jobs:', { error: error.message, stack: error.stack });
+            log.e('Error in /jobs/o:', { error: error.message, stack: error.stack });
             common.returnMessage(ob.params, 500, 'Internal server error');
         }
     });

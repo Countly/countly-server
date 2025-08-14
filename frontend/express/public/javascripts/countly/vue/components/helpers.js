@@ -1535,4 +1535,100 @@
         }
     }));
 
+
+    Vue.component("cly-database-engine-debug-panel", countlyBaseComponent.extend({
+        mixins: [
+            _mixins.i18n
+        ],
+        props: {
+            value: {
+                type: Object,
+                default: function() {
+                    return {
+                        dbOverride: '',
+                        comparisonMode: false
+                    };
+                }
+            },
+            options: {
+                type: Array,
+                default: function() {
+                    return [
+                        { value: "config", label: CV.i18n("drill.db-use-config") },
+                        { value: "mongodb", label: "MongoDB" },
+                        { value: "clickhouse", label: "ClickHouse" }
+                    ];
+                }
+            },
+            width: {
+                type: String,
+                default: '240px'
+            },
+            disabled: {
+                type: Boolean,
+                default: false
+            },
+            testId: {
+                type: String,
+                default: 'database-engine-debug-panel'
+            }
+        },
+        computed: {
+            isDatabaseDebugEnabled: function() {
+                return window.countlyGlobal && window.countlyGlobal.database_debug === true;
+            },
+            localValue: {
+                get: function() {
+                    return this.value;
+                },
+                set: function(newValue) {
+                    this.$emit('input', newValue);
+                }
+            }
+        },
+        methods: {
+            onSelectionChange: function(dbOverride) {
+                this.localValue = { ...this.localValue, dbOverride };
+            },
+            onComparisonModeChange: function(comparisonMode) {
+                this.localValue = { ...this.localValue, comparisonMode };
+            }
+        },
+        template: '<div v-if="isDatabaseDebugEnabled">\
+                        <cly-sub-section class="bu-is-flex bu-is-align-items-center bu-mb-3" :data-test-id="testId + \'-wrapper\'">\
+                            <span class="text-medium font-weight-bold bu-mr-2 text-uppercase" :data-test-id="testId + \'-label\'">\
+                                {{i18n(\'drill.database-engine\')}}\
+                            </span>\
+                            <el-select \
+                                :value="localValue.dbOverride" \
+                                @input="onSelectionChange" \
+                                :disabled="disabled"\
+                                size="small" \
+                                :style="{width: width}" \
+                                :test-id="testId + \'-select\'">\
+                                    <el-option\
+                                        v-for="option in options"\
+                                        :key="option.value"\
+                                        :label="option.label"\
+                                        :value="option.value"\
+                                        :test-id="testId + \'-option-\' + option.value">\
+                                    </el-option>\
+                            </el-select>\
+                        </cly-sub-section>\
+                    <cly-sub-section class="bu-is-flex bu-is-align-items-center bu-mb-5" :data-test-id="testId + \'-comparison-wrapper\'">\
+                        <span class="text-medium font-weight-bold bu-pr-4 text-uppercase" :data-test-id="testId + \'-comparison-label\'">\
+                            {{i18n(\'drill.comparison-mode\')}}\
+                        </span>\
+                        <el-checkbox \
+                            :value="localValue.comparisonMode"\
+                            @input="onComparisonModeChange"\
+                            :disabled="disabled"\
+                            v-tooltip="\'Run queries on all available adapters and log comparison data for analysis\'"\
+                            :test-id="testId + \'-comparison-checkbox\'">\
+                                {{i18n(\'drill.enable-comparison\')}}\
+                        </el-checkbox>\
+                    </cly-sub-section>\
+                </div>'
+    }));
+
 }(window.countlyVue = window.countlyVue || {}));
