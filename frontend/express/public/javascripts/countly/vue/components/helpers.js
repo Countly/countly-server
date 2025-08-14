@@ -1541,15 +1541,6 @@
             _mixins.i18n
         ],
         props: {
-            value: {
-                type: Object,
-                default: function() {
-                    return {
-                        dbOverride: '',
-                        comparisonMode: false
-                    };
-                }
-            },
             options: {
                 type: Array,
                 default: function() {
@@ -1573,25 +1564,43 @@
                 default: 'database-engine-debug-panel'
             }
         },
+        data: function() {
+            return {
+                dbOverride: this.getStoredValue('db_override', 'config'),
+                comparisonMode: this.getStoredValue('comparison_mode', false)
+            };
+        },
         computed: {
             isDatabaseDebugEnabled: function() {
                 return window.countlyGlobal && window.countlyGlobal.database_debug === true;
-            },
-            localValue: {
-                get: function() {
-                    return this.value;
-                },
-                set: function(newValue) {
-                    this.$emit('input', newValue);
-                }
             }
         },
         methods: {
+            getStoredValue: function(key, defaultValue) {
+                const storageKey = `database_debug_${key}_${countlyCommon.ACTIVE_APP_ID}`;
+                const storedValue = localStorage.getItem(storageKey);
+
+                if (storedValue !== null) {
+                    if (key === 'comparison_mode') {
+                        return storedValue === 'true';
+                    }
+                    return storedValue;
+                }
+
+                return defaultValue;
+            },
+            setStoredValue: function(key, value) {
+                const storageKey = `database_debug_${key}_${countlyCommon.ACTIVE_APP_ID}`;
+                localStorage.setItem(storageKey, value);
+            },
             onSelectionChange: function(dbOverride) {
-                this.localValue = { ...this.localValue, dbOverride };
+                this.dbOverride = dbOverride;
+                this.setStoredValue('db_override', dbOverride);
+                this.$emit('refresh-data', true);
             },
             onComparisonModeChange: function(comparisonMode) {
-                this.localValue = { ...this.localValue, comparisonMode };
+                this.comparisonMode = comparisonMode;
+                this.setStoredValue('comparison_mode', comparisonMode);
             }
         },
         template: '<div v-if="isDatabaseDebugEnabled">\
@@ -1600,7 +1609,7 @@
                                 {{i18n(\'drill.database-engine\')}}\
                             </span>\
                             <el-select \
-                                :value="localValue.dbOverride" \
+                                :value="dbOverride" \
                                 @input="onSelectionChange" \
                                 :disabled="disabled"\
                                 size="small" \
@@ -1620,7 +1629,7 @@
                             {{i18n(\'drill.comparison-mode\')}}\
                         </span>\
                         <el-checkbox \
-                            :value="localValue.comparisonMode"\
+                            :value="comparisonMode"\
                             @input="onComparisonModeChange"\
                             :disabled="disabled"\
                             v-tooltip="\'Run queries on all available adapters and log comparison data for analysis\'"\
@@ -1630,5 +1639,4 @@
                     </cly-sub-section>\
                 </div>'
     }));
-
 }(window.countlyVue = window.countlyVue || {}));
