@@ -67,56 +67,57 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
         if (testurl.indexOf(countlyCommon.API_PARTS.data.w) === 0 || testurl.indexOf(countlyCommon.API_PARTS.data.r) === 0) {
             //add token in header
             jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
-            const databaseDebugComparisonValue = localStorage.getItem(`database_debug_comparison_mode_${countlyCommon.ACTIVE_APP_ID}`);
-            const databaseDebugDbOverrideValue = localStorage.getItem(`database_debug_db_override_${countlyCommon.ACTIVE_APP_ID}`);
 
-            if (countlyGlobal.database_debug && options.data) {
-                if (typeof options.data === 'string') {
-                    if (databaseDebugComparisonValue) {
-                        options.data += '&comparison=' + databaseDebugComparisonValue;
+            if (countlyGlobal.database_debug) {
+                const databaseDebugComparisonValue = localStorage.getItem(`database_debug_comparison_mode_${countlyCommon.ACTIVE_APP_ID}`);
+                const databaseDebugDbOverrideValue = localStorage.getItem(`database_debug_db_override_${countlyCommon.ACTIVE_APP_ID}`);
+                if (options.data) {
+                    if (typeof options.data === 'string') {
+                        if (databaseDebugComparisonValue) {
+                            options.data += '&comparison=' + databaseDebugComparisonValue;
+                        }
+                        if (databaseDebugDbOverrideValue) {
+                            options.data += '&db_override=' + databaseDebugDbOverrideValue;
+                        }
                     }
-                    if (databaseDebugDbOverrideValue) {
-                        options.data += '&db_override=' + databaseDebugDbOverrideValue;
+                    else if (typeof options.data === 'object') {
+                        if (databaseDebugComparisonValue) {
+                            options.data.comparison = databaseDebugComparisonValue;
+                        }
+                        if (databaseDebugDbOverrideValue) {
+                            options.data.db_override = databaseDebugDbOverrideValue;
+                        }
                     }
-                }
-                else if (typeof options.data === 'object') {
-                    if (databaseDebugComparisonValue) {
-                        options.data.comparison = databaseDebugComparisonValue;
-                    }
-                    if (databaseDebugDbOverrideValue) {
-                        options.data.db_override = databaseDebugDbOverrideValue;
+                    else {
+                        var params = {};
+                        if (databaseDebugComparisonValue) {
+                            params.comparison = databaseDebugComparisonValue;
+                        }
+                        if (databaseDebugDbOverrideValue) {
+                            params.db_override = databaseDebugDbOverrideValue;
+                        }
+                        options.data = params;
                     }
                 }
                 else {
-                    var params = {};
+                    var paramString = '';
                     if (databaseDebugComparisonValue) {
-                        params.comparison = databaseDebugComparisonValue;
+                        paramString += 'comparison=' + databaseDebugComparisonValue;
                     }
                     if (databaseDebugDbOverrideValue) {
-                        params.db_override = databaseDebugDbOverrideValue;
+                        if (paramString) {
+                            paramString += '&';
+                        }
+                        paramString += 'db_override=' + databaseDebugDbOverrideValue;
                     }
-                    options.data = params;
-                }
-            }
-            else {
-                var paramString = '';
-                if (databaseDebugComparisonValue) {
-                    paramString += 'comparison=' + databaseDebugComparisonValue;
-                }
-                if (databaseDebugDbOverrideValue) {
                     if (paramString) {
-                        paramString += '&';
+                        options.data = paramString;
                     }
-                    paramString += 'db_override=' + databaseDebugDbOverrideValue;
-                }
-                if (paramString) {
-                    options.data = paramString;
                 }
             }
         }
     }
 });
-
 //register views
 app.DownloadView = new DownloadView();
 
