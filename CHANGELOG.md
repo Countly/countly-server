@@ -1,3 +1,8 @@
+## Version 25.03.XX
+
+Enterprise Fixes:
+- [journey-engine] Fix for skip threshold check in concurrent requests
+
 ## Version 25.03.15
 Enterprise Fixes:
 - [cohorts] Unescape segmentation properties options to prevent duplicated values
