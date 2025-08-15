@@ -1,62 +1,89 @@
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js');
-const { changeStreamReader } = require('../../../api/parts/data/changeStreamReader');
+var moment = require('moment-timezone');
+const { DataBatchReader } = require('../../../api/parts/data/dataBatchReader');
 var log = common.log('times-of-day:aggregator');
 
 (function() {
     plugins.register("/aggregator", function() {
-        var changeStream = new changeStreamReader(common.drillDb, {
-            pipeline: [
-                {"$match": {"fullDocument.e": {"$in": ["[CLY]_session", "[CLY]_custom"]}, "operationType": "insert"}},
-                {"$project": {"__id": "$fullDocument._id", "ts": "$fullDocument.ts", "cd": "$fullDocument.cd", "n": "$fullDocument.n", "a": "$fullDocument.a", "e": "$fullDocument.e", "dow": "$fullDocument.up.dow", "hour": "$fullDocument.up.hour"}}
-            ],
+        new DataBatchReader(common.drillDb, {
             "name": "times-of-day",
-            fallback: {
-                pipeline: [{
-                    "$match": {"e": {"$in": ["[CLY]_session", "[CLY]_custom"]}}
-                },
-                {"$project": {"__id": "$_id", "ts": "$ts", "cd": "$cd", "n": "$n", "a": "$a", "e": "$e", "dow": "$up.dow", "hour": "$up.hour"}}
-                ]
+            pipeline: [{
+                "$match": {"e": {"$in": ["[CLY]_session", "[CLY]_custom"]}}
             },
-            "collection": "drill_events",
-            "onClose": async function(callback) {
-                await common.writeBatcher.flush("countly", "times_of_day");
-                if (callback) {
-                    callback();
+            {
+                "$group": {
+                    "_id": {
+                        "a": "$a",
+                        "e": "$e",
+                        "n": "$n",
+                        "h": {"$dateToString": {"date": {"$toDate": "$ts"}, "format": "%Y:%m:%d:%H", "timezone": "UTC"}},
+                        "dow": "$up.dow",
+                        "hour": "$up.hour"
+                    },
+                    "c": {"$sum": "$c"},
+
+                }
+            },
+            {
+                "$project": {
+                    "a": "$_id.a",
+                    "e": "$_id.e",
+                    "n": "$_id.n",
+                    "h": "$_id.h",
+                    "dow": "$_id.dow",
+                    "hour": "$_id.hour",
+                    "c": 1,
+                    "_id": 0
+                }
+            },
+            {"$sort": {"a": 1}}
+            ],
+            interval: 6000,
+
+        }, async function(token, data) {
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let next = data[i];
+                    if (next.dow === 7) {
+                        next.dow = 0;
+                    }
+                    if (next.a && next.e && (next.dow || next.dow === 0) && (next.hour || next.hour === 0)) {
+                        try {
+                            var app = await common.readBatcher.getOne("apps", common.db.ObjectID(next.a), {projection: {timezone: 1}});
+
+                            if (app) {
+                                var appTimezone = app.timezone || "UTC";
+                                var d = moment();
+                                if (appTimezone) {
+                                    d.tz(appTimezone);
+                                }
+                                common.shiftHourlyData(next, Math.floor(d.utcOffset() / 60), "h");
+                                var datestr = next.h.split(":");
+                                datestr = datestr[0] + ":" + datestr[1];
+
+                                let setData = {s: next.e, a: common.db.ObjectID(next.a)};
+                                if (next.e === "[CLY]_custom") {
+                                    setData.s = next.n;
+                                }
+                                let id = next.a + "_" + setData.s + "_" + datestr;
+                                let incData = {};
+                                incData['d.' + next.dow + "." + next.hour + ".count"] = next.c;
+                                setData._id = id;
+                                setData.m = datestr;
+                                common.manualWriteBatcher.add("times_of_day", id, {$set: setData, $inc: incData}, "countly", {token: token});
+                            }
+                            else {
+                                log.e("App not found");
+                            }
+                        }
+                        catch (e) {
+                            log.e("Error processing times of day data", e);
+                        }
+                    }
+                    await common.manualWriteBatcher.flush("countly", "times_of_day", token.cd);
                 }
             }
-        }, (token, next) => {
-            if (next.dow === 7) {
-                next.dow = 0;
-            }
-            if (next.a && next.e && (next.dow || next.dow === 0) && (next.hour || next.hour === 0)) {
-                common.readBatcher.getOne("apps", common.db.ObjectID(next.a), {projection: {timezone: 1}}, function(err, app) {
-                    if (err) {
-                        log.e(err);
-                    }
-                    if (app) {
-                        var date = common.initTimeObj(app.timezone, next.ts);
-                        let setData = {s: next.e, a: common.db.ObjectID(next.a)};
-                        if (next.e === "[CLY]_custom") {
-                            setData.s = next.n;
-                        }
-                        let id = next.a + "_" + setData.s + "_" + date.monthly.replace('.', ':');
-                        let incData = {};
-                        incData['d.' + next.dow + "." + next.hour + ".count"] = 1;
-                        setData._id = id;
-                        setData.m = date.monthly.replace('.', ':');
-                        common.writeBatcher.add("times_of_day", id, {$set: setData, $inc: incData}, "countly", {token: token});
-                    }
-                    else {
-                        log.e("App not found");
-                    }
-                });
-            }
         });
-
-        common.writeBatcher.addFlushCallback("times_of_day", function(token) {
-            changeStream.acknowledgeToken(token);
-        });
-
     });
 }());

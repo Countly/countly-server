@@ -851,6 +851,7 @@ function deleteAllAppData(appId, fromAppDelete, params, app) {
                     }
                 });
             }
+            common.drillDb.collection("drill_meta").remove({"_id": {"$regex": "^" + appId} }, function() {});
         });
     }
     common.db.collection('app_users' + appId).drop(function() {

@@ -89,8 +89,15 @@
             context.commit('setLineChartData', obj);
         },
         getTableRows: function(context) {
+            var tableRows = [];
             var eventData = context.state.allEventsProcessed;
-            var tableRows = eventData.chartData.slice();
+            if (context.state.selectedEventsData && context.state.selectedEventsData.mode === "granular") {
+                tableRows = context.state.selectedEventsData.data || [];
+            }
+            else {
+
+                tableRows = eventData.chartData.slice();
+            }
             var labels = context.state.labels;
             tableRows.forEach(function(row, i) {
                 row.dateVal = i; //because we get them all always sorted by date
@@ -388,11 +395,12 @@
             else {
                 context.commit('setHasSegments', false);
             }
-            var eventData = countlyAllEvents.helpers.getEventsData(context, res);
+
             if (context.state.currentActiveSegmentation !== "segment") {
-                countlyAllEvents.helpers.getBarChartData(context, eventData);
+                countlyAllEvents.helpers.getBarChartData(context, {"chartData": res.data});
             }
             else {
+                var eventData = countlyAllEvents.helpers.getEventsData(context, res);
                 countlyAllEvents.helpers.getLineChartData(context, eventData);
             }
             segments.sort();
@@ -605,7 +613,17 @@
                 tmpPrevCount = 0,
                 tmpPrevSum = 0,
                 tmpPrevDur = 0;
-            if (periodObj.isSpecialPeriod) {
+            if (currentEventData.mode === "granular") {
+                for (var z = 0; z < currentEventData.data.length; z++) {
+                    currentTotal += currentEventData.data[z].c || 0;
+                    previousTotal += currentEventData.data[z].prev_c || 0;
+                    currentSum += currentEventData.data[z].s || 0;
+                    previousSum += currentEventData.data[z].prev_s || 0;
+                    currentDur += currentEventData.data[z].dur || 0;
+                    previousDur += currentEventData.data[z].prev_dur || 0;
+                }
+            }
+            else if (periodObj.isSpecialPeriod) {
                 for (var i = 0; i < (periodObj.currentPeriodArr.length); i++) {
                     tempX = countlyCommon.getDescendantProp(currentEventData, periodObj.currentPeriodArr[i]);
                     tempY = countlyCommon.getDescendantProp(currentEventData, periodObj.previousPeriodArr[i]);
