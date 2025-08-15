@@ -200,6 +200,14 @@ class JobServer {
             process.exit(exitCode);
         }
     }
+
+    /**
+     * Applies job configuration changes
+     * @param {JobConfig} jobConfig The job configuration to apply
+     */
+    async applyConfig(jobConfig) {
+        this.#jobManager.applyConfig(jobConfig);
+    }
 }
 
 module.exports = JobServer;
