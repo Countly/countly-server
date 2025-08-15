@@ -129,6 +129,7 @@
                         return {
                             type: "GET",
                             url: countlyCommon.API_URL + "/jobs/o", // no ?name= param => list mode
+                            headers: { 'Countly-Token': countlyGlobal.auth_token },
                             data: {
                                 app_id: countlyCommon.ACTIVE_APP_ID,
                                 iDisplayStart: 0,
@@ -277,6 +278,7 @@
                         type: "GET", // or POST if your server expects that
                         url: countlyCommon.API_URL + "/jobs/i",
                         data: data,
+                        headers: { 'Countly-Token': countlyGlobal.auth_token },
                         success: function(res) {
                             if (res.result === "Success") {
                                 self.refresh(true);
@@ -311,6 +313,7 @@
                 $.ajax({
                     type: "GET",
                     url: countlyCommon.API_URL + "/jobs/i",
+                    headers: { 'Countly-Token': countlyGlobal.auth_token },
                     data: {
                         app_id: countlyCommon.ACTIVE_APP_ID,
                         jobName: this.selectedJobConfig.name,
@@ -380,6 +383,7 @@
                 CV.$.ajax({
                     type: "GET",
                     url: countlyCommon.API_URL + "/jobs/o",
+                    headers: { 'Countly-Token': countlyGlobal.auth_token },
                     data: {
                         "app_id": countlyCommon.ACTIVE_APP_ID,
                         "name": self.job_name,
