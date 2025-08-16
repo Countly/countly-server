@@ -1,3 +1,9 @@
+## Version 25.03.xx
+
+Dependencies:
+- Bump get-random-values from 3.0.0 to 4.0.0
+- Bump puppeteer from 24.16.1 to 24.16.2
+
 ## Version 25.03.15
 Enterprise Fixes:
 - [cohorts] Unescape segmentation properties options to prevent duplicated values
