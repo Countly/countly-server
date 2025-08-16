@@ -3,7 +3,7 @@ Countly Product Analytics - Countly Lite License
 
 © Countly, https://count.ly
 
-Countly is provided under AGPL v3 with modified Section 7. In accordance 
+Countly is provided under AGPL-3.0 with modified Section 7. In accordance 
 with Section 7 of the AGPL, the Works included in this package or repository 
 (excluding 3rd party Software), are subject to the following additional terms:
 

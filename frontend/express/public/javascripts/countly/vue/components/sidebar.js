@@ -616,7 +616,6 @@
                 countlyVue.container.dataMixin({
                     "externalMainMenuOptions": "/sidebar/menu/main",
                     "otherMenuOptions": "/sidebar/menu/other",
-                    "customSidebarComponents": "/sidebar/custom",
                 })
             ],
             components: {

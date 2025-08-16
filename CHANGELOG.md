@@ -2,6 +2,53 @@
 Dependencies:
 - Remove SQLite
 
+
+## Version 25.03.14
+
+Fixes:
+- [dashboard] Localized missing string in the dashboard
+- [localization] Added French translations
+
+Enterprise Fixes:
+- [active_directory] Fix for body parser empty request body issue
+
+Dependencies:
+- Bump lint-staged from 16.1.2 to 16.1.4
+
+
+## Version 25.03.13
+Features:
+- [remote-config] Enable comparing newer/older app version in conditions
+
+Fixes:
+- [remote-config] Fix condition matching with compound conditions
+
+Enterprise Fixes:
+- [flows] Showing correct state for disabled flows
+- [surveys] Move "not likely" label next to 0 on mobile screens
+
+## Version 25.03.12
+Features:
+- [plugins] Add configuration warning tags to settings UI
+- [white-labeling] Add sidebar footer label setting to white labeling
+
+Fixes:
+- [core] Use correct rights validation for loyality
+- [crashes] Fix free session for home widget
+- [crashes] Fix trend and change calculation for crash stats
+- [crashes] Use na for free session and free user when there's no data
+- [push] Show segmentation, geo and cohorts related components in push drawer on editing draft.
+
+Enterprise Fixes:
+- [ldap] Error handling in ldap plugin on search error
+- [license] Display notification for non global admin user
+- [users] Load table data from report if user table calculation goes to report manager
+
+Dependencies:
+- Bump mongodb from 6.17.0 to 6.18.0
+- Bump puppeteer from 24.14.0 to 24.15.0
+- Bump supertest from 7.1.3 to 7.1.4
+
 ## Version 25.03.11
 Fixes:
 - [core] Fix mongo connection url parsing
@@ -9,6 +56,8 @@ Fixes:
 - [crashes] Fix free session and free user calculation
 - [dashboards] Delete associated widgets and reports when a dashboard is removed
 - [star-rating] Fix widget close post message
+- [core] Adjust level and update content of app version log
+- [populator] Update getVersion to generate valid semantic version
 
 Enterprise Fixes:
 - [crash_symbolication] Remove auto symbolication setting
