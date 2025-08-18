@@ -2,9 +2,26 @@
  * Base interface for event sources
  * Provides async iteration with automatic batch acknowledgment
  * 
+ * This is an abstract base class that defines the template method pattern for event sources.
+ * Subclasses must implement initialize(), getNext(), acknowledge(), and stop() methods.
+ * 
+ * The async iterator provides:
+ * - Automatic resource initialization and cleanup
+ * - At-least-once delivery semantics (events not acknowledged if consumer throws)
+ * - Proper resource cleanup on early exits, breaks, and errors
+ * - Single iteration restriction (prevents parallel processing on same instance)
+ * 
  * Usage: for await (const {token, events} of eventSource) { ... }
  * 
- * Batches are automatically acknowledged when the iterator moves to the next batch
+ * Application Code:
+ * Use UnifiedEventSource for a clean API: new UnifiedEventSource(name, sourceConf)
+ * This abstract class is implemented by KafkaEventSource and ChangeStreamEventSource.
+ * 
+ * Constructor Parameters:
+ * This is an abstract base class - it should not be instantiated directly.
+ * Subclasses define their own constructor parameters based on their specific requirements.
+ * 
+ * @abstract
  */
 class EventSourceInterface {
     #isIterating = false;
@@ -107,7 +124,6 @@ class EventSourceInterface {
             }
         }
     }
-
 
     /**
      * Check if the event source is currently being iterated

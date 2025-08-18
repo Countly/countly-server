@@ -21,14 +21,38 @@ class ChangeStreamEventSource extends EventSourceInterface {
 
     #isClosed = false;
 
-    // Memory safety constants
-    static #MAX_QUEUE_SIZE = 10000; // Maximum events in queue before backpressure
+    #isPaused = false;
 
-    static #QUEUE_WARNING_SIZE = 5000; // Warn when queue grows large
+    // Backpressure thresholds
+    static #PAUSE_THRESHOLD = 1000; // Pause changestream when queue reaches this size
+
+    static #RESUME_THRESHOLD = 100; // Resume changestream when queue drains to this size
 
     /**
-     * @param {Object} db - MongoDB database connection
-     * @param {Object} config - ChangeStream configuration
+     * Create a ChangeStreamEventSource instance
+     * 
+     * This class is typically created by EventSourceFactory, not directly by application code.
+     * Use UnifiedEventSource for a cleaner API: new UnifiedEventSource(name, sourceConf)
+     * 
+     * Constructor Parameters:
+     * @param {Object} db - Required. MongoDB database connection object
+     *                      Should be a valid MongoDB database instance with access to the target collection
+     * @param {Object} config - Required. ChangeStream configuration object
+     * @param {string} config.name - Required. Unique name for this event source used for logging and identification
+     *                               Should be descriptive (e.g., 'session-changestream', 'drill-events-watcher')
+     * @param {Array} [config.pipeline=[]] - Optional. MongoDB aggregation pipeline for filtering change stream events
+     *                                       Array of aggregation stages to filter/transform events before queuing
+     *                                       Example: [{ $match: { 'fullDocument.e': '[CLY]_session' } }]
+     * @param {string} [config.collection='drill_events'] - Optional. MongoDB collection name to watch for changes
+     *                                                       Defaults to 'drill_events' if not specified
+     * @param {Object} [config.options={}] - Optional. Additional MongoDB change stream options
+     *                                       Passed directly to MongoDB changeStream() method
+     *                                       Common options: { fullDocument: 'updateLookup', resumeAfter: token }
+     * @param {number} [config.interval=10000] - Optional. Health check interval in milliseconds (default: 10 seconds)
+     *                                           How often to check if the change stream is still healthy
+     * @param {Function} [config.onClose] - Optional. Callback function executed when the change stream closes
+     *                                      Receives error information if stream closes due to error
+     * @param {Object} [config.fallback] - Optional. Fallback configuration for when change streams fail
      */
     constructor(db, config) {
         super();
@@ -58,41 +82,25 @@ class ChangeStreamEventSource extends EventSourceInterface {
                 onClose: this.#config.onClose
             },
             (token, data) => {
-                // Check queue bounds for memory safety
-                if (this.#eventQueue.length >= ChangeStreamEventSource.#MAX_QUEUE_SIZE) {
-                    log.e(`[${this.#config.name}] Event queue full (${this.#eventQueue.length}), dropping events to prevent memory exhaustion`);
-                    // Drop oldest events to make room (FIFO with overflow protection)
-                    const dropCount = Math.floor(ChangeStreamEventSource.#MAX_QUEUE_SIZE * 0.1); // Drop 10%
-                    this.#eventQueue.splice(0, dropCount);
-                    log.w(`[${this.#config.name}] Dropped ${dropCount} oldest events due to queue overflow`);
+                // Simple backpressure: pause/resume changestream based on queue size
+                // No data loss - leverages changeStreamReader's robust token management
+                if (this.#eventQueue.length >= ChangeStreamEventSource.#PAUSE_THRESHOLD && !this.#isPaused) {
+                    log.w(`[${this.#config.name}] Queue large (${this.#eventQueue.length}), pausing changestream to prevent memory issues`);
+                    this.#pauseStream();
                 }
-                else if (this.#eventQueue.length >= ChangeStreamEventSource.#QUEUE_WARNING_SIZE) {
-                    log.w(`[${this.#config.name}] Event queue growing large: ${this.#eventQueue.length} events (warning threshold: ${ChangeStreamEventSource.#QUEUE_WARNING_SIZE})`);
+                else if (this.#eventQueue.length <= ChangeStreamEventSource.#RESUME_THRESHOLD && this.#isPaused) {
+                    log.i(`[${this.#config.name}] Queue drained (${this.#eventQueue.length}), resuming changestream`);
+                    this.#resumeStream();
                 }
-
-                // Extract the actual event data
                 let event = data;
                 if (data.fullDocument) {
                     event = data.fullDocument;
                 }
-
-                // Create a stable key for the token
-                const tokenKey = token._id ?
-                    `cs:${token._id}:${token.cd}` :
-                    `cs:${Buffer.from(JSON.stringify(token)).toString('base64')}`;
-
                 const eventData = {
-                    token: {
-                        ...token,
-                        key: tokenKey,
-                        originalToken: token
-                    },
+                    token: token,
                     event
                 };
-
                 this.#eventQueue.push(eventData);
-
-                // If someone is waiting for an event, resolve their promise
                 if (this.#resolveNext) {
                     const resolver = this.#resolveNext;
                     this.#resolveNext = null;
@@ -100,7 +108,6 @@ class ChangeStreamEventSource extends EventSourceInterface {
                 }
             }
         );
-
         this.#isRunning = true;
         log.d('ChangeStream event source initialized');
     }
@@ -115,18 +122,15 @@ class ChangeStreamEventSource extends EventSourceInterface {
         if (this.#eventQueue.length === 0) {
             return null;
         }
-
         const batch = [];
         let batchToken = null;
         const batchSize = Math.min(this.#eventQueue.length, maxBatchSize);
-
         for (let i = 0; i < batchSize; i++) {
             const eventData = this.#eventQueue.shift();
             batch.push(eventData.event);
             // Use the last token as the batch token for acknowledgment
             batchToken = eventData.token;
         }
-
         return {
             token: batchToken,
             events: batch
@@ -144,18 +148,13 @@ class ChangeStreamEventSource extends EventSourceInterface {
         if (this.#isClosed) {
             return null;
         }
-
         if (!this.#isRunning) {
             await this.initialize();
         }
-
-        // Try to collect available events into a batch
         let batch = this.#collectBatch();
         if (batch) {
             return batch;
         }
-
-        // Wait for events to arrive
         await new Promise((resolve) => {
             // Check again in case events arrived while creating the promise
             if (this.#eventQueue.length > 0) {
@@ -165,8 +164,6 @@ class ChangeStreamEventSource extends EventSourceInterface {
                 this.#resolveNext = resolve;
             }
         });
-
-        // Collect newly arrived events into a batch
         return this.#collectBatch();
     }
 
@@ -178,8 +175,8 @@ class ChangeStreamEventSource extends EventSourceInterface {
      */
     async acknowledge(token) {
         if (this.#reader && this.#reader.acknowledgeToken) {
-            await this.#reader.acknowledgeToken(token.originalToken || token);
-            log.d(`Acknowledged changestream batch ending at: ${token.key}`);
+            await this.#reader.acknowledgeToken(token);
+            log.d(`Acknowledged changestream batch ending at token: ${token._id || 'resume-token'}`);
         }
     }
 
@@ -191,27 +188,61 @@ class ChangeStreamEventSource extends EventSourceInterface {
         if (this.#isClosed) {
             return;
         }
-
         this.#isClosed = true;
-
         if (!this.#isRunning) {
             return;
         }
-
         // Clean up any waiting promises
         if (this.#resolveNext) {
             const resolver = this.#resolveNext;
             this.#resolveNext = null;
             resolver();
         }
-
         if (this.#reader) {
             this.#reader.close();
         }
-
         this.#isRunning = false;
+        this.#isPaused = false;
         this.#eventQueue = [];
         log.d('ChangeStream event source stopped');
+    }
+
+    /**
+     * Pause the changestream to control backpressure
+     * Uses changeStreamReader's built-in recovery mechanisms
+     * @private
+     */
+    #pauseStream() {
+        if (this.#isPaused || !this.#reader) {
+            return;
+        }
+        this.#isPaused = true;
+        this.#reader.keep_closed = true;
+        if (this.#reader.stream && !this.#reader.stream.closed) {
+            this.#reader.stream.close();
+        }
+        log.i(`[${this.#config.name}] Changestream paused due to backpressure (queue: ${this.#eventQueue.length})`);
+    }
+
+    /**
+     * Resume the changestream after backpressure relief
+     * Leverages changeStreamReader's token management and fallback mechanisms
+     * @private
+     */
+    async #resumeStream() {
+        if (!this.#isPaused || !this.#reader) {
+            return;
+        }
+        this.#isPaused = false;
+        this.#reader.keep_closed = false; // Allow changeStreamReader to restart
+        try {
+            await this.#reader.setUp(this.#reader.onData);
+            log.i(`[${this.#config.name}] Changestream resumed after backpressure relief (queue: ${this.#eventQueue.length})`);
+        }
+        catch (err) {
+            log.e(`[${this.#config.name}] Error resuming changestream after backpressure:`, err);
+            // changeStreamReader will handle this in its error handlers
+        }
     }
 
 }

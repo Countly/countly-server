@@ -3,8 +3,15 @@ const log = require('../utils/log.js')('kafka-event-source');
 
 /**
  * Kafka implementation of EventSourceInterface
- * Supports async iteration with auto-acknowledgment
- * Compatible with updated KafkaConsumer that uses KafkaClient for connection management
+ * Supports async iteration with auto-acknowledgment and proper at-least-once delivery
+ * 
+ * This implementation uses a simpler blocking approach without internal queuing:
+ * - KafkaConsumer handler blocks until the batch is acknowledged
+ * - Natural backpressure via KafkaConsumer's built-in flow control
+ * - Ensures offsets are only committed after successful processing
+ * 
+ * Note: This class returns ALL events from Kafka without filtering.
+ * Event filtering is the responsibility of the consumer of this class.
  */
 class KafkaEventSource extends EventSourceInterface {
     #kafkaConsumer;
@@ -13,66 +20,44 @@ class KafkaEventSource extends EventSourceInterface {
 
     #currentBatch = null;
 
-    #waitingForBatch = null;
+    #batchAvailable = null; // Promise resolver for when a new batch arrives
 
-    #batchReady = false;
+    #batchProcessed = null; // Promise resolver for when batch is acknowledged
 
     #isRunning = false;
-
-    #eventFilter;
-
-    #awaitingAckResolve = null;
-
-    #awaitingAck = null; // Promise
 
     #isClosed = false;
 
     /**
-     * @param {KafkaConsumer} kafkaConsumer - KafkaConsumer instance (from updated plugin)
-     * @param {Object} config - Configuration
-     * @param {string} [config.eventFilter] - Optional event type filter
-     * @param {string} config.name - Consumer name for logging
-     * @param {string[]} [config.topics] - Topics to consume from (overrides consumer default)
-     * @param {string} [config.topic] - Single topic to consume from
+     * Create a KafkaEventSource instance
+     * 
+     * This class is typically created by EventSourceFactory, not directly by application code.
+     * Use UnifiedEventSource for a cleaner API: new UnifiedEventSource(name, sourceConf)
+     * 
+     * Constructor Parameters:
+     * @param {KafkaConsumer} kafkaConsumer - Required. KafkaConsumer instance from plugins/kafka/api/lib/KafkaConsumer.js
+     *                                        Must be properly initialized with KafkaClient connection and consumer group configuration
+     *                                        Kafka topics and settings come from global countlyConfig
+     * @param {Object} config - Required. Configuration object for this event source
+     * @param {string} config.name - Required. Unique consumer name used for logging and identification
+     *                               Should be descriptive (e.g., 'session-aggregator', 'view-processor')
+     *                               Used as Kafka consumer group ID (with prefix from countlyConfig)
      */
     constructor(kafkaConsumer, config) {
         super();
-
         if (!kafkaConsumer) {
             throw new Error('KafkaConsumer instance is required for KafkaEventSource');
         }
-
         if (!config || !config.name) {
             throw new Error('Configuration with name property is required for KafkaEventSource');
         }
-
         this.#kafkaConsumer = kafkaConsumer;
         this.#config = config;
-        this.#eventFilter = config.eventFilter;
-
-        log.d(`KafkaEventSource created: ${this.#config.name}${this.#eventFilter ? ` (filter: ${this.#eventFilter})` : ''}`);
+        log.d(`KafkaEventSource created: ${this.#config.name}`);
     }
 
     /**
-     * Wait for acknowledgment promise
-     * @returns {Promise<void>} resolves when batch is acknowledged
-     * @private
-     */
-    #waitForAck() {
-        if (!this.#awaitingAck) {
-            this.#awaitingAck = new Promise((resolve) => {
-                this.#awaitingAckResolve = () => {
-                    this.#awaitingAck = null;
-                    this.#awaitingAckResolve = null;
-                    resolve();
-                };
-            });
-        }
-        return this.#awaitingAck;
-    }
-
-    /**
-     * Initialize the Kafka consumer using its existing start() method
+     * Initialize the Kafka consumer with blocking handler for proper acknowledgment flow
      * @returns {Promise<void>} resolves when consumer is started
      */
     async initialize() {
@@ -80,79 +65,79 @@ class KafkaEventSource extends EventSourceInterface {
             return;
         }
 
-        // Start the consumer - the handler will be called with native Kafka batches
         await this.#kafkaConsumer.start(async({ topic, partition, records }) => {
+            // Early exit if shutting down
+            if (this.#isClosed) {
+                return;
+            }
+
             log.d(`[${this.#config.name}] Received batch: ${records.length} records from ${topic}[${partition}]`);
 
-            // Filter and transform records into our format
+            // Transform records into our format
             const events = [];
             let lastOffset = null;
             let firstOffset = null;
 
             for (const { event, message, headers } of records) {
-                // Apply event filter if specified
-                if (!this.#eventFilter || event?.e === this.#eventFilter) {
-                    events.push({
-                        ...event,
-                        // Include Kafka metadata in the event for traceability
-                        _kafka: {
-                            topic,
-                            partition,
-                            offset: message.offset,
-                            key: message.key,
-                            headers
-                        }
-                    });
-                    lastOffset = message.offset;
-                    if (firstOffset === null) {
-                        firstOffset = message.offset;
+                // Include all events - filtering is responsibility of the consumer
+                events.push({
+                    ...event,
+                    // Include Kafka metadata in the event for traceability
+                    _kafka: {
+                        topic,
+                        partition,
+                        offset: message.offset,
+                        key: message.key,
+                        headers
                     }
+                });
+                lastOffset = message.offset;
+                if (firstOffset === null) {
+                    firstOffset = message.offset;
                 }
             }
 
-            log.d(`[${this.#config.name}] Filtered to ${events.length} events (from ${records.length} total)`);
-
             if (events.length === 0) {
-                // No matching events in this batch, continue
-                log.d(`[${this.#config.name}] No events matched filter, skipping batch`);
+                // No events in this batch (shouldn't happen with normal Kafka operation)
+                log.d(`[${this.#config.name}] No events in batch, skipping`);
                 return;
             }
 
-            // Create batch token with metadata for acknowledgment
+            // Create batch token for acknowledgment
             const batchToken = {
-                topic,
-                partition,
-                firstOffset,
-                lastOffset,
-                originalBatchSize: records.length,
-                filteredBatchSize: events.length,
-                timestamp: Date.now(),
                 key: `kafka:${topic}:${partition}:${firstOffset}-${lastOffset}`,
+                batchSize: records.length
             };
 
-            // Store the new batch
+            log.d(`[${this.#config.name}] Processing batch: ${batchToken.key} (${events.length} events)`);
+
+            // Store the batch for getNext() to retrieve
             this.#currentBatch = {
                 token: batchToken,
                 events: events
             };
-            this.#batchReady = true;
 
-            log.d(`[${this.#config.name}] Batch ready: ${batchToken.key} (${events.length} events)`);
+            // Create promise for acknowledgment
+            const processed = new Promise((resolve) => {
+                this.#batchProcessed = resolve;
+            });
 
-            // If someone is waiting for a batch, notify them
-            if (this.#waitingForBatch) {
-                const resolver = this.#waitingForBatch;
-                this.#waitingForBatch = null;
+            // Notify getNext() that a batch is available
+            if (this.#batchAvailable) {
+                const resolver = this.#batchAvailable;
+                this.#batchAvailable = null;
                 resolver();
             }
 
-            // Wait for this batch to be acknowledged before returning
-            // This ensures KafkaConsumer only commits after we've processed everything
-            await this.#waitForAck();
+            // CRITICAL: Block here until acknowledge() is called
+            // This ensures KafkaConsumer only commits offsets after processing
+            await processed;
+
+            log.d(`[${this.#config.name}] Batch processing acknowledged, allowing offset commit for ${batchToken.key}`);
         });
 
         this.#isRunning = true;
-        log.d(`[${this.#config.name}] Kafka event source initialized for batch processing`);
+        log.d(`[${this.#config.name}] Kafka event source initialized with blocking acknowledgment flow`);
     }
 
     /**
@@ -169,35 +154,39 @@ class KafkaEventSource extends EventSourceInterface {
             await this.initialize();
         }
 
-        // Return current batch if available
-        if (this.#batchReady && this.#currentBatch) {
+        // If batch already available from a previous Kafka callback, return it immediately
+        if (this.#currentBatch) {
             const batch = this.#currentBatch;
             this.#currentBatch = null;
+            log.d(`[${this.#config.name}] Returning available batch: ${batch.token.key}`);
             return batch;
         }
 
-        // Wait for the next batch to arrive
+        // Wait for next batch from Kafka
         await new Promise((resolve) => {
-            // Race condition protection: check one more time
-            if (this.#batchReady && this.#currentBatch) {
+            // Race condition check: batch might have arrived while creating promise
+            if (this.#currentBatch) {
                 resolve();
                 return;
             }
-            this.#waitingForBatch = resolve;
+            this.#batchAvailable = resolve;
         });
 
-        // Return batch if it arrived while we were waiting
-        if (this.#batchReady && this.#currentBatch) {
+        // Return the batch that arrived
+        if (this.#currentBatch) {
             const batch = this.#currentBatch;
             this.#currentBatch = null;
+            log.d(`[${this.#config.name}] Returning newly arrived batch: ${batch.token.key}`);
             return batch;
         }
 
+        // Closed while waiting
         return null;
     }
 
     /**
      * Acknowledge successful processing of a batch
+     * This unblocks the Kafka handler, allowing offset commit
      * @param {Object} token - Token from getNext()
      * @returns {Promise<void>} resolves when acknowledged
      * @protected
@@ -208,17 +197,18 @@ class KafkaEventSource extends EventSourceInterface {
             return;
         }
 
-        log.d(`[${this.#config.name}] Batch acknowledged: ${token.key} (${token.filteredBatchSize} events filtered from ${token.originalBatchSize})`);
+        log.d(`[${this.#config.name}] Acknowledging batch: ${token.key} (${token.batchSize} events)`);
 
-        // Mark batch as processed so Kafka can commit
-        this.#batchReady = false;
-
-        // Resolve the acknowledgment waiter to allow Kafka consumer to proceed
-        if (this.#awaitingAckResolve) {
-            this.#awaitingAckResolve();
+        // Unblock the Kafka handler so it can return and allow offset commit
+        if (this.#batchProcessed) {
+            const resolver = this.#batchProcessed;
+            this.#batchProcessed = null;
+            resolver();
+            log.d(`[${this.#config.name}] Batch acknowledged, unblocking Kafka handler for ${token.key}`);
         }
-
-        log.d(`[${this.#config.name}] Batch complete, allowing KafkaConsumer to commit offsets for ${token.topic}[${token.partition}]`);
+        else {
+            log.w(`[${this.#config.name}] No pending batch to acknowledge for token ${token.key}`);
+        }
     }
 
     /**
@@ -236,22 +226,26 @@ class KafkaEventSource extends EventSourceInterface {
             return;
         }
 
-        // Clean up any waiting promises
-        if (this.#waitingForBatch) {
-            const resolver = this.#waitingForBatch;
-            this.#waitingForBatch = null;
+        // Clean up any waiting promises to prevent hangs
+        if (this.#batchAvailable) {
+            const resolver = this.#batchAvailable;
+            this.#batchAvailable = null;
             resolver();
         }
 
-        // Clean up acknowledgment waiter
-        if (this.#awaitingAckResolve) {
-            this.#awaitingAckResolve();
+        if (this.#batchProcessed) {
+            const resolver = this.#batchProcessed;
+            this.#batchProcessed = null;
+            resolver();
         }
 
+        // Stop the Kafka consumer
         await this.#kafkaConsumer.stop();
+
+        // Clean up state
         this.#isRunning = false;
         this.#currentBatch = null;
-        this.#batchReady = false;
+
         log.d(`[${this.#config.name}] Kafka event source stopped`);
     }
 
