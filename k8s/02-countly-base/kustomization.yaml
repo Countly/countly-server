@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Main kustomization that combines all components
+# This should be used for full deployment after prerequisites and secrets are set up
+# Apply with: kubectl apply -k 02-countly-base/
+
+namespace: countly
+
+resources:
+# Include all components in order
+- 00-prerequisites
+- 02-core-services
+- 03-ingress
+
+# NOTE: 01-secrets is intentionally not included here
+# Secrets should be created separately using: kubectl apply -k 02-countly-base/01-secrets/
