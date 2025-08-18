@@ -128,7 +128,7 @@ export interface ValidationArgProperties {
         /** should property be present in args */
         required?: boolean;
         /** what type should property be, possible values: String, Array, Number, URL, Boolean, Object, Email */
-        type?: 'String' | 'Array' | 'Number' | 'URL' | 'Boolean' | 'Object' | 'Email' | string;
+        type?: 'String' | 'Array' | 'Number' | 'URL' | 'Boolean' | 'Object' | 'Email' | string | ValidationArgProperties;
         /** property should not be longer than provided value */
         'max-length'?: number;
         /** property should not be shorter than provided value */
@@ -239,7 +239,7 @@ export interface HTMLWhitelist {
 export interface Common {
     /** Reference to plugins */
     plugins: PluginManager;
-    
+
     /**
      * Escape special characters in the given string of html.
      * @param  {string} string - The string to escape for inserting into HTML
@@ -787,7 +787,7 @@ export interface Common {
      * Getter/setter for dot notatons:
      * @param {object} obj - object to use
      * @param {string | string[]} is - path of properties to get
-     * @param {any} value - value to set
+     * @param {any?} value - value to set
      * @returns {any} value at provided path
      * @example
      * common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 'string'
@@ -795,7 +795,7 @@ export interface Common {
      * common.dot({a: {b: {c: 'string'}}}, 'a.b.c', 5) === 5
      * common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 5
      */
-    dot: (obj: object, is: string | string[], value: any) => any;
+    dot: (obj: object, is: string | string[], value?: any) => any;
 
     /**
      * Not deep object and primitive type comparison function
@@ -983,7 +983,7 @@ export interface Common {
     };
 
     /** Database connection for output */
-    outDb?: Database; 
+    outDb?: Database;
 
     /** Database connection for drill queries */
     drillDb?: Database;
@@ -1019,7 +1019,7 @@ export interface Common {
         [hash: string]: {
             a: string;           // app id
             e?: string;          // event name (for events)
-            vs?: string;         // view segment (for views)  
+            vs?: string;         // view segment (for views)
             name: string;        // display name
         };
     };

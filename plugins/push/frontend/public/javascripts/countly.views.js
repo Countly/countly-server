@@ -714,8 +714,22 @@
             onSendToTestUsers: function() {
                 var self = this;
                 this.isLoading = true;
-                this.sendToTestUsers().then(function() {
-                    CountlyHelpers.notify({message: CV.i18n('push-notification.was-successfully-sent-to-test-users')});
+                this.sendToTestUsers().then(function(results) {
+                    console.log("view", results);
+                    let successfull = results.filter(push => !push.error);
+                    let failed = results.filter(push => push.error);
+                    if (!failed.length) {
+                        CountlyHelpers.notify({
+                            message: CV.i18n('push-notification.was-successfully-sent-to-test-users')
+                        });
+                    }
+                    else {
+                        CountlyHelpers.notify({
+                            message: CV.i18n('push-notification.some-messages-failed-to-send-test-users')
+                                + "(failed: " + failed.length + ", successful: " + successfull.length + ")",
+                        });
+                        console.warning("some messages were failed", results);
+                    }
                 }).catch(function(error) {
                     console.error(error);
                     CountlyHelpers.notify({ message: error.message, type: "error"});

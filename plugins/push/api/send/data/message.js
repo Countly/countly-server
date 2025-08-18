@@ -1,5 +1,8 @@
-'use strict';
-const { State, Status, STATUSES, Mongoable, S, S_REGEXP, Time } = require('./const'),
+/**
+ * @typedef {import("../../new/types/message").PlatformKey} PlatformKey
+ */
+
+const { State, Status, STATUSES, Mongoable, S, S_REGEXP} = require('./const'),
     { Filter } = require('./filter'),
     { Content } = require('./content'),
     { Trigger, PlainTrigger, TriggerKind } = require('./trigger'),
@@ -7,6 +10,7 @@ const { State, Status, STATUSES, Mongoable, S, S_REGEXP, Time } = require('./con
     { Info } = require('./info'),
     db = require('./db');
 
+const platforms = require("../../new/constants/platform-keymap.js");
 
 /**
  * Message class encapsulating all the message-related data
@@ -40,7 +44,7 @@ class Message extends Mongoable {
             _id: { required: false, type: 'ObjectID' },
             app: { required: true, type: 'ObjectID' },
             saveResults: { required: false, type: 'Boolean' },
-            platforms: { required: true, type: 'String[]', in: () => require('../platforms').platforms },
+            platforms: { required: true, type: 'String[]', in: () => Object.keys(platforms) },
             state: { type: 'Number' },
             status: { type: 'String', in: Object.values(Status) },
             filter: {
@@ -517,7 +521,7 @@ class Message extends Mongoable {
         return this.state === State.Created && this.triggers.filter(t => t.kind === TriggerKind.Plain &&
             (!t.delayed || (t.delayed && !t.tz && t.start.getTime() > Date.now() - DEFAULTS.schedule_ahead) || (t.delayed && t.tz && t.start.getTime() > Date.now() - DEFAULTS.schedule_ahead_tz))).length > 0;
     }
-    
+
     /**
      * Generate test message with default content
      *

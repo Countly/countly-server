@@ -1,67 +1,161 @@
 /**
+ * @typedef {import("../types/message").PersonalizationObject} PersonalizationObject
+ * @typedef {PersonalizationObject & { i: number; }} PersonalizationObjectWithIndex
+ * @typedef {{ content: Content; pers: Map<PersonalizableField, PersonalizationObjectWithIndex[]>; }} ContentWithPersonalization
+ * @typedef {import("../types/message").Content} Content
+ * @typedef {import("../types/message").PlatformMessageContent} PlatformMessageContent
  * @typedef {import("../types/message").Message} Message
  * @typedef {import("../types/message").PlatformKey} PlatformKey
  * @typedef {import("../types/user").User} User
+ * @typedef {"title"|"message"} PersonalizableField
  */
-const { Message: OldMessage } = require("../../send/data/message.js");
-const { PLATFORM: OLD_PLATFORM } = require("../../send/platforms");
-const { Template } = require("../../send/data/template.js");
-const PLATFORM_KEYMAP = require("../constants/platform-keymap.json");
+const { dot } = require('../../../../../api/utils/common');
+const { mapMessageToPayload: mapMessageToAndroidPayload } = require("../platforms/android");
+const { mapMessageToPayload: mapMessageToIOSPayload } = require("../platforms/ios");
+const { mapMessageToPayload: mapMessageToHuaweiPayload } = require("../platforms/huawei");
+const { removeUPFromUserPropertyKey } = require("./utils");
+/** @type {PersonalizableField[]} */
+const PERSONALIZABLE_CONTENT_FIELDS = ["title", "message"];
 
 /**
- *
- * @param {Message} message
+ * @param {Message} messageDoc
  */
-function createTemplate(message) {
-    const messageObj = new OldMessage(message);
-    const platforms = message.platforms
-        .map(key => PLATFORM_KEYMAP[key].platforms)
-        .flat()
-        .map(key => OLD_PLATFORM[/** @type {PlatformKey} */(key)]);
-
-    const templates = Object.fromEntries(
-        platforms.map(
-            platform => [
-                platform.key,
-                new Template(messageObj, platform)
-            ]
-        )
-    );
-
+function createTemplate(messageDoc) {
+    const {
+        contentsByLanguage,
+        contentsByPlatform
+    } = createContentMap(messageDoc);
+    if (!contentsByLanguage.has("default")) {
+        throw new Error("Message must have a default content (language: 'default')");
+    }
     /**
-     * Compiles the template for the given user
+     * Compiles the template for the given user's platform and properties.
      * @param {PlatformKey} platform - key for the platform: "a", "i" or "h"
-     * @param {User|{[key: string]: string;}} variables - app user object with push token populated and custom variables
-     * @returns {string} compiled template
+     * @param {User|{[key: string]: string;}} userProps - app user properties with push token populated and custom variables
+     * @returns {PlatformMessageContent} compiled message content
      */
-    return function(platform, variables) {
-        // a note (old push document):
-        // the ones start with a * is required by the template builder
-        // {
-        //     "_id": "655ef9d845f3a64d09de2572",
-        //     "a": "655b6dcd84ea28c204af50ca",    app id (apps._id)
-        //     "m": "655dd2d6b29f24798f570056",    message id (messages._id)
-        //     "p": "a",                           platform: android
-        //     "f": "p",                           token type (p: production, d: debug, a: test(ad hoc))
-        //     "u": "1",                           user id (app_users{APPID}.uid)
-        //     "t": "cRTmhA...",                   device token
-        //     *"h": "a535fbb5d4664c49",            hash created with "pr" key for templating
-        //     *"pr": {                             user properties to interpolate message string
-        //         "la": "en"                      language (default)
-        //     }
-        // }
-        const note = {
-            h: String(Math.random()),
-            pr: variables
-        };
-        return templates[platform].compile(note);
+    return function(platform, userProps) {
+        const platformSpecificContent = contentsByPlatform.get(platform);
+        const contentPersPair = /** @type {ContentWithPersonalization} */(
+            userProps.la && contentsByLanguage.has(userProps.la)
+                ? contentsByLanguage.get(userProps.la)
+                : contentsByLanguage.get("default")
+        );
+        const languageSpecificContent = compilePersonalizableContent(
+            contentPersPair,
+            userProps
+        );
+        if (!languageSpecificContent) {
+            throw new Error(`No content found for language: ${userProps.la}`);
+        }
+        const mergedContent = { ...languageSpecificContent, ...platformSpecificContent };
+        if (platform === "a") {
+            return mapMessageToAndroidPayload(messageDoc, mergedContent, userProps);
+        }
+        else if (platform === "i") {
+            return mapMessageToIOSPayload(messageDoc, mergedContent, userProps);
+        }
+        else if (platform === "h") {
+            return mapMessageToHuaweiPayload(messageDoc, mergedContent, userProps);
+        }
+        else {
+            throw new Error(`Unsupported platform: ${platform}`);
+        }
     }
 }
 
 /**
+ * Creates a map of message contents indexed by language and platform.
+ * The language content objects also contain personalization objects for each personalizable field (title, message).
+ * @param {Message} messageDoc - Message document containing contents.
+ * @returns {{ contentsByLanguage: Map<string, ContentWithPersonalization>, contentsByPlatform: Map<PlatformKey, Content> }} Content map indexed by language and platform.
+ */
+function createContentMap(messageDoc) {
+    /** @type {Map<string, { content: Content; pers: Map<PersonalizableField, PersonalizationObjectWithIndex[]>; }>} */
+    const contentsByLanguage = new Map;
+    /** @type {Map<PlatformKey, Content>} */
+    const contentsByPlatform = new Map;
+    for (let i = 0; i < messageDoc.contents.length; i++) {
+        const contentItem = messageDoc.contents[i];
+        if (contentItem.p) {
+            contentsByPlatform.set(contentItem.p, contentItem);
+        }
+        else {
+            // collect personalization objects for each personalizable field (title, message)
+            /** @type {Map<PersonalizableField, PersonalizationObjectWithIndex[]>} */
+            const personalizationObjects = new Map;
+            for (const field of PERSONALIZABLE_CONTENT_FIELDS) {
+                /** @type {PersonalizationObjectWithIndex[]} */
+                const persObjects = [];
+                const personalizations = /** @type {{[index: string]: PersonalizationObject}} */(
+                    contentItem[`${field}Pers`] ?? {}
+                );
+                for (let index in personalizations) {
+                    persObjects.push({
+                        i: parseInt(index, 10),
+                        ...personalizations[index],
+                    });
+                }
+                // sort personalization objects descending by index (otherwise it will break the template compiler)
+                persObjects.sort((a, b) => b.i - a.i);
+                personalizationObjects.set(field, persObjects);
+            }
+            contentsByLanguage.set(
+                contentItem.la ?? "default",
+                { content: contentItem, pers: personalizationObjects }
+            );
+        }
+    }
+    return { contentsByLanguage, contentsByPlatform };
+}
+
+/**
+ * Compiles the content with personalizations applied based on user properties.
+ * It replaces placeholders in the content fields with user property values.
+ * If a user property is not found, it uses the fallback value from the personalization object.
+ * If the personalization object has a 'c' flag, it capitalizes the first letter of the value.
+ * @param {ContentWithPersonalization} contentPers - Content with personalization objects.
+ * @param {{[key: string]: any;}} data - Data object containing user properties and other variables to be used in the template.
+ * @returns {Content} Compiled content with personalizations applied.
+ */
+function compilePersonalizableContent(contentPers, data) {
+    const { content, pers } = contentPers;
+    const result = { ...content };
+    for (const field of PERSONALIZABLE_CONTENT_FIELDS) {
+        if (!pers.has(field)) {
+            continue;
+        }
+        let template = content[field];
+        if (typeof template === "string") {
+            const sliced = template.split("");
+            const personalizations = pers.get(field) ?? [];
+            for (let i = 0; i < personalizations.length; i++) {
+                const persConfig = personalizations[i];
+                if (!persConfig.k) {
+                    continue;
+                }
+                let value = dot(data, removeUPFromUserPropertyKey(persConfig.k));
+                if (value === null || value === undefined) {
+                    value = persConfig.f ?? "";
+                }
+                else {
+                    value = String(value);
+                    if (persConfig.c && typeof value === "string") {
+                        value = value.charAt(0).toUpperCase() + value.slice(1);
+                    }
+                }
+                sliced.splice(persConfig.i, 0, ...value.split(""));
+            }
+            result[field] = sliced.join("");
+        }
+    }
+    return result;
+}
+
+/**
  * Returns the user properties used in parameterized message content.
- * @param {Message} message
- * @returns {string[]}
+ * @param {Message} message - Message document containing contents.
+ * @returns {string[]} Array of user property keys used in the message contents.
  */
 function getUserPropertiesUsedInsideMessage(message) {
     let keys = message.contents
@@ -72,12 +166,14 @@ function getUserPropertiesUsedInsideMessage(message) {
         ]))
         .flat()
         .filter(key => typeof key === "string")
-        .map(key => key.replace(/^up\./, ""));
-
+        .map(removeUPFromUserPropertyKey);
     return Array.from(new Set(keys));
 }
 
 module.exports = {
     createTemplate,
-    getUserPropertiesUsedInsideMessage
+    createContentMap,
+    compilePersonalizableContent,
+    removeUPFromUserPropertyKey,
+    getUserPropertiesUsedInsideMessage,
 }

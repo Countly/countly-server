@@ -1,4 +1,5 @@
 /**
+ * @typedef {import("../../api/new/types/queue.js").ScheduleEvent} ScheduleEvent
  * @typedef {import("../../api/new/types/message.ts").RecurringTrigger} RecurringTrigger
  * @typedef {import("../../api/new/types/message.ts").MultiTrigger} MultiTrigger
  * @typedef {import("../../api/new/types/message.ts").EventTrigger} EventTrigger
@@ -9,9 +10,21 @@
  * @typedef {import("../../api/new/types/queue.ts").AutoTriggerEvent} AutoTriggerEvent
  */
 const assert = require("assert");
-const { describe, it } = require("mocha");
+const { describe, it, afterEach } = require("mocha");
 const { ObjectId } = require("mongodb");
 const sinon = require("sinon");
+const proxyquire = require("proxyquire");
+const { createMockedMongoDb } = require("../mock/mongo.js");
+const timezones = require("../../api/new/constants/all-tz-offsets.json");
+const mockData = require("../mock/data.js");
+const { buildResultObject } = require("../../api/new/resultor.js");
+let {
+    collection,
+    db,
+    findCursor,
+} = createMockedMongoDb();
+/** @type {sinon.SinonStub<[pushes: ScheduleEvent[]], Promise<void>>} */
+const mockSendScheduleEvents = sinon.stub();
 const {
     tzOffsetAdjustedTime,
     findNextMatchForRecurring,
@@ -21,37 +34,18 @@ const {
     scheduleMessageByDateTrigger,
     mergeAutoTriggerEvents,
     scheduleMessageByAutoTriggers,
-} = require("../../api/new/scheduler.js");
-const queue = require("../../api/new/lib/kafka.js");
-const { mockMongoDb } = require("./mock/mongo.js");
-const timezones = require("../../api/new/constants/all-tz-offsets.json");
-const mockData = require("./mock/data.js");
-const { buildResultObject } = require("../../api/new/resultor.js");
+} = proxyquire("../../api/new/scheduler", {
+    "../../api/new/lib/kafka.js": {
+        sendScheduleEvents: mockSendScheduleEvents
+    }
+});
 
 describe("Scheduler", () => {
-    /** @type {sinon.SinonStub} */
-    let mockSendScheduleEvent;
-    /** @type {sinon.SinonStubbedInstance<FindCursor>} */
-    let findCursor;
-    /** @type {sinon.SinonStubbedInstance<Collection>} */
-    let collection;
-    /** @type {sinon.SinonStubbedInstance<Db>} */
-    let db;
-    /** @type {sinon.SinonSandbox} */
-    let mongoSandbox;
-
-    before(() => {
-        mockSendScheduleEvent = sinon.stub(queue, "sendScheduleEvent");
-        ({ findCursor, collection, db, mongoSandbox } = mockMongoDb());
-    });
-
-    beforeEach(() => {
-        mockSendScheduleEvent.resetHistory();
-        mongoSandbox.resetHistory();
-    });
-    after(() => {
-        mockSendScheduleEvent.restore()
-        mongoSandbox.restore();
+    afterEach(() => {
+        // Reset the sandbox to clear all stubs and spies.
+        // we cannot use resetHistory here because we need to reset the whole sandbox
+        ({ findCursor, collection, db } = createMockedMongoDb());
+        mockSendScheduleEvents.resetHistory();
     });
 
     describe("Timezone adjustment", () => {
@@ -224,57 +218,71 @@ describe("Scheduler", () => {
     });
 
     describe("Schedule event creation", () => {
-        /** @type {Schedule} */
         const schedule = mockData.schedule();
-
-        it("should send a schedule event for each timezone with correct date", async () => {
+        it("should send a schedule event for each timezone that hasn't passed the scheduler's time", async () => {
             if (schedule.schedulerTimezone === undefined) {
                 throw new Error("Scheduler timezone is required");
             }
             const minute = 60 * 1000;
             const utcTime = schedule.scheduledTo.getTime() - schedule.schedulerTimezone * minute;
-            const timezoneAdjusted = timezones.map(({ offset }) => utcTime + offset * minute);
+            const timezoneAdjusted = timezones
+                .map(({ offset }) => utcTime - offset * minute)
+                .filter((time) => time > Date.now());
             await createScheduleEvents(schedule);
-            const dates = mockSendScheduleEvent.args.map((args) => args[0].scheduledTo.getTime());
-            assert(mockSendScheduleEvent.callCount === timezoneAdjusted.length);
+            const arg = mockSendScheduleEvents.getCall(0).args[0];
+            const dates = arg.map((event) => event.scheduledTo.getTime());
+            assert.strictEqual(arg.length, timezoneAdjusted.length);
             assert.deepEqual(dates, timezoneAdjusted);
         });
         it("should send a single schedule event", async () => {
             await createScheduleEvents({ ...schedule, timezoneAware: false });
-            assert(mockSendScheduleEvent.callCount === 1);
+            assert(mockSendScheduleEvents.callCount === 1);
             assert(
-                mockSendScheduleEvent.calledWith({
+                mockSendScheduleEvents.calledWith([{
                     appId: schedule.appId,
                     messageId: schedule.messageId,
                     scheduleId: schedule._id,
                     scheduledTo: schedule.scheduledTo,
-                })
+                }])
             );
         });
     });
 
-    describe("Schedule document creation", () => {
+    describe("Schedule document creation should", () => {
         const appId = new ObjectId;
         const messageId = new ObjectId;
         const scheduledTo = new Date;
-        it("should throw an error when scheduler timezone is not passed for timezoneAware message", async () => {
+        it("throw an error when scheduler timezone is not given for a timezoneAware message", async () => {
             assert.rejects(createSchedule(db, appId, messageId, scheduledTo, true));
         });
-        it("should create a schedule document inside the collection", async () => {
+        it("create a schedule document inside the collection", async () => {
             const result = await createSchedule(db, appId, messageId, scheduledTo, false);
             assert(result._id instanceof ObjectId);
             assert(db.collection.calledWith("message_schedules"));
-            assert(collection.insertOne.calledWith({
+            const arg = collection.insertOne.getCall(0)?.args[0];
+            const actualScheduleDate = arg?.events?.scheduled?.[0]?.date;
+            const expectedArg = {
                 _id: result._id,
                 appId,
                 messageId,
                 scheduledTo,
+                rescheduleIfPassed: false,
                 status: "scheduled",
                 timezoneAware: false,
                 schedulerTimezone: undefined,
                 audienceFilter: undefined,
-                result: buildResultObject()
-            }));
+                messageOverrides: undefined,
+                result: buildResultObject(),
+                events: {
+                    scheduled: [{
+                        scheduledTo,
+                        date: actualScheduleDate,
+                        timezone: undefined,
+                    }],
+                    composed: []
+                }
+            };
+            assert.deepStrictEqual(expectedArg, arg);
         });
     });
 
@@ -294,63 +302,49 @@ describe("Scheduler", () => {
 
     describe("Auto trigger message scheduling", () => {
         it("should merge multiple events and creates a map", () => {
-            const app1 = new ObjectId("67b868f115891e7800e2f563");
-            const app2 = new ObjectId("67b868f115891e7800e2f562");
+            const app1 = new ObjectId("67b868f115891e7800e2f562");
+            const app2 = new ObjectId("67b868f115891e7800e2f563");
             const cohort1 = "67b868f115891e7800e2f564";
             const cohort2 = "67b868f115891e7800e2f565";
+            const event1 = "test-event-1";
+            const event2 = "test-event-2";
             /** @type {AutoTriggerEvent[]} */
             const events = [
-                { "kind": "event", "appId": app1, "eventKeys": [ "test-event" ], "uid": "7" },
-                { "kind": "event", "appId": app1, "eventKeys": [ "test-event" ], "uid": "8" },
-                { "kind": "event", "appId": app2, "eventKeys": [ "test-event-2" ], "uid": "4" },
-                { "kind": "event", "appId": app1, "eventKeys": [ "test-event-3" ], "uid": "3" },
+                { "kind": "event", "appId": app1, "eventKeys": [event1], "uid": "7" },
+                { "kind": "event", "appId": app2, "eventKeys": [event2], "uid": "11" },
                 { "kind": "cohort", "appId": app1, "direction": "enter", "cohortId": cohort1, "uids": ["1", "2"] },
+                { "kind": "event", "appId": app1, "eventKeys": [event2], "uid": "13" },
+                { "kind": "event", "appId": app2, "eventKeys": [event2], "uid": "4" },
                 { "kind": "cohort", "appId": app1, "direction": "enter", "cohortId": cohort1, "uids": ["5"] },
-                { "kind": "cohort", "appId": app1, "direction": "enter", "cohortId": cohort2, "uids": ["9"] },
+                { "kind": "event", "appId": app1, "eventKeys": [event1], "uid": "3" },
                 { "kind": "cohort", "appId": app1, "direction": "exit", "cohortId": cohort2, "uids": ["6"] },
+                { "kind": "cohort", "appId": app1, "direction": "enter", "cohortId": cohort2, "uids": ["9"] },
+                { "kind": "event", "appId": app2, "eventKeys": [event1], "uid": "8" },
                 { "kind": "cohort", "appId": app2, "direction": "exit", "cohortId": cohort1, "uids": ["10"] },
+                { "kind": "event", "appId": app1, "eventKeys": [event1], "uid": "12" },
             ];
-            const map = mergeAutoTriggerEvents(events);
-            /** @type {any} */
-            const convertedToArrays = {};
-            for (let appId in map) {
-                convertedToArrays[appId] = { event: {}, cohort: {} };
-                for (let eventKey in map[appId].event) {
-                    convertedToArrays[appId].event[eventKey] = Array.from(map[appId].event[eventKey]);
-                }
-                for (let cohortId in map[appId].cohort) {
-                    convertedToArrays[appId].cohort[cohortId] = {
-                        enter: Array.from(map[appId].cohort[cohortId].enter),
-                        exit: Array.from(map[appId].cohort[cohortId].exit),
-                    };
-                }
-            }
-            assert.deepStrictEqual(convertedToArrays, {
-                "67b868f115891e7800e2f563": {
-                    "event": { "test-event": ["7", "8"], "test-event-3": ["3"] },
-                    "cohort": {
-                        "67b868f115891e7800e2f564": { "enter": ["1", "2", "5"], "exit": [] },
-                        "67b868f115891e7800e2f565": { "enter": ["9"], "exit": ["6"] }
-                    }
-                },
-                "67b868f115891e7800e2f562": {
-                    "event": { "test-event-2": ["4"] },
-                    "cohort": {
-                        "67b868f115891e7800e2f564": { "enter": [], "exit": ["10"] }
-                    }
-                }
-            })
+            const merged = mergeAutoTriggerEvents(events);
+            assert.deepStrictEqual(merged, [
+              { appId: app1, triggerFilter: { kind: 'event', events: event1 }, uids: [ '7', '3', '12' ] },
+              { appId: app1, triggerFilter: { kind: 'event', events: event2 }, uids: [ '13' ] },
+              { appId: app1, triggerFilter: { kind: 'cohort', cohorts: cohort1, entry: true }, uids: [ '1', '2', '5' ] },
+              { appId: app1, triggerFilter: { kind: 'cohort', cohorts: cohort2, entry: true }, uids: [ '9' ] },
+              { appId: app1, triggerFilter: { kind: 'cohort', cohorts: cohort2, entry: false }, uids: [ '6' ] },
+              { appId: app2, triggerFilter: { kind: 'event', events: event2 }, uids: [ '11', '4' ] },
+              { appId: app2, triggerFilter: { kind: 'event', events: event1 }, uids: [ '8' ] },
+              { appId: app2, triggerFilter: { kind: 'cohort', cohorts: cohort1, entry: false }, uids: [ '10' ] }
+            ]);
         });
 
         it("should ....", async () => {
             /** @type {AutoTriggerEvent} */
             const event = {
-                "kind": "event",
-                "appId": new ObjectId("67b868f115891e7800e2f563"),
-                "eventKeys": [
+                kind: "event",
+                appId: new ObjectId("67b868f115891e7800e2f563"),
+                eventKeys: [
                     "test-event"
                 ],
-                "uid": "7"
+                uid: "7"
             };
             const message = {
                 _id: new ObjectId("67eee6adc2a1c39736eb9803"),

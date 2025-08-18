@@ -1,8 +1,9 @@
 /**
+ * @typedef {import("./new/types/message").PlatformKey} PlatformKey
  * @typedef {import("./new/types/message").Message} IMessage
  * @typedef {import("./new/types/schedule").Schedule} ISchedule
  */
-const { Message, Result, Creds, Status, platforms, Audience, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info, PLATFORMS_TITLES, Template, PLATFORM } = require('./send'),
+const { Message, Result, Creds, Status, ValidationError, TriggerKind, PlainTrigger, MEDIA_MIME_ALL, Filter, Trigger, Content, Info } = require('./send'),
     crypto = require("crypto"),
     { DEFAULTS, RecurringType } = require('./send/data/const'),
     common = require('../../../api/utils/common'),
@@ -14,6 +15,13 @@ const { Message, Result, Creds, Status, platforms, Audience, ValidationError, Tr
 const countlyFetch = require("../../../api/parts/data/fetch.js");
 const { buildResultObject } = require("./new/resultor.js");
 const { scheduleIfEligible, DATE_TRIGGERS } = require("./new/scheduler.js");
+const { buildUserAggregationPipeline, createPushStream, loadCredentials  } = require("./new/composer.js");
+const { loadProxyConfiguration } = require("./new/lib/utils");
+const { createTemplate } = require("./new/lib/template");
+const { sendAllPushes } = require("./new/sender.js");
+const platforms = require("./new/constants/platform-keymap.js");
+
+
 /**
  * @param {IMessage} message
  * @param {ISchedule=} lastSchedule
@@ -44,7 +52,7 @@ async function validate(args, draft = false) {
         let data = common.validateArgs(args, {
             _id: { required: false, type: 'ObjectID' },
             app: { required: true, type: 'ObjectID' },
-            platforms: { required: true, type: 'String[]', in: () => require('./send/platforms').platforms },
+            platforms: { required: true, type: 'String[]', in: () => Object.keys(platforms) },
             status: { type: 'String', in: Object.values(Status) },
             filter: {
                 type: Filter.scheme,
@@ -101,7 +109,7 @@ async function validate(args, draft = false) {
             for (let p of msg.platforms) {
                 let id = common.dot(app, `plugins.push.${p}._id`);
                 if (!id || id === 'demo') {
-                    throw new ValidationError(`No push credentials for ${PLATFORMS_TITLES[p]} platform`);
+                    throw new ValidationError(`No push credentials for ${platforms[/** @type {PlatformKey} */(p)].title} platform`);
                 }
             }
             let creds = await common.db.collection(Creds.collection).find({
@@ -187,8 +195,7 @@ module.exports.test = async params => {
     let msg = await validate(params.qstring),
         cfg = params.app.plugins && params.app.plugins.push || {},
         test_uids = cfg && cfg.test && cfg.test.uids ? cfg.test.uids.split(',') : undefined,
-        test_cohorts = cfg && cfg.test && cfg.test.cohorts ? cfg.test.cohorts.split(',') : undefined,
-        error;
+        test_cohorts = cfg && cfg.test && cfg.test.cohorts ? cfg.test.cohorts.split(',') : undefined;
 
     if (test_uids) {
         msg.filter = new Filter({user: JSON.stringify({uid: {$in: test_uids}})});
@@ -199,73 +206,39 @@ module.exports.test = async params => {
     else {
         throw new ValidationError('Please define test users in Push plugin configuration');
     }
-
     msg._id = common.db.ObjectID();
     msg.triggers = [new PlainTrigger({start: new Date()})];
-    msg.status = Status.Scheduled;
-    await msg.save();
-
+    msg.status = "active";
     try {
-        let audience = new Audience(log.sub('test-audience'), msg);
-        await audience.getApp();
-
-        let result = await audience.push(msg.triggerPlain()).setStart().run();
-        if (result.total === 0) {
+        const pipeline = await buildUserAggregationPipeline(common.db,
+            msg._data, undefined, undefined, msg.filter._data);
+        const numberOfUsers = await common.db.collection(`app_users${msg.app.toString()}`)
+            .aggregate(pipeline.concat([{ $count: 'count' }]))
+            .toArray();
+        if (!numberOfUsers[0]?.count || numberOfUsers[0].count === 0) {
             throw new ValidationError('No users with push tokens found in test users');
         }
-        else {
-            await msg.update({$set: {result: result.json, test: true}}, () => msg.result = result);
+        const app = await common.db.collection('apps').findOne({_id: msg.app});
+        if (!app) {
+            throw new ValidationError('No such app');
         }
-
-        let start = Date.now();
-        while (start > 0) {
-            // if ((Date.now() - start) > 5000) { // 5 seconds
-            //     msg.result.processed = msg.result.total; // TODO: remove
-            //     await msg.save();
-            //     break;
-            // }
-            if ((Date.now() - start) > 90000) { // 1.5 minutes
-                break;
-            }
-            msg = await Message.findOne(msg._id);
-            if (!msg) {
-                break;
-            }
-            if (msg.result.total === msg.result.processed) {
-                break;
-            }
-            await new Promise(res => setTimeout(res, 1000));
+        const template = createTemplate(msg._data);
+        const creds = await loadCredentials(common.db, msg.app);
+        const proxy = await loadProxyConfiguration(common.db);
+        const schedule = { _id: common.db.ObjectID() };
+        const stream = createPushStream(common.db, app, msg, schedule,
+            creds, proxy, template, pipeline);
+        let results = [];
+        for await (const push of stream) {
+            results.push(await sendAllPushes([push], false));
         }
+        results = results.flat();
+        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_test', data: {test_uids, test_cohorts, results}});
+        common.returnOutput(params, {results});
     }
-    catch (e) {
-        error = e;
-    }
-
-    if (msg) {
-        common.plugins.dispatch('/systemlogs', {params: params, action: 'push_message_test', data: {test_uids, test_cohorts}});
-        let ok = await msg.updateAtomically(
-            {_id: msg._id},
-            {
-                $set: {
-                    status: "deleted",
-                    'result.removed': new Date(),
-                    'result.removedBy': params.member._id,
-                    'result.removedByName': params.member.full_name
-                }
-            });
-        if (error) {
-            log.e('Error while sending test message', error);
-            common.returnMessage(params, 400, {errors: error.errors || [error.message || 'Unknown error']}, null, true);
-        }
-        else if (ok) {
-            common.returnOutput(params, {result: msg.result.json});
-        }
-        else {
-            common.returnMessage(params, 400, {errors: ['Message couldn\'t be deleted']}, null, true);
-        }
-    }
-    else {
-        common.returnMessage(params, 400, {errors: ['Failed to send test message']}, null, true);
+    catch (error) {
+        log.e('Error while sending test message', error);
+        common.returnMessage(params, 400, {errors: error.errors || [error.message || 'Unknown error']}, null, true);
     }
 };
 
@@ -316,7 +289,7 @@ module.exports.create = async params => {
         }
         catch (error) {
             log.e('Error while scheduling message', error);
-            return common.returnMessage(params, 500, "Error while scheduling the message. Check the API logs for details.");
+            return common.returnMessage(params, 500, "Error while scheduling the message: " + error.message);
         }
 
         // if (!demo && msg.status === Status.Active) {
@@ -585,7 +558,7 @@ module.exports.toggle = async params => {
 module.exports.estimate = async params => {
     let data = common.validateArgs(params.qstring, {
         app: {type: 'ObjectID', required: true},
-        platforms: {type: 'String[]', required: true, in: () => platforms, 'min-length': 1},
+        platforms: {type: 'String[]', required: true, in: () => Object.keys(platforms), 'min-length': 1},
         filter: {
             type: {
                 user: {type: 'JSON'},
@@ -621,20 +594,20 @@ module.exports.estimate = async params => {
     for (let p of data.platforms) {
         let id = common.dot(app, `plugins.push.${p}._id`);
         if (!id || id === 'demo') {
-            throw new ValidationError(`No push credentials for ${PLATFORMS_TITLES[p]} platform `);
+            throw new ValidationError(`No push credentials for ${platforms[/** @type {PlatformKey} */(p)]} platform `);
         }
     }
-
-    const steps = await new Audience(log, new Message(data), app).steps({la: 1});
+    const message = new Message(data);
+    const pipeline = await buildUserAggregationPipeline(common.db, message, undefined, undefined, message.filter);
     const cnt = await common.db.collection(`app_users${data.app}`)
-        .aggregate(steps.concat([{$count: 'count'}]))
+        .aggregate(pipeline.concat([{ $count: 'count' }]))
         .toArray();
     const count = cnt[0] && cnt[0].count || 0;
     const las = await common.db.collection(`app_users${data.app}`)
         .aggregate(
-            steps.concat([
-                {$project: {_id: '$la'}},
-                {$group: {_id: '$_id', count: {$sum: 1}}}
+            pipeline.concat([
+                { $project: { _id: '$la' } },
+                { $group: { _id: '$_id', count: { $sum: 1 } } }
             ])
         )
         .toArray();
@@ -643,7 +616,7 @@ module.exports.estimate = async params => {
         return a;
     }, {default: 0});
 
-    common.returnOutput(params, {count, locales});
+    common.returnOutput(params, { count, locales });
 };
 
 /**
@@ -966,214 +939,6 @@ module.exports.user = async params => {
 
     return true;
 };
-
-/**
- * Get notifications sent to a particular user
- *
- * @param {object} params params
- * @returns {Promise} resolves to true
- *
- * @api {GET} o/push/notifications Sent notifications
- * @apiName notifications
- * @apiDescription Get notifications sent to a particular user.
- * Makes a look up either by user id (uid) or did (device id). Returns notifications sent to a user if any.
- * @apiGroup Push Notifications
- *
- * @apiQuery {String} app_id, Application ID
- * @apiQuery {String} [id] User ID (uid). Either id or did must be specified.
- * @apiQuery {String} [did] User device ID (did). Either id or did must be specified.
- * @apiQuery {Boolean} full Return full messages along with simplified notifications. Note that true here will limit number of returned notifications to 10.
- * @apiQuery {String} platform Platform for notifications to return
- * @apiQuery {Integer} skip Pagination skip
- * @apiQuery {Integer} limit Pagination limit, must be in 1..50 range
- *
- * @apiSuccess {Object[]} notifications Array of simplified notifications objects with _id, title, message and date properties representing a notification sent to a user at a particular date.
- * Please note that returned title & message might not be accurate for cases when notification content was overridden in a message/push call as Countly doesn't keep this data after sending notifications. Default title & message will be returned in such cases.
- * Also note that current user profile properties are used for message content personalization when it's set.
- * @apiSuccess {String} notifications._id Noficiation message id
- * @apiSuccess {String} notifications.date ISO date when notification was sent to this user, +- few seconds
- * @apiSuccess {String} [notifications.title] Noficiation title string, if any
- * @apiSuccess {String} [notifications.message] Noficiation message string, if any
- *
- * @apiUse PushValidationError
- * @apiError NotFound Message Not Found
- * @apiErrorExample {json} NotFound
- *      HTTP/1.1 404 Not Found
- *      {
- *          "errors": ["User with the did specified is not found"]
- *      }
- * @apiSuccessExample {json} Success-Response
- *      HTTP/1.1 200 Success
- *      {
- *          "notifications": [
- *		        {
- *			        "_id": "6480d8a03f9ea25502c816ce",
- *			        "title": "Offers!",
- *			        "message": "Hi James, check out your personal limited offer",
- *			        "date": "2023-06-07T19:26:08.683Z"
- *		        },
- *		        {
- *			        "_id": "6465fede1276bf50b2662765",
- *			        "title": "Balance",
- *			        "message": "James, your balance is reaching 0",
- *			        "date": "2023-06-08T19:00:08.683Z"
- *		        }
- *          ]
- *      }
- *
- * @apiSuccessExample {json} Success-Response-full=true
- *      HTTP/1.1 200 Success
- *      {
- *          "notifications": [
- *		        {
- *			        "_id": "6480d8a03f9ea25502c816ce",
- *			        "title": "Offers!",
- *			        "message": "Hi James, check out your personal limited offer",
- *			        "date": "2023-06-07T19:26:08.683Z"
- *		        },
- *		        {
- *			        "_id": "6465fede1276bf50b2662765",
- *			        "title": "Balance",
- *			        "message": "James, your balance is reaching 0",
- *			        "date": "2023-06-08T19:00:08.683Z"
- *		        }
- *          ],
- *          "messages": [
- *              {
- *       			"_id": "6480d8a03f9ea25502c816ce",
- *                  "app": "5fbb72974e19c6614411d95f",
- *                  "contents": [
- *                      {
- *                          "title": "Offers!",
- *                          "message": "Hi James, check out your personal limited offer",
- *                          "expiration": 604800000
- *                      },
- *                      {
- *                          "p": "a",
- *                          "sound": "default"
- *                      },
- *                      {
- *                          "p": "i",
- *                          "sound": "default"
- *                      }
- *                  ],
- *                  "filter": {},
- *                  "other message fields": "..."
- *              },
- *              {
- *       			"_id": "6465fede1276bf50b2662765",
- *                  "app": "5fbb72974e19c6614411d95f",
- *                  "contents": [
- *                      {
- *      			        "title": "Balance",
- *		        	        "message": "James, your balance is reaching 0",
- *                          "expiration": 604800000
- *                      },
- *                      {
- *                          "p": "a",
- *                          "sound": "default"
- *                      },
- *                      {
- *                          "p": "i",
- *                          "sound": "default"
- *                      }
- *                  ],
- *                  "filter": {},
- *                  "other message fields": "..."
- *              }
- *          ]
- *      }
- */
-module.exports.notificationsForUser = async params => {
-    let data = common.validateArgs(params.qstring, {
-        id: {type: 'String', required: false},
-        did: {type: 'String', required: false},
-        app_id: {type: 'String', required: true},
-        platform: {type: 'String', in: platforms, required: true},
-        full: {type: 'BooleanString', required: true},
-        limit: {type: 'IntegerString', required: true, min: 1, max: 50},
-        skip: {type: 'IntegerString', required: true, min: 0},
-    }, true);
-    if (data.result) {
-        data = data.obj;
-    }
-    else {
-        common.returnMessage(params, 400, {errors: data.errors}, null, true);
-        return true;
-    }
-
-    if (!data.did && !data.id) {
-        common.returnMessage(params, 400, {errors: ['One of id & did parameters is required']}, null, true);
-        return true;
-    }
-
-    if (data.full) {
-        data.limit = Math.min(data.limit, 10);
-    }
-
-    let uid = data.id,
-        app_user;
-    if (!uid && data.did) {
-        app_user = await common.db.collection(`app_users${data.app_id}`).findOne({did: data.did});
-        if (!app_user) {
-            common.returnMessage(params, 404, {errors: ['User with the did specified is not found']}, null, true);
-            return true;
-        }
-        uid = app_user.uid;
-    }
-    else {
-        app_user = await common.db.collection(`app_users${data.app_id}`).findOne({uid: uid});
-        if (!app_user) {
-            common.returnMessage(params, 404, {errors: ['User with the uid specified is not found']}, null, true);
-            return true;
-        }
-    }
-
-    let push = await common.db.collection(`push_${data.app_id}`).findOne({_id: uid});
-    if (!push) {
-        common.returnOutput(params, {notifications: []});
-        return true;
-    }
-
-    let id_dates = Object.keys(push.msgs || {}).map(id => push.msgs[id].map(date => [id, date])).flat();
-    if (!id_dates.length) {
-        common.returnOutput(params, {notifications: []});
-        return true;
-    }
-
-    id_dates.sort(([, date1], [, date2]) => date1 > date2 ? -1 : 1);
-    id_dates = id_dates.slice(data.skip, data.skip + data.limit);
-
-    let ids = Array.from(new Set(id_dates.map(idd => idd[0]))).map(common.dbext.oid),
-        messages = await common.db.collection('messages').find({_id: {$in: ids}}).toArray();
-
-    let notifications = id_dates.map(([id, date]) => {
-        let m = messages.find(msg => msg._id.toString() === id.toString());
-        if (m) {
-            m = new Message(m);
-        }
-        else {
-            return [];
-        }
-        if (!m.platforms.includes(data.platform)) {
-            return [];
-        }
-
-        let o = new Template(m, PLATFORM[data.platform]).guess_compile({m: m._id, h: 0, pr: app_user});
-        o.date = new Date(date);
-        return o;
-    }).flat();
-
-    let ret = {notifications};
-
-    if (data.full) {
-        ret.messages = messages;
-    }
-
-    common.returnOutput(params, ret, true);
-
-    return true;
-};
 /**
  * Get messages
  *
@@ -1206,10 +971,9 @@ module.exports.notificationsForUser = async params => {
  * @apiUse PushValidationError
  */
 module.exports.all = async params => {
-    const platformTypes = require('./send/platforms').platforms;
     let data = common.validateArgs(params.qstring, {
         app_id: {type: 'ObjectID', required: true},
-        platform: {type: 'String', required: false, in: () => platformTypes},
+        platform: {type: 'String', required: false, in: () => Object.keys(platforms)},
         auto: {type: 'BooleanString', required: false},
         api: {type: 'BooleanString', required: false},
         multi: {type: 'BooleanString', required: false},

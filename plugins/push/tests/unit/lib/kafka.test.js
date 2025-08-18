@@ -4,47 +4,60 @@
  * @typedef {import('../../../api/new/types/queue.ts').ScheduleEventHandler} ScheduleEventHandler
  * @typedef {import('../../../api/new/types/queue.ts').PushEventHandler} PushEventHandler
  */
-const kafka = require("kafkajs");
+const { logLevel: kafkaLogLevel, Partitioners } = require("kafkajs");
+const proxyquire = require("proxyquire");
 const { ObjectId } = require("mongodb");
 const assert = require("assert");
-const { describe, it, beforeEach, after, before } = require("mocha");
+const { describe, it, after, afterEach } = require("mocha");
 const kafkaConfig = require("../../../api/new/constants/kafka-config.json");
-const { sendPushEvent, sendScheduleEvent, init } = require("../../../api/new/lib/kafka.js");
-const { mockKafkaJs } = require("../mock/kafka.js");
+const { createMockedKafkajs } = require("../../mock/kafka.js");
+let {
+    KafkaConstructor,
+    kafkaInstance,
+    producerInstance,
+    consumerInstance,
+    sandbox: kafkaSandbox,
+} = createMockedKafkajs();
+const {
+    sendPushEvents,
+    sendScheduleEvents,
+    initPushQueue
+} = proxyquire("../../../api/new/lib/kafka.js", {
+    "kafkajs": {
+        Kafka: KafkaConstructor,
+    }
+});
+
 
 describe("Kafka queue", () => {
-    /** @type {ReturnType<typeof mockKafkaJs>} */
-    let kafkaMock;
-
-    before(() => kafkaMock = mockKafkaJs());
-    beforeEach(() => kafkaMock.reset());
-    after(() => kafkaMock.restore());
+    afterEach(() => kafkaSandbox.resetHistory());
+    after(() => kafkaSandbox.restore());
 
     describe("Initialization", () => {
         it("should configure kafkajs instance correctly", async () => {
-            await init(async () => {}, async () => {}, async () => {}, false);
-            assert(kafkaMock.KafkaConstructor.calledWith({
+            await initPushQueue(async () => {}, async () => {}, async () => {}, async () => {});
+            assert(KafkaConstructor.calledWith({
                 clientId: kafkaConfig.clientId,
                 brokers: kafkaConfig.brokers,
-                logLevel: kafka.logLevel.ERROR,
+                logLevel: kafkaLogLevel.ERROR,
             }));
-            assert(kafkaMock.KafkaInstance.producer.calledWith({
-                createPartitioner: kafka.Partitioners.DefaultPartitioner
+            assert(kafkaInstance.producer.calledWith({
+                createPartitioner: Partitioners.DefaultPartitioner
             }));
-            assert(kafkaMock.ProducerInstance.connect.called);
-            assert(kafkaMock.KafkaInstance.consumer.calledWith({
+            assert(producerInstance.connect.called);
+            assert(kafkaInstance.consumer.calledWith({
                 groupId: kafkaConfig.consumerGroupId,
                 allowAutoTopicCreation: false
             }));
-            assert(kafkaMock.ConsumerInstance.connect.called)
+            assert(consumerInstance.connect.called)
             const topics = Object.values(kafkaConfig.topics)
                 .filter(i => i.name !== kafkaConfig.topics.SCHEDULE.name)
                 .map(i => i.name);
-            assert(kafkaMock.ConsumerInstance.subscribe.calledWith({
+            assert(consumerInstance.subscribe.calledWith({
                 topics,
                 fromBeginning: true
             }));
-            assert(kafkaMock.ConsumerInstance.run.called);
+            assert(consumerInstance.run.called);
         });
 
         it("should be able pass events to listeners", async () => {
@@ -64,12 +77,19 @@ describe("Kafka queue", () => {
                     platform: "i",
                     env: "p",
                     language: "en",
+                    saveResult: true,
+                    platformConfiguration: {},
                     credentials: {
                         _id: new ObjectId,
                         serviceAccountFile: "service account",
                         type: "fcm",
                         hash: "credentialshash"
-                    }
+                    },
+                    trigger: {
+                        kind: "plain",
+                        start: new Date(),
+                    },
+                    appTimezone: "NA",
                 };
                 /** @type {ScheduleEvent} */
                 const scheduleEvent = {
@@ -113,8 +133,8 @@ describe("Kafka queue", () => {
                         --noResolves || rej(err);
                     }
                 }
-                await init(pushEventHandler, scheduleEventHandler, async () => {}, false);
-                const { eachBatch } = kafkaMock.ConsumerInstance.run.firstCall.firstArg;
+                await initPushQueue(pushEventHandler, scheduleEventHandler, async () => {}, async () => {});
+                const { eachBatch } = consumerInstance.run.firstCall.firstArg;
                 await eachBatch({
                     batch: {
                         topic: kafkaConfig.topics.SEND.name,
@@ -147,16 +167,23 @@ describe("Kafka queue", () => {
                 platform: "i",
                 env: "p",
                 language: "en",
+                saveResult: true,
+                platformConfiguration: {},
                 credentials: {
                     _id: new ObjectId,
                     serviceAccountFile: "service account",
                     type: "fcm",
                     hash: "credentialshash"
-                }
+                },
+                trigger: {
+                    kind: "plain",
+                    start: new Date(),
+                },
+                appTimezone: "NA",
             };
-            await init(async () => {}, async () => {}, async () => {}, false);
-            await sendPushEvent(pushEvent);
-            assert(kafkaMock.ProducerInstance.send.calledWith({
+            await initPushQueue(async () => {}, async () => {}, async () => {}, async () => {});
+            await sendPushEvents([pushEvent]);
+            assert(producerInstance.send.calledWith({
                 topic: kafkaConfig.topics.SEND.name,
                 messages: [{
                     value : JSON.stringify(pushEvent)
@@ -177,15 +204,9 @@ describe("Kafka queue", () => {
                 scheduleId,
                 scheduledTo: new Date
             };
-            await init(async () => {}, async () => {}, async () => {}, false);
-            const before = Date.now() - 1000;
-            await sendScheduleEvent(scheduleEvent);
-            const after = Date.now() + 1000;
-            const arg = /** @type {any} */(kafkaMock.ProducerInstance.send.args[0][0]);
-            const timestamp = Number(arg?.messages?.[0]?.timestamp) * 1000;
-            assert(typeof timestamp === "number" && !isNaN(timestamp));
-            assert(timestamp >= before && timestamp <= after);
-            delete arg.messages[0].timestamp;
+            await initPushQueue(async () => {}, async () => {}, async () => {}, async () => {});
+            await sendScheduleEvents([scheduleEvent]);
+            const arg = /** @type {any} */(producerInstance.send.args[0][0]);
             assert(typeof arg.messages[0].key === "string");
             delete arg.messages[0].key;
             assert.deepStrictEqual(arg, {

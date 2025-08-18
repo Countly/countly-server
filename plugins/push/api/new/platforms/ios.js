@@ -1,26 +1,32 @@
 /**
+ * @typedef {import("../types/message.ts").Message} Message
+ * @typedef {import("../types/message.ts").Content} Content
+ * @typedef {import("../types/message.ts").IOSMessageContent} IOSMessageContent
+ * @typedef {import("../types/user.ts").User} User
  * @typedef {import("../types/queue.ts").PushEvent} PushEvent
  * @typedef {import("../types/queue.ts").IOSConfig} IOSConfig
  * @typedef {import("../types/credentials.ts").APNCredentials} APNCredentials
  * @typedef {import("../types/credentials.ts").APNP12Credentials} APNP12Credentials
+ * @typedef {import("../types/credentials.ts").APNP8Credentials} APNP8Credentials
  * @typedef {import("../types/proxy.ts").ProxyConfiguration} ProxyConfiguration
  * @typedef {{ token: string; createdAt: number; }} JWTCache
  * @typedef {{ agent: http2Wrapper.proxies.Http2OverHttp; lastUsedAt: number; }} ProxyCache
  * @typedef {import("../types/credentials.ts").TLSKeyPair} TLSKeyPair
  * @typedef {{ keyPair: TLSKeyPair; lastUsedAt: number; }} TLSKeyPairCache
  * @typedef {import("http2").OutgoingHttpHeaders} OutgoingHttpHeaders
- * @typedef {import("../types/utils.js").LogObject} LogObject
  */
 const jwt = require("jsonwebtoken");
 const http2Wrapper = require("http2-wrapper");
 const { URL } = require("url");
 const { PROXY_CONNECTION_TIMEOUT } = require("../constants/proxy-config.json");
-const { serializeProxyConfig, parseKeyPair } = require("../lib/utils.js");
+const { serializeProxyConfig, parseKeyPair, removeUPFromUserPropertyKey } = require("../lib/utils.js");
 const { SendError, InvalidResponse, APNSErrors } = require("../lib/error.js");
-
+/** @type {{[serializedProxyConfig: string]: ProxyCache}} */
+const PROXY_CACHE = {};
 /** @type {{[credentialHash: string]: JWTCache }} */
-const tokenCache = {};
+const TOKEN_CACHE = {};
 const TOKEN_TTL = 20 * 60 * 1000; // 20 mins
+
 /**
  * This function caches created tokens for a 20 mins. This is required because
  * APNs doesn't like changing tokens more than twice in 20 mins on the same
@@ -32,7 +38,7 @@ function getAuthToken(credentials) {
     if (credentials.type !== "apn_token") {
         return;
     }
-    const cache = tokenCache[credentials.hash];
+    const cache = TOKEN_CACHE[credentials.hash];
     if (cache && cache.createdAt + TOKEN_TTL > Date.now()) {
         return cache.token;
     }
@@ -41,12 +47,10 @@ function getAuthToken(credentials) {
         Buffer.from(credentials.key, "base64").toString(),
         { algorithm: "ES256", header: { alg: "ES256", kid: credentials.keyid } }
     );
-    tokenCache[credentials.hash] = { token, createdAt: Date.now() };
+    TOKEN_CACHE[credentials.hash] = { token, createdAt: Date.now() };
     return token;
 }
 
-/** @type {{[serializedProxyConfig: string]: ProxyCache}} */
-const proxyCache = {};
 /**
  * Creates a proxy agent with the given configuration, then caches it.
  * @param {ProxyConfiguration=} config
@@ -57,9 +61,9 @@ function getProxyAgent(config) {
         return;
     }
     const serializedProxyConfig = serializeProxyConfig(config);
-    if (serializedProxyConfig in proxyCache) {
-        proxyCache[serializedProxyConfig].lastUsedAt = Date.now();
-        return proxyCache[serializedProxyConfig].agent;
+    if (serializedProxyConfig in PROXY_CACHE) {
+        PROXY_CACHE[serializedProxyConfig].lastUsedAt = Date.now();
+        return PROXY_CACHE[serializedProxyConfig].agent;
     }
     /** @type {http2Wrapper.ProxyOptions} */
     const proxyOptions = {
@@ -77,7 +81,7 @@ function getProxyAgent(config) {
         timeout: PROXY_CONNECTION_TIMEOUT,
         proxyOptions
     });
-    proxyCache[serializedProxyConfig] = {
+    PROXY_CACHE[serializedProxyConfig] = {
         lastUsedAt: Date.now(),
         agent
     }
@@ -193,4 +197,109 @@ async function send(pushEvent) {
     });
 }
 
-module.exports = { send, getTlsKeyPair, getAuthToken, getProxyAgent };
+/**
+ * Validates the APN credentials
+ * @param {APNCredentials} credentials - APN credentials object
+ * @returns {Promise<APNCredentials>} credentials with validated and hashed service account file
+ * @throws {Error} if credentials are invalid
+ */
+async function validateCredentials(credentials) {
+    console.log(credentials);
+    if (credentials.type === "apn_universal") {
+        const cert = credentials.cert;
+        if (typeof cert !== "string" || !cert) {
+            throw new Error(`Invalid APNP12Credentials: cert is required and must be a string`);
+        }
+    }
+    else if (credentials.type === "apn_token") {
+        const requiredFields = /** @type {Array<keyof APNP8Credentials>} */(
+            ["key", "keyid", "bundle", "team"]
+        );
+        for (const field of requiredFields) {
+            if (!credentials[field] || typeof credentials[field] !== "string") {
+                throw new Error(`Invalid APNP8Credentials: ${field} is required`);
+            }
+        }
+    }
+
+    return credentials;
+}
+
+/**
+ * Maps message contents to an APNS request payload
+ * @param {Message} messageDoc - Message document
+ * @param {Content} content - Content object built from message contents in template builder
+ * @param {User|{[key: string]: string;}} userProps - User object or a map of custom properties
+ * @returns {IOSMessageContent} IOS message payload
+ */
+function mapMessageToPayload(messageDoc, content, userProps) {
+    /** @type {IOSMessageContent} */
+    const payload = {
+        aps: {},
+        c: { i: messageDoc._id.toString() }
+    };
+    if (content.buttons && content.buttons.length) {
+        payload.c.b = content.buttons.map((b) => ({ t: b.title, l: b.url }));
+        payload.aps["mutable-content"] = 1;
+    }
+    if (content.sound) {
+        payload.aps.sound = content.sound;
+    }
+    if (content.badge) {
+        payload.aps.badge = content.badge;
+    }
+    if (content.title || content.message) {
+        payload.aps.alert = {};
+        if (content.title) {
+            payload.aps.alert.title = content.title;
+        }
+        if (content.message) {
+            payload.aps.alert.body = content.message;
+        }
+    }
+    if (content.url) {
+        payload.c.l = content.url;
+    }
+    if (content.media) {
+        payload.c.a = content.media;
+        payload.aps["mutable-content"] = 1;
+    }
+    if (content.data) {
+        const data = JSON.parse(content.data);
+        Object.assign(payload, data);
+    }
+    if (content.extras && content.extras.length && typeof userProps === "object") {
+        for (const userPropKey of content.extras) {
+            const key = removeUPFromUserPropertyKey(userPropKey);
+            if (key in userProps) {
+                let value = userProps[key];
+                if (value !== undefined || value !== null) {
+                    if (!payload.c.e) {
+                        payload.c.e = {};
+                    }
+                    payload.c.e[key] = value;
+                }
+            }
+        }
+    }
+    if (content.specific && content.specific.length) {
+        const platformSpecifics = content.specific
+            .reduce((acc, item) => ({ ...acc, ...item }), {});
+        if (platformSpecifics.subtitle) {
+            payload.aps.alert = payload.aps.alert || {};
+            payload.aps.alert.subtitle = /** @type {string} */(platformSpecifics.subtitle);
+        }
+        if (platformSpecifics.setContentAvailable) {
+            payload.aps["content-available"] = 1;
+        }
+    }
+    return payload;
+}
+
+module.exports = {
+    send,
+    getTlsKeyPair,
+    getAuthToken,
+    getProxyAgent,
+    mapMessageToPayload,
+};

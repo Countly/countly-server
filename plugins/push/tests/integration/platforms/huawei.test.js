@@ -7,9 +7,10 @@ const { describe, it } = require("mocha");
 const { ObjectId } = require("mongodb");
 const { send } = require("../../../api/new/platforms/huawei");
 const { credentialsDTOToObject } = require("../../../api/new/lib/dto");
+const mockedData = require("../../mock/data");
+const { HUAWEI_TEST_TOKEN, HUAWEI_TEST_CREDENTIALS } = process.env;
 
 describe("Huawei sender", () => {
-    const { HUAWEI_TEST_TOKEN, HUAWEI_TEST_CREDENTIALS } = process.env;
     if (!HUAWEI_TEST_TOKEN || !HUAWEI_TEST_CREDENTIALS) {
         return console.log(
             "HUAWEI_TEST_TOKEN and/or " +
@@ -45,6 +46,9 @@ describe("Huawei sender", () => {
                 android: {},
             },
         },
+        appTimezone: "NA",
+        trigger: mockedData.plainTrigger(),
+        platformConfiguration: {}
     };
     it("should send the message successfully", async () => {
         const result = await send(pushEvent);
@@ -60,7 +64,6 @@ describe("Huawei sender", () => {
             send(pushEvent),
             send(pushEvent),
         ]);
-        console.log(result);
     }).timeout(20000);
     it("should send the message successfully through a proxy server", async () => {
         // console.time("sequential");

@@ -5,7 +5,7 @@
     "clientId": "countly-push",
     "consumerGroupId": "countly-push-consumers",
     "topics": {
-        "SEND": { "name": "CLY_PUSH_MESSAGE_SEND", "partitions": 6 },
+        "SEND": { "name": "CLY_PUSH_MESSAGE_SEND", "partitions": 10 },
         "SCHEDULE": { "name": "CLY_PUSH_MESSAGE_SCHEDULE", "partitions": 2 },
         "COMPOSE": { "name": "CLY_PUSH_MESSAGE_COMPOSE", "partitions": 3 },
         "RESULT": { "name": "CLY_PUSH_MESSAGE_RESULT", "partitions": 4 },

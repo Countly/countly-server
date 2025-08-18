@@ -25,16 +25,16 @@ function createMockedCollection(sandbox) {
     };
 }
 
-function mockMongoDb() {
+function createMockedMongoDb() {
     /**
-     * @type {{[collectionName: string]: sinon.SinonStubbedInstance<Collection<any>>}}
+     * @type {{[collectionName: string]: sinon.SinonStubbedInstance<Collection>}}
      */
     const namedCollections = {};
 
-    const mongoSandbox = sinon.createSandbox();
+    const sandbox = sinon.createSandbox();
     // generic collection
-    const {collection, findCursor, aggregationCursor} = createMockedCollection(mongoSandbox);
-    const db = mongoSandbox.createStubInstance(Db);
+    const {collection, findCursor, aggregationCursor} = createMockedCollection(sandbox);
+    const db = sandbox.createStubInstance(Db);
     // db.collection.returns(collection);
 
     db.collection.callsFake((collectionName) => {
@@ -49,13 +49,12 @@ function mockMongoDb() {
         aggregationCursor,
         collection,
         db,
-        mongoSandbox,
-
+        sandbox,
         /**
          * @param {string} name
          */
         createMockedCollection(name) {
-            const ret = createMockedCollection(mongoSandbox);
+            const ret = createMockedCollection(sandbox);
             namedCollections[name] = ret.collection;
             return ret;
         }
@@ -63,5 +62,5 @@ function mockMongoDb() {
 }
 
 module.exports = {
-    mockMongoDb
+    createMockedMongoDb
 }

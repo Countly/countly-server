@@ -7,13 +7,13 @@
 const plugins = require('../../pluginManager'),
     common = require('../../../api/utils/common'),
     log = common.log('push:api'),
-    { Message, TriggerKind, fields, platforms, ValidationError, PushError, DBMAP, guess } = require('./send'),
+    { Message, TriggerKind, ValidationError, PushError } = require('./send'),
     { validateCreate, validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
     { onTokenSession, onSessionUser, onAppPluginsUpdate, onMerge } = require('./api-push'),
     { autoOnCohort, /*autoOnCohortDeletion,*/ autoOnEvent } = require('./api-auto'),
     { apiPush } = require('./api-tx'),
     { drillAddPushEvents, drillPostprocessUids, drillPreprocessQuery } = require('./api-drill'),
-    { estimate, test, create, update, toggle, remove, all, one, mime, user, notificationsForUser, periodicStats } = require('./api-message'),
+    { estimate, test, create, update, toggle, remove, all, one, mime, user, periodicStats } = require('./api-message'),
     { dashboard } = require('./api-dashboard'),
     { clear, reset, removeUsers } = require('./api-reset'),
     FEATURE_NAME = 'push',
@@ -31,7 +31,6 @@ const plugins = require('../../pluginManager'),
                 stats: [validateRead, periodicStats],
             },
             user: [validateRead, user],
-            notifications: [validateRead, notificationsForUser],
         },
         i: {
             message: {
@@ -45,11 +44,14 @@ const plugins = require('../../pluginManager'),
         }
     };
 
-const { initPushQueue } = require("./new/lib/kafka.js");
+const { initPushQueue, setupTopicsAndPartitions } = require("./new/lib/kafka.js");
 const { composeAllScheduledPushes } = require('./new/composer.js');
 const { sendAllPushes } = require('./new/sender.js');
 const { saveResults } = require("./new/resultor.js");
 const { scheduleMessageByAutoTriggers } = require("./new/scheduler.js");
+const { guessThePlatformFromUserAgentHeader } = require("./new/lib/utils.js");
+const platforms = require("./new/constants/platform-keymap.js");
+const ALL_PLATFORM_KEYS = Object.keys(platforms);
 
 plugins.setConfigs(FEATURE_NAME, {
     proxyhost: '',
@@ -104,22 +106,35 @@ async function queueInitializer(db) {
     }
 }
 
-plugins.register('/worker', async function() {
-    common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
-    fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
-    await queueInitializer(common.db);
-});
+// plugins.register('/worker', async function() {
+//     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
+//     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
+//     await queueInitializer(common.db);
+// });
 
-plugins.register('/master', async function() {
-    common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
-    fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
-    setTimeout(() => {
-        const jobManager = require('../../../api/parts/jobs');
-        jobManager.job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
-        jobManager.job("push:clear-stats").replace().schedule("at 3:00 am every 7 days");
-    }, 10000);
-    await queueInitializer(common.db);
-});
+// plugins.register('/master', async function() {
+//     common.dbUniqueMap.users.push(common.dbMap['messaging-enabled'] = DBMAP.MESSAGING_ENABLED);
+//     fields(platforms, true).forEach(f => common.dbUserMap[f] = f);
+//     setTimeout(() => {
+//         const jobManager = require('../../../api/parts/jobs');
+//         jobManager.job('push:clear', {ghosts: true}).replace().schedule('at 3:00 pm every 7 days');
+//         jobManager.job("push:clear-stats").replace().schedule("at 3:00 am every 7 days");
+//     }, 10000);
+//     await queueInitializer(common.db);
+// });
+
+// Initialize the push queue and setup Kafka topics and partitions
+if (false) {
+    setupTopicsAndPartitions()
+        .then(() => log.i("Kafka topics and partitions setup completed"))
+        .catch(err => log.e("Error setting up Kafka topics and partitions:", err));
+}
+// initialize the push queue
+if (true) {
+    queueInitializer(common.db)
+        .then(() => log.i("Push queue initialized successfully"))
+        .catch(err => log.e("Error initializing push queue:", err));
+}
 
 plugins.register('/i', async ob => {
     let params = ob.params,
@@ -161,13 +176,13 @@ plugins.register('/i', async ob => {
                     }
 
                     if (!p && params.req.headers['user-agent']) {
-                        p = guess(params.req.headers['user-agent']);
+                        p = guessThePlatformFromUserAgentHeader(params.req.headers['user-agent']);
                     }
 
                     event.segmentation.a = a;
                     event.segmentation.t = t;
 
-                    if (p && platforms.indexOf(p) !== -1) {
+                    if (p && ALL_PLATFORM_KEYS.indexOf(p) !== -1) {
                         event.segmentation.p = p;
                         event.segmentation.ap = a + p;
                         event.segmentation.tp = t + p;
@@ -279,7 +294,6 @@ plugins.register('/session/user', onSessionUser);
 // API
 plugins.register('/i/push', ob => apiCall(apis.i, ob));
 plugins.register('/o/push', ob => apiCall(apis.o, ob));
-plugins.register('/i/apps/update/plugins/push', onAppPluginsUpdate);
 
 // Cohort hooks for cohorted auto push
 plugins.register('/cohort/enter', ({cohort, uids}) => autoOnCohort(true, cohort, uids));
@@ -298,6 +312,7 @@ plugins.register('/i/device_id', onMerge);
 plugins.register('/permissions/features', ob => ob.features.push(FEATURE_NAME));
 
 // Data clears/resets/deletes
+plugins.register('/i/apps/update/plugins/push', onAppPluginsUpdate);
 plugins.register('/i/apps/reset', reset);
 plugins.register('/i/apps/clear_all', clear);
 plugins.register('/i/apps/delete', reset);

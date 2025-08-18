@@ -7,9 +7,10 @@ const { describe, it } = require("mocha");
 const { ObjectId } = require("mongodb");
 const { send } = require("../../../api/new/platforms/ios");
 const { credentialsDTOToObject } = require("../../../api/new/lib/dto");
+const mockedData = require("../../mock/data");
+const { IOS_TEST_TOKEN, IOS_TEST_CREDENTIALS } = process.env;
 
 describe("IOS sender", () => {
-    const { IOS_TEST_TOKEN, IOS_TEST_CREDENTIALS } = process.env;
     if (!IOS_TEST_TOKEN || !IOS_TEST_CREDENTIALS) {
         return console.log("IOS_TEST_TOKEN and/or "
             + "IOS_TEST_CREDENTIALS are not defined, skipping tests");
@@ -48,7 +49,10 @@ describe("IOS sender", () => {
             c: {
                 i: "67d18d33119f2e488125e787"
             }
-        }
+        },
+        appTimezone: "NA",
+        trigger: mockedData.plainTrigger(),
+        platformConfiguration: {}
     }
     /** @type {PushEvent} */
     const pushEventWithProxy = {
@@ -61,7 +65,6 @@ describe("IOS sender", () => {
     }
     it("should send the message successfully", async () => {
         const result = await send(pushEvent);
-        console.log(result);
     });
     it("should send multiple messages", async () => {
         const result = await Promise.all([
@@ -70,7 +73,6 @@ describe("IOS sender", () => {
             send(pushEvent),
             send(pushEvent),
         ]);
-        console.log(result);
     }).timeout(20000);
     it("should send the message successfully through a proxy server", async () => {
         // console.time("sequential");

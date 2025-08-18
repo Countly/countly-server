@@ -8,27 +8,28 @@
  * @typedef {import('./types/message.ts').PlatformKey} PlatformKey
  * @typedef {import('./types/message.ts').PlatformEnvKey} PlatformEnvKey
  * @typedef {import('./types/message.ts').PlatformCombinedKeys} PlatformCombinedKeys
- * @typedef {import('./types/credentials.ts').SomeCredential} SomeCredential
+ * @typedef {import('./types/credentials.ts').PlatformCredential} PlatformCredential
  * @typedef {import('./types/proxy.ts').ProxyConfiguration} ProxyConfiguration
  * @typedef {import("mongodb").Db} MongoDb
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
  * @typedef {import('./types/schedule.ts').AudienceFilter} AudienceFilter
  * @typedef {import('./types/user.ts').User} User
  * @typedef {import('stream').Readable} Readable
- * @typedef {import('./types/utils.ts').LogObject} LogObject
+ * @typedef {{_id: ObjectId; timezone: string;}} App
  * @typedef {import("mongodb").Collection<{ radius: number; unit: "mi"|"km"; geo: { coordinates: [number, number]; } }>} GeosCollection
  * @typedef {import("mongodb").Collection<Message>} MessageCollection
  * @typedef {import("mongodb").Collection<Schedule>} ScheduleCollection
+ * @typedef {import("mongodb").Collection<App>} AppCollection
+ * @typedef {import("mongodb").Document} Document
  */
 
 const { ObjectId } = require('mongodb');
 const queue = require("./lib/kafka.js"); // do not import by destructuring; it's being mocked in the tests
 const { createTemplate, getUserPropertiesUsedInsideMessage } = require("./lib/template.js");
-const PLATFORM_KEYMAP = require("./constants/platform-keymap.json");
+const PLATFORM_KEYMAP = require("./constants/platform-keymap.js");
 const { buildResultObject, increaseResultStat, applyResultObject } = require("./resultor.js");
 const common = require("../../../../api/utils/common.js");
-const { loadDrillAPI } = require("./lib/utils.js");
-/** @type {LogObject} */
+const { loadDrillAPI, loadProxyConfiguration } = require("./lib/utils.js");
 const log = require('../../../../api/utils/common').log('push:composer');
 const { RESCHEDULABLE_DATE_TRIGGERS, scheduleMessageByDateTrigger } = require("./scheduler.js");
 const QUEUE_WRITE_BATCH_SIZE = 100;
@@ -68,6 +69,8 @@ async function composeScheduledPushes(db, scheduleEvent) {
     const messageCol = db.collection("messages");
     /** @type {ScheduleCollection} */
     const scheduleCol = db.collection("message_schedules");
+    /** @type {AppCollection} */
+    const appCol = db.collection("apps");
     const messageDoc = await messageCol.findOne({ _id: messageId, status: "active" });
     if (!messageDoc) {
         await scheduleCol.deleteMany({ messageId });
@@ -82,21 +85,18 @@ async function composeScheduledPushes(db, scheduleEvent) {
             messageId, "was deleted or canceled.");
         return 0;
     }
-    const appDoc = await db.collection("apps").findOne({
-        _id: scheduleDoc.appId });
+    const appDoc = await appCol.findOne({ _id: scheduleDoc.appId });
     if (!appDoc) {
         log.w("App", appId, "is deleted");
         return 0;
     }
-
     if (scheduleDoc.messageOverrides?.contents) {
         messageDoc.contents = [
             ...messageDoc.contents,
             ...scheduleDoc.messageOverrides.contents
         ];
     }
-
-    const stream = await getUserStream(
+    const aggregationPipeline = await buildUserAggregationPipeline(
         db,
         messageDoc,
         appDoc.timezone,
@@ -106,7 +106,6 @@ async function composeScheduledPushes(db, scheduleEvent) {
     const compileTemplate = createTemplate(messageDoc);
     const proxy = await loadProxyConfiguration(db);
     const creds = await loadCredentials(db, appId);
-
     // check if there's a missing credential
     for (let i = 0; i < messageDoc.platforms.length; i++) {
         const p = messageDoc.platforms[i];
@@ -116,56 +115,21 @@ async function composeScheduledPushes(db, scheduleEvent) {
                 messageId.toString());
         }
     }
-
     /** @type {PushEvent[]} */
     let events = [];
     const resultObject = buildResultObject();
-    for await (let user of stream) {
-        let tokenObj = user?.tk?.[0]?.tk;
-        if (!tokenObj) {
-            continue;
+    const stream = createPushStream(
+        db, appDoc, messageDoc, scheduleDoc, creds, proxy, compileTemplate,
+        aggregationPipeline
+    );
+    for await (let push of stream) {
+        events.push(push);
+        if (events.length === QUEUE_WRITE_BATCH_SIZE) {
+            await queue.sendPushEvents(events);
+            events = [];
         }
-        for (let pf in tokenObj) {
-            const platform = /** @type {PlatformKey} */(pf[0]);
-            if (!(platform in creds)) {
-                continue;
-            }
-            const env = /** @type {PlatformEnvKey} */(pf[1]);
-            const token = /** @type {string} */(
-                tokenObj[/** @type {PlatformCombinedKeys} */(pf)]
-            );
-            const language = user.la ?? "default";
-            let variables = {
-                ...user,
-                ...(scheduleDoc.messageOverrides?.variables ?? {})
-            };
-            /** @type {PushEvent} */
-            const push = {
-                appId: appId,
-                messageId: messageId,
-                scheduleId: scheduleId,
-                saveResult: messageDoc.saveResults,
-                token,
-                uid: user.uid,
-                platform,
-                env,
-                language,
-                credentials: creds[platform],
-                message: compileTemplate(platform, variables),
-                proxy,
-                platformConfiguration: getPlatformConfiguration(platform, messageDoc),
-                trigger: messageDoc.triggers[0],
-                appTimezone: appDoc.timezone,
-            };
-
-            events.push(push);
-            if (events.length === QUEUE_WRITE_BATCH_SIZE) {
-                await queue.sendPushEvents(events);
-                events = [];
-            }
-            // update results
-            increaseResultStat(resultObject, platform, language, "total");
-        }
+        // update results
+        increaseResultStat(resultObject, push.platform, push.language, "total");
     }
     // write the remaining pushes in the buffer
     if (events && events.length) {
@@ -174,7 +138,6 @@ async function composeScheduledPushes(db, scheduleEvent) {
     // update the schedule and message document
     await applyResultObject(db, scheduleId, messageId, resultObject,
         { composed: [scheduleEvent] });
-
     // check if we need to re-schedule this message
     const reschedulableTrigger = messageDoc.triggers
         .find(trigger => RESCHEDULABLE_DATE_TRIGGERS.includes(trigger.kind))
@@ -185,22 +148,65 @@ async function composeScheduledPushes(db, scheduleEvent) {
                 schedules.map(s => s.scheduledTo));
         }
     }
-
     return resultObject.total;
 }
 
 /**
- * @param {Message} message
- * @returns {{[key: string]: 1}}
+ * Creates a stream of push events for the given app, message, schedule and credentials.
+ * Pipeline needs to be built before this function is called.
+ * The stream will yield `PushEvent` objects for each user that matches the pipeline.
+ * @param {MongoDb} db - MongoDB database instance
+ * @param {App} appDoc - Application document
+ * @param {Message} messageDoc - Message document
+ * @param {Schedule} scheduleDoc - Schedule document
+ * @param {Awaited<ReturnType<loadCredentials>>} creds - Credentials for each platform
+ * @param {Awaited<ReturnType<loadProxyConfiguration>>} proxy - Proxy configuration
+ * @param {ReturnType<createTemplate>} template - Function to create message template
+ * @param {Document[]} pipeline - Aggregation pipeline to filter users
+ * @returns {AsyncGenerator<PushEvent, void, void>} Push event stream
  */
-function userPropsProjection(message) {
-    const props = getUserPropertiesUsedInsideMessage(message);
-    /** @type {{[key: string]: 1}} */
-    const result = {};
-    for (let i = 0; i < props.length; i++) {
-        result[props[i].replace(/\..+$/, "")] = 1;
+async function* createPushStream(db, appDoc, messageDoc, scheduleDoc, creds, proxy, template, pipeline) {
+    const stream = db.collection("app_users" + appDoc._id.toString())
+        .aggregate(pipeline, { allowDiskUse: true })
+        .stream();
+    for await (let user of stream) {
+        let tokenObj = user?.tk?.[0]?.tk;
+        if (!tokenObj) {
+            continue;
+        }
+        for (let combined in tokenObj) {
+            const platform = /** @type {PlatformKey} */(combined[0]);
+            if (!(platform in creds)) {
+                continue;
+            }
+            const env = /** @type {PlatformEnvKey} */(combined[1]);
+            const token = /** @type {string} */(
+                tokenObj[/** @type {PlatformCombinedKeys} */(combined)]
+            );
+            const language = user.la ?? "default";
+            let variables = {
+                ...user,
+                ...(scheduleDoc.messageOverrides?.variables ?? {})
+            };
+            yield /** @type {PushEvent} */({
+                appId: appDoc._id,
+                messageId: messageDoc._id,
+                scheduleId: scheduleDoc._id,
+                saveResult: messageDoc.saveResults,
+                token,
+                uid: user.uid,
+                platform,
+                env,
+                language,
+                credentials: creds[platform],
+                message: template(platform, variables),
+                proxy,
+                platformConfiguration: getPlatformConfiguration(platform, messageDoc),
+                trigger: messageDoc.triggers[0],
+                appTimezone: appDoc.timezone,
+            });
+        }
     }
-    return result;
 }
 
 /**
@@ -209,9 +215,9 @@ function userPropsProjection(message) {
  * @param {string=} appTimezone
  * @param {string=} timezone
  * @param {AudienceFilter=} filters
- * @returns {Promise<Readable & AsyncIterable<User>>}
+ * @returns {Promise<Document[]>}
  */
-async function getUserStream(db, message, appTimezone, timezone, filters) {
+async function buildUserAggregationPipeline(db, message, appTimezone, timezone, filters) {
     const appId = message.app.toString();
     /** @type {{ [key: string]: any }} non-user-defined filters */
     const $match = {};
@@ -224,10 +230,10 @@ async function getUserStream(db, message, appTimezone, timezone, filters) {
     };
     // Platforms:
     const platformFilters = [];
-    for (let pKey of message.platforms) {
-        const pfKeys = PLATFORM_KEYMAP[pKey].pf;
-        for (let pfKey of pfKeys) {
-            platformFilters.push({ ["tk" + pfKey]: { $exists: true } });
+    for (let platformKey of message.platforms) {
+        const combinedKeys = PLATFORM_KEYMAP[platformKey].combined;
+        for (let combinedKey of combinedKeys) {
+            platformFilters.push({ ["tk" + combinedKey]: { $exists: true } });
         }
     }
     if (platformFilters.length) {
@@ -235,83 +241,14 @@ async function getUserStream(db, message, appTimezone, timezone, filters) {
     }
     // Timezone:
     if (timezone) {
-        $match.tz = String(-1 * Number(timezone));
+        $match.tz = timezone;
     }
     /** @type {Array<{ $match: { [key: string]: any } }>} */
     let filterPipeline = [];
     if (filters) {
-        filterPipeline = await buildPipelineFromFilters(db, filters, appId, appTimezone);
+        filterPipeline = await convertAudienceFiltersToMatchStage(db, filters, appId, appTimezone);
     }
-    return db.collection("app_users" + appId)
-        .aggregate(
-            [{ $match }, ...filterPipeline, { $lookup }, { $project }],
-            { allowDiskUse: true }
-        )
-        .stream();
-}
-
-/**
- *
- * @param {MongoDb} db
- * @param {ObjectId} appId
- * @returns {Promise<{[key: string]: SomeCredential}>}
- */
-async function loadCredentials(db, appId) {
-    const app = await db.collection("apps").findOne({ _id: appId });
-    const configuredCreds = app?.plugins?.push || {};
-
-    const creds = /** @type {{[key: string]: SomeCredential}} */({});
-    for (let pKey in configuredCreds) {
-        const credId = configuredCreds?.[pKey]?._id;
-        if (!credId || credId === "demo") {
-            continue;
-        }
-        const cred = /** @type {SomeCredential|null} */(
-            await db.collection("creds").findOne({ _id: credId })
-        );
-        if (cred) {
-            creds[pKey] = cred;
-        }
-    }
-    return creds;
-}
-
-/**
- * @param {MongoDb} db
- * @returns {Promise<ProxyConfiguration|undefined>}
- */
-async function loadProxyConfiguration(db) {
-    /** @type {import("mongodb").Collection<{ _id: string; push?: { proxyhost: string, proxyport: string; proxyuser: string; proxypass: string; proxyunauthorized: boolean; } }>} */
-    const col = db.collection('plugins');
-    const plugins = await col.findOne({ _id: "plugins" });
-    const pushConfig = plugins?.push;
-    if (!pushConfig || !pushConfig.proxyhost || !pushConfig.proxyport) {
-        return;
-    }
-    const { proxyhost: host, proxyport: port, proxyuser: user,
-        proxypass: pass, proxyunauthorized: unauth } = pushConfig;
-    return { host, port, auth: !(unauth || false), pass, user }
-}
-
-/**
- * @param {PlatformKey} platform - a, i or h
- * @param {Message} message - Message document
- * @returns {IOSConfig|AndroidConfig|HuaweiConfig} configuration for the given platform
- */
-function getPlatformConfiguration(platform, message) {
-    if (platform === "i") {
-        let setContentAvailable = false;
-        const contentItem = message.contents.find(i => Array.isArray(i.specific));
-        if (contentItem && contentItem.specific) {
-            const obj = contentItem.specific.find(i => i.setContentAvailable !== undefined);
-            if (obj && obj.setContentAvailable) {
-                setContentAvailable = true;
-            }
-        }
-        return { setContentAvailable };
-    }
-
-    return {};
+    return [{ $match }, ...filterPipeline, { $lookup }, { $project }];
 }
 
 /**
@@ -321,7 +258,7 @@ function getPlatformConfiguration(platform, message) {
  * @param {string=} appTimezone
  * @returns {Promise<Array<{ $match: { [key: string]: any } }>>}
  */
-async function buildPipelineFromFilters(db, filters, appIdStr, appTimezone) {
+async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTimezone) {
     /** @type {Array<{ $match: { [key: string]: any } }>} */
     const pipeline = [];
     // User ids:
@@ -344,7 +281,7 @@ async function buildPipelineFromFilters(db, filters, appIdStr, appTimezone) {
         pipeline.push({ $match: { $or } });
     }
     // Cohorts:
-    if (Array.isArray(filters?.cohorts)) {
+    if (Array.isArray(filters?.cohorts) && filters.cohorts.length) {
         /** @type {{ [cohortPath: string]: "true" }} */
         const $match = {};
         for (let i = 0; i < filters.cohorts.length; i++) {
@@ -353,7 +290,7 @@ async function buildPipelineFromFilters(db, filters, appIdStr, appTimezone) {
         pipeline.push({ $match });
     }
     // Geos:
-    if (Array.isArray(filters?.geos)) {
+    if (Array.isArray(filters?.geos) && filters.geos.length) {
         /** @type {GeosCollection} */
         const col = db.collection("geos");
         const geoDocs = await col.find({
@@ -386,7 +323,7 @@ async function buildPipelineFromFilters(db, filters, appIdStr, appTimezone) {
         const userFilter = JSON.parse(filters.user);
         if (appTimezone) {
             let params = {
-                time: common.initTimeObj(appTimezone, Date.now()),
+                time: common.initTimeObj(appTimezone, String(Date.now())),
                 qstring: Object.assign({ app_id: appIdStr }, userFilter),
                 app_id: appIdStr
             };
@@ -431,7 +368,7 @@ async function buildPipelineFromFilters(db, filters, appIdStr, appTimezone) {
             }
             else {
                 let params = {
-                    time: common.initTimeObj(appTimezone, Date.now()),
+                    time: common.initTimeObj(appTimezone, String(Date.now())),
                     qstring: Object.assign({ app_id: appIdStr }, drillQuery),
                     app_id: appIdStr
                 };
@@ -485,11 +422,71 @@ async function buildPipelineFromFilters(db, filters, appIdStr, appTimezone) {
     return pipeline;
 }
 
+/**
+ * @param {MongoDb} db
+ * @param {ObjectId} appId
+ * @returns {Promise<{[key: string]: PlatformCredential}>}
+ */
+async function loadCredentials(db, appId) {
+    const app = await db.collection("apps").findOne({ _id: appId });
+    const configuredCreds = app?.plugins?.push || {};
+
+    const creds = /** @type {{[key: string]: PlatformCredential}} */({});
+    for (let pKey in configuredCreds) {
+        const credId = configuredCreds?.[pKey]?._id;
+        if (!credId || credId === "demo") {
+            continue;
+        }
+        const cred = /** @type {PlatformCredential|null} */(
+            await db.collection("creds").findOne({ _id: credId })
+        );
+        if (cred) {
+            creds[pKey] = cred;
+        }
+    }
+    return creds;
+}
+
+/**
+ * @param {PlatformKey} platform - a, i or h
+ * @param {Message} message - Message document
+ * @returns {IOSConfig|AndroidConfig|HuaweiConfig} configuration for the given platform
+ */
+function getPlatformConfiguration(platform, message) {
+    if (platform === "i") {
+        let setContentAvailable = false;
+        const contentItem = message.contents.find(i => Array.isArray(i.specific));
+        if (contentItem && contentItem.specific) {
+            const obj = contentItem.specific.find(i => i.setContentAvailable !== undefined);
+            if (obj && obj.setContentAvailable) {
+                setContentAvailable = true;
+            }
+        }
+        return { setContentAvailable };
+    }
+
+    return {};
+}
+
+/**
+ * @param {Message} message
+ * @returns {{[key: string]: 1}}
+ */
+function userPropsProjection(message) {
+    const props = getUserPropertiesUsedInsideMessage(message);
+    /** @type {{[key: string]: 1}} */
+    const result = {};
+    for (let i = 0; i < props.length; i++) {
+        result[props[i].replace(/\..+$/, "")] = 1;
+    }
+    return result;
+}
+
 module.exports = {
     composeAllScheduledPushes,
     composeScheduledPushes,
-    loadProxyConfiguration,
+    createPushStream,
     loadCredentials,
-    getUserStream,
+    buildUserAggregationPipeline,
     userPropsProjection,
 }

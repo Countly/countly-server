@@ -10,7 +10,7 @@ const { PushError, ValidationError } = require('./error'),
 class Trigger extends Validatable {
     /**
      * Constructor
-     * 
+     *
      * @param {object}          data        filter data
      * @param {Date|number}     data.start  message start date
      */
@@ -86,7 +86,7 @@ class Trigger extends Validatable {
 
     /**
      * Get start date
-     * 
+     *
      * @returns {Date|undefined} start date
      */
     get start() {
@@ -95,7 +95,7 @@ class Trigger extends Validatable {
 
     /**
      * Set start date
-     * 
+     *
      * @param {Date|number}  start  message start date
      */
     set start(start) {
@@ -109,7 +109,7 @@ class Trigger extends Validatable {
 
     /**
      * Construct an appropriate trigger from given data or throw a PushError if data is invalid
-     * 
+     *
      * @param {object} data trigger data
      * @returns {Trigger} Trigger subclass instance
      */
@@ -137,63 +137,6 @@ class Trigger extends Validatable {
         }
         else {
             throw new PushError(`Invalid trigger kind ${data.kind}`);
-        }
-    }
-
-    /**
-     * Backwards-compatibility conversion of Note to Trigger
-     * 
-     * @deprecated
-     * @param {object} note Note object
-     * @returns {Trigger[]} Trigger subclass instance
-     */
-    static fromNote(note) {
-        if (!(note instanceof require('../../parts/note').Note)) {
-            throw new PushError('fromNote supports only Note instance argument');
-        }
-
-        if (note.tx) {
-            return [new APITrigger({
-                start: note.date,
-            })];
-        }
-        else if (note.auto) {
-            if (note.autoOnEntry === 'events') {
-                return [new EventTrigger({
-                    start: note.date,
-                    end: note.autoEnd,
-                    actuals: note.actualDates,
-                    time: note.autoTime,
-                    reschedule: false,
-                    delay: note.autoDelay,
-                    cap: note.autoCapMessages,
-                    sleep: note.autoCapSleep,
-                    events: note.autoEvents,
-                })];
-            }
-            else {
-                return [new CohortTrigger({
-                    start: note.date,
-                    end: note.autoEnd,
-                    actuals: note.actualDates,
-                    time: note.autoTime,
-                    cancels: note.autoCancelTrigger,
-                    reschedule: false,
-                    delay: note.autoDelay,
-                    cap: note.autoCapMessages,
-                    sleep: note.autoCapSleep,
-                    cohorts: note.autoCohorts,
-                    entry: note.autoOnEntry,
-                })];
-            }
-        }
-        else {
-            return [new PlainTrigger({
-                start: note.date,
-                delayed: note.delayed,
-                tz: typeof note.tz === 'number' ? true : false,
-                sctz: typeof note.tz === 'number' ? note.tz : undefined
-            })];
         }
     }
 }
@@ -257,7 +200,7 @@ class PlainTrigger extends Trigger {
     /**
      * Getter for tz
      * Note that you don't set this field, but set `sctz` instead
-     * 
+     *
      * @returns {boolean} true if the trigger is timezoned
      */
     get tz() {
@@ -266,7 +209,7 @@ class PlainTrigger extends Trigger {
 
     /**
      * Getter for delayed
-     * 
+     *
      * @returns {boolean|undefined} true if audience calculation is delayed
      */
     get delayed() {
@@ -275,7 +218,7 @@ class PlainTrigger extends Trigger {
 
     /**
      * Set delayed property
-     * 
+     *
      * @param {boolean|undefined}  delayed  true if audience calculation should be delayed
      */
     set delayed(delayed) {
@@ -348,7 +291,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Get end date
-     * 
+     *
      * @returns {Date|undefined} end date
      */
     get end() {
@@ -357,7 +300,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Set end date
-     * 
+     *
      * @param {Date|number|undefined}  end  message end date
      */
     set end(end) {
@@ -371,7 +314,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Getter for actuals
-     * 
+     *
      * @returns {boolean} whether to use event/cohort time instead of server calculation time
      */
     get actuals() {
@@ -380,7 +323,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Setter for actuals
-     * 
+     *
      * @param {boolean|undefined} actuals whether to use event/cohort time instead of server calculation time
      */
     set actuals(actuals) {
@@ -394,7 +337,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Getter for time
-     * 
+     *
      * @returns {number|undefined} time (seconds since 00:00) when to send in user's timezone
      */
     get time() {
@@ -403,7 +346,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Setter for time
-     * 
+     *
      * @param {number|undefined} time time (seconds since 00:00) when to send in user's timezone
      */
     set time(time) {
@@ -417,7 +360,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Getter for reschedule
-     * 
+     *
      * @returns {boolean} allow rescheduling to next day when sending on "time" is not an option
      */
     get reschedule() {
@@ -426,7 +369,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Setter for reschedule
-     * 
+     *
      * @param {boolean|undefined} reschedule allow rescheduling to next day when sending on "time" is not an option
      */
     set reschedule(reschedule) {
@@ -440,7 +383,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Getter for delay
-     * 
+     *
      * @returns {number|undefined} delay sending this much seconds after the trigger date
      */
     get delay() {
@@ -449,7 +392,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Setter for delay
-     * 
+     *
      * @param {number|undefined} delay delay sending this much seconds after the trigger date
      */
     set delay(delay) {
@@ -463,7 +406,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Getter for cap
-     * 
+     *
      * @returns {number|undefined} send maximum this much messages
      */
     get cap() {
@@ -472,7 +415,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Setter for cap
-     * 
+     *
      * @param {number|undefined} cap send maximum this much messages
      */
     set cap(cap) {
@@ -486,7 +429,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Getter for sleep
-     * 
+     *
      * @returns {number|undefined} minimum time in ms between 2 messages
      */
     get sleep() {
@@ -495,7 +438,7 @@ class AutoTrigger extends Trigger {
 
     /**
      * Setter for sleep
-     * 
+     *
      * @param {number|undefined} sleep minimum time in ms between 2 messages
      */
     set sleep(sleep) {
@@ -514,7 +457,7 @@ class AutoTrigger extends Trigger {
 class EventTrigger extends AutoTrigger {
     /**
      * Constructor
-     * 
+     *
      * @param {object|null}     data            filter data
      * @param {string[]}        data.events     set of triggering event keys
      */
@@ -534,7 +477,7 @@ class EventTrigger extends AutoTrigger {
 
     /**
      * Getter for events
-     * 
+     *
      * @returns {string[]|undefined} array/set of triggering event keys
      */
     get events() {
@@ -543,7 +486,7 @@ class EventTrigger extends AutoTrigger {
 
     /**
      * Setter for events
-     * 
+     *
      * @param {string[]|undefined} events array/set of triggering event keys
      */
     set events(events) {
@@ -557,7 +500,7 @@ class EventTrigger extends AutoTrigger {
 
     /**
      * Add event key to the set
-     * 
+     *
      * @param {string} key event key to push
      */
     push(key) {
@@ -571,7 +514,7 @@ class EventTrigger extends AutoTrigger {
 
     /**
      * Remove event key from the set
-     * 
+     *
      * @param {string} key event key to push
      */
     pop(key) {
@@ -590,7 +533,7 @@ class EventTrigger extends AutoTrigger {
 class CohortTrigger extends AutoTrigger {
     /**
      * Constructor
-     * 
+     *
      * @param {object|null}     data            filter data
      * @param {string[]}        data.cohorts    array of triggering cohort ids
      * @param {boolean}         data.entry      trigger on cohrot entry (true) or exit (false)
@@ -614,7 +557,7 @@ class CohortTrigger extends AutoTrigger {
 
     /**
      * Getter for cohorts
-     * 
+     *
      * @returns {string[]|undefined} array/set of triggering cohort ids
      */
     get cohorts() {
@@ -623,7 +566,7 @@ class CohortTrigger extends AutoTrigger {
 
     /**
      * Setter for cohorts
-     * 
+     *
      * @param {string[]|undefined} cohorts array/set of triggering cohort ids
      */
     set cohorts(cohorts) {
@@ -637,7 +580,7 @@ class CohortTrigger extends AutoTrigger {
 
     /**
      * Add cohort id to the set
-     * 
+     *
      * @param {string} id cohort id to push
      */
     push(id) {
@@ -651,7 +594,7 @@ class CohortTrigger extends AutoTrigger {
 
     /**
      * Remove cohort id from the set
-     * 
+     *
      * @param {string} id cohort id to push
      */
     pop(id) {
@@ -665,7 +608,7 @@ class CohortTrigger extends AutoTrigger {
 
     /**
      * Getter for entry
-     * 
+     *
      * @returns {boolean} trigger on cohrot entry (true) or exit (false)
      */
     get entry() {
@@ -674,7 +617,7 @@ class CohortTrigger extends AutoTrigger {
 
     /**
      * Setter for entry
-     * 
+     *
      * @param {boolean|undefined} entry trigger on cohrot entry (true) or exit (false)
      */
     set entry(entry) {
@@ -688,7 +631,7 @@ class CohortTrigger extends AutoTrigger {
 
     /**
      * Getter for cancels
-     * 
+     *
      * @returns {boolean} whether to remove notification from queue on trigger inversion (when user exits cohort for entry = true and vice versa)
      */
     get cancels() {
@@ -697,7 +640,7 @@ class CohortTrigger extends AutoTrigger {
 
     /**
      * Setter for cancels
-     * 
+     *
      * @param {boolean|undefined} cancels whether to remove notification from queue on trigger inversion (when user exits cohort for entry = true and vice versa)
      */
     set cancels(cancels) {
@@ -716,7 +659,7 @@ class CohortTrigger extends AutoTrigger {
 class APITrigger extends AutoTrigger {
     /**
      * Constructor
-     * 
+     *
      * @param {object|null} data filter data
      */
     constructor(data) {
@@ -745,7 +688,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Get prev reference date
-     * 
+     *
      * @returns {Date|undefined} prev reference date
      */
     get prev() {
@@ -754,7 +697,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Set prev reference date
-     * 
+     *
      * @param {Date|number}  prev  message prev reference date
      */
     set prev(prev) {
@@ -768,7 +711,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Get last reference date
-     * 
+     *
      * @returns {Date|undefined} last reference date
      */
     get last() {
@@ -777,7 +720,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Set last reference date
-     * 
+     *
      * @param {Date|number}  last  message last reference date
      */
     set last(last) {
@@ -791,7 +734,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Calculate first reference date = date when a UTC user should receive this message
-     * 
+     *
      * @returns {Date} first reference date
      */
     reference() {
@@ -803,7 +746,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Calculate next reference date = date when a UTC user should receive this message
-     * 
+     *
      * @param {Date|null} previousReference previous reference date if any
      * @returns {Date} next reference date
      */
@@ -816,7 +759,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Calculate next schedule job date
-     * 
+     *
      * @param {Date} reference reference date
      * @returns {Date|null} date for next schedule job or null if no more reschedules is possible
      */
@@ -829,7 +772,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Getter for sctz
-     * 
+     *
      * @returns {number|undefined} in case tz = true, this is scheduler's timezone offset in minutes (GMT +3 is "-180")
      */
     get sctz() {
@@ -838,7 +781,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Set scheduler's timezone offset, effectively setting `tz` prop as well
-     * 
+     *
      * @param {number|undefined}  sctz  scheduler's timezone offset in seconds (GMT +3 = `-180`)
      */
     set sctz(sctz) {
@@ -855,7 +798,7 @@ class ReschedulingTrigger extends Trigger {
     /**
      * Getter for tz
      * Note that you don't set this field, but set `sctz` instead
-     * 
+     *
      * @returns {boolean} true if the trigger is timezoned
      */
     get tz() {
@@ -864,7 +807,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Getter for delayed
-     * 
+     *
      * @returns {boolean|undefined} true if audience calculation is delayed
      */
     get delayed() {
@@ -873,7 +816,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Set delayed property
-     * 
+     *
      * @param {boolean|undefined}  delayed  true if audience calculation should be delayed
      */
     set delayed(delayed) {
@@ -887,7 +830,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Getter for reschedule
-     * 
+     *
      * @returns {boolean|undefined} true if notification should be rescheduled to next day if it cannot be sent on time
      */
     get reschedule() {
@@ -896,7 +839,7 @@ class ReschedulingTrigger extends Trigger {
 
     /**
      * Set reschedule property
-     * 
+     *
      * @param {boolean|undefined}  reschedule  true if notification should be rescheduled to next day if it cannot be sent on time
      */
     set reschedule(reschedule) {
@@ -916,7 +859,7 @@ class ReschedulingTrigger extends Trigger {
 class RecurringTrigger extends ReschedulingTrigger {
     /**
      * Constructor
-     * 
+     *
      * @param {object|null} data filter data
      * @param {Date} data.end message end date (don't send anything after this date, set status to Stopped)
      * @param {string} data.bucket notification frequency ("daily", "weekly", "monthly")
@@ -947,7 +890,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Calculate first reference date = date when a UTC user should receive this message
-     * 
+     *
      * @returns {Date} first reference date
      */
     reference() {
@@ -992,7 +935,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Calculate next reference date = date when a UTC user should receive this message
-     * 
+     *
      * @param {Date|null} previousReference previous reference date if any
      * @returns {Date} next reference date
      */
@@ -1058,7 +1001,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Calculate next schedule job date
-     * 
+     *
      * @param {Date} reference reference date
      * @param {Number} now current time in ms (for tests to be able to override it)
      * @returns {Date|null} date for next schedule job or null if no more reschedules is possible
@@ -1071,7 +1014,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Get end date
-     * 
+     *
      * @returns {Date|undefined} end date
      */
     get end() {
@@ -1080,7 +1023,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Set end date
-     * 
+     *
      * @param {Date|number}  end  message end date
      */
     set end(end) {
@@ -1094,7 +1037,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Get bucket
-     * 
+     *
      * @returns {Date|undefined} bucket
      */
     get bucket() {
@@ -1103,7 +1046,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Set bucket
-     * 
+     *
      * @param {Date|number}  bucket  trigger bucket
      */
     set bucket(bucket) {
@@ -1117,7 +1060,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Getter for time
-     * 
+     *
      * @returns {number|undefined} time (seconds since 00:00) when to send in user's timezone
      */
     get time() {
@@ -1126,7 +1069,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Setter for time
-     * 
+     *
      * @param {number|undefined} time time (seconds since 00:00) when to send in user's timezone
      */
     set time(time) {
@@ -1140,7 +1083,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Getter for every
-     * 
+     *
      * @returns {number|undefined} repeat each this many weeks / months
      */
     get every() {
@@ -1149,7 +1092,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Setter for every
-     * 
+     *
      * @param {number|undefined} every repeat each this many weeks / months
      */
     set every(every) {
@@ -1163,7 +1106,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Getter for on
-     * 
+     *
      * @returns {number|undefined} repeat each of these weekdays / month days
      */
     get on() {
@@ -1172,7 +1115,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 
     /**
      * Setter for on
-     * 
+     *
      * @param {number|undefined} on repeat each of these weekdays / month days
      */
     set on(on) {
@@ -1192,7 +1135,7 @@ class RecurringTrigger extends ReschedulingTrigger {
 class MultiTrigger extends ReschedulingTrigger {
     /**
      * Constructor
-     * 
+     *
      * @param {object|null} data filter data
      * @param {boolean} data.sctz   in case tz = true, sctz is scheduler's timezone offset in minutes (GMT +3 is "-180")
      * @param {Date[]} data.dates   delivery times for multiple notifications
@@ -1214,7 +1157,7 @@ class MultiTrigger extends ReschedulingTrigger {
 
     /**
      * Calculate first reference date = date when a UTC user should receive this message
-     * 
+     *
      * @returns {Date} first reference date
      */
     reference() {
@@ -1223,7 +1166,7 @@ class MultiTrigger extends ReschedulingTrigger {
 
     /**
      * Calculate next reference date = date when a UTC user should receive this message
-     * 
+     *
      * @param {Date|null} previousReference previous reference date if any
      * @returns {Date} next reference date
      */
@@ -1239,7 +1182,7 @@ class MultiTrigger extends ReschedulingTrigger {
 
     /**
      * Calculate next schedule job date
-     * 
+     *
      * @param {Date} reference reference date
      * @param {Number} now current time in ms (for tests to be able to override it)
      * @returns {Date|null} date for next schedule job or null if no more reschedules is possible
@@ -1255,7 +1198,7 @@ class MultiTrigger extends ReschedulingTrigger {
 
     /**
      * Getter for dates
-     * 
+     *
      * @returns {number|undefined} array of dates to send the message on
      */
     get dates() {
@@ -1264,7 +1207,7 @@ class MultiTrigger extends ReschedulingTrigger {
 
     /**
      * Setter for dates
-     * 
+     *
      * @param {number|undefined} dates array of dates to send the message on
      */
     set dates(dates) {

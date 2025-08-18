@@ -9,22 +9,22 @@
  * @typedef {import('../types/queue.ts').ScheduleEventHandler} ScheduleEventHandler
  * @typedef {import('../types/queue.ts').ResultEventHandler} ResultEventHandler
  * @typedef {import('../types/queue.ts').AutoTriggerEventHandler} AutoTriggerEventHandler
- * @typedef {import('../types/utils.ts').LogObject} LogObject
  * @typedef {import('../types/queue.ts').ResultEvent} ResultEvent
  * @typedef {import('../types/queue.ts').AutoTriggerEvent} AutoTriggerEvent
  * @typedef {import('../types/queue.ts').ResultEventDTO} ResultEventDTO
  */
 const config = require("../constants/kafka-config.json");
-const kafkaJs = require("kafkajs"); // do not import by destructuring; it's being mocked in the tests
+const {
+    Kafka,
+    Partitioners,
+    logLevel: kafkaJsLogLevel
+} = require("kafkajs");
 const {
     scheduleEventDTOToObject,
     pushEventDTOToObject,
     resultEventDTOToObject,
     autoTriggerEventDTOToObject,
 } = require("./dto.js");
-/**
- * @type {LogObject}
- */
 const log = require('../../../../../api/utils/common').log('push:kafka');
 
 /** @type {Producer=} */
@@ -39,14 +39,14 @@ let PRODUCER;
  * @returns {Promise<void>}
  */
 async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResults, onAutoTriggerEvents) {
-    const kafka = new kafkaJs.Kafka({
+    const kafka = new Kafka({
         clientId: config.clientId,
         brokers: config.brokers,
-        logLevel: kafkaJs.logLevel.ERROR
+        logLevel: kafkaJsLogLevel.ERROR
     });
 
     PRODUCER = kafka.producer({
-        createPartitioner: kafkaJs.Partitioners.DefaultPartitioner
+        createPartitioner: Partitioners.DefaultPartitioner
     });
     await PRODUCER.connect();
 
@@ -77,7 +77,7 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
             },
         }) => {
             try {
-                log.i("Received", messages.length, "message in topic", topic);
+                log.i("Received", messages.length, "message(s) in topic", topic);
                 const parsed = messages
                     .map(
                         ({ value }) => value
@@ -85,6 +85,7 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
                             : null
                     )
                     .filter(value => !!value);
+                log.d("Messages:", JSON.stringify(parsed, null, 2));
                 switch (topic) {
                 case config.topics.SEND.name:
                     return await onPushMessages(parsed.map(pushEventDTOToObject));
@@ -121,10 +122,7 @@ async function sendScheduleEvents(scheduleEvents) {
                         Math.round(scheduleEvent.scheduledTo.getTime() / 1000)
                     ),
                 },
-                // TODO: find out why this is required. normally it should distribute
-                // to scheduler partitions in a round robin fashion when there's no key.
-                // But here, if we don't pass the "key", scheduler consumer never
-                // receives the event.
+                // in this case, key is required for the scheduler to work properly
                 key: String(Math.random()),
             }
         })
@@ -171,34 +169,113 @@ async function sendAutoTriggerEvents(autoTriggerEvents) {
     });
 }
 
-async function purge() {
-    const kafka = new kafkaJs.Kafka({
+/**
+ * Sets up Kafka topics and partitions according to the configuration.
+ * If `forceRecreation` is true, it will delete and recreate the topics.
+ * This function is intended to be run once at the start of the application
+ * to ensure that the Kafka topics are set up correctly. It checks if the topics exist,
+ * and if not, creates them with the specified number of partitions. If `forceRecreation` is true,
+ * it will delete existing topics and recreate them, which can be useful during development
+ * or testing to ensure a clean state.
+ * @param {boolean} forceRecreation - whether to forcefully recreate topics
+ * @returns {Promise<void>}
+ * @throws {Error} if there is an error during topic creation or deletion
+ */
+async function setupTopicsAndPartitions(forceRecreation = false) {
+    const kafka = new Kafka({
         clientId: config.clientId,
         brokers: config.brokers,
-        logLevel: kafkaJs.logLevel.ERROR
+        logLevel: kafkaJsLogLevel.ERROR
     });
     const admin = kafka.admin();
     const topics = Object.values(config.topics);
-    await admin.connect();
-    try {
-        await admin.deleteTopics({
-            topics: topics.map(({ name }) => name)
+
+    if (forceRecreation) {
+        try {
+            await admin.deleteTopics({
+                topics: topics.map(({ name }) => name)
+            });
+        }
+        catch (err) {
+            console.error(err);
+            // ignore...
+        }
+        await admin.createTopics({
+            topics: topics.map(
+                ({ name, partitions }) => ({
+                    topic: name,
+                    numPartitions: partitions
+                })
+            )
         });
-    } catch(err) {
-        console.error(err);
-        // ignore...
+        console.log("all topics are recreated");
     }
-    const result = await admin.createTopics({
-        topics: topics.map(
-            ({ name, partitions }) => ({
-                topic: name,
-                numPartitions: partitions
-            })
-        )
-    });
-    console.log("topic creation result", result);
-    await admin.disconnect();
-    return result;
+    else {
+        // also check if topics have the correct number of partitions
+        await admin.connect();
+        const existingTopics = await admin.listTopics();
+        const topicsToCreate = topics.filter(
+            ({ name }) => !existingTopics.includes(name)
+        );
+
+        if (topicsToCreate.length) {
+            const result = await admin.createTopics({
+                topics: topicsToCreate.map(
+                    ({ name, partitions }) => ({
+                        topic: name,
+                        numPartitions: partitions
+                    })
+                )
+            });
+            if (result) {
+                console.log("Created topics:", topicsToCreate.map(t => t.name));
+            }
+            else {
+                console.log("No topics were created. They might already exist.");
+            }
+        }
+
+        // Check existing topics for correct partition count
+        const existingTopicsToCheck = topics.filter(
+            ({ name }) => existingTopics.includes(name)
+        );
+
+        if (existingTopicsToCheck.length) {
+            const topicMetadata = await admin.fetchTopicMetadata({
+                topics: existingTopicsToCheck.map(({ name }) => name)
+            });
+
+            const topicsToUpdate = [];
+            for (const topic of existingTopicsToCheck) {
+                const metadata = topicMetadata.topics.find(t => t.name === topic.name);
+                if (metadata && metadata.partitions.length !== topic.partitions) {
+                    if (metadata.partitions.length < topic.partitions) {
+                        console.log(`Topic ${topic.name} has ${metadata.partitions.length} partitions, expected ${topic.partitions}`);
+                        topicsToUpdate.push({
+                            topic: topic.name,
+                            count: topic.partitions
+                        });
+                    }
+                    else {
+                        console.log(`Topic ${topic.name} has more partitions than expected: ${metadata.partitions.length} vs ${topic.partitions}. This is not an error, but you might want to check your configuration.`);
+                    }
+                }
+            }
+
+            if (topicsToUpdate.length) {
+                try {
+                    await admin.createPartitions({
+                        topicPartitions: topicsToUpdate
+                    });
+                    console.log("Updated partition counts for topics:", topicsToUpdate.map(t => t.topic));
+                } catch (err) {
+                    console.error("Failed to update partition counts:", err);
+                }
+            }
+        }
+
+        await admin.disconnect();
+    }
 }
 
 module.exports = ({
@@ -207,5 +284,5 @@ module.exports = ({
     sendResultEvents,
     initPushQueue,
     sendAutoTriggerEvents,
-    purge,
+    setupTopicsAndPartitions,
 });

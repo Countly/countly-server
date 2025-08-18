@@ -43,4 +43,4 @@ export interface HMSCredentials {
     hash: string;
 }
 
-export type SomeCredential = FCMCredentials | APNCredentials | HMSCredentials;
+export type PlatformCredential = FCMCredentials | APNCredentials | HMSCredentials;

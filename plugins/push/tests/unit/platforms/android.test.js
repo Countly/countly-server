@@ -7,8 +7,10 @@ const assert = require("assert");
 const { ObjectId } = require("mongodb");
 const sinon = require("sinon");
 const proxyquire = require("proxyquire").noCallThru();
+const mockData = require("../../mock/data");
 
-describe("Android sender", () => {
+describe("Android", () => {
+    describe("push notification sender");
     const mockHttpsProxyAgentInstance = {};
     const MockHttpsProxyAgent = sinon.stub().callsFake(() => mockHttpsProxyAgentInstance);
     const sendStub = sinon.stub();
@@ -51,15 +53,7 @@ describe("Android sender", () => {
      * @type {PushEvent}
      */
     const push = {
-        appId: new ObjectId,
-        messageId: new ObjectId,
-        scheduleId: new ObjectId,
-        uid: "1",
-        token: "lorem",
-        message: { data: { test: "message" } },
-        language: "default",
-        platform: "a",
-        env: "p",
+        ...mockData.pushEvent(),
         credentials: credentials,
     }
     beforeEach(() => {

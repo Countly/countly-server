@@ -1,52 +1,69 @@
 /**
  * @typedef {import("../../api/new/types/user").User} User
  * @typedef {import("../../api/new/types/queue").PushEvent} PushEvent
- * @typedef {import("../../api/new/types/credentials").SomeCredential} SomeCredential
+ * @typedef {import("../../api/new/types/credentials").PlatformCredential} PlatformCredential
  * @typedef {import("mongodb").AggregationCursor} AggregationCursor
  * @typedef {import("mongodb").Collection} Collection
  * @typedef {import("mongodb").Db} Db
  * @typedef {import("stream").Readable} Readable
  */
+const { ObjectId } = require("mongodb");
+const { describe, it } = require("mocha");
+const assert = require("assert");
+const mockData = require("../mock/data");
+const sinon = require("sinon");
+const { createMockedMongoDb } = require("../mock/mongo");
+const { createSilentLogger } = require("../mock/logger");
+const common = require("../../../../api/utils/common");
+const proxyquire = require("proxyquire");
+const { loadProxyConfiguration } = require("../../api/new/lib/utils");
+let {
+    collection,
+    db,
+    sandbox: mongoMockSandbox,
+    createMockedCollection
+} = createMockedMongoDb();
+/** @type {sinon.SinonStub<[pushes: PushEvent[]], Promise<void>>} */
+const mockSendPushEvents = sinon.stub();
+common.log = () => createSilentLogger();
 const {
     composeScheduledPushes,
     userPropsProjection,
     loadCredentials,
-    loadProxyConfiguration,
     getUserStream
-} = require("../../api/new/composer");
-const { ObjectId } = require("mongodb");
-const { describe, it } = require("mocha");
-const assert = require("assert");
-const mockData = require("./mock/data");
-const sinon = require("sinon");
-const { mockMongoDb } = require("./mock/mongo");
-const queue = require("../../api/new/lib/kafka.js");
+} = proxyquire("../../api/new/composer", {
+    "../../api/new/lib/kafka.js": {
+        sendPushEvents: mockSendPushEvents
+    },
+    "../../../../api/utils/common": common
+});
 
 describe("Push composer", async () => {
-    describe("Projection builder for user properties", () => {
-        it("should add the user properties used in the message content", () => {
+    afterEach(() => {
+        // Reset the sandbox to clear all stubs and spies.
+        // we cannot use resetHistory here because we need to reset the whole sandbox
+        ({ collection,
+            db,
+            sandbox: mongoMockSandbox,
+            createMockedCollection
+        } = createMockedMongoDb());
+        mockSendPushEvents.resetHistory();
+    });
+
+    describe("Projection builder for user properties should", () => {
+        it("add the user properties used in the message content", () => {
             assert.deepStrictEqual(
                 userPropsProjection(mockData.parametricMessage()),
                 { dt: 1, nonExisting: 1, d: 1, did: 1, fs: 1 }
             );
         });
-        it("should return an empty object when message is not parametric", () => {
+        it("return an empty object when message is not parametric", () => {
             assert.deepStrictEqual(userPropsProjection(mockData.message()), {});
         });
     });
 
-    describe("Loading credentials", () => {
-        /** @type {sinon.SinonStubbedInstance<Collection>} */
-        let collection;
-        /** @type {sinon.SinonStubbedInstance<Db>} */
-        let db;
-        /** @type {sinon.SinonSandbox} */
-        let mongoSandbox;
-
-        beforeEach(() => ({ collection, db, mongoSandbox } = mockMongoDb()));
-        afterEach(() => mongoSandbox.restore());
-
-        it("should return an empty object if push is not enabled", async () => {
+    describe("Credential loading should", () => {
+        it("return an empty object if push is not enabled", async () => {
             const appId = new ObjectId;
             collection.findOne.resolves({_id: appId, plugins: {}});
             const creds = await loadCredentials(db, appId);
@@ -54,7 +71,7 @@ describe("Push composer", async () => {
             assert(collection.findOne.calledWith({ _id: appId }));
             assert.deepStrictEqual(creds, {});
         });
-        it("should return an empty object if push is not configured", async () => {
+        it("return an empty object if push is not configured", async () => {
             const appId = new ObjectId;
             collection.findOne.resolves({_id: appId, plugins: {push: {}}});
             const creds = await loadCredentials(db, appId);
@@ -62,15 +79,10 @@ describe("Push composer", async () => {
             assert(collection.findOne.calledWith({ _id: appId }));
             assert.deepStrictEqual(creds, {});
         });
-        it("should return platform key indexed credentials", async () => {
+        it("return platform key indexed credentials", async () => {
             const appId = new ObjectId;
-            const credId = new ObjectId;
-            const cred = {
-                _id: credId,
-                hash: "somethingsomething",
-                serviceAccountFile: "data:application/json;base64,...",
-                type: "fcm"
-            };
+            const mockedCreds = mockData.androidCredential();
+            const credId = mockedCreds._id;
             collection.findOne.callsFake(({ _id }) => {
                 let obj;
                 if (_id === appId) {
@@ -79,14 +91,14 @@ describe("Push composer", async () => {
                         plugins: {
                             push: {
                                 a: {
-                                    ...cred,
+                                    ...mockedCreds,
                                     serviceAccountFile: "service-account.json",
                                 }
                             }
                         }
                     }
                 } else if (_id === credId) {
-                    obj = cred;
+                    obj = mockedCreds;
                 }
                 return Promise.resolve(obj);
             })
@@ -95,21 +107,11 @@ describe("Push composer", async () => {
             assert(collection.findOne.calledWith({ _id: appId }));
             assert(db.collection.calledWith("creds"));
             assert(collection.findOne.calledWith({ _id: credId }));
-            assert.deepStrictEqual(creds, { a: cred });
+            assert.deepStrictEqual(creds, { a: mockedCreds });
         });
     });
 
     describe("Loading proxy configuration", () => {
-        /** @type {sinon.SinonStubbedInstance<Collection>} */
-        let collection;
-        /** @type {sinon.SinonStubbedInstance<Db>} */
-        let db;
-        /** @type {sinon.SinonSandbox} */
-        let mongoSandbox;
-
-        beforeEach(() => ({ collection, db, mongoSandbox } = mockMongoDb()));
-        afterEach(() => mongoSandbox.restore());
-
         it("shouldn't return anything when proxy is not configured", async () => {
             collection.findOne.resolves({push: {}});
             const config = await loadProxyConfiguration(db);
@@ -117,7 +119,7 @@ describe("Push composer", async () => {
             assert(collection.findOne.calledWith({ _id: "plugins" }));
             assert(config === undefined);
         });
-        it("should return the proxy config", async () => {
+        it("return the proxy config", async () => {
             const push = {
                 proxyhost: "host",
                 proxyport: "port",
@@ -141,17 +143,7 @@ describe("Push composer", async () => {
     });
 
     describe("User document aggregation pipeline", () => {
-        /** @type {sinon.SinonStubbedInstance<Collection>} */
-        let collection;
-        /** @type {sinon.SinonStubbedInstance<Db>} */
-        let db;
-        /** @type {sinon.SinonSandbox} */
-        let mongoSandbox;
-
-        beforeEach(() => ({ collection, db, mongoSandbox } = mockMongoDb()));
-        afterEach(() => mongoSandbox.restore());
-
-        it("should correctly set projection step", () => {
+        it("correctly set projection step", () => {
             const user = mockData.appUser();
             const parametricMessage = mockData.parametricMessage();
             getUserStream(db, parametricMessage, user.tz);
@@ -159,7 +151,7 @@ describe("Push composer", async () => {
             let arg = collection.aggregate.args[0][0];
             let project = arg?.find((aggregationStep) => "$project" in aggregationStep)?.$project;
             assert.deepStrictEqual(project, { dt: 1, nonExisting: 1, d: 1, did: 1, fs: 1, uid: 1, tk: 1, la: 1 });
-            mongoSandbox.resetHistory();
+            mongoMockSandbox.resetHistory();
             const normalMessage = mockData.message();
             getUserStream(db, normalMessage, user.tz);
             assert(db.collection.calledWith("app_users" + normalMessage.app.toString()));
@@ -167,10 +159,10 @@ describe("Push composer", async () => {
             project = arg?.find((aggregationStep) => "$project" in aggregationStep)?.$project;
             assert.deepStrictEqual(project, { uid: 1, tk: 1, la: 1 });
         });
-        it("should correctly set timezone and platform filters", () => {
+        it("correctly set timezone and platform filters", () => {
             const user = mockData.appUser();
             const message = mockData.parametricMessage();
-            getUserStream(db, message, user.tz);
+            getUserStream(db, message, "NA", user.tz);
             assert(db.collection.calledWith("app_users" + message.app.toString()));
             let arg = collection.aggregate.args[0][0];
             let filters = arg?.find((aggregationStep) => "$match" in aggregationStep)?.$match;
@@ -181,9 +173,9 @@ describe("Push composer", async () => {
                     {tkhp: { $exists: true }}
                 ]
             });
-            mongoSandbox.resetHistory();
+            mongoMockSandbox.resetHistory();
             message.platforms = ["a", "i"];
-            getUserStream(db, message, user.tz);
+            getUserStream(db, message, "NA", user.tz);
             arg = collection.aggregate.args[0][0];
             filters = arg?.find((aggregationStep) => "$match" in aggregationStep)?.$match;
             assert.deepStrictEqual(filters, {
@@ -196,54 +188,36 @@ describe("Push composer", async () => {
                     {tkia: { $exists: true }},
                 ]
             });
-            it("should correctly set lookup step", () => {
-                const user = mockData.appUser();
-                const parametricMessage = mockData.parametricMessage();
-                getUserStream(db, parametricMessage, user.tz);
-                assert(db.collection.calledWith("app_users" + parametricMessage.app.toString()));
-                const arg = collection.aggregate.args[0][0];
-                const lookup = arg?.find((aggregationStep) => "$project" in aggregationStep)?.$lookup;
-                assert.deepStrictEqual(lookup, {
-                    from: "push_" + parametricMessage.app.toString(),
-                    localField: 'uid',
-                    foreignField: '_id',
-                    as: "tk"
-                });
+        });
+        it("correctly set lookup step", () => {
+            const user = mockData.appUser();
+            const parametricMessage = mockData.parametricMessage();
+            getUserStream(db, parametricMessage, user.tz);
+            assert(db.collection.calledWith("app_users" + parametricMessage.app.toString()));
+            const arg = collection.aggregate.args[0][0];
+            const lookup = arg?.find((aggregationStep) => "$lookup" in aggregationStep)?.$lookup;
+            assert.deepStrictEqual(lookup, {
+                from: "push_" + parametricMessage.app.toString(),
+                localField: 'uid',
+                foreignField: '_id',
+                as: "tk"
             });
         });
     });
 
     describe("Push event creation", () => {
-        /** @type {sinon.SinonStub} */
-        let mockSendPushEvent;
-        /** @type {(collectionName: string) => {collection: sinon.SinonStubbedInstance<Collection>, aggregationCursor:sinon.SinonStubbedInstance<AggregationCursor>}} */
-        let createMockedCollection;
-        /** @type {sinon.SinonStubbedInstance<Db>} */
-        let db;
-        /** @type {sinon.SinonSandbox} */
-        let mongoSandbox;
-
-        beforeEach(() => {
-            mockSendPushEvent = sinon.stub(queue, "sendPushEvents");
-            ({ db, mongoSandbox, createMockedCollection } = mockMongoDb());
-        });
-        afterEach(() => {
-            mockSendPushEvent.restore()
-            mongoSandbox.restore();
-        });
-
-        it("should delete all schedules if the message is deleted", async () => {
+        it("delete all schedules if the message is deleted", async () => {
             const {collection: messageCollection} = createMockedCollection("messages");
             const {collection: schedulesCollection} = createMockedCollection("message_schedules");
             messageCollection.findOne.resolves(null);
             const scheduleEvent = mockData.scheduleEvent();
             await composeScheduledPushes(db, scheduleEvent);
             assert(db.collection.calledWith("messages"));
-            assert(messageCollection.findOne.calledWith({ _id: scheduleEvent.messageId }));
+            assert(messageCollection.findOne.calledWith({ _id: scheduleEvent.messageId, status: "active" }));
             assert(db.collection.calledWith("message_schedules"));
             assert(schedulesCollection.deleteMany.calledWith({ messageId: scheduleEvent.messageId }));
         });
-        it("should return early if schedule was deleted or status is not \"scheduled\"", async () => {
+        it("return early if schedule was deleted or status is not \"scheduled\"", async () => {
             const {collection:messageCollection} = createMockedCollection("messages");
             const {collection:scheduleCollection} = createMockedCollection("message_schedules");
             const scheduleEvent = mockData.scheduleEvent();
@@ -254,34 +228,34 @@ describe("Push composer", async () => {
             message.app = scheduleEvent.appId;
             const numberOfPushes = await composeScheduledPushes(db, scheduleEvent);
             assert(db.collection.calledWith("messages"));
-            assert(messageCollection.findOne.calledWith({ _id: scheduleEvent.messageId }));
+            assert(messageCollection.findOne.calledWith({ _id: scheduleEvent.messageId, status: "active" }));
             assert(db.collection.calledWith("message_schedules"));
             assert(scheduleCollection.findOne.calledWith({
                 _id: scheduleEvent.scheduleId,
-                status: "scheduled"
+                status: {
+                    $in: ["scheduled", "sending"]
+                }
             }));
             assert(numberOfPushes === 0);
         });
-        it("should throw if app is not configured for the targeted platform", async () => {
+        it("stop composing if app is deleted", async () => {
             const scheduleEvent = mockData.scheduleEvent();
             const schedule = mockData.schedule();
             const message = mockData.message();
             const {collection:messageCollection} = createMockedCollection("messages");
             const {collection:scheduleCollection} = createMockedCollection("message_schedules");
             const {collection:appsCollection} = createMockedCollection("apps");
-            appsCollection.findOne.resolves({});
+            appsCollection.findOne.resolves(null);
             messageCollection.findOne.resolves(message);
             scheduleCollection.findOne.resolves(schedule);
-            await assert.rejects(composeScheduledPushes(db, scheduleEvent), {
-                message:"Missing platform configuration"
-            });
+            assert(await composeScheduledPushes(db, scheduleEvent) === 0);
         });
-        it("should create push events for each user token", async () => {
+        it("create push events for each user token", async () => {
             const scheduleEvent = mockData.scheduleEvent();
             const {appId, messageId, scheduleId} = scheduleEvent;
             const schedule = mockData.schedule();
             const message = mockData.message();
-            const appUsersCollectionName = "app_users" + scheduleEvent.appId.toString();
+            const appUsersCollectionName = "app_users" + appId.toString();
             schedule.appId = appId;
             schedule._id = scheduleId;
             schedule.messageId = messageId;
@@ -293,7 +267,7 @@ describe("Push composer", async () => {
             const {collection:appsCollection} = createMockedCollection("apps");
             const {collection:credsCollection} = createMockedCollection("creds");
             const credId = new ObjectId;
-            /** @type {SomeCredential} */
+            /** @type {PlatformCredential} */
             const creds = {
                 _id: credId,
                 hash: "somethingsomething",
@@ -301,7 +275,8 @@ describe("Push composer", async () => {
                 type: "fcm"
             };
             appsCollection.findOne.resolves({
-                _id: scheduleEvent.appId,
+                _id: appId,
+                timezone: "NA",
                 plugins: {
                     push: {
                         a: {
@@ -321,13 +296,16 @@ describe("Push composer", async () => {
                 messageId,
                 scheduleId,
                 token: "",
-                saveResult: false,
+                saveResult: true,
                 uid: "",
                 platform: "a",
                 env: "p",
                 credentials: creds,
                 proxy: undefined,
-                language: "en"
+                language: "en",
+                appTimezone: "NA",
+                trigger: message.triggers[0],
+                platformConfiguration: {}
             };
             /** @type {User[]} */
             const users = [
@@ -349,15 +327,17 @@ describe("Push composer", async () => {
             })();
             aggregationCursor.stream.returns(/** @type {Readable & AsyncIterable<User>} */(iterator));
             const result = await composeScheduledPushes(db, scheduleEvent);
+            const arg = mockSendPushEvents.getCall(0).firstArg?.map(
+                /** @type {(a: PushEvent) => Omit<PushEvent, "messages">} */(a => {
+                    delete a.message;
+                    return a;
+                })
+            );
+            assert(arg);
             assert(result === events.length);
-            assert(mockSendPushEvent.called);
+            assert(mockSendPushEvents.called);
             for (let i = 0; i < events.length; i++) {
-                const call = mockSendPushEvent.getCall(i);
-                assert(call);
-                const arg = call.firstArg;
-                assert(arg);
-                delete arg.message;
-                assert.deepStrictEqual(arg, events[i]);
+                assert.deepStrictEqual(arg[i], events[i]);
             }
         });
     });

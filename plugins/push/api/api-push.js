@@ -1,10 +1,19 @@
 /* eslint-disable no-inner-declarations */
 const { CentralMaster, CentralWorker } = require('../../../api/parts/jobs/ipc');
-
 const common = require('../../../api/utils/common'),
     log = common.log('push:api:push'),
-    Sender = require('./send/sender'),
-    { extract, field, allAppUserFields, platforms, PLATFORM, ValidationError, Creds, DBMAP } = require('./send');
+    { extract, field, allAppUserFields, /*platforms,*/ ValidationError, DBMAP } = require('./send');
+
+/**
+ * @typedef {import('./new/types/credentials').PlatformCredential} PlatformCredential
+ */
+const { validateCredentials: validateAndroidCredentials } = require("./new/platforms/android");
+const { validateCredentials: validateIOSCredentials } = require("./new/platforms/ios");
+const { validateCredentials: validateHuaweiCredentials } = require("./new/platforms/huawei");
+const { loadProxyConfiguration } = require('./new/lib/utils');
+
+const platforms = require("./new/constants/platform-keymap.js");
+const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
 
 const CMD_PUSH_TOKEN_SESSION = 'push_token_session',
     queue = {};
@@ -235,53 +244,60 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
     }
     let pushcfg = app.plugins.push;
     let old = JSON.stringify(pushcfg);
-    for (let i = 0; i < platforms.length; i++) {
-        let p = platforms[i],
+    for (let i = 0; i < platformKeys.length; i++) {
+        let p = platformKeys[i],
             c = config[p];
-
-        if (c === null) { // delete credentials
-            log.d('Unsetting %s config for app %s', p, app._id);
+        // delete credentials
+        if (c === null) {
             if (pushcfg[p] && pushcfg[p]._id) {
-                await Creds.deleteOne({_id: common.db.ObjectID(pushcfg[p]._id)});
+                await common.db.collection("creds").deleteOne({
+                    _id: common.db.ObjectID(pushcfg[p]._id)
+                });
             }
             pushcfg[p] = {};
-            await common.db.collection('apps').updateOne({_id: app._id}, {$set: {[`plugins.push.${p}`]: {}}});
+            await common.db.collection('apps').updateOne({
+                _id: app._id
+            }, {
+                $set: {[`plugins.push.${p}`]: {}}
+            });
         }
-        else if (c && c.type && !c.hash) { // new credentials
-            if (PLATFORM[p].CREDS[c.type]) {
-                log.i('Checking %s / %s credentials', p, c.type);
-                // check credentials for validity
-                let creds = new PLATFORM[p].CREDS[c.type](c),
-                    errors = creds.validate(),
-                    cfg = await Sender.loadConfig();
-                if (errors) {
-                    throw new ValidationError(errors);
+        // new credentials
+        else if (c && c.type && !c.hash) {
+            /** @type {Array<PlatformCredential["type"]>} */
+            const credentialTypes = ["apn_token", "apn_universal", "fcm", "hms"];
+            if (credentialTypes.includes(c.type)) {
+                let creds, view;
+                try {
+                    const proxyConfig = await loadProxyConfiguration(common.db);
+                    if (c.type === "fcm") {
+                        ({ creds, view } = await validateAndroidCredentials(c, proxyConfig));
+                    }
+                    else if (c.type === "hms") {
+                        ({ creds, view } = await validateHuaweiCredentials(c, proxyConfig));
+                    }
+                    else {
+                        ({ creds, view } = await validateIOSCredentials(c, proxyConfig));
+                    }
+                    // insert/update new credentials while removing old ones
+                    if (pushcfg[p] && pushcfg[p]._id) {
+                        await common.db.collection('creds').deleteOne({
+                            _id: common.db.ObjectID(pushcfg[p]._id)
+                        });
+                    }
+                    creds._id = common.db.ObjectID();
+                    view._id = creds._id;
+                    pushcfg[p] = view;
+                    await common.db.collection("creds").insertOne(creds);
+                    await common.db.collection('apps').updateOne({
+                        _id: app._id
+                    }, {
+                        $set: { [`plugins.push.${p}`]: view }
+                    });
                 }
-                log.i('Checking %s / %s credentials: validation passed', p, c.type);
-
-                // verify connectivity with the credentials given
-                let connection = new PLATFORM[p].connection('push:api:push', p + 'p', creds, [], cfg),
-                    valid = await connection.connect();
-                if (valid) {
-                    log.i('Checking %s / %s credentials: provider check passed', p, c.type);
+                catch(error) {
+                    log.e("error while updating credentials", error);
+                    throw new ValidationError(error.message || 'Invalid credentials');
                 }
-                else {
-                    log.i('Checking %s / %s credentials: provider check failed', p, c.type);
-                    connection.destroy();
-                    throw new ValidationError('Credentials were rejected by push notification provider');
-                }
-
-                // insert/update new credentials while removing old ones
-                if (pushcfg[p] && pushcfg[p]._id) {
-                    await Creds.deleteOne({_id: common.db.ObjectID(pushcfg[p]._id)});
-                }
-                creds._id = common.db.ObjectID();
-                pushcfg[p] = creds.view;
-                await creds.save();
-                await common.db.collection('apps').updateOne({_id: app._id}, {$set: {[`plugins.push.${p}`]: creds.view}});
-                log.d('Checking %s / %s credentials: saved', p, c.type);
-
-                connection.destroy();
             }
             else {
                 throw new ValidationError('Wrong credentials type');

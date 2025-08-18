@@ -2816,28 +2816,12 @@
             }
             return new Promise(function(resolve, reject) {
                 countlyPushNotification.api.sendToTestUsers(dto)
-                    .then(function(testDto) {
-                        if (!testDto.result) {
-                            reject(new Error(CV.i18n('push-notification.unknown-error')));
-                            console.error(testDto);
-                            return;
+                    .then(function(response) {
+                        if (!response.results) {
+                            console.error(response);
+                            return reject(new Error(CV.i18n('push-notification.unknown-error')));
                         }
-                        if (testDto.result.errors) {
-                            reject(new Error('Error sending push notificaiton to test users:' + JSON.stringify(testDto.result.errors)));
-                            console.error(testDto);
-                            return;
-                        }
-                        if (testDto.result.failed) {
-                            reject(new Error('Error sending push notification to test users. Number of errors:' + testDto.result.failed));
-                            console.error(testDto);
-                            return;
-                        }
-                        if (testDto.result.sent > 0) {
-                            resolve();
-                            return;
-                        }
-                        reject(new Error(CV.i18n('push-notification.unknown-error')));
-                        console.error(testDto);
+                        resolve(response.results);
                     }).catch(function(error) {
                         console.error(error);
                         reject(error);

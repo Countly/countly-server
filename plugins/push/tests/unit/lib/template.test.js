@@ -1,12 +1,52 @@
-const { createTemplate, getUserPropertiesUsedInsideMessage } = require("../../../api/new/lib/template");
+const { createTemplate, createContentMap, compilePersonalizableContent, sanitizeUserProperty, getUserPropertiesUsedInsideMessage } = require("../../../api/new/lib/template");
 const assert = require("assert");
 const { describe, it } = require("mocha");
-const mockData = require("../mock/data");
+const mockData = require("../../mock/data");
 
 describe("Message template", () => {
     it("should return the user parameters used inside the message content", () => {
         const result = getUserPropertiesUsedInsideMessage(mockData.parametricMessage());
         assert.deepStrictEqual(result, [ 'dt', 'nonExisting.parameter', 'd', 'did', 'fs' ]);
+    });
+
+    it("should remove the `up.` from a user property key", () => {
+        assert.strictEqual(sanitizeUserProperty("up.lorem"), "lorem");
+    });
+
+    it("should correctly map message content into desired output when message is parametric", () => {
+        const message = mockData.parametricMessage();
+        const contentMap = createContentMap(message);
+        const expectedPlatformMap = new Map;
+        message.contents.forEach(({ p, ...rest }) => p && expectedPlatformMap.set(p, { p, ...rest }));
+        assert.deepStrictEqual(contentMap.contentsByPlatform, expectedPlatformMap)
+        const defaultContentMessagePersonalizations = contentMap.contentsByLanguage.get("default")?.pers.get("message");
+        assert.strictEqual(defaultContentMessagePersonalizations?.[0]?.i, 25);
+        assert.strictEqual(defaultContentMessagePersonalizations?.[1]?.i, 24);
+    });
+
+    it("should compile the parametric title and message with user personalization data", () => {
+        const message = mockData.parametricMessage();
+        // message property in en content is already parametric. also add title
+        const enContent = message.contents.find(c => c.la === "en");
+        if (!enContent) {
+            return;
+        }
+        enContent.title = "en message title var1: ";
+        enContent.titlePers = {
+            "23": {
+                f: "fallbackValue",
+                c: true,
+                k: "nonExisting.parameter",
+                t: "a"
+            }
+        }
+        const contentMap = createContentMap(message);
+        const contentPersPair = contentMap.contentsByLanguage.get("en");
+        if (contentPersPair) {
+            const content = compilePersonalizableContent(contentPersPair, mockData.appUser());
+            assert.strictEqual(content.message, "en message content var1: Sdk_gphone64_arm64 some text");
+            assert.strictEqual(content.title, "en message title var1: fallbackValue");
+        }
     });
 
     it("should compile the \"en\" message content template for the user as android payload", () => {

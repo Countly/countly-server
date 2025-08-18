@@ -14,7 +14,6 @@
  * @typedef {import("mongodb").Collection<Message>} MessageCollection
  * @typedef {import("mongodb").Collection<Schedule>} ScheduleCollection
  * @typedef {import("mongodb").Filter<MessageTrigger>} MessageTriggerFilter
- * @typedef {import('./types/utils.ts').LogObject} LogObject
  * @typedef {{ [eventName: string]: Set<string> }} AutoTriggerEventMap
  * @typedef {{ [cohortId: string]: { enter: Set<string>, exit: Set<string> } }} AutoTriggerCohortMap
  * @typedef {{ [appId: string]: { event: AutoTriggerEventMap; cohort: AutoTriggerCohortMap; } }} AutoTriggerAppMap
@@ -25,7 +24,6 @@ const queue = require("./lib/kafka.js");
 const moment = require("moment");
 const allTZOffsets = require("./constants/all-tz-offsets.json");
 const { buildResultObject } = require('./resultor.js');
-/** @type {LogObject} */
 const log = require('../../../../api/utils/common').log('push:scheduler');
 
 /** @type {MessageTrigger["kind"][]} */
@@ -81,14 +79,14 @@ async function scheduleMessageByDateTrigger(db, messageId) {
             .toArray();
 
         let lastScheduleDate = previousSchedules[0]?.scheduledTo;
-        const nOSchedules = NUMBER_OF_SCHEDULES_AHEAD_OF_TIME - previousSchedules.length;
+        const numberOfSchedules = NUMBER_OF_SCHEDULES_AHEAD_OF_TIME - previousSchedules.length;
 
         /** @type {Date|undefined} */
         let foundDate = lastScheduleDate && lastScheduleDate.getTime() > Date.now()
             ? lastScheduleDate
             : new Date;
 
-        for (let i = 0; i < nOSchedules; i++) {
+        for (let i = 0; i < numberOfSchedules; i++) {
             if (trigger.kind === "multi") {
                 foundDate = findNextMatchForMulti(
                     trigger,
@@ -313,7 +311,7 @@ async function createScheduleEvents(messageSchedule) {
         for (let i = 0; i < allTZOffsets.length; i++) {
             const offset = allTZOffsets[i].offset;
             let tzAdjustedScheduleDate = new Date(
-                utcTime.getTime() + offset * minute
+                utcTime.getTime() - offset * minute
             );
             if (tzAdjustedScheduleDate.getTime() < Date.now()) {
                 // reschedule to the next day if the date is in the past
@@ -474,13 +472,14 @@ function findNextMatchForMulti(trigger, after = new Date) {
 }
 
 /**
- * Combines user ids across received auto trigger events into a set indexed by
- * their appIds. Events are grouped by their event names and cohorts are grouped
- * by their cohort IDs.
+ * Merges auto trigger events into a map of appId to event and cohort sets.
+ * This is used to reduce the number of mongo queries when scheduling messages.
+ * It groups events by appId and then by event name or cohort id.
  * @param {AutoTriggerEvent[]} autoTriggerEvents - list of auto trigger events
  * @returns {{appId: ObjectId; triggerFilter: MessageTriggerFilter; uids: string[];}[]} map of appId to event and cohort sets
  */
 function mergeAutoTriggerEvents(autoTriggerEvents) {
+    // first, we need to group the auto trigger events by appId.
     /** @type {AutoTriggerAppMap} */
     const appMap = {};
     for (let i = 0; i < autoTriggerEvents.length; i++) {
@@ -508,7 +507,7 @@ function mergeAutoTriggerEvents(autoTriggerEvents) {
             break;
         }
     }
-    // group messages together by their appId to reduce the number of mongo queries:
+    // now we have a map of appId to event and cohort sets.
     /** @type {{appId: ObjectId; triggerFilter: MessageTriggerFilter; uids: string[];}[]} */
     const messageFilters = [];
     for (const appId in appMap) {
@@ -540,7 +539,8 @@ function mergeAutoTriggerEvents(autoTriggerEvents) {
             }
         }
     }
-    return messageFilters;
+    // filter out empty filters
+    return messageFilters.filter(filter => filter.uids.length > 0);
 }
 
 /**

@@ -1,4 +1,8 @@
 /**
+ * @typedef {import("../types/message.ts").Message} Message
+ * @typedef {import("../types/message.ts").Content} Content
+ * @typedef {import("../types/user.ts").User} User
+ * @typedef {import("../types/message.ts").HuaweiMessageContent} HuaweiMessageContent
  * @typedef {import("../types/credentials.ts").HMSCredentials} HMSCredentials
  * @typedef {import("../types/proxy.ts").ProxyConfiguration} ProxyConfiguration
  * @typedef {import("../types/queue.ts").PushEvent} PushEvent
@@ -8,19 +12,20 @@ const https = require("https");
 const { URLSearchParams } = require("url");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 const { buildProxyUrl } = require("../lib/utils.js");
+const { mapMessageToPayload: mapMessageToAndroidPayload } = require("./android.js");
 const { PROXY_CONNECTION_TIMEOUT } = require("../constants/proxy-config.json");
 const { SendError, InvalidResponse, HMSErrors } = require("../lib/error.js");
-
 /** @type {{[credentialHash: string]: TokenCache}} */
-const tokenCache = {};
+const TOKEN_CACHE = {};
+
 /**
  * @param {HMSCredentials} credentials
  * @param {ProxyConfiguration=} proxy
  * @returns {Promise<string>}
  */
 async function getAuthToken(credentials, proxy) {
-    if (credentials.hash in tokenCache) {
-        const cache = tokenCache[credentials.hash];
+    if (credentials.hash in TOKEN_CACHE) {
+        const cache = TOKEN_CACHE[credentials.hash];
         if (cache.token) {
             if (cache.expiryDate && cache.expiryDate > Date.now()) {
                 return cache.token;
@@ -31,7 +36,7 @@ async function getAuthToken(credentials, proxy) {
         }
     }
 
-    tokenCache[credentials.hash] = {};
+    TOKEN_CACHE[credentials.hash] = {};
 
     const requestBody = (new URLSearchParams({
         grant_type: 'client_credentials',
@@ -85,8 +90,8 @@ async function getAuthToken(credentials, proxy) {
                     const expiryDate = parsed.expires_in
                         ? Date.now() + Number(parsed.expires_in) * 1000 - 5 * 60 * 1000
                         : Date.now() + 30 * 60 * 1000; // default 30 mins
-                    tokenCache[credentials.hash].token = parsed.access_token;
-                    tokenCache[credentials.hash].expiryDate = expiryDate;
+                    TOKEN_CACHE[credentials.hash].token = parsed.access_token;
+                    TOKEN_CACHE[credentials.hash].expiryDate = expiryDate;
                     return resolve(parsed.access_token);
                 }
 
@@ -104,7 +109,7 @@ async function getAuthToken(credentials, proxy) {
         request.end(requestBody);
     });
 
-    tokenCache[credentials.hash].promise = promise;
+    TOKEN_CACHE[credentials.hash].promise = promise;
     return promise;
 }
 
@@ -125,10 +130,12 @@ async function send(pushEvent) {
             rejectUnauthorized: pushEvent.proxy.auth,
         });
     }
-
-    pushEvent.message.message.token = [pushEvent.token];
-    const payload = JSON.stringify(pushEvent.message);
-    delete pushEvent.message.message.token;
+    const huaweiContent = /** @type {HuaweiMessageContent} */(
+        pushEvent.message
+    );
+    huaweiContent.message.token = [pushEvent.token];
+    const payload = JSON.stringify(huaweiContent);
+    delete huaweiContent.message.token;
 
     return new Promise((resolve, reject) => {
         const request = https.request({
@@ -185,5 +192,27 @@ async function send(pushEvent) {
     });
 }
 
+/**
+ * Maps message contents to an HMS request payload
+ * @param {Message} messageDoc - Message document
+ * @param {Content} content - Content object built from message contents in template builder
+ * @param {User|{[key: string]: string;}} userProps - User object or a map of custom properties
+ * @returns {HuaweiMessageContent} Huawei message payload
+ */
+function mapMessageToPayload(messageDoc, content, userProps) {
+    const androidPayload = mapMessageToAndroidPayload(messageDoc, content, userProps);
+    /** @type {HuaweiMessageContent} */
+    const payload = {
+        message: {
+            data: JSON.stringify(androidPayload.data),
+            android: {},
+        }
+    };
+    return payload;
+}
 
-module.exports = { send, getAuthToken };
+module.exports = {
+    send,
+    getAuthToken,
+    mapMessageToPayload,
+};

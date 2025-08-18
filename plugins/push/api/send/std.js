@@ -1,9 +1,7 @@
 const { Duplex } = require('stream'),
-    Measurement = require('./measure'),
     common = require("../../../../api/utils/common.js"),
-    // { getHasher, OutputType, HashType, hashAsBigInt} = require('bigint-hash'),
-    { ERROR, PushError, SendError, ConnectionError, ValidationError, Message} = require('./data'),
-    { FRAME, FRAME_NAME } = require('./proto');
+    { ERROR, PushError, SendError, ConnectionError, ValidationError, Message} = require('./data');
+    // { FRAME, FRAME_NAME } = require('./proto');
     // ,
     // log = require('../../../../api/utils/log.js')('push:send:base');
 
@@ -364,7 +362,7 @@ function flattenObject(ob) {
 }
 
 
-module.exports = { Base, util: {hash, wait, flattenObject}, Measurement, ERROR, PushError, SendError, ConnectionError, ValidationError };
+module.exports = { Base, util: {hash, wait, flattenObject}, ERROR, PushError, SendError, ConnectionError, ValidationError };
 
 // console.time("xx64");
 // for (let i = 0; i < 10000; i++) {

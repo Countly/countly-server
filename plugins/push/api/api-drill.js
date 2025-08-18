@@ -1,7 +1,13 @@
+/**
+ * @typedef {import("./new/types/message").PlatformKey} PlatformKey
+ * @typedef {import("./new/types/message").PlatformEnvKey} PlatformEnvKey
+ */
+
 const common = require('../../../api/utils/common'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
-    log = common.log('push:api:drill'),
-    { FIELDS_TITLES } = require('./send/platforms');
+    log = common.log('push:api:drill');
+
+const platforms = require("./new/constants/platform-keymap.js");
 
 module.exports.drillAddPushEvents = ({uid, params, events, event}) => {
     return new Promise((res, rej) => {
@@ -189,9 +195,21 @@ module.exports.drillPreprocessQuery = async function({query, params}) {
             };
         }
         if (query.push.$regex) {
-            q = Object.keys(FIELDS_TITLES).filter(k => query.push.$regex.test(FIELDS_TITLES[k])).map(tk => {
-                return {[tk]: {$exists: true}};
-            });
+            q = Object
+                .entries(platforms)
+                .map(([platformKey, platform]) => {
+                    const matchingEnvironment = Object
+                        .keys(platform.environmentTitles)
+                        .find(envKey => query.push.$regex.test(platform.environmentTitles[/** @type {PlatformEnvKey} */(envKey)]));
+                    if (matchingEnvironment) {
+                        return {
+                            ["tk" + platformKey + matchingEnvironment]: {
+                                $exists: true
+                            }
+                        }
+                    }
+                })
+                .filter(value => !!value);
         }
 
         delete query.push;

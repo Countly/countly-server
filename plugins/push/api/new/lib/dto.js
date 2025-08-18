@@ -8,7 +8,7 @@
  * @typedef {import('../types/queue.ts').ResultEventDTO} ResultEventDTO
  * @typedef {import('../types/queue.ts').CredentialsDTO} CredentialsDTO
  * @typedef {import('../types/queue.ts').AutoTriggerEventDTO} AutoTriggerEventDTO
- * @typedef {import('../types/credentials.js').SomeCredential} SomeCredential
+ * @typedef {import('../types/credentials.js').PlatformCredential} PlatformCredential
  */
 
 const { ObjectId } = require("mongodb");
@@ -43,7 +43,7 @@ function pushEventDTOToObject(pushEventDTO) {
 
 /**
  * @param {CredentialsDTO} credentialsDTO
- * @returns {SomeCredential}
+ * @returns {PlatformCredential}
  */
 function credentialsDTOToObject(credentialsDTO) {
     if ("notAfter" in credentialsDTO) {

@@ -6,7 +6,6 @@
  * @typedef {import("mongodb").AnyBulkWriteOperation} AnyBulkWriteOperation
  * @typedef {import("mongodb").BulkWriteResult} BulkWriteResult
  * @typedef {import("mongodb").SetFields<{[key: string]: any}>} SetFields
- * @typedef {import('./types/utils.ts').LogObject} LogObject
  * @typedef {import('./types/message.ts').PlatformKey} PlatformKey
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
  * @typedef {"total"|"sent"|"failed"|"actioned"} Stat
@@ -15,8 +14,6 @@
 const { ObjectId } = require("mongodb");
 const { InvalidDeviceToken } = require('./lib/error.js');
 const { updateInternalsWithResults, sanitizeMongoPath } = require("./lib/utils.js");
-
-/** @type {LogObject} */
 const log = require('../../../../api/utils/common').log('push:resultor');
 
 /** @type {Stat[]} */
@@ -342,7 +339,6 @@ function buildUpdateQueryForResult(result, query = {}, path = "result") {
 async function applyResultObject(db, scheduleId, messageId, resultObject, events) {
     // update the result object
     const $inc = buildUpdateQueryForResult(resultObject);
-
     // update the events object (only for schedule)
     /** @type {{[key: string]: any}=} */
     let $push;
@@ -359,12 +355,10 @@ async function applyResultObject(db, scheduleId, messageId, resultObject, events
             $push["events." + key] = { $each: occuredEvent };
         }
     }
-
     await db.collection("message_schedules")
         .updateOne({ _id: scheduleId }, $push ? { $inc, $push } : { $inc });
     await db.collection("messages")
         .updateOne({ _id: messageId }, { $inc });
-
     // set status of the schedule: "sending".
     await db.collection("message_schedules").updateOne({
         _id: scheduleId,
@@ -380,7 +374,6 @@ async function applyResultObject(db, scheduleId, messageId, resultObject, events
     }, {
         $set: { status: "sending" }
     });
-
     // set status of the schedule: "sent" or "failed".
     await db.collection("message_schedules").updateOne({
         _id: scheduleId,

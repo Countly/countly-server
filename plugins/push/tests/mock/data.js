@@ -1,10 +1,12 @@
 /**
- * @typedef {import("../../../api/new/types/message.ts").Message} Message
- * @typedef {import("../../../api/new/types/message.ts").RecurringTrigger} RecurringTrigger
- * @typedef {import("../../../api/new/types/message.ts").PlainTrigger} PlainTrigger
- * @typedef {import("../../../api/new/types/schedule.ts").Schedule} Schedule
- * @typedef {import("../../../api/new/types/queue.ts").ScheduleEvent} ScheduleEvent
- * @typedef {import("../../../api/new/types/user.js").User} User
+ * @typedef {import("../../api/new/types/message.ts").Message} Message
+ * @typedef {import("../../api/new/types/message.ts").RecurringTrigger} RecurringTrigger
+ * @typedef {import("../../api/new/types/message.ts").PlainTrigger} PlainTrigger
+ * @typedef {import("../../api/new/types/schedule.ts").Schedule} Schedule
+ * @typedef {import("../../api/new/types/queue.ts").ScheduleEvent} ScheduleEvent
+ * @typedef {import("../../api/new/types/queue.ts").PushEvent} PushEvent
+ * @typedef {import("../../api/new/types/user.js").User} User
+ * @typedef {import("../../api/new/types/credentials.js").PlatformCredential} PlatformCredential
  */
 const { ObjectId } = require("mongodb");
 
@@ -21,10 +23,14 @@ module.exports = {
             timezoneAware: true,
             schedulerTimezone: 180,
             status: "scheduled",
+            events: {
+                composed: [],
+                scheduled: [],
+            },
             result: {
                 actioned: 0,
                 total: 0,
-                errored: 0,
+                failed: 0,
                 sent: 0,
                 errors: {},
                 subs: {}
@@ -148,8 +154,7 @@ module.exports = {
             _id: new ObjectId,
             app: new ObjectId,
             platforms: ["a"],
-            state: 1,
-            status: "created",
+            status: "active",
             saveResults: true,
             triggers: [
                 {
@@ -170,21 +175,21 @@ module.exports = {
                 total: 1,
                 actioned: 0,
                 sent: 1,
-                errored: 0,
+                failed: 0,
                 errors: {},
                 subs: {
                     a: {
                         total: 1,
                         actioned: 0,
                         sent: 1,
-                        errored: 0,
+                        failed: 0,
                         errors: {},
                         subs: {
                             en: {
                                 total: 1,
                                 sent: 1,
                                 actioned: 0,
-                                errored: 0,
+                                failed: 0,
                                 errors: {},
                                 subs: {}
                             }
@@ -207,6 +212,46 @@ module.exports = {
                 startedLast: new Date,
                 finished: new Date
             }
+        }
+    },
+    /**
+     * @returns {PlatformCredential}
+     */
+    androidCredential() {
+        return {
+            _id: new ObjectId,
+            hash: "somethingsomething",
+            serviceAccountFile: "data:application/json;base64,...",
+            type: "fcm"
+        };
+    },
+    /**
+     * @returns {PushEvent}
+     */
+    pushEvent() {
+        return {
+            appId: new ObjectId,
+            messageId: new ObjectId,
+            scheduleId: new ObjectId,
+            token: "",
+            saveResult: true,
+            uid: "",
+            platform: "a",
+            env: "p",
+            credentials: this.androidCredential(),
+            message: {
+                data: {
+                    "c.i": "67c9bb34630cd98e0fb95a14",
+                    title: "test",
+                    message: "test",
+                    sound: "default"
+                }
+            },
+            proxy: undefined,
+            language: "en",
+            appTimezone: "NA",
+            trigger: this.plainTrigger(),
+            platformConfiguration: {}
         }
     },
 /*
@@ -361,7 +406,7 @@ COMPILED: {
                 {
                     la: "en",
                     title: "en message title",
-                    message: "en message content var1:   some text",
+                    message: "en message content var1:  some text",
                     messagePers: {
                         "25": {
                             f: "fallback",

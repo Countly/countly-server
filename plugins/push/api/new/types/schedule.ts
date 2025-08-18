@@ -1,13 +1,14 @@
 import { ObjectId } from "mongodb";
-import { Result, Content, ErrorObject } from "./message";
+import { Result, Content, MessageAudienceFilter } from "./message";
 import { ScheduleEvent } from "./queue";
 
-export interface AudienceFilter {
+export interface AudienceFilter extends MessageAudienceFilter {
+    // these are inherited from MessageAudienceFilter
+    // user?: string;
+    // drill?: string;
+    // geos?: ObjectId[];
+    // cohorts?: string[];
     uids?: string[];
-    user?: string;
-    drill?: string;
-    geos?: ObjectId[];
-    cohorts?: string[];
     cap?: {
         /** Maximum number of messages per user. If not set, no cap is applied. */
         maxMessages?: number;

@@ -1,7 +1,6 @@
 /**
  * @typedef {import("mongodb").Db} MongoDb
  * @typedef {import("mongodb").ObjectId} ObjectId
- * @typedef {import('../types/utils.ts').LogObject} LogObject
  */
 
 const common = require("../../../../../api/utils/common");
