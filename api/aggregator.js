@@ -4,7 +4,7 @@ const log = require('./utils/log.js')('aggregator-core:api');
 const common = require('./utils/common.js');
 const {WriteBatcher} = require('./parts/data/batcher.js');
 const {Cacher} = require('./parts/data/cacher.js');
-const {changeStreamReader} = require('./parts/data/changeStreamReader.js');
+const UnifiedEventSource = require('./eventSource/UnifiedEventSource.js');
 const usage = require('./aggregator/usage.js');
 var t = ["countly:", "aggregator"];
 t.push("node");
@@ -82,8 +82,11 @@ plugins.connectToAllDatabases(true).then(function() {
 
 
     //Events processing
-    plugins.register("/aggregator", function() {
-        var changeStream = new changeStreamReader(common.drillDb, {
+    plugins.register("/aggregator", async function() {
+        const eventSource = new UnifiedEventSource({
+            name: 'event-aggregator',
+            eventFilter: '[CLY]_custom',
+            db: common.drillDb,
             pipeline: [
                 {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_custom"}},
                 {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "c": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
@@ -93,22 +96,32 @@ plugins.connectToAllDatabases(true).then(function() {
                     "$match": {"e": {"$in": ["[CLY]_custom"]}}
                 }, {"$project": {"__id": "$_id", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "ts": "$ts", "sg": "$sg", "c": "$c", "s": "$s", "dur": "$dur"}}],
             },
-            "name": "event-ingestion"
-        }, (token, currEvent) => {
-            if (currEvent && currEvent.a && currEvent.e) {
-                usage.processEventFromStream(token, currEvent);
+            countlyConfig: countlyConfig
+        });
+        try {
+            for await (const {token, events} of eventSource) {
+                if (events && Array.isArray(events)) {
+                    // Process each event in the batch
+                    for (const currEvent of events) {
+                        if (currEvent && currEvent.a && currEvent.e) {
+                            usage.processEventFromStream(token, currEvent);
+                        }
+                    }
+                }
             }
-            // process next document
-        });
-        common.writeBatcher.addFlushCallback("events_data", function(token) {
-            changeStream.acknowledgeToken(token);
-        });
+        }
+        catch (err) {
+            log.e('Event processing error:', err);
+        }
     });
 
 
     //Sessions processing
-    plugins.register("/aggregator", function() {
-        var changeStream = new changeStreamReader(common.drillDb, {
+    plugins.register("/aggregator", async function() {
+        const sessionSource = new UnifiedEventSource({
+            name: 'session-aggregator',
+            eventFilter: '[CLY]_session',
+            db: common.drillDb,
             pipeline: [
                 {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
                 {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}},
@@ -118,34 +131,63 @@ plugins.connectToAllDatabases(true).then(function() {
                     "$match": {"e": {"$in": ["[CLY]_session"]}}
                 }]
             },
-            "name": "session-ingestion"
-        }, (token, next) => {
-            if (next.fullDocument) {
-                next = next.fullDocument;
-            }
-            var currEvent = next;
-            if (currEvent && currEvent.a) {
-                //Record in session data
-                common.readBatcher.getOne("apps", common.db.ObjectID(currEvent.a), function(err, app) {
-                    //record event totals in aggregated data
-                    if (err) {
-                        log.e("Error getting app data for session", err);
-                        return;
-                    }
-                    if (app) {
-                        usage.processSessionFromStream(token, currEvent, {"app_id": currEvent.a, "app": app, "time": common.initTimeObj(app.timezone, currEvent.ts), "appTimezone": (app.timezone || "UTC")});
-                    }
-                });
-            }
+            countlyConfig: countlyConfig
         });
-        common.writeBatcher.addFlushCallback("users", function(token) {
-            changeStream.acknowledgeToken(token);
-        });
+
+        // Process sessions using async iterator pattern
+        try {
+            for await (const { token, events } of sessionSource) {
+                if (events && Array.isArray(events)) {
+                    // Process each session event in the batch - PROPERLY AWAIT EACH ONE
+                    for (const currEvent of events) {
+                        if (currEvent && currEvent.a) {
+                            try {
+                                // Convert callback to Promise and await it
+                                const app = await new Promise((resolve, reject) => {
+                                    common.readBatcher.getOne("apps", common.db.ObjectID(currEvent.a), function(err, appResponse) {
+                                        if (err) {
+                                            reject(err);
+                                        }
+                                        else {
+                                            resolve(appResponse);
+                                        }
+                                    });
+                                });
+
+                                if (app) {
+                                    usage.processSessionFromStream(token, currEvent, {
+                                        "app_id": currEvent.a,
+                                        "app": app,
+                                        "time": common.initTimeObj(app.timezone, currEvent.ts),
+                                        "appTimezone": (app.timezone || "UTC")
+                                    });
+                                }
+                            }
+                            catch (err) {
+                                log.e("Error getting app data for session", err);
+                                // Continue processing other events in batch
+                            }
+                        }
+                    }
+                }
+                // Note: Auto-acknowledgment happens when iterator moves to next batch
+            }
+        }
+        catch (err) {
+            log.e('Session processing error:', err);
+        }
+
+        // Note: Session acknowledgment is now handled directly in the processing loop above
     });
 
-    plugins.register("/aggregator", function() {
+    //Session updates processing
+    plugins.register("/aggregator", async function() {
         var writeBatcher = new WriteBatcher(common.db);
-        var changeStream = new changeStreamReader(common.drillDb, {
+
+        const sessionUpdateSource = new UnifiedEventSource({
+            name: 'session-update-aggregator',
+            eventFilter: '[CLY]_session', // Session updates are also [CLY]_session events
+            db: common.drillDb,
             pipeline: [
                 {"$match": {"operationType": "update"}},
                 {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}}
@@ -154,46 +196,72 @@ plugins.connectToAllDatabases(true).then(function() {
                 pipeline: [{"$match": {"e": {"$in": ["[CLY]_session"]}}}],
                 "timefield": "lu"
             },
-            "options": {fullDocument: "updateLookup"},
-            "name": "session-updates",
-            "collection": "drill_events",
-            "onClose": async function(callback) {
+            options: {fullDocument: "updateLookup"},
+            collection: "drill_events",
+            onClose: async function(callback) {
                 await common.writeBatcher.flush("countly", "users");
                 if (callback) {
                     callback();
                 }
-            }
-        }, (token, fullDoc) => {
-            var fallback_processing = true;
-            var next = fullDoc;
-            if (next.fullDocument) {
-                fallback_processing = false;
-                next = fullDoc.fullDocument;
-            }
-            if (next && next.a && next.e && next.e === "[CLY]_session" && next.n && next.ts) {
-                common.readBatcher.getOne("apps", common.db.ObjectID(next.a), function(err, app) {
-                    //record event totals in aggregated data
-                    if (err) {
-                        log.e("Error getting app data for session", err);
-                        return;
-                    }
-                    if (app) {
-                        var dur = 0;
-                        if (fallback_processing) {
-                            dur = next.dur || 0;
+            },
+            countlyConfig: countlyConfig
+        });
+
+        // Process session updates using async iterator pattern
+        try {
+            for await (const { token, events } of sessionUpdateSource) {
+                if (events && Array.isArray(events)) {
+                    // Process each session update event in the batch - PROPERLY AWAIT EACH ONE
+                    for (const data of events) {
+                        var next = data;
+                        // Handle changestream format differences
+                        if (data && data.fullDocument) {
+                            next = data.fullDocument;
                         }
-                        else {
-                            dur = (fullDoc && fullDoc.updateDescription && fullDoc.updateDescription.updatedFields && fullDoc.updateDescription.updatedFields.dur) || 0;
-                        }//if(dur){
-                        usage.processSessionDurationRange(writeBatcher, token, dur, next.did, {"app_id": next.a, "app": app, "time": common.initTimeObj(app.timezone, next.ts), "appTimezone": (app.timezone || "UTC")});
-                        //}
+
+                        if (next && next.a && next.e && next.e === "[CLY]_session" && next.n && next.ts) {
+                            try {
+                                // Convert callback to Promise and await it
+                                const app = await new Promise((resolve, reject) => {
+                                    common.readBatcher.getOne("apps", common.db.ObjectID(next.a), function(err, appResponse) {
+                                        if (err) {
+                                            reject(err);
+                                        }
+                                        else {
+                                            resolve(appResponse);
+                                        }
+                                    });
+                                });
+
+                                if (app) {
+                                    var dur = next.dur || 0;
+                                    // For changestream updates, check updateDescription
+                                    if (data && data.updateDescription && data.updateDescription.updatedFields && data.updateDescription.updatedFields.dur) {
+                                        dur = data.updateDescription.updatedFields.dur;
+                                    }
+                                    usage.processSessionDurationRange(writeBatcher, token, dur, next.did, {
+                                        "app_id": next.a,
+                                        "app": app,
+                                        "time": common.initTimeObj(app.timezone, next.ts),
+                                        "appTimezone": (app.timezone || "UTC")
+                                    });
+                                }
+                            }
+                            catch (err) {
+                                log.e("Error getting app data for session update", err);
+                                // Continue processing other events in batch
+                            }
+                        }
                     }
-                });
+                }
+                // Note: Auto-acknowledgment happens when iterator moves to next batch
             }
-        });
-        writeBatcher.addFlushCallback("users", function(token) {
-            changeStream.acknowledgeToken(token);
-        });
+        }
+        catch (err) {
+            log.e('Session update processing error:', err);
+        }
+
+        // Note: Session update acknowledgment is now handled directly in the processing loop above
     });
 
 
