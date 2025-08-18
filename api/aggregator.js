@@ -83,20 +83,19 @@ plugins.connectToAllDatabases(true).then(function() {
 
     //Events processing
     plugins.register("/aggregator", async function() {
-        const eventSource = new UnifiedEventSource({
-            name: 'event-aggregator',
-            eventFilter: '[CLY]_custom',
-            db: common.drillDb,
-            pipeline: [
-                {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_custom"}},
-                {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "c": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
-            ],
-            fallback: {
-                pipeline: [{
-                    "$match": {"e": {"$in": ["[CLY]_custom"]}}
-                }, {"$project": {"__id": "$_id", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "ts": "$ts", "sg": "$sg", "c": "$c", "s": "$s", "dur": "$dur"}}],
-            },
-            countlyConfig: countlyConfig
+        const eventSource = new UnifiedEventSource('event-aggregator', {
+            mongo: {
+                db: common.drillDb,
+                pipeline: [
+                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_custom"}},
+                    {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "ts": "$fullDocument.ts", "sg": "$fullDocument.sg", "c": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
+                ],
+                fallback: {
+                    pipeline: [{
+                        "$match": {"e": {"$in": ["[CLY]_custom"]}}
+                    }, {"$project": {"__id": "$_id", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "ts": "$ts", "sg": "$sg", "c": "$c", "s": "$s", "dur": "$dur"}}]
+                }
+            }
         });
         try {
             for await (const {token, events} of eventSource) {
@@ -118,20 +117,19 @@ plugins.connectToAllDatabases(true).then(function() {
 
     //Sessions processing
     plugins.register("/aggregator", async function() {
-        const sessionSource = new UnifiedEventSource({
-            name: 'session-aggregator',
-            eventFilter: '[CLY]_session',
-            db: common.drillDb,
-            pipeline: [
-                {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
-                {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}},
-            ],
-            fallback: {
-                pipeline: [{
-                    "$match": {"e": {"$in": ["[CLY]_session"]}}
-                }]
-            },
-            countlyConfig: countlyConfig
+        const sessionSource = new UnifiedEventSource('session-aggregator', {
+            mongo: {
+                db: common.drillDb,
+                pipeline: [
+                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
+                    {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}}
+                ],
+                fallback: {
+                    pipeline: [{
+                        "$match": {"e": {"$in": ["[CLY]_session"]}}
+                    }]
+                }
+            }
         });
 
         // Process sessions using async iterator pattern
@@ -184,27 +182,26 @@ plugins.connectToAllDatabases(true).then(function() {
     plugins.register("/aggregator", async function() {
         var writeBatcher = new WriteBatcher(common.db);
 
-        const sessionUpdateSource = new UnifiedEventSource({
-            name: 'session-update-aggregator',
-            eventFilter: '[CLY]_session', // Session updates are also [CLY]_session events
-            db: common.drillDb,
-            pipeline: [
-                {"$match": {"operationType": "update"}},
-                {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}}
-            ],
-            fallback: {
-                pipeline: [{"$match": {"e": {"$in": ["[CLY]_session"]}}}],
-                "timefield": "lu"
-            },
-            options: {fullDocument: "updateLookup"},
-            collection: "drill_events",
-            onClose: async function(callback) {
-                await common.writeBatcher.flush("countly", "users");
-                if (callback) {
-                    callback();
+        const sessionUpdateSource = new UnifiedEventSource('session-update-aggregator', {
+            mongo: {
+                db: common.drillDb,
+                pipeline: [
+                    {"$match": {"operationType": "update"}},
+                    {"$addFields": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd"}}
+                ],
+                fallback: {
+                    pipeline: [{"$match": {"e": {"$in": ["[CLY]_session"]}}}],
+                    "timefield": "lu"
+                },
+                options: {fullDocument: "updateLookup"},
+                collection: "drill_events",
+                onClose: async function(callback) {
+                    await common.writeBatcher.flush("countly", "users");
+                    if (callback) {
+                        callback();
+                    }
                 }
-            },
-            countlyConfig: countlyConfig
+            }
         });
 
         // Process session updates using async iterator pattern
