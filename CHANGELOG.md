@@ -1,4 +1,6 @@
 ## Version 25.03.xx
+Fixes:
+- [journeys] Prevent showing journey builder when viewing journey list page
 
 Dependencies:
 - Bump get-random-values from 3.0.0 to 4.0.0
