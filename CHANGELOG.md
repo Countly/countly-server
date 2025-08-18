@@ -1,10 +1,12 @@
 ## Version 25.03.xx
-Fixes:
+Enterprise Fixes:
 - [journeys] Prevent showing journey builder when viewing journey list page
+- [journey-engine] Fix for skip threshold check in concurrent requests
 
 Dependencies:
 - Bump get-random-values from 3.0.0 to 4.0.0
 - Bump puppeteer from 24.16.1 to 24.16.2
+
 
 ## Version 25.03.15
 Enterprise Fixes:
@@ -12,7 +14,6 @@ Enterprise Fixes:
 - [ldap] Connection timeout values are added to LDAP config
 
 ## Version 25.03.14
-
 Fixes:
 - [dashboard] Localized missing string in the dashboard
 - [localization] Added French translations
