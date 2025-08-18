@@ -6,32 +6,32 @@ const log = require('../utils/log.js')('core:ingestor');
 const crypto = require('crypto');
 const { ignorePossibleDevices, checksumSaltVerification, validateRedirect} = require('../utils/requestProcessorCommon.js');
 const {ObjectId} = require("mongodb");
-const { Readable } = require('stream');
+const KafkaClient = require('../../plugins/kafka/api/lib/kafkaClient');
+const KafkaProducer = require('../../plugins/kafka/api/lib/kafkaProducer');
+const countlyConfig = require('../config');
 const countlyApi = {
     mgmt: {
         appUsers: require('../parts/mgmt/app_users.js'),
     }
 };
 
-const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
-
-// Initialize ClickHouse client
-const clickhouseClientSingleton = require('../../plugins/clickhouse/api/ClickhouseClient');
-let clickhouseClient = null;
-
-/**
- * Initialize ClickHouse client asynchronously
- */
-async function initializeClickhouseClient() {
-    if (clickhouseClientSingleton && clickhouseClientSingleton.getInstance) {
-        try {
-            clickhouseClient = await clickhouseClientSingleton.getInstance();
-        }
-        catch (error) {
-            log.e('Failed to initialize ClickHouse client:', error);
-        }
+// Initialize Kafka producer if enabled
+let kafkaProducer = null;
+if (countlyConfig.kafka?.enabled) {
+    try {
+        const kafkaClient = new KafkaClient();
+        kafkaProducer = new KafkaProducer(kafkaClient, {
+            transactionalIdPrefix: 'countly-ingestor'
+        });
+        log.i('Kafka producer initialized for ingestor');
+    }
+    catch (kafkaError) {
+        log.e('Failed to initialize Kafka producer for ingestor:', kafkaError);
+        // Continue without Kafka - events will only be stored in MongoDB
     }
 }
+
+const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 
 /**
  * Transform MongoDB document to ClickHouse format
@@ -668,38 +668,30 @@ var processToDrill = async function(params, drill_updates, callback) {
         try {
             await common.drillDb.collection("drill_events").bulkWrite(eventsToInsert, {ordered: false});
 
-            // write to clickhouse
-            if (!clickhouseClient) {
-                await initializeClickhouseClient();
-            }
-
-            if (clickhouseClient) {
+            // Send to Kafka if enabled
+            if (kafkaProducer) {
                 try {
-                    const clickhouseData = [];
+                    const kafkaData = [];
                     for (const bulkOp of eventsToInsert) {
                         if (bulkOp.insertOne && bulkOp.insertOne.document) {
                             const transformed = transformToClickhouseFormat(bulkOp.insertOne.document);
                             if (transformed) {
-                                clickhouseData.push(transformed);
+                                kafkaData.push(transformed);
                             }
                         }
                     }
 
-                    if (clickhouseData.length > 0) {
-                        //todo: start queue building here
-                        const startTime = Date.now();
-                        await clickhouseClient.insert({
-                            table: 'drill_events',
-                            values: Readable.from(clickhouseData, { objectMode: true }),
-                            format: 'JSONEachRow',
-                        });
-                        const insertTime = Date.now() - startTime;
-                        log.d(`Successfully wrote ${clickhouseData.length} events to ClickHouse in ${insertTime}ms`);
+                    if (kafkaData.length > 0) {
+                        const result = await kafkaProducer.sendEvents(kafkaData);
+                        if (result.success) {
+                            log.d(`Successfully sent ${result.sent} events to Kafka`);
+                        }
                     }
                 }
-                catch (chError) {
-                    log.e('Error writing to ClickHouse:', chError);
-                    // Continue execution - don't fail the entire request for ClickHouse errors
+                catch (kafkaError) {
+                    log.e('Error sending to Kafka:', kafkaError);
+                    // Continue execution - don't fail the entire request for Kafka errors
+                    // Events are already stored in MongoDB
                 }
             }
 
@@ -729,40 +721,6 @@ var processToDrill = async function(params, drill_updates, callback) {
                     callback(realError);
                 }
                 else {
-                    // write to clickhouse for successful duplicate key inserts
-                    if (!clickhouseClient) {
-                        await initializeClickhouseClient();
-                    }
-
-                    if (clickhouseClient) {
-                        try {
-                            const clickhouseData = [];
-                            for (const bulkOp of eventsToInsert) {
-                                if (bulkOp.insertOne && bulkOp.insertOne.document) {
-                                    const transformed = transformToClickhouseFormat(bulkOp.insertOne.document);
-                                    if (transformed) {
-                                        clickhouseData.push(transformed);
-                                    }
-                                }
-                            }
-
-                            if (clickhouseData.length > 0) {
-                                const startTime = Date.now();
-                                await clickhouseClient.insert({
-                                    table: 'drill_events',
-                                    values: Readable.from(clickhouseData, { objectMode: true }),
-                                    format: 'JSONEachRow',
-                                });
-                                const insertTime = Date.now() - startTime;
-                                log.d(`Successfully wrote ${clickhouseData.length} events to ClickHouse in ${insertTime}ms (duplicate key recovery)`);
-                            }
-                        }
-                        catch (chError) {
-                            log.e('Error writing to ClickHouse during duplicate key recovery:', chError);
-                            // Continue execution - don't fail the entire request for ClickHouse errors
-                        }
-                    }
-
                     callback(null);
                     if (Object.keys(viewUpdate).length) {
                         //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
@@ -773,7 +731,6 @@ var processToDrill = async function(params, drill_updates, callback) {
                             log.e(err);
                         }
                     }
-
                 }
             }
             else {
