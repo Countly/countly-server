@@ -15,6 +15,6 @@ describe('5.Mixed tooltip (old iOS SDK version)', () => {
     it('5.3-Test', function() {
         goToConfigTab(true);
         checkTooltipAppears('success', 2, true);
-        checkTooltipAppears('warning', 20, true);
+        checkTooltipAppears('warning', 25, true);
     });
 });
