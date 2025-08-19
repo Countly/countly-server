@@ -11,7 +11,7 @@ const log = require('../utils/log.js')('kafka-event-source');
  * - Ensures offsets are only committed after successful processing
  * 
  * Note: This class returns ALL events from Kafka without filtering.
- * Event filtering is the responsibility of the consumer of this class.
+ * Event filtering is the responsibility of the consumer of this class (aggregator).
  */
 class KafkaEventSource extends EventSourceInterface {
     #kafkaConsumer;
@@ -113,6 +113,7 @@ class KafkaEventSource extends EventSourceInterface {
 
             // Store the batch for getNext() to retrieve
             this.#currentBatch = {
+                source: 'KAFKA',
                 token: batchToken,
                 events: events
             };
