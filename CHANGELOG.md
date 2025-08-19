@@ -1,7 +1,7 @@
 ## Version 25.03.xx
 Enterprise Fixes:
 - [journeys] Prevent showing journey builder when viewing journey list page
-- [journey-engine] Fix for skip threshold check in concurrent requests
+- [journeys] Fix for skip threshold check in concurrent requests
 
 Dependencies:
 - Bump get-random-values from 3.0.0 to 4.0.0
