@@ -216,6 +216,26 @@ var countlyConfig = {
             enableAutoCommit: false // Disable auto-commit for exactly-once processing (default: false) - WARNING: true can cause data loss on consumer crash before processing
         }
     },
+
+    /**
+    * EventSink configuration for writing events to multiple destinations
+    * EventSink provides a unified interface for writing events to MongoDB, Kafka, or both
+    * 
+    * @type {object}
+    * @property {Array<string>} [sinks=['mongo']] - Array of sink types to enable
+    *                                               Options: 'mongo', 'kafka', or both
+    *                                               MongoDB is always available as fallback
+    *                                               Kafka is only used if kafka.enabled is also true
+    * 
+    * Examples:
+    * - sinks: ['mongo'] - Write only to MongoDB (default)
+    * - sinks: ['kafka'] - Write only to Kafka (if enabled)
+    * - sinks: ['mongo', 'kafka'] - Write to both in parallel
+    */
+    eventSink: {
+        sinks: ['mongo', 'kafka'], // Default: MongoDB only. Add 'kafka' for dual writes
+    },
+
     /**
     * Default API configuration
     * @type {object} 
