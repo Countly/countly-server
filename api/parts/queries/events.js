@@ -5,6 +5,7 @@
 
 const common = require('../../utils/common.js');
 const log = common.log('core:queries');
+const WhereClauseConverter = require('../../../plugins/clickhouse/api/WhereClauseConverter');
 
 /**
  * MongoDB handler for drill aggregation
@@ -40,9 +41,10 @@ async function fetchAggregatedSegmentedEventDataMongo(params) {
             }
         }
         match.ts = {"$gt": ts.$gt, "$lt": ts.$lt};
+        match[segmentation] = {"$ne": null};
         var pipeline = [];
         if (previous) {
-            match.ts.$gt = match.ts.$gt - (ts.$lt - ts.$gt);
+            match.ts.$gt = match.ts.$gt - (ts.$lt - ts.$gt) + 1;
             pipeline = [
                 {"$match": match},
                 {
@@ -90,21 +92,73 @@ async function fetchAggregatedSegmentedEventDataMongo(params) {
 /**
  * ClickHouse handler for drill aggregation
  * Executes drill aggregation using ClickHouse SQL
- * */
-async function fetchAggregatedSegmentedEventDataClickhouse(/*params*/) {
+ * @param {Object} params - Query parameters object containing all necessary data
+ * @returns {Promise<Object>} Returns aggregated event data
+ */
+async function fetchAggregatedSegmentedEventDataClickhouse(params) {
+    var { apps, events, segmentation, ts, limit, previous = true} = params;
 
-    /*var { collection, name, pipeline, cd0, cd1} = params;
-
-    if (name === 'server-stats') {
-    //build query for server stats
-    }*/
     try {
+        var match = {};
+        if (apps && apps.length) {
+            if (apps.length === 1) {
+                match.a = apps[0];
+            }
+            else {
+                match.a = {$in: apps};
+            }
+        }
+
+        match.e = "[CLY]_custom";
+        if (events && events.length) {
+            if (events.length === 1) {
+                match.n = events[0];
+            }
+            else {
+                match.n = {$in: events};
+            }
+        }
+        match.ts = {"$gt": ts.$gt, "$lt": ts.$lt};
+        if (previous) {
+            match.ts.$gt = match.ts.$gt - (ts.$lt - ts.$gt) + 1;
+        }
+        match[segmentation] = {"$ne": null};
+
+        segmentation = "`" + segmentation.replaceAll(".", "`.`") + "`";
+        const converter = new WhereClauseConverter();
+        const { sql: whereSQL, params: ch_params } = converter.queryObjToWhere(match);
+
+        var fields = [];
+        if (previous) {
+            fields = [
+                `${segmentation}::String AS _id`,
+                `sum(c) AS c`,
+                `sum(s) AS s`,
+                `sum(dur) AS dur`
+            ];
+        }
+        else {
+            fields = [
+                `${segmentation} AS _id`,
+                `sum(multiIf(ts > ${ts.$gt}, c, 0)) AS c`,
+                `sum(multiIf(ts <= ${ts.$gt}, c, 0)) AS prev_c`,
+                `sum(multiIf(ts > ${ts.$gt}, s, 0)) AS s`,
+                `sum(multiIf(ts <= ${ts.$gt}, s, 0)) AS prev_s`,
+                `sum(multiIf(ts > ${ts.$gt}, dur, 0)) AS dur`,
+                `sum(multiIf(ts <= ${ts.$gt}, dur, 0)) AS prev_dur`
+            ];
+        }
+
+        let query = `SELECT ${fields.join(', ')} FROM drill_events ${whereSQL} \nGROUP BY ${segmentation}::String \nORDER BY c DESC \nLIMIT ${limit || 1000}`;
+        log.e(query);
+        var data = await common.clickhouseQueryService.aggregate({query: query, params: ch_params}, {});
+
         return {
             _queryMeta: {
                 adapter: 'clickhouse',
-                query: []
+                query: query
             },
-            data: {}
+            data: data
         };
     }
     catch (error) {
@@ -129,13 +183,11 @@ async function fetchAggregatedSegmentedEventData(params, options) {
             mongodb: {
                 handler: fetchAggregatedSegmentedEventDataMongo
             },
-            /* clickhouse: {
+            clickhouse: {
                 handler: fetchAggregatedSegmentedEventDataClickhouse
-            }*/
+            }
         }
     };
-
-
 
     return common.queryRunner.executeQuery(queryDef, params, options);
 }
