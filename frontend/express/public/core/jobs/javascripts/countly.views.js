@@ -28,7 +28,7 @@
         // Backend uses "COMPLETED", "FAILED", "RUNNING", "SCHEDULED" (see getJobStatus in api.js)
         // But also "success", "failed", "pending" (see getRunStatus in api.js)
         switch (status) {
-        case "RUNNING": return "green";
+        case "RUNNING": return "blue";
         case "COMPLETED": return "green";
         case "SUCCESS": return "green";
         case "SCHEDULED":
@@ -196,7 +196,7 @@
                     return 'gray';
                 }
                 if (details.currentState.status === 'RUNNING') {
-                    return 'green';
+                    return 'blue';
                 }
                 if (details.currentState.status === 'FAILED') {
                     return 'red';
@@ -224,7 +224,7 @@
                 switch (statusValue) {
                 case "SUCCESS":
                 case "COMPLETED": return 'green';
-                case "RUNNING": return 'green';
+                case "RUNNING": return 'blue';
                 case "FAILED": return 'red';
                 case "PENDING":
                 case "SCHEDULED": return 'yellow';
@@ -439,7 +439,7 @@
                     return "gray";
                 }
                 switch (jobDetails.currentState.status) {
-                case "RUNNING": return "green";
+                case "RUNNING": return "blue";
                 case "FAILED": return "red";
                 case "COMPLETED": return "green";
                 case "PENDING": return "yellow";
@@ -466,7 +466,7 @@
                 switch (status) {
                 case "SUCCESS":
                 case "COMPLETED": return "green";
-                case "RUNNING": return "green";
+                case "RUNNING": return "blue";
                 case "FAILED": return "red";
                 case "PENDING":
                 case "SCHEDULED": return "yellow";
