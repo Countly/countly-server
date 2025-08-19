@@ -60,102 +60,6 @@ class JobManager {
         const pulseConfig = config.PULSE;
         this.#jobRunner = new PulseJobRunner(this.#db, pulseConfig, Logger);
         this.#jobConfigsCollection = db.collection('jobConfigs');
-        this.#watchConfigs();
-    }
-
-    /**
-     * Watches for changes in job configurations and applies them in real-time
-     * @private
-     * @returns {Promise<void>} A promise that resolves once the watcher is started
-     * @throws {Error} If watch stream cannot be established
-     */
-    async #watchConfigs() {
-        this.#log.d('Initializing config change stream watcher');
-        const changeStream = this.#jobConfigsCollection.watch();
-
-        changeStream.on('change', async(change) => {
-            this.#log.d('Detected config change:', {
-                operationType: change.operationType,
-                documentId: change.documentKey?._id,
-                updatedFields: change.updateDescription?.updatedFields
-            });
-
-            // Dont really need this, as we are only updating the config
-            // if (change.operationType === 'insert') {
-            //     const jobConfig = change.fullDocument;
-            //     await this.#applyConfig(jobConfig);
-            // }
-            // else 
-            if (change.operationType === 'update') {
-                // Fetch the complete document after update
-                const jobConfig = await this.#jobConfigsCollection.findOne({
-                    _id: change.documentKey._id
-                });
-                if (jobConfig) {
-                    await this.#applyConfig({...change.updateDescription?.updatedFields, jobName: jobConfig.jobName});
-                }
-            }
-        });
-    }
-
-    /**
-     * Applies job configuration changes
-     * @private
-     * @param {JobConfig} jobConfig The job configuration to apply
-     * @throws {Error} If job runner is not initialized or configuration is invalid
-     */
-    async #applyConfig(jobConfig) {
-        try {
-            if (!this.#jobRunner) {
-                throw new Error('Job runner not initialized');
-            }
-
-            const { jobName } = jobConfig;
-            this.#log.d('Applying config changes for job:', {
-                jobName,
-                changes: {
-                    runNow: jobConfig.runNow,
-                    scheduleUpdated: !!jobConfig.schedule,
-                    retryUpdated: !!jobConfig.retry,
-                    enabledStateChanged: typeof jobConfig.enabled === 'boolean'
-                }
-            });
-
-            if (jobConfig.runNow === true) {
-                await this.#jobRunner.runJobNow(jobName);
-                await this.#jobConfigsCollection.updateOne(
-                    { jobName },
-                    { $unset: { runNow: "" } }
-                );
-            }
-
-            if (jobConfig.schedule) {
-                await this.#jobRunner.updateSchedule(jobName, {type: "schedule", value: jobConfig.schedule});
-            }
-
-            if (jobConfig.retry) {
-                await this.#jobRunner.configureRetry(jobName, jobConfig.retry);
-            }
-
-            if (typeof jobConfig.enabled === 'boolean') {
-                if (jobConfig.enabled) {
-                    await this.#jobRunner.enableJob(jobName);
-                    this.#log.i(`Job ${jobName} enabled via config`);
-                }
-                else {
-                    await this.#jobRunner.disableJob(jobName);
-                    this.#log.i(`Job ${jobName} disabled via config`);
-                }
-            }
-        }
-        catch (error) {
-            this.#log.e('Failed to apply job configuration:', {
-                jobName: jobConfig.jobName || "unknown",
-                error: error.message,
-                stack: error.stack
-            });
-            throw error; // Re-throw to allow caller to handle
-        }
     }
 
     /**
@@ -276,7 +180,7 @@ class JobManager {
                 // Apply configuration override if valid
                 const configOverride = configOverridesMap.get(jobName);
                 if (configOverride && configOverride.checksum === jobDefinitionChecksums[jobName]) {
-                    await this.#applyConfig(configOverride);
+                    await this.applyConfig(configOverride);
                     this.#log.d(`Applied configuration override for job: ${jobName}`);
                 }
             })
@@ -299,6 +203,65 @@ class JobManager {
         await this.#loadJobs(jobClasses);
         await this.#jobRunner.start();
         this.#log.d('JobManager started successfully');
+    }
+
+    /**
+     * Applies job configuration changes
+     * @param {JobConfig} jobConfig The job configuration to apply
+     * @throws {Error} If job runner is not initialized or configuration is invalid
+     */
+    async applyConfig(jobConfig) {
+        try {
+            if (!this.#jobRunner) {
+                throw new Error('Job runner not initialized');
+            }
+
+            const { jobName } = jobConfig;
+            this.#log.d('Applying config changes for job:', {
+                jobName,
+                changes: {
+                    runNow: jobConfig.runNow,
+                    scheduleUpdated: !!jobConfig.schedule,
+                    retryUpdated: !!jobConfig.retry,
+                    enabledStateChanged: typeof jobConfig.enabled === 'boolean'
+                }
+            });
+
+            if (jobConfig.runNow === true) {
+                await this.#jobRunner.runJobNow(jobName);
+                await this.#jobConfigsCollection.updateOne(
+                    { jobName },
+                    { $unset: { runNow: "" } }
+                );
+            }
+
+            if (jobConfig.schedule) {
+                await this.#jobRunner.updateSchedule(jobName, {type: "schedule", value: jobConfig.schedule});
+            }
+
+            if (jobConfig.retry) {
+                await this.#jobRunner.configureRetry(jobName, jobConfig.retry);
+            }
+
+            if (typeof jobConfig.enabled === 'boolean') {
+                if (jobConfig.enabled) {
+                    await this.#jobRunner.enableJob(jobName);
+                    this.#log.i(`Job ${jobName} enabled via config`);
+                }
+                else {
+                    await this.#jobRunner.disableJob(jobName);
+                    this.#log.i(`Job ${jobName} disabled via config`);
+                }
+            }
+        }
+        catch (error) {
+            this.#log.e('Failed to apply job configuration:', {
+                jobName: jobConfig.jobName || "unknown",
+                error: error.message,
+                stack: error.stack
+            });
+            throw error; // Re-throw to allow caller to handle
+        }
     }
 
     /**
