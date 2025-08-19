@@ -2,6 +2,14 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.16
+Enterprise Fixes:
+- [journeys] Fix for skip threshold check in concurrent requests
+- [journeys] Prevent showing journey builder when viewing journey list page
+
+Dependencies:
+- Bump get-random-values from 3.0.0 to 4.0.0
+- Bump puppeteer from 24.16.1 to 24.16.2
 
 ## Version 25.03.15
 Enterprise Fixes:
@@ -9,7 +17,6 @@ Enterprise Fixes:
 - [ldap] Connection timeout values are added to LDAP config
 
 ## Version 25.03.14
-
 Fixes:
 - [dashboard] Localized missing string in the dashboard
 - [localization] Added French translations
@@ -21,7 +28,7 @@ Dependencies:
 - Bump eslint-plugin-vue from 10.3.0 to 10.4.0
 - Bump fs-extra from 11.3.0 to 11.3.1
 - Bump lint-staged from 16.1.2 to 16.1.4
-- Bump puppeteer from 24.15.0 to 24.16.0
+- Bump puppeteer from 24.15.0 to 24.16.1
 - Bump sass from 1.89.2 to 1.90.0
 - Bump typescript from 5.8.3 to 5.9.2
 
