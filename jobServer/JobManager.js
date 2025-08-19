@@ -60,42 +60,6 @@ class JobManager {
         const pulseConfig = config.PULSE;
         this.#jobRunner = new PulseJobRunner(this.#db, pulseConfig, Logger);
         this.#jobConfigsCollection = db.collection('jobConfigs');
-        this.#watchConfigs();
-    }
-
-    /**
-     * Watches for changes in job configurations and applies them in real-time
-     * @private
-     * @returns {Promise<void>} A promise that resolves once the watcher is started
-     * @throws {Error} If watch stream cannot be established
-     */
-    async #watchConfigs() {
-        this.#log.d('Initializing config change stream watcher');
-        const changeStream = this.#jobConfigsCollection.watch();
-
-        changeStream.on('change', async(change) => {
-            this.#log.d('Detected config change:', {
-                operationType: change.operationType,
-                documentId: change.documentKey?._id,
-                updatedFields: change.updateDescription?.updatedFields
-            });
-
-            // Dont really need this, as we are only updating the config
-            // if (change.operationType === 'insert') {
-            //     const jobConfig = change.fullDocument;
-            //     await this.#applyConfig(jobConfig);
-            // }
-            // else 
-            if (change.operationType === 'update') {
-                // Fetch the complete document after update
-                const jobConfig = await this.#jobConfigsCollection.findOne({
-                    _id: change.documentKey._id
-                });
-                if (jobConfig) {
-                    await this.applyConfig({...change.updateDescription?.updatedFields, jobName: jobConfig.jobName});
-                }
-            }
-        });
     }
 
     /**
