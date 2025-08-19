@@ -5,6 +5,35 @@ var countlyModel = require('../../../api/lib/countly.model.js');
 var {validateRead, validateUpdate} = require('../../../api/utils/rights.js');
 
 const FEATURE_NAME = 'sdk';
+const validOptions = [
+    "tracking",
+    "networking",
+    "crt",
+    "vt",
+    "st",
+    "cet",
+    "ecz",
+    "cr",
+    "sui",
+    "eqs",
+    "rqs",
+    "czi",
+    "dort",
+    "scui",
+    "lkl",
+    "lvs",
+    "lsv",
+    "lbc",
+    "ltlpt",
+    "ltl",
+    "lt",
+    "rcz",
+    "bom",
+    "bom_at",
+    "bom_rqp",
+    "bom_ra",
+    "bom_d"
+];
 
 plugins.register("/permissions/features", function(ob) {
     ob.features.push(FEATURE_NAME);
@@ -109,7 +138,7 @@ plugins.register("/permissions/features", function(ob) {
     plugins.register("/o", function(ob) {
         var params = ob.params;
 
-        // returns server config for the given app
+        // returns server config for the given app (regardless of enforcement, can be useful)
         if (params.qstring.method === "sdk-config") {
             validateRead(params, FEATURE_NAME, function() {
                 getSDKConfig(params).then(function(res) {
@@ -145,35 +174,6 @@ plugins.register("/permissions/features", function(ob) {
                     }
 
                     var configToSave = uploadConfig.c || uploadConfig; // incase they provide the config object directly
-                    var validOptions = [
-                        "tracking",
-                        "networking",
-                        "crt",
-                        "vt",
-                        "st",
-                        "cet",
-                        "ecz",
-                        "cr",
-                        "sui",
-                        "eqs",
-                        "rqs",
-                        "czi",
-                        "dort",
-                        "scui",
-                        "lkl",
-                        "lvs",
-                        "lsv",
-                        "lbc",
-                        "ltlpt",
-                        "ltl",
-                        "lt",
-                        "rcz",
-                        "bom",
-                        "bom_at",
-                        "bom_rqp",
-                        "bom_ra",
-                        "bom_d"
-                    ];
                     for (var key in configToSave) {
                         if (validOptions.indexOf(key) === -1) {
                             delete configToSave[key];
@@ -197,6 +197,8 @@ plugins.register("/permissions/features", function(ob) {
                 });
             });
         }
+
+        // returns enforcement info for the given app
         if (params.qstring.method === "sdk-enforcement") {
             validateRead(params, FEATURE_NAME, function() {
                 getEnforcement(params).then(function(res) {
@@ -221,6 +223,9 @@ plugins.register("/permissions/features", function(ob) {
             break;
         case 'update-enforcement':
             validateUpdate(params, FEATURE_NAME, function() {
+                if (!params.app_id) {
+                    return common.returnMessage(params, 400, 'Missing parameter "app_id"');
+                }
                 var enforcement = params.qstring.enforcement;
                 if (typeof enforcement === "string") {
                     try {
@@ -228,6 +233,15 @@ plugins.register("/permissions/features", function(ob) {
                     }
                     catch (SyntaxError) {
                         return common.returnMessage(params, 400, 'Error parsing enforcement');
+                    }
+                }
+                if (typeof enforcement !== "object") {
+                    return common.returnMessage(params, 400, 'Wrong enforcement format');
+                }
+                // check remove enforcement options those are not in validOptions
+                for (var key in enforcement) {
+                    if (validOptions.indexOf(key) === -1) {
+                        delete enforcement[key];
                     }
                 }
                 common.outDb.collection('sdk_enforcement').updateOne(
@@ -531,6 +545,9 @@ plugins.register("/permissions/features", function(ob) {
                 console.log('Error parsing parameter', parameter);
                 return common.returnMessage(params, 400, 'Error parsing parameter');
             }
+        }
+        if (!params.app_id) {
+            return common.returnMessage(params, 400, 'Missing parameter "app_id"');
         }
         common.outDb.collection('sdk_configs').updateOne({_id: params.app_id + ""}, {$set: {config: parameter} }, {upsert: true}, function() {
             common.returnOutput(params, {result: 'Success'});
