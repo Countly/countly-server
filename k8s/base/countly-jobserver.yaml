@@ -1,3 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: countly-jobserver
+  namespace: countly
+  labels:
+    app: countly-jobserver
+    branch: newarchitecture
+    component: jobserver
+spec:
+  selector:
+    app: countly-jobserver
+  ports:
+    - name: http
+      port: 3020
+      targetPort: 3020
+      protocol: TCP
+  type: ClusterIP
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
