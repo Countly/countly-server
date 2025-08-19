@@ -30,14 +30,6 @@ const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request')(plugins.getConfig("security"));
 
-try {
-    require('../../jobServer/api');
-    log.i('Job api loaded');
-}
-catch (ex) {
-    log.e('Job api not available');
-}
-
 var loaded_configs_time = 0;
 
 const countlyApi = {
