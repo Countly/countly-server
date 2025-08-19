@@ -971,8 +971,7 @@ countlyCommon.getPeriodRange = function(period, timezone, offset) {
         offset = moment.tz(timezone).utcOffset();
         offset = offset * -1;
     }
-
-    return {"$gt": startTimestamp.valueOf() + offset * 60000, "$lt": endTimestamp.valueOf() + offset * 60000};
+    return {"$gt": startTimestamp.valueOf() + offset * 60000 - 1, "$lt": endTimestamp.valueOf() + offset * 60000 + 1};
 };
 
 /**

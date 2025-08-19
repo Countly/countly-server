@@ -45,13 +45,13 @@ async function mongodbHandler(params) {
  * ClickHouse handler for drill aggregation
  * Executes drill aggregation using ClickHouse SQL
  * */
-async function clickhouseHandler(/*params*/) {
+/*async function clickhouseHandler(params) {
 
-    /*var { collection, name, pipeline, cd0, cd1} = params;
+    var { collection, name, pipeline, cd0, cd1} = params;
 
     if (name === 'server-stats') {
     //build query for server stats
-    }*/
+    }
     try {
         return {
             _queryMeta: {
@@ -65,7 +65,7 @@ async function clickhouseHandler(/*params*/) {
         log.e('ClickHouse drill aggregation failed', error);
         throw error;
     }
-}
+}*/
 
 /**
  * Fetch segmentation projection data
@@ -84,9 +84,9 @@ async function fetchDataForAggregator(params, options) {
             mongodb: {
                 handler: mongodbHandler
             },
-            clickhouse: {
+            /*clickhouse: {
                 handler: clickhouseHandler
-            }
+            }*/
         }
     };
     if (!defined_aggregators[params.name]) {

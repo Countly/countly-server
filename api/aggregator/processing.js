@@ -16,6 +16,11 @@ const {Cacher} = require('../parts/data/cacher.js');
 var crypto = require('crypto');
 
 (function() {
+    /**
+     * Determines the type of a value for aggregation purposes.
+     * @param {*} value - The value to determine the type of.
+     * @returns {string} - The determined type ('l' for list, 'a' for array, 'n' for number, 'd' for date).
+     */
     function determineType(value) {
         var type = "l";
         if (Array.isArray(value)) {
