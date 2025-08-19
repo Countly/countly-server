@@ -103,7 +103,7 @@ plugins.connectToAllDatabases(true).then(function() {
                     // Process each event in the batch
                     for (const currEvent of events) {
                         if (currEvent && currEvent.a && currEvent.e) {
-                            usage.processEventFromStream(token, currEvent);
+                            await usage.processEventFromStream(token, currEvent);
                         }
                     }
                 }

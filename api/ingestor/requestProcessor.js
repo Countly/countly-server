@@ -6,89 +6,26 @@ const log = require('../utils/log.js')('core:ingestor');
 const crypto = require('crypto');
 const { ignorePossibleDevices, checksumSaltVerification, validateRedirect} = require('../utils/requestProcessorCommon.js');
 const {ObjectId} = require("mongodb");
-const KafkaClient = require('../../plugins/kafka/api/lib/kafkaClient');
-const KafkaProducer = require('../../plugins/kafka/api/lib/kafkaProducer');
-const countlyConfig = require('../config');
+const UnifiedEventSink = require('../eventSink/UnifiedEventSink');
 const countlyApi = {
     mgmt: {
         appUsers: require('../parts/mgmt/app_users.js'),
     }
 };
 
-// Initialize Kafka producer if enabled
-let kafkaProducer = null;
-if (countlyConfig.kafka?.enabled) {
-    try {
-        const kafkaClient = new KafkaClient();
-        kafkaProducer = new KafkaProducer(kafkaClient, {
-            transactionalIdPrefix: 'countly-ingestor'
-        });
-        log.i('Kafka producer initialized for ingestor');
-    }
-    catch (kafkaError) {
-        log.e('Failed to initialize Kafka producer for ingestor:', kafkaError);
-        // Continue without Kafka - events will only be stored in MongoDB
-    }
+// Initialize unified event sink
+let eventSink = null;
+try {
+    eventSink = new UnifiedEventSink();
+    log.i('UnifiedEventSink initialized for ingestor');
+}
+catch (error) {
+    log.e('Failed to initialize UnifiedEventSink for ingestor:', error);
+    // This is a critical error since we need at least MongoDB for event storage
+    throw error;
 }
 
-const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 
-/**
- * Transform MongoDB document to ClickHouse format
- * @param {object} doc - MongoDB document
- * @returns {object|null} - Transformed document or null if invalid
- */
-function transformToClickhouseFormat(doc) {
-    if (!doc || !doc.a || !doc.e || !doc.ts || !doc._id) {
-        return null;
-    }
-
-    const result = {};
-
-    // Required fields
-    result.a = doc.a;
-    result.e = doc.n || doc.e;
-    result.uid = doc.uid;
-    result.did = doc.did;
-    result._id = doc._id;
-
-    // Timestamp handling
-    const ts = doc.ts;
-    result.ts = typeof ts === 'number' ? ts : (ts instanceof Date ? ts.getTime() : new Date(ts).getTime());
-
-    // Numeric fields
-    if (doc.c !== undefined && doc.c !== null) {
-        result.c = typeof doc.c === 'number' ? doc.c : +doc.c;
-    }
-    if (doc.s !== undefined && doc.s !== null) {
-        result.s = typeof doc.s === 'number' ? doc.s : +doc.s;
-    }
-    if (doc.dur !== undefined && doc.dur !== null) {
-        result.dur = typeof doc.dur === 'number' ? doc.dur : +doc.dur;
-    }
-
-    // JSON fields
-    if (doc.up && typeof doc.up === 'object') {
-        result.up = doc.up;
-    }
-    if (doc.custom && typeof doc.custom === 'object') {
-        result.custom = doc.custom;
-    }
-    if (doc.cmp && typeof doc.cmp === 'object') {
-        result.cmp = doc.cmp;
-    }
-    if (doc.sg && typeof doc.sg === 'object') {
-        result.sg = doc.sg;
-    }
-
-    // Optional date field
-    if (doc.lu !== undefined && doc.lu !== null) {
-        const lu = doc.lu;
-        result.lu = typeof lu === 'number' ? lu : (lu instanceof Date ? lu.getTime() : new Date(lu).getTime());
-    }
-
-    return result;
-}
 
 
 //Do not restart. If fails to creating, ail request.
@@ -418,7 +355,6 @@ var processToDrill = async function(params, drill_updates, callback) {
 
     var eventsToInsert = [];
     var timestamps = {};
-    var viewUpdate = {};
     if (events.length > 0) {
         for (let i = 0; i < events.length; i++) {
             var currEvent = events[i];
@@ -638,24 +574,6 @@ var processToDrill = async function(params, drill_updates, callback) {
             dbEventObject.dur = currEvent.dur || 0;
             dbEventObject.c = currEvent.count || 1;
             eventsToInsert.push({"insertOne": {"document": dbEventObject}});
-            if (eventKey === "[CLY]_view") {
-                var view_id = crypto.createHash('md5').update(currEvent.segmentation.name).digest('hex');
-                viewUpdate[view_id] = {"lvid": dbEventObject._id, "ts": dbEventObject.ts, "a": params.app_id + ""};
-                if (currEvent.segmentation) {
-                    var sgm = {};
-                    var have_sgm = false;
-                    for (var key in currEvent.segmentation) {
-                        if (key === 'platform' || !escapedViewSegments[key]) {
-                            sgm[key] = currEvent.segmentation[key];
-                            have_sgm = true;
-                        }
-                    }
-                    if (have_sgm) {
-                        viewUpdate[view_id].sg = sgm;
-                    }
-                }
-
-            }
 
         }
     }
@@ -666,77 +584,24 @@ var processToDrill = async function(params, drill_updates, callback) {
     }
     if (eventsToInsert.length > 0) {
         try {
-            await common.drillDb.collection("drill_events").bulkWrite(eventsToInsert, {ordered: false});
+            // Use UnifiedEventSink to write to all configured sinks (MongoDB, Kafka, etc.)
+            const result = await eventSink.write(eventsToInsert);
 
-            // Send to Kafka if enabled
-            if (kafkaProducer) {
-                try {
-                    const kafkaData = [];
-                    for (const bulkOp of eventsToInsert) {
-                        if (bulkOp.insertOne && bulkOp.insertOne.document) {
-                            const transformed = transformToClickhouseFormat(bulkOp.insertOne.document);
-                            if (transformed) {
-                                kafkaData.push(transformed);
-                            }
-                        }
-                    }
-
-                    if (kafkaData.length > 0) {
-                        const result = await kafkaProducer.sendEvents(kafkaData);
-                        if (result.success) {
-                            log.d(`Successfully sent ${result.sent} events to Kafka`);
-                        }
-                    }
-                }
-                catch (kafkaError) {
-                    log.e('Error sending to Kafka:', kafkaError);
-                    // Continue execution - don't fail the entire request for Kafka errors
-                    // Events are already stored in MongoDB
-                }
+            if (result.overall.success) {
+                log.d(`Successfully wrote ${result.overall.written} events using EventSink`);
+                callback(null);
             }
-
-            callback(null);
-            if (Object.keys(viewUpdate).length) {
-                //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
-                try {
-                    await common.db.collection("app_userviews").updateOne({_id: params.app_id + "_" + params.app_user.uid}, {$set: viewUpdate}, {upsert: true});
-                }
-                catch (err) {
-                    log.e(err);
-                }
+            else {
+                // EventSink failed - this is typically a MongoDB failure
+                log.e('EventSink failed to write events:', result.overall.error);
+                callback(new Error(result.overall.error));
+                return;
             }
 
         }
-        catch (errors) {
-            var realError;
-            if (errors && Array.isArray(errors)) {
-                log.e(JSON.stringify(errors));
-                for (let i = 0; i < errors.length; i++) {
-                    if ([11000, 10334, 17419].indexOf(errors[i].code) === -1) {
-                        realError = true;
-                    }
-                }
-
-                if (realError) {
-                    callback(realError);
-                }
-                else {
-                    callback(null);
-                    if (Object.keys(viewUpdate).length) {
-                        //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
-                        try {
-                            await common.db.collection("app_userviews").updateOne({_id: params.app_id + "_" + params.app_user.uid}, {$set: viewUpdate}, {upsert: true});
-                        }
-                        catch (err) {
-                            log.e(err);
-                        }
-                    }
-                }
-            }
-            else {
-                console.log(errors);
-                callback(errors);
-            }
+        catch (error) {
+            log.e('Error writing events via EventSink:', error);
+            callback(error);
         }
     }
     else {
