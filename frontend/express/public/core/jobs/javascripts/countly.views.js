@@ -284,7 +284,7 @@
                                 self.refresh(true);
                                 CountlyHelpers.notify({
                                     type: "ok",
-                                    message: CV.i18n("jobs." + command + "-success")
+                                    message: CV.i18n("jobs.command." + command + "-success", row.name)
                                 });
                             }
                             else {
@@ -316,7 +316,7 @@
                     headers: { 'Countly-Token': countlyGlobal.auth_token },
                     data: {
                         app_id: countlyCommon.ACTIVE_APP_ID,
-                        jobName: this.selectedJobConfig.name,
+                        jobName: self.selectedJobConfig.name,
                         action: 'updateSchedule',
                         schedule: this.selectedJobConfig.schedule
                     },
@@ -326,7 +326,7 @@
                         self.refresh(true);
                         CountlyHelpers.notify({
                             type: "ok",
-                            message: CV.i18n("jobs.schedule-updated")
+                            message: CV.i18n("jobs.command.schedule-success", self.selectedJobConfig.name),
                         });
                     },
                     error: function(err) {
