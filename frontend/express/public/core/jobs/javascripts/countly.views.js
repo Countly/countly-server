@@ -1,4 +1,4 @@
-/*global countlyAuth, countlyCommon, app, countlyVue, CV, countlyGlobal, CountlyHelpers, $, moment */
+/*global VeeValidate, cronstrue, countlyAuth, countlyCommon, app, countlyVue, CV, countlyGlobal, CountlyHelpers, $, moment */
 
 (function() {
     /**
@@ -109,6 +109,23 @@
         }
     };
 
+    VeeValidate.extend('validCron', {
+        validate: function(inpValue) {
+            var valid = true;
+
+            try {
+                cronstrue.toString(inpValue);
+            }
+            catch (_) {
+                valid = false;
+            }
+
+            return {
+                valid: valid,
+            };
+        },
+    });
+
     /**
      * Main view for listing jobs
      */
@@ -187,6 +204,14 @@
             },
         },
         methods: {
+            parseCron: function(inpStr) {
+                try {
+                    return cronstrue.toString(inpStr);
+                }
+                catch (_) {
+                    return inpStr;
+                }
+            },
             formatDateTime: function(date) {
                 return date ? moment(date).format('D MMM, YYYY HH:mm:ss') : '-';
             },

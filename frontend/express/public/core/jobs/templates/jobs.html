@@ -198,41 +198,46 @@
                 width="30%"
                 append-to-body
             >
-                <div class="bu-columns">
-                    <div class="bu-column">
-                        <div class="config-item">
-                            <label>{{ i18n('jobs.schedule') }}:</label>
-                            <el-input
-                                v-model="selectedJobConfig.schedule"
-                                :placeholder="selectedJobConfig.defaultSchedule"
-                            ></el-input>
+                <validation-observer v-slot="form">
+                    <div class="bu-columns">
+                        <div class="bu-column">
+                            <div class="config-item">
+                                <label>{{ i18n('jobs.schedule') }}:</label>
+                                <validation-provider v-slot="validation" name="schedule" ref="scheduleValidator" rules='required|validCron'>
+                                    <el-input
+                                        v-model="selectedJobConfig.schedule"
+                                        :placeholder="selectedJobConfig.defaultSchedule"
+                                    ></el-input>
 
-                            <div class="bu-mt-2 bu-is-size-7 bu-has-text-grey">
-                                {{ i18n('jobs.schedule-hint') }}
-                            </div>
+                                    <div class="bu-mt-2 bu-is-size-7 bu-has-text-grey">
+                                        {{ i18n('jobs.schedule-hint') }}
+                                    </div>
 
-                            <div
-                                v-if="selectedJobConfig.scheduleLabel"
-                                class="bu-mt-2 bu-is-size-7"
-                            >
-                                {{ selectedJobConfig.scheduleLabel }}
+                                    <div v-if="validation.errors.length > 0" class="text-small color-red-100 bu-pt-1">
+                                        {{i18n('jobs.schedule-error')}}
+                                    </div>
+                                    <div v-else class="text-small bu-pt-1">
+                                        {{parseCron(selectedJobConfig.schedule)}}
+                                    </div>
+                                </validation-provider>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <span slot="footer" class="dialog-footer">
-                    <el-button @click="scheduleDialogVisible = false">
-                        {{ i18n('common.cancel') }}
-                    </el-button>
-                    <el-button
-                        type="primary"
-                        @click="saveSchedule"
-                        :loading="saving"
-                    >
-                        {{ i18n('common.save') }}
-                    </el-button>
-                </span>
+                    <span slot="footer" class="dialog-footer">
+                        <el-button @click="scheduleDialogVisible = false">
+                            {{ i18n('common.cancel') }}
+                        </el-button>
+                        <el-button
+                            type="success"
+                            @click="saveSchedule"
+                            :loading="saving"
+                            :disabled="form.invalid"
+                        >
+                            {{ i18n('common.save') }}
+                        </el-button>
+                    </span>
+                </validation-observer>
             </el-dialog>
         </cly-section>
     </cly-main>
