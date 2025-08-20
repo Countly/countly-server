@@ -1,0 +1,74 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: controllers
+  namespace: kafka
+  labels: { strimzi.io/cluster: demo-kafka }
+spec:
+  replicas: 1
+  roles: ["controller"]
+  resources:
+    requests: { cpu: "1", memory: "4Gi" }
+    limits:   { cpu: "1", memory: "4Gi" }        # Guaranteed QoS
+  storage:
+    type: persistent-claim
+    size: 20Gi
+    class: pd-ssd
+    deleteClaim: false
+  template:
+    pod:
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: kafka
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: role
+                  operator: In
+                  values: ["kafka"]
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: brokers
+  namespace: kafka
+  labels: { strimzi.io/cluster: demo-kafka }
+spec:
+  replicas: 2
+  roles: ["broker"]
+  resources:
+    requests: { cpu: "1", memory: "4Gi" }
+    limits:   { cpu: "1", memory: "4Gi" }       # Guaranteed QoS
+  jvmOptions:
+    "-Xms": "2g"
+    "-Xmx": "2g"                                 # leave RAM to page cache
+    "-XX":
+      "UseG1GC": "true"
+      "MaxGCPauseMillis": "20"
+  storage:
+    type: jbod
+    volumes:
+      - id: 0
+        type: persistent-claim
+        size: 100Gi
+        class: pd-ssd
+        deleteClaim: false
+  template:
+    pod:
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: kafka
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: role
+                  operator: In
+                  values: ["kafka"]

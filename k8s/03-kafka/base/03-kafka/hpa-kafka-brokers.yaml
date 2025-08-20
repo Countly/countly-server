@@ -1,0 +1,46 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: kafka-brokers-hpa
+  namespace: kafka
+spec:
+  scaleTargetRef:
+    apiVersion: kafka.strimzi.io/v1beta2
+    kind: KafkaNodePool
+    name: brokers
+  minReplicas: 1
+  maxReplicas: 1  # Keep odd number for better quorum
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 85
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 300  # 5 minutes - conservative for brokers
+      policies:
+        - type: Pods
+          value: 2  # Scale by 2 to maintain even distribution
+          periodSeconds: 300
+        - type: Percent
+          value: 33  # Max 33% increase
+          periodSeconds: 300
+      selectPolicy: Min
+    scaleDown:
+      stabilizationWindowSeconds: 900  # 15 minutes - very conservative
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 900
+        - type: Percent
+          value: 10  # Very conservative scale down
+          periodSeconds: 900
+      selectPolicy: Min

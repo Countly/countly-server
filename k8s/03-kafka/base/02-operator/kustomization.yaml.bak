@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: kafka
+
+resources:
+  # Remote install manifest for the Cluster Operator (no Helm)
+  - https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.47.0/strimzi-cluster-operator-0.47.0.yaml
+  # Additional RBAC for leader election in kafka namespace
+  - rbac-leader-election.yaml
+
+patches:
+  - target:
+      kind: Deployment
+      name: strimzi-cluster-operator
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/20/value
+        value: kafka

@@ -1,0 +1,46 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: connect-ch-hpa
+  namespace: kafka
+spec:
+  scaleTargetRef:
+    apiVersion: kafka.strimzi.io/v1beta2
+    kind: KafkaConnect
+    name: connect-ch
+  minReplicas: 1
+  maxReplicas: 1
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 120  # Slower scale up for Connect
+      policies:
+        - type: Percent
+          value: 50  # More conservative scaling
+          periodSeconds: 120
+        - type: Pods
+          value: 2
+          periodSeconds: 120
+      selectPolicy: Min  # Use the more conservative policy
+    scaleDown:
+      stabilizationWindowSeconds: 600  # Longer stabilization for Connect
+      policies:
+        - type: Percent
+          value: 25  # Very conservative scale down
+          periodSeconds: 300
+        - type: Pods
+          value: 1
+          periodSeconds: 300
+      selectPolicy: Min

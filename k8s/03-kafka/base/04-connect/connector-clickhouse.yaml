@@ -1,0 +1,31 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: ch-sink-drill-events
+  namespace: kafka
+  labels: { strimzi.io/cluster: connect-ch }
+spec:
+  class: com.clickhouse.kafka.connect.ClickHouseSinkConnector
+  tasksMax: 8                                  # <= total partitions in input topic(s)
+  autoRestart:
+    enabled: true
+  config:
+    topics: test_topic
+    topic2TableMap: "test_topic=drill_events"
+
+    # ClickHouse connection (from env)
+    hostname: ${env:CLICKHOUSE_HOST}
+    port: ${env:CLICKHOUSE_PORT}
+    ssl: ${env:CLICKHOUSE_SSL}
+    database: ${env:CLICKHOUSE_DB}
+    username: ${env:CLICKHOUSE_USER}
+    password: ${env:CLICKHOUSE_PASSWORD}
+
+    # Per-connector Kafka consumer overrides (require override policy=All at worker)
+    consumer.override.max.poll.records: ${env:KAFKA_CONSUMER_MAX_POLL_RECORDS}
+    consumer.override.max.partition.fetch.bytes: ${env:KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES}
+    consumer.override.fetch.max.bytes: ${env:KAFKA_CONSUMER_FETCH_MAX_BYTES}
+
+    # DLQ (optional)
+#    errors.tolerance: all
+#    errors.deadletterqueue.topic.name: dlq.clickhouse.drill
