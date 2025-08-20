@@ -38,8 +38,8 @@ spec:
 
   # JVM & resources for Connect workers
   jvmOptions:
-    "-Xms": "4g"
-    "-Xmx": "4g"
+    "-Xms": "5g"
+    "-Xmx": "5g"
   resources:
     requests: { cpu: "2", memory: "8Gi" }
     limits:   { cpu: "2", memory: "8Gi" }   # Guaranteed QoS
@@ -63,6 +63,17 @@ spec:
         - name: CLICKHOUSE_PASSWORD
           valueFrom: { secretKeyRef: { name: clickhouse-auth, key: password } }
 
+        # ClickHouse connector settings
+        - name: EXACTLY_ONCE
+          valueFrom: { configMapKeyRef: { name: connect-env, key: EXACTLY_ONCE } }
+        - name: ERRORS_RETRY_TIMEOUT
+          valueFrom: { configMapKeyRef: { name: connect-env, key: ERRORS_RETRY_TIMEOUT } }
+        - name: ERRORS_TOLERANCE
+          valueFrom: { configMapKeyRef: { name: connect-env, key: ERRORS_TOLERANCE } }
+        
+        # Performance tuning environment variables  
+        - name: KAFKA_CONSUMER_FETCH_MIN_BYTES
+          valueFrom: { configMapKeyRef: { name: connect-env, key: KAFKA_CONSUMER_FETCH_MIN_BYTES } }
         - name: KAFKA_CONSUMER_MAX_POLL_RECORDS
           valueFrom: { configMapKeyRef: { name: connect-env, key: KAFKA_CONSUMER_MAX_POLL_RECORDS } }
         - name: KAFKA_CONSUMER_MAX_PARTITION_FETCH_BYTES

@@ -76,6 +76,7 @@ spec:
       num.concurrent.partition.movements.per.broker: "5"
       num.concurrent.intra.broker.partition.movements: "2"
       num.concurrent.leader.movements: "100"
+      num.concurrent.leader.movements.per.broker: "30"
       
       # Anomaly detection (must be >= metric sampling interval)
       anomaly.detection.interval.ms: "60000"

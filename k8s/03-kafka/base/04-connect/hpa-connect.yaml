@@ -9,7 +9,7 @@ spec:
     kind: KafkaConnect
     name: connect-ch
   minReplicas: 1
-  maxReplicas: 1
+  maxReplicas: 3
   metrics:
     - type: Resource
       resource:
