@@ -13,19 +13,29 @@
  * @typedef {{ agent: http2Wrapper.proxies.Http2OverHttp; lastUsedAt: number; }} ProxyCache
  * @typedef {import("../types/credentials.ts").TLSKeyPair} TLSKeyPair
  * @typedef {{ keyPair: TLSKeyPair; lastUsedAt: number; }} TLSKeyPairCache
+ * @typedef {Omit<APNP12Credentials, "type"|"_id"|"cert"|"secret"|"hash">&TLSKeyPair} P12CertificateContents
  * @typedef {import("http2").OutgoingHttpHeaders} OutgoingHttpHeaders
  */
+
 const jwt = require("jsonwebtoken");
 const http2Wrapper = require("http2-wrapper");
+const nodeForge = require("node-forge");
 const { URL } = require("url");
+const { ObjectId } = require("mongodb");
 const { PROXY_CONNECTION_TIMEOUT } = require("../constants/proxy-config.json");
-const { serializeProxyConfig, parseKeyPair, removeUPFromUserPropertyKey } = require("../lib/utils.js");
+const {
+    serializeProxyConfig,
+    removeUPFromUserPropertyKey
+} = require("../lib/utils.js");
 const { SendError, InvalidResponse, APNSErrors } = require("../lib/error.js");
+const { createHash } = require("crypto");
 /** @type {{[serializedProxyConfig: string]: ProxyCache}} */
 const PROXY_CACHE = {};
 /** @type {{[credentialHash: string]: JWTCache }} */
 const TOKEN_CACHE = {};
 const TOKEN_TTL = 20 * 60 * 1000; // 20 mins
+/** @type {{[hash: string]: TLSKeyPairCache}} */
+const TLS_KEY_PAIR_CACHE = {};
 
 /**
  * This function caches created tokens for a 20 mins. This is required because
@@ -84,25 +94,131 @@ function getProxyAgent(config) {
     PROXY_CACHE[serializedProxyConfig] = {
         lastUsedAt: Date.now(),
         agent
-    }
+    };
     return agent;
 }
 
-/** @type {{[hash: string]: TLSKeyPairCache}} */
-const tlsKeyPairCache = {};
 /**
  * @param {APNP12Credentials} credentials
  * @returns {TLSKeyPair}
  */
 function getTlsKeyPair(credentials) {
-    const cache = tlsKeyPairCache[credentials.hash];
+    const cache = TLS_KEY_PAIR_CACHE[credentials.hash];
     if (cache) {
         cache.lastUsedAt = Date.now();
         return cache.keyPair;
     }
-    const keyPair = parseKeyPair(credentials);
-    tlsKeyPairCache[credentials.hash] = { keyPair, lastUsedAt: Date.now() };
+    const { cert, key } = parseP12Certificate(
+        credentials.cert, credentials.secret
+    );
+    const keyPair = { cert, key };
+    TLS_KEY_PAIR_CACHE[credentials.hash] = { keyPair, lastUsedAt: Date.now() };
     return keyPair;
+}
+
+/**
+ * @param {string} certificate - Base64 encoded P12 certificate
+ * @param {string=} secret - Passphrase for the P12 certificate
+ * @returns {P12CertificateContents}
+ */
+function parseP12Certificate(certificate, secret) {
+    /** @type {Partial<P12CertificateContents>&{topics: string[]}} */
+    const result = {
+        cert: undefined,
+        key: undefined,
+        notBefore: undefined,
+        notAfter: undefined,
+        bundle: undefined,
+        topics: [],
+    };
+
+    // parse the key pair
+    const buffer = nodeForge.util.decode64(certificate);
+    const asn1 = nodeForge.asn1.fromDer(buffer);
+    const p12 = nodeForge.pkcs12.pkcs12FromAsn1(asn1, false, secret);
+    const cert = p12.getBags({
+        bagType: nodeForge.pki.oids.certBag
+    })?.[nodeForge.pki.oids.certBag]?.[0];
+    const pk = p12.getBags({
+        bagType: nodeForge.pki.oids.pkcs8ShroudedKeyBag
+    })?.[nodeForge.pki.oids.pkcs8ShroudedKeyBag]?.[0];
+    if (!cert || !pk || !cert.cert || !pk.key) {
+        throw new Error('Failed to get TLS key pairs from crededentials');
+    }
+    result.cert = nodeForge.pki.certificateToPem(cert.cert);
+    result.key = nodeForge.pki.privateKeyToPem(pk.key);
+
+    // parse extensions for topics, bundle, notBefore and notAfter:
+    p12.safeContents.forEach(safeContents => {
+        safeContents.safeBags.forEach(safeBag => {
+            if (safeBag.cert) {
+                if (safeBag.cert.validity) {
+                    if (safeBag.cert.validity.notBefore) {
+                        result.notBefore = safeBag.cert.validity.notBefore;
+                    }
+                    if (safeBag.cert.validity.notAfter) {
+                        result.notAfter = safeBag.cert.validity.notAfter;
+                    }
+                }
+                var tpks = safeBag.cert.getExtension({
+                    // @ts-ignore
+                    id: '1.2.840.113635.100.6.3.6'
+                });
+                // @ts-ignore
+                if (tpks && tpks.value) {
+                    // @ts-ignore
+                    let strValue = /** @type {string} */(tpks.value)
+                        .replace(/0[\x00-\x1f\(\)!]/gi, '');
+                    strValue = strValue.replace('\f\f', '\f');
+                    let value = strValue.split('\f')
+                        .map(s => s.replace(/[^A-Za-z\-\.]/gi, '').trim());
+                    // next line is a workaround for a p12 file not being parsed
+                    // correctly. in the problematic file, first topic was
+                    // starting with a "-". full value of the extension was
+                    // something like this:
+                    //   - 0\x82\x01\x05\f-ly.count.CountlySwift0\x07\f
+                    //   - \x05topic\f2ly.count.CountlySwift.voip0\x06\
+                    //   - f\x04voip\f:ly.count.CountlySwift.complicati
+                    //   - on0\x0E\f\fcomplication\f6ly.count.CountlySw
+                    //   - ift.voip-ptt0\x0B\f\t.voip-ptt
+                    value = value.map(
+                        s => s.replace(/^[^A-Za-z\.]/, "").trim()
+                    );
+                    value.shift();
+                    for (var i = 0; i < value.length; i++) {
+                        for (var j = 0; j < value.length; j++) {
+                            if (i !== j && value[j].indexOf(value[i]) === 0) {
+                                if (result.topics.indexOf(value[i]) === -1
+                                    && value[i]
+                                    && value[i].indexOf('.') !== -1
+                                    && value[i].indexOf(".") !== 0
+                                ) {
+                                    result.topics.push(value[i]);
+                                }
+                                if (result.topics.indexOf(value[j]) === -1
+                                    && value[j]
+                                    && value[j].indexOf('.') !== -1
+                                    && value[j].indexOf(".") !== 0
+                                ) {
+                                    result.topics.push(value[j]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+    if (result.topics.length === 0) {
+        throw new Error('Not a universal (Sandbox & Production) certificate');
+    }
+    if (!result.notBefore || !result.notAfter) {
+        throw new Error('No validity dates in the certificate');
+    }
+    result.topics.sort((a, b) => a.length - b.length);
+    result.bundle = result.topics[0];
+    result.topics = result.topics;
+    return /** @type {P12CertificateContents} */(result);
 }
 
 /**
@@ -199,30 +315,95 @@ async function send(pushEvent) {
 
 /**
  * Validates the APN credentials
- * @param {APNCredentials} credentials - APN credentials object
- * @returns {Promise<APNCredentials>} credentials with validated and hashed service account file
+ * @param {APNCredentials} creds
+ * @param {ProxyConfiguration=} proxyConfig - FCM credentials object
+ * @returns {Promise<{ creds: APNCredentials, view: APNCredentials }>}
  * @throws {Error} if credentials are invalid
  */
-async function validateCredentials(credentials) {
-    console.log(credentials);
-    if (credentials.type === "apn_universal") {
-        const cert = credentials.cert;
-        if (typeof cert !== "string" || !cert) {
+async function validateCredentials(creds, proxyConfig) {
+    /** @type {APNCredentials} */
+    let view;
+    if (creds.type === "apn_universal") {
+        if (typeof creds.cert !== "string" || !creds.cert) {
             throw new Error(`Invalid APNP12Credentials: cert is required and must be a string`);
         }
+        const { key, cert, ...content } = parseP12Certificate(
+            creds.cert,
+            creds.secret
+        );
+        if (content.notBefore.getTime() > Date.now()) {
+            throw new Error('Certificate is not valid yet');
+        }
+        if (content.notAfter.getTime() < Date.now()) {
+            throw new Error('Certificate is expired');
+        }
+        creds = { ...creds, ...content };
+        view = { ...creds, cert: "APN Sandbox & Production Certificate (P12)" };
     }
-    else if (credentials.type === "apn_token") {
+    else { // creds.type === "apn_token"
         const requiredFields = /** @type {Array<keyof APNP8Credentials>} */(
             ["key", "keyid", "bundle", "team"]
         );
         for (const field of requiredFields) {
-            if (!credentials[field] || typeof credentials[field] !== "string") {
+            if (!creds[field] || typeof creds[field] !== "string") {
                 throw new Error(`Invalid APNP8Credentials: ${field} is required`);
             }
         }
+        if (creds.key.indexOf(';base64,') !== -1) {
+            let mime = creds.key.substring(0, creds.key.indexOf(';base64,'));
+            if (!['data:application/x-pkcs8', 'data:application/pkcs8'].includes(mime)) {
+                throw new Error(`Invalid APNP8Credentials: key must be a base64 encoded P8 file`);
+            }
+            creds.key = creds.key.substring(creds.key.indexOf(',') + 1);
+        }
+        view = { ...creds, key: 'APN Key File (P8)' };
+    }
+    const hash = createHash("sha256").update(JSON.stringify(creds)).digest("hex");
+    creds.hash = hash;
+    view.hash = hash;
+
+    try {
+        await send({
+            credentials: creds,
+            appId: new ObjectId,
+            messageId: new ObjectId,
+            scheduleId: new ObjectId,
+            uid: "1",
+            token: Math.random() + '',
+            message: {
+                aps: {
+                    sound: 'default',
+                    alert: {
+                        title: 'test',
+                        body: 'test'
+                    }
+                },
+                c: { i: Math.random() + '' }
+            },
+            saveResult: false,
+            platform: "i",
+            env: "p",
+            language: "en",
+            platformConfiguration: {
+                setContentAvailable: false
+            },
+            trigger: {
+                kind: "plain",
+                start: new Date(),
+            },
+            appTimezone: "NA",
+            proxy: proxyConfig,
+        });
+    }
+    catch(error) {
+        const invalidTokenErrorMessage = "INVALID_ARGUMENT: The registration token is not a valid FCM registration token";
+        if (error instanceof SendError && error.message === invalidTokenErrorMessage) {
+            return { creds, view };
+        }
+        throw error;
     }
 
-    return credentials;
+    throw new Error("Test connection failed for an unknown reason.");
 }
 
 /**
@@ -298,8 +479,10 @@ function mapMessageToPayload(messageDoc, content, userProps) {
 
 module.exports = {
     send,
+    parseP12Certificate,
     getTlsKeyPair,
     getAuthToken,
     getProxyAgent,
     mapMessageToPayload,
+    validateCredentials,
 };

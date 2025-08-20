@@ -10,7 +10,6 @@ const proxyquire = require("proxyquire").noCallThru();
 const mockData = require("../../mock/data");
 
 describe("Android", () => {
-    describe("push notification sender");
     const mockHttpsProxyAgentInstance = {};
     const MockHttpsProxyAgent = sinon.stub().callsFake(() => mockHttpsProxyAgentInstance);
     const sendStub = sinon.stub();

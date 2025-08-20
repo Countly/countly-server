@@ -13,7 +13,6 @@
  */
 
 const { URL } = require("url");
-const nodeForge = require("node-forge");
 const common = require('../../../../../api/utils/common');
 const { processEvents: processInternalEvents } = require('../../../../../api/parts/data/events');
 const { updateDataPoints } = require('../../../../server-stats/api/parts/stats');
@@ -75,34 +74,6 @@ function serializeProxyConfig(config) {
     return config
         ? KEY_ORDER.map(key => config[key]).join("-")
         : "undefined"
-}
-
-/**
- * Parses a P12 certificate and extracts the TLS key pair.
- * This function decodes the base64 encoded certificate, converts it to ASN.1 format,
- * and then extracts the certificate and private key from the P12 structure.
- * It returns an object containing the PEM formatted certificate and private key.
- * If the certificate or private key cannot be extracted, it throws an error.
- * @param {APNP12Credentials} credentials - The credentials object containing the certificate and secret.
- * @returns {TLSKeyPair} PEM strings
- */
-function parseKeyPair(credentials) {
-    const buffer = nodeForge.util.decode64(credentials.cert);
-    const asn1 = nodeForge.asn1.fromDer(buffer);
-    const p12 = nodeForge.pkcs12.pkcs12FromAsn1(asn1, false, credentials.secret);
-    const cert = p12.getBags({
-        bagType: nodeForge.pki.oids.certBag
-    })?.[nodeForge.pki.oids.certBag]?.[0];
-    const pk = p12.getBags({
-        bagType: nodeForge.pki.oids.pkcs8ShroudedKeyBag
-    })?.[nodeForge.pki.oids.pkcs8ShroudedKeyBag]?.[0];
-    if (!cert || !pk || !cert.cert || !pk.key) {
-        throw new Error('Failed to get TLS key pairs from crededentials');
-    }
-    return {
-        cert: nodeForge.pki.certificateToPem(cert.cert),
-        key: nodeForge.pki.privateKeyToPem(pk.key)
-    };
 }
 
 /**
@@ -292,7 +263,6 @@ function extractTokenFromQuerystring(qstring) {
 module.exports = {
     buildProxyUrl,
     serializeProxyConfig,
-    parseKeyPair,
     loadDrillAPI,
     updateInternalsWithResults,
     sanitizeMongoPath,

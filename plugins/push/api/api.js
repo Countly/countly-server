@@ -92,13 +92,13 @@ async function queueInitializer(db) {
     try {
         await initPushQueue(
             (pushes) => sendAllPushes(pushes)
-                .catch(e => logError("Error while processing PushEvents", e)),
+                .catch(e => logError("Error while processing PushEvents", pushes, e)),
             (schedules) => composeAllScheduledPushes(db, schedules)
-                .catch(e => logError("Error while processing ScheduleEvents", e)),
+                .catch(e => logError("Error while processing ScheduleEvents", schedules, e)),
             (results) => saveResults(db, results)
-                .catch(e => logError("Error while processing ResultEvents", e)),
+                .catch(e => logError("Error while processing ResultEvents", results, e)),
             (autoTriggerEvents) => scheduleMessageByAutoTriggers(db, autoTriggerEvents)
-                .catch(e => logError("Error while processing AutoTriggerEvents", e)),
+                .catch(e => logError("Error while processing AutoTriggerEvents", autoTriggerEvents, e)),
         );
     }
     catch(e) {

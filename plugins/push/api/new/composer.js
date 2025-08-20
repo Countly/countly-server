@@ -49,7 +49,7 @@ async function composeAllScheduledPushes(db, scheduleEvents) {
             totalNumberOfPushes += result;
         }
         catch(err) {
-            log.e("Error while composing scheduleEvents", err);
+            log.e("Error while composing scheduleEvents", scheduleEvent, err);
             // TODO: handle error as result
         }
     }

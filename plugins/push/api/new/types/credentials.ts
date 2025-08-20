@@ -10,28 +10,28 @@ export interface FCMCredentials {
 }
 
 export interface APNP12Credentials {
+    type: "apn_universal";
     _id: ObjectId;
-    bundle: string;
     cert: string;
+    secret: string;
+    bundle: string;
     notAfter: Date;
     notBefore: Date;
-    secret: string;
     topics: string[];
-    type: "apn_universal";
     hash: string;
 }
 
 export interface APNP8Credentials {
+    type: "apn_token";
     _id: ObjectId;
     bundle: string;
     key: string;
     keyid: string;
     team: string;
-    type: "apn_token";
     hash: string;
 }
 
-export type TLSKeyPair = Pick<SecureContextOptions, "key"|"cert">;
+export type TLSKeyPair = Required<Pick<SecureContextOptions, "key"|"cert">>;
 
 export type APNCredentials = APNP12Credentials | APNP8Credentials;
 

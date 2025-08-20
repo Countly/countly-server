@@ -119,14 +119,14 @@ async function send(pushEvent) {
 }
 
 /**
- * Validates the FCM credentials
+ * Validates the FCM credentials, hashes the service account file, and returns the credentials object with a view object.
  * @param {FCMCredentials} credentials - FCM credentials object
  * @param {ProxyConfiguration=} proxyConfig - FCM credentials object
  * @returns {Promise<{ creds: FCMCredentials, view: FCMCredentials }>} credentials with validated and hashed service account file and its view object
  * @throws {Error} if credentials are invalid
  */
 async function validateCredentials(credentials, proxyConfig) {
-    const { serviceAccountFile, hash, type } = credentials;
+    const { serviceAccountFile, type } = credentials;
     if (type !== "fcm") {
         throw new Error("Invalid credentials type");
     }
@@ -217,18 +217,6 @@ async function validateCredentials(credentials, proxyConfig) {
 }
 
 /**
- * Validates the FCM credentials
- * @param {FCMCredentials} credentials - FCM credentials object
- * @returns {FCMCredentials} credentials with validated and hashed service account file
- */
-function credentialsView(credentials) {
-    const serviceAccountFile = credentials.serviceAccountFile
-        ? "service-account.json"
-        : "";
-    return { ...credentials, serviceAccountFile };
-}
-
-/**
  * Maps message contents to an FCM request payload
  * @param {Message} messageDoc - Message document
  * @param {Content} content - Content object built from message contents in template builder
@@ -308,5 +296,4 @@ module.exports = {
     isProxyConfigurationUpdated,
     validateCredentials,
     mapMessageToPayload,
-    credentialsView,
 };

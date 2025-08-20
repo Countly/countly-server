@@ -29,7 +29,7 @@ async function saveResults(db, results) {
     }
     catch (error) {
         console.error(error);
-        log.e("Error while updating internals with results", error);
+        log.e("Error while updating internals with results", results, error);
     }
 
     /** @type {{[scheduleId: string]: { resultObject: Result; messageId: ObjectId; }}} */
@@ -94,7 +94,7 @@ async function saveResults(db, results) {
         // TODO: record [CLY]_push_sent events
     }
     catch (error) {
-        log.e("Error while updating meta results", error);
+        log.e("Error while updating meta results", results, error);
     }
 }
 
