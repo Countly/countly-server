@@ -10,31 +10,28 @@ spec:
   kafka:
     version: 4.0.0
     image: gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+    # rack:
+    #   topologyKey: topology.kubernetes.io/zone
     listeners:
       - name: internal
         port: 9092
         type: internal
         tls: false
     config:
-      # Production broker configuration
-      num.network.threads: 2 #8
-      num.io.threads: 4 #16
+      # Network configuration
       socket.send.buffer.bytes: 102400
       socket.receive.buffer.bytes: 102400
       socket.request.max.bytes: 104857600
       
-      # Replication and durability (staging with 2 brokers)
-      default.replication.factor: 2
-      min.insync.replicas: 1
+      # Replication and durability (production)
+      default.replication.factor: 3
+      min.insync.replicas: 2
       unclean.leader.election.enable: false
       
-      # Log settings
+      # Log settings (simplified for staging)
       log.retention.hours: 168
-      log.retention.bytes: 1073741824
       log.segment.bytes: 1073741824
       log.cleanup.policy: delete
-      log.flush.interval.messages: 10000
-      log.flush.interval.ms: 1000
       
       # Compression
       compression.type: lz4
@@ -42,17 +39,16 @@ spec:
       # Topic creation
       auto.create.topics.enable: false
       
-      # Consumer offsets topic configuration (for 2 brokers)
-      offsets.topic.replication.factor: 2
-      offsets.topic.num.partitions: 50
-      transaction.state.log.replication.factor: 2
-      transaction.state.log.min.isr: 1
+      # Consumer offsets topic configuration (production)
+      offsets.topic.replication.factor: 3
+      offsets.topic.num.partitions: 24
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
       
       # Inter broker protocol
       inter.broker.protocol.version: 4.0
       log.message.format.version: 4.0
     
-    # Remove JBOD storage as it conflicts with NodePool configuration
   cruiseControl:
     # Resource configuration for Cruise Control
     resources:
@@ -76,10 +72,10 @@ spec:
       network.inbound.balance.threshold: "1.1"  
       network.outbound.balance.threshold: "1.1"
       
-      # Rebalance configuration
+      # Rebalance configuration (optimized for 3-broker production)
       num.concurrent.partition.movements.per.broker: "5"
       num.concurrent.intra.broker.partition.movements: "2"
-      num.concurrent.leader.movements: "1000"
+      num.concurrent.leader.movements: "100"
       
       # Anomaly detection (must be >= metric sampling interval)
       anomaly.detection.interval.ms: "60000"

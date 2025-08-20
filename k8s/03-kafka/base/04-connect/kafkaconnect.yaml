@@ -17,9 +17,9 @@ spec:
     config.storage.topic: connect_ch_configs
     offset.storage.topic: connect_ch_offsets
     status.storage.topic: connect_ch_status
-    config.storage.replication.factor: 2
-    offset.storage.replication.factor: 2
-    status.storage.replication.factor: 2
+    config.storage.replication.factor: 3
+    offset.storage.replication.factor: 3
+    status.storage.replication.factor: 3
     config.storage.partitions: 1
     offset.storage.partitions: 25
     status.storage.partitions: 5

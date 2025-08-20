@@ -3,5 +3,6 @@ kind: Kustomization
 
 resources:
   - kafka.yaml
-  - nodepools.yaml
-  - hpa-kafka-brokers.yaml
+  - controllers.yaml
+  - brokers.yaml
+  # For scaling: modify replicas in controllers.yaml or brokers.yaml and let Cruise Control rebalance

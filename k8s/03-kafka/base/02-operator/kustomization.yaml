@@ -3,11 +3,8 @@ kind: Kustomization
 namespace: kafka
 
 resources:
-  # Remote install manifest for the Cluster Operator (no Helm)
   - https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.47.0/strimzi-cluster-operator-0.47.0.yaml
-  # Additional RBAC for leader election in kafka namespace
   - rbac-leader-election.yaml
-  # Comprehensive RBAC for Strimzi operator in kafka namespace
   - rbac-strimzi-namespace.yaml
 
 patches:
@@ -19,7 +16,6 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/image
         value: gcr.io/countly-dev-313620/strimzi/operator:0.47.0
-      # Update environment variables to use our registry images
       - op: replace
         path: /spec/template/spec/containers/0/env/3/value
         value: gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
@@ -53,7 +49,6 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/env/10/value
         value: gcr.io/countly-dev-313620/strimzi/operator:0.47.0
-  # Fix ServiceAccount references in RoleBindings - they point to myproject instead of kafka
   - target:
       kind: RoleBinding
       name: strimzi-cluster-operator

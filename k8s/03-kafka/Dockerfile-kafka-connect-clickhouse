@@ -1,6 +1,5 @@
 # Dockerfile-kafka-connect-clickhouse
 # Pinned to Strimzi 0.47.0 + Apache Kafka 4.0.0
-# Using our uploaded image from countly-dev-313620
 FROM gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
 
 USER root:root
