@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Enterprise Fixes:
+- [ldap] Recursive user search in ldap added
+
 ## Version 25.03.16
 Enterprise Fixes:
 - [journeys] Fix for skip threshold check in concurrent requests
