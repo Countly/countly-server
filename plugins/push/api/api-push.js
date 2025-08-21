@@ -2,18 +2,23 @@
 const { CentralMaster, CentralWorker } = require('../../../api/parts/jobs/ipc');
 const common = require('../../../api/utils/common'),
     log = common.log('push:api:push'),
-    { extract, field, allAppUserFields, /*platforms,*/ ValidationError, DBMAP } = require('./send');
+    { ValidationError, DBMAP } = require('./send');
 
 /**
  * @typedef {import('./new/types/credentials').PlatformCredential} PlatformCredential
+ * @typedef {import('./new/types/message').PlatformKey} PlatformKey
  */
 const { validateCredentials: validateAndroidCredentials } = require("./new/platforms/android");
 const { validateCredentials: validateIOSCredentials } = require("./new/platforms/ios");
 const { validateCredentials: validateHuaweiCredentials } = require("./new/platforms/huawei");
 const { loadProxyConfiguration } = require('./new/lib/utils');
-
+const { extractTokenFromQuerystring } = require("./new/lib/utils");
 const platforms = require("./new/constants/platform-keymap.js");
 const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
+const allAppUserFields = Object.values(platforms)
+    .map(platform => platform.combined)
+    .flat()
+    .map(combined => `tk${combined}`);
 
 const CMD_PUSH_TOKEN_SESSION = 'push_token_session',
     queue = {};
@@ -104,9 +109,10 @@ ipc.attach();
  * @param {Object} msg IPC message
  */
 async function processTokenSession(msg) {
+    console.log('processTokenSession', JSON.stringify(msg, null, 2));
     let {p, f, token, hash, app_id, uid, app_user_id} = msg,
-        appusersField = field(p, f, true),
-        pushField = field(p, f, false),
+        appusersField = `tk${p}${f}`,
+        pushField = `tk.${p}${f}`,
         pushCollection = common.db.collection(`push_${app_id}`),
         appusersCollection = common.db.collection(`app_users${app_id}`);
 
@@ -162,7 +168,7 @@ async function processTokenSession(msg) {
 }
 
 module.exports.onTokenSession = async(dbAppUser, params) => {
-    let stuff = extract(params.qstring);
+    let stuff = extractTokenFromQuerystring(params.qstring);
     if (stuff) {
         let [p, f, token, hash] = stuff;
         ipc.send({to: 0, cmd: CMD_PUSH_TOKEN_SESSION, p, f, token, hash, uid: dbAppUser.uid, app_id: params.app_id, app_user_id: params.app_user_id});
