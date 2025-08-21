@@ -76,7 +76,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
                         if (databaseDebugComparisonValue) {
                             options.data += '&comparison=' + databaseDebugComparisonValue;
                         }
-                        if (databaseDebugDbOverrideValue) {
+                        if (databaseDebugDbOverrideValue && options.data.indexOf('db_override=') === -1) {
                             options.data += '&db_override=' + databaseDebugDbOverrideValue;
                         }
                     }
