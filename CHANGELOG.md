@@ -1,3 +1,8 @@
+## Version 25.03.X
+Enterprise Fixes:
+- [license] Update metric endpoint permission
+
+
 ## Version 25.03.16
 Enterprise Fixes:
 - [journeys] Fix for skip threshold check in concurrent requests
