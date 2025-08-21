@@ -1,0 +1,1508 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Push Notifications API",
+    "description": "API for managing push notifications in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/push/message/create": {
+      "get": {
+        "summary": "Create push notification message",
+        "description": "Create a new push notification message",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app",
+            "in": "query",
+            "required": true,
+            "description": "Application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platforms",
+            "in": "query",
+            "required": true,
+            "description": "Array of platforms to send to",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "saveStats",
+            "in": "query",
+            "required": false,
+            "description": "Store each individual push records into push_stats for debugging",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Message status (draft, etc.)",
+            "schema": {
+              "type": "string",
+              "enum": ["draft"]
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": false,
+            "description": "User profile filter to limit recipients",
+            "schema": {
+              "type": "object"
+            }
+          },
+          {
+            "name": "triggers",
+            "in": "query",
+            "required": true,
+            "description": "Array of triggers for when message should be sent",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          {
+            "name": "contents",
+            "in": "query",
+            "required": true,
+            "description": "Array of content objects for different platforms/locales",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "ID of the created message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or push error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ServerError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/push/message/test": {
+      "get": {
+        "summary": "Test push notification message",
+        "description": "Send a test push notification message",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platforms",
+            "in": "query",
+            "required": true,
+            "description": "Array of platforms to test",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "test",
+            "in": "query",
+            "required": true,
+            "description": "Test configuration with tokens or UIDs",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test message sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or push error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/push/message/update": {
+      "get": {
+        "summary": "Update push notification message",
+        "description": "Update an existing push notification message",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_id",
+            "in": "query",
+            "required": true,
+            "description": "Message ID to update",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or push error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/push/message/toggle": {
+      "get": {
+        "summary": "Toggle push notification message",
+        "description": "Start or stop a push notification message",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_id",
+            "in": "query",
+            "required": true,
+            "description": "Message ID to toggle",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message toggled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or push error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/push/message/remove": {
+      "get": {
+        "summary": "Remove push notification message",
+        "description": "Remove an existing push notification message",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_id",
+            "in": "query",
+            "required": true,
+            "description": "Message ID to remove",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or push error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/push/message/push": {
+      "get": {
+        "summary": "Add notifications to API message",
+        "description": "Add notifications to previously created message with API trigger",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_id",
+            "in": "query",
+            "required": true,
+            "description": "Message ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "description": "Date to send notifications on",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": true,
+            "description": "User profile filter to limit recipients",
+            "schema": {
+              "type": "object"
+            }
+          },
+          {
+            "name": "contents",
+            "in": "query",
+            "required": false,
+            "description": "Array of contents to override message contents",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          {
+            "name": "variables",
+            "in": "query",
+            "required": false,
+            "description": "Custom variables for personalization",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notifications added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "description": "Number of notifications added"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or push error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/push/message/pop": {
+      "get": {
+        "summary": "Remove notifications from API message",
+        "description": "Remove notifications from previously created message with API trigger",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_id",
+            "in": "query",
+            "required": true,
+            "description": "Message ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": true,
+            "description": "User profile filter to limit recipients",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notifications removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "number",
+                      "description": "Number of notifications removed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or push error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/push/dashboard": {
+      "get": {
+        "summary": "Get push notification dashboard",
+        "description": "Get dashboard statistics for push notifications",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sent": {
+                      "type": "object",
+                      "description": "Sent notifications metrics",
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "description": "Total quantity of notifications sent"
+                        },
+                        "weekly": {
+                          "type": "object",
+                          "description": "Weekly metrics for sent notifications",
+                          "properties": {
+                            "keys": {
+                              "type": "array",
+                              "description": "Metrics keys",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "data": {
+                              "type": "array",
+                              "description": "Metrics values",
+                              "items": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        "monthly": {
+                          "type": "object",
+                          "description": "Monthly metrics for sent notifications",
+                          "properties": {
+                            "keys": {
+                              "type": "array",
+                              "description": "Metrics keys",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "data": {
+                              "type": "array",
+                              "description": "Metrics values",
+                              "items": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        "platforms": {
+                          "type": "object",
+                          "description": "Sent metrics per platform"
+                        }
+                      }
+                    },
+                    "sent_automated": {
+                      "type": "object",
+                      "description": "Sent notifications metrics for automated messages"
+                    },
+                    "sent_tx": {
+                      "type": "object",
+                      "description": "Sent notifications metrics for API messages"
+                    },
+                    "actions": {
+                      "type": "object",
+                      "description": "Actions metrics"
+                    },
+                    "actions_automated": {
+                      "type": "object",
+                      "description": "Actions metrics for automated messages"
+                    },
+                    "actions_tx": {
+                      "type": "object",
+                      "description": "Actions metrics for API messages"
+                    },
+                    "enabled": {
+                      "type": "object",
+                      "description": "Number of push notification - enabled user profiles per platform",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "users": {
+                      "type": "integer",
+                      "description": "Total number of user profiles"
+                    },
+                    "platforms": {
+                      "type": "object",
+                      "description": "Map of platform key to platform title for all supported platforms"
+                    },
+                    "tokens": {
+                      "type": "object",
+                      "description": "Map of token key to token title for all supported platforms / modes"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/push/mime": {
+      "get": {
+        "summary": "Get MIME types information",
+        "description": "Get supported MIME types for push notification media",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MIME types retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mime": {
+                      "type": "array",
+                      "description": "Array of supported MIME types",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/push/message/estimate": {
+      "get": {
+        "summary": "Estimate push notification audience",
+        "description": "Estimate the number of users that would receive a push notification",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "platforms",
+            "in": "query",
+            "required": true,
+            "description": "Array of platforms to estimate for",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": false,
+            "description": "User profile filter to estimate",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audience estimation retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "description": "Total estimated audience"
+                    },
+                    "platforms": {
+                      "type": "object",
+                      "description": "Estimated audience per platform"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/push/message/all": {
+      "get": {
+        "summary": "Get all push notification messages",
+        "description": "Get a list of all push notification messages",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "description": "Message ID"
+                      },
+                      "app": {
+                        "type": "string",
+                        "description": "Application ID"
+                      },
+                      "saveStats": {
+                        "type": "boolean",
+                        "description": "Store individual push records for debugging"
+                      },
+                      "platforms": {
+                        "type": "array",
+                        "description": "Array of platforms",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "state": {
+                        "type": "number",
+                        "description": "Message state (internal use)"
+                      },
+                      "status": {
+                        "type": "string",
+                        "description": "Message status",
+                        "enum": ["created", "inactive", "draft", "scheduled", "sending", "sent", "stopped", "failed"]
+                      },
+                      "filter": {
+                        "type": "object",
+                        "description": "User profile filter"
+                      },
+                      "triggers": {
+                        "type": "array",
+                        "description": "Array of triggers",
+                        "items": {
+                          "type": "object"
+                        }
+                      },
+                      "contents": {
+                        "type": "array",
+                        "description": "Array of contents",
+                        "items": {
+                          "type": "object"
+                        }
+                      },
+                      "result": {
+                        "type": "object",
+                        "description": "Notification sending result",
+                        "properties": {
+                          "total": {
+                            "type": "number",
+                            "description": "Total number of push notifications"
+                          },
+                          "processed": {
+                            "type": "number",
+                            "description": "Number notifications processed so far"
+                          },
+                          "sent": {
+                            "type": "number",
+                            "description": "Number notifications sent successfully"
+                          },
+                          "actioned": {
+                            "type": "number",
+                            "description": "Number notifications with positive user reactions"
+                          },
+                          "errored": {
+                            "type": "number",
+                            "description": "Number notifications with errors"
+                          }
+                        }
+                      },
+                      "info": {
+                        "type": "object",
+                        "description": "Info object - extra information about the message",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "description": "Message title"
+                          },
+                          "appName": {
+                            "type": "string",
+                            "description": "Application name"
+                          },
+                          "silent": {
+                            "type": "boolean",
+                            "description": "UI switch to show the message as silent"
+                          },
+                          "scheduled": {
+                            "type": "boolean",
+                            "description": "UI switch to show the message as scheduled"
+                          },
+                          "created": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Date when the message was created"
+                          },
+                          "createdBy": {
+                            "type": "string",
+                            "description": "ID of user who created the message"
+                          },
+                          "createdByName": {
+                            "type": "string",
+                            "description": "Name of user who created the message"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/push/message/{_id}": {
+      "get": {
+        "summary": "Get specific push notification message",
+        "description": "Get details of a specific push notification message",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_id",
+            "in": "path",
+            "required": true,
+            "description": "Message ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "Message ID"
+                    },
+                    "app": {
+                      "type": "string",
+                      "description": "Application ID"
+                    },
+                    "saveStats": {
+                      "type": "boolean",
+                      "description": "Store individual push records for debugging"
+                    },
+                    "platforms": {
+                      "type": "array",
+                      "description": "Array of platforms",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "state": {
+                      "type": "number",
+                      "description": "Message state (internal use)"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Message status",
+                      "enum": ["created", "inactive", "draft", "scheduled", "sending", "sent", "stopped", "failed"]
+                    },
+                    "filter": {
+                      "type": "object",
+                      "description": "User profile filter"
+                    },
+                    "triggers": {
+                      "type": "array",
+                      "description": "Array of triggers",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "contents": {
+                      "type": "array",
+                      "description": "Array of contents",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "result": {
+                      "type": "object",
+                      "description": "Notification sending result"
+                    },
+                    "info": {
+                      "type": "object",
+                      "description": "Info object - extra information about the message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/push/user": {
+      "get": {
+        "summary": "Get push notification user data",
+        "description": "Get push notification related data for a specific user",
+        "tags": [
+          "Push Notifications"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "query",
+            "required": true,
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "uid": {
+                      "type": "string",
+                      "description": "User ID"
+                    },
+                    "tokens": {
+                      "type": "object",
+                      "description": "User push tokens"
+                    },
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "Whether push notifications are enabled for this user"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/pushes/create": {
+      "get": {
+        "summary": "Create push notification message (Legacy API)",
+        "description": "Create a new push notification message using legacy API format",
+        "tags": [
+          "Push Notifications (Legacy)"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "apps",
+            "in": "query",
+            "required": false,
+            "description": "Array of app IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "platforms",
+            "in": "query",
+            "required": false,
+            "description": "Array of platforms",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "messagePerLocale",
+            "in": "query",
+            "required": false,
+            "description": "Message content per locale",
+            "schema": {
+              "type": "object"
+            }
+          },
+          {
+            "name": "userConditions",
+            "in": "query",
+            "required": false,
+            "description": "User targeting conditions",
+            "schema": {
+              "type": "object"
+            }
+          },
+          {
+            "name": "drillConditions",
+            "in": "query",
+            "required": false,
+            "description": "Drill conditions",
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message created successfully (legacy format)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "ID of the created message"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/pushes/prepare": {
+      "get": {
+        "summary": "Prepare push notification message (Legacy API)",
+        "description": "Prepare a push notification message for sending using legacy API format",
+        "tags": [
+          "Push Notifications (Legacy)"
+        ],
+        "parameters": [
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Target app ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "_id",
+            "in": "query",
+            "required": true,
+            "description": "Message ID to prepare",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message prepared successfully (legacy format)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["ValidationError", "PushError"]
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    }
+  ]
+}
