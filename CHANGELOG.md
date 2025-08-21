@@ -1,6 +1,11 @@
 ## Version 25.03.XX
 Enterprise Fixes:
-- [journey-engine] Fix for skip threshold check in concurrent requests
+- [ldap] Recursive user search in ldap added
+
+## Version 25.03.16
+Enterprise Fixes:
+- [journeys] Fix for skip threshold check in concurrent requests
+- [journeys] Prevent showing journey builder when viewing journey list page
 
 Dependencies:
 - Bump get-random-values from 3.0.0 to 4.0.0
