@@ -95,6 +95,56 @@ const OVERRIDES = {
         }
     },
 
+    KAFKA: {
+        ENABLED: 'enabled',
+        DRILLEVENTSTOPIC: 'drillEventsTopic',
+        GROUPIDPREFIX: 'groupIdPrefix',
+        PARTITIONS: 'partitions',
+        REPLICATIONFACTOR: 'replicationFactor',
+        RETENTIONMS: 'retentionMs',
+        ENABLETRANSACTIONS: 'enableTransactions',
+        TRANSACTIONALID: 'transactionalId',
+        TRANSACTIONTIMEOUT: 'transactionTimeout',
+        RDKAFKA: {
+            BROKERS: 'brokers',
+            CLIENTID: 'clientId',
+            REQUESTTIMEOUTMS: 'requestTimeoutMs',
+            CONNECTIONTIMEOUTMS: 'connectionTimeoutMs',
+            SECURITYPROTOCOL: 'securityProtocol',
+            SASLMECHANISM: 'saslMechanism',
+            SASLUSERNAME: 'saslUsername',
+            SASLPASSWORD: 'saslPassword',
+            LINGERMS: 'lingerMs',
+            RETRIES: 'retries',
+            INITIALRETRYTIME: 'initialRetryTime',
+            MAXRETRYTIME: 'maxRetryTime',
+            ACKS: 'acks'
+        },
+        PRODUCER: {
+            BATCHSIZE: 'batchSize',
+            BATCHNUMMESSAGES: 'batchNumMessages',
+            QUEUEBUFFERINGMAXMESSAGES: 'queueBufferingMaxMessages',
+            QUEUEBUFFERINGMAXKBYTES: 'queueBufferingMaxKbytes',
+            COMPRESSIONLEVEL: 'compressionLevel',
+            MESSAGETIMEOUTMS: 'messageTimeoutMs',
+            DELIVERYTIMEOUTMS: 'deliveryTimeoutMs'
+        },
+        CONSUMER: {
+            FETCHMINBYTES: 'fetchMinBytes',
+            FETCHMAXWAITMS: 'fetchMaxWaitMs',
+            FETCHMAXBYTES: 'fetchMaxBytes',
+            MAXPARTITIONFETCHBYTES: 'maxPartitionFetchBytes',
+            QUEUEDMINMESSAGES: 'queuedMinMessages',
+            QUEUEDMAXMESSAGESKBYTES: 'queuedMaxMessagesKbytes',
+            SESSIONTIMEOUTMS: 'sessionTimeoutMs',
+            MAXPOLLINTERVALMS: 'maxPollIntervalMs',
+            AUTOOFFSETRESET: 'autoOffsetReset',
+            ENABLEAUTOCOMMIT: 'enableAutoCommit',
+            INVALIDJSONBEHAVIOR: 'invalidJsonBehavior',
+            INVALIDJSONMETRICS: 'invalidJsonMetrics'
+        }
+    },
+
     IGNOREPROXIES: 'ignoreProxies',
     FILESTORAGE: 'fileStorage',
     RELOADCONFIGAFTER: 'reloadConfigAfter',

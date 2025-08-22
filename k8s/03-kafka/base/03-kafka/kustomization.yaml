@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - kafka.yaml
+  - controllers.yaml
+  - brokers.yaml
+  # For scaling: modify replicas in controllers.yaml or brokers.yaml and let Cruise Control rebalance

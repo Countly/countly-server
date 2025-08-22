@@ -2123,7 +2123,11 @@ var pluginManager = function pluginManager() {
             return ret;
         }
         else {
-            return client.db(db_name);
+            var db_instance = client.db(db_name);
+            if (return_original && client.db.ObjectID) {
+                db_instance.ObjectID = client.db.ObjectID;
+            }
+            return db_instance;
         }
     };
 

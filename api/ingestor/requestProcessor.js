@@ -6,8 +6,8 @@ const log = require('../utils/log.js')('core:ingestor');
 const crypto = require('crypto');
 const { ignorePossibleDevices, checksumSaltVerification, validateRedirect} = require('../utils/requestProcessorCommon.js');
 const {ObjectId} = require("mongodb");
-const { Readable } = require('stream');
 const {preset} = require('../lib/countly.preset.js');
+const UnifiedEventSink = require('../eventSink/UnifiedEventSink');
 const countlyApi = {
     mgmt: {
         appUsers: require('../parts/mgmt/app_users.js'),
@@ -15,88 +15,19 @@ const countlyApi = {
 };
 
 const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
-
-var clickhouseClientSingleton;
-// Initialize ClickHouse client
+// Initialize unified event sink
+let eventSink = null;
 try {
-    clickhouseClientSingleton = require('../../plugins/clickhouse/api/ClickhouseClient');
+    eventSink = new UnifiedEventSink();
+    log.i('UnifiedEventSink initialized for ingestor');
 }
-catch (ee) {
-    log.e('ClickHouse client initialization failed:', ee);
-}
-let clickhouseClient = null;
-
-/**
- * Initialize ClickHouse client asynchronously
- */
-async function initializeClickhouseClient() {
-    if (clickhouseClientSingleton && clickhouseClientSingleton.getInstance) {
-        try {
-            clickhouseClient = await clickhouseClientSingleton.getInstance();
-        }
-        catch (error) {
-            log.e('Failed to initialize ClickHouse client:', error);
-        }
-    }
+catch (error) {
+    log.e('Failed to initialize UnifiedEventSink for ingestor:', error);
+    // This is a critical error since we need at least MongoDB for event storage
+    throw error;
 }
 
-/**
- * Transform MongoDB document to ClickHouse format
- * @param {object} doc - MongoDB document
- * @returns {object|null} - Transformed document or null if invalid
- */
-function transformToClickhouseFormat(doc) {
-    if (!doc || !doc.a || !doc.e || !doc.ts || !doc._id) {
-        return null;
-    }
 
-    const result = {};
-
-    // Required fields
-    result.a = doc.a;
-    result.e = doc.e;
-    result.n = doc.n;
-    result.uid = doc.uid;
-    result.did = doc.did;
-    result._id = doc._id;
-
-    // Timestamp handling
-    const ts = doc.ts;
-    result.ts = typeof ts === 'number' ? ts : (ts instanceof Date ? ts.getTime() : new Date(ts).getTime());
-
-    // Numeric fields
-    if (doc.c !== undefined && doc.c !== null) {
-        result.c = typeof doc.c === 'number' ? doc.c : +doc.c;
-    }
-    if (doc.s !== undefined && doc.s !== null) {
-        result.s = typeof doc.s === 'number' ? doc.s : +doc.s;
-    }
-    if (doc.dur !== undefined && doc.dur !== null) {
-        result.dur = typeof doc.dur === 'number' ? doc.dur : +doc.dur;
-    }
-
-    // JSON fields
-    if (doc.up && typeof doc.up === 'object') {
-        result.up = doc.up;
-    }
-    if (doc.custom && typeof doc.custom === 'object') {
-        result.custom = doc.custom;
-    }
-    if (doc.cmp && typeof doc.cmp === 'object') {
-        result.cmp = doc.cmp;
-    }
-    if (doc.sg && typeof doc.sg === 'object') {
-        result.sg = doc.sg;
-    }
-
-    // Optional date field
-    if (doc.lu !== undefined && doc.lu !== null) {
-        const lu = doc.lu;
-        result.lu = typeof lu === 'number' ? lu : (lu instanceof Date ? lu.getTime() : new Date(lu).getTime());
-    }
-
-    return result;
-}
 
 
 //Do not restart. If fails to creating, ail request.
@@ -556,51 +487,33 @@ var processToDrill = async function(params, drill_updates, callback) {
     }
     if (eventsToInsert.length > 0) {
         try {
+            /**
+             * NEW INGESTOR START
+              */
+            try {
+                // Use UnifiedEventSink to write to all configured sinks (MongoDB, Kafka, etc.)
+                const result = await eventSink.write(eventsToInsert);
+
+                if (result.overall.success) {
+                    log.d(`Successfully wrote ${result.overall.written} events using EventSink`);
+                    callback(null);
+                }
+                else {
+                    // EventSink failed - this is typically a MongoDB failure
+                    log.e('EventSink failed to write events:', result.overall.error);
+                    callback(new Error(result.overall.error));
+                    return;
+                }
+
+            }
+            catch (error) {
+                log.e('Error writing events via EventSink:', error);
+                callback(error);
+            }
+            /**
+             * NEW INGESTOR END
+             */
             await common.drillDb.collection("drill_events").bulkWrite(eventsToInsert, {ordered: false});
-
-            // write to clickhouse
-            if (!clickhouseClient) {
-                try {
-                    await initializeClickhouseClient();
-                }
-                catch (error) {
-                    log.e('Failed to initialize ClickHouse client:', error);
-                }
-            }
-
-            if (clickhouseClient) {
-                try {
-                    const clickhouseData = [];
-                    for (const bulkOp of eventsToInsert) {
-                        if (bulkOp.insertOne && bulkOp.insertOne.document) {
-                            if (bulkOp.insertOne.document.e === "[CLY]_session_update") {
-                                bulkOp.insertOne.document.e = "[CLY]_session";
-                                bulkOp.insertOne.document._id = bulkOp.insertOne.document.lsid;
-                            }
-                            const transformed = transformToClickhouseFormat(bulkOp.insertOne.document);
-                            if (transformed) {
-                                clickhouseData.push(transformed);
-                            }
-                        }
-                    }
-
-                    if (clickhouseData.length > 0) {
-                        //todo: start queue building here
-                        const startTime = Date.now();
-                        await clickhouseClient.insert({
-                            table: 'drill_events',
-                            values: Readable.from(clickhouseData, { objectMode: true }),
-                            format: 'JSONEachRow',
-                        });
-                        const insertTime = Date.now() - startTime;
-                        log.d(`Successfully wrote ${clickhouseData.length} events to ClickHouse in ${insertTime}ms`);
-                    }
-                }
-                catch (chError) {
-                    log.e('Error writing to ClickHouse:', chError);
-                    // Continue execution - don't fail the entire request for ClickHouse errors
-                }
-            }
 
             callback(null);
             if (Object.keys(viewUpdate).length) {
@@ -628,40 +541,6 @@ var processToDrill = async function(params, drill_updates, callback) {
                     callback(realError);
                 }
                 else {
-                    // write to clickhouse for successful duplicate key inserts
-                    if (!clickhouseClient) {
-                        await initializeClickhouseClient();
-                    }
-
-                    if (clickhouseClient) {
-                        try {
-                            const clickhouseData = [];
-                            for (const bulkOp of eventsToInsert) {
-                                if (bulkOp.insertOne && bulkOp.insertOne.document) {
-                                    const transformed = transformToClickhouseFormat(bulkOp.insertOne.document);
-                                    if (transformed) {
-                                        clickhouseData.push(transformed);
-                                    }
-                                }
-                            }
-
-                            if (clickhouseData.length > 0) {
-                                const startTime = Date.now();
-                                await clickhouseClient.insert({
-                                    table: 'drill_events',
-                                    values: Readable.from(clickhouseData, { objectMode: true }),
-                                    format: 'JSONEachRow',
-                                });
-                                const insertTime = Date.now() - startTime;
-                                log.d(`Successfully wrote ${clickhouseData.length} events to ClickHouse in ${insertTime}ms (duplicate key recovery)`);
-                            }
-                        }
-                        catch (chError) {
-                            log.e('Error writing to ClickHouse during duplicate key recovery:', chError);
-                            // Continue execution - don't fail the entire request for ClickHouse errors
-                        }
-                    }
-
                     callback(null);
                     if (Object.keys(viewUpdate).length) {
                         //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
