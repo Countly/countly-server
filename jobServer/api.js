@@ -444,6 +444,12 @@ plugins.register('/jobs/i', async function(ob) {
                 { $set: updateData },
                 { upsert: true }
             );
+            if (common.jobServer) {
+                // Apply update to job runner
+                common.jobServer.applyConfig({ jobName, ...updateData });
+            }
+
+            log.d(`Job ${jobName} ${action} success`);
             common.returnMessage(ob.params, 200, 'Success');
         }
         catch (error) {

@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: countly
+
+# Secrets that need to be created once manually
+# Apply with: kubectl apply -k base/01-secrets/
+# NOTE: Copy example files first:
+#   cp ../secrets/common.env.example ../secrets/common.env
+#   cp ../secrets/mongodb.env.example ../secrets/mongodb.env
+#   cp ../secrets/clickhouse.env.example ../secrets/clickhouse.env
+# Then edit the files with your actual values
+
+secretGenerator:
+- name: common-config
+  envs:
+  - ../secrets/common.env
+  options:
+    disableNameSuffixHash: true
+- name: mongodb-config
+  envs:
+  - ../secrets/mongodb.env
+  options:
+    disableNameSuffixHash: true
+- name: clickhouse-config
+  envs:
+  - ../secrets/clickhouse.env
+  options:
+    disableNameSuffixHash: true
