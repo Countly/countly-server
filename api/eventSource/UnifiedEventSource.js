@@ -1,6 +1,6 @@
 const EventSourceFactory = require('./EventSourceFactory');
 const countlyConfig = require('../config');
-const log = require('../utils/log.js')('unified-event-source');
+const log = require('../utils/log.js')('eventSource:unified');
 
 /**
  * UnifiedEventSource - Async iterator wrapper around EventSourceFactory

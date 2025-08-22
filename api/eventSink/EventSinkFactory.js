@@ -1,6 +1,6 @@
 const MongoEventSink = require('./MongoEventSink');
 const KafkaEventSink = require('./KafkaEventSink');
-const log = require('../utils/log.js')('event-sink-factory');
+const log = require('../utils/log.js')('eventSink:factory');
 
 /**
  * Factory class for creating appropriate EventSink instances

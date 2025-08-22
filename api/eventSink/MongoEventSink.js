@@ -1,6 +1,6 @@
 const EventSinkInterface = require('./EventSinkInterface');
 const common = require('../utils/common.js');
-const log = require('../utils/log.js')('mongo-event-sink');
+const log = require('../utils/log.js')('eventSink:mongo');
 
 /**
  * MongoDB implementation of EventSinkInterface

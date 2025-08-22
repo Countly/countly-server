@@ -1,5 +1,5 @@
 const EventSourceInterface = require('./EventSourceInterface');
-const log = require('../utils/log.js')('kafka-event-source');
+const log = require('../utils/log.js')('eventSource:kafka');
 
 /**
  * Kafka implementation of EventSourceInterface

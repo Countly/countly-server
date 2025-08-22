@@ -1,6 +1,6 @@
 const EventSinkInterface = require('./EventSinkInterface');
 const { transformToKafkaEventFormat } = require('../utils/eventTransformer');
-const log = require('../utils/log.js')('kafka-event-sink');
+const log = require('../utils/log.js')('eventSink:kafka');
 
 /**
  * Kafka implementation of EventSinkInterface

@@ -1,5 +1,5 @@
 const EventSinkFactory = require('./EventSinkFactory');
-const log = require('../utils/log.js')('unified-event-sink');
+const log = require('../utils/log.js')('eventSink:unified');
 
 /**
  * UnifiedEventSink - High-level wrapper around EventSinkFactory

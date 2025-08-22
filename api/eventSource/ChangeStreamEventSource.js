@@ -1,6 +1,6 @@
 const EventSourceInterface = require('./EventSourceInterface');
 const { changeStreamReader } = require('../parts/data/changeStreamReader');
-const log = require('../utils/log.js')('changestream-event-source');
+const log = require('../utils/log.js')('eventSource:changestream');
 
 /**
  * ChangeStream implementation of EventSourceInterface

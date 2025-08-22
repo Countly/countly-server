@@ -1,6 +1,6 @@
 const KafkaEventSource = require('./KafkaEventSource');
 const ChangeStreamEventSource = require('./ChangeStreamEventSource');
-const log = require('../utils/log.js')('event-source-factory');
+const log = require('../utils/log.js')('eventSource:factory');
 
 /**
  * Factory for creating event sources based on configuration
