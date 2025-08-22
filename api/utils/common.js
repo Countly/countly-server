@@ -518,6 +518,9 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
 };
 
 common.getDate = function(timestamp, timezone) {
+    if (timestamp && timestamp.toString().length === 13) {
+        timestamp = Math.floor(timestamp / 1000);
+    }
     var tmpDate = (timestamp) ? moment.unix(timestamp) : moment();
 
     if (timezone) {

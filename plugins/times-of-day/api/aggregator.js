@@ -120,6 +120,7 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
                                     if (app) {
                                         next.h = common.getDate(next.ts, app.timezone || "UTC");
                                         next.h = next.h.format("YYYY:MM:DD:HH");
+                                        next.h = next.h.replaceAll(":0", ":");
                                         var datestr = next.h.split(":");
                                         datestr = datestr[0] + ":" + datestr[1];
 

@@ -152,6 +152,10 @@ async function fetchAggregatedSegmentedEventDataClickhouse(params) {
         let query = `SELECT ${fields.join(', ')} FROM drill_events ${whereSQL} \nGROUP BY ${segmentation}::String \nORDER BY c DESC \nLIMIT ${limit || 1000}`;
         log.e(query);
         var data = await common.clickhouseQueryService.aggregate({query: query, params: ch_params}, {});
+        for (var z = 0; z < data.length; z++) {
+            data[z].c = parseInt(data[z].c);
+            data[z].prev_c = parseInt(data[z].prev_c);
+        }
 
         return {
             _queryMeta: {
