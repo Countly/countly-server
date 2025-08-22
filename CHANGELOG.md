@@ -1,5 +1,6 @@
 ## Version 25.03.X
 Enterprise Fixes:
+- [ldap] Recursive user search in ldap added
 - [license] Update metric endpoint permission
 
 
