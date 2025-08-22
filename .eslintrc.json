@@ -414,6 +414,9 @@
                 "frontend/express/public/core/*/javascripts/countly.*.js",
                 "plugins/*/frontend/public/javascripts/countly.*.js"
             ],
+            "excludedFiles": [
+                "frontend/express/public/javascripts/utils/cronstrue.min.js"
+            ],
             "parserOptions": {
                 "ecmaVersion": 2020
             },

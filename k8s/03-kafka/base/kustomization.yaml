@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: kafka
+
+# Resources are listed in dependency order
+# Kustomize applies them sequentially as listed
+resources:
+  - namespace.yaml
+  - 01-storage     # Storage classes (infrastructure prerequisites)
+  - 02-operator    # CRDs and operator (requires namespace)
+  - 03-kafka       # Kafka cluster (requires CRDs from operator + storage)
+  - 04-connect     # Kafka Connect (requires Kafka cluster)

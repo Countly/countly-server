@@ -1,0 +1,79 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: kafka
+
+resources:
+  - https://github.com/strimzi/strimzi-kafka-operator/releases/download/0.47.0/strimzi-cluster-operator-0.47.0.yaml
+  - rbac-leader-election.yaml
+  - rbac-strimzi-namespace.yaml
+
+patches:
+  # Patch operator to use our registry image
+  - target:
+      kind: Deployment
+      name: strimzi-cluster-operator
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: gcr.io/countly-dev-313620/strimzi/operator:0.47.0
+      - op: replace
+        path: /spec/template/spec/containers/0/env/3/value
+        value: gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+      - op: replace
+        path: /spec/template/spec/containers/0/env/4/value
+        value: gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+      - op: replace
+        path: /spec/template/spec/containers/0/env/5/value
+        value: |
+          3.9.0=gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+          3.9.1=gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+          4.0.0=gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+      - op: replace
+        path: /spec/template/spec/containers/0/env/6/value
+        value: |
+          3.9.0=gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+          3.9.1=gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+          4.0.0=gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+      - op: replace
+        path: /spec/template/spec/containers/0/env/7/value
+        value: |
+          3.9.0=gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+          3.9.1=gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+          4.0.0=gcr.io/countly-dev-313620/strimzi/kafka:0.47.0-kafka-4.0.0
+      - op: replace
+        path: /spec/template/spec/containers/0/env/8/value
+        value: gcr.io/countly-dev-313620/strimzi/operator:0.47.0
+      - op: replace
+        path: /spec/template/spec/containers/0/env/9/value
+        value: gcr.io/countly-dev-313620/strimzi/operator:0.47.0
+      - op: replace
+        path: /spec/template/spec/containers/0/env/10/value
+        value: gcr.io/countly-dev-313620/strimzi/operator:0.47.0
+  - target:
+      kind: RoleBinding
+      name: strimzi-cluster-operator
+    patch: |-
+      - op: replace
+        path: /subjects/0/namespace
+        value: kafka
+  - target:
+      kind: RoleBinding
+      name: strimzi-cluster-operator-entity-operator-delegation
+    patch: |-
+      - op: replace
+        path: /subjects/0/namespace
+        value: kafka
+  - target:
+      kind: RoleBinding
+      name: strimzi-cluster-operator-leader-election
+    patch: |-
+      - op: replace
+        path: /subjects/0/namespace
+        value: kafka
+  - target:
+      kind: RoleBinding
+      name: strimzi-cluster-operator-watched
+    patch: |-
+      - op: replace
+        path: /subjects/0/namespace
+        value: kafka

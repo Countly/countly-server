@@ -1,3 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: countly-jobserver
+  namespace: countly
+  labels:
+    app: countly-jobserver
+    branch: newarchitecture
+    component: jobserver
+spec:
+  selector:
+    app: countly-jobserver
+  ports:
+    - name: http
+      port: 3020
+      targetPort: 3020
+      protocol: TCP
+  type: ClusterIP
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -63,33 +82,27 @@ spec:
             memory: "2.5Gi"
             cpu: "1"
         
-        # JobServer doesn't have HTTP endpoints, so we use exec probes
+        # Use ping endpoint for healthcheck
         livenessProbe:
-          exec:
-            command:
-            - /bin/sh
-            - -c
-            - "ps aux | grep -v grep | grep 'jobServer/index.js'"
+          httpGet:
+            path: /o/ping
+            port: 3020
           initialDelaySeconds: 120
           periodSeconds: 30
           timeoutSeconds: 10
           failureThreshold: 3
         readinessProbe:
-          exec:
-            command:
-            - /bin/sh
-            - -c
-            - "ps aux | grep -v grep | grep 'jobServer/index.js'"
+          httpGet:
+            path: /o/ping
+            port: 3020
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
         startupProbe:
-          exec:
-            command:
-            - /bin/sh
-            - -c
-            - "ps aux | grep -v grep | grep 'jobServer/index.js'"
+          httpGet:
+            path: /o/ping
+            port: 3020
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5

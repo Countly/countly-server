@@ -1,4 +1,4 @@
-/*global countlyAuth, countlyCommon, app, countlyVue, CV, countlyGlobal, CountlyHelpers, $, moment */
+/*global VeeValidate, cronstrue, countlyAuth, countlyCommon, app, countlyVue, CV, countlyGlobal, CountlyHelpers, $, moment */
 
 (function() {
     /**
@@ -28,7 +28,7 @@
         // Backend uses "COMPLETED", "FAILED", "RUNNING", "SCHEDULED" (see getJobStatus in api.js)
         // But also "success", "failed", "pending" (see getRunStatus in api.js)
         switch (status) {
-        case "RUNNING": return "green";
+        case "RUNNING": return "blue";
         case "COMPLETED": return "green";
         case "SUCCESS": return "green";
         case "SCHEDULED":
@@ -109,6 +109,23 @@
         }
     };
 
+    VeeValidate.extend('validCron', {
+        validate: function(inpValue) {
+            var valid = true;
+
+            try {
+                cronstrue.toString(inpValue);
+            }
+            catch (_) {
+                valid = false;
+            }
+
+            return {
+                valid: valid,
+            };
+        },
+    });
+
     /**
      * Main view for listing jobs
      */
@@ -187,6 +204,14 @@
             },
         },
         methods: {
+            parseCron: function(inpStr) {
+                try {
+                    return cronstrue.toString(inpStr);
+                }
+                catch (_) {
+                    return inpStr;
+                }
+            },
             formatDateTime: function(date) {
                 return date ? moment(date).format('D MMM, YYYY HH:mm:ss') : '-';
             },
@@ -196,7 +221,7 @@
                     return 'gray';
                 }
                 if (details.currentState.status === 'RUNNING') {
-                    return 'green';
+                    return 'blue';
                 }
                 if (details.currentState.status === 'FAILED') {
                     return 'red';
@@ -224,7 +249,7 @@
                 switch (statusValue) {
                 case "SUCCESS":
                 case "COMPLETED": return 'green';
-                case "RUNNING": return 'green';
+                case "RUNNING": return 'blue';
                 case "FAILED": return 'red';
                 case "PENDING":
                 case "SCHEDULED": return 'yellow';
@@ -284,7 +309,7 @@
                                 self.refresh(true);
                                 CountlyHelpers.notify({
                                     type: "ok",
-                                    message: CV.i18n("jobs." + command + "-success")
+                                    message: CV.i18n("jobs.command." + command + "-success", row.name)
                                 });
                             }
                             else {
@@ -316,7 +341,7 @@
                     headers: { 'Countly-Token': countlyGlobal.auth_token },
                     data: {
                         app_id: countlyCommon.ACTIVE_APP_ID,
-                        jobName: this.selectedJobConfig.name,
+                        jobName: self.selectedJobConfig.name,
                         action: 'updateSchedule',
                         schedule: this.selectedJobConfig.schedule
                     },
@@ -326,7 +351,7 @@
                         self.refresh(true);
                         CountlyHelpers.notify({
                             type: "ok",
-                            message: CV.i18n("jobs.schedule-updated")
+                            message: CV.i18n("jobs.command.schedule-success", self.selectedJobConfig.name),
                         });
                     },
                     error: function(err) {
@@ -439,7 +464,7 @@
                     return "gray";
                 }
                 switch (jobDetails.currentState.status) {
-                case "RUNNING": return "green";
+                case "RUNNING": return "blue";
                 case "FAILED": return "red";
                 case "COMPLETED": return "green";
                 case "PENDING": return "yellow";
@@ -466,7 +491,7 @@
                 switch (status) {
                 case "SUCCESS":
                 case "COMPLETED": return "green";
-                case "RUNNING": return "green";
+                case "RUNNING": return "blue";
                 case "FAILED": return "red";
                 case "PENDING":
                 case "SCHEDULED": return "yellow";

@@ -1,0 +1,961 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "description": "Comprehensive HTTP performance and reliability metrics for all Countly services.",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "panels": [],
+            "title": "HTTP Performance Overview",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Total HTTP request rate across all services and top 5 busiest routes.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "reqps"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 1
+            },
+            "id": 2,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull", "max"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(http_request_total{job=~\"$job\"}[$__rate_interval]))",
+                    "legendFormat": "Total Requests"
+                },
+                {
+                    "expr": "topk(5, sum(rate(http_request_total{job=~\"$job\"}[$__rate_interval])) by (http_route))",
+                    "legendFormat": "{{http_route}}"
+                }
+            ],
+            "title": "HTTP Request Rate (Total + Top 5 Routes)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "HTTP request success rate percentage over time.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "percent",
+                    "min": 0,
+                    "max": 100,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "red",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 95
+                            },
+                            {
+                                "color": "green",
+                                "value": 99
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 1
+            },
+            "id": 3,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull", "min", "mean"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "(\n  sum(rate(http_response_status_total{job=~\"$job\", http_status_code=~\"2..\"}[$__rate_interval])) by (job) /\n  sum(rate(http_response_status_total{job=~\"$job\"}[$__rate_interval])) by (job)\n) * 100",
+                    "legendFormat": "{{job}} Success Rate"
+                }
+            ],
+            "title": "HTTP Success Rate (2xx responses)",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 9
+            },
+            "id": 4,
+            "panels": [],
+            "title": "Request Performance",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "HTTP request duration percentiles - worst case performance.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 10
+            },
+            "id": 5,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_route))",
+                    "legendFormat": "{{job}} {{http_route}} p99"
+                }
+            ],
+            "title": "HTTP Request Duration p99",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "HTTP request duration p50 and p95 percentiles.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 10
+            },
+            "id": 6,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_route))",
+                    "legendFormat": "{{job}} {{http_route}} p95"
+                },
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_route))",
+                    "legendFormat": "{{job}} {{http_route}} p50"
+                }
+            ],
+            "title": "HTTP Request Duration p50/p95",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Top 10 slowest HTTP routes based on p99 duration.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 100
+                            },
+                            {
+                                "color": "red",
+                                "value": 500
+                            }
+                        ]
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 18
+            },
+            "id": 7,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull", "max", "mean"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "topk(10, histogram_quantile(0.99, sum(rate(http_request_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, http_route)))",
+                    "legendFormat": "{{http_route}} p99"
+                }
+            ],
+            "title": "Top 10 Slowest HTTP Routes (p99 Duration)",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 26
+            },
+            "id": 8,
+            "panels": [],
+            "title": "Connection & Queue Performance",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "HTTP connection duration percentiles.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 27
+            },
+            "id": 9,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(http_connection_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_route))",
+                    "legendFormat": "{{job}} {{http_route}} p99"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(http_connection_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_route))",
+                    "legendFormat": "{{job}} {{http_route}} p95"
+                },
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(http_connection_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_route))",
+                    "legendFormat": "{{job}} {{http_route}} p50"
+                }
+            ],
+            "title": "HTTP Connection Duration",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "HTTP request queue duration percentiles.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 27
+            },
+            "id": 10,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(http_request_queue_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_route))",
+                    "legendFormat": "{{job}} {{http_route}} p99"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(http_request_queue_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_route))",
+                    "legendFormat": "{{job}} {{http_route}} p95"
+                },
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(http_request_queue_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_route))",
+                    "legendFormat": "{{job}} {{http_route}} p50"
+                }
+            ],
+            "title": "HTTP Queue Duration",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 35
+            },
+            "id": 11,
+            "panels": [],
+            "title": "Status Codes & Error Analysis",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "HTTP response status code distribution by percentage.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "percent",
+                    "min": 0,
+                    "max": 100
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 36
+            },
+            "id": 12,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "(\n  sum(rate(http_response_status_total{job=~\"$job\", http_status_code=~\"2..\"}[$__rate_interval])) by (job) /\n  sum(rate(http_response_status_total{job=~\"$job\"}[$__rate_interval])) by (job)\n) * 100",
+                    "legendFormat": "{{job}} 2xx Success"
+                },
+                {
+                    "expr": "(\n  sum(rate(http_response_status_total{job=~\"$job\", http_status_code=~\"3..\"}[$__rate_interval])) by (job) /\n  sum(rate(http_response_status_total{job=~\"$job\"}[$__rate_interval])) by (job)\n) * 100",
+                    "legendFormat": "{{job}} 3xx Redirect"
+                },
+                {
+                    "expr": "(\n  sum(rate(http_response_status_total{job=~\"$job\", http_status_code=~\"4..\"}[$__rate_interval])) by (job) /\n  sum(rate(http_response_status_total{job=~\"$job\"}[$__rate_interval])) by (job)\n) * 100",
+                    "legendFormat": "{{job}} 4xx Client Error"
+                },
+                {
+                    "expr": "(\n  sum(rate(http_response_status_total{job=~\"$job\", http_status_code=~\"5..\"}[$__rate_interval])) by (job) /\n  sum(rate(http_response_status_total{job=~\"$job\"}[$__rate_interval])) by (job)\n) * 100",
+                    "legendFormat": "{{job}} 5xx Server Error"
+                }
+            ],
+            "title": "HTTP Status Code Distribution",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "HTTP request timeout and error rates by route.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "reqps"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 36
+            },
+            "id": 13,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(http_timeout_total{job=~\"$job\"}[$__rate_interval])) by (job, http_route)",
+                    "legendFormat": "{{job}} {{http_route}} Timeouts"
+                },
+                {
+                    "expr": "sum(rate(http_error_total{job=~\"$job\"}[$__rate_interval])) by (job, http_route)",
+                    "legendFormat": "{{job}} {{http_route}} Errors"
+                }
+            ],
+            "title": "HTTP Timeouts & Errors by Route",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 44
+            },
+            "id": 14,
+            "panels": [],
+            "title": "Traffic Analysis",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "HTTP requests by method (GET, POST, etc.) across all routes.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "reqps"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 45
+            },
+            "id": 15,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull", "mean"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(http_request_total{job=~\"$job\"}[$__rate_interval])) by (http_method)",
+                    "legendFormat": "{{http_method}}"
+                }
+            ],
+            "title": "HTTP Requests by Method",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Active HTTP requests and connections.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "short"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 45
+            },
+            "id": 16,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(http_request_in_flight{job=~\"$job\"}) by (job)",
+                    "legendFormat": "{{job}} Requests"
+                },
+                {
+                    "expr": "sum(http_connections_total{job=~\"$job\"}) by (job)",
+                    "legendFormat": "{{job}} Connections"
+                }
+            ],
+            "title": "Active Requests & Connections",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "HTTP client request duration percentiles.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 53
+            },
+            "id": 17,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(http_client_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} Client p99"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(http_client_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} Client p95"
+                },
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(http_client_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} Client p50"
+                }
+            ],
+            "title": "HTTP Client Duration",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 61
+            },
+            "id": 18,
+            "panels": [],
+            "title": "Payload Analysis & Error Rates",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Overall HTTP error rate across all services (4xx + 5xx + network errors).",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "reqps",
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 62
+            },
+            "id": 19,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull", "mean", "max"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(rate(http_error_total{job=~\"$job\"}[$__rate_interval])) by (job, error_type)",
+                    "legendFormat": "{{job}} {{error_type}} Errors"
+                },
+                {
+                    "expr": "sum(rate(http_response_status_total{job=~\"$job\", http_status_code=~\"4..|5..\"}[$__rate_interval])) by (job)",
+                    "legendFormat": "{{job}} HTTP 4xx/5xx"
+                }
+            ],
+            "title": "HTTP Error Rate (Overall)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Error rate percentage across all HTTP requests.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "percent",
+                    "min": 0,
+                    "max": 100,
+                    "custom": {
+                        "fillOpacity": 10,
+                        "lineWidth": 2
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 62
+            },
+            "id": 20,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "calcs": ["lastNotNull", "mean", "max"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "(sum(rate(http_error_total{job=~\"$job\"}[$__rate_interval])) by (job) / sum(rate(http_request_total{job=~\"$job\"}[$__rate_interval])) by (job)) * 100",
+                    "legendFormat": "{{job}} Total Error %"
+                },
+                {
+                    "expr": "((sum(rate(http_response_status_total{job=~\"$job\", http_status_code=~\"4..\"}[$__rate_interval])) by (job)) / sum(rate(http_response_status_total{job=~\"$job\"}[$__rate_interval])) by (job)) * 100",
+                    "legendFormat": "{{job}} 4xx Error %"
+                },
+                {
+                    "expr": "((sum(rate(http_response_status_total{job=~\"$job\", http_status_code=~\"5..\"}[$__rate_interval])) by (job)) / sum(rate(http_response_status_total{job=~\"$job\"}[$__rate_interval])) by (job)) * 100",
+                    "legendFormat": "{{job}} 5xx Error %"
+                }
+            ],
+            "title": "HTTP Error Rate Percentage",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "HTTP request payload size distribution.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "bytes"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 70
+            },
+            "id": 21,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(http_request_size_bytes_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} Request p99"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(http_request_size_bytes_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} Request p95"
+                },
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(http_request_size_bytes_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} Request p50"
+                }
+            ],
+            "title": "HTTP Request Payload Sizes",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "HTTP response payload size distribution.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "bytes"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 70
+            },
+            "id": 22,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(http_response_size_bytes_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} Response p99"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(http_response_size_bytes_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} Response p95"
+                },
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(http_response_size_bytes_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job))",
+                    "legendFormat": "{{job}} Response p50"
+                }
+            ],
+            "title": "HTTP Response Payload Sizes",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Countly-specific HTTP server duration metrics for detailed application performance.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "unit": "ms"
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 78
+            },
+            "id": 23,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": ["lastNotNull", "mean", "max"]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "histogram_quantile(0.99, sum(rate(countly_http_server_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_status_code))",
+                    "legendFormat": "{{job}} {{http_status_code}} p99"
+                },
+                {
+                    "expr": "histogram_quantile(0.95, sum(rate(countly_http_server_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_status_code))",
+                    "legendFormat": "{{job}} {{http_status_code}} p95"
+                },
+                {
+                    "expr": "histogram_quantile(0.50, sum(rate(countly_http_server_duration_milliseconds_bucket{job=~\"$job\"}[$__rate_interval])) by (le, job, http_status_code))",
+                    "legendFormat": "{{job}} {{http_status_code}} p50"
+                }
+            ],
+            "title": "Countly HTTP Server Duration by Status Code",
+            "type": "timeseries"
+        }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": [
+        "countly",
+        "http",
+        "performance",
+        "reliability"
+    ],
+    "templating": {
+        "list": [
+            {
+                "current": {
+                    "selected": false,
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                },
+                "definition": "label_values({__name__=~\"http_.*|countly_http_.*\", job=~\".*countly.*\"}, job)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Job",
+                "multi": true,
+                "name": "job",
+                "options": [],
+                "query": {
+                    "query": "label_values({__name__=~\"http_.*|countly_http_.*\", job=~\".*countly.*\"}, job)",
+                    "refId": "StandardVariableQuery"
+                },
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "HTTP Performance & Reliability Dashboard",
+    "uid": "http-performance-dashboard",
+    "version": 1
+}
