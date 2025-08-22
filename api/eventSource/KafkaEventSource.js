@@ -73,40 +73,30 @@ class KafkaEventSource extends EventSourceInterface {
 
             log.d(`[${this.#config.name}] Received batch: ${records.length} records from ${topic}[${partition}]`);
 
-            // Transform records into our format
-            const events = [];
-            let lastOffset = null;
-            let firstOffset = null;
-
-            for (const { event, message, headers } of records) {
-                // Include all events - filtering is responsibility of the consumer
-                events.push({
-                    ...event,
-                    // Include Kafka metadata in the event for traceability
-                    _kafka: {
-                        topic,
-                        partition,
-                        offset: message.offset,
-                        key: message.key,
-                        headers
-                    }
-                });
-                lastOffset = message.offset;
-                if (firstOffset === null) {
-                    firstOffset = message.offset;
-                }
-            }
-
-            if (events.length === 0) {
+            if (records.length === 0) {
                 // No events in this batch (shouldn't happen with normal Kafka operation)
                 log.d(`[${this.#config.name}] No events in batch, skipping`);
                 return;
             }
 
-            // Create batch token for acknowledgment
+            // Create meaningful batch token with Kafka metadata
+            // Get first and last offsets before transforming records
+            const firstOffset = records[0]?.message?.offset;
+            const lastOffset = records[records.length - 1]?.message?.offset;
+
+            // Transform records in-place for memory efficiency
+            for (let i = 0; i < records.length; i++) {
+                records[i] = records[i].event;
+            }
+            const events = records;
+
             const batchToken = {
-                key: `kafka:${topic}:${partition}:${firstOffset}-${lastOffset}`,
-                batchSize: records.length
+                topic,
+                partition,
+                firstOffset,
+                lastOffset,
+                batchSize: records.length,
+                key: `kafka:${topic}:${partition}:${firstOffset}-${lastOffset}`
             };
 
             log.d(`[${this.#config.name}] Processing batch: ${batchToken.key} (${events.length} events)`);
