@@ -111,16 +111,16 @@ spec:
         pathType: Exact
         backend:
           service:
-            name: countly-api
+            name: countly-jobserver
             port:
-              number: 3001
+              number: 3020
       - path: /jobs/
         pathType: Prefix
         backend:
           service:
-            name: countly-api
+            name: countly-jobserver
             port:
-              number: 3001
+              number: 3020
       # Static assets - directory paths that should be served by frontend
       - path: /appimages/
         pathType: Prefix

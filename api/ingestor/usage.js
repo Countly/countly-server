@@ -331,9 +331,30 @@ usage.processSession = function(ob) {
                         drill_updates.custom = JSON.parse(JSON.stringify(params.app_user.custom));
                     }
                     drill_updates["sg.ended"] = "true";
-                    drill_updates.lu = new Date();
-                    //if (drill_updates.dur || drill_updates.custom) {
+
+                    //Update for session doc in mongo
                     ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates}}});
+                    //Insert to use as trigger
+                    ob.drill_updates.push({
+                        "insertOne": {
+                            "document": {
+                                "_id": params.app_user.lsid + "_" + params.time.mstimestamp,
+                                "a": params.app_id,
+                                "e": "[CLY]_session_update",
+                                "did": params.app_user.did,
+                                "uid": params.app_user.uid,
+                                "_uid": params.app_user._id,
+                                "lsid": params.app_user.lsid,
+                                "sg": {"ended": "true"},
+                                "ts": params.time.timestamp,
+                                "custom": drill_updates.custom,
+                                "c": 0,
+                                "dur": drill_updates.dur || 0,
+                                "sum": 0,
+                                "cd": new Date()
+                            }
+                        }
+                    });
                     //}
                 }
                 userProps.sd = 0 + session_duration;
@@ -376,6 +397,27 @@ usage.processSession = function(ob) {
                 //if (drill_updates2.dur || drill_updates2.custom) {
                 ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
                 //}
+
+                ob.drill_updates.push({
+                    "insertOne": {
+                        "document": {
+                            "_id": params.app_user.lsid + "_" + params.time.mstimestamp,
+                            "a": params.app_id,
+                            "e": "[CLY]_session_update",
+                            "did": params.app_user.did,
+                            "uid": params.app_user.uid,
+                            "_uid": params.app_user._id,
+                            "lsid": params.app_user.lsid,
+                            "ts": params.time.timestamp,
+                            "sg": {"ended": "true"},
+                            "custom": drill_updates2.custom,
+                            "c": 0,
+                            "dur": drill_updates2.dur || 0,
+                            "sum": 0,
+                            "cd": new Date()
+                        }
+                    }
+                });
             }
             userProps.data = {};
         }

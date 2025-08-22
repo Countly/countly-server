@@ -277,6 +277,22 @@ var countlyConfig = {
         maxUploadFileSize: 200 * 1024 * 1024, // 200MB
     },
     /**
+    * Default Job Server configuration
+    * @type {object} 
+    * @property {number} [port=3020] - port number to use, default 3020
+    * @property {string} [host=localhost] - host to which to bind connection
+    * @property {number} [max_sockets=1024] - maximal amount of sockets to open simultaneously
+    * @property {number} [timeout=120000] - nodejs server request timeout, need to also increase nginx timeout too for longer requests
+    * @property {number} maxUploadFileSize - limit the size of uploaded file
+    */
+    jobServer: {
+        port: 3020,
+        host: "localhost",
+        max_sockets: 1024,
+        timeout: 120000,
+        maxUploadFileSize: 200 * 1024 * 1024, // 200MB
+    },
+    /**
     * Path to use for countly directory, empty path if installed at root of website
     * @type {string} 
     */

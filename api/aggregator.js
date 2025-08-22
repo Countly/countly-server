@@ -4,6 +4,9 @@ const log = require('./utils/log.js')('aggregator-core:api');
 const common = require('./utils/common.js');
 const {WriteBatcher} = require('./parts/data/batcher.js');
 const {Cacher} = require('./parts/data/cacher.js');
+const QueryRunner = require('./parts/data/QueryRunner.js');
+//Core aggregators
+require('./aggregator/processing.js');
 const UnifiedEventSource = require('./eventSource/UnifiedEventSource.js');
 const usage = require('./aggregator/usage.js');
 var t = ["countly:", "aggregator"];
@@ -32,9 +35,10 @@ plugins.connectToAllDatabases(true).then(function() {
     // common.writeBatcher = new WriteBatcher(common.db);
 
     common.writeBatcher = new WriteBatcher(common.db);
-    common.secondaryWriteBatcher = new WriteBatcher(common.db);
+    common.secondaryWriteBatcher = new WriteBatcher(common.db);//Remove once all plugins are updated
+    common.manualWriteBatcher = new WriteBatcher(common.db, true); //Manually trigerable batcher
     common.readBatcher = new Cacher(common.db); //Used for Apps info
-
+    common.queryRunner = new QueryRunner();
     common.readBatcher.transformationFunctions = {
         "event_object": function(data) {
             if (data && data.list) {
@@ -262,7 +266,7 @@ plugins.connectToAllDatabases(true).then(function() {
     });
 
 
-    /** 
+    /**
     * Set Plugins APIs Config
     */
     //Put in single file outside(all set configs)
@@ -366,7 +370,6 @@ plugins.connectToAllDatabases(true).then(function() {
     async function storeBatchedData(code) {
         try {
             await common.writeBatcher.flushAll();
-            await common.secondaryWriteBatcher.flushAll();
             // await common.insertBatcher.flushAll();
             console.log("Successfully stored batch state");
         }
@@ -425,7 +428,7 @@ plugins.connectToAllDatabases(true).then(function() {
 
 
     plugins.init({"skipDependencies": true, "filename": "aggregator"});
-    plugins.loadConfigs(common.db, function() {
+    plugins.loadConfigs(common.db, async function() {
         plugins.dispatch("/aggregator", {common: common});
     });
 });

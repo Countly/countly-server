@@ -6,6 +6,7 @@ const log = require('../utils/log.js')('core:ingestor');
 const crypto = require('crypto');
 const { ignorePossibleDevices, checksumSaltVerification, validateRedirect} = require('../utils/requestProcessorCommon.js');
 const {ObjectId} = require("mongodb");
+const {preset} = require('../lib/countly.preset.js');
 const UnifiedEventSink = require('../eventSink/UnifiedEventSink');
 const countlyApi = {
     mgmt: {
@@ -13,6 +14,7 @@ const countlyApi = {
     }
 };
 
+const escapedViewSegments = { "name": true, "segment": true, "height": true, "width": true, "y": true, "x": true, "visit": true, "uvc": true, "start": true, "bounce": true, "exit": true, "type": true, "view": true, "domain": true, "dur": true, "_id": true, "_idv": true, "utm_source": true, "utm_medium": true, "utm_campaign": true, "utm_term": true, "utm_content": true, "referrer": true};
 // Initialize unified event sink
 let eventSink = null;
 try {
@@ -92,124 +94,6 @@ function processUser(params, done) {
     }
 }
 
-var preset = {
-    up: {
-        fs: { name: "first_seen", type: "d" },
-        ls: { name: "last_seen", type: "d" },
-        tsd: { name: "total_session_duration", type: "n" },
-        sc: { name: "session_count", type: "n" },
-        d: { name: "device", type: "l" },
-        dt: { name: "device_type", type: "l" },
-        mnf: { name: "manufacturer", type: "l" },
-        ornt: { name: "ornt", type: "l" },
-        cty: { name: "city", type: "l" },
-        rgn: { name: "region", type: "l" },
-        cc: { name: "country_code", type: "l" },
-        p: { name: "platform", type: "l" },
-        pv: { name: "platform_version", type: "l" },
-        av: { name: "app_version", type: "l" },
-        c: { name: "carrier", type: "l" },
-        r: { name: "resolution", type: "l" },
-        dnst: { name: "dnst", type: "l" },
-        brw: { name: "brw", type: "l" },
-        brwv: { name: "brwv", type: "l" },
-        la: { name: "la", type: "l" },
-        lo: { name: "lo", type: "l" },
-        src: { name: "src", type: "l" },
-        src_ch: { name: "src_ch", type: "l" },
-        name: { name: "name", type: "s" },
-        username: { name: "username", type: "s" },
-        email: { name: "email", type: "s" },
-        organization: { name: "organization", type: "s" },
-        phone: { name: "phone", type: "s" },
-        gender: { name: "gender", type: "l" },
-        byear: { name: "byear", type: "n" },
-        age: { name: "age", type: "n" },
-        engagement_score: { name: "engagement_score", type: "n" },
-        lp: { name: "lp", type: "d" },
-        lpa: { name: "lpa", type: "n" },
-        tp: { name: "tp", type: "n" },
-        tpc: { name: "tpc", type: "n" },
-        lv: { name: "lv", type: "l" },
-        cadfs: { name: "cadfs", type: "n" },
-        cawfs: { name: "cawfs", type: "n" },
-        camfs: { name: "camfs", type: "n" },
-        hour: { name: "hour", type: "l" },
-        dow: { name: "dow", type: "l" },
-        hh: { name: "hh", type: "l" },
-    },
-    sg: {
-        "[CLY]_view": {
-            start: { name: "start", type: "l" },
-            exit: { name: "exit", type: "l" },
-            bounce: { name: "bounce", type: "l" }
-        },
-        "[CLY]_session": {
-            request_id: { name: "request_id", type: "s" },
-            prev_session: { name: "prev_session", type: "s" },
-            prev_start: { name: "prev_start", type: "d" },
-            postfix: { name: "postfix", type: "s" },
-            ended: {name: "ended", type: "l"}
-        },
-        "[CLY]_action": {
-            x: { name: "x", type: "n" },
-            y: { name: "y", type: "n" },
-            width: { name: "width", type: "n" },
-            height: { name: "height", type: "n" }
-        },
-        "[CLY]_crash": {
-            name: { name: "name", type: "s" },
-            manufacture: { name: "manufacture", type: "l" },
-            cpu: { name: "cpu", type: "l" },
-            opengl: { name: "opengl", type: "l" },
-            view: { name: "view", type: "l" },
-            browser: { name: "browser", type: "l" },
-            os: { name: "os", type: "l" },
-            orientation: { name: "orientation", type: "l" },
-            nonfatal: { name: "nonfatal", type: "l" },
-            root: { name: "root", type: "l" },
-            online: { name: "online", type: "l" },
-            signal: { name: "signal", type: "l" },
-            muted: { name: "muted", type: "l" },
-            background: { name: "background", type: "l" },
-            app_version: { name: "app_version", type: "l" },
-            ram_current: { name: "ram_current", type: "n" },
-            ram_total: { name: "ram_total", type: "n" },
-            disk_current: { name: "disk_current", type: "n" },
-            disk_total: { name: "disk_total", type: "n" },
-            bat_current: { name: "bat_current", type: "n" },
-            bat_total: { name: "bat_total", type: "n" },
-            bat: { name: "bat", type: "n" },
-            run: { name: "run", type: "n" }
-        },
-        "[CLY]_star_rating": {
-            email: { name: "email", type: "s" },
-            comment: { name: "comment", type: "s" },
-            widget_id: { name: "widget_id", type: "l" },
-            contactMe: { name: "contactMe", type: "s" },
-            rating: { name: "rating", type: "n" },
-            platform_version_rate: { name: "platform_version_rate", type: "s" }
-        },
-        "[CLY]_nps": {
-            comment: { name: "comment", type: "s" },
-            widget_id: { name: "widget_id", type: "l" },
-            rating: { name: "rating", type: "n" },
-            shown: { name: "shown", type: "s" },
-            answered: { name: "answered", type: "s" }
-        },
-        "[CLY]_survey": {
-            widget_id: { name: "widget_id", type: "l" },
-            shown: { name: "shown", type: "s" },
-            answered: { name: "answered", type: "s" }
-        },
-        "[CLY]_push_action": {
-            i: { name: "i", type: "s" }
-        },
-        "[CLY]_push_sent": {
-            i: { name: "i", type: "s" }
-        }
-    }
-};
 
 /**
  * Fills user properties from dbAppUser object
@@ -355,6 +239,7 @@ var processToDrill = async function(params, drill_updates, callback) {
 
     var eventsToInsert = [];
     var timestamps = {};
+    var viewUpdate = {};
     if (events.length > 0) {
         for (let i = 0; i < events.length; i++) {
             var currEvent = events[i];
@@ -574,6 +459,24 @@ var processToDrill = async function(params, drill_updates, callback) {
             dbEventObject.dur = currEvent.dur || 0;
             dbEventObject.c = currEvent.count || 1;
             eventsToInsert.push({"insertOne": {"document": dbEventObject}});
+            if (eventKey === "[CLY]_view") {
+                var view_id = crypto.createHash('md5').update(currEvent.segmentation.name).digest('hex');
+                viewUpdate[view_id] = {"lvid": dbEventObject._id, "ts": dbEventObject.ts, "a": params.app_id + ""};
+                if (currEvent.segmentation) {
+                    var sgm = {};
+                    var have_sgm = false;
+                    for (var key in currEvent.segmentation) {
+                        if (key === 'platform' || !escapedViewSegments[key]) {
+                            sgm[key] = currEvent.segmentation[key];
+                            have_sgm = true;
+                        }
+                    }
+                    if (have_sgm) {
+                        viewUpdate[view_id].sg = sgm;
+                    }
+                }
+
+            }
 
         }
     }
@@ -584,24 +487,77 @@ var processToDrill = async function(params, drill_updates, callback) {
     }
     if (eventsToInsert.length > 0) {
         try {
-            // Use UnifiedEventSink to write to all configured sinks (MongoDB, Kafka, etc.)
-            const result = await eventSink.write(eventsToInsert);
+            /**
+             * NEW INGESTOR START
+              */
+            try {
+                // Use UnifiedEventSink to write to all configured sinks (MongoDB, Kafka, etc.)
+                const result = await eventSink.write(eventsToInsert);
 
-            if (result.overall.success) {
-                log.d(`Successfully wrote ${result.overall.written} events using EventSink`);
-                callback(null);
+                if (result.overall.success) {
+                    log.d(`Successfully wrote ${result.overall.written} events using EventSink`);
+                    callback(null);
+                }
+                else {
+                    // EventSink failed - this is typically a MongoDB failure
+                    log.e('EventSink failed to write events:', result.overall.error);
+                    callback(new Error(result.overall.error));
+                    return;
+                }
+
             }
-            else {
-                // EventSink failed - this is typically a MongoDB failure
-                log.e('EventSink failed to write events:', result.overall.error);
-                callback(new Error(result.overall.error));
-                return;
+            catch (error) {
+                log.e('Error writing events via EventSink:', error);
+                callback(error);
+            }
+            /**
+             * NEW INGESTOR END
+             */
+            await common.drillDb.collection("drill_events").bulkWrite(eventsToInsert, {ordered: false});
+
+            callback(null);
+            if (Object.keys(viewUpdate).length) {
+                //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
+                try {
+                    await common.db.collection("app_userviews").updateOne({_id: params.app_id + "_" + params.app_user.uid}, {$set: viewUpdate}, {upsert: true});
+                }
+                catch (err) {
+                    log.e(err);
+                }
             }
 
         }
-        catch (error) {
-            log.e('Error writing events via EventSink:', error);
-            callback(error);
+        catch (errors) {
+            var realError;
+            if (errors && Array.isArray(errors)) {
+                log.e(JSON.stringify(errors));
+                for (let i = 0; i < errors.length; i++) {
+                    if ([11000, 10334, 17419].indexOf(errors[i].code) === -1) {
+                        realError = true;
+                    }
+                }
+
+                if (realError) {
+                    callback(realError);
+                }
+                else {
+                    callback(null);
+                    if (Object.keys(viewUpdate).length) {
+                        //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
+                        try {
+                            await common.db.collection("app_userviews").updateOne({_id: params.app_id + "_" + params.app_user.uid}, {$set: viewUpdate}, {upsert: true});
+                        }
+                        catch (err) {
+                            log.e(err);
+                        }
+                    }
+
+                }
+            }
+            else {
+                console.log(errors);
+                callback(errors);
+            }
         }
     }
     else {

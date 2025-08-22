@@ -30,14 +30,6 @@ const validateUserForGlobalAdmin = validateGlobalAdmin;
 const validateUserForMgmtReadAPI = validateUser;
 const request = require('countly-request')(plugins.getConfig("security"));
 
-try {
-    require('../../jobServer/api');
-    log.i('Job api loaded');
-}
-catch (ex) {
-    log.e('Job api not available');
-}
-
 var loaded_configs_time = 0;
 
 const countlyApi = {
@@ -2656,7 +2648,52 @@ const processRequest = (params) => {
                     }
                     break;
                 case 'get_events':
-                    validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
+                    //validateRead(params, 'core', countlyApi.data.fetch.fetchCollection, 'events');
+                    validateRead(params, 'core', async function() {
+                        try {
+                            var result = await common.db.collection("events").findOne({ '_id': params.app_id });
+                            if (!result) {
+                                result = {};
+                            }
+                            result.list = [];
+                            result.segments = {};
+                            const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
+                            result.limits = {
+                                event_limit: pluginsGetConfig.event_limit,
+                                event_segmentation_limit: pluginsGetConfig.event_segmentation_limit,
+                                event_segmentation_value_limit: pluginsGetConfig.event_segmentation_value_limit,
+                            };
+
+                            var aggregation = [];
+                            aggregation.push({$match: {"app_id": params.qstring.app_id, "type": "e", "biglist": {"$ne": true}}});
+                            aggregation.push({"$project": {e: 1, _id: 0, "sg": 1}});
+                            //e does not start with [CLY]_
+                            aggregation.push({$match: {"e": {"$not": /^(\[CLY\]_)/}}});
+                            aggregation.push({"$sort": {"e": 1}});
+                            aggregation.push({"$limit": pluginsGetConfig.event_limit || 500});
+
+                            var res = await common.drillDb.collection("drill_meta").aggregate(aggregation).toArray();
+
+                            for (var k = 0; k < res.length; k++) {
+                                result.list.push(res[k].e);
+                                if (res[k].sg && Object.keys(res[k].sg).length > 0) {
+                                    result.segments[res[k].e] = Object.keys(res[k].sg);
+                                }
+                            }
+                            if (result.list.length === 0) {
+                                delete result.list;
+                            }
+                            if (Object.keys(result.segments).length === 0) {
+                                delete result.segments;
+                            }
+                            common.returnOutput(params, result);
+
+                        }
+                        catch (ex) {
+                            console.error("Error fetching events", ex);
+                            common.returnMessage(params, 500, "Error fetching events");
+                        }
+                    }, 'events');
                     break;
                 case 'top_events':
                     validateRead(params, 'core', countlyApi.data.fetch.fetchDataTopEvents);
