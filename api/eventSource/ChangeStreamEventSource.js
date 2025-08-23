@@ -132,6 +132,7 @@ class ChangeStreamEventSource extends EventSourceInterface {
             batchToken = eventData.token;
         }
         return {
+            source: 'MONGODB_CHANGESTREAM',
             token: batchToken,
             events: batch
         };
