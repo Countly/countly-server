@@ -93,7 +93,7 @@ class ChangeStreamEventSource extends EventSourceInterface {
                     this.#resumeStream();
                 }
                 let event = data;
-                if (data.fullDocument) {
+                if (data && data.fullDocument) {
                     event = data.fullDocument;
                 }
                 const eventData = {
