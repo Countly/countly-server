@@ -6,14 +6,8 @@ const log = require('../utils/log.js')('eventSink:factory');
  * Factory class for creating appropriate EventSink instances
  * Handles sink selection based on configuration and availability
  * 
- * This factory:
- * - Always ensures MongoDB sink is available as fallback
- * - Adds Kafka sink if enabled and available
- * - Validates configuration at creation time
- * - Provides singleton pattern for sink reuse
  */
 class EventSinkFactory {
-    static #instances = new Map();
 
     /**
      * Create appropriate event sink(s) based on configuration
@@ -22,22 +16,17 @@ class EventSinkFactory {
      * @param {Array<string>} [config.eventSink.sinks] - Array of sink types to enable
      * @param {boolean} [config.kafka.enabled] - Whether Kafka is enabled
      * @param {Object} [options={}] - Additional options for sink creation
-     * @returns {Array<EventSinkInterface>} Array of initialized sink instances
+     * @returns {Array<EventSinkInterface>} Array of sink instances
      */
     static create(config, options = {}) {
         if (!config) {
             throw new Error('Configuration is required for EventSinkFactory');
         }
-        const cacheKey = EventSinkFactory._generateCacheKey(config, options);
-        if (EventSinkFactory.#instances.has(cacheKey)) {
-            return EventSinkFactory.#instances.get(cacheKey);
-        }
         const sinks = [];
-        let configuredSinks = config.eventSink?.sinks || ['mongo'];
+        let configuredSinks = config.eventSink?.sinks;
 
         if (!Array.isArray(configuredSinks) || configuredSinks.length === 0) {
-            log.w('Invalid or empty eventSink.sinks configuration, using default [mongo]');
-            configuredSinks = ['mongo'];
+            EventSinkFactory.#fatalSinkCreation('Invalid or empty eventSink.sinks configuration');
         }
         if (configuredSinks.includes('mongo')) {
             try {
@@ -46,75 +35,28 @@ class EventSinkFactory {
                 log.d('Created MongoEventSink');
             }
             catch (error) {
-                log.e('Failed to create MongoEventSink:', error);
-                throw new Error(`Failed to create MongoDB event sink: ${error.message}`);
+                EventSinkFactory.#fatalSinkCreation('Failed to create MongoEventSink', error);
             }
         }
         if (configuredSinks.includes('kafka')) {
-            if (config.kafka?.enabled) {
-                try {
-                    EventSinkFactory._validateKafkaAvailability();
-                    const kafkaSink = new KafkaEventSink(options.kafka || {});
-                    sinks.push(kafkaSink);
-                    log.d('Created KafkaEventSink');
-                }
-                catch (error) {
-                    log.e('Failed to create KafkaEventSink:', error);
-                    log.w('Kafka sink requested but not available, continuing with MongoDB only');
-                }
+            if (!config.kafka?.enabled) {
+                EventSinkFactory.#fatalSinkCreation('Kafka sink configured but kafka.enabled is false');
             }
-            else {
-                log.i('Kafka sink requested but kafka.enabled is false, skipping');
+            try {
+                EventSinkFactory.#validateKafkaAvailability();
+                const kafkaSink = new KafkaEventSink(options.kafka || {});
+                sinks.push(kafkaSink);
+                log.d('Created KafkaEventSink');
+            }
+            catch (error) {
+                EventSinkFactory.#fatalSinkCreation('Failed to create KafkaEventSink', error);
             }
         }
         if (sinks.length === 0) {
-            log.w('No sinks were created, falling back to MongoDB');
-            const fallbackSink = new MongoEventSink(options.mongo || {});
-            sinks.push(fallbackSink);
+            EventSinkFactory.#fatalSinkCreation('No sinks were created from configuration');
         }
-        EventSinkFactory.#instances.set(cacheKey, sinks);
         log.i(`EventSinkFactory created ${sinks.length} sink(s): ${sinks.map(s => s.getType()).join(', ')}`);
         return sinks;
-    }
-
-
-    /**
-     * Clear cached sink instances (useful for testing or config changes)
-     */
-    static clearCache() {
-        EventSinkFactory.#instances.clear();
-        log.d('EventSinkFactory cache cleared');
-    }
-
-    /**
-     * Get statistics for all cached sink instances
-     * @returns {Array<Object>} Array of sink statistics
-     */
-    static getAllStats() {
-        const stats = [];
-        for (const [cacheKey, sinks] of EventSinkFactory.#instances) {
-            stats.push({
-                cacheKey,
-                sinks: sinks.map(sink => sink.getStats())
-            });
-        }
-        return stats;
-    }
-
-    /**
-     * Generate a cache key for sink instances
-     * @param {Object} config - Configuration object
-     * @param {Object} options - Options object
-     * @returns {string} Cache key
-     * @private
-     */
-    static _generateCacheKey(config, options) {
-        const key = {
-            sinks: config.eventSink?.sinks || ['mongo'],
-            kafkaEnabled: config.kafka?.enabled || false,
-            options: JSON.stringify(options)
-        };
-        return JSON.stringify(key);
     }
 
     /**
@@ -122,7 +64,7 @@ class EventSinkFactory {
      * @throws {Error} If Kafka modules cannot be loaded
      * @private
      */
-    static _validateKafkaAvailability() {
+    static #validateKafkaAvailability() {
         try {
             // Try to require Kafka modules to ensure they're available
             require('../../plugins/kafka/api/lib/kafkaClient');
@@ -134,46 +76,23 @@ class EventSinkFactory {
     }
 
     /**
-     * Process results from parallel sink writes
-     * @param {Array<EventSinkInterface>} sinks - Array of sinks
-     * @param {Array<Object>} results - Results from Promise.allSettled
-     * @returns {Object} Processed results
+     * Handle fatal errors during sink creation.
+     * Logs the error, terminates the process, and throws to satisfy control flow.
+     * @param {string} msg - Error message to log
+     * @param {Error} [error] - Optional underlying error
      * @private
      */
-    static _processResults(sinks, results) {
-        const processed = {
-            overall: { success: true, written: 0 },
-            sinks: {}
-        };
-
-        for (let i = 0; i < results.length; i++) {
-            const sink = sinks[i];
-            const result = results[i];
-            const sinkType = sink.getType();
-
-            if (result.status === 'fulfilled') {
-                processed.sinks[sinkType] = result.value;
-                processed.overall.written += result.value.written || 0;
-            }
-            else {
-                processed.sinks[sinkType] = {
-                    success: false,
-                    written: 0,
-                    error: result.reason?.message || 'Unknown error',
-                    type: sinkType
-                };
-
-                // If MongoDB fails, overall operation fails
-                // If only Kafka fails, we can continue (graceful degradation)
-                if (sinkType === 'MongoEventSink') {
-                    processed.overall.success = false;
-                    processed.overall.error = result.reason?.message;
-                }
-            }
+    static #fatalSinkCreation(msg, error) {
+        if (error) {
+            log.e(msg, error);
         }
-
-        return processed;
+        else {
+            log.e(msg);
+        }
+        // Keep throw for testability and static analysis; not reached at runtime after exit()
+        throw new Error(error?.message ? `${msg}: ${error.message}` : msg);
     }
+
 }
 
 module.exports = EventSinkFactory;

@@ -1,22 +1,19 @@
 const EventSinkInterface = require('./EventSinkInterface');
 const { transformToKafkaEventFormat } = require('../utils/eventTransformer');
-const log = require('../utils/log.js')('eventSink:kafka');
+const Log = require('../utils/log.js');
 
 /**
  * Kafka implementation of EventSinkInterface
- * Lightweight wrapper around existing KafkaProducer for writing events to Kafka
- * 
- * This implementation:
- * - Reuses all KafkaProducer features (batching, compression, transactions)
- * - Transforms MongoDB bulkWrite operations to Kafka events
- * - Uses existing transformToClickhouseFormat function
- * - Leverages producer's built-in retry logic and error handling
- * - Transactions are enabled by default for exactly-once semantics
+ * Lightweight wrapper around existing KafkaProducer for writing events to Kafka to conform to EventSinkInterface
  */
 class KafkaEventSink extends EventSinkInterface {
+    #log;
+
     #kafkaClient;
 
     #kafkaProducer;
+
+    #transformer;
 
     #isConnected = false;
 
@@ -24,11 +21,19 @@ class KafkaEventSink extends EventSinkInterface {
      * Create a KafkaEventSink instance
      * Uses existing Kafka infrastructure with minimal overhead
      * 
-     * @param {Object} [options={}] - Configuration options
+     * @param {Object} [options={}] - OPTIONAL Configuration options
+     * @param {Object} [options.kafkaClient] - Pre-initialized Kafka client
+     * @param {Object} [options.kafkaProducer] - Pre-initialized Kafka producer
+     * @param {Object} [options.transformer] -  transformer method
+     * @param {Object} [options.log] - Custom logger (defaults to internal logger)
      * @param {string} [options.transactionalIdPrefix='countly-event-sink'] - Prefix for transactional ID
      */
     constructor(options = {}) {
         super();
+        this.#log = options.log || Log('eventSink:kafka');
+        this.#kafkaClient = options.kafkaClient; // Created lazily in initialize() if not supplied
+        this.#kafkaProducer = options.kafkaProducer; // Created lazily in initialize() if not supplied
+        this.#transformer = options.transformer || transformToKafkaEventFormat;
         this.transactionalIdPrefix = options.transactionalIdPrefix || 'countly-event-sink';
     }
 
@@ -40,39 +45,42 @@ class KafkaEventSink extends EventSinkInterface {
         if (this.isInitialized()) {
             return;
         }
-
         try {
-            const KafkaClient = require('../../plugins/kafka/api/lib/kafkaClient');
-            const KafkaProducer = require('../../plugins/kafka/api/lib/kafkaProducer');
 
-            this.#kafkaClient = new KafkaClient();
-            this.#kafkaProducer = new KafkaProducer(this.#kafkaClient, {
-                transactionalIdPrefix: this.transactionalIdPrefix
-            });
+            if (!this.#kafkaClient) {
+                const KafkaClient = require('../../plugins/kafka/api/lib/kafkaClient');
+                this.#kafkaClient = this.#kafkaClient || new KafkaClient();
+            }
 
-            // KafkaProducer initializes connection internally when first used
+            if (!this.#kafkaProducer) {
+                const KafkaProducer = require('../../plugins/kafka/api' +
+                    '/lib/kafkaProducer');
+                this.#kafkaProducer = this.#kafkaProducer || new KafkaProducer(this.#kafkaClient, {
+                    transactionalIdPrefix: this.transactionalIdPrefix
+                });
+            }
+
             this.#isConnected = true;
-
             this._setInitialized();
-            log.d('KafkaEventSink initialized with transactional producer');
+            this.#log.d('KafkaEventSink initialized with transactional producer');
         }
         catch (error) {
-            log.e('Failed to initialize KafkaEventSink:', error);
+            this.#log.e('Failed to initialize KafkaEventSink:', error);
             throw error;
         }
     }
 
     /**
      * Write events to Kafka by transforming bulkWrite operations to event format
-     * @param {Array<Object>} bulkOps - Array of bulkWrite operations from MongoDB format
+     * @param {Array<Object>} bulkEvents - Array of bulkWrite operations from MongoDB format
      * @returns {Promise<Object>} Result object with success status and metadata
      */
-    async write(bulkOps) {
+    async write(bulkEvents) {
         if (!this.isInitialized()) {
             await this.initialize();
         }
 
-        if (!this._validateEvents(bulkOps)) {
+        if (!this._validateEvents(bulkEvents)) {
             return this._createResult(true, 0, 'No events to write');
         }
 
@@ -83,9 +91,9 @@ class KafkaEventSink extends EventSinkInterface {
             // Transform bulkWrite operations to Kafka event format
             const events = [];
 
-            for (const op of bulkOps) {
+            for (const op of bulkEvents) {
                 if (op.insertOne && op.insertOne.document) {
-                    const transformed = transformToKafkaEventFormat(op.insertOne.document);
+                    const transformed = this.#transformer(op.insertOne.document);
                     if (transformed) {
                         events.push(transformed);
                         transformedEvents++;
@@ -94,10 +102,9 @@ class KafkaEventSink extends EventSinkInterface {
             }
 
             if (events.length === 0) {
-                this._updateStats(0, true);
                 return this._createResult(true, 0, 'No valid events to transform', {
                     duration: Date.now() - startTime,
-                    originalCount: bulkOps.length
+                    originalCount: bulkEvents.length
                 });
             }
 
@@ -108,26 +115,22 @@ class KafkaEventSink extends EventSinkInterface {
             const duration = Date.now() - startTime;
 
             if (result.success) {
-                this._updateStats(result.sent, true);
-                log.d(`Successfully sent ${result.sent} events to Kafka in ${duration}ms`);
+                this.#log.d(`Successfully sent ${result.sent} events to Kafka in ${duration}ms`);
 
                 return this._createResult(true, result.sent, 'Events sent to Kafka successfully', {
                     duration,
-                    originalCount: bulkOps.length,
+                    originalCount: bulkEvents.length,
                     transformedCount: transformedEvents
                 });
             }
             else {
-                // KafkaProducer returned failure
-                this._updateStats(0, false, new Error('Kafka producer returned failure'));
                 throw new Error(`Kafka send failed: ${result.message || 'Unknown error'}`);
             }
         }
         catch (error) {
             const duration = Date.now() - startTime;
-            this._updateStats(0, false, error);
-            log.e(`Failed to write ${transformedEvents} events to Kafka in ${duration}ms:`);
-            log.e('Error writing events to Kafka:', error);
+            this.#log.e(`Failed to write ${transformedEvents} events to Kafka in ${duration}ms:`);
+            this.#log.e('Error writing events to Kafka:', error);
             throw error;
         }
     }
@@ -147,10 +150,10 @@ class KafkaEventSink extends EventSinkInterface {
                 this.#isConnected = false;
             }
             this._setClosed();
-            log.d('KafkaEventSink closed');
+            this.#log.d('KafkaEventSink closed');
         }
         catch (error) {
-            log.e('Error closing KafkaEventSink:', error);
+            this.#log.e('Error closing KafkaEventSink:', error);
             this._setClosed(); // Mark as closed even if disconnect failed
         }
     }

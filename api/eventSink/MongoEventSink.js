@@ -1,6 +1,6 @@
 const EventSinkInterface = require('./EventSinkInterface');
 const common = require('../utils/common.js');
-const log = require('../utils/log.js')('eventSink:mongo');
+const Log = require('../utils/log.js');
 
 /**
  * MongoDB implementation of EventSinkInterface
@@ -14,21 +14,26 @@ const log = require('../utils/log.js')('eventSink:mongo');
  * Note: This class passes through to MongoDB's native bulkWrite without additional batching
  */
 class MongoEventSink extends EventSinkInterface {
+    #log;
+
     #db;
 
-    #collectionName;
+    #collection;
 
     /**
      * Create a MongoEventSink instance
      * 
      * @param {Object} [options={}] - Configuration options
      * @param {Object} [options.db] - MongoDB database connection (defaults to common.drillDb)
+     * @param {Object} [options.log] - Custom logger (defaults to internal logger)
      * @param {string} [options.collection='drill_events'] - Collection name for events
      */
     constructor(options = {}) {
         super();
         this.#db = options.db || common.drillDb;
-        this.#collectionName = options.collection || 'drill_events';
+        this.#log = options.log || Log('eventSink:mongo');
+        const collectionName = options.collection || 'drill_events';
+        this.#collection = this.#db.collection(collectionName);
     }
 
     /**
@@ -39,19 +44,13 @@ class MongoEventSink extends EventSinkInterface {
         if (this.isInitialized()) {
             return;
         }
-
         try {
-            // Test the database connection
-            if (!this.#db) {
-                throw new Error('MongoDB database connection is not available');
-            }
-            await this.#db.collection(this.#collectionName).findOne({}, { _id: 1 });
-
+            await this.#collection.findOne({}, { _id: 1 });
             this._setInitialized();
-            log.d(`MongoEventSink initialized for collection: ${this.#collectionName}`);
+            this.#log.d(`MongoEventSink initialized for collection`);
         }
         catch (error) {
-            log.e('Failed to initialize MongoEventSink:', error);
+            this.#log.e('Failed to initialize MongoEventSink:', error);
             throw error;
         }
     }
@@ -74,24 +73,16 @@ class MongoEventSink extends EventSinkInterface {
         let insertedCount = 0;
 
         try {
-            const result = await this.#db.collection(this.#collectionName)
-                .bulkWrite(bulkOps, { ordered: false });
-
+            const result = await this.#collection.bulkWrite(bulkOps, { ordered: false });
             insertedCount = result.insertedCount || 0;
-
             const duration = Date.now() - startTime;
-            this._updateStats(insertedCount, true);
-
-            log.d(`Successfully wrote ${insertedCount} events to MongoDB in ${duration}ms`);
-
+            this.#log.d(`Successfully wrote ${insertedCount} events to MongoDB in ${duration}ms`);
             return this._createResult(true, insertedCount, 'Events written successfully', {
                 duration
             });
         }
         catch (error) {
             const duration = Date.now() - startTime;
-
-            // Handle MongoDB duplicate key errors and other write errors
             if (error.writeErrors && Array.isArray(error.writeErrors)) {
                 const duplicateErrors = error.writeErrors.filter(e => e.code === 11000);
                 const realErrors = error.writeErrors.filter(e => e.code !== 11000);
@@ -101,32 +92,24 @@ class MongoEventSink extends EventSinkInterface {
                     // Calculate successful inserts (total - duplicates)
                     const successfulInserts = bulkOps.length - duplicateErrors.length;
 
-                    this._updateStats(successfulInserts, true);
-                    log.d(`Wrote ${successfulInserts} events with ${duplicateErrors.length} duplicates ignored`);
-
+                    this.#log.d(`Wrote ${successfulInserts} events with ${duplicateErrors.length} duplicates ignored`);
                     return this._createResult(true, successfulInserts, 'Events written (duplicates ignored)', {
                         duration,
                         duplicates: duplicateErrors.length
                     });
                 }
                 else {
-                    // Real errors occurred
-                    log.e(`MongoDB write errors: ${realErrors.length} real errors, ${duplicateErrors.length} duplicates`, realErrors);
+                    this.#log.e(`MongoDB write errors: ${realErrors.length} real errors, ${duplicateErrors.length} duplicates`, realErrors);
                 }
             }
             else if (error.code === 11000) {
                 // Single duplicate key error
-                this._updateStats(0, true);
-                log.d('Event already exists (duplicate key), ignoring');
-
+                this.#log.d('Event already exists (duplicate key), ignoring');
                 return this._createResult(true, 0, 'Event already exists (duplicate)', {
                     duration
                 });
             }
-
-            // Real error occurred
-            this._updateStats(0, false, error);
-            log.e('Error writing events to MongoDB:', error);
+            this.#log.e('Error writing events to MongoDB:', error);
             throw error;
         }
     }
@@ -140,7 +123,7 @@ class MongoEventSink extends EventSinkInterface {
             return;
         }
         this._setClosed();
-        log.d('MongoEventSink closed');
+        this.#log.d('MongoEventSink closed');
     }
 
 }
