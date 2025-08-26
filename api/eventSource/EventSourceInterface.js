@@ -88,7 +88,6 @@ class EventSourceInterface {
 
         try {
             await this.initialize();
-
             // Main loop: ack previous, then fetch next, then yield
             // (ack happens only when caller asks for the next batch)
             // ensures at-least-once if caller throws before requesting next
@@ -123,14 +122,6 @@ class EventSourceInterface {
                 this.#isIterating = false;
             }
         }
-    }
-
-    /**
-     * Check if the event source is currently being iterated
-     * @returns {boolean} True if iteration is in progress
-     */
-    isIterating() {
-        return this.#isIterating;
     }
 }
 

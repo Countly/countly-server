@@ -202,7 +202,11 @@ module.exports = function(grunt) {
                     reporter: 'spec',
                     timeout: 50000
                 },
-                src: ['test/*/*.js']
+                src: ['test/*/*.js'],
+                filter: function(filepath) {
+                    // Exclude unit test files
+                    return !filepath.includes('.unit.js');
+                }
             }
         },
         mocha_nyc: {
