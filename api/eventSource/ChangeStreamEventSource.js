@@ -4,6 +4,8 @@ const Log = require('../utils/log.js');
 /**
  * ChangeStream implementation of EventSourceInterface
  * Supports async iteration with auto-acknowledgment of MongoDB changestream events
+ * 
+ * @DI Supports dependency injection for testing and modularity
  */
 class ChangeStreamEventSource extends EventSourceInterface {
     #log; // Logging function

@@ -39,7 +39,6 @@ class EventSinkInterface {
      * Write events to the sink
      * @param {Array<Object>} events - Array of events to write (bulkWrite format or event objects)
      * @returns {Promise<Object>} Result object with success status and metadata
-     * @protected
      */
     async write(events) { // eslint-disable-line no-unused-vars
         throw new Error('write() must be implemented by subclass');
