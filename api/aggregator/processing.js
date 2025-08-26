@@ -8,6 +8,7 @@ var usage = require('./usage.js');
 const log = require('../utils/log.js')('aggregator-core:api');
 const {WriteBatcher} = require('../parts/data/batcher.js');
 const {Cacher} = require('../parts/data/cacher.js');
+const {preset} = require('../lib/countly.preset.js');
 
 const UnifiedEventSource = require('../eventSource/UnifiedEventSource.js');
 //dataviews = require('./parts/data/dataviews.js');
@@ -292,12 +293,22 @@ var crypto = require('crypto');
                 db: common.drillDb,
                 pipeline: [
                     {"$match": {"operationType": "insert"}},
-                    {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "sg": "$fullDocument.sg"}}
+                    {
+                        "$project": {
+                            "__iid": "$fullDocument._id",
+                            "cd": "$fullDocument.cd",
+                            "a": "$fullDocument.a",
+                            "e": "$fullDocument.e",
+                            "n": "$fullDocument.n",
+                            "sg": "$fullDocument.sg",
+                            "up": "$fullDocument.up",
+                            "custom": "$fullDocument.custom",
+                            "cmp": "$fullDocument.cmp"
+                        }
+                    }
                 ],
                 fallback: {
-                    pipeline: [{
-                        "$match": {"e": {"$in": ["[CLY]_custom"]}}
-                    }, {"$project": {"__id": "$_id", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "sg": "$sg"}}]
+                    pipeline: []
                 }
             }
         });
@@ -338,6 +349,43 @@ var crypto = require('crypto');
                                     };
                                     updates[app_id + "_meta_" + event_hash] = updates[app_id + "_meta_" + event_hash] || {};
                                     updates[app_id + "_meta_" + event_hash]["sg." + sgk + ".type"] = type;
+                                }
+                            }
+
+                            if (events[z].e === "[CLY]_session" || events[z].e === "[CLY]_session_upadate") {
+                                var meta_up = await drillMetaCache.getOne("drill_meta", {_id: events[z].a + "_meta_up"});
+                                if ((!meta_up || !meta_up._id) && !updates[app_id + "_meta_up"]) {
+                                    updates[app_id + "_meta_up"] = {
+                                        _id: app_id + "_meta_up",
+                                        app_id: events[z].a,
+                                        e: "up",
+                                        type: "up"
+                                    };
+                                    meta_up = {
+                                        _id: app_id + "_meta_up",
+                                        app_id: events[z].a,
+                                        e: "up",
+                                        type: "up"
+                                    };
+                                }
+                                var groups = ["up", "cmp", "custom"];
+                                for (var p = 0; p < groups.length; p++) {
+                                    if (events[z][groups[p]]) {
+                                        for (var key in events[z][groups[p]]) {
+                                            if (!meta_up[groups[p]] || !meta_up[groups[p]][key]) {
+                                                meta_up[groups[p]] = meta_up[groups[p]] || {};
+                                                if (preset[groups[p]] && preset[groups[p]][key]) {
+                                                    meta_up[groups[p]][key] = {type: preset[groups[p]][key].type};
+                                                }
+                                                else {
+                                                    meta_up[groups[p]][key] = {type: determineType(events[z][groups[p]][key])};
+                                                }
+
+                                                updates[app_id + "_meta_up"] = updates[app_id + "_meta_up"] || {};
+                                                updates[app_id + "_meta_up"][groups[p] + "." + key + ".type"] = meta_up[groups[p]][key].type;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

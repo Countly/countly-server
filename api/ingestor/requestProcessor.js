@@ -605,6 +605,8 @@ const processRequestData = (ob, done) => {
         for (let i = 0; i < ob.updates.length; i++) {
             update = common.mergeQuery(update, ob.updates[i]);
         }
+        //Adding fake event to notify property update.
+        ob.params.qstring.events.push({"key": "[CLY]_property_update"});
     }
     //var SaveAppUser = Date.now().valueOf();
 

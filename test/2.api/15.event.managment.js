@@ -776,7 +776,7 @@ describe('Testing event settings', function() {
                         ob.should.have.property("map", {"test1": {"is_visible": false}});
                         ob.should.have.property("order", ["test1"]);
                         ob.should.have.property("overview", []);
-                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["s", "bad_segment"]});
+                        ob.should.have.property("segments", {"test3": ["my_segment2"], "t1": [], "t5": ["bad_segment", "s"]});
                         ob.should.have.property("omitted_segments", {"test3": ["my_segment"], "t1": ["s"]});
                         ob.should.have.property("whitelisted_segments", {});
                         done();
