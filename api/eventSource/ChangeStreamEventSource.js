@@ -63,12 +63,12 @@ class ChangeStreamEventSource extends EventSourceInterface {
      * @param {Function} [mongoOptions.onClose] - Optional. Callback function executed when the change stream closes
      *                                            Receives error information if stream closes due to error
      * @param {Object} [mongoOptions.fallback] - Optional. Fallback configuration for when change streams fail
-     * @param {Object} countlyConfig - Required. Global Countly configuration
-     * @param {Object} [dependencies={}] - Optional dependency injection for testing
+     * @param {Object} dependencies - Required. Dependency injection for configuration and testing
+     * @param {Object} dependencies.countlyConfig - Required. Global Countly configuration
      * @param {Function} [dependencies.ChangeStreamReader] - ChangeStreamReader class for creating reader instances
      * @param {Logger} [dependencies.log] - Logging function, defaults to internal Log utility
      */
-    constructor(name, mongoOptions, countlyConfig, dependencies = {}) {
+    constructor(name, mongoOptions, dependencies) {
         super();
         if (!name || typeof name !== 'string') {
             throw new Error('ChangeStreamEventSource requires a name (string) parameter');
@@ -76,14 +76,17 @@ class ChangeStreamEventSource extends EventSourceInterface {
         if (!mongoOptions?.db) {
             throw new Error('ChangeStreamEventSource requires mongoOptions.db (MongoDB database connection)');
         }
-        if (!countlyConfig || typeof countlyConfig !== 'object') {
-            throw new Error('ChangeStreamEventSource requires countlyConfig (object) parameter');
+        if (!dependencies || typeof dependencies !== 'object') {
+            throw new Error('ChangeStreamEventSource requires dependencies (object) parameter');
+        }
+        if (!dependencies.countlyConfig || typeof dependencies.countlyConfig !== 'object') {
+            throw new Error('ChangeStreamEventSource requires dependencies.countlyConfig (object) parameter');
         }
 
         this.#log = dependencies.log || Log('eventSource:changestream');
         this.#name = name;
         this.#db = mongoOptions.db;
-        this.#countlyConfig = countlyConfig;
+        this.#countlyConfig = dependencies.countlyConfig;
         this.#mongoOptions = mongoOptions;
 
         this.#ChangeStreamReader = dependencies.ChangeStreamReader || require('../parts/data/changeStreamReader').changeStreamReader;

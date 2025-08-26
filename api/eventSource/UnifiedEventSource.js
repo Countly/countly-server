@@ -105,7 +105,9 @@ class UnifiedEventSource {
         this.#countlyConfig = dependencies.countlyConfig || require('../config');
         this.#options = options;
 
-        this.#source = EventSourceFactory.create(name, options, this.#countlyConfig);
+        this.#source = EventSourceFactory.create(name, options, {
+            countlyConfig: this.#countlyConfig
+        });
 
         this.#log.d(`UnifiedEventSource created: ${name} (${this.#source.constructor.name})`);
     }

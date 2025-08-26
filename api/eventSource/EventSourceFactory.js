@@ -144,7 +144,9 @@ class EventSourceFactory {
     static #createChangeStreamSource(name, options, countlyConfig, log) {
         log.i(`[${name}] Creating ChangeStream event source with consistent dependency injection`);
         const mongoOptions = options.mongo || {};
-        return new ChangeStreamEventSource(name, mongoOptions, countlyConfig);
+        return new ChangeStreamEventSource(name, mongoOptions, {
+            countlyConfig: countlyConfig
+        });
     }
 }
 
