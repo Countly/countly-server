@@ -74,10 +74,7 @@ async function fetchAggregatedSegmentedEventDataMongo(params) {
         pipeline.push({"$match": {"c": {"$gt": 0}}});
         pipeline.push({"$sort": {"c": -1}});
         pipeline.push({"$limit": limit || 1000});
-
-        log.e(JSON.stringify(pipeline));
         var data = await common.drillDb.collection("drill_events").aggregate(pipeline, {allowDiskUse: true}).toArray();
-        log.e(JSON.stringify(data));
         return {
             _queryMeta: {
                 adapter: 'mongodb',
@@ -158,8 +155,8 @@ async function fetchAggregatedSegmentedEventDataClickhouse(params) {
         let query = `SELECT ${fields.join(', ')} FROM drill_events ${whereSQL} \nGROUP BY ${segmentation}::String \nORDER BY c DESC \nLIMIT ${limit || 1000}`;
         var data = await common.clickhouseQueryService.aggregate({query: query, params: ch_params}, {});
         for (var z = 0; z < data.length; z++) {
-            data[z].c = parseInt(data[z].c);
-            data[z].prev_c = parseInt(data[z].prev_c);
+            data[z].c = parseInt(data[z].c, 10);
+            data[z].prev_c = parseInt(data[z].prev_c, 10);
         }
 
         return {
