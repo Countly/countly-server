@@ -8,31 +8,35 @@ const Log = require('../utils/log.js');
  * This class provides a simplified interface for writing events to multiple sinks
  * with automatic configuration loading and sink management.
  * 
+ * @DI Supports dependency injection for testing and modularity
+ * 
  * @example
  * const eventSink = new UnifiedEventSink();
  * await eventSink.write(bulkWriteOperations);
  * await eventSink.close();
  */
 class UnifiedEventSink {
-    #log;
+    #log; // logger instance
 
-    #config = null;
+    #config = null; // configuration object
 
-    #sinks = [];
+    #sinks = []; // array of initialized sinks
 
-    #initialized = false;
+    #initialized = false; // true if sinks are initialized
 
-    #closed = false;
+    #closed = false; // true if the sink has been closed
 
     /**
      * Create a UnifiedEventSink instance
      * Configuration is loaded automatically from the global config
      * 
-     * @param {Object} [config] - Optional configuration override for testing
+     * @param {Object} [dependencies={}] - Optional dependency injection for testing and modularity
+     * @param {Object} [dependencies.config] - Configuration override for testing
+     * @param {Logger} [dependencies.log] - Logger instance (defaults to Log('eventSink:unified'))
      */
-    constructor(config = null) {
-        this.#config = config || countlyConfig ;
-        this.#log = Log('eventSink:unified');
+    constructor(dependencies = {}) {
+        this.#config = dependencies.config || countlyConfig ;
+        this.#log = dependencies.log || Log('eventSink:unified');
         this.#log.d('UnifiedEventSink created');
     }
 

@@ -1,11 +1,10 @@
 const MongoEventSink = require('./MongoEventSink');
 const KafkaEventSink = require('./KafkaEventSink');
-const log = require('../utils/log.js')('eventSink:factory');
+const Log = require('../utils/log.js');
 
 /**
  * Factory class for creating appropriate EventSink instances
- * Handles sink selection based on configuration and availability
- * 
+ * @DI Supports dependency injection for testing and modularity
  */
 class EventSinkFactory {
 
@@ -16,9 +15,12 @@ class EventSinkFactory {
      * @param {Array<string>} [config.eventSink.sinks] - Array of sink types to enable
      * @param {boolean} [config.kafka.enabled] - Whether Kafka is enabled
      * @param {Object} [options={}] - Additional options for sink creation
+     * @param {Object} [dependencies={}] - Optional dependency injection for testing and modularity
+     * @param {Logger} [dependencies.log] - Logger instance (defaults to Log('eventSink:factory'))
      * @returns {Array<EventSinkInterface>} Array of sink instances
      */
-    static create(config, options = {}) {
+    static create(config, options = {}, dependencies = {}) {
+        const log = dependencies.log || Log('eventSink:factory');
         if (!config) {
             throw new Error('Configuration is required for EventSinkFactory');
         }
@@ -30,7 +32,7 @@ class EventSinkFactory {
         }
         if (configuredSinks.includes('mongo')) {
             try {
-                const mongoSink = new MongoEventSink(options.mongo || {});
+                const mongoSink = new MongoEventSink(options.mongo || {}, {});
                 sinks.push(mongoSink);
                 log.d('Created MongoEventSink');
             }
@@ -44,15 +46,17 @@ class EventSinkFactory {
             }
             try {
                 EventSinkFactory.#validateKafkaAvailability();
-                const kafkaSink = new KafkaEventSink(options.kafka || {});
+                const kafkaSink = new KafkaEventSink(options.kafka || {}, {});
                 sinks.push(kafkaSink);
                 log.d('Created KafkaEventSink');
             }
             catch (error) {
+                log.e('Kafka sink creation failed:', error);
                 EventSinkFactory.#fatalSinkCreation('Failed to create KafkaEventSink', error);
             }
         }
         if (sinks.length === 0) {
+            log.e('No valid sinks were created from configuration:', configuredSinks);
             EventSinkFactory.#fatalSinkCreation('No sinks were created from configuration');
         }
         log.i(`EventSinkFactory created ${sinks.length} sink(s): ${sinks.map(s => s.getType()).join(', ')}`);
@@ -83,12 +87,6 @@ class EventSinkFactory {
      * @private
      */
     static #fatalSinkCreation(msg, error) {
-        if (error) {
-            log.e(msg, error);
-        }
-        else {
-            log.e(msg);
-        }
         // Keep throw for testability and static analysis; not reached at runtime after exit()
         throw new Error(error?.message ? `${msg}: ${error.message}` : msg);
     }

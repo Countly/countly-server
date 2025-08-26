@@ -5,34 +5,37 @@ const Log = require('../utils/log.js');
 /**
  * Kafka implementation of EventSinkInterface
  * Lightweight wrapper around existing KafkaProducer for writing events to Kafka to conform to EventSinkInterface
+ * 
+ * @DI Supports dependency injection for testing and modularity
  */
 class KafkaEventSink extends EventSinkInterface {
-    #log;
+    #log; // logger instance
 
-    #kafkaClient;
+    #kafkaClient; // Kafka client instance
 
-    #kafkaProducer;
+    #kafkaProducer; // Kafka producer instance
 
-    #transformer;
+    #transformer; // event transformer function
 
-    #isConnected = false;
+    #isConnected = false; // true if producer is connected
 
     /**
      * Create a KafkaEventSink instance
      * Uses existing Kafka infrastructure with minimal overhead
      * 
-     * @param {Object} [options={}] - OPTIONAL Configuration options
-     * @param {Object} [options.kafkaClient] - Pre-initialized Kafka client
-     * @param {Object} [options.kafkaProducer] - Pre-initialized Kafka producer
-     * @param {Object} [options.transformer] -  transformer method
-     * @param {Object} [options.log] - Custom logger (defaults to internal logger)
+     * @param {Object} [options={}] - Configuration options for the sink
+     * @param {Function} [options.transformer] - Event transformer function (defaults to transformToKafkaEventFormat)
      * @param {string} [options.transactionalIdPrefix='countly-event-sink'] - Prefix for transactional ID
+     * @param {Object} [dependencies={}] - Optional dependency injection for testing and modularity
+     * @param {Object} [dependencies.kafkaClient] - Pre-initialized Kafka client
+     * @param {Object} [dependencies.kafkaProducer] - Pre-initialized Kafka producer
+     * @param {Logger} [dependencies.log] - Logger instance (defaults to Log('eventSink:kafka'))
      */
-    constructor(options = {}) {
+    constructor(options = {}, dependencies = {}) {
         super();
-        this.#log = options.log || Log('eventSink:kafka');
-        this.#kafkaClient = options.kafkaClient; // Created lazily in initialize() if not supplied
-        this.#kafkaProducer = options.kafkaProducer; // Created lazily in initialize() if not supplied
+        this.#log = dependencies.log || Log('eventSink:kafka');
+        this.#kafkaClient = dependencies.kafkaClient; // Created lazily in initialize() if not supplied
+        this.#kafkaProducer = dependencies.kafkaProducer; // Created lazily in initialize() if not supplied
         this.#transformer = options.transformer || transformToKafkaEventFormat;
         this.transactionalIdPrefix = options.transactionalIdPrefix || 'countly-event-sink';
     }

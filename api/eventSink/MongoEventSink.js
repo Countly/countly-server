@@ -12,26 +12,29 @@ const Log = require('../utils/log.js');
  * - Maintains compatibility with existing requestProcessor logic
  * 
  * Note: This class passes through to MongoDB's native bulkWrite without additional batching
+ * 
+ * @DI Supports dependency injection for testing and modularity
  */
 class MongoEventSink extends EventSinkInterface {
-    #log;
+    #log; // logger instance
 
-    #db;
+    #db; // MongoDB database connection
 
-    #collection;
+    #collection; // MongoDB collection instance
 
     /**
      * Create a MongoEventSink instance
      * 
-     * @param {Object} [options={}] - Configuration options
-     * @param {Object} [options.db] - MongoDB database connection (defaults to common.drillDb)
-     * @param {Object} [options.log] - Custom logger (defaults to internal logger)
+     * @param {Object} [options={}] - Configuration options for the sink
      * @param {string} [options.collection='drill_events'] - Collection name for events
+     * @param {Object} [dependencies={}] - Optional dependency injection for testing and modularity
+     * @param {Object} [dependencies.db] - MongoDB database connection object (defaults to common.drillDb)
+     * @param {Logger} [dependencies.log] - Logger instance (defaults to Log('eventSink:mongo'))
      */
-    constructor(options = {}) {
+    constructor(options = {}, dependencies = {}) {
         super();
-        this.#db = options.db || common.drillDb;
-        this.#log = options.log || Log('eventSink:mongo');
+        this.#db = dependencies.db || common.drillDb;
+        this.#log = dependencies.log || Log('eventSink:mongo');
         const collectionName = options.collection || 'drill_events';
         this.#collection = this.#db.collection(collectionName);
     }
