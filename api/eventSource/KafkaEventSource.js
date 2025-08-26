@@ -1,5 +1,5 @@
 const EventSourceInterface = require('./EventSourceInterface');
-const log = require('../utils/log.js')('eventSource:kafka');
+const Log = require('../utils/log.js');
 
 /**
  * Kafka implementation of EventSourceInterface
@@ -10,54 +10,88 @@ const log = require('../utils/log.js')('eventSource:kafka');
  * - Natural backpressure via KafkaConsumer's built-in flow control
  * - Ensures offsets are only committed after successful processing
  * 
- * Note: This class returns ALL events from Kafka without filtering.
+ * @note  This class returns ALL events from Kafka without filtering.
  * Event filtering is the responsibility of the consumer of this class (aggregator).
+ * 
+ * @DI Supports dependency injection for testing and modularity
  */
 class KafkaEventSource extends EventSourceInterface {
-    #kafkaConsumer;
+    #log; // Logger instance
 
-    #config;
+    #KafkaConsumer; // Class reference for dependency injection
 
-    #currentBatch = null;
+    #kafkaConsumer; // Instance of KafkaConsumer
+
+    #KafkaClient; // Class reference for dependency injection
+
+    #kafkaClient; // Instance of KafkaClient
+
+    #kafkaOptions; // Kafka-specific configuration
+
+    #countlyConfig; // Countly configuration for Kafka settings
+
+    #name; // Unique name which will also be groupId in Consumer
+
+    #currentBatch = null; // Batch pointer
 
     #batchAvailable = null; // Promise resolver for when a new batch arrives
 
     #batchProcessed = null; // Promise resolver for when batch is acknowledged
 
-    #isRunning = false;
+    #isRunning = false; // True if consumer is started
 
-    #isClosed = false;
+    #isClosed = false; // True if closed
 
     /**
-     * Create a KafkaEventSource instance
+     * Create a KafkaEventSource instance with consistent dependency injection
      * 
      * This class is typically created by EventSourceFactory, not directly by application code.
      * Use UnifiedEventSource for a cleaner API: new UnifiedEventSource(name, sourceConf)
      * 
+     * Now follows consistent dependency injection pattern - receives config and classes,
+     * creates its own consumer instance in initialize() method.
+     * 
      * Constructor Parameters:
-     * @param {KafkaConsumer} kafkaConsumer - Required. KafkaConsumer instance from plugins/kafka/api/lib/KafkaConsumer.js
-     *                                        Must be properly initialized with KafkaClient connection and consumer group configuration
-     *                                        Kafka topics and settings come from global countlyConfig
-     * @param {Object} config - Required. Configuration object for this event source
-     * @param {string} config.name - Required. Unique consumer name used for logging and identification
-     *                               Should be descriptive (e.g., 'session-aggregator', 'view-processor')
-     *                               Used as Kafka consumer group ID (with prefix from countlyConfig)
+     * @param {string} name - Required. Unique consumer name used for logging and identification
+     *                        Should be descriptive (e.g., 'session-aggregator', 'view-processor')
+     *                        Used as Kafka consumer group ID (with prefix from countlyConfig)
+     * @param {Object} kafkaOptions - Required. Kafka-specific configuration object
+     * @param {Array} [kafkaOptions.topics] - Kafka topics to subscribe to (defaults from countlyConfig if not provided)
+     * @param {Object} dependencies - Required. Dependency injection for configuration and testing
+     * @param {Object} dependencies.countlyConfig - Required. Global Countly configuration for Kafka settings
+     * @param {Function} [dependencies.KafkaClient] - KafkaClient class for creating client instances
+     * @param {Function} [dependencies.KafkaConsumer] - KafkaConsumer class for creating consumer instances
+     * @param {Logger} [dependencies.log] - Logger instance (defaults to internal logger if not provided)
      */
-    constructor(kafkaConsumer, config) {
+    constructor(name, kafkaOptions, dependencies) {
         super();
-        if (!kafkaConsumer) {
-            throw new Error('KafkaConsumer instance is required for KafkaEventSource');
+        if (!name || typeof name !== 'string') {
+            throw new Error('KafkaEventSource requires a name (string) parameter');
         }
-        if (!config || !config.name) {
-            throw new Error('Configuration with name property is required for KafkaEventSource');
+        if (!kafkaOptions || typeof kafkaOptions !== 'object') {
+            throw new Error('KafkaEventSource requires kafkaOptions (object) parameter');
         }
-        this.#kafkaConsumer = kafkaConsumer;
-        this.#config = config;
-        log.d(`KafkaEventSource created: ${this.#config.name}`);
+        if (!dependencies || typeof dependencies !== 'object') {
+            throw new Error('KafkaEventSource requires dependencies (object) parameter');
+        }
+        if (!dependencies.countlyConfig || typeof dependencies.countlyConfig !== 'object') {
+            throw new Error('KafkaEventSource requires dependencies.countlyConfig (object) parameter');
+        }
+
+        this.#log = dependencies.log || Log('eventSource:kafka');
+        this.#name = name;
+        this.#kafkaOptions = kafkaOptions;
+        this.#countlyConfig = dependencies.countlyConfig;
+
+        this.#KafkaClient = dependencies.KafkaClient || require('../../plugins/kafka/api/lib/kafkaClient');
+        this.#KafkaConsumer = dependencies.KafkaConsumer || require('../../plugins/kafka/api/lib/KafkaConsumer');
+
+        this.#log.d(`KafkaEventSource created: ${name} (will create consumer on initialize)`);
     }
 
     /**
      * Initialize the Kafka consumer with blocking handler for proper acknowledgment flow
+     * Creates its own KafkaClient and KafkaConsumer instances for consistent dependency injection
      * @returns {Promise<void>} resolves when consumer is started
      */
     async initialize() {
@@ -65,31 +99,33 @@ class KafkaEventSource extends EventSourceInterface {
             return;
         }
 
+        // Create Kafka dependencies - consistent with ChangeStreamEventSource pattern
+        this.#log.d(`[${this.#name}] Creating Kafka client and consumer`);
+        this.#kafkaClient = new this.#KafkaClient();
+        this.#kafkaConsumer = new this.#KafkaConsumer(this.#kafkaClient, this.#name, {
+            topics: this.#kafkaOptions.topics || [this.#countlyConfig.kafka?.drillEventsTopic || 'countly-drill-events'],
+            ...this.#kafkaOptions
+        });
+
+        // Start the consumer with blocking handler
         await this.#kafkaConsumer.start(async({ topic, partition, records }) => {
-            // Early exit if shutting down
             if (this.#isClosed) {
                 return;
             }
-
-            log.d(`[${this.#config.name}] Received batch: ${records.length} records from ${topic}[${partition}]`);
-
+            this.#log.d(`[${this.#name}] Received batch: ${records.length} records from ${topic}[${partition}]`);
             if (records.length === 0) {
-                // No events in this batch (shouldn't happen with normal Kafka operation)
-                log.d(`[${this.#config.name}] No events in batch, skipping`);
+                // No events in this batch (shouldn't happen with normal Kafka operation), hence warning log
+                this.#log.w(`[${this.#name}] No events in batch, skipping, Please investigate.`);
                 return;
             }
-
             // Create meaningful batch token with Kafka metadata
-            // Get first and last offsets before transforming records
             const firstOffset = records[0]?.message?.offset;
             const lastOffset = records[records.length - 1]?.message?.offset;
-
             // Transform records in-place for memory efficiency
             for (let i = 0; i < records.length; i++) {
                 records[i] = records[i].event;
             }
             const events = records;
-
             const batchToken = {
                 topic,
                 partition,
@@ -98,10 +134,7 @@ class KafkaEventSource extends EventSourceInterface {
                 batchSize: records.length,
                 key: `kafka:${topic}:${partition}:${firstOffset}-${lastOffset}`
             };
-
-            log.d(`[${this.#config.name}] Processing batch: ${batchToken.key} (${events.length} events)`);
-
-            // Store the batch for getNext() to retrieve
+            this.#log.d(`[${this.#name}] Processing batch: ${batchToken.key} (${events.length} events)`);
             this.#currentBatch = {
                 source: 'KAFKA',
                 token: batchToken,
@@ -124,11 +157,11 @@ class KafkaEventSource extends EventSourceInterface {
             // This ensures KafkaConsumer only commits offsets after processing
             await processed;
 
-            log.d(`[${this.#config.name}] Batch processing acknowledged, allowing offset commit for ${batchToken.key}`);
+            this.#log.d(`[${this.#name}] Batch processing acknowledged, allowing offset commit for ${batchToken.key}`);
         });
 
         this.#isRunning = true;
-        log.d(`[${this.#config.name}] Kafka event source initialized with blocking acknowledgment flow`);
+        this.#log.d(`[${this.#name}] Kafka event source initialized with self-created consumer (consistent dependency injection)`);
     }
 
     /**
@@ -140,19 +173,16 @@ class KafkaEventSource extends EventSourceInterface {
         if (this.#isClosed) {
             return null;
         }
-
         if (!this.#isRunning) {
             await this.initialize();
         }
-
         // If batch already available from a previous Kafka callback, return it immediately
         if (this.#currentBatch) {
             const batch = this.#currentBatch;
             this.#currentBatch = null;
-            log.d(`[${this.#config.name}] Returning available batch: ${batch.token.key}`);
+            this.#log.d(`[${this.#name}] Returning available batch: ${batch.token.key}`);
             return batch;
         }
-
         // Wait for next batch from Kafka
         await new Promise((resolve) => {
             // Race condition check: batch might have arrived while creating promise
@@ -167,10 +197,9 @@ class KafkaEventSource extends EventSourceInterface {
         if (this.#currentBatch) {
             const batch = this.#currentBatch;
             this.#currentBatch = null;
-            log.d(`[${this.#config.name}] Returning newly arrived batch: ${batch.token.key}`);
+            this.#log.d(`[${this.#name}] Returning newly arrived batch: ${batch.token.key}`);
             return batch;
         }
-
         // Closed while waiting
         return null;
     }
@@ -184,21 +213,19 @@ class KafkaEventSource extends EventSourceInterface {
      */
     async acknowledge(token) {
         if (!token) {
-            log.w(`[${this.#config.name}] acknowledge() called with null/undefined token`);
+            this.#log.w(`[${this.#name}] acknowledge() called with null/undefined token`);
             return;
         }
-
-        log.d(`[${this.#config.name}] Acknowledging batch: ${token.key} (${token.batchSize} events)`);
-
+        this.#log.d(`[${this.#name}] Acknowledging batch: ${token.key} (${token.batchSize} events)`);
         // Unblock the Kafka handler so it can return and allow offset commit
         if (this.#batchProcessed) {
             const resolver = this.#batchProcessed;
             this.#batchProcessed = null;
             resolver();
-            log.d(`[${this.#config.name}] Batch acknowledged, unblocking Kafka handler for ${token.key}`);
+            this.#log.d(`[${this.#name}] Batch acknowledged, unblocking Kafka handler for ${token.key}`);
         }
         else {
-            log.w(`[${this.#config.name}] No pending batch to acknowledge for token ${token.key}`);
+            this.#log.w(`[${this.#name}] No pending batch to acknowledge for token ${token.key}`);
         }
     }
 
@@ -210,34 +237,27 @@ class KafkaEventSource extends EventSourceInterface {
         if (this.#isClosed) {
             return;
         }
-
         this.#isClosed = true;
-
         if (!this.#isRunning) {
             return;
         }
-
         // Clean up any waiting promises to prevent hangs
         if (this.#batchAvailable) {
             const resolver = this.#batchAvailable;
             this.#batchAvailable = null;
             resolver();
         }
-
         if (this.#batchProcessed) {
             const resolver = this.#batchProcessed;
             this.#batchProcessed = null;
             resolver();
         }
-
         // Stop the Kafka consumer
         await this.#kafkaConsumer.stop();
-
         // Clean up state
         this.#isRunning = false;
         this.#currentBatch = null;
-
-        log.d(`[${this.#config.name}] Kafka event source stopped`);
+        this.#log.d(`[${this.#name}] Kafka event source stopped`);
     }
 
 }
