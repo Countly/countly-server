@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Countly Database Viewer API",
-    "description": "API for accessing and querying database collections in Countly Server",
+    "description": "API for viewing and managing database collections in Countly Server",
     "version": "1.0.0"
   },
   "servers": [
@@ -11,44 +11,85 @@
     }
   ],
   "paths": {
-    "/o/db/collections": {
+    "/o/db": {
       "get": {
-        "summary": "Get database collections",
-        "description": "Get a list of available database collections",
+        "summary": "Database Viewer Operations",
+        "description": "Multi-purpose endpoint for database viewing operations including listing databases/collections, querying documents, running aggregations, and getting indexes",
         "tags": [
-          "Database Management"
-        ],
-        "responses": {
-          "200": {
-            "description": "Database collections retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "description": "Collection name"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/o/db/collection/count": {
-      "get": {
-        "summary": "Get document count",
-        "description": "Get the number of documents in a collection",
-        "tags": [
-          "Database Management"
+          "Database Viewer"
         ],
         "parameters": [
           {
-            "name": "collection",
+            "name": "api_key",
             "in": "query",
             "required": true,
-            "description": "Collection name",
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": false,
+            "description": "Application ID to filter results",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "db",
+            "in": "query",
+            "required": false,
+            "description": "Database name (countly, countly_drill, countly_out, countly_fs)",
+            "schema": {
+              "type": "string",
+              "enum": ["countly", "countly_drill", "countly_out", "countly_fs"]
+            }
+          },
+          {
+            "name": "dbs",
+            "in": "query",
+            "required": false,
+            "description": "Alternative parameter for database name",
+            "schema": {
+              "type": "string",
+              "enum": ["countly", "countly_drill", "countly_out", "countly_fs"]
+            }
+          },
+          {
+            "name": "collection",
+            "in": "query",
+            "required": false,
+            "description": "Collection name to query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "document",
+            "in": "query",
+            "required": false,
+            "description": "Document ID to retrieve specific document",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "description": "Specific action to perform",
+            "schema": {
+              "type": "string",
+              "enum": ["get_indexes"]
+            }
+          },
+          {
+            "name": "aggregation",
+            "in": "query",
+            "required": false,
+            "description": "MongoDB aggregation pipeline as JSON string",
             "schema": {
               "type": "string"
             }
@@ -57,154 +98,25 @@
             "name": "filter",
             "in": "query",
             "required": false,
-            "description": "Query filter in JSON format",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Document count retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "integer",
-                      "description": "Number of documents in the collection"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/o/db/collection/aggregate": {
-      "get": {
-        "summary": "Aggregate collection",
-        "description": "Perform an aggregation operation on a collection",
-        "tags": [
-          "Database Management"
-        ],
-        "parameters": [
-          {
-            "name": "collection",
-            "in": "query",
-            "required": true,
-            "description": "Collection name",
+            "description": "MongoDB query filter as JSON string",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "pipeline",
-            "in": "query",
-            "required": true,
-            "description": "Aggregation pipeline in JSON format",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Aggregation performed successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "array",
-                      "description": "Aggregation result documents",
-                      "items": {
-                        "type": "object"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/o/db/collection/group": {
-      "get": {
-        "summary": "Group collection",
-        "description": "Perform a group operation on a collection",
-        "tags": [
-          "Database Management"
-        ],
-        "parameters": [
-          {
-            "name": "collection",
-            "in": "query",
-            "required": true,
-            "description": "Collection name",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "group",
-            "in": "query",
-            "required": true,
-            "description": "Group configuration in JSON format",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Group operation performed successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "array",
-                      "description": "Group result documents",
-                      "items": {
-                        "type": "object"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/o/db/collection/findOne": {
-      "get": {
-        "summary": "Find one document",
-        "description": "Find a single document in a collection",
-        "tags": [
-          "Database Management"
-        ],
-        "parameters": [
-          {
-            "name": "collection",
-            "in": "query",
-            "required": true,
-            "description": "Collection name",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "filter",
+            "name": "query",
             "in": "query",
             "required": false,
-            "description": "Query filter in JSON format",
+            "description": "Alternative parameter for MongoDB query filter as JSON string",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "project",
+            "in": "query",
+            "required": false,
+            "description": "MongoDB projection as JSON string",
             "schema": {
               "type": "string"
             }
@@ -213,63 +125,7 @@
             "name": "projection",
             "in": "query",
             "required": false,
-            "description": "Fields to include in JSON format",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Document found successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "object",
-                      "description": "Found document"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/o/db/collection/find": {
-      "get": {
-        "summary": "Find documents",
-        "description": "Find multiple documents in a collection",
-        "tags": [
-          "Database Management"
-        ],
-        "parameters": [
-          {
-            "name": "collection",
-            "in": "query",
-            "required": true,
-            "description": "Collection name",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "filter",
-            "in": "query",
-            "required": false,
-            "description": "Query filter in JSON format",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "projection",
-            "in": "query",
-            "required": false,
-            "description": "Fields to include in JSON format",
+            "description": "Alternative parameter for MongoDB projection as JSON string",
             "schema": {
               "type": "string"
             }
@@ -278,7 +134,7 @@
             "name": "sort",
             "in": "query",
             "required": false,
-            "description": "Sort criteria in JSON format",
+            "description": "MongoDB sort criteria as JSON string",
             "schema": {
               "type": "string"
             }
@@ -289,45 +145,150 @@
             "required": false,
             "description": "Maximum number of documents to return",
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 20
             }
           },
           {
             "name": "skip",
             "in": "query",
             "required": false,
-            "description": "Number of documents to skip",
+            "description": "Number of documents to skip for pagination",
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "sSearch",
+            "in": "query",
+            "required": false,
+            "description": "Search term for document IDs",
+            "schema": {
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Documents found successfully",
+            "description": "Database operation completed successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
+                  "oneOf": [
+                    {
                       "type": "array",
-                      "description": "Found documents",
+                      "description": "List of databases and their collections",
                       "items": {
-                        "type": "object"
+                        "$ref": "#/components/schemas/DatabaseInfo"
                       }
                     },
-                    "pages": {
-                      "type": "integer",
-                      "description": "Total number of pages"
+                    {
+                      "type": "object",
+                      "description": "Paginated collection data",
+                      "properties": {
+                        "limit": {
+                          "type": "integer"
+                        },
+                        "start": {
+                          "type": "integer"
+                        },
+                        "end": {
+                          "type": "integer"
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "pages": {
+                          "type": "integer"
+                        },
+                        "curPage": {
+                          "type": "integer"
+                        },
+                        "collections": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      }
                     },
-                    "curPage": {
-                      "type": "integer",
-                      "description": "Current page number"
-                    },
-                    "totalItems": {
-                      "type": "integer",
-                      "description": "Total number of documents"
+                    {
+                      "type": "object",
+                      "description": "Single document result",
+                      "additionalProperties": true
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/db/mongotop": {
+      "get": {
+        "summary": "Get MongoDB Top Statistics",
+        "description": "Retrieve MongoDB top statistics (requires global admin privileges)",
+        "tags": [
+          "Database Statistics"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication (global admin required)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MongoDB top statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
                     }
                   }
                 }
@@ -337,161 +298,35 @@
         }
       }
     },
-    "/i/db/insert": {
-      "post": {
-        "summary": "Insert document",
-        "description": "Insert a new document into a collection",
+    "/o/db/mongostat": {
+      "get": {
+        "summary": "Get MongoDB Statistics", 
+        "description": "Retrieve MongoDB statistics (requires global admin privileges)",
         "tags": [
-          "Database Management"
+          "Database Statistics"
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "collection": {
-                    "type": "string",
-                    "description": "Collection name",
-                    "required": true
-                  },
-                  "document": {
-                    "type": "object",
-                    "description": "Document to insert",
-                    "required": true
-                  }
-                }
-              }
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication (global admin required)",
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "Document inserted successfully",
+            "description": "MongoDB statistics retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "description": "Result message"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/i/db/update": {
-      "post": {
-        "summary": "Update document",
-        "description": "Update an existing document in a collection",
-        "tags": [
-          "Database Management"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "collection": {
-                    "type": "string",
-                    "description": "Collection name",
-                    "required": true
-                  },
-                  "filter": {
-                    "type": "object",
-                    "description": "Query filter to match documents",
-                    "required": true
-                  },
-                  "update": {
-                    "type": "object",
-                    "description": "Update operations",
-                    "required": true
-                  },
-                  "multi": {
-                    "type": "boolean",
-                    "description": "Whether to update multiple documents"
-                  },
-                  "upsert": {
-                    "type": "boolean",
-                    "description": "Whether to insert if no documents match"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Document updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "description": "Result message"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/i/db/delete": {
-      "post": {
-        "summary": "Delete document",
-        "description": "Delete documents from a collection",
-        "tags": [
-          "Database Management"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "collection": {
-                    "type": "string",
-                    "description": "Collection name",
-                    "required": true
-                  },
-                  "filter": {
-                    "type": "object",
-                    "description": "Query filter to match documents",
-                    "required": true
-                  },
-                  "multi": {
-                    "type": "boolean",
-                    "description": "Whether to delete multiple documents"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Documents deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {
-                      "type": "string",
-                      "description": "Result message"
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
                     }
                   }
                 }
@@ -503,25 +338,33 @@
     }
   },
   "components": {
-    "securitySchemes": {
-      "ApiKeyAuth": {
-        "type": "apiKey",
-        "in": "query",
-        "name": "api_key"
+    "schemas": {
+      "DatabaseInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Database name"
+          },
+          "collections": {
+            "type": "object",
+            "description": "Object mapping pretty collection names to actual collection names",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["name", "collections"]
       },
-      "AuthToken": {
-        "type": "apiKey",
-        "in": "query",
-        "name": "auth_token"
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "description": "Error message or result status"
+          }
+        }
       }
     }
-  },
-  "security": [
-    {
-      "ApiKeyAuth": []
-    },
-    {
-      "AuthToken": []
-    }
-  ]
+  }
 }
