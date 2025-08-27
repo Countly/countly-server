@@ -607,7 +607,9 @@ const processRequestData = (ob, done) => {
         }
         //Adding fake event to notify property update.
         ob.params.qstring.events = ob.params.qstring.events || [];
-        ob.params.qstring.events.push({"key": "[CLY]_property_update"});
+        if (ob.params.qstring.events.length === 0) {
+            ob.params.qstring.events.push({"key": "[CLY]_property_update"});
+        }
     }
     //var SaveAppUser = Date.now().valueOf();
 
