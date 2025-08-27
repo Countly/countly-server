@@ -11,6 +11,7 @@ var usage = {},
     log = require('../../utils/log.js')('api:usage'),
     async = require('async'),
     plugins = require('../../../plugins/pluginManager.js'),
+    crypto = require('crypto'),
     moment = require('moment-timezone');
 
 /**
@@ -1275,6 +1276,41 @@ plugins.register("/sdk/user_properties", async function(ob) {
 
     if (Object.keys(update).length) {
         ob.updates.push(update);
+    }
+});
+
+
+//Granural data deletion
+plugins.register("/i/event/delete", async function(ob) {
+    if (ob.event_key && ob.appId) {
+        // var collectionNameWoPrefix = crypto.createHash('sha1').update(ob.event_key + ob.appId).digest('hex');
+        // common.drillDb.collection("drill_events" + collectionNameWoPrefix).drop(function() {});
+        let promises = [];
+        if (Array.isArray(ob.event_key)) {
+            plugins.dispatch("/core/delete_granular_data", {
+                db: "drill",
+                query: { "a": ob.appId + "", "e": "[CLY]_custom", "n": {"$in": ob.event_key}},
+                collection: "drill_events"
+            });
+            for (var z = 0; z < ob.event_key.length; z++) {
+                promises.push(common.drillDb.collection('drill_bookmarks').remove({ 'app_id': ob.appId, 'event_key': ob.event_key[z] }));
+                let hash = crypto.createHash('sha1').update(ob.event_key[z] + ob.appId).digest('hex');
+                promises.push(common.drillDb.collection("drill_meta").remove({'_id': {"$regex": `${ob.appId}_${hash}.*`}}));
+            }
+        }
+        else {
+
+            plugins.dispatch("/core/delete_granular_data", {
+                db: "drill",
+                query: { "a": ob.appId + "", "e": "[CLY]_custom", "n": ob.event_key},
+                collection: "drill_events"
+            });
+            promises.push(common.drillDb.collection('drill_bookmarks').remove({ 'app_id': ob.appId, 'event_key': ob.event_key }));
+            let hash = crypto.createHash('sha1').update(ob.event_key + ob.appId).digest('hex');
+            promises.push(common.drillDb.collection("drill_meta").remove({'_id': {"$regex": `${ob.appId}_${hash}.*`}}));
+        }
+
+        await Promise.all(promises);
     }
 });
 
