@@ -842,20 +842,22 @@
                      */
                     this.$nextTick(function() {
                         this.$nextTick(function() {
-                            self.onOptionsMenuMouseLeaveTimeout = setTimeout(function() {
-                                if (selectedOption && selectedOption.menu === "dashboards") {
-                                    if (!self.onMainMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
-                                        0;
-                                        /**
-                                         * If not on the main menu, hide the main menu.
-                                         */
-                                        self.showMainMenu = false;
+                            if (!self.onOptionsMenuMouseLeaveTimeout) {
+                                self.onOptionsMenuMouseLeaveTimeout = setTimeout(function() {
+                                    if (selectedOption && selectedOption.menu === "dashboards") {
+                                        if (!self.onMainMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
+                                            0;
+                                            /**
+                                             * If not on the main menu, hide the main menu.
+                                             */
+                                            self.showMainMenu = false;
+                                        }
                                     }
-                                }
 
-                                clearTimeout(self.onOptionsMenuMouseLeaveTimeout);
-                                self.onOptionsMenuMouseLeaveTimeout = null;
-                            }, 0);
+                                    clearTimeout(self.onOptionsMenuMouseLeaveTimeout);
+                                    self.onOptionsMenuMouseLeaveTimeout = null;
+                                }, 0);
+                            }
                         });
                     });
                 },
@@ -878,19 +880,21 @@
                      */
                     this.$nextTick(function() {
                         this.$nextTick(function() {
-                            self.onMainMenuMouseLeaveTimeout = setTimeout(function() {
-                                if (selectedOption && selectedOption.menu === "dashboards") {
-                                    if (!self.onOptionsMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
-                                        /**
-                                         * If not on the options menu, hide the main menu.
-                                         */
-                                        self.showMainMenu = false;
+                            if (!self.onMainMenuMouseLeaveTimeout) {
+                                self.onMainMenuMouseLeaveTimeout = setTimeout(function() {
+                                    if (selectedOption && selectedOption.menu === "dashboards") {
+                                        if (!self.onOptionsMenu && self.$refs.dashboards && self.$refs.dashboards[0] && !self.$refs.dashboards[0].hasOpenDrawer()) {
+                                            /**
+                                             * If not on the options menu, hide the main menu.
+                                             */
+                                            self.showMainMenu = false;
+                                        }
                                     }
-                                }
 
-                                clearTimeout(self.onMainMenuMouseLeaveTimeout);
-                                self.onMainMenuMouseLeaveTimeout = null;
-                            }, 0);
+                                    clearTimeout(self.onMainMenuMouseLeaveTimeout);
+                                    self.onMainMenuMouseLeaveTimeout = null;
+                                }, 0);
+                            }
                         });
                     });
                 },
