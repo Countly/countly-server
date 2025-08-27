@@ -9,8 +9,7 @@
  * - Standardized error handling and logging
  * - Common initialization and cleanup patterns
  * - Consistent return value format
- * - Base metrics tracking
- * 
+ *
  * Usage: Extend this class and implement the abstract methods
  *
  * Application Code:
@@ -28,14 +27,6 @@ class EventSinkInterface {
 
     #isClosed = false;
 
-    #stats = {
-        totalWrites: 0,
-        totalEvents: 0,
-        totalErrors: 0,
-        lastError: null,
-        lastWrite: null
-    };
-
     /**
      * Initialize the event sink
      * @returns {Promise<void>} resolves when the sink is ready
@@ -48,7 +39,6 @@ class EventSinkInterface {
      * Write events to the sink
      * @param {Array<Object>} events - Array of events to write (bulkWrite format or event objects)
      * @returns {Promise<Object>} Result object with success status and metadata
-     * @protected
      */
     async write(events) { // eslint-disable-line no-unused-vars
         throw new Error('write() must be implemented by subclass');
@@ -87,19 +77,6 @@ class EventSinkInterface {
     }
 
     /**
-     * Get statistics about the sink
-     * @returns {Object} Statistics object
-     */
-    getStats() {
-        return {
-            type: this.getType(),
-            isInitialized: this.#isInitialized,
-            isClosed: this.#isClosed,
-            ...this.#stats
-        };
-    }
-
-    /**
      * Protected method to mark sink as initialized
      * @protected
      */
@@ -116,29 +93,6 @@ class EventSinkInterface {
         this.#isInitialized = false;
     }
 
-    /**
-     * Protected method to update statistics
-     * @param {number} eventCount - Number of events written
-     * @param {boolean} success - Whether the write was successful
-     * @param {Error} [error] - Error object if write failed
-     * @protected
-     */
-    _updateStats(eventCount, success, error = null) {
-        this.#stats.totalWrites++;
-        this.#stats.lastWrite = new Date();
-
-        if (success) {
-            this.#stats.totalEvents += eventCount;
-        }
-        else {
-            this.#stats.totalErrors++;
-            this.#stats.lastError = {
-                timestamp: new Date(),
-                error: error?.message || 'Unknown error',
-                code: error?.code
-            };
-        }
-    }
 
     /**
      * Protected helper to validate events array

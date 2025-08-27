@@ -118,6 +118,12 @@ export interface CountlyAPIConfig {
   /** ClickHouse connection configuration */
   clickhouse?: ClickHouseConfig;
 
+  /** Kafka integration configuration */
+  kafka?: KafkaConfig;
+
+  /** EventSink configuration for writing events to multiple destinations */
+  eventSink?: EventSinkConfig;
+
   /** API server settings */
   api: APIConfig;
 
@@ -179,6 +185,112 @@ export interface CountlyFrontendConfig {
 
   /** Additional configuration properties */
   [key: string]: any;
+}
+
+/** Kafka producer configuration */
+export interface KafkaProducerConfig {
+  /** Maximum batch size in bytes */
+  batchSize?: number; // default: 1048576 (1MB)
+  /** Maximum number of messages per batch */
+  batchNumMessages?: number; // default: 10000
+  /** Maximum messages to buffer in producer queue */
+  queueBufferingMaxMessages?: number; // default: 100000
+  /** Maximum memory for buffering in KB */
+  queueBufferingMaxKbytes?: number; // default: 1048576 (1GB)
+  /** LZ4 compression level 1-12 */
+  compressionLevel?: number; // default: 1
+  /** Maximum time to deliver a message in milliseconds */
+  messageTimeoutMs?: number; // default: 300000 (5 minutes)
+  /** Total time for delivery including retries in milliseconds */
+  deliveryTimeoutMs?: number; // default: 300000 (5 minutes)
+}
+
+/** Kafka consumer configuration */
+export interface KafkaConsumerConfig {
+  /** Minimum bytes to fetch per request */
+  fetchMinBytes?: number; // default: 1024
+  /** Maximum wait time for fetch requests in milliseconds */
+  fetchMaxWaitMs?: number; // default: 500
+  /** Maximum bytes to fetch per request */
+  fetchMaxBytes?: number; // default: 52428800 (50MB)
+  /** Maximum bytes per partition per fetch */
+  maxPartitionFetchBytes?: number; // default: 1048576 (1MB)
+  /** Minimum messages to queue before consuming */
+  queuedMinMessages?: number; // default: 100000
+  /** Maximum memory for message queue in KB */
+  queuedMaxMessagesKbytes?: number; // default: 1048576 (1GB)
+  /** Consumer session timeout in milliseconds */
+  sessionTimeoutMs?: number; // default: 30000
+  /** Maximum time between polls in milliseconds */
+  maxPollIntervalMs?: number; // default: 300000 (5 minutes)
+  /** Where to start reading when no offset exists */
+  autoOffsetReset?: "latest" | "earliest"; // default: "latest"
+  /** Disable auto-commit for exactly-once processing */
+  enableAutoCommit?: boolean; // default: false
+}
+
+/** Kafka rdkafka (librdkafka) configuration */
+export interface KafkaRdkafkaConfig {
+  /** List of Kafka broker addresses */
+  brokers?: string[]; // default: ["localhost:9092"]
+  /** Client identifier for Kafka connections */
+  clientId?: string; // default: "countly-kafka-client"
+  /** Request timeout for Kafka operations */
+  requestTimeoutMs?: number; // default: 30000
+  /** Connection timeout for initial broker connections */
+  connectionTimeoutMs?: number; // default: 10000
+  /** Security protocol */
+  securityProtocol?: "PLAINTEXT" | "SSL" | "SASL_PLAINTEXT" | "SASL_SSL" | null;
+  /** SASL mechanism */
+  saslMechanism?: "PLAIN" | "SCRAM-SHA-256" | "SCRAM-SHA-512" | "GSSAPI" | null;
+  /** SASL username for authentication */
+  saslUsername?: string | null;
+  /** SASL password for authentication */
+  saslPassword?: string | null;
+  /** Time to wait for more messages before sending batch */
+  lingerMs?: number; // default: 5
+  /** Number of retries for failed requests */
+  retries?: number; // default: 8
+  /** Initial retry backoff time in milliseconds */
+  initialRetryTime?: number; // default: 100
+  /** Maximum retry backoff time in milliseconds */
+  maxRetryTime?: number; // default: 30000
+  /** Acknowledgment level (-1: all replicas, 1: leader only, 0: no acks) */
+  acks?: -1 | 1 | 0; // default: -1
+}
+
+/** Kafka configuration */
+export interface KafkaConfig {
+  /** Enable/disable Kafka integration globally */
+  enabled?: boolean; // default: false
+  /** Default topic name for event data */
+  drillEventsTopic?: string; // default: "countly-drill-events"
+  /** Prefix added to all consumer group IDs */
+  groupIdPrefix?: string; // default: "cly_"
+  /** Default number of partitions for new topics */
+  partitions?: number; // default: 10
+  /** Default replication factor for new topics */
+  replicationFactor?: number; // default: 1
+  /** Message retention time in milliseconds */
+  retentionMs?: number; // default: 604800000 (7 days)
+  /** Enable transactional producers */
+  enableTransactions?: boolean; // default: false
+  /** Custom transactional ID prefix */
+  transactionalId?: string;
+  /** Transaction timeout in milliseconds */
+  transactionTimeout?: number; // default: 60000
+  /** librdkafka configuration settings */
+  rdkafka?: KafkaRdkafkaConfig;
+  /** Producer-specific settings */
+  producer?: KafkaProducerConfig;
+  /** Consumer-specific settings */
+  consumer?: KafkaConsumerConfig;
+}
+
+/** EventSink configuration */
+export interface EventSinkConfig {
+  /** Array of sink types to enable */
+  sinks?: Array<"mongo" | "kafka">; // default: ["mongo"]
 }
 
 /** ClickHouse database configuration */
