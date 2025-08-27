@@ -2,6 +2,14 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.17
+Enterprise Fixes:
+- [ldap] Recursive user search in ldap added
+- [license] Update metric endpoint permission
+  
+Dependencies:
+- Bump puppeteer from 24.16.2 to 24.17.0
+
 ## Version 25.03.16
 Enterprise Fixes:
 - [journeys] Fix for skip threshold check in concurrent requests
