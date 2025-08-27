@@ -496,7 +496,7 @@ plugins.register('/jobs/o', async function(ob) {
                 });
 
                 const jobHistoryDocs = await jobHistoriesCollection.find({
-                    name: 'jobName',
+                    name: jobName,
                 }).toArray();
 
                 // The "normal" docs (type: 'normal')
