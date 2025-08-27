@@ -1,0 +1,670 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Countly Reports API",
+    "description": "API for managing scheduled reports in Countly Server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/i/reports/create": {
+      "get": {
+        "summary": "Create report",
+        "description": "Create a new scheduled report",
+        "tags": [
+          "Reports Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing report configuration",
+            "schema": {
+              "type": "string"
+            },
+            "example": "{\"title\":\"My Report\",\"report_type\":\"core\",\"apps\":[\"app_id_1\"],\"emails\":[\"user@example.com\"],\"metrics\":{\"analytics\":true,\"crash\":true},\"metricsArray\":[],\"frequency\":\"daily\",\"timezone\":\"Europe/London\",\"hour\":9,\"minute\":0,\"sendPdf\":true}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - User does not have permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "User does not have right to access this information"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/reports/update": {
+      "get": {
+        "summary": "Update report",
+        "description": "Update an existing scheduled report",
+        "tags": [
+          "Reports Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing report update data with _id field",
+            "schema": {
+              "type": "string"
+            },
+            "example": "{\"_id\":\"507f1f77bcf86cd799439011\",\"title\":\"Updated Report\",\"frequency\":\"weekly\"}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - User does not have permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "User does not have right to access this information"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/reports/delete": {
+      "get": {
+        "summary": "Delete report",
+        "description": "Delete an existing scheduled report",
+        "tags": [
+          "Reports Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing report _id to delete",
+            "schema": {
+              "type": "string"
+            },
+            "example": "{\"_id\":\"507f1f77bcf86cd799439011\"}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - insufficient arguments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Not enough args"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/reports/status": {
+      "get": {
+        "summary": "Change report status",
+        "description": "Change the enabled status of one or more reports",
+        "tags": [
+          "Reports Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing object mapping report IDs to boolean status values",
+            "schema": {
+              "type": "string"
+            },
+            "example": "{\"507f1f77bcf86cd799439011\":false,\"507f1f77bcf86cd799439012\":true}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Success"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/reports/send": {
+      "get": {
+        "summary": "Send report now",
+        "description": "Immediately send an existing report via email",
+        "tags": [
+          "Reports Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing report _id to send",
+            "schema": {
+              "type": "string"
+            },
+            "example": "{\"_id\":\"507f1f77bcf86cd799439011\"}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report sending result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "string",
+                          "example": "Success"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "string",
+                          "example": "No data to report"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - insufficient arguments or report not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Not enough args"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/i/reports/preview": {
+      "get": {
+        "summary": "Preview report",
+        "description": "Preview a report as HTML without sending it",
+        "tags": [
+          "Reports Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "args",
+            "in": "query",
+            "required": true,
+            "description": "JSON string containing report _id to preview",
+            "schema": {
+              "type": "string"
+            },
+            "example": "{\"_id\":\"507f1f77bcf86cd799439011\"}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report preview as HTML",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML content of the report preview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - insufficient arguments or report not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "Not enough args"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/reports/all": {
+      "get": {
+        "summary": "Get all reports",
+        "description": "Get a list of all scheduled reports accessible to the current user",
+        "tags": [
+          "Reports Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key for authentication",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "App ID for permission check",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reports retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Report"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ReportConfig": {
+        "type": "object",
+        "required": ["title", "report_type", "apps", "emails", "metrics", "frequency", "timezone", "hour", "minute"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Report title",
+            "example": "Weekly Analytics Report"
+          },
+          "report_type": {
+            "type": "string",
+            "description": "Type of report",
+            "enum": ["core", "performance", "push", "crash", "view", "compliance"],
+            "example": "core"
+          },
+          "apps": {
+            "type": "array",
+            "description": "Array of app IDs to include in report",
+            "items": {
+              "type": "string"
+            },
+            "example": ["507f1f77bcf86cd799439011"]
+          },
+          "emails": {
+            "type": "array",
+            "description": "Email addresses to send report to",
+            "items": {
+              "type": "string",
+              "format": "email"
+            },
+            "example": ["admin@example.com", "manager@example.com"]
+          },
+          "metrics": {
+            "type": "object",
+            "description": "Metrics to include in report",
+            "example": {
+              "analytics": true,
+              "crash": true,
+              "revenue": false,
+              "star-rating": true,
+              "performance": false
+            }
+          },
+          "metricsArray": {
+            "type": "array",
+            "description": "Array of specific metrics to include in report",
+            "items": {
+              "type": "object"
+            },
+            "example": []
+          },
+          "frequency": {
+            "type": "string",
+            "description": "Report frequency",
+            "enum": ["daily", "weekly", "monthly"],
+            "example": "weekly"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Timezone for report scheduling",
+            "example": "Europe/London"
+          },
+          "day": {
+            "type": "integer",
+            "description": "Day to send report (1-7 for weekly, 1-31 for monthly)",
+            "minimum": 0,
+            "maximum": 31,
+            "example": 1
+          },
+          "hour": {
+            "type": "integer",
+            "description": "Hour of day to send report (0-23)",
+            "minimum": 0,
+            "maximum": 23,
+            "example": 9
+          },
+          "minute": {
+            "type": "integer",
+            "description": "Minute of hour to send report (0-59)",
+            "minimum": 0,
+            "maximum": 59,
+            "example": 0
+          },
+          "sendPdf": {
+            "type": "boolean",
+            "description": "Whether to send report as PDF attachment",
+            "example": true
+          },
+          "dashboards": {
+            "type": "array",
+            "description": "Dashboard IDs to include in report (for dashboard reports)",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "example": null
+          },
+          "date_range": {
+            "type": "object",
+            "description": "Custom date range for report data",
+            "nullable": true,
+            "example": null
+          },
+          "selectedEvents": {
+            "type": "array",
+            "description": "Specific events to include in report",
+            "items": {
+              "type": "string"
+            },
+            "example": []
+          }
+        }
+      },
+      "Report": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ReportConfig"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "description": "Report ID",
+                "example": "507f1f77bcf86cd799439011"
+              },
+              "user": {
+                "type": "string",
+                "description": "User ID who created the report",
+                "example": "507f1f77bcf86cd799439012"
+              },
+              "r_day": {
+                "type": "integer",
+                "description": "Resolved day in server timezone"
+              },
+              "r_hour": {
+                "type": "integer",
+                "description": "Resolved hour in server timezone"
+              },
+              "r_minute": {
+                "type": "integer",
+                "description": "Resolved minute in server timezone"
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether the report is enabled",
+                "example": true
+              },
+              "isValid": {
+                "type": "boolean",
+                "description": "Whether the report configuration is valid",
+                "example": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "api_key"
+      },
+      "AuthToken": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth_token"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AuthToken": []
+    }
+  ]
+}
