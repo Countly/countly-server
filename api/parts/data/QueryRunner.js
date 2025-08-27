@@ -53,6 +53,15 @@ if (!config.database.adapters || Object.keys(config.database.adapters).length ==
 class QueryRunner {
 
     /**
+     * Get the current comparison mode from config
+     * @returns {string} The comparison mode ('disabled', 'files', 'logs', 'both')
+     * @private
+     */
+    _getComparisonMode() {
+        return config.database?.comparisonLogs?.mode || 'files';
+    }
+
+    /**
      * Ensure comparison logs directory exists
      * @returns {string} Path to the comparison logs directory
      * @private
@@ -72,7 +81,7 @@ class QueryRunner {
      * @private
      */
     writeComparisonLog(queryName, comparisonData) {
-        const comparisonMode = config.database?.comparisonLogs?.mode || 'files';
+        const comparisonMode = this._getComparisonMode();
 
         // Skip logging if disabled
         if (comparisonMode === 'disabled') {
@@ -192,7 +201,7 @@ class QueryRunner {
             const queryName = queryDef.name;
 
             // Check if comparison mode is enabled (either explicitly or via config)
-            const comparisonMode = config.database?.comparisonLogs?.mode || 'files';
+            const comparisonMode = this._getComparisonMode();
             const shouldRunComparison = options.comparison || (comparisonMode !== 'disabled');
 
             if (shouldRunComparison) {
@@ -351,7 +360,7 @@ class QueryRunner {
         this.writeComparisonLog(queryName, comparisonData);
 
         log.d(`Comparison mode: Query '${queryName}' completed on all adapters, returning result from ${primaryAdapter}`);
-        return primaryResult?.data;
+        return primaryResult ? primaryResult.data : primaryResult;
     }
 
     /**
