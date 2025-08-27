@@ -183,6 +183,7 @@ function buildJobDetails(scheduledDoc, jobConfig, latestRunData = null) {
             nextRun: scheduledDoc?.nextRunAt,
             lastRun: statusDoc.lastFinishedAt,
             lastRunStatus: getRunStatus(statusDoc),
+            failedAt: statusDoc.failedAt,
             failReason: statusDoc.failReason,
             lastRunDuration: formatJobDuration(statusDoc.lastRunAt, statusDoc.lastFinishedAt),
             // Additional fields if needed
