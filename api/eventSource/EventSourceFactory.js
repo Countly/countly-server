@@ -1,47 +1,46 @@
 const KafkaEventSource = require('./KafkaEventSource');
 const ChangeStreamEventSource = require('./ChangeStreamEventSource');
-const log = require('../utils/log.js')('eventSource:factory');
+const Log = require('../utils/log.js');
 
 /**
  * Factory for creating event sources based on configuration
  * Determines whether to use Kafka or ChangeStream based on availability and configuration
+ * 
+ * @DI Supports dependency injection for testing and modularity
  */
 class EventSourceFactory {
+
     /**
      * Create an event source based on the provided configuration
-     * 
+     *
      * This factory is typically called by UnifiedEventSource, not directly by application code.
      * The UnifiedEventSource provides a cleaner API: new UnifiedEventSource(name, sourceConf)
-     * 
-     * EventSourceFactory.create() Constructor-like Method Parameters:
-     * @param {Object} config - Required. Configuration object that determines which event source to create
-     * @param {string} config.name - Required. Unique name for this event source used across all implementations
-     *                               Used for consumer group naming (Kafka), logging, and identification
-     * @param {Object} config.db - Required. MongoDB database connection object
-     *                             Required for both Kafka (fallback scenarios) and ChangeStream implementations
-     * 
-     * // Global Configuration
-     * @param {Object} [config.countlyConfig] - Optional. Countly configuration override
-     *                                          Defaults to require('../config') if not provided
-     *                                          Used to determine Kafka availability via kafka.enabled property
-     *                                          Kafka topics and settings come from countlyConfig.kafka
-     * 
-     * // Kafka-Specific Parameters (only used if Kafka is enabled and available)
-     * @param {Object} [config.kafkaConfig] - Optional. Kafka-specific configuration overrides (rarely used)
-     *                                        Most Kafka config comes from global countlyConfig.kafka
-     * 
-     * // ChangeStream-Specific Parameters (used when Kafka is disabled or unavailable)
-     * @param {string} [config.collection='drill_events'] - Optional. MongoDB collection name to watch for changes
-     * @param {Array} [config.pipeline=[]] - Optional. MongoDB aggregation pipeline for filtering change stream events
-     *                                       Example: [{ $match: { 'fullDocument.e': '[CLY]_session' } }]
-     * @param {Object} [config.options={}] - Optional. Additional MongoDB change stream options
-     *                                       Passed to MongoDB changeStream() method
-     * @param {number} [config.interval=10000] - Optional. Health check interval for change stream (milliseconds)
-     * @param {Function} [config.onClose] - Optional. Callback executed when change stream closes
-     * @param {Object} [config.fallback] - Optional. Fallback configuration for change stream recovery
-     * 
+     *
+     * EventSourceFactory.create() Method Parameters:
+     * @param {string} name - Required. Unique name for this event source used across all implementations
+     *                        Used for consumer group name
+     * @param {Object} options - Required. Configuration object that determines which event source to create
+     * @param {Object} options.mongo - Required. MongoDB/ChangeStream configuration
+     * @param {Object} options.mongo.db - Required. MongoDB database connection object
+     *                                   Required for both Kafka (fallback scenarios) and ChangeStream implementations
+     * @param {string} [options.mongo.collection='drill_events'] - Optional. MongoDB collection name to watch for changes
+     * @param {Array} [options.mongo.pipeline=[]] - Optional. MongoDB aggregation pipeline for filtering change stream events
+     *                                             Example: [{ $match: { 'fullDocument.e': '[CLY]_session' } }]
+     * @param {Object} [options.mongo.options={}] - Optional. Additional MongoDB change stream options
+     *                                             Passed to MongoDB changeStream() method
+     * @param {number} [options.mongo.interval=10000] - Optional. Health check interval for change stream (milliseconds)
+     * @param {Function} [options.mongo.onClose] - Optional. Callback executed when change stream closes
+     * @param {Object} [options.mongo.fallback] - Optional. Fallback configuration for change stream recovery
+     * @param {Object} [options.kafka] - Optional. Kafka-specific configuration overrides (rarely used)
+     *                                  Most Kafka options come from global countlyConfig.kafka
+     * @param {Object} [dependencies={}] - Optional dependency injection for testing and modularity
+     * @param {Object} [dependencies.countlyConfig] - Countly configuration object (defaults to require('../config'))
+     *                                                Used to determine Kafka availability via kafka.enabled property
+     *                                                Kafka topics and settings come from countlyConfig.kafka
+     * @param {Function} [dependencies.log] - Logger instance (defaults to Log('eventSource:factory'))
+     *
      * @returns {EventSourceInterface} KafkaEventSource or ChangeStreamEventSource based on configuration and availability
-     * 
+     *
      * @example
      * // Typically called via UnifiedEventSource (recommended):
      * const eventSource = new UnifiedEventSource('session-processor', {
@@ -50,36 +49,38 @@ class EventSourceFactory {
      *     pipeline: [{ $match: { 'fullDocument.e': '[CLY]_session' } }]
      *   }
      * });
-     * 
+     *
      * @example
-     * // Direct factory usage (not recommended for application code):
-     * const eventSource = EventSourceFactory.create({
-     *   name: 'session-processor',
-     *   countlyConfig,
-     *   db: mongoDatabase,
-     *   pipeline: [{ $match: { 'fullDocument.e': '[CLY]_session' } }]
+     * // Direct factory usage with dependency injection:
+     * const eventSource = EventSourceFactory.create('session-processor', {
+     *   mongo: {
+     *     db: mongoDatabase,
+     *     pipeline: [{ $match: { 'fullDocument.e': '[CLY]_session' } }]
+     *   }
+     * }, {
+     *   countlyConfig: customConfig,
+     *   log: customLogger
      * });
-     * 
-     * @throws {Error} If config.name is missing
-     * @throws {Error} If config.db is missing
+     *
+     * @throws {Error} If name is missing
+     * @throws {Error} If options.mongo.db is missing
      */
-    static create(config) {
-        if (!config.name) {
-            throw new Error('EventSourceFactory requires a name in config');
+    static create(name, options, dependencies = {}) {
+        if (!name || typeof name !== 'string') {
+            throw new Error('EventSourceFactory requires a name (string) parameter');
+        }
+        if (!options?.mongo?.db) {
+            throw new Error('EventSourceFactory requires options.mongo.db (MongoDB database connection)');
         }
 
-        if (!config.db) {
-            throw new Error('EventSourceFactory requires a database connection');
-        }
+        const log = dependencies.log || Log('eventSource:factory');
+        const config = dependencies.countlyConfig || require('../config');
 
-        const countlyConfig = config.countlyConfig || require('../config');
-
-        // Check if Kafka should be used
-        if (this.#shouldUseKafka(countlyConfig, config)) {
-            return this.#createKafkaSource(config, countlyConfig);
+        if (this.#shouldUseKafka(config, { name }, log)) {
+            return this.#createKafkaSource(name, options, config, log);
         }
         else {
-            return this.#createChangeStreamSource(config);
+            return this.#createChangeStreamSource(name, options, config, log);
         }
     }
 
@@ -87,17 +88,15 @@ class EventSourceFactory {
      * Determine if Kafka should be used
      * @param {Object} countlyConfig - Countly configuration
      * @param {Object} config - Event source configuration
+     * @param {Logger} log - Logger instance
      * @returns {boolean} True if Kafka should be used, false otherwise
      * @private
      */
-    static #shouldUseKafka(countlyConfig, config) {
-        // Check if Kafka is enabled in configuration
+    static #shouldUseKafka(countlyConfig, config, log) {
         if (!countlyConfig.kafka?.enabled) {
             log.d(`[${config.name}] Kafka disabled in configuration`);
             return false;
         }
-
-        // Check if Kafka modules are available
         try {
             require.resolve('../../plugins/kafka/api/lib/KafkaConsumer');
             require.resolve('../../plugins/kafka/api/lib/kafkaClient');
@@ -113,50 +112,40 @@ class EventSourceFactory {
     }
 
     /**
-     * Create a Kafka event source
-     * @param {Object} config - Configuration object
+     * Create a Kafka event source with consistent dependency injection
+     * Now follows the same pattern as ChangeStream - passes config, lets source create its own dependencies
+     * @param {string} name - Event source name for logging/identification
+     * @param {Object} options - Configuration object with kafka section
      * @param {Object} countlyConfig - Countly configuration
+     * @param {Logger} log - Logger instance
      * @returns {KafkaEventSource} The Kafka event source instance
-     * @throws {Error} If Kafka modules are not available or eventFilter is missing
+     * @throws {Error} If Kafka modules are not available
      * @throws {Error} If Kafka configuration is invalid
      * @private
      */
-    static #createKafkaSource(config, countlyConfig) {
-        log.i(`[${config.name}] Creating Kafka event source`);
-
-        const KafkaConsumer = require('../../plugins/kafka/api/lib/KafkaConsumer');
-        const kafkaClient = require('../../plugins/kafka/api/lib/kafkaClient');
-
-        const client = new kafkaClient();
-        const kafkaConfig = config.kafkaConfig || {};
-
-        const consumer = new KafkaConsumer(client, config.name, {
-            topics: kafkaConfig.topics || [countlyConfig.kafka?.drillEventsTopic || 'countly-drill-events'],
-            ...kafkaConfig
-        });
-
-        return new KafkaEventSource(consumer, {
-            name: config.name
+    static #createKafkaSource(name, options, countlyConfig, log) {
+        log.i(`[${name}] Creating Kafka event source with consistent dependency injection`);
+        const kafkaOptions = options.kafka || {};
+        return new KafkaEventSource(name, kafkaOptions, {
+            countlyConfig: countlyConfig
         });
     }
 
     /**
-     * Create a ChangeStream event source
-     * @param {Object} config - Configuration object
+     * Create a ChangeStream event source with consistent dependency injection
+     * Now follows the same pattern as Kafka - passes config and lets source create its own dependencies
+     * @param {string} name - Event source name for logging/identification
+     * @param {Object} options - Configuration object with mongo section
+     * @param {Object} countlyConfig - Countly configuration
+     * @param {Logger} log - Logger instance
      * @returns {ChangeStreamEventSource} The ChangeStream event source instance
      * @private
      */
-    static #createChangeStreamSource(config) {
-        log.i(`[${config.name}] Creating ChangeStream event source`);
-
-        return new ChangeStreamEventSource(config.db, {
-            name: config.name,
-            pipeline: config.pipeline || [],
-            fallback: config.fallback,
-            collection: config.collection || 'drill_events',
-            options: config.options || {},
-            interval: config.interval || 10000,
-            onClose: config.onClose
+    static #createChangeStreamSource(name, options, countlyConfig, log) {
+        log.i(`[${name}] Creating ChangeStream event source with consistent dependency injection`);
+        const mongoOptions = options.mongo || {};
+        return new ChangeStreamEventSource(name, mongoOptions, {
+            countlyConfig: countlyConfig
         });
     }
 }

@@ -1,5 +1,6 @@
 const EventSinkFactory = require('./EventSinkFactory');
-const log = require('../utils/log.js')('eventSink:unified');
+const countlyConfig = require('../config');
+const Log = require('../utils/log.js');
 
 /**
  * UnifiedEventSink - High-level wrapper around EventSinkFactory
@@ -7,44 +8,41 @@ const log = require('../utils/log.js')('eventSink:unified');
  * This class provides a simplified interface for writing events to multiple sinks
  * with automatic configuration loading and sink management.
  * 
- * Key features:
- * - Self-contained configuration (imports config directly)
- * - Automatic sink selection based on configuration
- * - Parallel writes to all configured sinks
- * - Graceful error handling and degradation
- * - Resource cleanup on shutdown
- * - Lazy initialization for performance
- *
+ * @DI Supports dependency injection for testing and modularity
+ * 
  * @example
  * const eventSink = new UnifiedEventSink();
  * await eventSink.write(bulkWriteOperations);
  * await eventSink.close();
  */
 class UnifiedEventSink {
-    #config = null;
+    #log; // logger instance
 
-    #sinks = [];
+    #config = null; // configuration object
 
-    #initialized = false;
+    #sinks = []; // array of initialized sinks
 
-    #closed = false;
+    #initialized = false; // true if sinks are initialized
+
+    #closed = false; // true if the sink has been closed
 
     /**
      * Create a UnifiedEventSink instance
      * Configuration is loaded automatically from the global config
      * 
-     * @param {Object} [overrideConfig] - Optional configuration override for testing
+     * @param {Object} [dependencies={}] - Optional dependency injection for testing and modularity
+     * @param {Object} [dependencies.config] - Configuration override for testing
+     * @param {Logger} [dependencies.log] - Logger instance (defaults to Log('eventSink:unified'))
      */
-    constructor(overrideConfig = null) {
-        // Import config directly to make this module independent
-        this.#config = overrideConfig || require('../config');
-        log.d('UnifiedEventSink created');
+    constructor(dependencies = {}) {
+        this.#config = dependencies.config || countlyConfig ;
+        this.#log = dependencies.log || Log('eventSink:unified');
+        this.#log.d('UnifiedEventSink created');
     }
 
     /**
      * Initialize all configured sinks
      * This is called automatically on first write operation
-     * 
      * @returns {Promise<void>} resolves when all sinks are initialized
      * @private
      */
@@ -56,17 +54,16 @@ class UnifiedEventSink {
             throw new Error('UnifiedEventSink has been closed and cannot be reused');
         }
         try {
-            // Create sinks using factory
             this.#sinks = EventSinkFactory.create(this.#config);
             // Initialize all sinks in parallel
             await Promise.all(this.#sinks.map(sink => sink.initialize()));
             this.#initialized = true;
-            log.i(`UnifiedEventSink initialized with ${this.#sinks.length} sink(s): ${
+            this.#log.i(`UnifiedEventSink initialized with ${this.#sinks.length} sink(s): ${
                 this.#sinks.map(s => s.getType()).join(', ')
             }`);
         }
         catch (error) {
-            log.e('Failed to initialize UnifiedEventSink:', error);
+            this.#log.e('Failed to initialize UnifiedEventSink:', error);
             throw error;
         }
     }
@@ -103,7 +100,7 @@ class UnifiedEventSink {
         }
         const startTime = Date.now();
         try {
-            log.d(`Writing ${events.length} events to ${this.#sinks.length} sink(s)`);
+            this.#log.d(`Writing ${events.length} events to ${this.#sinks.length} sink(s)`);
             const results = await Promise.allSettled(
                 this.#sinks.map(sink => sink.write(events))
             );
@@ -111,16 +108,16 @@ class UnifiedEventSink {
             const duration = Date.now() - startTime;
             processedResults.overall.duration = duration;
             if (processedResults.overall.success) {
-                log.d(`Successfully wrote events in ${duration}ms - Total: ${processedResults.overall.written}`);
+                this.#log.d(`Successfully wrote events in ${duration}ms - Total: ${processedResults.overall.written}`);
             }
             else {
-                log.e(`Failed to write events - ${processedResults.overall.error}`);
+                this.#log.e(`Failed to write events - ${processedResults.overall.error}`);
             }
             return processedResults;
         }
         catch (error) {
             const duration = Date.now() - startTime;
-            log.e('Unexpected error in UnifiedEventSink.write:', error);
+            this.#log.e('Unexpected error in UnifiedEventSink.write:', error);
             return {
                 overall: {
                     success: false,
@@ -141,38 +138,28 @@ class UnifiedEventSink {
         if (this.#closed) {
             return;
         }
-        log.d('Closing UnifiedEventSink');
+        this.#log.d('Closing UnifiedEventSink');
         try {
             // Close all sinks in parallel, ignoring individual failures
             await Promise.all(
                 this.#sinks.map(sink =>
                     sink.close().catch(error => {
-                        log.w(`Error closing ${sink.getType()}:`, error);
+                        this.#log.w(`Error closing ${sink.getType()}:`, error);
                     })
                 )
             );
         }
         catch (error) {
-            log.w('Error during UnifiedEventSink cleanup:', error);
+            this.#log.w('Error during UnifiedEventSink cleanup:', error);
         }
         finally {
             this.#closed = true;
             this.#initialized = false;
-            this.#sinks = [];
-            log.d('UnifiedEventSink closed');
+            this.#sinks = []; // clear references
+            this.#log.d('UnifiedEventSink closed');
         }
     }
 
-    /**
-     * Get statistics from all sinks
-     * @returns {Array<Object>} Array of sink statistics
-     */
-    getStats() {
-        if (!this.#initialized) {
-            return [];
-        }
-        return this.#sinks.map(sink => sink.getStats());
-    }
 
     /**
      * Get the configured sink types
@@ -235,7 +222,7 @@ class UnifiedEventSink {
                     type: sinkType,
                     timestamp: new Date()
                 };
-                log.w(`${sinkType} write failed:`, result.reason);
+                this.#log.w(`${sinkType} write failed:`, result.reason);
             }
         }
         // Overall success depends on MongoDB success (primary sink)

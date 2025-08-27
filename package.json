@@ -18,15 +18,13 @@
   },
   "scripts": {
     "test": "grunt --verbose",
-    "test:unit": "TODO_ADD_UNIT_TESTS",
+    "test:unit": "NODE_PATH=./node_modules/ npx mocha 'test/unit/*.unit.js' 'test/unit/*.unit.test.js' 'plugins/*/tests/**/*.unit.js' --reporter spec --timeout 50000",
     "prepare": "husky",
     "start:api": "node api/api.js",
     "start:frontend": "node frontend/express/app.js",
     "start:aggregator": "node api/aggregator.js",
     "start:ingestor": "node api/ingestor.js",
-    "start:jobserver": "node jobServer/index.js",
-    "start:clickhouse-writer": "node plugins/clickhouse/api/writer/index.js",
-    "start:clickhouse-updater": "node plugins/clickhouse/api/writer/updater.js"
+    "start:jobserver": "node jobServer/index.js"
   },
   "lint-staged": {
     "*.{js,vue}": [
@@ -46,6 +44,7 @@
     "mocha": "10.8.2",
     "nyc": "17.1.0",
     "should": "13.2.3",
+    "sinon": "^21.0.0",
     "supertest": "7.1.1",
     "typescript": "^5.8.2"
   },

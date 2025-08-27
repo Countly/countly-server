@@ -18,6 +18,8 @@
         "types/rights.d.ts",        // Rights validation type definitions
         "types/events.d.ts",        // Events processing type definitions
         "types/usage.d.ts",         // Usage processing type definitions
+        "types/eventSink.d.ts",     // Event sink type definitions
+        "types/eventSource.d.ts",   // Event source type definitions
         "api/utils/localization.js" // Include JS file for type checking
     ],
     // Include all type definition files from plugin types directories
