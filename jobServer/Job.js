@@ -97,7 +97,7 @@ class Job {
     priorities = JOB_PRIORITIES;
 
     /** @type {string} Job history mongodb collection name */
-    #jobHistoryCollectionName = 'jobHistory';
+    #jobHistoryCollectionName = 'jobHistories';
 
     /** @type {import('mongodb').Collection<JobHistory>} */
     #jobHistoryCollection;

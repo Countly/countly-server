@@ -469,6 +469,7 @@ plugins.register('/jobs/o', async function(ob) {
         const db = common.db;
         const jobsCollection = db.collection('pulseJobs');
         const jobConfigsCollection = db.collection('jobConfigs');
+        const jobHistoriesCollection = db.collection('jobHistories');
         const columns = ["name", "status", "scheduleLabel", "nextRunAt", "lastFinishedAt", "lastRunStatus", "total" ];
         try {
             const {
@@ -493,6 +494,10 @@ plugins.register('/jobs/o', async function(ob) {
                     name: jobName,
                     type: 'single'
                 });
+
+                const jobHistoryDocs = await jobHistoriesCollection.find({
+                    name: 'jobName',
+                }).toArray();
 
                 // The "normal" docs (type: 'normal')
                 const query = { name: jobName, type: 'normal' };
@@ -582,7 +587,8 @@ plugins.register('/jobs/o', async function(ob) {
                     iTotalRecords: total,
                     iTotalDisplayRecords: total,
                     aaData: processedRuns,
-                    jobDetails: jobDetails
+                    jobDetails: jobDetails,
+                    jobHistories: jobHistoryDocs,
                 });
                 return;
             }
