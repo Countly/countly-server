@@ -128,8 +128,8 @@ function increaseDataPoints(object, data) {
     object.ratings += (data.str || 0);
     object.apm += (data.apm || 0);
     object.custom += (data.ce || 0);
-    object.cs = (data.cs || 0);
-    object.ps = (data.ps || 0);
+    object.cs += (data.cs || 0);
+    object.ps += (data.ps || 0);
     if (data.dp) {
         object.dp += data.dp;
     }
@@ -241,7 +241,7 @@ function fetchDatapoints(db, filter, options, callback) {
     options.dateObjPrev = options.dateObjPrev || {};
     db.collection("server_stats_data_points").find(filter, {}).toArray(function(err, result) {
         var toReturn = {
-            "all-apps": {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0, "crash": 0, "views": 0, "actions": 0, "nps": 0, "surveys": 0, "ratings": 0, "apm": 0, "custom": 0},
+            "all-apps": {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0, "crash": 0, "views": 0, "actions": 0, "nps": 0, "surveys": 0, "ratings": 0, "apm": 0, "custom": 0, cs: 0, ps: 0},
         };
 
         if (err || !result) {
@@ -280,7 +280,7 @@ function fetchDatapoints(db, filter, options, callback) {
 
         for (let i = 0; i < result.length; i++) {
             if (!toReturn[result[i].a]) {
-                toReturn[result[i].a] = {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0, "crash": 0, "views": 0, "actions": 0, "nps": 0, "surveys": 0, "ratings": 0, "apm": 0, "custom": 0};
+                toReturn[result[i].a] = {"events": 0, "sessions": 0, "push": 0, "dp": 0, "change": 0, "crash": 0, "views": 0, "actions": 0, "nps": 0, "surveys": 0, "ratings": 0, "apm": 0, "custom": 0, cs: 0, ps: 0};
             }
             const dates = result[i].d;
             if (options.dateObj[result[i].m]) {
