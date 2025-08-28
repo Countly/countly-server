@@ -192,53 +192,32 @@
             </cly-datatable-n>
             
             <!-- Schedule dialog moved outside of the table structure -->
-            <el-dialog
-                :title="i18n('jobs.schedule-configuration')"
-                :visible.sync="scheduleDialogVisible"
-                width="30%"
-                append-to-body
+            <cly-form-dialog
+                :title="scheduleDialogTitle"
+                name="job-schedule-dialog"
+                class="cly-vue-jobs-dialog"
+                v-bind="formDialogs.jobSchedule"
+                :saveButtonLabel="i18n('common.save')"
+                @submit="saveSchedule"
+                center
             >
-                <validation-observer v-slot="form">
-                    <div class="bu-columns">
-                        <div class="bu-column">
-                            <div class="config-item">
-                                <label>{{ i18n('jobs.schedule') }}:</label>
-                                <validation-provider v-slot="validation" name="schedule" ref="scheduleValidator" rules='required|validCron'>
-                                    <el-input
-                                        v-model="selectedJobConfig.schedule"
-                                        :placeholder="selectedJobConfig.defaultSchedule"
-                                    ></el-input>
-
-                                    <div class="bu-mt-2 bu-is-size-7 bu-has-text-grey">
-                                        {{ i18n('jobs.schedule-hint') }}
-                                    </div>
-
-                                    <div v-if="validation.errors.length > 0" class="text-small color-red-100 bu-pt-1">
-                                        {{i18n('jobs.schedule-error')}}
-                                    </div>
-                                    <div v-else class="text-small bu-pt-1">
-                                        {{parseCron(selectedJobConfig.schedule)}}
-                                    </div>
-                                </validation-provider>
+                <template v-slot="formDialogScope">
+                    <cly-form-step id="jobs-schedule-configuration">
+                        <cly-form-field v-slot="validation" name="jobs-schedule" :label="i18n('jobs.schedule')" rules="required|validCron">
+                            <div class="bu-mb-2 bu-is-size-7 bu-has-text-grey">
+                                {{ i18n('jobs.schedule-hint') }}
                             </div>
-                        </div>
-                    </div>
-
-                    <span slot="footer" class="dialog-footer">
-                        <el-button @click="scheduleDialogVisible = false">
-                            {{ i18n('common.cancel') }}
-                        </el-button>
-                        <el-button
-                            type="success"
-                            @click="saveSchedule"
-                            :loading="saving"
-                            :disabled="form.invalid"
-                        >
-                            {{ i18n('common.save') }}
-                        </el-button>
-                    </span>
-                </validation-observer>
-            </el-dialog>
+                            <el-input v-model="selectedJobConfig.schedule" :placeholder="selectedJobConfig.defaultSchedule"></el-input>
+                            <div v-if="validation.errors.length > 0" class="text-small color-red-100 bu-pt-1">
+                                {{i18n('jobs.schedule-error')}}
+                            </div>
+                            <div v-else class="text-small bu-pt-1">
+                                {{parseCron(selectedJobConfig.schedule)}}
+                            </div>
+                        </cly-form-field>
+                    </cly-form-step>
+                </template>
+            </cly-form-dialog>
         </cly-section>
     </cly-main>
 </div>

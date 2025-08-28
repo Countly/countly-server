@@ -194,6 +194,9 @@
                 jobsTablePersistKey: "cly-jobs-table"
             };
         },
+        mixins: [
+            countlyVue.mixins.hasFormDialogs("jobSchedule")
+        ],
         computed: {
             /**
              * Whether the current user can enable/disable jobs
@@ -201,6 +204,9 @@
              */
             canSuspendJob: function() {
                 return countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID];
+            },
+            scheduleDialogTitle: function() {
+                return '“' + this.selectedJobConfig.name + '” ' + CV.i18n('jobs.schedule-configuration');
             },
         },
         methods: {
@@ -288,7 +294,7 @@
                             defaultSchedule: row.schedule,
                             enabled: row.enabled
                         };
-                        this.scheduleDialogVisible = true;
+                        this.openFormDialog('jobSchedule', this.selectedJobConfig);
                         return;
                     }
 
@@ -347,7 +353,7 @@
                     },
                     success: function() {
                         self.saving = false;
-                        self.scheduleDialogVisible = false;
+                        self.closeFormDialog('jobSchedule');
                         self.refresh(true);
                         CountlyHelpers.notify({
                             type: "ok",
@@ -356,6 +362,7 @@
                     },
                     error: function(err) {
                         self.saving = false;
+                        self.closeFormDialog('jobSchedule');
                         CountlyHelpers.notify({
                             type: "error",
                             message: err.responseJSON?.result || "Error"
