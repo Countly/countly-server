@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Enterprise Fixes:
+- [journeys] Update skip threshold when journeys are paused
+
 ## Version 25.03.17
 Enterprise Fixes:
 - [ldap] Recursive user search in ldap added
