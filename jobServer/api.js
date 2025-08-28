@@ -451,6 +451,11 @@ plugins.register('/jobs/i', async function(ob) {
             }
 
             log.d(`Job ${jobName} ${action} success`);
+            plugins.dispatch('/systemlogs', {
+                params: ob.params,
+                action: `jobs_${action}`,
+                data: { name: jobName, ...updateData },
+            });
             common.returnMessage(ob.params, 200, 'Success');
         }
         catch (error) {

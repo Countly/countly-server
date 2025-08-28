@@ -259,6 +259,9 @@ if (require.main === module) {
             const config = await pluginManager.getConfig();
             log.d('Configuration initialized successfully');
 
+            // Init systemlogs
+            pluginManager.initPlugin('systemlogs', 'api');
+
             // TEMPORARY DEBUG - JOB SERVER CONFIG
             console.log('=== JOB SERVER LOADED CONFIG ===');
             console.log('Config loaded:', JSON.stringify(config, null, 2));
