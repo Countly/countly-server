@@ -11,8 +11,6 @@ const { send, validateCredentials } = require("../../../api/new/platforms/ios");
 const { credentialsDTOToObject } = require("../../../api/new/lib/dto");
 const mockedData = require("../../mock/data");
 const { IOS_TEST_TOKEN, IOS_TEST_CREDENTIALS_P8, IOS_TEST_CREDENTIALS_P12 } = process.env;
-const fsPromise = require("fs/promises");
-const path = require("path");
 
 describe("IOS integration", () => {
     describe("push notification sender", () => {

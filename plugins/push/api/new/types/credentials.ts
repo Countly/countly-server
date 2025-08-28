@@ -3,16 +3,16 @@ import { SecureContextOptions } from "node:tls";
 
 export interface FCMCredentials {
     _id: ObjectId;
-    serviceAccountFile: string;
     type: "fcm";
+    serviceAccountFile: string;
     hash: string;
 }
 
 export type UnvalidatedFCMCredentials = Omit<FCMCredentials, "_id" | "hash">;
 
 export interface APNP12Credentials {
-    type: "apn_universal";
     _id: ObjectId;
+    type: "apn_universal";
     cert: string;
     secret: string;
     bundle: string;
@@ -25,8 +25,8 @@ export interface APNP12Credentials {
 export type UnvalidatedAPNP12Credentials = Omit<APNP12Credentials, "_id" | "bundle" | "notAfter" | "notBefore" | "topics" | "hash"> & { fileType?: "p12" };
 
 export interface APNP8Credentials {
-    type: "apn_token";
     _id: ObjectId;
+    type: "apn_token";
     bundle: string;
     key: string;
     keyid: string;
@@ -44,10 +44,12 @@ export type TLSKeyPair = Required<Pick<SecureContextOptions, "key"|"cert">>;
 
 export interface HMSCredentials {
     _id: ObjectId;
+    type: "hms";
     app: string;
     secret: string;
-    type: "hms";
     hash: string;
 }
+
+export type UnvalidatedHMSCredentials = Omit<HMSCredentials, "_id" | "hash"> ;
 
 export type PlatformCredential = FCMCredentials | APNCredentials | HMSCredentials;

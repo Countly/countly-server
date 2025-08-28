@@ -4,17 +4,28 @@
  * @typedef {import("../types/user.ts").User} User
  * @typedef {import("../types/message.ts").HuaweiMessageContent} HuaweiMessageContent
  * @typedef {import("../types/credentials.ts").HMSCredentials} HMSCredentials
+ * @typedef {import("../types/credentials.ts").UnvalidatedHMSCredentials} UnvalidatedHMSCredentials
  * @typedef {import("../types/proxy.ts").ProxyConfiguration} ProxyConfiguration
  * @typedef {import("../types/queue.ts").PushEvent} PushEvent
  * @typedef {{ token?: string; expiryDate?: number; promise?: Promise<string>; }} TokenCache
  */
 const https = require("https");
+const { ObjectId } = require("mongodb");
 const { URLSearchParams } = require("url");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 const { buildProxyUrl } = require("../lib/utils.js");
-const { mapMessageToPayload: mapMessageToAndroidPayload } = require("./android.js");
+const { createHash } = require("crypto");
+const {
+    mapMessageToPayload: mapMessageToAndroidPayload
+} = require("./android.js");
 const { PROXY_CONNECTION_TIMEOUT } = require("../constants/proxy-config.json");
-const { SendError, InvalidResponse, HMSErrors } = require("../lib/error.js");
+const {
+    InvalidCredentials,
+    SendError,
+    InvalidResponse,
+    InvalidDeviceToken,
+    HMSErrors
+} = require("../lib/error.js");
 /** @type {{[credentialHash: string]: TokenCache}} */
 const TOKEN_CACHE = {};
 
@@ -193,6 +204,85 @@ async function send(pushEvent) {
 }
 
 /**
+ * Validates the given unvalidated credentials, returns the validated
+ * @param {UnvalidatedHMSCredentials} unvalidatedCreds - Unvalidated credentials
+ * @param {ProxyConfiguration=} proxyConfig - Optional proxy configuration
+ * @returns {Promise<{ creds: HMSCredentials, view: HMSCredentials }>} Validated credentials and a view object
+ * @throws {Error} if credentials are invalid
+ */
+async function validateCredentials(unvalidatedCreds, proxyConfig) {
+    if (unvalidatedCreds.type !== "hms") {
+        throw new InvalidCredentials("Invalid credentials type");
+    }
+    const requiredFields = /** @type {Array<keyof UnvalidatedHMSCredentials>} */(
+        ["app", "secret"]
+    );
+    for (const field of requiredFields) {
+        if (!unvalidatedCreds[field] || typeof unvalidatedCreds[field] !== "string") {
+            throw new InvalidCredentials(
+                `Invalid HMSCredentials: ${field} is required and must be a string`
+            );
+        }
+    }
+    if (unvalidatedCreds.app.length < 6 || unvalidatedCreds.app.length > 32) {
+        throw new InvalidCredentials(
+            "Invalid HMSCredentials: app length must be between 6 and 32 characters"
+        );
+    }
+    if (unvalidatedCreds.secret.length !== 64) {
+        throw new InvalidCredentials(
+            "Invalid HMSCredentials: secret length must be 64 characters"
+        );
+    }
+    /** @type {HMSCredentials} */
+    const creds = {
+        ...unvalidatedCreds,
+        _id: new ObjectId(),
+        hash: createHash("sha256").update(JSON.stringify(unvalidatedCreds))
+            .digest("hex")
+    };
+    /** @type {HMSCredentials} */
+    const view = {
+        ...creds,
+        secret: `HPK secret "${creds.secret.slice(0, 10)}...${creds.secret.slice(-10)}"`,
+    };
+    try {
+        await send({
+            credentials: creds,
+            appId: new ObjectId,
+            messageId: new ObjectId,
+            scheduleId: new ObjectId,
+            uid: "1",
+            token: Math.random() + '',
+            message: {
+                message: {
+                    data: '{"c.i":"' + Math.random() + '","title":"test","message":"test"}',
+                    android: {}
+                }
+            },
+            saveResult: false,
+            platform: "h",
+            env: "p",
+            language: "en",
+            platformConfiguration: {},
+            trigger: {
+                kind: "plain",
+                start: new Date(),
+            },
+            appTimezone: "NA",
+            proxy: proxyConfig,
+        });
+    }
+    catch (error) {
+        if (error instanceof InvalidDeviceToken) {
+            return { creds, view };
+        }
+        throw error;
+    }
+    throw new InvalidCredentials("Test connection failed for an unknown reason.");
+}
+
+/**
  * Maps message contents to an HMS request payload
  * @param {Message} messageDoc - Message document
  * @param {Content} content - Content object built from message contents in template builder
@@ -215,4 +305,5 @@ module.exports = {
     send,
     getAuthToken,
     mapMessageToPayload,
+    validateCredentials,
 };
