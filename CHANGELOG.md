@@ -5,6 +5,7 @@ Fixes:
 Enterprise Fixes:
 - [journeys] Update skip threshold when journeys are paused
 - [journeys] fix for clearing content queue when journey is paused
+- [content] validations added to content endpoint for preflight check
 
 ## Version 25.03.17
 Enterprise Fixes:
