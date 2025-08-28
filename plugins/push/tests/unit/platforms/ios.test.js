@@ -7,10 +7,6 @@ const assert = require("assert");
 const path = require("path");
 const fsPromise = require("fs/promises");
 const { describe, it } = require("mocha");
-// const { ObjectId } = require("mongodb");
-// const sinon = require("sinon");
-// const proxyquire = require("proxyquire").noCallThru();
-// const mockData = require("../../mock/data");
 const { parseP12Certificate } = require("../../../api/new/platforms/ios");
 
 describe("IOS platform", () => {
@@ -30,6 +26,7 @@ describe("IOS platform", () => {
             assert(result.notBefore.getTime() > 0);
             assert(result.topics.length > 0);
         });
+
         it("should fail an invalid p12 certificate", async () => {
             const certificate = await fsPromise.readFile(
                 path.join(
@@ -42,6 +39,7 @@ describe("IOS platform", () => {
                 new Error("Not a universal (Sandbox & Production) certificate")
             );
         });
+
         it("shouldn't be able to parse a p12 certificate with incorrect secret", async () => {
             const certificate = await fsPromise.readFile(
                 path.join(
@@ -54,6 +52,7 @@ describe("IOS platform", () => {
                 new Error("PKCS#12 MAC could not be verified. Invalid password?")
             );
         });
+
         it("should parse a passphrase protected p12 certificate correctly", async () => {
             const certificate = await fsPromise.readFile(
                 path.join(

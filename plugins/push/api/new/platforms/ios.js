@@ -15,6 +15,8 @@
  * @typedef {{ keyPair: TLSKeyPair; lastUsedAt: number; }} TLSKeyPairCache
  * @typedef {Omit<APNP12Credentials, "type"|"_id"|"cert"|"secret"|"hash">&TLSKeyPair} P12CertificateContents
  * @typedef {import("http2").OutgoingHttpHeaders} OutgoingHttpHeaders
+ * @typedef {import("../types/credentials.ts").UnvalidatedAPNCredentials} UnvalidatedAPNCredentials
+ * @typedef {import("../types/credentials.ts").UnvalidatedAPNP8Credentials} UnvalidatedAPNP8Credentials
  */
 
 const jwt = require("jsonwebtoken");
@@ -27,7 +29,13 @@ const {
     serializeProxyConfig,
     removeUPFromUserPropertyKey
 } = require("../lib/utils.js");
-const { SendError, InvalidResponse, APNSErrors } = require("../lib/error.js");
+const {
+    InvalidCredentials,
+    SendError,
+    InvalidResponse,
+    APNSErrors,
+    InvalidDeviceToken
+} = require("../lib/error.js");
 const { createHash } = require("crypto");
 /** @type {{[serializedProxyConfig: string]: ProxyCache}} */
 const PROXY_CACHE = {};
@@ -41,8 +49,8 @@ const TLS_KEY_PAIR_CACHE = {};
  * This function caches created tokens for a 20 mins. This is required because
  * APNs doesn't like changing tokens more than twice in 20 mins on the same
  * TCP connection.
- * @param {APNCredentials} credentials
- * @returns {string=}
+ * @param {APNCredentials} credentials - APN Token credentials
+ * @returns {string=} JWT Token
  */
 function getAuthToken(credentials) {
     if (credentials.type !== "apn_token") {
@@ -63,8 +71,8 @@ function getAuthToken(credentials) {
 
 /**
  * Creates a proxy agent with the given configuration, then caches it.
- * @param {ProxyConfiguration=} config
- * @returns {http2Wrapper.proxies.Http2OverHttp=}
+ * @param {ProxyConfiguration=} config - Proxy configuration
+ * @returns {http2Wrapper.proxies.Http2OverHttp=} Proxy agent
  */
 function getProxyAgent(config) {
     if (!config) {
@@ -99,8 +107,9 @@ function getProxyAgent(config) {
 }
 
 /**
- * @param {APNP12Credentials} credentials
- * @returns {TLSKeyPair}
+ * Gets TLS Key Pair from the given credentials, caches it.
+ * @param {APNP12Credentials} credentials - APN P12 credentials
+ * @returns {TLSKeyPair} TLS Key Pair
  */
 function getTlsKeyPair(credentials) {
     const cache = TLS_KEY_PAIR_CACHE[credentials.hash];
@@ -117,9 +126,11 @@ function getTlsKeyPair(credentials) {
 }
 
 /**
+ * Parses the given P12 certificate, extracts topics, bundle id, notBefore and
+ * notAfter dates.
  * @param {string} certificate - Base64 encoded P12 certificate
  * @param {string=} secret - Passphrase for the P12 certificate
- * @returns {P12CertificateContents}
+ * @returns {P12CertificateContents} Parsed certificate contents
  */
 function parseP12Certificate(certificate, secret) {
     /** @type {Partial<P12CertificateContents>&{topics: string[]}} */
@@ -131,7 +142,6 @@ function parseP12Certificate(certificate, secret) {
         bundle: undefined,
         topics: [],
     };
-
     // parse the key pair
     const buffer = nodeForge.util.decode64(certificate);
     const asn1 = nodeForge.asn1.fromDer(buffer);
@@ -143,11 +153,10 @@ function parseP12Certificate(certificate, secret) {
         bagType: nodeForge.pki.oids.pkcs8ShroudedKeyBag
     })?.[nodeForge.pki.oids.pkcs8ShroudedKeyBag]?.[0];
     if (!cert || !pk || !cert.cert || !pk.key) {
-        throw new Error('Failed to get TLS key pairs from crededentials');
+        throw new InvalidCredentials('Failed to get TLS key pairs from crededentials');
     }
     result.cert = nodeForge.pki.certificateToPem(cert.cert);
     result.key = nodeForge.pki.privateKeyToPem(pk.key);
-
     // parse extensions for topics, bundle, notBefore and notAfter:
     p12.safeContents.forEach(safeContents => {
         safeContents.safeBags.forEach(safeBag => {
@@ -210,10 +219,10 @@ function parseP12Certificate(certificate, secret) {
         });
     });
     if (result.topics.length === 0) {
-        throw new Error('Not a universal (Sandbox & Production) certificate');
+        throw new InvalidCredentials('Not a universal (Sandbox & Production) certificate');
     }
     if (!result.notBefore || !result.notAfter) {
-        throw new Error('No validity dates in the certificate');
+        throw new InvalidCredentials('No validity dates in the certificate');
     }
     result.topics.sort((a, b) => a.length - b.length);
     result.bundle = result.topics[0];
@@ -222,12 +231,13 @@ function parseP12Certificate(certificate, secret) {
 }
 
 /**
- * @param {PushEvent} pushEvent
- * @returns {Promise<string>}
+ * Sends the given push event to APNs service and returns the raw response.
+ * @param {PushEvent} pushEvent - Push event to send
+ * @returns {Promise<string>} Raw response from APNs
  * @throws Unknown connection errors
- * @throws {SendError}
- * @throws {InvalidDeviceToken}
- * @throws {InvalidResponse}
+ * @throws {SendError} on known APNs errors
+ * @throws {InvalidDeviceToken} if the device token is invalid
+ * @throws {InvalidResponse} if the response is invalid
  */
 async function send(pushEvent) {
     const hostname = pushEvent.env === "d"
@@ -256,7 +266,9 @@ async function send(pushEvent) {
         options.key = keyPair.key;
         options.cert = keyPair.cert;
     }
-    const platformConfig = /** @type {IOSConfig} */(pushEvent.platformConfiguration);
+    const platformConfig = /** @type {IOSConfig} */(
+        pushEvent.platformConfiguration
+    );
     if (platformConfig.setContentAvailable) {
         headers["apns-priority"] = 5;
     }
@@ -314,54 +326,132 @@ async function send(pushEvent) {
 }
 
 /**
- * Validates the APN credentials
- * @param {APNCredentials} creds
- * @param {ProxyConfiguration=} proxyConfig - FCM credentials object
- * @returns {Promise<{ creds: APNCredentials, view: APNCredentials }>}
+ * Validates the given unvalidated credentials, returns the validated
+ * @param {UnvalidatedAPNCredentials} unvalidatedCreds - Unvalidated credentials
+ * @param {ProxyConfiguration=} proxyConfig - Optional proxy configuration
+ * @returns {Promise<{ creds: APNCredentials, view: APNCredentials }>} Validated credentials and a view object
  * @throws {Error} if credentials are invalid
  */
-async function validateCredentials(creds, proxyConfig) {
-    /** @type {APNCredentials} */
-    let view;
-    if (creds.type === "apn_universal") {
-        if (typeof creds.cert !== "string" || !creds.cert) {
-            throw new Error(`Invalid APNP12Credentials: cert is required and must be a string`);
+async function validateCredentials(unvalidatedCreds, proxyConfig) {
+    if (unvalidatedCreds.type === "apn_universal") {
+        if (typeof unvalidatedCreds.cert !== "string" || !unvalidatedCreds.cert) {
+            throw new InvalidCredentials(
+                "Invalid APNP12Credentials: cert is " +
+                "required and must be a string"
+            );
         }
+        if (unvalidatedCreds.cert.indexOf(';base64,') === -1) {
+            throw new InvalidCredentials(
+                "Invalid APNP12Credentials: certificate must "
+                + "be a base64 encoded P12 file"
+            );
+        }
+        const mime = unvalidatedCreds.cert.substring(
+            0,
+            unvalidatedCreds.cert.indexOf(';base64,')
+        );
+        const allowedMimes = [
+            "data:application/x-pkcs12",
+            "data:application/pkcs12",
+            "data:application/octet-stream"
+        ];
+        if (
+            !allowedMimes.includes(mime)
+            || (mime === 'data:application/octet-stream'
+                && unvalidatedCreds.fileType !== 'p12')
+        ) {
+            throw new InvalidCredentials(
+                "Invalid APNP12Credentials: certificate must "
+                + "be a base64 encoded P12 file"
+            );
+        }
+        const cleanedCert = unvalidatedCreds.cert.substring(
+            unvalidatedCreds.cert.indexOf(',') + 1
+        );
         const { key, cert, ...content } = parseP12Certificate(
-            creds.cert,
-            creds.secret
+            cleanedCert,
+            unvalidatedCreds.secret
         );
         if (content.notBefore.getTime() > Date.now()) {
-            throw new Error('Certificate is not valid yet');
+            throw new InvalidCredentials('Certificate is not valid yet');
         }
         if (content.notAfter.getTime() < Date.now()) {
-            throw new Error('Certificate is expired');
+            throw new InvalidCredentials('Certificate is expired');
         }
-        creds = { ...creds, ...content };
-        view = { ...creds, cert: "APN Sandbox & Production Certificate (P12)" };
+        const _creds = { ...unvalidatedCreds, ...content, cert: cleanedCert };
+        /** @type {APNP12Credentials} */
+        const creds = {
+            ..._creds,
+            _id: new ObjectId,
+            hash: createHash("sha256").update(JSON.stringify(_creds))
+                .digest("hex")
+        };
+        const view = {
+            ...creds,
+            cert: "APN Sandbox & Production Certificate (P12)"
+        };
+        await credentialTest(creds, proxyConfig);
+        return { creds, view };
     }
     else { // creds.type === "apn_token"
-        const requiredFields = /** @type {Array<keyof APNP8Credentials>} */(
+        const requiredFields = /** @type {Array<keyof UnvalidatedAPNP8Credentials>} */(
             ["key", "keyid", "bundle", "team"]
         );
         for (const field of requiredFields) {
-            if (!creds[field] || typeof creds[field] !== "string") {
-                throw new Error(`Invalid APNP8Credentials: ${field} is required`);
+            if (!unvalidatedCreds[field] || typeof unvalidatedCreds[field] !== "string") {
+                throw new InvalidCredentials(
+                    `Invalid APNP8Credentials: ${field} is required`
+                );
             }
         }
-        if (creds.key.indexOf(';base64,') !== -1) {
-            let mime = creds.key.substring(0, creds.key.indexOf(';base64,'));
-            if (!['data:application/x-pkcs8', 'data:application/pkcs8'].includes(mime)) {
-                throw new Error(`Invalid APNP8Credentials: key must be a base64 encoded P8 file`);
-            }
-            creds.key = creds.key.substring(creds.key.indexOf(',') + 1);
+        if (unvalidatedCreds.key.indexOf(';base64,') === -1) {
+            throw new InvalidCredentials(
+                "Invalid APNP8Credentials: key must be a base64 encoded P8 file"
+            );
         }
-        view = { ...creds, key: 'APN Key File (P8)' };
+        let mime = unvalidatedCreds.key.substring(
+            0,
+            unvalidatedCreds.key.indexOf(';base64,')
+        );
+        const allowedMimes = [
+            "data:application/x-pkcs8",
+            "data:application/pkcs8",
+            "data:application/octet-stream"
+        ];
+        if (
+            !allowedMimes.includes(mime)
+            || (mime === "data:application/octet-stream"
+                && unvalidatedCreds.fileType !== "p8")
+        ) {
+            throw new InvalidCredentials(
+                "Invalid APNP8Credentials: key must " +
+                "be a base64 encoded P8 file"
+            );
+        }
+        unvalidatedCreds.key = unvalidatedCreds.key.substring(
+            unvalidatedCreds.key.indexOf(',') + 1
+        );
+        const _creds = { ...unvalidatedCreds };
+        /** @type {APNP8Credentials} */
+        const creds = {
+            ..._creds,
+            _id: new ObjectId,
+            hash: createHash("sha256").update(JSON.stringify(_creds))
+                .digest("hex")
+        };
+        const view = { ...creds, key: 'APN Key File (P8)' };
+        await credentialTest(creds, proxyConfig);
+        return { creds, view };
     }
-    const hash = createHash("sha256").update(JSON.stringify(creds)).digest("hex");
-    creds.hash = hash;
-    view.hash = hash;
+}
 
+/**
+ * Tests the APN credentials by sending a test message to a random device token.
+ * @param {APNCredentials} creds - Validated APN credentials
+ * @param {ProxyConfiguration=} proxyConfig - Optional proxy configuration
+ * @returns {Promise<boolean>} Returns true if the credentials are valid, throws otherwise
+ */
+async function credentialTest(creds, proxyConfig) {
     try {
         await send({
             credentials: creds,
@@ -395,15 +485,13 @@ async function validateCredentials(creds, proxyConfig) {
             proxy: proxyConfig,
         });
     }
-    catch(error) {
-        const invalidTokenErrorMessage = "INVALID_ARGUMENT: The registration token is not a valid FCM registration token";
-        if (error instanceof SendError && error.message === invalidTokenErrorMessage) {
-            return { creds, view };
+    catch (error) {
+        if (error instanceof InvalidDeviceToken) {
+            return true;
         }
         throw error;
     }
-
-    throw new Error("Test connection failed for an unknown reason.");
+    throw new InvalidCredentials("Test connection failed for an unknown reason.");
 }
 
 /**
@@ -449,7 +537,11 @@ function mapMessageToPayload(messageDoc, content, userProps) {
         const data = JSON.parse(content.data);
         Object.assign(payload, data);
     }
-    if (content.extras && content.extras.length && typeof userProps === "object") {
+    if (
+        content.extras
+        && content.extras.length
+        && typeof userProps === "object"
+    ) {
         for (const userPropKey of content.extras) {
             const key = removeUPFromUserPropertyKey(userPropKey);
             if (key in userProps) {
@@ -468,7 +560,9 @@ function mapMessageToPayload(messageDoc, content, userProps) {
             .reduce((acc, item) => ({ ...acc, ...item }), {});
         if (platformSpecifics.subtitle) {
             payload.aps.alert = payload.aps.alert || {};
-            payload.aps.alert.subtitle = /** @type {string} */(platformSpecifics.subtitle);
+            payload.aps.alert.subtitle = /** @type {string} */(
+                platformSpecifics.subtitle
+            );
         }
         if (platformSpecifics.setContentAvailable) {
             payload.aps["content-available"] = 1;
@@ -485,4 +579,5 @@ module.exports = {
     getProxyAgent,
     mapMessageToPayload,
     validateCredentials,
+    credentialTest,
 };

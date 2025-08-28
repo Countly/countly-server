@@ -290,8 +290,6 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
                             _id: common.db.ObjectID(pushcfg[p]._id)
                         });
                     }
-                    creds._id = common.db.ObjectID();
-                    view._id = creds._id;
                     pushcfg[p] = view;
                     await common.db.collection("creds").insertOne(creds);
                     await common.db.collection('apps').updateOne({

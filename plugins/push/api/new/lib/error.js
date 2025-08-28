@@ -8,6 +8,10 @@ class PushError extends Error {
     }
 }
 /**
+ * Being thrown in the `validateCredentials()` function inside platform files.
+ */
+class InvalidCredentials extends PushError {}
+/**
  * Being thrown in the `send()` functions inside platform files.
  */
 class SendError extends PushError {
@@ -113,6 +117,10 @@ const HMSErrors = {
 }
 
 module.exports = {
+    PushError,
+
+    InvalidCredentials,
+
     SendError,
     InvalidResponse,
     InvalidDeviceToken,

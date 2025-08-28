@@ -10,7 +10,7 @@ const { credentialsDTOToObject } = require("../../../api/new/lib/dto");
 const mockedData = require("../../mock/data");
 const { HUAWEI_TEST_TOKEN, HUAWEI_TEST_CREDENTIALS } = process.env;
 
-describe("Huawei sender", () => {
+describe("Huawei integration", () => {
     if (!HUAWEI_TEST_TOKEN || !HUAWEI_TEST_CREDENTIALS) {
         return console.log(
             "HUAWEI_TEST_TOKEN and/or " +

@@ -8,13 +8,14 @@
  * @typedef {import("../types/proxy").ProxyConfigurationKey} ProxyConfigurationKey
  * @typedef {{ proxy?: ProxyConfiguration, serviceAccount: string }} FirebaseAppConfiguration
  * @typedef {import("../types/credentials").FCMCredentials} FCMCredentials
+ * @typedef {import("../types/credentials").UnvalidatedFCMCredentials} UnvalidatedFCMCredentials
  * @typedef {import("firebase-admin").FirebaseError} FirebaseError
  */
 const firebaseAdmin = require("firebase-admin");
 const { HttpsProxyAgent } = require("https-proxy-agent");
 const { buildProxyUrl, serializeProxyConfig, flattenObject, removeUPFromUserPropertyKey } = require("../lib/utils.js");
 const { PROXY_CONNECTION_TIMEOUT } = require("../constants/proxy-config.json");
-const { SendError, FCMErrors } = require("../lib/error.js");
+const { InvalidCredentials, SendError, FCMErrors } = require("../lib/error.js");
 const { createHash } = require("crypto");
 const { ObjectId } = require("mongodb");
 
@@ -35,19 +36,17 @@ function isProxyConfigurationUpdated(app, newProxy) {
 
 /**
  * Sends a push notification using Firebase Cloud Messaging (FCM)
- * @param {PushEvent} pushEvent - Push event object containing credentials, token, message, and other properties
- * @returns {Promise<string>}
+ * @param {PushEvent} pushEvent - Push event object
+ * @returns {Promise<string>} Promise that resolves to the message ID string
  */
 async function send(pushEvent) {
-    const creds = /** @type {import("../types/credentials").FCMCredentials} */(
+    const creds = /** @type {FCMCredentials} */(
         pushEvent.credentials
     );
     const appName = creds.hash;
-
     let firebaseApp = firebaseAdmin.apps.find(
         app => app ? app.name === appName : false
     );
-
     // delete the old application if proxy configuration is updated
     if (firebaseApp) {
         if (isProxyConfigurationUpdated(firebaseApp, pushEvent.proxy)) {
@@ -56,7 +55,6 @@ async function send(pushEvent) {
             firebaseApp = undefined;
         }
     }
-
     // create the application instance
     if (!firebaseApp) {
         const buffer = Buffer.from(
@@ -64,7 +62,6 @@ async function send(pushEvent) {
             "base64"
         );
         const serviceAccountObject = JSON.parse(buffer.toString("utf8"));
-
         /** @type {HttpsProxyAgent<"proxy-address">=} */
         let agent;
         if (pushEvent.proxy) {
@@ -74,7 +71,6 @@ async function send(pushEvent) {
                 rejectUnauthorized: pushEvent.proxy.auth,
             });
         }
-
         firebaseApp = firebaseAdmin.initializeApp({
             httpAgent: agent,
             credential: firebaseAdmin.credential.cert(
@@ -82,7 +78,6 @@ async function send(pushEvent) {
                 agent
             ),
         }, appName);
-
         // save proxy object to track its state
         if (pushEvent.proxy) {
             appProxyMap.set(firebaseApp, pushEvent.proxy);
@@ -119,19 +114,19 @@ async function send(pushEvent) {
 }
 
 /**
- * Validates the FCM credentials, hashes the service account file, and returns the credentials object with a view object.
- * @param {FCMCredentials} credentials - FCM credentials object
+ * Validates the FCM credentials, hashes the service account file, and returns the credentials with a view object.
+ * @param {UnvalidatedFCMCredentials} unvalidatedCreds - FCM credentials object
  * @param {ProxyConfiguration=} proxyConfig - FCM credentials object
  * @returns {Promise<{ creds: FCMCredentials, view: FCMCredentials }>} credentials with validated and hashed service account file and its view object
- * @throws {Error} if credentials are invalid
+ * @throws {InvalidCredentials} if credentials are invalid
  */
-async function validateCredentials(credentials, proxyConfig) {
-    const { serviceAccountFile, type } = credentials;
+async function validateCredentials(unvalidatedCreds, proxyConfig) {
+    const { serviceAccountFile, type } = unvalidatedCreds;
     if (type !== "fcm") {
-        throw new Error("Invalid credentials type");
+        throw new InvalidCredentials("Invalid credentials type");
     }
     if (!serviceAccountFile) {
-        throw new Error("Service account file is required");
+        throw new InvalidCredentials("Service account file is required");
     }
     let mime = serviceAccountFile.indexOf(';base64,') === -1
         ? null
@@ -140,7 +135,7 @@ async function validateCredentials(credentials, proxyConfig) {
             serviceAccountFile.indexOf(';base64,')
         );
     if (mime !== "data:application/json") {
-        throw new Error("Service account file must be a base64 encoded JSON file");
+        throw new InvalidCredentials("Service account file must be a base64 encoded JSON file");
     }
     const serviceAccountJSON = Buffer.from(
         serviceAccountFile.substring(serviceAccountFile.indexOf(',') + 1),
@@ -151,7 +146,7 @@ async function validateCredentials(credentials, proxyConfig) {
         serviceAccountObject = JSON.parse(serviceAccountJSON);
     }
     catch (error) {
-        throw new Error(
+        throw new InvalidCredentials(
             "Service account file is not a valid JSON: "
             + (error instanceof SyntaxError ? error.message : "Unknown error")
         );
@@ -162,9 +157,14 @@ async function validateCredentials(credentials, proxyConfig) {
         || !serviceAccountObject.project_id
         || !serviceAccountObject.private_key
         || !serviceAccountObject.client_email) {
-        throw new Error("Service account file is not a valid Firebase service account JSON");
+        throw new InvalidCredentials("Service account file is not a valid Firebase service account JSON");
     }
-
+    const credentials = {
+        ...unvalidatedCreds,
+        _id: new ObjectId,
+        serviceAccountFile,
+        hash: createHash("sha256").update(serviceAccountJSON).digest("hex")
+    };
     try {
         await send({
             credentials,
@@ -195,25 +195,21 @@ async function validateCredentials(credentials, proxyConfig) {
         });
     }
     catch(error) {
+        // normally, we expect an INVALID_REGISTRATION_TOKEN or REGISTRATION_TOKEN_NOT_REGISTERED
+        // but for some reason fcm returns with INVALID_ARGUMENT:
         const invalidTokenErrorMessage = "INVALID_ARGUMENT: The registration token is not a valid FCM registration token";
         if (error instanceof SendError && error.message === invalidTokenErrorMessage) {
-            const hash = createHash("sha256").update(serviceAccountJSON).digest("hex");
             return {
-                creds: {
-                    ...credentials,
-                    hash,
-                },
+                creds: credentials,
                 view: {
                     ...credentials,
-                    hash,
                     serviceAccountFile: "service-account.json"
                 }
             }
         }
         throw error;
     }
-
-    throw new Error("Test connection failed for an unknown reason.");
+    throw new InvalidCredentials("Test connection failed for an unknown reason.");
 }
 
 /**
@@ -289,7 +285,6 @@ function mapMessageToPayload(messageDoc, content, userProps) {
     // TODO: timeToLive
     return payload;
 }
-
 
 module.exports = {
     send,

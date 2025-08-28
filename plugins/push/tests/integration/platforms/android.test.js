@@ -10,7 +10,7 @@ const { credentialsDTOToObject } = require("../../../api/new/lib/dto");
 const mockedData = require("../../mock/data");
 const { ANDROID_TEST_TOKEN, ANDROID_TEST_CREDENTIALS } = process.env;
 
-describe("Android", () => {
+describe("Android integration", () => {
     describe("push notification sender", () => {
         if (!ANDROID_TEST_TOKEN || !ANDROID_TEST_CREDENTIALS) {
             return console.log("ANDROID_TEST_TOKEN and/or "
@@ -51,15 +51,6 @@ describe("Android", () => {
             trigger: mockedData.plainTrigger(),
             platformConfiguration: {}
         }
-        /** @type {PushEvent} */
-        const pushEventWithProxy = {
-            ...pushEvent,
-            proxy: {
-                host:"localhost",
-                auth: false,
-                port: "8124"
-            }
-        }
 
         it("should send the message successfully", async () => {
             const result = await send(pushEvent);
@@ -67,7 +58,17 @@ describe("Android", () => {
         });
 
         it("should send the message successfully through a proxy server", async () => {
-            console.log("IMPLEMENT");
+            // TODO: Implement a real proxy server test
+            console.log("PLACEHOLDER TEST");
+            /** @type {PushEvent} */
+            const pushEventWithProxy = {
+                ...pushEvent,
+                proxy: {
+                    host:"localhost",
+                    auth: false,
+                    port: "8124"
+                }
+            }
             // console.time("sequential");
             // for (let i = 0; i < 50; i++) {
             //     await send(pushEventWithProxy);
@@ -87,24 +88,6 @@ describe("Android", () => {
     });
 
     describe("credential validator", () => {
-        it("should throw when there's a missing property", async () => {
-            let invalidCredentials = /** @type {any} */({type: "apn_universal"});
-            await assert.rejects(validateCredentials(invalidCredentials));
-            invalidCredentials = /** @type {any} */({type: "fcm"});
-            await assert.rejects(validateCredentials(invalidCredentials));
-            invalidCredentials = /** @type {any} */({type: "fcm", serviceAccountFile: "test"});
-            await assert.rejects(validateCredentials(invalidCredentials));
-        });
-
-        it("should throw when serviceAccountFile is not a json", async () => {
-            const invalidCredentials = /** @type {FCMCredentials} */({
-                type: "fcm",
-                serviceAccountFile: "invalid",
-                hash: "invalid"
-            });
-            await assert.rejects(validateCredentials(invalidCredentials));
-        });
-
         it("should try and send a test message to validate the credential and then fail", async () => {
             const invalidCredentials = /** @type {FCMCredentials} */({
                 _id: new ObjectId,

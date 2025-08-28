@@ -1,13 +1,14 @@
 import { ObjectId } from "mongodb";
 import { SecureContextOptions } from "node:tls";
 
-
 export interface FCMCredentials {
     _id: ObjectId;
     serviceAccountFile: string;
     type: "fcm";
     hash: string;
 }
+
+export type UnvalidatedFCMCredentials = Omit<FCMCredentials, "_id" | "hash">;
 
 export interface APNP12Credentials {
     type: "apn_universal";
@@ -21,6 +22,8 @@ export interface APNP12Credentials {
     hash: string;
 }
 
+export type UnvalidatedAPNP12Credentials = Omit<APNP12Credentials, "_id" | "bundle" | "notAfter" | "notBefore" | "topics" | "hash"> & { fileType?: "p12" };
+
 export interface APNP8Credentials {
     type: "apn_token";
     _id: ObjectId;
@@ -31,9 +34,13 @@ export interface APNP8Credentials {
     hash: string;
 }
 
-export type TLSKeyPair = Required<Pick<SecureContextOptions, "key"|"cert">>;
+export type UnvalidatedAPNP8Credentials = Omit<APNP8Credentials, "_id" | "hash"> & { fileType?: "p8" };
 
 export type APNCredentials = APNP12Credentials | APNP8Credentials;
+
+export type UnvalidatedAPNCredentials = UnvalidatedAPNP12Credentials | UnvalidatedAPNP8Credentials;
+
+export type TLSKeyPair = Required<Pick<SecureContextOptions, "key"|"cert">>;
 
 export interface HMSCredentials {
     _id: ObjectId;
