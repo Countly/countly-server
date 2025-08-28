@@ -55,7 +55,7 @@
                             </template>
                             <template v-else>
                                 <div class="bu-level-item">
-                                    <el-button @click="exitFullScreen" icon="el-icon-circle-close"></el-button>
+                                    <el-button @click="exitFullScreen" icon="el-icon-circle-close" data-test-id="exit-fullscreen-button"></el-button>
                                 </div>
                             </template>
                         </template>
@@ -64,15 +64,15 @@
                 <div class="bu-level bu-mt-2" v-if="dashboard.creation.time || dashboard.creation.by">
                     <div class="bu-level-left">
                         <div class="bu-level-item">
-                            <div class="bu-level-item color-cool-gray-50 text-medium">
+                            <div class="bu-level-item color-cool-gray-50 text-medium" data-test-id="dashboard-creation-info">
                                 <span>
-                                    <i class="far fa-clock"></i>
+                                    <i class="far fa-clock" data-test-id="dashboard-creation-time-icon"></i>
                                     {{i18nM('dashbaords.created')}}
                                 </span>
-                                <span v-if="dashboard.creation.time" class="bu-ml-1">
+                                <span v-if="dashboard.creation.time" class="bu-ml-1" data-test-id="dashboard-creation-time">
                                     {{dashboard.creation.time}}
                                 </span>
-                                <span v-if="dashboard.creation.by" class="bu-ml-1">
+                                <span v-if="dashboard.creation.by" class="bu-ml-1" data-test-id="dashboard-creation-by">
                                     {{i18n('dashbaords.created-by', dashboard.creation.by)}}
                                 </span>
                             </div>
