@@ -1,6 +1,9 @@
-## Version 25.03.X
+## Version 25.03.XX
 Fixes:
 - [server-stats] Fix breakdown event calculation
+
+Enterprise Fixes:
+- [journeys] Update skip threshold when journeys are paused
 
 
 ## Version 25.03.17
