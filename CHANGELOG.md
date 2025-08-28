@@ -1,12 +1,16 @@
 ## Version 25.03.XX
+Fixes:
+- [server-stats] Fix breakdown event calculation
+
 Enterprise Fixes:
 - [journeys] Update skip threshold when journeys are paused
+
 
 ## Version 25.03.17
 Enterprise Fixes:
 - [ldap] Recursive user search in ldap added
 - [license] Update metric endpoint permission
-  
+
 Dependencies:
 - Bump puppeteer from 24.16.2 to 24.17.0
 
