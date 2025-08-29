@@ -1295,7 +1295,7 @@ plugins.register("/i/event/delete", async function(ob) {
             for (var z = 0; z < ob.event_key.length; z++) {
                 promises.push(common.drillDb.collection('drill_bookmarks').remove({ 'app_id': ob.appId, 'event_key': ob.event_key[z] }));
                 let hash = crypto.createHash('sha1').update(ob.event_key[z] + ob.appId).digest('hex');
-                promises.push(common.drillDb.collection("drill_meta").remove({'_id': {"$regex": `${ob.appId}_${hash}.*`}}));
+                promises.push(common.drillDb.collection("drill_meta").remove({'_id': {"$regex": `${ob.appId}_meta_${hash}.*`}}));
             }
         }
         else {
@@ -1307,7 +1307,7 @@ plugins.register("/i/event/delete", async function(ob) {
             });
             promises.push(common.drillDb.collection('drill_bookmarks').remove({ 'app_id': ob.appId, 'event_key': ob.event_key }));
             let hash = crypto.createHash('sha1').update(ob.event_key + ob.appId).digest('hex');
-            promises.push(common.drillDb.collection("drill_meta").remove({'_id': {"$regex": `${ob.appId}_${hash}.*`}}));
+            promises.push(common.drillDb.collection("drill_meta").remove({'_id': {"$regex": `^${ob.appId}_meta_${hash}.*`}}));
         }
 
         await Promise.all(promises);
