@@ -2131,9 +2131,6 @@
             else if (diff <= 2592000) {
                 text = jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400));
             }
-            else {
-                text = tooltip;
-            }
             return text;
         };
 

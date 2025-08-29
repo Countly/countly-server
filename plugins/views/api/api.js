@@ -801,7 +801,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                             }
                         }
                     }
-                    ret.lu = data2.lu;
+                    ret.lu = data2?.lu;
                     ret.running = data2.running;
                     if (ret.lu) {
                         //get difference in seconds
@@ -1218,7 +1218,8 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 if (err) {
                                     log.e(err);
                                 }
-                                if (data && data.data && data.data.u) {
+                                data = data || {};
+                                if (data.data && data.data.u) {
                                     ret_data.u = data.data.u;
                                 }
                                 else {
