@@ -841,7 +841,8 @@ countlyCommon.getTimezone = function(params) {
     else if (params.qstring.periodOffset) {
         var offset = parseInt(params.qstring.periodOffset, 10);
         offset = Math.round(offset / 60);//convert to hours
-        timezone = offset >= 0 ? "Etc/GMT-" + offset : "Etc/GMT+" + Math.abs(offset);
+        //GMT+/- is opposite. Fot +2 timezone it is GMT-2
+        timezone = offset >= 0 ? "Etc/GMT+" + offset : "Etc/GMT-" + Math.abs(offset);
     }
     else {
         timezone = params.appTimezone || "UTC";

@@ -257,9 +257,8 @@ var processToDrill = async function(params, drill_updates, callback) {
             if (currEvent.key === "[CLY]_view" && !plugins.getConfig("drill", params.app && params.app.plugins, true).record_views) {
                 continue;
             }*/
-
             if (currEvent.key === "[CLY]_view" && !(currEvent.segmentation && currEvent.segmentation.visit)) {
-                continue;
+                currEvent.key = "[CLY]_view_update";
             }
 
             /*
