@@ -118,112 +118,6 @@ export interface Content {
     specific?: { [key: string]: string|number|boolean; }[];
 }
 
-export interface AndroidMessageContent {
-    data: {
-        title?: string; // message title
-        message?: string; // message content
-        "c.i": string; // message id as string
-        "c.m"?: string; // message media url
-        "c.l"?: string; // message link url
-        "c.b"?: string; // buttons: stringified array of objects in the form of: Array<{ t: string; l: string; }>; (button text and link)
-        "c.li"?: string; // message icon
-        badge?: string; // badge: stringified badge number
-        sound?: string;
-        // keeping this here for "custom json data" and "extra user properties"
-        [key: string]: any;
-        // test: 'custom json data for android', // custom json
-        // "c.e.cc": string; // extra user property: country code
-        // "c.e.cty": string; // extra user property: city
-    }
-    // EXAMPLE:
-    // data: {
-    //     'c.i': '689607f8899e1ae6f88173cc',
-    //     'c.m': 'https://www.someurl.com/something.png',
-    //     sound: 'default',
-    //     badge: 32,
-    //     'c.l': 'https://www.someurl.com',
-    //     title: 'message title',
-    //     message: 'message content',
-    //     'c.b': [{ t: 'button text', l: 'https://www.someurl.com' } ],
-    //     test: 'custom json data',
-    //     'c.e.cc': 'us',
-    //     'c.e.cty': 'Böston 墨尔本',
-    //     'c.e.src': 'Android',
-    //     'c.li': 'test-icon'
-    // }
-}
-
-export interface IOSMessageContent {
-    aps: {
-        "mutable-content"?: number; // gets set to 1 if the message has media or buttons
-        sound?: string; // sound file name, default is 'default'
-        badge?: number; // badge number
-        alert?: {
-            title?: string; // message title
-            body?: string; // message content
-            subtitle?: string; // message subtitle
-        };
-        "content-available"?: number; // set to 1 for silent push
-    },
-    c: {
-        i: string; // message id as string
-        a?: string; // message media url
-        l?: string; // message link url
-        b?: Array<{ // buttons
-            t: string; // button text
-            l: string; // button link
-        }>;
-        e?: { // extra user properties like: country code, city, source, etc.
-            [key: string]: any;
-            // av: "0:0" // extra user property: app version
-        };
-    },
-    [key: string]: any; // custom json data
-    // NORMAL MESSAGE EXAMPLE:
-    // aps: {
-    //     'mutable-content': 1,
-    //     sound: 'default',
-    //     badge: 12,
-    //     alert: {
-    //         title: 'message title',
-    //         body: 'message content',
-    //         subtitle: 'message subtitle'
-    //     },
-    //     'content-available': 1
-    // },
-    // c: {
-    //     i: '689607f8899e1ae6f88173cc',
-    //     a: 'https://someurl.com/something.png',
-    //     l: 'https://someurl.com/',
-    //     b: [{ t: 'button text', l: 'https://www.someurl.com' }],
-    //     e: { av: '0:0' }
-    // },
-    // test: 'custom json data'
-    //
-    // SILENT MESSAGE EXAMPLE:
-    // aps: { badge: 32, 'content-available': 1 },
-    // c: {
-    //   i: '689624ae899e1ae6f88173d7',
-    //   e: { did: '426BCD17-3820-4D69-A8FC-F2C491817A74' }
-    // },
-    // test: 'custom json data'
-}
-
-export interface HuaweiMessageContent {
-    message: {
-        data: string; // JSON stringified data. should be in the form of: AndroidMessageContent.data
-        android: {};
-        token?: string[]; // Huawei device token. being included in huawei push sender.
-    }
-    // EXAMPLE:
-    // message: {
-    //   data: '{"c.i":"689607f8899e1ae6f88173cc","c.m":"https://www.someurl.com/something.png","title":"message title","message":"message content","c.b":[{"t":"message text"}]}',
-    //   android: {}
-    // }
-}
-
-export type PlatformMessageContent = AndroidMessageContent | IOSMessageContent | HuaweiMessageContent;
-
 export interface Result {
     subs?: { [key: string]: Result };
     total: number;
@@ -235,12 +129,6 @@ export interface Result {
     // for schedule: the error encountered before composing starts. this error should also change schedule's status to "failed"
     error?: ErrorObject;
 }
-
-// TODO: remove this. use self referencing type instead
-// To avoid circular referencing:
-// export type SubSubResult = BaseResult & { subs: { [key: string]: any } }; // "sub" in here is not being used
-// export type SubResult = BaseResult & { subs: { [key: string]: SubSubResult } };
-// export type Result = BaseResult & { subs: { [key: string]: SubResult } };
 
 export interface ErrorObject {
     name: string;

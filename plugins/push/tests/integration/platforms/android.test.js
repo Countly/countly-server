@@ -39,7 +39,7 @@ describe("Android integration", () => {
             language: "en",
             platform: "a",
             uid: "1",
-            message: {
+            payload: {
                 data: {
                     "c.i": "67c9bb34630cd98e0fb95a14",
                     title: "test",

@@ -14,6 +14,10 @@ const log = common.log("push:message-cache");
 }} */
 let AUTO_TRIGGER_MESSAGES = {};
 
+/**
+ * Loads auto-trigger messages from the database into memory.
+ * This function is called periodically to refresh the cache.
+ */
 async function loadAutoMessages() {
     const now = new Date;
     const messages = await common.db.collection("messages")

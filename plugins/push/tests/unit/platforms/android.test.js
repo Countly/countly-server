@@ -1,7 +1,7 @@
 /**
  * @typedef {import("../../../api/new/types/credentials").FCMCredentials} FCMCredentials
  * @typedef {import("../../../api/new/types/queue").PushEvent} PushEvent
- * @typedef {import("../../../api/new/types/proxy").ProxyConfiguration} ProxyConfiguration
+ * @typedef {import("../../../api/new/types/utils").ProxyConfiguration} ProxyConfiguration
  */
 const assert = require("assert");
 const { ObjectId } = require("mongodb");
@@ -112,7 +112,7 @@ describe("Android platform", () => {
             await send(push);
             assert(sendStub.calledWith({
                 token: push.token,
-                ...push.message
+                ...push.payload
             }));
         });
     });

@@ -8,8 +8,9 @@
  * @typedef {import('./types/message.ts').PlatformKey} PlatformKey
  * @typedef {import('./types/message.ts').PlatformEnvKey} PlatformEnvKey
  * @typedef {import('./types/message.ts').PlatformCombinedKeys} PlatformCombinedKeys
+ * @typedef {import("./types/queue.ts").AndroidPushEvent} AndroidPushEvent
  * @typedef {import('./types/credentials.ts').PlatformCredential} PlatformCredential
- * @typedef {import('./types/proxy.ts').ProxyConfiguration} ProxyConfiguration
+ * @typedef {import('./types/utils.ts').PluginConfiguration} PluginConfiguration
  * @typedef {import("mongodb").Db} MongoDb
  * @typedef {import('./types/schedule.ts').Schedule} Schedule
  * @typedef {import('./types/schedule.ts').AudienceFilter} AudienceFilter
@@ -29,16 +30,16 @@ const { createTemplate, getUserPropertiesUsedInsideMessage } = require("./lib/te
 const PLATFORM_KEYMAP = require("./constants/platform-keymap.js");
 const { buildResultObject, increaseResultStat, applyResultObject } = require("./resultor.js");
 const common = require("../../../../api/utils/common.js");
-const { loadDrillAPI, loadProxyConfiguration } = require("./lib/utils.js");
+const { loadDrillAPI, loadPluginConfiguration } = require("./lib/utils.js");
 const log = require('../../../../api/utils/common').log('push:composer');
 const { RESCHEDULABLE_DATE_TRIGGERS, scheduleMessageByDateTrigger } = require("./scheduler.js");
 const QUEUE_WRITE_BATCH_SIZE = 100;
 
 /**
- *
- * @param {MongoDb} db
- * @param {ScheduleEvent[]} scheduleEvents
- * @returns {Promise<number>}
+ * Composes push notifications for all given schedule events.
+ * @param {MongoDb} db - MongoDB database instance
+ * @param {ScheduleEvent[]} scheduleEvents - Array of schedule events to process
+ * @returns {Promise<number>} Total number of composed push notifications
  */
 async function composeAllScheduledPushes(db, scheduleEvents) {
     let totalNumberOfPushes = 0;
@@ -57,10 +58,12 @@ async function composeAllScheduledPushes(db, scheduleEvents) {
 }
 
 /**
- *
- * @param {MongoDb} db
- * @param {ScheduleEvent} scheduleEvent
- * @returns {Promise<number>}
+ * Composes push notifications for a single schedule event.
+ * Loads necessary documents, builds aggregation pipeline, creates push events,
+ * sends them to the queue, and updates the schedule and message documents.
+ * @param {MongoDb} db - MongoDB database instance
+ * @param {ScheduleEvent} scheduleEvent - Schedule event to process
+ * @returns {Promise<number>} Number of composed push notifications
  */
 async function composeScheduledPushes(db, scheduleEvent) {
     const { appId, scheduleId, messageId, timezone } = scheduleEvent
@@ -104,7 +107,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
         scheduleDoc.audienceFilter
     );
     const compileTemplate = createTemplate(messageDoc);
-    const proxy = await loadProxyConfiguration(db);
+    const pluginConfig = await loadPluginConfiguration(db);
     const creds = await loadCredentials(db, appId);
     // check if there's a missing credential
     for (let i = 0; i < messageDoc.platforms.length; i++) {
@@ -119,7 +122,7 @@ async function composeScheduledPushes(db, scheduleEvent) {
     let events = [];
     const resultObject = buildResultObject();
     const stream = createPushStream(
-        db, appDoc, messageDoc, scheduleDoc, creds, proxy, compileTemplate,
+        db, appDoc, messageDoc, scheduleDoc, creds, pluginConfig, compileTemplate,
         aggregationPipeline
     );
     for await (let push of stream) {
@@ -160,12 +163,12 @@ async function composeScheduledPushes(db, scheduleEvent) {
  * @param {Message} messageDoc - Message document
  * @param {Schedule} scheduleDoc - Schedule document
  * @param {Awaited<ReturnType<loadCredentials>>} creds - Credentials for each platform
- * @param {Awaited<ReturnType<loadProxyConfiguration>>} proxy - Proxy configuration
+ * @param {PluginConfiguration|undefined} pluginConfig - Plugin configuration
  * @param {ReturnType<createTemplate>} template - Function to create message template
  * @param {Document[]} pipeline - Aggregation pipeline to filter users
  * @returns {AsyncGenerator<PushEvent, void, void>} Push event stream
  */
-async function* createPushStream(db, appDoc, messageDoc, scheduleDoc, creds, proxy, template, pipeline) {
+async function* createPushStream(db, appDoc, messageDoc, scheduleDoc, creds, pluginConfig, template, pipeline) {
     const stream = db.collection("app_users" + appDoc._id.toString())
         .aggregate(pipeline, { allowDiskUse: true })
         .stream();
@@ -188,6 +191,9 @@ async function* createPushStream(db, appDoc, messageDoc, scheduleDoc, creds, pro
                 ...user,
                 ...(scheduleDoc.messageOverrides?.variables ?? {})
             };
+            const sendBefore = typeof pluginConfig?.messageTimeout === "number"
+                ? new Date(Date.now() + pluginConfig?.messageTimeout)
+                : undefined;
             yield /** @type {PushEvent} */({
                 appId: appDoc._id,
                 messageId: messageDoc._id,
@@ -196,11 +202,12 @@ async function* createPushStream(db, appDoc, messageDoc, scheduleDoc, creds, pro
                 token,
                 uid: user.uid,
                 platform,
+                sendBefore,
                 env,
                 language,
                 credentials: creds[platform],
-                message: template(platform, variables),
-                proxy,
+                payload: template(platform, variables),
+                proxy: pluginConfig?.proxy,
                 platformConfiguration: getPlatformConfiguration(platform, messageDoc),
                 trigger: messageDoc.triggers[0],
                 appTimezone: appDoc.timezone,
@@ -210,12 +217,15 @@ async function* createPushStream(db, appDoc, messageDoc, scheduleDoc, creds, pro
 }
 
 /**
- * @param {MongoDb} db
- * @param {Message} message
- * @param {string=} appTimezone
- * @param {string=} timezone
- * @param {AudienceFilter=} filters
- * @returns {Promise<Document[]>}
+ * Builds an aggregation pipeline to filter users based on the message and audience filters.
+ * The pipeline includes matching by platform, timezone, cohorts, geos, user-defined filters,
+ * drill queries, and capping rules.
+ * @param {MongoDb} db - MongoDB database instance
+ * @param {Message} message - Message document
+ * @param {string=} appTimezone - Application timezone
+ * @param {string=} timezone - User timezone to filter by
+ * @param {AudienceFilter=} filters - Audience filters from the schedule
+ * @returns {Promise<Document[]>} Aggregation pipeline
  */
 async function buildUserAggregationPipeline(db, message, appTimezone, timezone, filters) {
     const appId = message.app.toString();
@@ -252,11 +262,14 @@ async function buildUserAggregationPipeline(db, message, appTimezone, timezone, 
 }
 
 /**
- * @param {MongoDb} db
- * @param {AudienceFilter} filters
- * @param {string} appIdStr
- * @param {string=} appTimezone
- * @returns {Promise<Array<{ $match: { [key: string]: any } }>>}
+ * Converts audience filters into MongoDB aggregation match stages.
+ * Supports filtering by user IDs, cohort statuses, cohorts, geos, user-defined filters,
+ * drill queries, and capping rules.
+ * @param {MongoDb} db - MongoDB database instance
+ * @param {AudienceFilter} filters - Audience filters
+ * @param {string} appIdStr - Application ID as string
+ * @param {string=} appTimezone - Application timezone
+ * @returns {Promise<Array<{ $match: { [key: string]: any } }>>} Aggregation match stages
  */
 async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTimezone) {
     /** @type {Array<{ $match: { [key: string]: any } }>} */
@@ -423,9 +436,11 @@ async function convertAudienceFiltersToMatchStage(db, filters, appIdStr, appTime
 }
 
 /**
- * @param {MongoDb} db
- * @param {ObjectId} appId
- * @returns {Promise<{[key: string]: PlatformCredential}>}
+ * Loads platform credentials configured for the given app.
+ * Skips missing or demo credentials.
+ * @param {MongoDb} db - MongoDB database instance
+ * @param {ObjectId} appId - Application ID
+ * @returns {Promise<{[key: string]: PlatformCredential}>} Platform credentials
  */
 async function loadCredentials(db, appId) {
     const app = await db.collection("apps").findOne({ _id: appId });
@@ -448,9 +463,11 @@ async function loadCredentials(db, appId) {
 }
 
 /**
- * @param {PlatformKey} platform - a, i or h
+ * Extracts platform-specific configuration from the message document.
+ * Currently, only iOS configuration is supported.
+ * @param {PlatformKey} platform - Platform key (e.g., "i" for iOS)
  * @param {Message} message - Message document
- * @returns {IOSConfig|AndroidConfig|HuaweiConfig} configuration for the given platform
+ * @returns {IOSConfig|AndroidConfig|HuaweiConfig} Platform configuration
  */
 function getPlatformConfiguration(platform, message) {
     if (platform === "i") {
@@ -469,8 +486,9 @@ function getPlatformConfiguration(platform, message) {
 }
 
 /**
- * @param {Message} message
- * @returns {{[key: string]: 1}}
+ * Generates a projection object for user properties used in the message.
+ * @param {Message} message - Message document
+ * @returns {{[key: string]: 1}} Projection object for user properties
  */
 function userPropsProjection(message) {
     const props = getUserPropertiesUsedInsideMessage(message);

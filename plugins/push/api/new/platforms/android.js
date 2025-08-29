@@ -3,9 +3,8 @@
  * @typedef {import("../types/message").Content} Content
  * @typedef {import("../types/message").Message} Message
  * @typedef {import("../types/user").User} User
- * @typedef {import("../types/message").AndroidMessageContent} AndroidMessageContent
- * @typedef {import("../types/proxy").ProxyConfiguration} ProxyConfiguration
- * @typedef {import("../types/proxy").ProxyConfigurationKey} ProxyConfigurationKey
+ * @typedef {import("../types/queue").AndroidMessagePayload} AndroidMessagePayload
+ * @typedef {import("../types/utils").ProxyConfiguration} ProxyConfiguration
  * @typedef {{ proxy?: ProxyConfiguration, serviceAccount: string }} FirebaseAppConfiguration
  * @typedef {import("../types/credentials").FCMCredentials} FCMCredentials
  * @typedef {import("../types/credentials").UnvalidatedFCMCredentials} UnvalidatedFCMCredentials
@@ -86,7 +85,7 @@ async function send(pushEvent) {
     try {
         const messageId = await firebaseApp.messaging().send({
             token: pushEvent.token,
-            ...pushEvent.message
+            ...pushEvent.payload
         });
         return messageId;
     }
@@ -173,7 +172,7 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
             scheduleId: new ObjectId,
             uid: "1",
             token: Math.random() + '',
-            message: {
+            payload: {
                 data: {
                     'c.i': Math.random() + '',
                     title: 'test',
@@ -217,10 +216,10 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
  * @param {Message} messageDoc - Message document
  * @param {Content} content - Content object built from message contents in template builder
  * @param {User|{[key: string]: string;}} userProps - User object or a map of custom properties
- * @returns {AndroidMessageContent} Android message payload
+ * @returns {AndroidMessagePayload} Android message payload
  */
 function mapMessageToPayload(messageDoc, content, userProps) {
-    /** @type {AndroidMessageContent} */
+    /** @type {AndroidMessagePayload} */
     const payload = {
         data: {
             "c.i": messageDoc._id.toString(),

@@ -3,12 +3,13 @@
  * @typedef {PersonalizationObject & { i: number; }} PersonalizationObjectWithIndex
  * @typedef {{ content: Content; pers: Map<PersonalizableField, PersonalizationObjectWithIndex[]>; }} ContentWithPersonalization
  * @typedef {import("../types/message").Content} Content
- * @typedef {import("../types/message").PlatformMessageContent} PlatformMessageContent
+ * @typedef {import("../types/queue").PlatformMessagePayload} PlatformMessagePayload
  * @typedef {import("../types/message").Message} Message
  * @typedef {import("../types/message").PlatformKey} PlatformKey
  * @typedef {import("../types/user").User} User
  * @typedef {"title"|"message"} PersonalizableField
  */
+
 const { dot } = require('../../../../../api/utils/common');
 const { mapMessageToPayload: mapMessageToAndroidPayload } = require("../platforms/android");
 const { mapMessageToPayload: mapMessageToIOSPayload } = require("../platforms/ios");
@@ -18,7 +19,10 @@ const { removeUPFromUserPropertyKey } = require("./utils");
 const PERSONALIZABLE_CONTENT_FIELDS = ["title", "message"];
 
 /**
- * @param {Message} messageDoc
+ * Creates a message template function that compiles message content based on user's platform and properties.
+ * The template function takes a platform key and user properties, and returns the compiled message payload.
+ * @param {Message} messageDoc - Message document containing contents.
+ * @returns {(platform: PlatformKey, userProps: User|{[key: string]: string;}) => PlatformMessagePayload} Template function to compile message content.
  */
 function createTemplate(messageDoc) {
     const {
@@ -32,7 +36,7 @@ function createTemplate(messageDoc) {
      * Compiles the template for the given user's platform and properties.
      * @param {PlatformKey} platform - key for the platform: "a", "i" or "h"
      * @param {User|{[key: string]: string;}} userProps - app user properties with push token populated and custom variables
-     * @returns {PlatformMessageContent} compiled message content
+     * @returns {PlatformMessagePayload} compiled message content
      */
     return function(platform, userProps) {
         const platformSpecificContent = contentsByPlatform.get(platform);

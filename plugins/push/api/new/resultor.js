@@ -15,13 +15,17 @@ const { ObjectId } = require("mongodb");
 const { InvalidDeviceToken } = require('./lib/error.js');
 const { updateInternalsWithResults, sanitizeMongoPath } = require("./lib/utils.js");
 const log = require('../../../../api/utils/common').log('push:resultor');
-
 /** @type {Stat[]} */
 const STAT_KEYS = ["total", "sent", "failed", "actioned"];
 
 /**
- * @param {MongoDb} db
- * @param {ResultEvent[]} results
+ * Processes the given results, updates the relevant Schedule and Message
+ * documents, saves the results into message_results collection, clears
+ * invalid tokens from app_users{appId} and push_{appId} collections and
+ * records sent dates into push_{appId} collections.
+ * @param {MongoDb} db - MongoDB database instance
+ * @param {ResultEvent[]} results - Array of result events to process
+ * @returns {Promise<void>}
  */
 async function saveResults(db, results) {
     try {
@@ -104,9 +108,9 @@ async function saveResults(db, results) {
  * (eg: "tkap" for an android production token) from app_users{appId} collection.
  * This should be ran after receving an InvalidDeviceToken error from the
  * provider during PushEvent processing.
- * @param {MongoDb} db
- * @param {{appId: string; uid: string; platformAndEnv: string;}[]} invalidTokens
- * @returns {Promise<BulkWriteResult[]|undefined>}
+ * @param {MongoDb} db - MongoDB database instance
+ * @param {{appId: string; uid: string; platformAndEnv: string;}[]} invalidTokens - Array of invalid tokens to clear
+ * @returns {Promise<BulkWriteResult[]|undefined>} Promise resolving to the result of bulk write operations
  */
 async function clearInvalidTokens(db, invalidTokens) {
     /** @type {{[appId: string]: { [platformAndEnv: string]: string[] }}} */
@@ -184,9 +188,10 @@ async function clearInvalidTokens(db, invalidTokens) {
  *     id: "ios development token"
  *   }
  * }
- * @param {MongoDb} db
- * @param {ResultEvent[]} sentPushEvents
- * @returns {Promise<BulkWriteResult[]|undefined>}
+ * @param {MongoDb} db - MongoDB database instance
+ * @param {ResultEvent[]} sentPushEvents - Array of sent push events
+ * @param {number=} date - Date to record as sent date (default: current date
+ * @returns {Promise<BulkWriteResult[]|undefined>} Promise resolving to the result of bulk write operations
  */
 async function recordSentDates(db, sentPushEvents, date = Date.now()) {
     /** @type {{[appId: string]: { [messageId: string]: string[] }}} */
@@ -244,7 +249,9 @@ async function recordSentDates(db, sentPushEvents, date = Date.now()) {
 }
 
 /**
- * @returns {Result}
+ * Builds and returns a new Result object with all stats initialized to zero
+ * and empty errors and sub results.
+ * @returns {Result} New Result object
  */
 function buildResultObject() {
     return {
@@ -258,12 +265,17 @@ function buildResultObject() {
 }
 
 /**
- * @param {Result} resultObject
- * @param {PlatformKey} platform
- * @param {string} language
- * @param {Stat} stat
- * @param {string=} error
- * @param {number=} amount
+ * Increases the specified stat in the given Result object and its
+ * sub-results for the specified platform and language. If the stat is "failed",
+ * it also increments the count for the given error message in the errors object.
+ * If the platform or language sub-results do not exist, they are created.
+ * @param {Result} resultObject - The Result object to update
+ * @param {PlatformKey} platform - The platform key (e.g., "i", "a", "h")
+ * @param {string} language - The language code (e.g., "en")
+ * @param {Stat} stat - The stat to increase ("total", "sent", "failed", or "actioned")
+ * @param {string=} error - The error message (required if stat is "failed")
+ * @param {number=} amount - The amount to increase the stat by (default is 1)
+ * @returns {void}
  */
 function increaseResultStat(
     resultObject,
@@ -306,10 +318,13 @@ function increaseResultStat(
 }
 
 /**
- * @param {Result} result
- * @param {{[key: string]: number}} query
- * @param {string} path
- * @returns {{[key: string]: number}}
+ * Recursively builds an update query object for MongoDB to increment
+ * the stats and errors of the given Result object and its sub-results.
+ * The query object can be used with the $inc operator in an update operation.
+ * @param {Result} result - The Result object to build the query from
+ * @param {{[key: string]: number}} query - The query object to populate (default is an empty object)
+ * @param {string} path - The current path in the Result object (default is "result")
+ * @returns {{[key: string]: number}} The populated query object
  */
 function buildUpdateQueryForResult(result, query = {}, path = "result") {
     for (let i = 0; i < STAT_KEYS.length; i++) {
@@ -330,11 +345,17 @@ function buildUpdateQueryForResult(result, query = {}, path = "result") {
 }
 
 /**
- * @param {MongoDb} db
- * @param {ObjectId} scheduleId
- * @param {ObjectId} messageId
- * @param {Result} resultObject
- * @param {{scheduled?: ScheduleEvent[]; composed?: ScheduleEvent[];}=} events
+ * Applies the given Result object to the Schedule and Message documents
+ * identified by the provided scheduleId and messageId. It updates the stats
+ * in the Result object, appends any provided events to the Schedule's events,
+ * and updates the Schedule's status based on the progress of scheduled and
+ * composed events.
+ * @param {MongoDb} db - MongoDB database instance
+ * @param {ObjectId} scheduleId - The ID of the Schedule document to update
+ * @param {ObjectId} messageId - The ID of the Message document to update
+ * @param {Result} resultObject - The Result object containing stats to apply
+ * @param {{scheduled?: ScheduleEvent[]; composed?: ScheduleEvent[];}=} events - Optional events to append to the Schedule's events
+ * @returns {Promise<void>} Promise that resolves when the operation is complete
  */
 async function applyResultObject(db, scheduleId, messageId, resultObject, events) {
     // update the result object
@@ -411,7 +432,6 @@ async function applyResultObject(db, scheduleId, messageId, resultObject, events
         }
     }]);
 }
-
 
 module.exports = {
     STAT_KEYS,

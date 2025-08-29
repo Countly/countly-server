@@ -8,7 +8,7 @@ const { send: androidSend } = require("./platforms/android.js");
 const { send: iosSend } = require("./platforms/ios.js");
 const { send: huaweiSend } = require("./platforms/huawei.js");
 const { sendResultEvents } = require("./lib/kafka.js");
-const { SendError } = require("./lib/error.js");
+const { SendError, TooLateToSend } = require("./lib/error.js");
 const log = require('../../../../api/utils/common').log('push:sender');
 
 /**
@@ -16,7 +16,7 @@ const log = require('../../../../api/utils/common').log('push:sender');
  * Each push event is processed based on its platform type (iOS, Android, Huawei).
  * The function waits for all push events to be processed and returns an array of result events.
  * If any push event fails, it captures the error and includes it in the result.
- * If `handleResults` is false, the function will not send the results to Kafka.
+ * If `autoHandleResults` is false, the function will not send the results to Kafka.
  * @param {PushEvent[]} pushes - Array of push events to send
  * @param {boolean} autoHandleResults - If false, the function will not send the results to Kafka.
  * @returns {Promise<ResultEvent[]>} A promise that resolves to an array of result events.
@@ -25,6 +25,11 @@ async function sendAllPushes(pushes, autoHandleResults = true) {
     /** @type {Promise<string>[]} */
     const promises = [];
     for (let i = 0; i < pushes.length; i++) {
+        const push = pushes[i];
+        if (push.sendBefore && push.sendBefore.getTime() < Date.now()) {
+            promises.push(Promise.reject(new TooLateToSend));
+            continue;
+        }
         switch (pushes[i].platform) {
         case "i":
             promises.push(iosSend(pushes[i]));

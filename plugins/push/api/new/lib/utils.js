@@ -1,6 +1,7 @@
 /**
- * @typedef {import("../types/proxy").ProxyConfiguration} ProxyConfiguration
- * @typedef {import("../types/proxy").ProxyConfigurationKey} ProxyConfigurationKey
+ * @typedef {import("../types/utils").PluginDocument} PluginDocument
+ * @typedef {import("../types/utils").PluginConfiguration} PluginConfiguration
+ * @typedef {import("../types/utils").ProxyConfiguration} ProxyConfiguration
  * @typedef {import("../types/credentials").APNP12Credentials} APNP12Credentials
  * @typedef {import("../types/credentials").TLSKeyPair} TLSKeyPair
  * @typedef {import("../types/message").PlatformKey} PlatformKey
@@ -19,26 +20,34 @@ const { updateDataPoints } = require('../../../../server-stats/api/parts/stats')
 const platforms = require('../constants/platform-keymap');
 
 /**
- * Loads the proxy configuration from the MongoDB database.
- * This function retrieves the proxy settings from the 'plugins' collection in the database.
- * It checks for the presence of the 'push' configuration and extracts the proxy settings.
- * If the proxy settings are not defined or incomplete, it returns undefined.
- * The function returns a ProxyConfiguration object containing the host, port, user, pass, and auth properties.
- * The auth property is set to true if the proxy is authorized, otherwise it is set to false.
- * @param {MongoDb} db - The MongoDB database instance to query for the proxy configuration.
- * @returns {Promise<ProxyConfiguration|undefined>} A promise that resolves to a ProxyConfiguration object or undefined if the configuration is not found.
+ * Loads the plugin configuration from the MongoDB database.
+ * @param {MongoDb} db - The MongoDB database instance to query for the plugin configuration.
+ * @returns {Promise<PluginConfiguration|undefined>} The plugin configuration object or undefined if not found.
  */
-async function loadProxyConfiguration(db) {
-    /** @type {import("mongodb").Collection<{ _id: string; push?: { proxyhost: string, proxyport: string; proxyuser: string; proxypass: string; proxyunauthorized: boolean; } }>} */
+async function loadPluginConfiguration(db) {
+    /** @type {import("mongodb").Collection<PluginDocument>} */
     const col = db.collection('plugins');
     const plugins = await col.findOne({ _id: "plugins" });
     const pushConfig = plugins?.push;
-    if (!pushConfig || !pushConfig.proxyhost || !pushConfig.proxyport) {
+    if (!pushConfig) {
         return;
     }
-    const { proxyhost: host, proxyport: port, proxyuser: user,
-        proxypass: pass, proxyunauthorized: unauth } = pushConfig;
-    return { host, port, auth: !(unauth || false), pass, user }
+    /** @type {PluginConfiguration} */
+    const config = {
+        messageTimeout: typeof pushConfig.message_timeout === "number"
+            ? pushConfig.message_timeout
+            : undefined
+    };
+    if (pushConfig.proxyhost && pushConfig.proxyport) {
+        config.proxy = {
+            host: pushConfig.proxyhost,
+            port: pushConfig.proxyport,
+            auth: !(pushConfig.proxyunauthorized || false),
+            user: pushConfig.proxyuser,
+            pass: pushConfig.proxypass
+        };
+    }
+    return config;
 }
 
 /**
@@ -69,7 +78,7 @@ function buildProxyUrl(config) {
  * @returns {string} The serialized string representation of the ProxyConfiguration.
  */
 function serializeProxyConfig(config) {
-    /** @type {ProxyConfigurationKey[]} */
+    /** @type {Array<keyof ProxyConfiguration>} */
     const KEY_ORDER = ["auth", "host", "pass", "port", "user"];
     return config
         ? KEY_ORDER.map(key => config[key]).join("-")
@@ -211,7 +220,7 @@ function removeUPFromUserPropertyKey(key) {
 /**
  * Guesses the platform from the user agent header.
  * @param {string} userAgent - the user agent string to analyze
- * @returns {string=} the guessed platform key ('a' for Android, 'i' for iOS, 'h' for Huawei)
+ * @returns {PlatformKey=} the guessed platform key ('a' for Android, 'i' for iOS, 'h' for Huawei)
  */
 function guessThePlatformFromUserAgentHeader(userAgent) {
     if (userAgent.includes('Android') && userAgent.includes('Huawei')) {
@@ -268,7 +277,7 @@ module.exports = {
     sanitizeMongoPath,
     flattenObject,
     removeUPFromUserPropertyKey,
-    loadProxyConfiguration,
     guessThePlatformFromUserAgentHeader,
     extractTokenFromQuerystring,
+    loadPluginConfiguration,
 }

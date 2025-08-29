@@ -16,7 +16,7 @@ const { createMockedMongoDb } = require("../mock/mongo");
 const { createSilentLogger } = require("../mock/logger");
 const common = require("../../../../api/utils/common");
 const proxyquire = require("proxyquire");
-const { loadProxyConfiguration } = require("../../api/new/lib/utils");
+const { loadPluginConfiguration } = require("../../api/new/lib/utils");
 let {
     collection,
     db,
@@ -111,31 +111,38 @@ describe("Push composer", async () => {
         });
     });
 
-    describe("Loading proxy configuration", () => {
-        it("shouldn't return anything when proxy is not configured", async () => {
+    describe("Loading plugin configuration", () => {
+        it("shouldn't return anything when plugin is not configured", async () => {
             collection.findOne.resolves({push: {}});
-            const config = await loadProxyConfiguration(db);
+            const pluginConfig = await loadPluginConfiguration(db);
             assert(db.collection.calledWith("plugins"));
             assert(collection.findOne.calledWith({ _id: "plugins" }));
-            assert(config === undefined);
+            assert(pluginConfig === undefined);
         });
-        it("return the proxy config", async () => {
-            const push = {
-                proxyhost: "host",
-                proxyport: "port",
-                proxyuser: "user",
-                proxypass: "pass",
-                proxyunauthorized: true
+        it("return the plugin config", async () => {
+            const pluginDocument = {
+                _id: "plugins",
+                push: {
+                    proxyhost: "host",
+                    proxyport: "port",
+                    proxyuser: "user",
+                    proxypass: "pass",
+                    proxyunauthorized: true,
+                    message_timeout: 15000,
+                }
             };
             const result = {
-                host: "host",
-                port: "port",
-                user: "user",
-                pass: "pass",
-                auth: false
+                messageTimeout: 15000,
+                proxy: {
+                    host: "host",
+                    port: "port",
+                    user: "user",
+                    pass: "pass",
+                    auth: false
+                }
             };
-            collection.findOne.resolves({ push });
-            const config = await loadProxyConfiguration(db);
+            collection.findOne.resolves(pluginDocument);
+            const config = await loadPluginConfiguration(db);
             assert(db.collection.calledWith("plugins"));
             assert(collection.findOne.calledWith({ _id: "plugins" }));
             assert.deepStrictEqual(config, result);
@@ -290,7 +297,7 @@ describe("Push composer", async () => {
             scheduleCollection.findOne.resolves(schedule);
             credsCollection.findOne.resolves(creds);
             const user = mockData.appUser();
-            /** @type {Omit<PushEvent, "message">} */
+            /** @type {Omit<PushEvent, "payload">} */
             const event = {
                 appId,
                 messageId,
@@ -313,7 +320,7 @@ describe("Push composer", async () => {
                 { ...user, uid: "2", },
                 { ...user, uid: "3", }
             ];
-            /** @type {Array<Omit<PushEvent, "message">>} */
+            /** @type {Array<Omit<PushEvent, "payload">>} */
             const events = [
                 { ...event, uid: users[0].uid, token: /** @type {string} */(users[0].tk?.[0].tk.ap) },
                 { ...event, uid: users[1].uid, token: /** @type {string} */(users[1].tk?.[0].tk.ap) },
@@ -328,9 +335,9 @@ describe("Push composer", async () => {
             aggregationCursor.stream.returns(/** @type {Readable & AsyncIterable<User>} */(iterator));
             const result = await composeScheduledPushes(db, scheduleEvent);
             const arg = mockSendPushEvents.getCall(0).firstArg?.map(
-                /** @type {(a: PushEvent) => Omit<PushEvent, "messages">} */(a => {
-                    delete a.message;
-                    return a;
+                /** @type {(a: PushEvent) => Omit<PushEvent, "paylaod">} */(a => {
+                    const { payload, ...ret } = a;
+                    return ret;
                 })
             );
             assert(arg);

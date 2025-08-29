@@ -1,4 +1,5 @@
-const { createTemplate, createContentMap, compilePersonalizableContent, sanitizeUserProperty, getUserPropertiesUsedInsideMessage } = require("../../../api/new/lib/template");
+const { createTemplate, createContentMap, compilePersonalizableContent, getUserPropertiesUsedInsideMessage } = require("../../../api/new/lib/template");
+const { removeUPFromUserPropertyKey } = require("../../../api/new/lib/utils");
 const assert = require("assert");
 const { describe, it } = require("mocha");
 const mockData = require("../../mock/data");
@@ -10,7 +11,7 @@ describe("Message template", () => {
     });
 
     it("should remove the `up.` from a user property key", () => {
-        assert.strictEqual(sanitizeUserProperty("up.lorem"), "lorem");
+        assert.strictEqual(removeUPFromUserPropertyKey("up.lorem"), "lorem");
     });
 
     it("should correctly map message content into desired output when message is parametric", () => {

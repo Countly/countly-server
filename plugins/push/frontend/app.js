@@ -15,7 +15,6 @@ module.exports = {
         db.collection('push').createIndexes([
             {name: 'main', key: {_id: 1, m: 1, p: 1, f: 1}},
         ]).catch(() => {});
-        console.log(platformEnvCombinedKeys);
 
         db.collection('apps').find().toArray(function(err, apps) {
             if (apps && apps.length) {

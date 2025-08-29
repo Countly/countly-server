@@ -11,7 +11,7 @@ const common = require('../../../api/utils/common'),
 const { validateCredentials: validateAndroidCredentials } = require("./new/platforms/android");
 const { validateCredentials: validateIOSCredentials } = require("./new/platforms/ios");
 const { validateCredentials: validateHuaweiCredentials } = require("./new/platforms/huawei");
-const { loadProxyConfiguration } = require('./new/lib/utils');
+const { loadPluginConfiguration } = require('./new/lib/utils');
 const { extractTokenFromQuerystring } = require("./new/lib/utils");
 const platforms = require("./new/constants/platform-keymap.js");
 const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
@@ -274,15 +274,15 @@ module.exports.onAppPluginsUpdate = async({params, app, config}) => {
             if (credentialTypes.includes(c.type)) {
                 let creds, view;
                 try {
-                    const proxyConfig = await loadProxyConfiguration(common.db);
+                    const pluginConfig = await loadPluginConfiguration(common.db);
                     if (c.type === "fcm") {
-                        ({ creds, view } = await validateAndroidCredentials(c, proxyConfig));
+                        ({ creds, view } = await validateAndroidCredentials(c, pluginConfig?.proxy));
                     }
                     else if (c.type === "hms") {
-                        ({ creds, view } = await validateHuaweiCredentials(c, proxyConfig));
+                        ({ creds, view } = await validateHuaweiCredentials(c, pluginConfig?.proxy));
                     }
                     else {
-                        ({ creds, view } = await validateIOSCredentials(c, proxyConfig));
+                        ({ creds, view } = await validateIOSCredentials(c, pluginConfig?.proxy));
                     }
                     // insert/update new credentials while removing old ones
                     if (pushcfg[p] && pushcfg[p]._id) {

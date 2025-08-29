@@ -44,7 +44,7 @@ describe("Huawei integration", () => {
             language: "en",
             platform: "h",
             uid: "1",
-            message: {
+            payload: {
                 message: {
                     data: '{"c.i":"67e3da4a7818317f3db65ccd","title":"xxx","message":"xxx"}',
                     android: {},

@@ -31,11 +31,12 @@ const log = require('../../../../../api/utils/common').log('push:kafka');
 let PRODUCER;
 
 /**
- * Connects to the kafka broker and creates the required topics
- * @param {PushEventHandler} onPushMessages function to call when there's a PushEvent in the PUSH_MESSAGES_TOPIC topic
- * @param {ScheduleEventHandler} onMessageSchedules function to call when there's a
- * @param {ResultEventHandler} onMessageResults
- * @param {AutoTriggerEventHandler} onAutoTriggerEvents
+ * Connects to the kafka broker and creates the required topics.
+ * Also sets up consumers for the topics and calls the provided handlers when messages are received.
+ * @param {PushEventHandler} onPushMessages - function to call when there's a PushEvent in the PUSH_MESSAGES_TOPIC topic
+ * @param {ScheduleEventHandler} onMessageSchedules - function to call when there's a
+ * @param {ResultEventHandler} onMessageResults - function to call when there's a ResultEvent in the MESSAGE_RESULTS_TOPIC topic
+ * @param {AutoTriggerEventHandler} onAutoTriggerEvents - function to call when there's an AutoTriggerEvent in the AUTO_TRIGGER_TOPIC topic
  * @returns {Promise<void>}
  */
 async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResults, onAutoTriggerEvents) {
@@ -104,8 +105,10 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
 }
 
 /**
- *
+ * Sends schedule events to the broker.
  * @param {ScheduleEvent[]} scheduleEvents - message schedules to send to broker
+ * @returns {Promise<void>}
+ * @throws {Error} if the producer is not initialized
  */
 async function sendScheduleEvents(scheduleEvents) {
     if (!PRODUCER) {
@@ -130,8 +133,10 @@ async function sendScheduleEvents(scheduleEvents) {
 }
 
 /**
- *
- * @param {PushEvent[]} pushes
+ * Sends push events to the broker.
+ * @param {PushEvent[]} pushes - push events to send to broker
+ * @returns {Promise<void>}
+ * @throws {Error} if the producer is not initialized
  */
 async function sendPushEvents(pushes) {
     if (!PRODUCER) {
@@ -157,7 +162,10 @@ async function sendResultEvents(results) {
 }
 
 /**
+ * Sends auto trigger events to the broker.
  * @param {AutoTriggerEvent[]} autoTriggerEvents
+ * @returns {Promise<void>}
+ * @throws {Error} if the producer is not initialized
  */
 async function sendAutoTriggerEvents(autoTriggerEvents) {
     if (!PRODUCER) {

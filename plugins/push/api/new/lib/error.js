@@ -25,6 +25,19 @@ class SendError extends PushError {
     }
 }
 /**
+ * This error indicates that the notification could not be sent in time.
+ * Being thrown in the `sender`.
+ */
+class TooLateToSend extends SendError {
+    /**
+     * @param {string} [message]
+     * @param {string=} response
+     */
+    constructor(message = "The notification could not be sent in time.", response = "Not sent") {
+        super(message, response);
+    }
+}
+/**
  * Generic unexpected error when we cannot make any sense of the response from the provider.
  */
 class InvalidResponse extends SendError {}
@@ -118,10 +131,10 @@ const HMSErrors = {
 
 module.exports = {
     PushError,
-
     InvalidCredentials,
 
     SendError,
+    TooLateToSend,
     InvalidResponse,
     InvalidDeviceToken,
 

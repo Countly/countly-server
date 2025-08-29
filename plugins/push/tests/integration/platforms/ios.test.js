@@ -41,7 +41,7 @@ describe("IOS integration", () => {
             language: "en",
             platform: "i",
             uid: "1",
-            message: {
+            payload: {
                 aps: {
                     alert: {
                         title: "testa",

@@ -1,14 +1,14 @@
 /**
  * @typedef {import("../types/message.ts").Message} Message
  * @typedef {import("../types/message.ts").Content} Content
- * @typedef {import("../types/message.ts").IOSMessageContent} IOSMessageContent
+ * @typedef {import("../types/queue.ts").IOSMessagePayload} IOSMessagePayload
  * @typedef {import("../types/user.ts").User} User
  * @typedef {import("../types/queue.ts").PushEvent} PushEvent
  * @typedef {import("../types/queue.ts").IOSConfig} IOSConfig
  * @typedef {import("../types/credentials.ts").APNCredentials} APNCredentials
  * @typedef {import("../types/credentials.ts").APNP12Credentials} APNP12Credentials
  * @typedef {import("../types/credentials.ts").APNP8Credentials} APNP8Credentials
- * @typedef {import("../types/proxy.ts").ProxyConfiguration} ProxyConfiguration
+ * @typedef {import("../types/utils.ts").ProxyConfiguration} ProxyConfiguration
  * @typedef {{ token: string; createdAt: number; }} JWTCache
  * @typedef {{ agent: http2Wrapper.proxies.Http2OverHttp; lastUsedAt: number; }} ProxyCache
  * @typedef {import("../types/credentials.ts").TLSKeyPair} TLSKeyPair
@@ -321,7 +321,7 @@ async function send(pushEvent) {
                 );
             });
         });
-        request.end(JSON.stringify(pushEvent.message));
+        request.end(JSON.stringify(pushEvent.payload));
     });
 }
 
@@ -460,7 +460,7 @@ async function credentialTest(creds, proxyConfig) {
             scheduleId: new ObjectId,
             uid: "1",
             token: Math.random() + '',
-            message: {
+            payload: {
                 aps: {
                     sound: 'default',
                     alert: {
@@ -499,10 +499,10 @@ async function credentialTest(creds, proxyConfig) {
  * @param {Message} messageDoc - Message document
  * @param {Content} content - Content object built from message contents in template builder
  * @param {User|{[key: string]: string;}} userProps - User object or a map of custom properties
- * @returns {IOSMessageContent} IOS message payload
+ * @returns {IOSMessagePayload} IOS message payload
  */
 function mapMessageToPayload(messageDoc, content, userProps) {
-    /** @type {IOSMessageContent} */
+    /** @type {IOSMessagePayload} */
     const payload = {
         aps: {},
         c: { i: messageDoc._id.toString() }

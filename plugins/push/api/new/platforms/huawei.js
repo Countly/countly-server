@@ -2,10 +2,10 @@
  * @typedef {import("../types/message.ts").Message} Message
  * @typedef {import("../types/message.ts").Content} Content
  * @typedef {import("../types/user.ts").User} User
- * @typedef {import("../types/message.ts").HuaweiMessageContent} HuaweiMessageContent
+ * @typedef {import("../types/queue.ts").HuaweiMessagePayload} HuaweiMessagePayload
  * @typedef {import("../types/credentials.ts").HMSCredentials} HMSCredentials
  * @typedef {import("../types/credentials.ts").UnvalidatedHMSCredentials} UnvalidatedHMSCredentials
- * @typedef {import("../types/proxy.ts").ProxyConfiguration} ProxyConfiguration
+ * @typedef {import("../types/utils.ts").ProxyConfiguration} ProxyConfiguration
  * @typedef {import("../types/queue.ts").PushEvent} PushEvent
  * @typedef {{ token?: string; expiryDate?: number; promise?: Promise<string>; }} TokenCache
  */
@@ -141,8 +141,8 @@ async function send(pushEvent) {
             rejectUnauthorized: pushEvent.proxy.auth,
         });
     }
-    const huaweiContent = /** @type {HuaweiMessageContent} */(
-        pushEvent.message
+    const huaweiContent = /** @type {HuaweiMessagePayload} */(
+        pushEvent.payload
     );
     huaweiContent.message.token = [pushEvent.token];
     const payload = JSON.stringify(huaweiContent);
@@ -254,7 +254,7 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
             scheduleId: new ObjectId,
             uid: "1",
             token: Math.random() + '',
-            message: {
+            payload: {
                 message: {
                     data: '{"c.i":"' + Math.random() + '","title":"test","message":"test"}',
                     android: {}
@@ -287,11 +287,11 @@ async function validateCredentials(unvalidatedCreds, proxyConfig) {
  * @param {Message} messageDoc - Message document
  * @param {Content} content - Content object built from message contents in template builder
  * @param {User|{[key: string]: string;}} userProps - User object or a map of custom properties
- * @returns {HuaweiMessageContent} Huawei message payload
+ * @returns {HuaweiMessagePayload} Huawei message payload
  */
 function mapMessageToPayload(messageDoc, content, userProps) {
     const androidPayload = mapMessageToAndroidPayload(messageDoc, content, userProps);
-    /** @type {HuaweiMessageContent} */
+    /** @type {HuaweiMessagePayload} */
     const payload = {
         message: {
             data: JSON.stringify(androidPayload.data),

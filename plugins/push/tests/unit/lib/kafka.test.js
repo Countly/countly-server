@@ -73,12 +73,20 @@ describe("Kafka queue", () => {
                     scheduleId,
                     uid: "1",
                     token: "token",
-                    message: "message",
+                    payload: {
+                        aps: {
+                        },
+                        c: {
+                            i: messageId.toString()
+                        }
+                    },
                     platform: "i",
                     env: "p",
                     language: "en",
                     saveResult: true,
-                    platformConfiguration: {},
+                    platformConfiguration: {
+                        setContentAvailable: false
+                    },
                     credentials: {
                         _id: new ObjectId,
                         serviceAccountFile: "service account",
@@ -163,12 +171,19 @@ describe("Kafka queue", () => {
                 scheduleId,
                 uid: "1",
                 token: "token",
-                message: "message",
+                payload: {
+                    aps: {},
+                    c: {
+                        i: messageId.toString()
+                    }
+                },
                 platform: "i",
                 env: "p",
                 language: "en",
                 saveResult: true,
-                platformConfiguration: {},
+                platformConfiguration: {
+                    setContentAvailable: false
+                },
                 credentials: {
                     _id: new ObjectId,
                     serviceAccountFile: "service account",

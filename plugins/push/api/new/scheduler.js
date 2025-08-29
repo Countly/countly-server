@@ -34,9 +34,9 @@ const NUMBER_OF_SCHEDULES_AHEAD_OF_TIME = 5;
 /**
  * Schedules the provided message to be sent on the next calculated date,
  * determined by the message's triggering properties.
- * @param   {MongoDb}  db        - mongodb database object
- * @param   {ObjectId} messageId - message document from messages collection
- * @returns {Promise<Schedule[]|undefined>} the created Schedule documents from message_schedules collection
+ * @param {MongoDb} db - Mongodb database object
+ * @param {ObjectId} messageId - Message document from messages collection
+ * @returns {Promise<Schedule[]|undefined>} The created Schedule documents from message_schedules collection
  */
 async function scheduleMessageByDateTrigger(db, messageId) {
     /** @type {MessageCollection} */
@@ -127,9 +127,9 @@ async function scheduleMessageByDateTrigger(db, messageId) {
 
 /**
  * Schedules messages based on auto trigger events (cohort and event).
- * @param {MongoDb} db
- * @param {AutoTriggerEvent[]} autoTriggerEvents
- * @returns {Promise<Schedule[]>}
+ * @param {MongoDb} db - Mongodb database object
+ * @param {AutoTriggerEvent[]} autoTriggerEvents - List of auto trigger events
+ * @returns {Promise<Schedule[]>} The created Schedule documents from message_schedules collection
  */
 async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
     const messageFilters = mergeAutoTriggerEvents(autoTriggerEvents);
@@ -223,16 +223,16 @@ async function scheduleMessageByAutoTriggers(db, autoTriggerEvents) {
  * Creates a schedule for the message to be sent at the given date.
  * This function is used in both auto and date trigger event handlers.
  * API (tx) triggers uses this directly to schedule messages.
- * @param {MongoDb}           db                 - mongodb database object
- * @param {ObjectId}          appId              - ObjectId of the app
- * @param {ObjectId}          messageId          - ObjectId of the message
- * @param {Date}              scheduledTo        - Date to schedule this message to. UTC user's schedule date when timezone aware
- * @param {boolean}           timezoneAware      - set true if this is going to be scheduled for each timezone
- * @param {number=}           schedulerTimezone  - timezone of the scheduler
- * @param {boolean=}          rescheduleIfPassed - true if we want to reschedule to next day if the date is in the past
- * @param {AudienceFilter=}   audienceFilter     - user ids from app_users{appId} collection
- * @param {MessageOverrides=} messageOverrides   - overrides for the message (content, parameters, etc.)
- * @returns {Promise<Schedule>} created Schedule document from message_schedules collection
+ * @param {MongoDb} db - mongodb database object
+ * @param {ObjectId} appId - ObjectId of the app
+ * @param {ObjectId} messageId - ObjectId of the message
+ * @param {Date} scheduledTo - Date to schedule this message to. UTC user's schedule date when timezone aware
+ * @param {boolean} timezoneAware - Set true if this is going to be scheduled for each timezone
+ * @param {number=} schedulerTimezone - Timezone of the scheduler
+ * @param {boolean=} rescheduleIfPassed - True if we want to reschedule to next day if the date is in the past
+ * @param {AudienceFilter=} audienceFilter - User ids from app_users{appId} collection
+ * @param {MessageOverrides=} messageOverrides - Overrides for the message (content, parameters, etc.)
+ * @returns {Promise<Schedule>} Created Schedule document from message_schedules collection
  */
 async function createSchedule(
     db,
@@ -284,9 +284,11 @@ async function createSchedule(
 }
 
 /**
- *
- * @param {Schedule} messageSchedule
- * @returns {Promise<ScheduleEvent[]>}
+ * Creates schedule events for the given message schedule.
+ * If the message schedule is timezone aware, it creates multiple events for
+ * each timezone offset.
+ * @param {Schedule} messageSchedule - Schedule document from message_schedules collection
+ * @returns {Promise<ScheduleEvent[]>} Created schedule events
  */
 async function createScheduleEvents(messageSchedule) {
     /** @type {ScheduleEvent[]} */
@@ -337,11 +339,11 @@ async function createScheduleEvents(messageSchedule) {
 }
 
 /**
- *
- * @param {Date} date - date to adjust
- * @param {number} offset - in minutes
- * @param {number} time - in milliseconds (hours * 60 * 60 + minutes * 60 + seconds) * 1000
- * @returns {Date}
+ * Adjusts the given date by the timezone offset and sets the time.
+ * @param {Date} date - Base date
+ * @param {number} offset - Timezone offset in minutes
+ * @param {number} time - Time in milliseconds from midnight
+ * @returns {Date} Adjusted date
  */
 function tzOffsetAdjustedTime(date, offset, time) {
     return moment.utc(date.getTime())
@@ -353,10 +355,10 @@ function tzOffsetAdjustedTime(date, offset, time) {
 }
 
 /**
- *
- * @param {RecurringTrigger} trigger
- * @param {Date=} startFrom
- * @returns {Date=}
+ * Finds the next matching date for the given recurring trigger.
+ * @param {RecurringTrigger} trigger - Recurring trigger object
+ * @param {Date=} startFrom - Date to start searching from (default: now)
+ * @returns {Date=} Next matching date or undefined if not found
  */
 function findNextMatchForRecurring(trigger, startFrom = new Date) {
     // to prevent mutation:
@@ -451,10 +453,10 @@ function findNextMatchForRecurring(trigger, startFrom = new Date) {
 }
 
 /**
- *
- * @param {MultiTrigger} trigger
- * @param {Date=} after
- * @returns {Date=}
+ * Finds the next matching date for the given multi trigger.
+ * @param {MultiTrigger} trigger - Multi trigger object
+ * @param {Date=} after - Date to start searching from (default: now)
+ * @returns {Date=} Next matching date or undefined if not found
  */
 function findNextMatchForMulti(trigger, after = new Date) {
     // avoid mutation. sort the dates
@@ -475,8 +477,8 @@ function findNextMatchForMulti(trigger, after = new Date) {
  * Merges auto trigger events into a map of appId to event and cohort sets.
  * This is used to reduce the number of mongo queries when scheduling messages.
  * It groups events by appId and then by event name or cohort id.
- * @param {AutoTriggerEvent[]} autoTriggerEvents - list of auto trigger events
- * @returns {{appId: ObjectId; triggerFilter: MessageTriggerFilter; uids: string[];}[]} map of appId to event and cohort sets
+ * @param {AutoTriggerEvent[]} autoTriggerEvents - List of auto trigger events
+ * @returns {{appId: ObjectId; triggerFilter: MessageTriggerFilter; uids: string[];}[]} Map of appId to event and cohort sets
  */
 function mergeAutoTriggerEvents(autoTriggerEvents) {
     // first, we need to group the auto trigger events by appId.
@@ -545,9 +547,9 @@ function mergeAutoTriggerEvents(autoTriggerEvents) {
 
 /**
  * Schedules the message if it is eligible for date scheduling.
- * @param {MongoDb} db - mongodb database object
- * @param {Message} message - message document from messages collection
- * @returns {Promise<Schedule[]|undefined>} the created Schedule documents from message_schedules collection
+ * @param {MongoDb} db - Mongodb database object
+ * @param {Message} message - Message document from messages collection
+ * @returns {Promise<Schedule[]|undefined>} The created Schedule documents from message_schedules collection
  */
 async function scheduleIfEligible(db, message) {
     if (message.info.demo || message.status !== "active") {

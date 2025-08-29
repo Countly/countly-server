@@ -16,7 +16,7 @@ const countlyFetch = require("../../../api/parts/data/fetch.js");
 const { buildResultObject } = require("./new/resultor.js");
 const { scheduleIfEligible, DATE_TRIGGERS } = require("./new/scheduler.js");
 const { buildUserAggregationPipeline, createPushStream, loadCredentials  } = require("./new/composer.js");
-const { loadProxyConfiguration } = require("./new/lib/utils");
+const { loadPluginConfiguration } = require("./new/lib/utils");
 const { createTemplate } = require("./new/lib/template");
 const { sendAllPushes } = require("./new/sender.js");
 const platforms = require("./new/constants/platform-keymap.js");
@@ -224,10 +224,10 @@ module.exports.test = async params => {
         }
         const template = createTemplate(msg._data);
         const creds = await loadCredentials(common.db, msg.app);
-        const proxy = await loadProxyConfiguration(common.db);
+        const pluginConfig = await loadPluginConfiguration(common.db);
         const schedule = { _id: common.db.ObjectID() };
         const stream = createPushStream(common.db, app, msg, schedule,
-            creds, proxy, template, pipeline);
+            creds, pluginConfig?.proxy, template, pipeline);
         let results = [];
         for await (const push of stream) {
             results.push(await sendAllPushes([push], false));
