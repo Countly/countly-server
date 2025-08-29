@@ -1,3 +1,8 @@
+## Version 24.05.X
+Enterprise Fixes:
+- [license] Update license metric endpoint permission
+
+
 ## Version 24.05.36
 Features:
 - [plugins] Add configuration warning tags to settings UI
