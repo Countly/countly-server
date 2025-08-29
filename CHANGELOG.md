@@ -4,8 +4,10 @@ Fixes:
 - [server-stats] Add new events to breakdown
 
 Enterprise Fixes:
+- [content] validations added to content endpoint for preflight check
 - [journeys] Update skip threshold when journeys are paused
 - [journeys] fix for clearing content queue when journey is paused
+
 
 ## Version 25.03.17
 Enterprise Fixes:
