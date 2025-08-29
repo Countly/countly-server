@@ -518,6 +518,9 @@ common.initTimeObj = function(appTimezone, reqTimestamp) {
 };
 
 common.getDate = function(timestamp, timezone) {
+    if (timestamp && timestamp.toString().length === 13) {
+        timestamp = Math.floor(timestamp / 1000);
+    }
     var tmpDate = (timestamp) ? moment.unix(timestamp) : moment();
 
     if (timezone) {
@@ -3410,10 +3413,10 @@ class DataTable {
 
 common.DataTable = DataTable;
 
-common.applyUniqueOnModel = function(model, uniqueData, prop) {
+common.applyUniqueOnModel = function(model, uniqueData, prop, segment) {
     for (var z = 0; z < uniqueData.length; z++) {
         var value = uniqueData[z][prop];
-        var iid = uniqueData[z]._id.split(":");
+        var iid = uniqueData[z]._id.replaceAll(":0", ":").split(":");
         if (iid.length > 1) {
             if (!model[iid[0]]) {
                 model[iid[0]] = {};
@@ -3429,15 +3432,33 @@ common.applyUniqueOnModel = function(model, uniqueData, prop) {
                     if (!model[iid[0]][iid[1]][iid[2]][iid[3]]) {
                         model[iid[0]][iid[1]][iid[2]][iid[3]] = {};
                     }
-                    model[iid[0]][iid[1]][iid[2]][iid[3]][prop] = value;
+                    if (segment) {
+                        model[iid[0]][iid[1]][iid[2]][iid[3]][segment] = model[iid[0]][iid[1]][iid[2]][iid[3]][segment] || {};
+                        model[iid[0]][iid[1]][iid[2]][iid[3]][segment][prop] = value;
+                    }
+                    else {
+                        model[iid[0]][iid[1]][iid[2]][iid[3]][prop] = value;
+                    }
                 }
                 else {
-                    model[iid[0]][iid[1]][iid[2]][prop] = value;
+                    if (segment) {
+                        model[iid[0]][iid[1]][iid[2]][segment] = model[iid[0]][iid[1]][iid[2]][segment] || {};
+                        model[iid[0]][iid[1]][iid[2]][segment][prop] = value;
+                    }
+                    else {
+                        model[iid[0]][iid[1]][iid[2]][prop] = value;
+                    }
                 }
 
             }
             else {
-                model[iid[0]][iid[1]][prop] = value;
+                if (segment) {
+                    model[iid[0]][iid[1]][segment] = model[iid[0]][iid[1]][segment] || {};
+                    model[iid[0]][iid[1]][segment][prop] = value;
+                }
+                else {
+                    model[iid[0]][iid[1]][prop] = value;
+                }
 
             }
         }
@@ -3454,7 +3475,6 @@ common.shiftHourlyData = function(data, offset, field = "_id") {
     var dd, iid;
     if (typeof offset === "number") {
         if (Array.isArray(data)) {
-            data = [data];
             for (var z = 0; z < data.length; z++) {
                 iid = data[z][field].replace("h", "").split(":");
                 dd = Date.UTC(parseInt(iid[0], 10), parseInt(iid[1]), parseInt(iid[2]), parseInt(iid[3]), 0, 0);
@@ -3595,6 +3615,19 @@ common.convertArrayToModel = function(arr, segmented, props) {
                         for (var p2 in props) {
                             if (arr[z][p2]) {
                                 model[iid[0]][iid[1]][iid[2]][arr[z].sg][p2] += arr[z][p2];
+                            }
+                        }
+                        if (iid.length > 3) {
+                            if (!model[iid[0]][iid[1]][iid[2]][iid[3]]) {
+                                model[iid[0]][iid[1]][iid[2]][iid[3]] = {};
+                            }
+                            if (!model[iid[0]][iid[1]][iid[2]][iid[3]][arr[z].sg]) {
+                                model[iid[0]][iid[1]][iid[2]][iid[3]][arr[z].sg] = createEmptyObj(props);
+                            }
+                            for (var p33 in props) {
+                                if (arr[z][p33]) {
+                                    model[iid[0]][iid[1]][iid[2]][iid[3]][arr[z].sg][p33] += arr[z][p33];
+                                }
                             }
                         }
                     }

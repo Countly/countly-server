@@ -257,9 +257,8 @@ var processToDrill = async function(params, drill_updates, callback) {
             if (currEvent.key === "[CLY]_view" && !plugins.getConfig("drill", params.app && params.app.plugins, true).record_views) {
                 continue;
             }*/
-
             if (currEvent.key === "[CLY]_view" && !(currEvent.segmentation && currEvent.segmentation.visit)) {
-                continue;
+                currEvent.key = "[CLY]_view_update";
             }
 
             /*
@@ -513,7 +512,7 @@ var processToDrill = async function(params, drill_updates, callback) {
             /**
              * NEW INGESTOR END
              */
-            await common.drillDb.collection("drill_events").bulkWrite(eventsToInsert, {ordered: false});
+            /*await common.drillDb.collection("drill_events").bulkWrite(eventsToInsert, {ordered: false});
 
             callback(null);
             if (Object.keys(viewUpdate).length) {
@@ -524,40 +523,12 @@ var processToDrill = async function(params, drill_updates, callback) {
                 catch (err) {
                     log.e(err);
                 }
-            }
+            }*/
 
         }
         catch (errors) {
-            var realError;
-            if (errors && Array.isArray(errors)) {
-                log.e(JSON.stringify(errors));
-                for (let i = 0; i < errors.length; i++) {
-                    if ([11000, 10334, 17419].indexOf(errors[i].code) === -1) {
-                        realError = true;
-                    }
-                }
-
-                if (realError) {
-                    callback(realError);
-                }
-                else {
-                    callback(null);
-                    if (Object.keys(viewUpdate).length) {
-                        //updates app_viewdata colelction.If delayed new incoming view updates will not have reference. (So can do in aggregator only if we can insure minimal delay)
-                        try {
-                            await common.db.collection("app_userviews").updateOne({_id: params.app_id + "_" + params.app_user.uid}, {$set: viewUpdate}, {upsert: true});
-                        }
-                        catch (err) {
-                            log.e(err);
-                        }
-                    }
-
-                }
-            }
-            else {
-                console.log(errors);
-                callback(errors);
-            }
+            console.log(errors);
+            callback(errors);
         }
     }
     else {
@@ -632,6 +603,11 @@ const processRequestData = (ob, done) => {
     if (ob.params.app_user.last_req !== ob.params.request_hash && ob.updates.length) {
         for (let i = 0; i < ob.updates.length; i++) {
             update = common.mergeQuery(update, ob.updates[i]);
+        }
+        //Adding fake event to notify property update.
+        ob.params.qstring.events = ob.params.qstring.events || [];
+        if (ob.params.qstring.events.length === 0) {
+            ob.params.qstring.events.push({"key": "[CLY]_property_update"});
         }
     }
     //var SaveAppUser = Date.now().valueOf();

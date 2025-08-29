@@ -864,7 +864,7 @@ const processRequest = (params) => {
                         return false;
                     }
                     validateUpdate(params, 'events', function() {
-                        common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, function(err, event) {
+                        common.db.collection('events').findOne({"_id": common.db.ObjectID(params.qstring.app_id)}, async function(err, event) {
                             if (err) {
                                 common.returnMessage(params, 400, err);
                                 return;
@@ -873,6 +873,21 @@ const processRequest = (params) => {
                                 common.returnMessage(params, 400, "Could not find event");
                                 return;
                             }
+                            //Load available events
+
+                            const pluginsGetConfig = plugins.getConfig("api", params.app && params.app.plugins, true);
+
+                            var list = await common.drillDb.collection("drill_meta").aggregate(
+                                [
+                                    {$match: {"app_id": params.qstring.app_id, "type": "e", "biglist": {"$ne": true}}},
+                                    {$match: {"e": {"$not": /^(\[CLY\]_)/}}},
+                                    {"$group": {"_id": "$e"}},
+                                    {"$sort": {"_id": 1}},
+                                    {"$limit": pluginsGetConfig.event_limit || 500},
+                                    {"$group": {"_id": null, "list": {"$addToSet": "$_id"}}}
+                                ]
+                                , {"allowDiskUse": true}).toArray();
+                            event.list = list[0].list;
 
                             var update_array = {};
                             var update_segments = [];
@@ -2678,6 +2693,25 @@ const processRequest = (params) => {
                                 result.list.push(res[k].e);
                                 if (res[k].sg && Object.keys(res[k].sg).length > 0) {
                                     result.segments[res[k].e] = Object.keys(res[k].sg);
+                                }
+                                if (result.omitted_segments && result.omitted_segments[res[k].e]) {
+                                    for (let kz = 0; kz < result.omitted_segments[res[k].e].length; kz++) {
+                                        //remove items that are in omitted list
+                                        result.segments[res[k].e].splice(result.segments[res[k].e].indexOf(result.omitted_segments[res[k].e][kz]), 1);
+                                    }
+                                }
+                                if (result.whitelisted_segments && result.whitelisted_segments[res[k].e] && Array.isArray(result.whitelisted_segments[res[k].e])) {
+                                    //remove all that are not whitelisted
+                                    for (let kz = 0; kz < result.segments[res[k].e].length; kz++) {
+                                        if (result.whitelisted_segments[res[k].e].indexOf(result.segments[res[k].e][kz]) === -1) {
+                                            result.segments[res[k].e].splice(kz, 1);
+                                            kz--;
+                                        }
+                                    }
+                                }
+                                //Sort segments
+                                if (result.segments[res[k].e]) {
+                                    result.segments[res[k].e].sort();
                                 }
                             }
                             if (result.list.length === 0) {

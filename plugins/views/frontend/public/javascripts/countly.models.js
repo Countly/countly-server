@@ -57,7 +57,7 @@
             _segmentVal = context.state.selectedSegmentValue;
             return $.when(countlyViews.initialize());
         },
-        fetchTotals: function() {
+        fetchTotals: function(passed) {
             var data = {
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "views",
@@ -65,6 +65,9 @@
                 "periodOffset": new Date().getTimezoneOffset(),
                 "action": "getTotals"
             };
+            if (passed && passed.no_cache) {
+                data.no_cache = true;
+            }
 
             return CV.$.ajax({
                 type: "GET",
@@ -512,8 +515,8 @@
                         context.dispatch('onFetchError', error);
                     });
             },
-            fetchTotals: function(context) {
-                return countlyViews.service.fetchTotals()
+            fetchTotals: function(context, data) {
+                return countlyViews.service.fetchTotals(data)
                     .then(function(response) {
                         context.commit('setTotals', response || {});
                         context.dispatch('onFetchSuccess');
@@ -715,7 +718,7 @@
             return this.refresh();
         }
 
-        _period = countlyCommon.getPeriodForAjax();
+        countlyCommon.getPeriodAsDateStrings(),
         this.reset();
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
@@ -902,10 +905,10 @@
                 return this.initialize();
             }
             var periodIsOk = true;
-            if (_period !== countlyCommon.getPeriodForAjax()) {
+            if (_period !== countlyCommon.getPeriodAsDateStrings()) {
                 periodIsOk = false;
             }
-            _period = countlyCommon.getPeriodForAjax();
+            _period = countlyCommon.getPeriodAsDateStrings();
 
             var selected = [];
 

@@ -9,7 +9,8 @@ var pluginOb = {},
     fetch = require('../../../api/parts/data/fetch.js'),
     log = common.log('views:api'),
     {checkViewQuery} = require('./common.js'),
-    { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js');
+    { validateRead, validateUpdate, validateDelete } = require('../../../api/utils/rights.js'),
+    {getTotals, getUniqueCount, getGraphValues} = require('./queries/views.js');
 var calculatedDataManager = require('../../../api/utils/calculatedDataManager.js');
 
 
@@ -380,6 +381,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
             var appOffset = dd.utcOffset();
             settings.offset = (appOffset + settings.offset) / 60;
+            settings.offset = settings.offset * -1;
         }
         var pipeline = [];
         var period = params.qstring.period || '30days';
@@ -462,7 +464,7 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 e2 = 24 - settings.offset;
                             }
                             else {
-                                e2 = -1 * settings.offset;
+                                e2 = -1 * settings.offset - 1;
                             }
                             for (; s2 <= e2; s2++) {
                                 selectMap[kk[0] + ":" + kk[1]].push("$d." + kk[2] + "." + s2);
@@ -581,7 +583,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         collectionName = "app_viewdata";
         var app_id = settings.app_id;
         var pipeline = createAggregatePipeline(params, settings);
-
         if (settings.depends) {
             pipeline.push({"$match": settings.depends}); //filter only those which has some value in choosen column
         }
@@ -742,36 +743,79 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
     **/
     function getUniqueValuesForTable(params, data, callback) {
         var promises = [];
+        var ret = {};
+
+        var tz = countlyCommon.getTimezone(params) || "UTC";
+        var currentRange = countlyCommon.getPeriodRange(params.qstring.period, tz);
+        var query = {
+            "a": params.qstring.app_id,
+            "e": "[CLY]_view",
+            "ts": currentRange,
+            "n": {"$in": []}
+        };
+        if (params.qstring.segment && params.qstring.segmentVal) {
+            query["sg." + params.qstring.segment] = params.qstring.segmentVal;
+        }
+        var mapper = {};
         for (var z = 0; z < data.length; z++) {
-            promises.push(new Promise(function(resolve) {
-                var index = z;
-                calculatedDataManager.longtask({
-                    db: common.db,
-                    threshold: plugins.getConfig("api").request_threshold / 2,
-                    app_id: params.qstring.app_id,
-                    query_data: {
-                        "appID": params.qstring.app_id,
-                        "period": params.qstring.period,
-                        "event": "[CLY]_view",
-                        "name": data[index].view,
-                        "periodOffset": params.qstring.periodOffset || 0,
-                        "queryName": "uniqueCount",
-                    },
-                    outputData: function(err, data2) {
-                        if (err) {
-                            log.e(err);
-                        }
-                        if (data2 && data2.data) {
-                            data[index].u = data2.data;
-                        }
-                        resolve();
-                    }
-                });
-            }));
+            query.n.$in.push(data[z].view);
+            mapper[data[z].view] = z;
         }
 
+        var queryParams = {};
+        queryParams.adapter = params.qstring.db_override &&
+                                            params.qstring.db_override !== 'compare' &&
+                                            params.qstring.db_override !== 'config'
+            ? params.qstring.db_override
+            : undefined;
+
+        queryParams.comparison = params.qstring.comparison === 'true' || params.qstring.comparison === true;
+
+
+        promises.push(new Promise(function(resolve) {
+            calculatedDataManager.longtask({
+                db: common.db,
+                threshold: plugins.getConfig("api").request_threshold / 2,
+                app_id: params.qstring.app_id,
+                no_cache: params.qstring.no_cache,
+                query_data: {
+                    "query": query
+                },
+                query_function: async function(query_data, callback2) {
+                    try {
+                        var my_data = await getUniqueCount(query_data, queryParams);
+                        callback2(null, my_data);
+                    }
+                    catch (error) {
+                        callback2(error);
+                    }
+                },
+                outputData: function(err, data2) {
+                    if (err) {
+                        log.e(err);
+                    }
+                    if (data2 && data2.data) {
+                        for (var k = 0; k < data2.data.length; k++) {
+                            if (data[mapper[data2.data[k]._id]]) {
+                                data[mapper[data2.data[k]._id]].u = data2.data[k].u;
+                            }
+                        }
+                    }
+                    ret.lu = data2?.lu;
+                    ret.running = data2.running;
+                    if (ret.lu) {
+                        //get difference in seconds
+                        ret.lu_diff = Math.floor((Date.now() - new Date(ret.lu).getTime()) / 1000);
+                    }
+                    resolve();
+                }
+            });
+        }));
+
+
         Promise.all(promises).then(function() {
-            callback();
+            ret.data = data;
+            callback(ret);
         });
 
     }
@@ -988,7 +1032,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                     selOptions.dataNamingMap[res[z]._id] = z;
                                 }
 
-
                                 getAggregatedData(colName, params, selOptions, function(data, total) {
                                     var values = ["u", "t", "s", "b", "e", "d", "scr", "br"];
                                     data = data || [];
@@ -1014,8 +1057,11 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             }
                                         }
                                     }
-                                    getUniqueValuesForTable(params, data, function() {
-                                        common.returnOutput(params, {sEcho: params.qstring.sEcho, iTotalRecords: total || data.length, iTotalDisplayRecords: total || data.length, aaData: data});
+                                    getUniqueValuesForTable(params, data, function(ret) {
+                                        ret.sEcho = params.qstring.sEcho;
+                                        ret.iTotalRecords = total || ret.data.length;
+                                        ret.iTotalDisplayRecords = total || ret.data.length;
+                                        common.returnOutput(params, ret);
                                     });
                                 });
                             }
@@ -1028,7 +1074,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                         getAggregatedData(colName, params, selOptions, function(data, total) {
                             var values = ["u", "t", "s", "b", "e", "d", "scr", "br"];
                             data = data || [];
-
                             // log.e(params.qstring.period+"("+sortcol+") "+(Date.now()-rightNow)/1000);
                             for (var z = 0; z < data.length; z++) {
                                 for (var p = 0; p < values.length; p++) {
@@ -1134,24 +1179,59 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
 
                     var promises = [];
                     promises.push(new Promise(function(resolve) {
+                        var tz = countlyCommon.getTimezone(params) || "UTC";
+                        var currentRange = countlyCommon.getPeriodRange(params.qstring.period, tz);
+                        var my_query = {
+                            "a": params.qstring.app_id,
+                            "e": "[CLY]_view",
+                            "ts": currentRange
+                        };
+
+                        var queryParams = {};
+                        queryParams.adapter = params.qstring.db_override &&
+                                            params.qstring.db_override !== 'compare' &&
+                                            params.qstring.db_override !== 'config'
+                            ? params.qstring.db_override
+                            : undefined;
+
+                        queryParams.comparison = params.qstring.comparison === 'true' || params.qstring.comparison === true;
+
                         calculatedDataManager.longtask({
                             db: common.db,
-                            threshold: plugins.getConfig("api").request_threshold,
+                            no_cache: params.qstring.no_cache,
+                            threshold: plugins.getConfig("api").request_threshold / 2,
                             app_id: params.qstring.app_id,
                             query_data: {
-                                "appID": params.qstring.app_id,
-                                "period": params.qstring.period,
-                                "event": "[CLY]_view",
-                                "periodOffset": params.qstring.periodOffset || 0,
-                                "queryName": "uniqueCount",
+                                "query": my_query
+                            },
+                            async query_function(query_data, callback) {
+                                try {
+                                    var totals = await getTotals(query_data, queryParams);
+                                    callback(null, totals);
+                                }
+                                catch (error) {
+                                    log.e("Error occurred while fetching totals: " + error);
+                                    callback("Error occurred while fetching totals" + error);
+                                }
                             },
                             outputData: function(err, data) {
                                 if (err) {
                                     log.e(err);
                                 }
-                                if (data && data.data) {
-                                    ret_data.u = data.data;
-                                    ret_data.lu = data.lu;
+                                data = data || {};
+                                if (data.data && data.data.u) {
+                                    ret_data.u = data.data.u;
+                                }
+                                else {
+                                    console.trace();
+                                }
+                                ret_data.lu = data.lu;
+                                if (ret_data.lu) {
+                                    //get difference in seconds
+                                    ret_data.lu_diff = Math.floor((Date.now() - new Date(ret_data.lu).getTime()) / 1000);
+                                }
+                                if (data.running) {
+                                    ret_data.running = true;
                                 }
                                 resolve();
                             }
@@ -1163,7 +1243,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                 log.e(err);
                             }
                             res = res || [];
-
                             res = res[0];
                             for (var key in res) {
                                 ret_data[key] = res[key];
@@ -1225,10 +1304,25 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                     }
                                 }
                             }
+
+                            var tz = countlyCommon.getTimezone(params) || "UTC";
+                            var currentRange = countlyCommon.getPeriodRange(params.qstring.period, tz);
+
+
+                            var queryParams = {};
+                            queryParams.adapter = params.qstring.db_override &&
+                                            params.qstring.db_override !== 'compare' &&
+                                            params.qstring.db_override !== 'config'
+                                ? params.qstring.db_override
+                                : undefined;
+
+                            queryParams.comparison = params.qstring.comparison === 'true' || params.qstring.comparison === true;
+
                             Promise.each(graphKeys, function(viewid) {
                                 return new Promise(function(resolve /*, reject*/) {
                                     var paramsObj = {};
                                     paramsObj.time = params.time;
+                                    paramsObj.app_id = params.qstring.app_id;
                                     paramsObj.qstring = {};
                                     for (let prop in params.qstring) {
                                         paramsObj.qstring[prop] = params.qstring[prop];
@@ -1240,19 +1334,27 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                         segment = "no-segment";
                                     }
 
-                                    fetch.getTimeObj(colName, paramsObj, {dontBreak: true, id_prefix: (params.qstring.app_id + "_"), "id": segment, id_postfix: "_" + (viewid.view.replace(params.qstring.app_id + "_", "")), unique: "u", levels: {daily: levels, monthly: ["u", "t", "s", "b", "e", "d", "scr"]}}, function(data2) {
+                                    fetch.getTimeObj(colName, paramsObj, {dontBreak: true, id_prefix: (params.qstring.app_id + "_"), "id": segment, id_postfix: "_" + (viewid.view.replace(params.qstring.app_id + "_", "")), levels: {daily: levels, monthly: [ "t", "s", "b", "e", "d", "scr"]}}, function(data2) {
                                         if (offset) {
                                             var props = {"b": true, "t": true, "s": true, "d": true, "u": true, "scr": true, "e": true};
-                                            //log.e("Current model:" + JSON.stringify(data2));
                                             //Trasform model to array, 
                                             var arrayData = common.convertModelToArray(data2, (segment !== "no-segment"));
-                                            // console.log("arrayData: " + JSON.stringify(arrayData));
+                                            //log.e("arrayData: " + JSON.stringify(arrayData));
                                             // shift data, 
                                             arrayData = common.shiftHourlyData(arrayData, offset * -1);
-                                            //console.log("arrayData(shifted): " + JSON.stringify(arrayData));
+                                            //log.e("arrayData(shifted): " + JSON.stringify(arrayData));
                                             // transform back to model.
-                                            data2 = common.convertArrayToModel(arrayData, (segment !== "no-segment"), props);
-                                            //console.log("rebuilded model" + JSON.stringify(data2));
+                                            data2 = common.convertArrayToModel(arrayData, (segment !== "no-segment") ? segment : null, props);
+                                            //log.e("rebuilded model" + JSON.stringify(data2));
+                                        }
+                                        var my_query = {
+                                            "a": params.qstring.app_id,
+                                            "e": "[CLY]_view",
+                                            "ts": currentRange,
+                                            "n": viewid.name
+                                        };
+                                        if (params.qstring.segment && params.qstring.segmentVal) {
+                                            my_query["sg." + params.qstring.segment] = params.qstring.segmentVal;
                                         }
 
                                         calculatedDataManager.longtask({
@@ -1260,21 +1362,29 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             threshold: plugins.getConfig("api").request_threshold / 2,
                                             app_id: params.qstring.app_id,
                                             query_data: {
-                                                "appID": params.qstring.app_id,
-                                                "period": params.qstring.period,
-                                                "event": "[CLY]_view",
-                                                "name": viewid.name,
+                                                "timezone": tz,
                                                 "bucket": params.qstring.bucket,
-                                                "periodOffset": params.qstring.periodOffset || 0,
-                                                "queryName": "uniqueGraph"
+                                                "query": my_query
+                                            },
+                                            query_function: async function(query_data, callback) {
+                                                try {
+                                                    var totals = await getGraphValues(query_data);
+                                                    callback(null, totals);
+                                                }
+                                                catch (error) {
+                                                    log.e("Error occurred while fetching totals: " + error);
+                                                    callback("Error occurred while fetching totals" + error);
+                                                }
                                             },
                                             outputData: function(err5, data3) {
                                                 if (err5) {
                                                     log.e(err5);
                                                 }
+                                                // log.e("Current data2: " + JSON.stringify(data2));
                                                 if (data3 && data3.data) {
-                                                    common.applyUniqueOnModel(data2, data3.data, "u");
+                                                    common.applyUniqueOnModel(data2, data3.data, "u", params.qstring.segmentVal);
                                                 }
+                                                //log.e("after applying model" + JSON.stringify(data2));
                                                 retData[viewid.view] = {};
                                                 retData[viewid.view][segment] = data2;
                                                 resolve();
@@ -1485,63 +1595,6 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         const aggregateQuery = [
             { $match: matchQuery },
         ];
-
-        const use_union_with = plugins.getConfig('drill', params.app_id && params.app && params.app.plugins, true).use_union_with;
-
-        if (use_union_with) {
-            const oldCollectionName = 'drill_events' + crypto.createHash('sha1').update('[CLY]_action' + params.qstring.app_id).digest('hex');
-            const eventHash = crypto.createHash('sha1').update('[CLY]_action' + params.qstring.app_id).digest('hex');
-
-            const metaQuery = [
-                {
-                    $facet: {
-                        meta: [
-                            { $match: { _id: 'meta' } },
-                            { $project: { _id: 0, 'sg.type': 1, 'sg.domain': 1 } },
-                            { $limit: 1 },
-                        ],
-                        meta_v2: [
-                            { $match: { _id: 'meta_v2' } },
-                            { $project: { _id: 0, 'sg.type': 1, 'sg.domain': 1 } },
-                            { $limit: 1 },
-                        ],
-                    },
-                },
-            ];
-
-            const metaKeys = ['meta', 'meta_v2'];
-            const metas = await common.drillDb.collection(oldCollectionName).aggregate(metaQuery).toArray();
-            metaKeys.forEach((key) => {
-                if (key in metas[0]) {
-                    const meta = metas[0][key][0];
-
-                    if (meta && meta.sg && meta.sg.type && meta.sg.type.values) {
-                        common.arrayAddUniq(result.types, meta.sg.type.values);
-                    }
-
-                    if (meta && meta.sg && meta.sg.domain && meta.sg.domain.values) {
-                        common.arrayAddUniq(result.domains, meta.sg.domain.values);
-                    }
-                }
-            });
-
-            const moreMeta = await common.drillDb.collection(`drill_meta${params.qstring.app_id}`).findOne(
-                { _id: `meta_${eventHash}` },
-                { _id: 0, 'sg.domain': 1 },
-            );
-
-            if (moreMeta && moreMeta.sg && moreMeta.sg.domain) {
-                common.arrayAddUniq(result.domains, Object.keys(moreMeta.sg.domain.values));
-            }
-
-            const matchQueryOld = Object.assign({}, matchQuery);
-            delete matchQueryOld.a;
-            delete matchQueryOld.e;
-
-            aggregateQuery.push({
-                $unionWith: { coll: oldCollectionName, pipeline: [{ $match: matchQueryOld }] },
-            });
-        }
 
         aggregateQuery.push({ $project: projectionQuery });
 

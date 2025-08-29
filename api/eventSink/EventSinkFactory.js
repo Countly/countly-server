@@ -25,7 +25,7 @@ class EventSinkFactory {
             throw new Error('Configuration is required for EventSinkFactory');
         }
         const sinks = [];
-        let configuredSinks = config.eventSink?.sinks;
+        let configuredSinks = config.eventSink?.sinks || ['mongo'];
 
         if (!Array.isArray(configuredSinks) || configuredSinks.length === 0) {
             EventSinkFactory.#fatalSinkCreation('Invalid or empty eventSink.sinks configuration');

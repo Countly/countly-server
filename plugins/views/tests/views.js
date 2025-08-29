@@ -95,7 +95,7 @@ function verifyMetrics(err, ob, done, correct) {
         }
         else if (ob[c] != correct[c]) {
             console.log("key:" + c);
-            console.log(correct[c] + " " + ob[c]);
+            console.log("NEED: " + correct[c] + " GOT:" + ob[c]);
             return false;
         }
     }
@@ -222,7 +222,7 @@ function verifyTotals(period, order, orderString) {
     it('checking result(' + period + ')', function(done) {
         orderString = orderString || "&iSortCol_0=0&sSortDir_0=asc";
         request
-            .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=views&action=getTable' + orderString + '&period=' + period)
+            .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&no_cache=true&method=views&action=getTable' + orderString + '&period=' + period)
             .expect(200)
             .end(function(err, res) {
                 var resDecoded = JSON.parse(res.text);

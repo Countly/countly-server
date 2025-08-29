@@ -1,16 +1,16 @@
 /**
  * File contains core data aggregators
  */
-
-
 var common = require('../utils/common.js');
-const { DataBatchReader } = require('../parts/data/dataBatchReader');
+//const { DataBatchReader } = require('../parts/data/dataBatchReader');
 const plugins = require('../../plugins/pluginManager.js');
 var usage = require('./usage.js');
 const log = require('../utils/log.js')('aggregator-core:api');
 const {WriteBatcher} = require('../parts/data/batcher.js');
 const {Cacher} = require('../parts/data/cacher.js');
+const {preset} = require('../lib/countly.preset.js');
 
+const UnifiedEventSource = require('../eventSource/UnifiedEventSource.js');
 //dataviews = require('./parts/data/dataviews.js');
 
 var crypto = require('crypto');
@@ -38,8 +38,8 @@ var crypto = require('crypto');
         }
         return type;
     }
-    //Core events data aggregator
-    plugins.register("/aggregator", function() {
+    //Core events aggregator for querying data. Queries data in batches based on cd field on drill_events collection in mongodb, aggregates in pipeline
+    /* plugins.register("/aggregator", function() {
         new DataBatchReader(common.drillDb, {
             pipeline: [
                 {"$match": {"e": "[CLY]_custom"}},
@@ -73,82 +73,142 @@ var crypto = require('crypto');
             "collection": "drill_events",
         }, async function(token, results) {
             if (results && results.length > 0) {
-                await usage.processEventTotalsFromStream(token, results, common.manualWriteBatcher);
+                await usage.processEventTotalsFromAggregation(token, results, common.manualWriteBatcher);
                 //Flush collected changes
                 await common.manualWriteBatcher.flush("countly", "events_data", token.cd);
             }
         // process next batch of documents
         });
+    });*/
+
+    //Events processing
+    plugins.register("/aggregator", async function() {
+        const eventSource = new UnifiedEventSource('event-aggregator', {
+            mongo: {
+                db: common.drillDb,
+                pipeline: [
+                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_custom"}},
+                    {"$project": {"__iid": "$fullDocument._id", "cd": "$fullDocument.cd", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "ts": "$fullDocument.ts", "c": "$fullDocument.c", "s": "$fullDocument.s", "dur": "$fullDocument.dur"}}
+                ],
+                fallback: {
+                    pipeline: [{
+                        "$match": {"e": {"$in": ["[CLY]_custom"]}}
+                    }, {"$project": {"__id": "$_id", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "ts": "$ts", "c": "$c", "s": "$s", "dur": "$dur"}}]
+                }
+            }
+        });
+        try {
+            for await (const {token, events} of eventSource) {
+                if (events && Array.isArray(events)) {
+                    // Process each event in the batch
+                    for (const currEvent of events) {
+                        if (currEvent && currEvent.a && currEvent.e && currEvent.e === "[CLY]_custom") {
+                            currEvent.e = currEvent.n;
+                            await usage.processEventTotalsFromStream(token, currEvent, common.manualWriteBatcher);
+                        }
+                    }
+                    common.manualWriteBatcher.flush("countly", "events_data");
+                }
+            }
+        }
+        catch (err) {
+            log.e('Event processing error:', err);
+        }
     });
+
 
     //processes session data and updates in aggregated data
-    plugins.register("/aggregator", function() {
-        new DataBatchReader(common.drillDb, {
-            pipeline: [
-                {"$match": {"e": "[CLY]_session"}},
-            ],
-            "name": "session-ingestion"
-        }, async function(token, data) {
-            if (data.length > 0) {
-                for (var k = 0; k < data.length; k++) {
-                    var currEvent = data[k];
-                    if (currEvent && currEvent.a) {
-                    //Record in session data
-                        try {
-                            var app = await common.readBatcher.getOne("apps", common.db.ObjectID(currEvent.a));
-                            //record event totals in aggregated data
-                            if (app) {
-                                await usage.processSessionFromStream(token, currEvent, {"app_id": currEvent.a, "app": app, "time": common.initTimeObj(app.timezone, currEvent.ts), "appTimezone": (app.timezone || "UTC")});
-                            }
-                        }
-                        catch (ex) {
-                            log.e("Error processing session event", ex);
-                            return;
-                        }
-                    }
+    //!!! NOT FULLY AWAITING
+    plugins.register("/aggregator", async function() {
+        const eventSource = new UnifiedEventSource('session-ingestion', {
+            mongo: {
+                db: common.drillDb,
+                pipeline: [
+                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
+                ],
+                fallback: {
+                    pipeline: [{
+                        "$match": {"e": {"$in": ["[CLY]_session"]}}
+                    }]
                 }
-                await common.manualWriteBatcher.flush("countly", "users", token.cd);
             }
         });
+        try {
+            for await (const {token, events} of eventSource) {
+                if (events && Array.isArray(events)) {
+                    for (var k = 0; k < events.length; k++) {
+                        if (events[k].e === "[CLY]_session" && events[k].a) {
+                            try {
+                                var app = await common.readBatcher.getOne("apps", common.db.ObjectID(events[k].a));
+                                //record event totals in aggregated data
+                                if (app) {
+                                    await usage.processSessionFromStream(token, events[k], {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
+                                }
+                            }
+                            catch (ex) {
+                                log.e("Error processing session event", ex);
+                            }
+                        }
+                    }
+                    await common.manualWriteBatcher.flush("countly", "users");
+                }
+            }
+        }
+        catch (err) {
+            log.e('Event processing error:', err);
+        }
     });
 
-    plugins.register("/aggregator", function() {
+
+    plugins.register("/aggregator", async function() {
         var writeBatcher = new WriteBatcher(common.db, true);
-        new DataBatchReader(common.drillDb, {
-            pipeline: [{"$match": {"e": {"$in": ["[CLY]_session_update"]}}}],
-            "name": "session-updates",
-            "collection": "drill_events",
-        }, async function(token, docs) {
-            console.log("Processing session updates " + docs.length);
-            if (docs.length > 0) {
-                for (var z = 0; z < docs.length; z++) {
-                    var next = docs[z];
-                    if (next && next.a && next.e && next.e === "[CLY]_session_update" && next.ts) {
-                        try {
-                            var app = await common.readBatcher.getOne("apps", common.db.ObjectID(next.a));
-                            if (app) {
-                                var dur = 0;
-                                dur = next.dur || 0;
 
-                                await usage.processSessionDurationRange(writeBatcher, token, dur, next.did, {"app_id": next.a, "app": app, "time": common.initTimeObj(app.timezone, next.ts), "appTimezone": (app.timezone || "UTC")});
-                            //}
-                            }
-                        }
-                        catch (e) {
-                            log.e(e);
-                            return;
-                        }
-
-                    }
+        const eventSource = new UnifiedEventSource('session-updates', {
+            mongo: {
+                db: common.drillDb,
+                pipeline: [
+                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session_update"}},
+                ],
+                fallback: {
+                    pipeline: [{
+                        "$match": {"e": {"$in": ["[CLY]_session_update"]}}
+                    }]
                 }
-                await writeBatcher.flush("countly", "users", token.cd);
             }
         });
+        try {
+            for await (const {token, events} of eventSource) {
+                if (events && Array.isArray(events)) {
+                    for (var k = 0; k < events.length; k++) {
+                        if (events[k].e === "[CLY]_session_update" && events[k].a) {
+                            try {
+                                var app = await common.readBatcher.getOne("apps", common.db.ObjectID(events[k].a));
+                                //record event totals in aggregated data
+                                if (app) {
+                                    var dur = 0;
+                                    dur = events[k].dur || 0;
+
+                                    await usage.processSessionDurationRange(writeBatcher, token, dur, events[k].did, {"app_id": events[k].a, "app": app, "time": common.initTimeObj(app.timezone, events[k].ts), "appTimezone": (app.timezone || "UTC")});
+
+                                }
+                            }
+                            catch (ex) {
+                                log.e("Error processing session event", ex);
+                            }
+                        }
+                    }
+                    await common.manualWriteBatcher.flush("countly", "users");
+                }
+            }
+        }
+        catch (err) {
+            log.e('Event processing error:', err);
+        }
     });
 
 
-    //Drill meta aggregator
-    plugins.register("/aggregator", function() {
+    //Drill meta aggregator in batches
+    /* plugins.register("/aggregator", function() {
         var drillMetaCache = new Cacher(common.drillDb); //Used for Apps info
         new DataBatchReader(common.drillDb, {
             pipeline: [
@@ -223,5 +283,131 @@ var crypto = require('crypto');
             }
             // process next document
         });
+    });*/
+
+    //Processing event meta
+    plugins.register("/aggregator", async function() {
+        var drillMetaCache = new Cacher(common.drillDb);
+        const eventSource = new UnifiedEventSource('drill-meta', {
+            mongo: {
+                db: common.drillDb,
+                pipeline: [
+                    {"$match": {"operationType": "insert"}},
+                    {
+                        "$project": {
+                            "__iid": "$fullDocument._id",
+                            "cd": "$fullDocument.cd",
+                            "a": "$fullDocument.a",
+                            "e": "$fullDocument.e",
+                            "n": "$fullDocument.n",
+                            "sg": "$fullDocument.sg",
+                            "up": "$fullDocument.up",
+                            "custom": "$fullDocument.custom",
+                            "cmp": "$fullDocument.cmp"
+                        }
+                    }
+                ],
+                fallback: {
+                    pipeline: []
+                }
+            }
+        });
+        try {
+            for await (const {/*token,*/ events} of eventSource) {
+                if (events && Array.isArray(events)) {
+                    // Process each event in the batch
+                    var updates = {};
+                    //Should sort before by event 
+                    for (var z = 0; z < events.length; z++) {
+                        if (events[z].a && events[z].e) {
+                            if (events[z].e === "[CLY]_custom") {
+                                events[z].e = events[z].n;
+                            }
+                            let event_hash = crypto.createHash("sha1").update(events[z].e + events[z].a).digest("hex");
+                            var meta = await drillMetaCache.getOne("drill_meta", {_id: events[z].a + "_meta_" + event_hash});
+                            var app_id = events[z].a;
+                            if ((!meta || !meta._id) && !updates[app_id + "_meta_" + event_hash]) {
+                                updates[app_id + "_meta_" + event_hash] = {
+                                    _id: app_id + "_meta_" + event_hash,
+                                    app_id: events[z].a,
+                                    e: events[z].e,
+                                    type: "e"
+                                };
+                                meta = {
+                                    _id: app_id + "_meta_" + event_hash,
+                                    app_id: events[z].a,
+                                    e: events[z].e,
+                                    type: "e"
+                                };
+                            }
+                            for (var sgk in events[z].sg) {
+                                if (!meta.sg || !meta.sg[events[z].sg[sgk]]) {
+                                    meta.sg = meta.sg || {};
+                                    var type = determineType(events[z].sg[sgk]);
+                                    meta.sg[sgk] = {
+                                        type: type
+                                    };
+                                    updates[app_id + "_meta_" + event_hash] = updates[app_id + "_meta_" + event_hash] || {};
+                                    updates[app_id + "_meta_" + event_hash]["sg." + sgk + ".type"] = type;
+                                }
+                            }
+
+                            if (events[z].e === "[CLY]_session" || events[z].e === "[CLY]_session_upadate") {
+                                var meta_up = await drillMetaCache.getOne("drill_meta", {_id: events[z].a + "_meta_up"});
+                                if ((!meta_up || !meta_up._id) && !updates[app_id + "_meta_up"]) {
+                                    updates[app_id + "_meta_up"] = {
+                                        _id: app_id + "_meta_up",
+                                        app_id: events[z].a,
+                                        e: "up",
+                                        type: "up"
+                                    };
+                                    meta_up = {
+                                        _id: app_id + "_meta_up",
+                                        app_id: events[z].a,
+                                        e: "up",
+                                        type: "up"
+                                    };
+                                }
+                                var groups = ["up", "cmp", "custom"];
+                                for (var p = 0; p < groups.length; p++) {
+                                    if (events[z][groups[p]]) {
+                                        for (var key in events[z][groups[p]]) {
+                                            if (!meta_up[groups[p]] || !meta_up[groups[p]][key]) {
+                                                meta_up[groups[p]] = meta_up[groups[p]] || {};
+                                                if (preset[groups[p]] && preset[groups[p]][key]) {
+                                                    meta_up[groups[p]][key] = {type: preset[groups[p]][key].type};
+                                                }
+                                                else {
+                                                    meta_up[groups[p]][key] = {type: determineType(events[z][groups[p]][key])};
+                                                }
+
+                                                updates[app_id + "_meta_up"] = updates[app_id + "_meta_up"] || {};
+                                                updates[app_id + "_meta_up"][groups[p] + "." + key + ".type"] = meta_up[groups[p]][key].type;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (Object.keys(updates).length > 0) {
+                        //bulk operation
+                        const bulkOps = Object.keys(updates).map(u => {
+                            return {
+                                updateOne: {
+                                    filter: {"_id": u},
+                                    update: {$set: updates[u]},
+                                    upsert: true
+                                }
+                            };
+                        });
+                        await common.drillDb.collection("drill_meta").bulkWrite(bulkOps);
+                    }
+                }
+            }
+        }
+        catch (err) {
+            log.e('Event processing error:', err);
+        }
     });
 }());
