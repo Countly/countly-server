@@ -2072,7 +2072,6 @@
             };
         };
 
-
         countlyCommon.formatTimeAgoTextFromDiff = function(diff) {
             if (Math.round(diff).toString().length === 10) {
                 diff *= 1000;
@@ -2080,7 +2079,6 @@
             var target = new Date(Date.now.valueOf() - diff);
             var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
             var text = tooltip;
-            var color = null;
 
             if (diff <= -2592000) {
                 return tooltip;
@@ -2095,23 +2093,18 @@
                 text = jQuery.i18n.prop("common.in.minutes", Math.abs(Math.round(diff / 60)));
             }
             else if (diff <= -1) {
-                color = "#50C354";
                 text = (jQuery.i18n.prop("common.in.seconds", Math.abs(diff)));
             }
             else if (diff <= 1) {
-                color = "#50C354";
                 text = jQuery.i18n.map["common.ago.just-now"];
             }
             else if (diff < 20) {
-                color = "#50C354";
                 text = jQuery.i18n.prop("common.ago.seconds-ago", diff);
             }
             else if (diff < 40) {
-                color = "#50C354";
                 text = jQuery.i18n.map["common.ago.half-minute"];
             }
             else if (diff < 60) {
-                color = "#50C354";
                 text = jQuery.i18n.map["common.ago.less-minute"];
             }
             else if (diff <= 90) {
