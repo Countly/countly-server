@@ -121,6 +121,7 @@
 <script  type="text/x-template" id="reports-drawer">
 <cly-drawer
     class="cly-vue-report-drawer"
+    test-id="reports-drawer"
     @submit="onSubmit"
     @close="onClose"
     @copy="onCopy"
@@ -130,12 +131,12 @@
     <template v-slot:default="drawerScope">
         <cly-form-step id="reports-drawer-main">
 
-        <cly-form-field name="title" :label="i18n('reports.report_name')" rules="required">
-            <el-input v-model="drawerScope.editedObject.title" :placeholder="i18n('reports.report-name')"></el-input>
+        <cly-form-field name="title" :label="i18n('reports.report_name')" rules="required" test-id="email-report-name">
+            <el-input v-model="drawerScope.editedObject.title" :placeholder="i18n('reports.report-name')" test-id="email-report-name-input"></el-input>
         </cly-form-field>
 
-        <cly-form-field name="email" :label="i18n('reports.email-to-receive')" rules="required">
-            <cly-select-email :collapse-tags="false" v-model="drawerScope.editedObject.emails"></cly-select-email>
+        <cly-form-field name="email" :label="i18n('reports.email-to-receive')" rules="required" test-id="email-to-receive">
+            <cly-select-email :collapse-tags="false" v-model="drawerScope.editedObject.emails" test-id="email-to-receive-input"></cly-select-email>
         </cly-form-field>
 
         <cly-form-field class="bu-py-4 report-type-block">
@@ -162,10 +163,11 @@
             </div>
         </cly-form-field>
 
-        <cly-form-field name="apps" :label="i18n('reports.select-apps')" rules="required" v-if="showApps">
+        <cly-form-field name="apps" :label="i18n('reports.select-apps')" rules="required" v-if="showApps" test-id="select-apps">
             <cly-app-select 
                 :auth='{"feature": "reports", "permission":  drawerScope.editedObject._id ? "u": "c"}'
                 class="bu-is-flex"
+                test-id="select-apps-combobox"
                 :placeholder="i18n('reports.Select_apps')"
                 v-on:change="appsChange" 
                 :collapse-tags="false"
@@ -185,23 +187,25 @@
         </cly-form-field> 
 
 
-        <cly-form-field name="metrics" :label="i18n('reports.include-metrics')" rules="required" v-if="showMetrics">
+        <cly-form-field name="metrics" :label="i18n('reports.include-metrics')" rules="required" v-if="showMetrics" test-id="select-data">
             <cly-select-x
                 :collapse-tags="false"
                 :placeholder="i18n('reports.Select_metrics')"
                 mode="multi-check"                
                 v-model="metricsArray"
                 class="bu-is-flex"
+                test-id="select-metrics-combobox"
                 :options="metricOptions">
             </cly-select-x>
         </cly-form-field> 
 
-        <cly-form-field name="select_dashboards" :label="i18n('dashboards.select_dashboards')" rules="required" v-if="showDashboards">
+        <cly-form-field name="select_dashboards" :label="i18n('dashboards.select_dashboards')" rules="required" v-if="showDashboards" test-id="select-dashboards">
             <cly-select-x
                 :placeholder="i18n('dashboards.select')"
                 mode="single-list"
                 v-model="drawerScope.editedObject.dashboards"
                 class="bu-is-flex"
+                test-id="select-dashboards-combobox"
                 :options="dashboardsOptions">
             </cly-select-x>
         </cly-form-field> 
@@ -228,18 +232,20 @@
                    :maxInputWidth="300"
                    :collapse-tags="true"
                    :class="{'is-error': v.errors.length > 0, 'bu-is-flex':true}"
+                   test-id="select-events-combobox"
                    :options="eventOptions">
                 </cly-select-x>
             </validation-provider>
         </div>
         
-        <cly-form-field name="frequency" class="frequency-block" :label="i18n('reports.frequency')" rules="required">
-            <div class="cly-vue-report-drawer__report_description bu-mb-4 text-small  color-cool-gray-50">
+        <cly-form-field name="frequency" class="frequency-block" :label="i18n('reports.frequency')" rules="required" test-id="select-frequency">
+            <div class="cly-vue-report-drawer__report_description bu-mb-4 text-small  color-cool-gray-50" data-test-id="select-frequency-description-label">
                 {{i18n('reports.frequency-desc')}}
             </div>
             <el-radio
                 v-on:change="reportFrequencyChange" 
                 class="is-autosized"
+                test-id="select-frequency-combobox"
                 v-model="drawerScope.editedObject.frequency"
                 :label="item.value"
                 :key="idx"
@@ -253,15 +259,17 @@
         <cly-form-field name="select-date-range" :label="i18n('dashboards.select-report-date-range')" rules="required" v-if="showDashboards">
             <cly-select-x
                 :placeholder="i18n('dashboards.select-date-range')"
-                mode="single-list"
+                mode="single-list-combobox"
                 v-model="drawerScope.editedObject.date_range"
                 class="bu-is-flex"
+                test-id="select-date-range"
                 :options="reportDateRangesOptions">
             </cly-select-x>
         </cly-form-field>
 
         <cly-form-field name="dayOfWeek" :label="i18n('reports.dow')" rules="required" v-if="drawerScope.editedObject.frequency === 'weekly'">
             <cly-select-x
+                test-id="select-dow"
                 :placeholder="i18n('reports.Select-dow')"
                 mode="single-list"
                 v-model="drawerScope.editedObject.day"
@@ -275,6 +283,7 @@
                 {{i18n('reports.time-desc')}}
             </div>
             <cly-select-x
+                test-id="select-time-combobox"
                 :placeholder="i18n('reports.Select-time')"
                 mode="single-list"
                 v-model="drawerScope.editedObject.hour"
@@ -293,6 +302,7 @@
                 mode="single-list"
                 v-model="drawerScope.editedObject.timezone"
                 class="bu-is-flex"
+                test-id="select-timezone-combobox"
                 :options="timezoneOptions">
             </cly-select-x>
         </cly-form-field>

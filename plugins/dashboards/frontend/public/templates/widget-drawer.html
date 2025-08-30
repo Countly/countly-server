@@ -3,12 +3,14 @@
     @copy="onCopy"
     @close="onClose"
     :title="title"
+    test-id="widget-drawer"
     :saveButtonLabel="saveButtonLabel"
     v-bind="controls">
     <template v-slot:default="drawerScope">
         <cly-form-step id="widget-drawer">
             <cly-form-field
                 name="widget_type"
+                test-id="widget-type"
                 rules="required"
                 :subheading="i18nM('dashboards.widget-type-description')"
                 :label="i18nM('dashboards.widget-type')">
@@ -28,6 +30,7 @@
                             style="width:100%"
                             :label="item.type"
                             :key="item.type"
+                            :test-id="'widget-type-' + item.type"
                             border>
                             <div class="has-ellipsis text-smallish cly-vue-dashboards__drawer-widget-type">
                                 {{item.label}}
