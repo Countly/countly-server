@@ -49,6 +49,12 @@ export interface DatabaseAdapterConfig {
   enabled?: boolean; // default: true
 }
 
+/** QueryRunner comparison logs configuration (DEVELOPMENT ONLY) */
+export interface ComparisonLogsConfig {
+  /** Comparison logs mode - WARNING: Should be disabled in production */
+  mode?: 'disabled' | 'files' | 'logs' | 'both'; // default: 'disabled'
+}
+
 /** Database configuration */
 export interface DatabaseConfig {
   /** Whether to kill process if non-MongoDB database adapters fail connection on startup */
@@ -62,6 +68,8 @@ export interface DatabaseConfig {
     mongodb?: DatabaseAdapterConfig;
     clickhouse?: DatabaseAdapterConfig;
   };
+  /** QueryRunner comparison logging configuration (DEVELOPMENT ONLY - disable in production) */
+  comparisonLogs?: ComparisonLogsConfig;
 }
 
 /** Mail configuration */
