@@ -46,15 +46,6 @@
                                     :text="scope.row.config.enabled ? scope.row.status : 'DISABLED'"
                                     :color="getColor(scope.row)"
                                 ></cly-status-tag>
-
-                                <!-- Show error tooltip if there's a failReason -->
-                                <el-tooltip
-                                    v-if="scope.row.failReason"
-                                    :content="scope.row.failReason"
-                                    placement="top"
-                                >
-                                    <i class="ion-alert-circled bu-ml-2" style="color: #D23F00;"></i>
-                                </el-tooltip>
                             </span>
                         </template>
                     </el-table-column>
@@ -149,6 +140,15 @@
                                 >
                                 </cly-status-tag>
                             </span>
+
+                            <!-- Show error tooltip if the last run failed and there's a failReason -->
+                            <el-tooltip
+                                v-if="scope.row.lastRunStatus === 'failed' && scope.row.failReason"
+                                :content="scope.row.failReason"
+                                placement="top"
+                            >
+                                <i class="ion-alert-circled bu-ml-2" style="color: #D23F00;"></i>
+                            </el-tooltip>
                         </template>
                     </el-table-column>
 
