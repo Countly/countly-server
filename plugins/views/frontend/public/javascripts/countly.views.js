@@ -260,12 +260,12 @@
                 label: CV.i18n('common.table.total-users'),
                 default: true
             },
-            {
+            /*{
                 value: "n",
                 width: "180",
                 label: CV.i18n('common.table.new-users'),
                 default: true
-            },
+            },*/
             {
                 value: "t",
                 width: "130",
@@ -312,13 +312,6 @@
                 });
             }
 
-            dynamicCols.push({
-                value: "uvc",
-                label: CV.i18n('views.uvc'),
-                width: "180",
-                default: true
-            });
-
             return {
                 description: CV.i18n('views.description'),
                 remoteTableDataSource: countlyVue.vuex.getServerDataSource(this.$store, "countlyViews", "viewsMainTable"),
@@ -364,6 +357,12 @@
 
         },
         methods: {
+            refreshTotals: function() {
+                var self = this;
+                this.$store.dispatch('countlyViews/fetchTotals', {no_cache: true}).then(function() {
+                    self.totalCards = self.calculateTotalCards();
+                });
+            },
             refresh: function(force) {
                 var self = this;
                 if (force) {
@@ -531,7 +530,6 @@
                 else {
                     totals.br = 0;
                 }
-
                 return [
                     {
                         "name": CV.i18n('views.total_page_views.title'),
@@ -545,6 +543,8 @@
                         "description": CV.i18n('views.unique_users.desc'),
                         "value": countlyCommon.formatNumber(totals.u),
                         "lu": totals.lu,
+                        "ago": countlyCommon.formatTimeAgoTextFromDiff(totals.lu_diff),
+                        "lu_diff": totals.lu_diff,
                         "percent": 0,
                         isPercentage: false
                     },
