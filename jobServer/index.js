@@ -47,6 +47,7 @@ const Logger = require('../api/utils/log.js');
 const log = new Logger('jobServer:index');
 const {ReadBatcher, WriteBatcher, InsertBatcher} = require('../api/parts/data/batcher');
 const common = require('../api/utils/common.js');
+const QueryRunner = require('../api/parts/data/QueryRunner.js');
 const pluginManager = require('../plugins/pluginManager.js');
 
 const {processRequest} = require('./requestProcessor');
@@ -167,6 +168,7 @@ if (require.main === module) {
                 common.writeBatcher = new WriteBatcher(countlyDb);
                 common.readBatcher = new ReadBatcher(countlyDb);
                 common.insertBatcher = new InsertBatcher(countlyDb);
+                common.queryRunner = new QueryRunner();
 
                 // Initialize drill-specific batchers if drillDb is available
                 if (drillDb) {
@@ -259,8 +261,9 @@ if (require.main === module) {
             const config = await pluginManager.getConfig();
             log.d('Configuration initialized successfully');
 
-            // Init systemlogs
-            pluginManager.initPlugin('systemlogs', 'api');
+            console.log('=== INITIALIZING PLUGINS ===');
+            pluginManager.init();
+            console.log('✓ Plugins initialized');
 
             // TEMPORARY DEBUG - JOB SERVER CONFIG
             console.log('=== JOB SERVER LOADED CONFIG ===');
