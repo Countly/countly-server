@@ -1,4 +1,13 @@
-## Version 25.03.X
+## Version 25.03.XX
+Fixes:
+- [server-stats] Fix breakdown event calculation
+- [server-stats] Add new events to breakdown
+
+Enterprise Fixes:
+- [journeys] Update skip threshold when journeys are paused
+- [journeys] fix for clearing content queue when journey is paused
+
+## Version 25.03.17
 Enterprise Fixes:
 - [ldap] Recursive user search in ldap added
 - [license] Update metric endpoint permission
