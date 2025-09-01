@@ -29,7 +29,7 @@ function getJobStatus(job) {
         const failedDate = new Date(job.failedAt);
         const finishedDate = new Date(job.lastFinishedAt);
 
-        if (failedDate > finishedDate) {
+        if (failedDate >= finishedDate) {
             return "FAILED";
         }
         else {
@@ -59,7 +59,7 @@ function getRunStatus(job) {
         const failedDate = new Date(job.failedAt);
         const finishedDate = new Date(job.lastFinishedAt);
 
-        if (failedDate > finishedDate) {
+        if (failedDate >= finishedDate) {
             return "failed";
         }
         else {
