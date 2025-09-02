@@ -1,4 +1,7 @@
 ## Version 25.03.XX
+Enterprise Fixes:
+- [journeys] Fix for performance issues when huge number of journey instances created
+
 Fixes:
 - [server-stats] Fix breakdown event calculation
 - [server-stats] Add new events to breakdown
