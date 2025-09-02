@@ -149,6 +149,7 @@
                 <el-radio
                     v-on:change="reportTypeChange" 
                     class="is-autosized "
+                    :test-id="`report-type-${item.value}`"
                     v-model="drawerScope.editedObject.report_type"
                     :label="item.value"
                     :key="idx"
@@ -259,17 +260,16 @@
         <cly-form-field name="select-date-range" :label="i18n('dashboards.select-report-date-range')" rules="required" v-if="showDashboards">
             <cly-select-x
                 :placeholder="i18n('dashboards.select-date-range')"
-                mode="single-list-combobox"
+                test-id="select-date-range"
+                mode="single-list"
                 v-model="drawerScope.editedObject.date_range"
                 class="bu-is-flex"
-                test-id="select-date-range"
                 :options="reportDateRangesOptions">
             </cly-select-x>
         </cly-form-field>
 
         <cly-form-field name="dayOfWeek" :label="i18n('reports.dow')" rules="required" v-if="drawerScope.editedObject.frequency === 'weekly'">
             <cly-select-x
-                test-id="select-dow"
                 :placeholder="i18n('reports.Select-dow')"
                 mode="single-list"
                 v-model="drawerScope.editedObject.day"
