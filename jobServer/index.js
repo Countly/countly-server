@@ -48,6 +48,7 @@ const log = new Logger('jobServer:index');
 const {ReadBatcher, WriteBatcher, InsertBatcher} = require('../api/parts/data/batcher');
 const common = require('../api/utils/common.js');
 const QueryRunner = require('../api/parts/data/QueryRunner.js');
+var { MongoDbQueryRunner } = require('../api/utils/mongoDbQueryRunner.js');
 const pluginManager = require('../plugins/pluginManager.js');
 
 const {processRequest} = require('./requestProcessor');
@@ -169,12 +170,14 @@ if (require.main === module) {
                 common.readBatcher = new ReadBatcher(countlyDb);
                 common.insertBatcher = new InsertBatcher(countlyDb);
                 common.queryRunner = new QueryRunner();
+                console.log('✓ Batchers and QueryRunner initialized');
 
                 // Initialize drill-specific batchers if drillDb is available
                 if (drillDb) {
                     common.drillReadBatcher = new ReadBatcher(drillDb);
+                    common.drillQueryRunner = new MongoDbQueryRunner(common.drillDb);
+                    console.log('✓ Drill database components initialized');
                 }
-                log.d('Batchers initialized successfully');
             }
             catch (batcherError) {
                 log.e('Failed to initialize batchers:', {
