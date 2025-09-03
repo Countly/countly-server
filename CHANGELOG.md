@@ -1,15 +1,17 @@
 ## Version 25.03.18
-Enterprise Fixes:
-- [journeys] Fix for content shown event handling
-- [journeys] Fix for performance issues when huge number of journey instances created
-  
 Fixes:
 - [server-stats] Add new events to breakdown
 - [server-stats] Fix breakdown event calculation
 
 Enterprise Fixes:
-- [journeys] fix for clearing content queue when journey is paused
+- [journeys] Fix for clearing content queue when journey is paused
+- [journeys] Fix for content shown event handling
+- [journeys] Fix for performance issues when huge number of journey instances created
 - [journeys] Update skip threshold when journeys are paused
+
+Dependencies:
+- Bump get-random-values from 3.0.0 to 4.0.0
+- Bump puppeteer from 24.16.1 to 24.16.2
 
 ## Version 25.03.17
 Enterprise Fixes:
