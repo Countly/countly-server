@@ -1,14 +1,15 @@
-## Version 25.03.XX
+## Version 25.03.18
 Enterprise Fixes:
-- [journeys] Fix for performance issues when huge number of journey instances created
 - [journeys] Fix for content shown event handling
+- [journeys] Fix for performance issues when huge number of journey instances created
+  
 Fixes:
-- [server-stats] Fix breakdown event calculation
 - [server-stats] Add new events to breakdown
+- [server-stats] Fix breakdown event calculation
 
 Enterprise Fixes:
-- [journeys] Update skip threshold when journeys are paused
 - [journeys] fix for clearing content queue when journey is paused
+- [journeys] Update skip threshold when journeys are paused
 
 ## Version 25.03.17
 Enterprise Fixes:
