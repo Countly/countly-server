@@ -1,4 +1,4 @@
-## Version 24.05.X
+## Version 24.05.37
 Enterprise Fixes:
 - [license] Update license metric endpoint permission
 
