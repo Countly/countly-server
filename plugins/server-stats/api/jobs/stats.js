@@ -3,11 +3,10 @@
 const job = require('../../../../api/parts/jobs/job.js'),
     tracker = require('../../../../api/parts/mgmt/tracker.js'),
     log = require('../../../../api/utils/log.js')('job:stats'),
-    config = require('../../../../frontend/express/config.js'),
     pluginManager = require('../../../pluginManager.js'),
     serverStats = require('../parts/stats.js'),
-    moment = require('moment-timezone'),
-    request = require('countly-request')(pluginManager.getConfig('security'));
+    common = require('../../../../api/utils/common.js'),
+    moment = require('moment-timezone');
 
 let drill;
 try {
@@ -17,14 +16,6 @@ catch (ex) {
     log.e(ex);
     drill = null;
 }
-
-const promisedLoadConfigs = function(db) {
-    return new Promise((resolve) => {
-        pluginManager.loadConfigs(db, () => {
-            resolve();
-        });
-    });
-};
 
 /** Representing a StatsJob. Inherits api/parts/jobs/job.js (job.Job) */
 class StatsJob extends job.Job {
@@ -128,94 +119,39 @@ class StatsJob extends job.Job {
     * @returns {undefined} Returns nothing, only callback
     **/
     run(db, done) {
-        if (config.web.track !== 'none') {
-            db.collection('members').find({global_admin: true}).toArray(async(err, members) => {
-                if (!err && members.length > 0) {
-                    let license = {};
-                    if (drill) {
-                        try {
-                            license = await drill.loadLicense(undefined, db);
-                        }
-                        catch (error) {
-                            log.e(error);
-                            // do nothing, most likely there is no license
-                        }
-                    }
-
-                    const options = {
-                        monthlyBreakdown: true,
-                        license_hosting: license.license_hosting,
-                    };
-
-                    serverStats.fetchDatapoints(db, {}, options, async(allData) => {
-                        const dataSummary = StatsJob.generateDataSummary(allData);
-
-                        let date = new Date();
-                        const usersData = [];
-
-                        await promisedLoadConfigs(db);
-
-                        let domain = '';
-
-                        try {
-                            // try to extract hostname from full domain url
-                            const urlObj = new URL(pluginManager.getConfig('api').domain);
-                            domain = urlObj.hostname;
-                        }
-                        catch (_) {
-                            // do nothing, domain from config will be used as is
-                        }
-
-                        usersData.push({
-                            device_id: domain,
-                            timestamp: Math.floor(date.getTime() / 1000),
-                            hour: date.getHours(),
-                            dow: date.getDay(),
-                            user_details: JSON.stringify({
-                                custom: {
-                                    dataPointsAll: dataSummary.all,
-                                    dataPointsMonthlyAvg: dataSummary.avg,
-                                    dataPointsLast3Months: dataSummary.month3,
-                                },
-                            }),
-                        });
-
-                        var formData = {
-                            app_key: 'e70ec21cbe19e799472dfaee0adb9223516d238f',
-                            requests: JSON.stringify(usersData)
-                        };
-
-                        request.post({
-                            url: 'https://stats.count.ly/i/bulk',
-                            json: formData
-                        }, function(a) {
-                            log.d('Done running stats job: %j', a);
-                            done();
-                        });
-
-                        if (tracker.isEnabled()) {
-                            const dataMonthly = StatsJob.generateDataMonthly(allData);
-
-                            const Countly = tracker.getSDK();
-                            Countly.user_details({
-                                'custom': dataMonthly,
-                            });
-
-                            Countly.userData.save();
-                        }
-                    });
+        pluginManager.loadConfigs(db, async function() {
+            let license = {};
+            if (drill) {
+                try {
+                    license = await drill.loadLicense(undefined, db);
                 }
-                else {
-                    done();
+                catch (error) {
+                    log.e(error);
+                    // do nothing, most likely there is no license
                 }
+            }
+
+            const options = {
+                monthlyBreakdown: true,
+                license_hosting: license.license_hosting,
+            };
+
+            serverStats.fetchDatapoints(db, {}, options, async(allData) => {
+                const dataSummary = StatsJob.generateDataSummary(allData);
+                const dataMonthly = StatsJob.generateDataMonthly(allData);
+                dataMonthly.dataPointsAll = dataSummary.all;
+                dataMonthly.dataPointsMonthlyAvg = dataSummary.avg;
+                dataMonthly.dataPointsLast3Months = dataSummary.month3;
+                common.db = db; // ensure common.db is set
+                tracker.enable(); // ensure tracking is enabled
+                const Countly = tracker.getSDK();
+                Countly.user_details({
+                    'custom': dataMonthly,
+                });
+                Countly.userData.save();
+                done();
             });
-        }
-        else {
-            db.collection('plugins').updateOne({_id: 'plugins'}, {$unset: {remoteConfig: 1}}).catch(dbe => {
-                log.e('Db error', dbe);
-            });
-            done();
-        }
+        });
     }
 }
 

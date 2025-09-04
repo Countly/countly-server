@@ -136,8 +136,7 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    offline_mode: false,
-    self_tracking: "",
+    offline_mode: false
 });
 
 if (!plugins.isPluginEnabled('tracker')) {
@@ -832,11 +831,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     app.get(countlyConfig.path + '/robots.txt', function(req, res) {
         res.contentType('text/plain');
         res.send(plugins.getConfig("security").robotstxt);
-    });
-
-    app.get(countlyConfig.path + '/configs', function(req, res) {
-        membersUtility.recheckConfigs(countlyConfigOrig, countlyConfig);
-        res.send("Success");
     });
 
     app.get(countlyConfig.path + '/session', function(req, res, next) {
