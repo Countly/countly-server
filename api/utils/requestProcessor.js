@@ -386,7 +386,6 @@ const processRequest = (params) => {
                         purpose: "LoginAuthToken",
                         callback: function(err2, token) {
                             if (err2) {
-                                console.log(err2);
                                 common.returnMessage(params, 400, 'Error creating token: ' + err2);
                                 return false;
                             }
