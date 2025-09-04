@@ -14,11 +14,11 @@ const METRIC_ENUM = {
     AVG_SESSION_DURATION: "average session duration",
 };
 
-module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
+module.exports.check = async({ alertConfigs: alert, scheduledTo: date }) => {
     const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-        return done();
+        return;
     }
 
     let { alertDataSubType, period, compareType, compareValue } = alert;
@@ -33,14 +33,14 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
     }
     else if (alertDataSubType === METRIC_ENUM.AVG_SESSION_DURATION) {
         if (!numberOfSessions) {
-            return done();
+            return;
         }
         const sessionDuration = await getSessionMetricByDate(app, "d", date, period) || 0;
         metricValue = sessionDuration / numberOfSessions / 60;
     }
     else {
         log.e(`Metric "${alert.alertDataSubType}" couldn't be mapped for alert ${alert._id.toString()}`);
-        return done();
+        return;
     }
 
     if (compareType === commonLib.COMPARE_TYPE_ENUM.MORE_THAN) {
@@ -59,7 +59,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
         }
         else if (alertDataSubType === METRIC_ENUM.AVG_SESSION_DURATION) {
             if (!numberOfSessionsBefore) {
-                return done();
+                return;
             }
             let sessionDuration = await getSessionMetricByDate(app, "d", before, period);
             if (typeof sessionDuration !== "number") {
@@ -69,7 +69,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
         }
 
         if (!metricValueBefore) {
-            return done();
+            return;
         }
 
         const change = (metricValue / metricValueBefore - 1) * 100;
@@ -81,8 +81,6 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
-
-    done();
 };
 
 /**
