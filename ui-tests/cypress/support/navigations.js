@@ -15,8 +15,8 @@ const goToDashboardPage = () => {
 };
 
 const openDashboardsMenu = () => {
-	cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.DASHBOARDS)
-}
+    cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.DASHBOARDS);
+};
 
 const goToHomePage = () => {
     cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.MAIN_MENU);

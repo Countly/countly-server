@@ -3,20 +3,20 @@ import {
     customDashboardElements,
     customDashboardDrawerElements,
     newWidgetDrawerElements
-} from "../../../support/elements/dashboard/dashboards/dashboards"
+} from "../../../support/elements/dashboard/dashboards/dashboards";
 
 //Dashboard Sidebar Menu 
 const clickDashboardsNewButton = () => {
-    cy.clickElement(dashboardsMenuElements().DASHBOARD_NEW_BUTTON)
+    cy.clickElement(dashboardsMenuElements().DASHBOARD_NEW_BUTTON);
 };
 
 //Dashboard Drawer
 const typeDashboardName = (dashboardName) => {
-    cy.typeInput(customDashboardDrawerElements.DASHBOARD_NAME_INPUT, dashboardName)
-}
+    cy.typeInput(customDashboardDrawerElements.DASHBOARD_NAME_INPUT, dashboardName);
+};
 
 const clickCreateDashboardButton = () => {
-    cy.clickElement(customDashboardDrawerElements.CREATE_BUTTON)
+    cy.clickElement(customDashboardDrawerElements.CREATE_BUTTON);
     cy.checkPaceActive();
 };
 
@@ -40,17 +40,17 @@ const closeNotification = () => {
 
 //Custom Dashboard Page
 const clickNewWidgetButton = () => {
-    cy.clickElement(customDashboardElements.NEW_WIDGET_BUTTON)
+    cy.clickElement(customDashboardElements.NEW_WIDGET_BUTTON);
 };
 
 const openCreateNewReportDrawer = () => {
-    cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON)
-    cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON_CREATE_REPORTS_OPTION)
+    cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON);
+    cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON_CREATE_REPORTS_OPTION);
 };
 
 //Widget Drawer
 const selectSourceApp = (appName) => {
-    cy.selectListBoxItem(newWidgetDrawerElements.SELECT_SOURCE_APP, appName)
+    cy.selectListBoxItem(newWidgetDrawerElements.SELECT_SOURCE_APP, appName);
 };
 
 const selectVisualizationType = (visualizationType) => {
@@ -58,11 +58,11 @@ const selectVisualizationType = (visualizationType) => {
 };
 
 const selectMetric = (metricName) => {
-    cy.selectOption(newWidgetDrawerElements.SELECT_METRIC, metricName)
+    cy.selectOption(newWidgetDrawerElements.SELECT_METRIC, metricName);
 };
 
 const clickCreateWidgetButton = () => {
-    cy.clickElement(newWidgetDrawerElements.CREATE_WIDGET_BUTTON)
+    cy.clickElement(newWidgetDrawerElements.CREATE_WIDGET_BUTTON);
 };
 
 //

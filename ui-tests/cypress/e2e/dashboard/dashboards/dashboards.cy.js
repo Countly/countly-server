@@ -9,13 +9,13 @@ const { VISUALIZATION_TYPE, TIME_UNITS } = require('../../../support/constants')
 
 
 describe('Create New Custom Dashboard', () => {
-    beforeEach(function () {
+    beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
         navigationHelpers.openDashboardsMenu();
     });
 
-    it('Create custom dashboard with widgets and email report', function () {
+    it('Create custom dashboard with widgets and email report', function() {
 
         const dashboard = generateDashboardFixture();
 
@@ -53,7 +53,7 @@ describe('Create New Custom Dashboard', () => {
         //     frequency: helper.capitalize(TIME_UNITS.DAILY),
         //     time: "at 04:00, (GMT+03:00) Istanbul",
         // });
-        
+
         reportHelper.openReportPreviewButton();
         reportHelper.verifyReportPreviewPageImage();
     });
