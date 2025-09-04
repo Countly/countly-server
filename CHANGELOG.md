@@ -1,3 +1,7 @@
+## Version 25.03.XX
+Enterprise Fixes
+- [journeys] Fix for handling the skip threshold value when saving the journey
+
 ## Version 25.03.18
 Fixes:
 - [server-stats] Add new events to breakdown
