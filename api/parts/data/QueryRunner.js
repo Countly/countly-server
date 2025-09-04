@@ -53,6 +53,15 @@ if (!config.database.adapters || Object.keys(config.database.adapters).length ==
 class QueryRunner {
 
     /**
+     * Get the current comparison mode from config
+     * @returns {string} The comparison mode ('disabled', 'files', 'logs', 'both')
+     * @private
+     */
+    _getComparisonMode() {
+        return config.database?.comparisonLogs?.mode || 'files';
+    }
+
+    /**
      * Ensure comparison logs directory exists
      * @returns {string} Path to the comparison logs directory
      * @private
@@ -66,23 +75,65 @@ class QueryRunner {
     }
 
     /**
-     * Write comparison results to JSON file
+     * Write comparison results to JSON file and/or application logs
      * @param {string} queryName - Query name for file naming
      * @param {Object} comparisonData - Data to write
      * @private
      */
     writeComparisonLog(queryName, comparisonData) {
-        try {
-            const comparisonLogsDir = this.ensureComparisonLogsDir();
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const filename = `${queryName}_${timestamp}.json`;
-            const filepath = path.join(comparisonLogsDir, filename);
+        const comparisonMode = this._getComparisonMode();
 
-            fs.writeFileSync(filepath, JSON.stringify(comparisonData, null, 2));
-            log.d(`Comparison log written to: ${filepath}`);
+        // Skip logging if disabled
+        if (comparisonMode === 'disabled') {
+            return;
+        }
+
+        // Add development warning to comparison data
+        const dataWithWarning = {
+            ...comparisonData,
+            warning: "DEVELOPMENT FEATURE: Query comparison logging should be disabled in production environments for performance reasons"
+        };
+
+        try {
+            // Write to files if mode is 'files' or 'both'
+            if (comparisonMode === 'files' || comparisonMode === 'both') {
+                const comparisonLogsDir = this.ensureComparisonLogsDir();
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `${queryName}_${timestamp}.json`;
+                const filepath = path.join(comparisonLogsDir, filename);
+
+                // Use async file write to avoid blocking
+                fs.writeFile(filepath, JSON.stringify(dataWithWarning, null, 2), (err) => {
+                    if (err) {
+                        log.e('Failed to write comparison log file', err);
+                    }
+                    else {
+                        log.d(`Comparison log written to file: ${filepath}`);
+                    }
+                });
+            }
+
+            // Write to application logs if mode is 'logs' or 'both'
+            if (comparisonMode === 'logs' || comparisonMode === 'both') {
+                log.w('DEVELOPMENT FEATURE: Query comparison logging to application logs should be disabled in production');
+                // Log summary instead of full data to prevent log flooding
+                const logSummary = {
+                    queryName: dataWithWarning.queryName,
+                    timestamp: dataWithWarning.timestamp,
+                    warning: dataWithWarning.warning,
+                    adaptersExecuted: Object.keys(dataWithWarning.adapters || {}),
+                    results: Object.entries(dataWithWarning.adapters || {}).map(([adapter, data]) => ({
+                        adapter,
+                        success: data.success,
+                        duration: data.duration,
+                        resultCount: Array.isArray(data.transformedResult) ? data.transformedResult.length : 'N/A'
+                    }))
+                };
+                log.i(`Query comparison summary for '${queryName}':`, JSON.stringify(logSummary, null, 2));
+            }
         }
         catch (error) {
-            log.e('Failed to write comparison log', error);
+            log.w('Failed to write comparison log - this development feature should be disabled in production', error);
         }
     }
 
@@ -149,8 +200,11 @@ class QueryRunner {
 
             const queryName = queryDef.name;
 
-            // Check if comparison mode is enabled
-            if (options.comparison) {
+            // Check if comparison mode is enabled (either explicitly or via config)
+            const comparisonMode = this._getComparisonMode();
+            const shouldRunComparison = options.comparison || (comparisonMode !== 'disabled');
+
+            if (shouldRunComparison) {
                 return await this.executeQueryWithComparison(queryDef, params, options, transformOptions);
             }
 
@@ -211,7 +265,6 @@ class QueryRunner {
             queryName,
             timestamp: new Date().toISOString(),
             notes: {
-                fieldMapping: "MongoDB 'n' field (event name) is mapped to ClickHouse 'e' field during data ingestion. Query discrepancies may be due to this field mapping difference.",
                 dataConsistency: "Ensure both adapters are querying equivalent data. MongoDB and ClickHouse may have different field schemas."
             },
             adapters: {}
@@ -248,7 +301,10 @@ class QueryRunner {
                 const rawResult = await this.executeOnAdapter(queryDef, adapterName, params, options);
 
                 // Extract query metadata and actual data from standardized format
-                adapterData.query = rawResult._queryMeta.query;
+                if (!rawResult._queryMeta?.query) {
+                    log.d(`Query '${queryName}' on adapter '${adapterName}' returned no query metadata`);
+                }
+                adapterData.query = rawResult._queryMeta?.query || null;
                 adapterData.rawResult = rawResult.data;
 
                 adapterData.success = true;
@@ -330,8 +386,7 @@ class QueryRunner {
 
             log.d(`Executing query '${query.name}' on adapter '${adapterName}'`);
 
-            const result = await handler(params, options);
-            return result;
+            return await handler(params, options);
         }
         catch (error) {
             log.e(`Query execution failed: ${query.name} on ${adapterName}`, error);

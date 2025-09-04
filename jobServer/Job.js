@@ -25,6 +25,10 @@ const { JOB_PRIORITIES } = require('./constants/JobPriorities');
  */
 
 /**
+ * @typedef {Object} JobHistory
+ */
+
+/**
  * Base class for creating jobs.
  * 
  * @example
@@ -91,6 +95,12 @@ class Job {
 
     /** @type {Object.<string, PriorityLevel>} Available job priorities */
     priorities = JOB_PRIORITIES;
+
+    /** @type {string} Job history mongodb collection name */
+    #jobHistoryCollectionName = 'jobHistories';
+
+    /** @type {import('mongodb').Collection<JobHistory>} */
+    #jobHistoryCollection;
 
     /**
      * Creates an instance of Job.
@@ -273,6 +283,8 @@ class Job {
             jobName: this.jobName
         });
 
+        this.#jobHistoryCollection = db?.collection(this.#jobHistoryCollectionName);
+
         try {
             const result = await new Promise((resolve, reject) => {
                 try {
@@ -303,16 +315,32 @@ class Job {
 
             this.log.i(`[Job:${this.jobName}] Completed successfully`, {
                 result: result || null,
-                duration: `${Date.now() - job?.attrs?.lastRunAt?.getTime()}ms`
+                duration: `${Date.now() - job?.attrs?.lastRunAt?.getTime()}ms`,
             });
             done(null, result);
         }
         catch (error) {
+            const duration = `${Date.now() - job?.attrs?.lastRunAt?.getTime()}ms`;
+
             this.log.e(`[Job:${this.jobName}] Execution failed`, {
                 error: error.message,
                 stack: error.stack,
-                duration: `${Date.now() - job?.attrs?.lastRunAt?.getTime()}ms`
+                duration,
             });
+
+            const historyDoc = { ...job.attrs };
+            historyDoc.job_id = historyDoc?._id;
+            delete historyDoc._id;
+            historyDoc.duration = duration;
+            historyDoc.status = 'FAILED';
+            if (!('failedAt' in historyDoc)) {
+                historyDoc.failedAt = new Date();
+            }
+            if (!('failReason' in historyDoc)) {
+                historyDoc.failReason = error.message;
+            }
+            this.#jobHistoryCollection.insertOne(historyDoc);
+
             done(error);
         }
     }

@@ -3,7 +3,11 @@
 * @module api/config
 */
 
-/** @lends module:api/config */
+/**
+ * @typedef {import('../types/config').CountlyAPIConfig} CountlyAPIConfig
+ */
+
+/** @type {CountlyAPIConfig} */
 var countlyConfig = {
 
     /**
@@ -17,6 +21,8 @@ var countlyConfig = {
      * @property {boolean} [adapters.mongodb.enabled=true] - Enable MongoDB adapter
      * @property {object} adapters.clickhouse - ClickHouse adapter settings
      * @property {boolean} [adapters.clickhouse.enabled=true] - Enable ClickHouse adapter
+     * @property {object} comparisonLogs - Configuration for QueryRunner comparison logging (DEVELOPMENT ONLY - disable in production)
+     * @property {string} [comparisonLogs.mode='disabled'] - Comparison logs mode: 'disabled' (no logging), 'files' (write to comparison_logs directory), 'logs' (write to application logs), or 'both'. WARNING: Should be disabled in production environments for performance reasons.
      */
     database: {
         failOnConnectionError: true,
@@ -29,6 +35,9 @@ var countlyConfig = {
             clickhouse: {
                 enabled: true
             }
+        },
+        comparisonLogs: {
+            mode: 'disabled' // Options: 'disabled', 'files', 'logs', 'both' - WARNING: DEVELOPMENT ONLY, use 'disabled' in production
         }
     },
 
@@ -372,4 +381,5 @@ var countlyConfig = {
     }
 };
 
+/** @type {CountlyAPIConfig} */
 module.exports = require('./configextender')('API', countlyConfig, process.env);
