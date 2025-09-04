@@ -3053,6 +3053,274 @@
         }
       }
     },
+    "/o/apps/all": {
+      "get": {
+        "summary": "Get all apps",
+        "description": "Get all applications in the system (requires global admin privileges)",
+        "tags": [
+          "App Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key (global admin required)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All apps retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "admin_of": {
+                      "type": "object",
+                      "description": "Apps user is admin of",
+                      "additionalProperties": {
+                        "$ref": "#/components/schemas/App"
+                      }
+                    },
+                    "user_of": {
+                      "type": "object",
+                      "description": "Apps user has access to",
+                      "additionalProperties": {
+                        "$ref": "#/components/schemas/App"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Global admin privileges required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/apps/mine": {
+      "get": {
+        "summary": "Get current user's apps",
+        "description": "Get applications that the current user has access to",
+        "tags": [
+          "App Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User apps retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "admin_of": {
+                      "type": "object",
+                      "description": "Apps user is admin of",
+                      "additionalProperties": {
+                        "$ref": "#/components/schemas/App"
+                      }
+                    },
+                    "user_of": {
+                      "type": "object",
+                      "description": "Apps user has access to",
+                      "additionalProperties": {
+                        "$ref": "#/components/schemas/App"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/apps/details": {
+      "get": {
+        "summary": "Get app details",
+        "description": "Get detailed information about a specific application",
+        "tags": [
+          "App Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID (24 character string)",
+            "schema": {
+              "type": "string",
+              "minLength": 24,
+              "maxLength": 24
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "App details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/App"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "owner_name": {
+                          "type": "string",
+                          "description": "Name of the app owner"
+                        },
+                        "last_data": {
+                          "type": "integer",
+                          "description": "Timestamp of last data received"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized or app does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/o/apps/plugins": {
+      "get": {
+        "summary": "Get app plugins configuration",
+        "description": "Get plugin configurations for a specific application",
+        "tags": [
+          "App Management"
+        ],
+        "parameters": [
+          {
+            "name": "api_key",
+            "in": "query",
+            "required": true,
+            "description": "API key (global admin required)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "description": "Application ID (24 character string)",
+            "schema": {
+              "type": "string",
+              "minLength": 24,
+              "maxLength": 24
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Specific plugin name to retrieve configuration for",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "App plugins retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "plugins": {
+                      "type": "object",
+                      "description": "Plugin configurations",
+                      "additionalProperties": {
+                        "type": "object",
+                        "description": "Plugin-specific configuration"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Global admin privileges required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/o/analytics/dashboard": {
       "get": {
         "summary": "Get dashboard data",
@@ -4108,6 +4376,89 @@
             }
           }
         }
+      },
+      "App": {
+        "type": "object",
+        "description": "Application object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Application ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Application name"
+          },
+          "key": {
+            "type": "string",
+            "description": "Application key"
+          },
+          "category": {
+            "type": "string",
+            "description": "Application category"
+          },
+          "type": {
+            "type": "string",
+            "description": "Application type (mobile, web, desktop)"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Application timezone"
+          },
+          "country": {
+            "type": "string",
+            "description": "Application country code"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Owner user ID"
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "Creation timestamp"
+          },
+          "edited_at": {
+            "type": "integer",
+            "description": "Last edit timestamp"
+          },
+          "plugins": {
+            "type": "object",
+            "description": "Plugin configurations",
+            "additionalProperties": true
+          },
+          "app_domain": {
+            "type": "string",
+            "description": "Application domain for web apps"
+          },
+          "app_version": {
+            "type": "string",
+            "description": "Application version"
+          },
+          "salt": {
+            "type": "string",
+            "description": "Salt for data security"
+          },
+          "checksum_salt": {
+            "type": "string",
+            "description": "Checksum salt for data validation"
+          },
+          "image": {
+            "type": "string",
+            "description": "Application icon/image path"
+          }
+        },
+        "required": ["_id", "name", "key"]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error response",
+        "properties": {
+          "result": {
+            "type": "string",
+            "description": "Error message or result status"
+          }
+        },
+        "required": ["result"]
       }
     },
     "securitySchemes": {
