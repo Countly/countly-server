@@ -85,22 +85,22 @@
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column type="options">
+            <el-table-column type="options" test-id="more-button-area">
                 <template v-slot="rowScope">
                     <cly-more-options :test-id="'datatable-reports-' + rowScope.$index" v-if="rowScope.row.hover" size="small" @command="handleReportEditCommand($event,rowScope)">
-                        <el-dropdown-item v-if="rowScope.row._canUpdate" icon="el-icon-document-copy" command="edit-comment">
+                        <el-dropdown-item v-if="rowScope.row._canUpdate" icon="el-icon-document-copy" command="edit-comment" :data-test-id="'edit-report-button-' + rowScope.$index">
                             Edit
                         </el-dropdown-item>
-                        <el-dropdown-item  icon="el-icon-position" command="send-comment">
+                        <el-dropdown-item  icon="el-icon-position" command="send-comment" :data-test-id="'send-now-report-button-' + rowScope.$index">
                             Send Now
                         </el-dropdown-item>
                         <form name="previewemailform" method="post" target="_blank">
                             <input type="hidden" name="auth_token">
                         </form>
-                        <el-dropdown-item  icon="el-icon-chat-dot-square" command="preview-comment">
+                        <el-dropdown-item  icon="el-icon-chat-dot-square" command="preview-comment" :data-test-id="'preview-report-button-' + rowScope.$index">
                             Preview
                         </el-dropdown-item>
-                        <el-dropdown-item v-if="rowScope.row._canDelete" icon="el-icon-delete" command="delete-comment">
+                        <el-dropdown-item v-if="rowScope.row._canDelete" icon="el-icon-delete" command="delete-comment" :data-test-id="'delete-report-button-' + rowScope.$index">
                             Delete
                         </el-dropdown-item>
                     </cly-more-options>
