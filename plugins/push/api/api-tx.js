@@ -1,5 +1,7 @@
 /**
  * @typedef {import("./new/types/schedule").AudienceFilter} AudienceFilter
+ * @typedef {import("./new/types/message").Message} Message
+ * @typedef {import("mongodb").Collection<Message>} MessageCollection
  */
 
 const { Filter, Content, ValidationError } = require("./send"),
@@ -42,7 +44,7 @@ const { createSchedule } = require("./new/scheduler");
  * @apiErrorExample WrongDate
  *      HTTP/1.1 400 Bad Request
  *      {
- *          "errors": ["Message start date is later than push date"]
+ *          "errors": ["Message start date is later than start date"]
  *      }
  */
 module.exports.apiPush = async (params) => {
@@ -51,7 +53,7 @@ module.exports.apiPush = async (params) => {
         {
             app_id: { type: "ObjectID", required: true },
             _id: { type: "ObjectID", required: true },
-            start: { type: "Date", required: true },
+            start: { type: "Date", required: false },
             filter: { type: Filter.scheme, required: true },
             contents: {
                 type: Content.scheme,
@@ -69,20 +71,51 @@ module.exports.apiPush = async (params) => {
     if (!data.result) {
         throw new ValidationError(data.errors);
     }
+    /** @type {MessageCollection} */
+    const collection = common.db.collection("messages");
+    const message = await collection.findOne({
+        _id: data.obj._id,
+        app: data.obj.app_id,
+    });
+    if (!message) {
+        return common.returnMessage(params, 404, {
+            errors: ["Message not found"]
+        });
+    }
+    const trigger = message.triggers.find((t) => t.kind === "api");
+    if (!trigger) {
+        return common.returnMessage(params, 400, {
+            errors: ["Message is not transactional"]
+        });
+    }
+    const start = data.obj.start ?? new Date();
+    if (trigger.start.getTime() > start.getTime()) {
+        return common.returnMessage(params, 400, {
+            errors: ["Message start date is later than start date"]
+        });
+    }
     log.i("Scheduling transactional message:", JSON.stringify(data.obj));
-    const schedule = await createSchedule(
-        common.db,
-        data.obj.app_id,
-        data.obj._id,
-        data.obj.start,
-        false,
-        undefined,
-        false,
-        data.obj.filter,
-        {
-            contents: data.obj.contents,
-            variables: data.obj.variables,
-        },
-    );
-    common.returnOutput(params, { schedule });
+    try {
+        const schedule = await createSchedule(
+            common.db,
+            data.obj.app_id,
+            data.obj._id,
+            start,
+            false,
+            undefined,
+            false,
+            data.obj.filter,
+            {
+                contents: data.obj.contents,
+                variables: data.obj.variables,
+            },
+        );
+        common.returnOutput(params, { schedule });
+    }
+    catch (err) {
+        log.e("Error while scheduling the message", err);
+        return common.returnMessage(params, 500, {
+            errors: "Error while scheduling the message: " + error.message
+        });
+    }
 };

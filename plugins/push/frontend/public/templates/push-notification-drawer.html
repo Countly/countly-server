@@ -299,24 +299,6 @@
                             </validation-provider>
                         </div>
                     </template>
-                    <div class="cly-vue-drawer-step__section">
-                        <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
-                            {{i18n('push-notification.delivery-date-calculation')}}
-                            <!-- <cly-tooltip-icon :tooltip="i18n('push-notification.delivery-date-description')" icon="ion ion-help-circled"> </cly-tooltip-icon> -->
-                        </div>
-                        <div class="bu-is-flex bu-is-flex-direction-column">
-                            <line-radio-button-with-description
-                                :label="DeliveryDateCalculationEnum.EVENT_SERVER_DATE"
-                                v-model="pushNotificationUnderEdit.automatic.deliveryDateCalculation"
-                                :title="i18n('push-notification.relative-to-the-date-event-server')">
-                            </line-radio-button-with-description>
-                            <line-radio-button-with-description
-                                :label="DeliveryDateCalculationEnum.EVENT_DEVICE_DATE"
-                                v-model="pushNotificationUnderEdit.automatic.deliveryDateCalculation"
-                                :title="i18n('push-notification.relative-to-the-date-event-device')">
-                            </line-radio-button-with-description>
-                        </div>
-                    </div>
                     <template v-if="pushNotificationUnderEdit.automatic.trigger !== TriggerEnum.EVENT">
                         <div class="cly-vue-drawer-step__section">
                             <div class="bu-mb-2 cly-vue-push-notification-drawer__line-radio-button-group-header">
@@ -1270,7 +1252,6 @@
                                 <review-section-row v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT" :label="i18n('push-notification.events')" :value="pushNotificationUnderEdit.automatic.events.join(', ')"></review-section-row>
                                 <review-section-row v-else :label="i18n('push-notification.cohorts')" :value="previewCohorts(pushNotificationUnderEdit.automatic.cohorts).join(', ')"></review-section-row>
                                 <review-section-row v-if="isLocationSet" :label="i18n('push-notification.geolocations')" :value="previewLocations.join(', ')"></review-section-row>
-                                <review-section-row v-if="pushNotificationUnderEdit.automatic.trigger === TriggerEnum.EVENT" :label="i18n('push-notification.delivery-date-calculation')" :value="deliveryDateCalculationOptions[pushNotificationUnderEdit.automatic.deliveryDateCalculation].label"></review-section-row>
                                 <review-section-row v-else :label="i18n('push-notification.behavior-trigger-not-met')" :value="triggerNotMetOptions[pushNotificationUnderEdit.automatic.triggerNotMet].label"></review-section-row>
                             </template>
                         </div>

@@ -7,7 +7,6 @@ const { S, State, Status, STATUSES, TriggerKind, RecurringType, Time, MEDIA_MIME
     { Content } = require('./content'),
     { Result, MAX_ERRORS, MAX_RUNS } = require('./result'),
     { Message } = require('./message'),
-    // { Template } = require('./template'),
     dbext = require('./db');
 
 module.exports = {
@@ -39,8 +38,6 @@ module.exports = {
     MAX_RUNS,
 
     Message,
-
-    // Template,
 
     ERROR,
     PushError,

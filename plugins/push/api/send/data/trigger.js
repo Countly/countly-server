@@ -263,7 +263,6 @@ class AutoTrigger extends Trigger {
      *
      * @param {object|null}     data            filter data
      * @param {Date}            data.end        message end date (don't send anything after this date, set status to Stopped)
-     * @param {boolean}         data.actuals    whether to use server calculation date (false) or event/cohort entry date for scheduling (true)
      * @param {number}          data.time       time (milliseconds since 00:00) when to send in user's timezone
      * @param {boolean}         data.reschedule allow rescheduling to next day when sending on "time" is not an option
      * @param {number}          data.delay      delay sending this much seconds after the trigger
@@ -280,7 +279,6 @@ class AutoTrigger extends Trigger {
     static get scheme() {
         return Object.assign({}, super.scheme, {
             end: {type: 'Date', required: false},
-            actuals: {type: 'Boolean', required: false},
             time: {type: 'Number', required: false, min: Time.MIN, max: Time.MAX},
             reschedule: {type: 'Boolean', required: false},
             delay: {type: 'Number', required: false},
@@ -309,29 +307,6 @@ class AutoTrigger extends Trigger {
         }
         else {
             delete this._data.end;
-        }
-    }
-
-    /**
-     * Getter for actuals
-     *
-     * @returns {boolean} whether to use event/cohort time instead of server calculation time
-     */
-    get actuals() {
-        return this._data.actuals || false;
-    }
-
-    /**
-     * Setter for actuals
-     *
-     * @param {boolean|undefined} actuals whether to use event/cohort time instead of server calculation time
-     */
-    set actuals(actuals) {
-        if (actuals !== null && actuals !== undefined) {
-            this._data.actuals = actuals;
-        }
-        else {
-            delete this._data.actuals;
         }
     }
 

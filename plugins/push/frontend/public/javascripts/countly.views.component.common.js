@@ -982,7 +982,6 @@
                 audienceSelectionOptions: countlyPushNotification.service.audienceSelectionOptions,
                 triggerOptions: countlyPushNotification.service.triggerOptions,
                 triggerNotMetOptions: countlyPushNotification.service.triggerNotMetOptions,
-                deliveryDateCalculationOptions: countlyPushNotification.service.deliveryDateCalculationOptions,
                 deliveryMethodOptions: countlyPushNotification.service.deliveryMethodOptions,
                 cohorts: [],
                 locations: [],

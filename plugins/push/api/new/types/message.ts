@@ -25,7 +25,6 @@ export interface BaseTrigger {
 export interface BaseAutoTrigger extends BaseTrigger {
     kind: "event"|"api"|"cohort";
     end?: Date;
-    actuals?: boolean;
     time?: number; // Delivery time in milliseconds (from clock input)
     reschedule?: boolean;
     delay?: number; // Delivery method: Delayed in milliseconds (from days and hours inputs)

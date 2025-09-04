@@ -77,14 +77,13 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
                 messages,
             },
         }) => {
+            const decoded = messages.map(
+                m => m.value ? m.value.toString("utf8") : null
+            );
             try {
                 log.i("Received", messages.length, "message(s) in topic", topic);
-                const parsed = messages
-                    .map(
-                        ({ value }) => value
-                            ? JSON.parse(value.toString("utf8"))
-                            : null
-                    )
+                const parsed = decoded
+                    .map(value => value ? JSON.parse(value) : null)
                     .filter(value => !!value);
                 log.d("Messages:", JSON.stringify(parsed, null, 2));
                 switch (topic) {
@@ -97,8 +96,14 @@ async function initPushQueue(onPushMessages, onMessageSchedules, onMessageResult
                 case config.topics.AUTO_TRIGGER.name:
                     return await onAutoTriggerEvents(parsed.map(autoTriggerEventDTOToObject));
                 }
-            } catch(err) {
-                log.e("Error while consuming. topic:", topic, err);
+            }
+            catch(err) {
+                log.e(
+                    "Error while consuming,",
+                    "Topic", topic,
+                    "Messages:", decoded,
+                    "Error:", err
+                );
             }
         }
     });

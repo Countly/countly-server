@@ -15,10 +15,12 @@ const { loadPluginConfiguration } = require('./new/lib/utils');
 const { extractTokenFromQuerystring } = require("./new/lib/utils");
 const platforms = require("./new/constants/platform-keymap.js");
 const platformKeys = /** @type {PlatformKey[]} */(Object.keys(platforms));
-const allAppUserFields = Object.values(platforms)
-    .map(platform => platform.combined)
-    .flat()
-    .map(combined => `tk${combined}`);
+const allAppUserFields = [...new Set(
+    Object.values(platforms)
+        .map(platform => platform.combined)
+        .flat()
+        .map(combined => `tk${combined}`)
+)];
 
 const CMD_PUSH_TOKEN_SESSION = 'push_token_session',
     queue = {};

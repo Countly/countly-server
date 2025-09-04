@@ -1,11 +1,3 @@
-const { Base, util, ERROR, SendError, PushError, ConnectionError, ValidationError } = require('./std'),
-    // { FRAME, encode, decode } = require('./proto'),
-    // { Pool } = require('./pool'),
-    // { pools } = require('./pools'),
-    // { extract, guess, PLATFORM, platforms, FIELDS, FIELDS_TITLES, PLATFORMS_TITLES, field, fields, allAppUserFields } = require('./platforms'),
-    // { Audience } = require('./audience'),
-    DATA = require('./data');
-
 /*
  * A bit of disambiguation to wrap one's head around :allthethings:
  *
@@ -44,26 +36,4 @@ const { Base, util, ERROR, SendError, PushError, ConnectionError, ValidationErro
  * Note = plains + title? + message? + pedata?
  */
 
-module.exports = Object.assign({
-    // FRAME,
-    // encode,
-    // decode,
-    util,
-    Base,
-    ERROR,
-    SendError,
-    PushError,
-    ConnectionError,
-    ValidationError,
-    // Audience,
-    // extract,
-    // guess,
-    // PLATFORM,
-    // platforms,
-    // PLATFORMS_TITLES,
-    // FIELDS,
-    // FIELDS_TITLES,
-    // field,
-    // fields,
-    // allAppUserFields
-}, DATA);
+module.exports = require('./data');

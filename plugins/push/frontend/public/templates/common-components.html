@@ -455,8 +455,7 @@
                                 <template><span>-</span></template>
                             </div>
                         </details-tab-row>
-                        <details-tab-row v-if="pushNotification.automatic.trigger === TriggerEnum.EVENT" :label="i18n('push-notification.delivery-date-calculation')" :value="deliveryDateCalculationOptions[pushNotification.automatic.deliveryDateCalculation].label"></details-tab-row>
-                        <details-tab-row v-else :label="i18n('push-notification.behavior-trigger-not-met')" :value="triggerNotMetOptions[pushNotification.automatic.triggerNotMet].label"></details-tab-row>
+                        <details-tab-row v-if="pushNotification.automatic.trigger !== TriggerEnum.EVENT" :label="i18n('push-notification.behavior-trigger-not-met')" :value="triggerNotMetOptions[pushNotification.automatic.triggerNotMet].label"></details-tab-row>
                     </template>
                 </div>
             </template>

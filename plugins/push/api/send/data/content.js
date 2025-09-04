@@ -1,7 +1,7 @@
 'use strict';
 
 const { PushError } = require('./error'),
-    { S, Validatable, PERS_TYPES } = require('./const');
+    { Validatable, PERS_TYPES } = require('./const');
 
 const platforms = require('../../new/constants/platform-keymap');
 

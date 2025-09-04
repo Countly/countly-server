@@ -383,7 +383,6 @@ describe("Scheduler", () => {
                     {
                         kind: 'event',
                         start: new Date("2025-04-03T19:50:47.672Z"),
-                        actuals: false,
                         events: [ 'test-event' ]
                     }
                 ]

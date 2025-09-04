@@ -63,18 +63,12 @@ plugins.setConfigs(FEATURE_NAME, {
         uids: '', // comma separated list of app_users.uid
         cohorts: '', // comma separated list of cohorts._id
     },
-    rate: {
-        rate: '',
-        period: ''
-    },
-    deduplicate: false,
-    sendahead: 60000, // send pushes scheduled up to 60 sec in the future
-    connection_retries: 3, // retry this many times on recoverable errors
-    connection_factor: 1000, // exponential backoff factor
-    pool_pushes: 400, // object mode streams high water mark
-    pool_bytes: 10000, // bytes mode streams high water mark
-    pool_concurrency: 5, // max number of same type connections
-    pool_pools: 10, // max number of connections in total
+    // TODO: rate limiting needs to be implemented on kafka consumer side. also
+    // it needs to be configurable per app not as a global setting.
+    // rate: {
+    //     rate: '',
+    //     period: ''
+    // },
     message_timeout: 3600000, // timeout for a message not sent yet (for TooLateToSend error)
     default_content_available: false, // sets content-available: 1 by default for ios
 });
@@ -85,24 +79,21 @@ plugins.internalDrillEvents.push('[CLY]_push_sent');
 plugins.internalDrillEvents.push('[CLY]_push_action');
 
 /**
- * @param {MongoDb} db
+ * Initialize the push queue
+ * @param {MongoDb} db - MongoDB database instance
+ * @returns {Promise<void>}
  */
 async function queueInitializer(db) {
-    const logError = common.log("push:queue").e;
     try {
         await initPushQueue(
-            (pushes) => sendAllPushes(pushes)
-                .catch(e => logError("Error while processing PushEvents", pushes, e)),
-            (schedules) => composeAllScheduledPushes(db, schedules)
-                .catch(e => logError("Error while processing ScheduleEvents", schedules, e)),
-            (results) => saveResults(db, results)
-                .catch(e => logError("Error while processing ResultEvents", results, e)),
-            (autoTriggerEvents) => scheduleMessageByAutoTriggers(db, autoTriggerEvents)
-                .catch(e => logError("Error while processing AutoTriggerEvents", autoTriggerEvents, e)),
+            pushes => sendAllPushes(pushes),
+            schedules => composeAllScheduledPushes(db, schedules),
+            results => saveResults(db, results),
+            autoTriggerEvents => scheduleMessageByAutoTriggers(db, autoTriggerEvents),
         );
     }
     catch(e) {
-        logError("Error while initializing Push queue", e);
+        log.e("Error while initializing Push queue", e);
     }
 }
 
@@ -374,7 +365,6 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiBody {Number} [triggers.sctz] [only for plain trigger] Send in users' timezones switch, a number representing message creator offset timezone in minutes (GMT+3 is -180)
  * @apiBody {Boolean} [triggers.delayed] [only for plain trigger] Delay audience selection to 5 minutes prior to start date
  * @apiBody {Date} [triggers.end] [only for event, cohort & api triggers] Campaign end date (epoch or ISO date string)
- * @apiBody {Boolean} [triggers.actuals] [only for event, cohort triggers] Use event / cohort date instead of date of event arrival to the server date / cohort recalculation date
  * @apiBody {Number} [triggers.time] [only for event, cohort triggers] Time in ms since 00:00 in case event or cohort message is to be sent in users' timezones
  * @apiBody {Boolean} [triggers.reschedule] [only for event, cohort triggers] Allow rescheduling to next day if it's too late to send on scheduled day
  * @apiBody {Number} [triggers.delay] [only for event, cohort triggers] Milliseconds to delay sending of event or cohort message
@@ -425,7 +415,6 @@ plugins.register('/i/app_users/export', ({app_id, uids, export_commands, dbargs,
  * @apiSuccess {Number} [triggers.sctz] [only for plain trigger] Send in users' timezones switch, a number representing message creator offset timezone in minutes (GMT+3 is -180)
  * @apiSuccess {Boolean} [triggers.delayed] [only for plain trigger] Delay audience selection to 5 minutes prior to start date
  * @apiSuccess {Date} [triggers.end] [only for event, cohort & api triggers] Campaign end date (epoch or ISO date string)
- * @apiSuccess {Boolean} [triggers.actuals] [only for event, cohort triggers] Use event / cohort date instead of date of event arrival to the server date / cohort recalculation date
  * @apiSuccess {Number} [triggers.time] [only for event, cohort triggers] Time in ms since 00:00 in case event or cohort message is to be sent in users' timezones
  * @apiSuccess {Boolean} [triggers.reschedule] [only for event, cohort triggers] Allow rescheduling to next day if it's too late to send on scheduled day
  * @apiSuccess {Number} [triggers.delay] [only for event, cohort triggers] Milliseconds to delay sending of event or cohort message

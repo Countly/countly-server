@@ -119,10 +119,6 @@
         COHORT_EXIT: 'cohortExit',
         EVENT: 'event'
     });
-    var DeliveryDateCalculationEnum = Object.freeze({
-        EVENT_SERVER_DATE: 'eventServerDate',
-        EVENT_DEVICE_DATE: 'eventDeviceDate'
-    });
     var TriggerNotMetEnum = Object.freeze({
         SEND_ANYWAY: 'sendAnyway',
         CANCEL_ON_EXIT: 'cancelOnExit'
@@ -170,10 +166,6 @@
     var triggerNotMetOptions = {};
     triggerNotMetOptions[TriggerNotMetEnum.SEND_ANYWAY] = {label: CV.i18n('push-notification.send-anyway'), value: TriggerNotMetEnum.SEND_ANYWAY};
     triggerNotMetOptions[TriggerNotMetEnum.CANCEL_ON_EXIT] = {label: CV.i18n('push-notification.cancel-when-user-exits-cohort'), value: TriggerNotMetEnum.CANCEL_ON_EXIT};
-
-    var deliveryDateCalculationOptions = {};
-    deliveryDateCalculationOptions[DeliveryDateCalculationEnum.EVENT_SERVER_DATE] = {label: CV.i18n('push-notification.relative-to-the-date-event-server'), value: DeliveryDateCalculationEnum.EVENT_SERVER_DATE};
-    deliveryDateCalculationOptions[DeliveryDateCalculationEnum.EVENT_DEVICE_DATE] = {label: CV.i18n('push-notification.relative-to-the-date-event-device'), value: DeliveryDateCalculationEnum.EVENT_DEVICE_DATE};
 
     var deliveryMethodOptions = {};
     deliveryMethodOptions[DeliveryMethodEnum.IMMEDIATELY] = {label: CV.i18n('push-notification.immediately'), value: DeliveryMethodEnum.IMMEDIATELY};
@@ -336,7 +328,6 @@
                     days: 0,
                     hours: 0
                 },
-                deliveryDateCalculation: DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
                 trigger: typeof countlyCohorts === 'undefined' ? TriggerEnum.EVENT : TriggerEnum.COHORT_ENTRY,
                 triggerNotMet: TriggerNotMetEnum.SEND_ANYWAY,
                 events: [],
@@ -1588,7 +1579,6 @@
                 };
                 model.automatic = {
                     deliveryMethod: triggerDto.delay ? DeliveryMethodEnum.DELAYED : DeliveryMethodEnum.IMMEDIATELY,
-                    deliveryDateCalculation: triggerDto.actuals ? DeliveryDateCalculationEnum.EVENT_DEVICE_DATE : DeliveryDateCalculationEnum.EVENT_SERVER_DATE,
                     trigger: triggerDto.kind === 'event' ? TriggerEnum.EVENT : triggerDto.entry ? TriggerEnum.COHORT_ENTRY : TriggerEnum.COHORT_EXIT,
                     triggerNotMet: triggerDto.cancels ? TriggerNotMetEnum.CANCEL_ON_EXIT : TriggerNotMetEnum.SEND_ANYWAY,
                     cohorts: triggerDto.cohorts || [],
@@ -2062,7 +2052,6 @@
                 var result = {
                     kind: model.automatic.trigger === TriggerEnum.EVENT ? 'event' : 'cohort',
                     start: model.delivery.startDate,
-                    actuals: model.automatic.deliveryDateCalculation === DeliveryDateCalculationEnum.EVENT_DEVICE_DATE,
                     reschedule: false,
                 };
                 if (options.isEndDateSet) {
@@ -2446,7 +2435,6 @@
         MessageTypeEnum: MessageTypeEnum,
         TriggerEnum: TriggerEnum,
         DeliveryMethodEnum: DeliveryMethodEnum,
-        DeliveryDateCalculationEnum: DeliveryDateCalculationEnum,
         TriggerNotMetEnum: TriggerNotMetEnum,
         IOSAuthConfigTypeEnum: IOSAuthConfigTypeEnum,
         UserPropertyTypeEnum: UserPropertyTypeEnum,
@@ -2470,7 +2458,6 @@
         },
         triggerOptions: triggerOptions,
         triggerNotMetOptions: triggerNotMetOptions,
-        deliveryDateCalculationOptions: deliveryDateCalculationOptions,
         deliveryMethodOptions: deliveryMethodOptions,
         statusOptions: statusOptions,
         iosAuthConfigTypeOptions: iosAuthConfigTypeOptions,
