@@ -1,6 +1,7 @@
 ## Version 25.03.XX
 Enterprise Fixes
 - [journeys] Fix for handling the skip threshold value when saving the journey
+- [journeys] Performance improvement on journey stat user list & UI bugfixes
 
 ## Version 25.03.18
 Fixes:
