@@ -194,16 +194,12 @@ if (countlyConfig.web && countlyConfig.web.track === "all") {
     countlyConfig.web.track = null;
 }
 
-var countlyConfigOrig = JSON.parse(JSON.stringify(countlyConfig));
-
 Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_fs")]).then(function(dbs) {
     var countlyDb = dbs[0];
     //reference for consistency between app and api processes
     membersUtility.db = common.db = countlyDb;
     countlyFs.setHandler(dbs[1]);
 
-    //checking remote configuration
-    membersUtility.recheckConfigs(countlyConfigOrig, countlyConfig);
     /**
     * Create sha1 hash string
     * @param {string} str - string to hash

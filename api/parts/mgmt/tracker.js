@@ -86,6 +86,25 @@ tracker.enable = function() {
     });
 };
 
+/**
+ * Get bulk server instance
+ * @returns {Object} Countly Bulk instance
+ */
+tracker.getBulkServer = function() {
+    return new Countly.Bulk({
+        app_key: server,
+        url: url
+    });
+};
+
+/**
+ * Get bulk user instance
+ * @param {Object} serverInstance - Countly Bulk server instance
+ * @returns {Object} Countly Bulk User instance
+ */
+tracker.getBulkUser = function(serverInstance) {
+    return serverInstance.add_user({device_id: stripTrailingSlash((plugins.getConfig("api").domain + "").split("://").pop())});
+};
 
 /**
 * Report server level event
@@ -94,6 +113,20 @@ tracker.enable = function() {
 tracker.reportEvent = function(event) {
     if (isEnabled && plugins.getConfig("tracking").server_events) {
         Countly.add_event(event);
+    }
+};
+
+/**
+* Report server level event in bulk
+* @param {Array} events - array of event objects
+**/
+tracker.reportEventBulk = function(events) {
+    if (isEnabled && plugins.getConfig("tracking").server_events) {
+        Countly.request({
+            app_key: server,
+            device_id: Countly.get_device_id(),
+            events: JSON.stringify(events)
+        });
     }
 };
 

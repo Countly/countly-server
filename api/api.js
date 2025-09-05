@@ -344,7 +344,7 @@ plugins.connectToAllDatabases().then(function() {
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             jobs.job('api:topEvents').replace().schedule('at 00:01 am ' + 'every 1 day');
-            jobs.job('api:ping').replace().schedule('every 1 day');
+            jobs.job('api:ping').replace().schedule('at 00:01 am ' + 'every 1 day');
             jobs.job('api:clear').replace().schedule('every 1 day');
             jobs.job('api:clearTokens').replace().schedule('every 1 day');
             jobs.job('api:clearAutoTasks').replace().schedule('every 1 day');
