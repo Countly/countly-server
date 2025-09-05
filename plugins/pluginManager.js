@@ -1815,25 +1815,42 @@ var pluginManager = function pluginManager() {
         if (!db) {
             db = "countly";
         }
-        var i = str.lastIndexOf('/countly');
-        var k = str.lastIndexOf('/' + db);
-        if (i !== k && i !== -1 && db) {
-            return str.substr(0, i) + "/" + db + str.substr(i + ('/countly').length);
+
+        // Handle admin database replacement for any target database
+        var hasAdminDb = str.indexOf('/admin') !== -1;
+
+        if (hasAdminDb) {
+            var updatedConnectionString = str.replace('/admin', '/' + db);
+            var hasAuthSource = updatedConnectionString.indexOf('authSource=') !== -1;
+
+            if (!hasAuthSource) {
+                var hasQueryParams = updatedConnectionString.indexOf('?') !== -1;
+                var authSourceParam = hasQueryParams ? '&authSource=admin' : '?authSource=admin';
+                updatedConnectionString += authSourceParam;
+            }
+
+            return updatedConnectionString;
         }
-        else if (i === -1 && k === -1) {
+
+        var countlyIndex = str.lastIndexOf('/countly');
+        var targetDbIndex = str.lastIndexOf('/' + db);
+        if (countlyIndex !== targetDbIndex && countlyIndex !== -1 && db) {
+            return str.substr(0, countlyIndex) + "/" + db + str.substr(countlyIndex + ('/countly').length);
+        }
+        else if (countlyIndex === -1 && targetDbIndex === -1) {
             //no db found in the string, we should insert the needed one
-            var urlparts = str.split("://");
-            if (typeof urlparts[1] === "string") {
-                var parts = urlparts[1].split("/");
-                if (parts.length === 1) {
-                    parts[0] += "/" + db;
+            var urlParts = str.split("://");
+            if (typeof urlParts[1] === "string") {
+                var pathParts = urlParts[1].split("/");
+                if (pathParts.length === 1) {
+                    pathParts[0] += "/" + db;
                 }
                 else {
-                    parts[parts.length - 1] = db + parts[parts.length - 1];
+                    pathParts[pathParts.length - 1] = db + pathParts[pathParts.length - 1];
                 }
-                urlparts[1] = parts.join("/");
+                urlParts[1] = pathParts.join("/");
             }
-            return urlparts.join("://");
+            return urlParts.join("://");
         }
         return str;
     };
@@ -1884,7 +1901,6 @@ var pluginManager = function pluginManager() {
                                 process.argv[1].endsWith('api/ingestor.js') ||
                                 process.argv[1].endsWith('api/aggregator.js') ||
                                 process.argv[1].includes('/api/') ||
-                                process.argv[1].includes('clickhouse/api/writer/') ||
                                 process.argv[1].includes('jobServer/index.js'))) {
             useConfig = JSON.parse(JSON.stringify(apiCountlyConfig));
         }
@@ -1896,7 +1912,6 @@ var pluginManager = function pluginManager() {
                                 process.argv[1].endsWith('api/ingestor.js') ||
                                 process.argv[1].endsWith('api/aggregator.js') ||
                                 process.argv[1].includes('/api/') ||
-                                process.argv[1].includes('clickhouse/api/writer/') ||
                                 process.argv[1].includes('jobServer/index.js')));
         console.log('countlyConfig.mongodb:', JSON.stringify(countlyConfig.mongodb, null, 2));
         console.log('apiCountlyConfig.mongodb:', JSON.stringify(apiCountlyConfig.mongodb, null, 2));
