@@ -25,7 +25,7 @@ describe('Create New Custom Dashboard', () => {
         dashboardsHelper.closeNotification();
         dashboardsHelper.clickNewWidgetButton();
 
-        dashboardsHelper.selectSourceApp("Demo App");
+        dashboardsHelper.selectSourceApp("default");
         dashboardsHelper.selectVisualizationType(VISUALIZATION_TYPE.TIME_SERIES);
         dashboardsHelper.selectMetric("New Sessions");
         dashboardsHelper.clickCreateWidgetButton();
