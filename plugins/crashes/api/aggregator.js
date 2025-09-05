@@ -1,3 +1,4 @@
+var moment = require('moment-timezone');
 
 var plugins = require('../../pluginManager.js'),
     common = require('../../../api/utils/common.js');
@@ -149,8 +150,8 @@ var props = [
                     }
                     if (app && app._id) {
                         var params = {"app_id": next.a, "app": app, "time": common.initTimeObj(app.timezone, next.ts), "appTimezone": (app.timezone || "UTC")};
-                        var platform = next.up.p;
-                        var version = next.up.av;
+                        const platform = next.up?.p || next.sg?.os;
+                        const version = next.up?.av || next.sg?.app_version?.replace(/\./g, ":");
 
                         var groupSet = {};
                         var groupInsert = {};
@@ -165,7 +166,7 @@ var props = [
 
                         groupInsert._id = hash;
                         groupSet.os = platform;
-                        groupSet.lastTs = next.ts;
+                        groupSet.lastTs = moment(next.cd).unix();
 
                         if (next.sg.name) {
                             groupSet.name = ((next.sg.name + "").split('\n')[0] + "").trim();
@@ -452,8 +453,8 @@ var props = [
                         var params = {"app_id": next.a, "app": app, "time": common.initTimeObj(app.timezone, next.ts), "appTimezone": (app.timezone || "UTC")};
 
                         var metrics = ["cr_s", "cr_u"];
-                        var platform = next.up.p;
-                        var version = next.up.av;
+                        const platform = next.up?.p || next.sg?.os;
+                        const version = next.up?.av || next.sg?.app_version?.replace(/\./g, ":");
                         var lastTs = next.sg.prev_start || 0;
 
                         //WE DON"T know platfirm and version from previous session. So it if changes  - new model is not recording that.
@@ -528,8 +529,8 @@ var props = [
                                 metrics.push("crauf");
                             }
 
-                            var platform = next.up.p;
-                            var version = next.up.av;
+                            const platform = next.up?.p || next.sg?.os;
+                            const version = next.up?.av || next.sg?.app_version?.replace(/\./g, ":");
                             var ts0 = next.sg.prev_start || 0;
                             if (metrics.length) {
                                 recordCustomMetric(params, "crashdata", params.app_id, metrics, 1, null, ["crauf"], ts0, token, updateWriteBatcher);
