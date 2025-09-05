@@ -1,6 +1,5 @@
 import user from '../../../fixtures/user.json';
 const navigationHelpers = require('../../../support/navigations');
-const helper = require('../../../support/helper');
 const loginHelpers = require('../../../lib/login/login');
 const dashboardsHelper = require('../../../lib/dashboard/dashboards/dashboards');
 const reportHelper = require('../../../lib/dashboard/manage/reports/reports');
