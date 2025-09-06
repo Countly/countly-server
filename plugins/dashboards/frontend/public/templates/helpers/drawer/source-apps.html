@@ -1,9 +1,11 @@
 <cly-form-field
     name="apps"
+    test-id="source-apps"
     rules="required"
     :label="i18nM('dashboards.source-apps')">
     <cly-app-select
         :key="rerender"
+        test-id="source-apps-select"
         style="width: 100%;"
         v-bind="$attrs"
         v-on="allListeners"
