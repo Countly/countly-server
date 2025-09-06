@@ -848,6 +848,11 @@ taskmanager.deleteResult = function(options, callback) {
         if (task.gridfs) {
             countlyFs.gridfs.deleteFile("task_results", options.id, {id: options.id}, function() {});
         }
+
+        // Delete additional results specific to task type
+        taskmanager.deleteAdditionalResults(task, options, function() {
+            // Continue with normal task deletion
+        });
         options.db.collection("long_tasks").remove({_id: options.id}, function() {
             callback(null, task);
         });
@@ -861,6 +866,45 @@ taskmanager.deleteResult = function(options, callback) {
             });
         }
     });
+};
+
+/**
+* Delete additional results specific to task type
+* @param {object} task - the task object
+* @param {object} options - options for the task
+* @param {function} callback - callback for the result
+*/
+taskmanager.deleteAdditionalResults = function(task, options, callback) {
+    if (task.type === "journey_engine") {
+        const collectionName = "journey_task_data_" + options.id;
+        options.db.collection(collectionName).drop(function(dropErr) {
+            if (dropErr && dropErr.code !== 26) { // 26 = namespace not found, which is fine
+                log.w("Failed to drop journey task data collection:", collectionName, dropErr);
+            }
+            else {
+                log.d("Successfully dropped journey task data collection:", collectionName);
+            }
+        });
+
+        // Also try to clean up the default collection if it exists and is empty
+        // This is a safety measure for cases where the default collection might have been used
+        options.db.collection("journey_task_data").countDocuments({}, function(countErr, count) {
+            if (!countErr && count === 0) {
+                options.db.collection("journey_task_data").drop(function(defaultDropErr) {
+                    if (defaultDropErr && defaultDropErr.code !== 26) {
+                        log.w("Failed to drop default journey task data collection:", defaultDropErr);
+                    }
+                    else if (!defaultDropErr) {
+                        log.d("Successfully dropped empty default journey task data collection");
+                    }
+                });
+            }
+            callback();
+        });
+    }
+    else {
+        callback();
+    }
 };
 
 /**
