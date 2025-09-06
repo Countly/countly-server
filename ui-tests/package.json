@@ -9,9 +9,9 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@faker-js/faker": "^9.7.0",
+    "@faker-js/faker": "^10.0.0",
     "base-64": "^1.0.0",
-    "chai": "^5.1.1",
+    "chai": "^6.0.1",
     "cypress-file-upload": "^5.0.8",
     "moment": "^2.29.4"
   },
