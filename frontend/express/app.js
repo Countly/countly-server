@@ -72,7 +72,8 @@ var versionInfo = require('./version.info'),
     argon2 = require('argon2'),
     countlyCommon = require('../../api/lib/countly.common.js'),
     timezones = require('../../api/utils/timezones.js').getTimeZones,
-    { validateCreate } = require('../../api/utils/rights.js');
+    { validateCreate } = require('../../api/utils/rights.js'),
+    tracker = require('../../api/parts/mgmt/tracker.js');
 
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
@@ -199,6 +200,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     //reference for consistency between app and api processes
     membersUtility.db = common.db = countlyDb;
     countlyFs.setHandler(dbs[1]);
+    tracker.enable();
 
     /**
     * Create sha1 hash string

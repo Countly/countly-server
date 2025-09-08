@@ -16,6 +16,7 @@ const {WriteBatcher, ReadBatcher, InsertBatcher} = require('./parts/data/batcher
 const pack = require('../package.json');
 const versionInfo = require('../frontend/express/version.info.js');
 const moment = require("moment");
+const tracker = require('./parts/mgmt/tracker.js');
 
 var t = ["countly:", "api"];
 common.processRequest = processRequest;
@@ -38,6 +39,7 @@ else {
 process.title = t.join(' ');
 
 plugins.connectToAllDatabases().then(function() {
+    tracker.enable();
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);
