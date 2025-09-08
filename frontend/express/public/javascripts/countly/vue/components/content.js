@@ -570,6 +570,11 @@
                 type: String
             },
 
+            size: {
+                default: null,
+                type: String
+            },
+
             subHeader: {
                 default: null,
                 type: String
@@ -588,11 +593,6 @@
             value: {
                 default: null,
                 type: [String, Number, Boolean, Object, Array]
-            },
-
-            size: {
-                default: null,
-                type: String
             },
 
             withComponentTooltip: {
