@@ -40,6 +40,7 @@ const {ExpressInstrumentation} = require('@opentelemetry/instrumentation-express
 const {MongoDBInstrumentation} = require('@opentelemetry/instrumentation-mongodb');
 const {FsInstrumentation} = require('@opentelemetry/instrumentation-fs');
 const {PinoInstrumentation} = require('@opentelemetry/instrumentation-pino');
+const {KafkaJsInstrumentation} = require('@opentelemetry/instrumentation-kafkajs');
 const {OTLPTraceExporter} = require('@opentelemetry/exporter-trace-otlp-http');
 const {OTLPMetricExporter} = require('@opentelemetry/exporter-metrics-otlp-http');
 const {PeriodicExportingMetricReader} = require('@opentelemetry/sdk-metrics');
@@ -556,6 +557,9 @@ function initializeOpenTelemetry() {
                 '@opentelemetry/instrumentation-mongodb': {
                     enabled: false,
                 },
+                '@opentelemetry/instrumentation-kafkajs': {
+                    enabled: false,
+                },
                 '@opentelemetry/instrumentation-fs': {
                     enabled: false,
                 },
@@ -782,6 +786,11 @@ function initializeOpenTelemetry() {
                     }
                 },
                 disableLogCorrelation: false,
+            }),
+            // KafkaJS instrumentation for producers/consumers
+            // Automatically injects/extracts W3C trace context via Kafka headers
+            new KafkaJsInstrumentation({
+                // Keep defaults for safety; hooks can be added later if needed
             }),
         ];
 
