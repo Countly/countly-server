@@ -1000,6 +1000,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                     member: member,
                     config: req.config,
                     security: plugins.getConfig("security"),
+                    tracking: plugins.getConfig("tracking"),
                     plugins: plugins.getPlugins(),
                     pluginsFull: plugins.getPlugins(true),
                     path: countlyConfig.path || "",
