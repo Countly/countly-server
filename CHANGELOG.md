@@ -1,3 +1,7 @@
+## Version 24.05.38
+Enterprise Fixes:
+- [home] Fix home download render issue
+
 ## Version 24.05.37
 Enterprise Fixes:
 - [license] Update license metric endpoint permission
