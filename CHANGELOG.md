@@ -3,6 +3,13 @@ Enterprise Fixes
 - [journeys] Fix for handling the skip threshold value when saving the journey
 - [journeys] Performance improvement on journey stat user list & UI bugfixes
 
+Dependencies:
+- Bump mongodb from 6.18.0 to 6.19.0
+- Bump nodemailer from 7.0.5 to 7.0.6
+- Bump express-rate-limit from 8.0.1 to 8.1.0
+- Bump sass from 1.90.0 to 1.92.1
+- Bump puppeteer from 24.17.0 to 24.19.0
+
 ## Version 25.03.18
 Fixes:
 - [server-stats] Add new events to breakdown
