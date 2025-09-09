@@ -1,9 +1,11 @@
 import user from '../../../fixtures/user.json';
 const navigationHelpers = require('../../../support/navigations');
+const helper = require('../../../support/helper');
 const loginHelpers = require('../../../lib/login/login');
 const dashboardsHelper = require('../../../lib/dashboard/dashboards/dashboards');
 const reportHelper = require('../../../lib/dashboard/manage/reports/reports');
 const { generateDashboardFixture } = require('../../../fixtures/generators/dashboards');
+const { generateReportFixture } = require('../../../fixtures/generators/reports');
 const { VISUALIZATION_TYPE, TIME_UNITS } = require('../../../support/constants');
 
 
@@ -17,14 +19,21 @@ describe('Create New Custom Dashboard', () => {
     it('Create custom dashboard with widgets and email report', function() {
 
         const dashboard = generateDashboardFixture();
+        const report = generateReportFixture();
 
         dashboardsHelper.clickDashboardsNewButton();
         dashboardsHelper.typeDashboardName(dashboard.dashboardName);
         dashboardsHelper.clickCreateDashboardButton();
         dashboardsHelper.verifyDashboardCreatedNotification();
         dashboardsHelper.closeNotification();
-        dashboardsHelper.clickNewWidgetButton();
 
+        dashboardsHelper.verifyCustomDashboardElements({
+            dashboardName: dashboard.dashboardName,
+            createdTime: "just now",
+            createdBy: user.username,
+        });
+
+        dashboardsHelper.clickNewWidgetButton();
         dashboardsHelper.selectSourceApp("default");
         dashboardsHelper.selectVisualizationType(VISUALIZATION_TYPE.TIME_SERIES);
         dashboardsHelper.selectMetric("New Sessions");
@@ -32,8 +41,15 @@ describe('Create New Custom Dashboard', () => {
         dashboardsHelper.verifyWidgetCreatedNotification();
         dashboardsHelper.closeNotification();
 
+        dashboardsHelper.verifyCustomDashboardWidgetElements({
+            widgetTitle: "Analytics",
+            widgetAppName: "default",
+            widgetItem: "New Sessions",
+            widgetLabel: "New Sessions"
+        });
+
         dashboardsHelper.openCreateNewReportDrawer();
-        reportHelper.typeReportName("My Custom Report");
+        reportHelper.typeReportName(report.reportName);
         reportHelper.typeReportToReceive(...["demo@count.ly", "test@count.ly"]);
         reportHelper.selectReportTypeDashboard();
         reportHelper.selectFrequencyType(TIME_UNITS.DAILY);
@@ -44,14 +60,14 @@ describe('Create New Custom Dashboard', () => {
         reportHelper.verifyReportCreatedNotification();
         reportHelper.closeNotification();
 
-        // reportHelper.verifyReportsDataTable({
-        //     isStatusChecked: true,
-        //     reportName: "My Custom Report",
-        //     email: "demo@count.ly test@count.ly",
-        //     data: "'Dashboard " + dashboard.dashboardName,
-        //     frequency: helper.capitalize(TIME_UNITS.DAILY),
-        //     time: "at 04:00, (GMT+03:00) Istanbul",
-        // });
+        reportHelper.verifyReportsDataTable({
+            isStatusChecked: true,
+            reportName: report.reportName,
+            email: "demo@count.ly test@count.ly",
+            data: "Dashboard " + dashboard.dashboardName,
+            frequency: helper.capitalize(TIME_UNITS.DAILY),
+            time: "at 04:00, (GMT+03:00) Istanbul",
+        });
 
         reportHelper.openReportPreviewButton();
         reportHelper.verifyReportPreviewPageImage();

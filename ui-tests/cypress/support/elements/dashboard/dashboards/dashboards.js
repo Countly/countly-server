@@ -7,6 +7,10 @@ export const dashboardsMenuElements = (index = 0) => ({
 
 const customDashboardElements = {
     CUSTOM_DASHBOARD_TITLE: "dashboard-name",
+    CUSTOM_DASHBOARD_CREATED_TIME_ICON: "dashboard-creation-time-icon",
+    CUSTOM_DASHBOARD_CREATED_LABEL: "dashboard-created-label",
+    CUSTOM_DASHBOARD_CREATED_TIME: "dashboard-creation-time",
+    CUSTOM_DASHBOARD_CREATED_BY: "dashboard-creation-by",
     SELECT_DATE_RANGE: "dashboard-date-picker-pseudo-input",
     NEW_WIDGET_BUTTON: "add-widget-button",
 
@@ -28,6 +32,15 @@ const customDashboardElements = {
     NOTIFICATION_SAVED_SUCCESSFULLY_MESSAGE: 'cly-notification-text',
     NOTIFICATION_SAVED_SUCCESSFULLY_MESSAGE_CLOSE_ICON: 'cly-notification-full-size-close-icon',
 };
+
+const customDashboardWidgetElements = (index = 0) => ({
+    WIDGET_TITLE: "widget-title",
+    WIDGET_APP_ICON: 'widget-app-icon',
+    WIDGET_APP_NAME: 'widget-app-name',
+    WIDGET_ITEM: 'widget-item-' + index,
+    WIDGET_LABEL: 'widget-label-' + index,
+    WIDGET_MORE_OPTIONS_BUTTON: 'cly-more-options-test-id-more-option-button'
+});
 
 const customDashboardDrawerElements = {
     TITLE: "create-dashboard-drawer-header-title",
@@ -105,6 +118,7 @@ const newWidgetDrawerElements = {
 module.exports = {
     dashboardsMenuElements,
     customDashboardElements,
+    customDashboardWidgetElements,
     customDashboardDrawerElements,
     newWidgetDrawerElements
 };

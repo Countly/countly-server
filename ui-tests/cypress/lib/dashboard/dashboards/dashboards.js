@@ -1,6 +1,7 @@
 import {
     dashboardsMenuElements,
     customDashboardElements,
+    customDashboardWidgetElements,
     customDashboardDrawerElements,
     newWidgetDrawerElements
 } from "../../../support/elements/dashboard/dashboards/dashboards";
@@ -48,6 +49,74 @@ const openCreateNewReportDrawer = () => {
     cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON_CREATE_REPORTS_OPTION);
 };
 
+const verifyCustomDashboardElements = ({
+    dashboardName = null,
+    createdTime = null,
+    createdBy = null
+}) => {
+
+    cy.verifyElement({
+        labelElement: customDashboardElements.CUSTOM_DASHBOARD_TITLE,
+        labelText: dashboardName
+    });
+
+    cy.verifyElement({
+        element: customDashboardElements.CUSTOM_DASHBOARD_CREATED_TIME_ICON
+    });
+
+    cy.verifyElement({
+        element: customDashboardElements.CUSTOM_DASHBOARD_CREATED_LABEL,
+        elementText: "Created"
+    });
+
+    cy.verifyElement({
+        element: customDashboardElements.CUSTOM_DASHBOARD_CREATED_TIME,
+        elementText: createdTime
+    });
+
+    cy.verifyElement({
+        element: customDashboardElements.CUSTOM_DASHBOARD_CREATED_BY,
+        elementText: createdBy
+    });
+};
+
+const verifyCustomDashboardWidgetElements = ({
+    index = 0,
+    widgetTitle = null,
+    widgetAppName = null,
+    widgetItem = null,
+    widgetLabel = null
+}) => {
+
+    cy.verifyElement({
+        labelElement: customDashboardWidgetElements(index).WIDGET_TITLE,
+        labelText: widgetTitle
+    });
+
+    cy.verifyElement({
+        element: customDashboardWidgetElements(index).WIDGET_APP_ICON
+    });
+
+    cy.verifyElement({
+        labelElement: customDashboardWidgetElements(index).WIDGET_APP_NAME,
+        labelText: widgetAppName
+    });
+
+    cy.verifyElement({
+        element: customDashboardWidgetElements(index).WIDGET_ITEM,
+        elementText: widgetItem
+    });
+
+    cy.verifyElement({
+        element: customDashboardWidgetElements(index).WIDGET_MORE_OPTIONS_BUTTON
+    });
+
+    cy.verifyElement({
+        element: customDashboardWidgetElements(index).WIDGET_LABEL,
+        elementText: widgetLabel
+    });
+};
+
 //Widget Drawer
 const selectSourceApp = (appName) => {
     cy.selectListBoxItem(newWidgetDrawerElements.SELECT_SOURCE_APP, appName);
@@ -74,6 +143,8 @@ module.exports = {
     verifyDashboardCreatedNotification,
     verifyWidgetCreatedNotification,
     closeNotification,
+    verifyCustomDashboardElements,
+    verifyCustomDashboardWidgetElements,
     clickNewWidgetButton,
     selectSourceApp,
     selectVisualizationType,

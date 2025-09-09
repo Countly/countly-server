@@ -67,7 +67,7 @@
                             <div class="bu-level-item color-cool-gray-50 text-medium" data-test-id="dashboard-creation-info">
                                 <span>
                                     <i class="far fa-clock" data-test-id="dashboard-creation-time-icon"></i>
-                                    {{i18nM('dashbaords.created')}}
+                                    <span data-test-id="dashboard-created-label">{{i18nM('dashbaords.created')}}</span>
                                 </span>
                                 <span v-if="dashboard.creation.time" class="bu-ml-1" data-test-id="dashboard-creation-time">
                                     {{dashboard.creation.time}}
