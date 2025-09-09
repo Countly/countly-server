@@ -15,11 +15,11 @@ const METRIC_TO_PROPERTY_MAP = {
     "# of page views": "t",
 };
 
-module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
+module.exports.check = async({ alertConfigs: alert, scheduledTo: date }) => {
     const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-        return done();
+        return;
     }
 
     let { alertDataSubType, alertDataSubType2, period, compareType, compareValue } = alert;
@@ -28,7 +28,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
 
     if (!metricProperty) {
         log.e(`Metric "${alert.alertDataSubType}" couldn't be mapped for alert ${alert._id.toString()}`);
-        return done();
+        return;
     }
 
     const metricValue = await getViewMetricByDate(app, metricProperty, alertDataSubType2, date, period) || 0;
@@ -42,7 +42,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
         const before = moment(date).subtract(1, commonLib.PERIOD_TO_DATE_COMPONENT_MAP[period]).toDate();
         const metricValueBefore = await getViewMetricByDate(app, metricProperty, alertDataSubType2, before, period);
         if (!metricValueBefore) {
-            return done();
+            return;
         }
 
         const change = (metricValue / metricValueBefore - 1) * 100;
@@ -54,7 +54,6 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
-    done();
 };
 
 /**

@@ -10,7 +10,7 @@ const { ObjectId } = require('mongodb');
 
 const DATA_POINT_PROPERTY = "dp";
 
-module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: date }) {
+module.exports.check = async function({ alertConfigs: alert, scheduledTo: date }) {
     const selectedApp = alert.selectedApps[0];
     let apps;
     if (selectedApp === "all") {
@@ -53,8 +53,6 @@ module.exports.check = async function({ alertConfigs: alert, done, scheduledTo: 
             }
         }
     }
-
-    done();
 };
 
 /**

@@ -134,7 +134,16 @@ class PulseJobRunner {
                 this.#log.d(`Job ${jobName} disabled after creation`);
             }
 
-            const scheduleConfig = instance.getSchedule();
+            const scheduleConfig = { ...instance.getSchedule() };
+            const overrideSchedule = await this.#db.collection('jobConfigs').findOne(
+                { jobName, schedule: { $exists: true } },
+                { jobName: 1, schedule: 1 },
+            );
+
+            if (overrideSchedule) {
+                scheduleConfig.value = overrideSchedule.schedule;
+            }
+
             this.#pendingSchedules.set(jobName, scheduleConfig);
             this.#log.d(`Job ${jobName} defined successfully with enabled state: ${isEnabled}`);
 

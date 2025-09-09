@@ -194,6 +194,9 @@
                 jobsTablePersistKey: "cly-jobs-table"
             };
         },
+        mixins: [
+            countlyVue.mixins.hasFormDialogs("jobSchedule")
+        ],
         computed: {
             /**
              * Whether the current user can enable/disable jobs
@@ -201,6 +204,9 @@
              */
             canSuspendJob: function() {
                 return countlyGlobal.member.global_admin || countlyGlobal.admin_apps[countlyCommon.ACTIVE_APP_ID];
+            },
+            scheduleDialogTitle: function() {
+                return '“' + this.selectedJobConfig.name + '” ' + CV.i18n('jobs.schedule-configuration');
             },
         },
         methods: {
@@ -288,7 +294,7 @@
                             defaultSchedule: row.schedule,
                             enabled: row.enabled
                         };
-                        this.scheduleDialogVisible = true;
+                        this.openFormDialog('jobSchedule', this.selectedJobConfig);
                         return;
                     }
 
@@ -347,7 +353,7 @@
                     },
                     success: function() {
                         self.saving = false;
-                        self.scheduleDialogVisible = false;
+                        self.closeFormDialog('jobSchedule');
                         self.refresh(true);
                         CountlyHelpers.notify({
                             type: "ok",
@@ -356,6 +362,7 @@
                     },
                     error: function(err) {
                         self.saving = false;
+                        self.closeFormDialog('jobSchedule');
                         CountlyHelpers.notify({
                             type: "error",
                             message: err.responseJSON?.result || "Error"
@@ -375,14 +382,22 @@
             return {
                 job_name: this.$route.params.jobName,
                 jobDetails: null,
-                jobRuns: [],
+                manualJobRuns: [],
+                jobHistories: [],
                 isLoading: false,
-                // columns for the run history table
+                // columns for the manual run history table
                 jobRunColumns: [
                     { prop: "lastRunAt", label: CV.i18n('jobs.run-time'), sortable: true },
                     { prop: "status", label: CV.i18n('jobs.status'), sortable: true },
                     { prop: "duration", label: CV.i18n('jobs.duration'), sortable: true },
                     { prop: "result", label: CV.i18n('jobs.result') }
+                ],
+                // columns for the failed run history table
+                jobHistoryColumns: [
+                    { prop: "lastRunAt", label: CV.i18n('jobs.run-time'), sortable: true },
+                    { prop: "type", label: CV.i18n('jobs.type'), sortable: true },
+                    { prop: "duration", label: CV.i18n('jobs.duration'), sortable: true },
+                    { prop: "failReason", label: CV.i18n('jobs.fail-reason'), sortable: true },
                 ]
             };
         },
@@ -421,7 +436,7 @@
                         self.jobDetails = response.jobDetails;
 
                         // aaData => the array of normal run docs
-                        self.jobRuns = (response.aaData || []).map(function(run) {
+                        self.manualJobRuns = (response.aaData || []).map(function(run) {
                             return {
                                 lastRunAt: run.lastRunAt,
                                 status: run.status,
@@ -431,6 +446,8 @@
                                 dataAsString: run.dataAsString
                             };
                         });
+
+                        self.jobHistories = response.jobHistories;
 
                         self.isLoading = false;
                     },
@@ -497,7 +514,15 @@
                 case "SCHEDULED": return "yellow";
                 default: return "gray";
                 }
-            }
+            },
+            getJobTypeLabel: function(inpJobType) {
+                var jobTypeMap = {
+                    single: CV.i18n("jobs.type-scheduled"),
+                    normal: CV.i18n("jobs.type-manual"),
+                };
+
+                return jobTypeMap[inpJobType];
+            },
         },
         mounted: function() {
             // On load, fetch data
