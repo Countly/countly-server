@@ -17,7 +17,7 @@ describe('Create New Custom Dashboard', () => {
     });
 
     it(`
-        Create custom dashboard with widgets and email report with this parameters:
+        Create a custom dashboard with a widget and an email report with these parameters:
         //***Dashboard***
         Dashboard Visibility: All Users (default)
         //***Widget***
@@ -43,7 +43,7 @@ describe('Create New Custom Dashboard', () => {
         dashboardsHelper.verifyCustomDashboardElements({
             dashboardName: dashboard.dashboardName,
             createdTime: "just now",
-            createdBy: user.username,
+            createdBy: "devops+uitests@count.ly",
         });
 
         dashboardsHelper.clickNewWidgetButton();
