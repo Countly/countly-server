@@ -17,7 +17,7 @@ describe('Create New Custom Dashboard', () => {
     });
 
     it(`
-        Create a custom dashboard with a widget and an email report with these parameters:
+        Create a custom dashboard with a widget and an email report, and then verify the report preview using these parameters:
         //***Dashboard***
         Dashboard Visibility: All Users (default)
         //***Widget***
