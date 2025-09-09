@@ -326,7 +326,7 @@ jobs:
           fi
 
       - name: Upload UI tests artifacts
-        if: ${{ failure() }}
+
         shell: bash
         working-directory: /opt/countly/ui-tests/cypress
         run: |
