@@ -16,7 +16,20 @@ describe('Create New Custom Dashboard', () => {
         navigationHelpers.openDashboardsMenu();
     });
 
-    it('Create custom dashboard with widgets and email report', function() {
+    it(`
+        Create custom dashboard with widgets and email report with this parameters:
+        //***Dashboard***
+        Dashboard Visibility: All Users (default)
+        //***Widget***
+        Widget Type: Analytics (default)
+        Data Type: Sessions (default)
+        App Count: Single App (default)
+        Visualization Type: Time Series
+        Metric: New Sessions
+        //***Report***
+        Report Type: Dashboard Report
+        Frequency: Daily
+    `, function() {
 
         const dashboard = generateDashboardFixture();
         const report = generateReportFixture();
