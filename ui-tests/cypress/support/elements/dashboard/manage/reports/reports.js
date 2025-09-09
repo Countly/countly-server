@@ -35,6 +35,7 @@ const reportsDataTableElements = (index = 0) => ({
     FREQUENCY: 'datatable-reports-frequency-' + index,
     TIME: 'datatable-reports-time-' + index,
     MORE_OPTIONS_BUTTON: 'datatable-reports-' + index + '-more-options-button',
+    MORE_OPTIONS_BUTTON_OPTION_PREVIEW_FORM: 'previewemailform-report-button-' + index,
     MORE_OPTIONS_BUTTON_OPTION_PREVIEW: 'preview-report-button-' + index,
     MORE_OPTIONS_BUTTON_OPTION_EDIT: 'edit-report-button-' + index,
     MORE_OPTIONS_BUTTON_OPTION_DELETE: 'delete-report-button-' + index,

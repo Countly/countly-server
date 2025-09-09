@@ -94,7 +94,7 @@
                         <el-dropdown-item  icon="el-icon-position" command="send-comment" :data-test-id="'send-now-report-button-' + rowScope.$index">
                             Send Now
                         </el-dropdown-item>
-                        <form name="previewemailform" method="post" target="_blank">
+                        <form name="previewemailform" method="post" target="_blank" :data-test-id="'previewemailform-report-button-' + rowScope.$index">
                             <input type="hidden" name="auth_token">
                         </form>
                         <el-dropdown-item  icon="el-icon-chat-dot-square" command="preview-comment" :data-test-id="'preview-report-button-' + rowScope.$index">

@@ -192,7 +192,17 @@ const closeNotification = () => {
 };
 
 const openReportPreviewButton = (index = 0) => {
-    cy.clickDataTableMoreButtonItem(reportsDataTableElements(index).MORE_OPTIONS_BUTTON_OPTION_PREVIEW);
+
+    cy.getElement("datatable-more-button-area")
+        .eq(0).invoke('show')
+        .trigger('mouseenter', { force: true });
+
+    cy.clickElement(reportsDataTableElements(index).MORE_OPTIONS_BUTTON, true);
+
+    cy.getElement(reportsDataTableElements(index).MORE_OPTIONS_BUTTON_OPTION_PREVIEW_FORM)
+        .eq(0).invoke('removeAttr', 'target').click({ force: true });
+
+    cy.clickElement(reportsDataTableElements(index).MORE_OPTIONS_BUTTON_OPTION_PREVIEW, true);
 };
 
 const verifyReportPreviewPageImage = () => {
