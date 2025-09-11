@@ -28,7 +28,7 @@
     "eslint": "^8.56.0",
     "eslint-plugin-vue": "^10.2.0",
     "grunt-contrib-watch": "1.1.0",
-    "grunt-eslint": "24.3.0",
+    "grunt-eslint": "26.0.0",
     "grunt-mocha-nyc": "1.0.3",
     "grunt-mocha-test": "0.13.3",
     "husky": "^9.1.7",
