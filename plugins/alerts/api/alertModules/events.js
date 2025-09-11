@@ -21,11 +21,11 @@ const METRIC_TO_PROPERTY_MAP = {
 
 const AVERAGE_METRICS = ["average sum", "average duration"];
 
-module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) => {
+module.exports.check = async({ alertConfigs: alert, scheduledTo: date }) => {
     const app = await common.readBatcher.getOne("apps", { _id: new ObjectId(alert.selectedApps[0]) });
     if (!app) {
         log.e(`App ${alert.selectedApps[0]} couldn't be found`);
-        return done();
+        return;
     }
 
     let { alertDataSubType, alertDataSubType2, period, compareType, compareValue, filterKey, filterValue } = alert;
@@ -42,7 +42,7 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
     if (AVERAGE_METRICS.includes(alertDataSubType)) {
         const count = await getEventMetricByDate(app, alertDataSubType2, "c", date, period, segments);
         if (!count) {
-            return done();
+            return;
         }
         metricValue /= count;
     }
@@ -57,14 +57,14 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
         let metricValueBefore = await getEventMetricByDate(app, alertDataSubType2, metricProp, before, period, segments);
 
         if (!metricValueBefore) {
-            return done();
+            return;
         }
 
         // if this is average:
         if (AVERAGE_METRICS.includes(alertDataSubType)) {
             const count = await getEventMetricByDate(app, alertDataSubType2, "c", before, period, segments);
             if (!count) {
-                return done();
+                return;
             }
             metricValueBefore /= count;
         }
@@ -78,7 +78,6 @@ module.exports.check = async({ alertConfigs: alert, done, scheduledTo: date }) =
             await commonLib.trigger({ alert, app, date, metricValue, metricValueBefore }, log);
         }
     }
-    done();
 };
 
 

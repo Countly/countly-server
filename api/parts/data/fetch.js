@@ -101,7 +101,7 @@ fetch.prefetchEventData = async function(collection, params) {
             var events = [];
             if (result && result.list) {
                 events = result.list.filter((event) => {
-                    return event.indexOf("[CLY]") !== 0;
+                    return event && event.indexOf("[CLY]") !== 0;
                 });
                 if (result.order && result.order.length) {
                     for (let i = 0; i < result.order.length; i++) {
