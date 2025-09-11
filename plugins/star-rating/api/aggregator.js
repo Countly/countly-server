@@ -43,9 +43,9 @@ const usage = require('../../../api/aggregator/usage.js');
                                     if (app && app._id) {
                                         //increases count
                                         common.manualWriteBatcher.add("feedback_widgets", common.db.ObjectID(next.sg.widget_id), {$inc: { ratingsSum: next.sg.rating, ratingsCount: 1 }}, "countly", {token: token, upsert: false});
-                                        var allowed_segemnts = ["platform", "app_version", "rating", "widget_id", "platform_version_rate"];
+                                        var allowed_segments = ["platform", "app_version", "rating", "widget_id", "platform_version_rate"];
                                         for (var seg in next.sg) {
-                                            if (allowed_segemnts.indexOf(seg) === -1) {
+                                            if (allowed_segments.indexOf(seg) === -1) {
                                                 delete next.sg[seg];
                                             }
                                         }
