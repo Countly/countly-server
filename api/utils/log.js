@@ -45,6 +45,9 @@ prefs.default = prefs.default || "warn";
 let deflt = (prefs && prefs.default) ? prefs.default : 'error';
 let prettyPrint = prefs.prettyPrint || false;
 
+// Singleton transport for pretty-print to avoid memory leaks
+let prettyTransport = null;
+
 /**
  * Current levels for all modules
  * @type {Object.<string, string>}
@@ -233,17 +236,22 @@ const createLogger = (name, level) => {
 
     // Add pretty-print configuration if enabled
     if (prettyPrint) {
-        config.transport = {
-            target: 'pino-pretty',
-            options: {
-                colorize: true,
-                translateTime: 'SYS:standard',
-                ignore: 'pid,hostname'
-            }
-        };
+        // Use singleton transport to avoid memory leaks
+        if (!prettyTransport) {
+            prettyTransport = pino.transport({
+                target: 'pino-pretty',
+                options: {
+                    colorize: true,
+                    translateTime: 'SYS:standard',
+                    ignore: 'pid,hostname'
+                }
+            });
+        }
+        return pino(config, prettyTransport);
     }
-
-    return pino(config);
+    else {
+        return pino(config);
+    }
 };
 
 /**
@@ -311,6 +319,12 @@ const setDefault = function(level) {
  */
 const setPrettyPrint = function(enabled) {
     prettyPrint = enabled;
+
+    // Reset transport when changing pretty-print setting
+    if (prettyTransport) {
+        prettyTransport.end();
+        prettyTransport = null;
+    }
 };
 
 /**
