@@ -41,7 +41,7 @@ class DataBatchReader {
     * Check if stream is closed and restart if needed
     */
     async checkState() {
-        log.e("Checking state for batcher to revive if dead");
+        log.d("Checking state for batcher to revive if dead");
         //Check last token in database. If it is older than 60 seconds. Set up again
         try {
             var token = await common.db.collection("plugins").findOne({"_id": "_changeStreams"}, {projection: {[this.name]: 1}});
