@@ -311,8 +311,10 @@ var countlyConfig = {
     * @type {object} 
     * @property {string} [default=warn] - default level of logging for {@link logger}
     * @property {array=} info - modules to log for information level for {@link logger}
+    * @property {boolean} [prettyPrint=false] - whether to pretty print the logs
     */
     logging: {
+        prettyPrint: false,
         info: ["jobs", "push"],
         default: "warn"
     },
