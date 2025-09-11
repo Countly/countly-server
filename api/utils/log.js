@@ -43,6 +43,7 @@ const ACCEPTABLE = {
 let prefs = require('../config.js', 'dont-enclose').logging || {};
 prefs.default = prefs.default || "warn";
 let deflt = (prefs && prefs.default) ? prefs.default : 'error';
+let prettyPrint = prefs.prettyPrint || false;
 
 /**
  * Current levels for all modules
@@ -160,7 +161,7 @@ const logLevel = function(name) {
  * @returns {Logger} Configured Pino logger instance
  */
 const createLogger = (name, level) => {
-    return pino({
+    const config = {
         name,
         level: level || deflt,
         timestamp: pino.stdTimeFunctions.isoTime,
@@ -228,7 +229,21 @@ const createLogger = (name, level) => {
                 return traceContext ? { ...object, ...traceContext } : object;
             }
         }
-    });
+    };
+
+    // Add pretty-print configuration if enabled
+    if (prettyPrint) {
+        config.transport = {
+            target: 'pino-pretty',
+            options: {
+                colorize: true,
+                translateTime: 'SYS:standard',
+                ignore: 'pid,hostname'
+            }
+        };
+    }
+
+    return pino(config);
 };
 
 /**
@@ -288,6 +303,14 @@ const setLevel = function(module, level) {
  */
 const setDefault = function(level) {
     deflt = level;
+};
+
+/**
+ * Sets pretty-print option
+ * @param {boolean} enabled - Whether to enable pretty-print
+ */
+const setPrettyPrint = function(enabled) {
+    prettyPrint = enabled;
 };
 
 /**
@@ -490,6 +513,12 @@ module.exports.setLevel = setLevel;
  * @param {string} level - The log level
  */
 module.exports.setDefault = setDefault;
+
+/**
+ * Sets pretty-print option for all loggers
+ * @param {boolean} enabled - Whether to enable pretty-print
+ */
+module.exports.setPrettyPrint = setPrettyPrint;
 
 /**
  * Gets current logging level for a module
