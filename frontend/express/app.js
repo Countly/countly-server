@@ -54,7 +54,6 @@ var versionInfo = require('./version.info'),
     url = require('url'),
     authorize = require('../../api/utils/authorizer.js'), //for token validations
     languages = require('../../frontend/express/locale.conf'),
-    render = require('../../api/utils/render.js'),
     rateLimit = require("express-rate-limit"),
     membersUtility = require("./libs/members.js"),
     argon2 = require('argon2'),
@@ -1894,48 +1893,6 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                 res.send(result);
             });
         }
-    });
-
-    app.get(countlyConfig.path + '/render', function(req, res) {
-        if (!req.session.uid) {
-            return res.redirect(countlyConfig.path + '/login');
-        }
-
-        var options = {};
-        var view = req.query.view || "";
-        var route = req.query.route || "";
-        var id = req.query.id || "";
-
-        options.view = view + "#" + route;
-        options.id = id ? "#" + id : "";
-
-        var randomString = (+new Date()).toString() + (Math.random()).toString();
-        var imageName = "screenshot_" + sha1Hash(randomString) + ".png";
-
-        options.savePath = path.resolve(__dirname, "./public/images/screenshots/" + imageName);
-        options.source = "core";
-
-        authorize.save({
-            db: countlyDb,
-            multi: false,
-            owner: req.session.uid,
-            ttl: 300,
-            purpose: "LoginAuthToken",
-            callback: function(err2, token) {
-                if (err2) {
-                    console.log(err2);
-                    return res.send(false);
-                }
-                options.token = token;
-                render.renderView(options, function(err3) {
-                    if (err3) {
-                        return res.send(false);
-                    }
-
-                    return res.send({path: countlyConfig.path + "/images/screenshots/" + imageName});
-                });
-            }
-        });
     });
 
     app.get(countlyConfig.path + '/login/token/:token', function(req, res) {

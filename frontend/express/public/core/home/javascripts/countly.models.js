@@ -1,4 +1,4 @@
-/* global countlyVue,CV,countlyCommon*/
+/* global countlyVue,CV,countlyCommon,countlyGlobal*/
 
 (function(countlyHomeView) {
     countlyHomeView.getVuexModule = function() {
@@ -12,11 +12,12 @@
         var HomeViewActions = {
             downloadScreen: function(context) {
                 return CV.$.ajax({
-                    type: "GET",
-                    url: "/render?view=/dashboard&route=/" + countlyCommon.ACTIVE_APP_ID + "/",
+                    type: "POST",
+                    url: "/o/render?view=/dashboard&route=/" + countlyCommon.ACTIVE_APP_ID + "/",
                     data: {
                         app_id: countlyCommon.ACTIVE_APP_ID,
                         "id": "main_home_view",
+                        api_key: countlyGlobal.member.api_key,
                         options: JSON.stringify({"dimensions": {"width": 2000, "padding": 25}})
                     },
                     dataType: "json"
