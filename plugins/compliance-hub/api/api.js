@@ -129,7 +129,7 @@ const FEATURE_NAME = 'compliance_hub';
         case 'current': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                return false;
+                return true;
             }
             validateRead(params, FEATURE_NAME, function() {
                 var query = params.qstring.query || {};
@@ -150,7 +150,7 @@ const FEATURE_NAME = 'compliance_hub';
         case 'search': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                return false;
+                return true;
             }
             validateRead(params, FEATURE_NAME, function() {
                 var query = params.qstring.query || {};
@@ -271,7 +271,7 @@ const FEATURE_NAME = 'compliance_hub';
         case 'consents': {
             if (!params.qstring.app_id) {
                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
-                return false;
+                return true;
             }
             validateRead(params, FEATURE_NAME, function() {
                 appUsers.count(params.qstring.app_id, {}, function(err, total) {
