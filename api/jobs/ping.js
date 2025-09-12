@@ -17,7 +17,7 @@ class PingJob extends job.Job {
             if (!offlineMode) {
                 var server = tracker.getBulkServer();
                 var user = tracker.getBulkUser(server);
-                var days = 30;
+                var days = 90;
                 var current_sync = Date.now();
 
                 // Atomically retrieve old last_sync value and set new one
