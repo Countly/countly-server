@@ -224,7 +224,7 @@ var countlyConfig = {
             // Consumer group settings
             sessionTimeoutMs: 30000, // Consumer session timeout in milliseconds (default: 30 seconds) - WARNING: Too low causes rebalances, potentially losing in-flight messages
             maxPollIntervalMs: 300000, // Maximum time between polls in milliseconds (default: 5 minutes) - WARNING: Too low causes consumer to be kicked out, losing uncommitted offsets
-            autoOffsetReset: "latest", // Where to start reading when no offset exists (latest/earliest)
+            autoOffsetReset: 'earliest', // Where to start reading when no offset exists (latest/earliest)
             enableAutoCommit: false, // Disable auto-commit for exactly-once processing (default: false) - WARNING: true can cause data loss on consumer crash before processing
 
             // Error handling settings
