@@ -414,6 +414,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     };
 
     plugins.loadConfigs(countlyDb, function() {
+        tracker.enable();
         curTheme = plugins.getConfig("frontend").theme;
         app.loadThemeFiles(curTheme);
         app.dashboard_headers = plugins.getConfig("security").dashboard_additional_headers;

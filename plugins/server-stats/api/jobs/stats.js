@@ -154,6 +154,9 @@ class StatsJob extends job.Job {
 
             var server = tracker.getBulkServer();
             var user = tracker.getBulkUser(server);
+            if (!user) {
+                return done();
+            }
             var days = 30;
             var current_sync = Date.now();
 

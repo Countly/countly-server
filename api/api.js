@@ -39,7 +39,9 @@ else {
 process.title = t.join(' ');
 
 plugins.connectToAllDatabases().then(function() {
-    tracker.enable();
+    plugins.loadConfigs(common.db, function() {
+        tracker.enable();
+    });
     common.writeBatcher = new WriteBatcher(common.db);
     common.readBatcher = new ReadBatcher(common.db);
     common.insertBatcher = new InsertBatcher(common.db);

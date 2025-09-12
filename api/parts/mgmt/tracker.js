@@ -16,8 +16,7 @@ var tracker = {},
     server = "9c28c347849f2c03caf1b091ec7be8def435e85e",
     user = "fa6e9ae7b410cb6d756e8088c5f3936bf1fab5f3",
     url = "https://stats.count.ly",
-    plugins = require('../../../plugins/pluginManager.js'),
-    domain = plugins.getConfig("api").domain;
+    plugins = require('../../../plugins/pluginManager.js');
 
 var IS_FLEX = false;
 
@@ -51,26 +50,28 @@ tracker.enable = function() {
         storage_path: "../../../.sdk/",
         interval: 10000,
         fail_timeout: 600,
-        session_update: 120,
+        session_update: 60 * 60 * 12,
         remote_config: true,
         debug: (logger.getLevel("tracker:server") === "debug")
     };
+
+    var domain = plugins.getConfig("api").domain;
+
     //set static device id if domain is defined
     if (domain) {
         config.device_id = stripTrailingSlash((domain + "").split("://").pop());
     }
-    Countly.init(config);
 
-    //change device id if is it not domain
-    if (domain && Countly.get_device_id() !== domain) {
-        Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
-    }
-    else if (!domain) {
-        checkDomain();
-    }
-    isEnabled = true;
-    Countly.user_details({"name": config.device_id });
-    plugins.loadConfigs(common.db, function() {
+    if (config.device_id && config.device_id !== "localhost") {
+        Countly.init(config);
+
+        //change device id if is it not domain
+        if (Countly.get_device_id() !== domain) {
+            Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
+        }
+
+        isEnabled = true;
+        Countly.user_details({"name": config.device_id });
         if (plugins.getConfig("tracking").server_sessions) {
             Countly.begin_session(true);
         }
@@ -83,7 +84,7 @@ tracker.enable = function() {
             }
             collectServerData();
         }, 20000);
-    });
+    }
 };
 
 /**
@@ -103,7 +104,10 @@ tracker.getBulkServer = function() {
  * @returns {Object} Countly Bulk User instance
  */
 tracker.getBulkUser = function(serverInstance) {
-    return serverInstance.add_user({device_id: stripTrailingSlash((plugins.getConfig("api").domain + "").split("://").pop())});
+    var domain = stripTrailingSlash((plugins.getConfig("api").domain + "").split("://").pop());
+    if (domain && domain !== "localhost") {
+        return serverInstance.add_user({device_id: domain});
+    }
 };
 
 /**
@@ -223,21 +227,5 @@ function stripTrailingSlash(str) {
     }
     return str;
 }
-
-//check every hour if domain was provided
-var checkDomain = function() {
-    if (!domain && domain !== plugins.getConfig("api").domain) {
-        domain = plugins.getConfig("api").domain;
-        if (Countly && isEnabled) {
-            Countly.change_id(stripTrailingSlash((domain + "").split("://").pop()), true);
-            Countly.userData.set("domain", domain);
-            Countly.user_details({"name": stripTrailingSlash((domain + "").split("://").pop())});
-            Countly.userData.save();
-        }
-    }
-    else if (!domain) {
-        setTimeout(checkDomain, 3600000);
-    }
-};
 
 module.exports = tracker;
