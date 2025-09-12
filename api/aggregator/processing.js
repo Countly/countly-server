@@ -352,7 +352,7 @@ var crypto = require('crypto');
                                 }
                             }
 
-                            if (events[z].e === "[CLY]_session" || events[z].e === "[CLY]_session_upadate") {
+                            if (events[z].e === "[CLY]_session" || events[z].e === "[CLY]_session_begin") {
                                 var meta_up = await drillMetaCache.getOne("drill_meta", {_id: events[z].a + "_meta_up"});
                                 if ((!meta_up || !meta_up._id) && !updates[app_id + "_meta_up"]) {
                                     updates[app_id + "_meta_up"] = {
