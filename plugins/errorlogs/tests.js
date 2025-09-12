@@ -219,11 +219,7 @@ describe('Testing Error Logs Plugin', function() {
                             if (err2) {
                                 return done(err2);
                             }
-                            console.log(res2.text);
-                            var logContent = JSON.parse(res2.text);
-                            logContent.should.be.an.instanceOf(Object);
-                            // After clearing, log should be empty or contain minimal content
-                            logContent.should.be.belowOrEqual(10);
+                            res2.text.should.eql("{}");
                             done();
                         });
                 });
