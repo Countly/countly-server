@@ -7,6 +7,7 @@ export interface MongoDBConfig {
   max_pool_size?: number; // default: 500
   username?: string;
   password?: string;
+
   mongos?: boolean;
   dbOptions?: Record<string, any>;
   serverOptions?: Record<string, any>;

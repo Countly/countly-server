@@ -56,11 +56,8 @@ class KafkaEventSink extends EventSinkInterface {
             }
 
             if (!this.#kafkaProducer) {
-                const KafkaProducer = require('../../plugins/kafka/api' +
-                    '/lib/kafkaProducer');
-                this.#kafkaProducer = this.#kafkaProducer || new KafkaProducer(this.#kafkaClient, {
-                    transactionalIdPrefix: this.transactionalIdPrefix
-                });
+                const KafkaProducer = require('../../plugins/kafka/api/lib/kafkaProducer');
+                this.#kafkaProducer = this.#kafkaProducer || new KafkaProducer(this.#kafkaClient, {});
             }
 
             this.#isConnected = true;
