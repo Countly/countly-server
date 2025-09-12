@@ -222,7 +222,7 @@ describe('Testing Error Logs Plugin', function() {
                             var logContent = JSON.parse(res2.text);
                             logContent.should.be.an.instanceOf(Object);
                             // After clearing, log should be empty or contain minimal content
-                            logContent.length.should.be.belowOrEqual(10);
+                            logContent.should.be.belowOrEqual(10);
                             done();
                         });
                 });
