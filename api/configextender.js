@@ -85,6 +85,9 @@ const OVERRIDES = {
         DEBUG: 'debug',
         FAILONCONNECTIONERROR: 'failOnConnectionError',
         ADAPTERPREFERENCE: 'adapterPreference',
+        COMPARISONLOGS: {
+            MODE: 'mode'
+        },
         ADAPTERS: {
             MONGODB: {
                 ENABLED: 'enabled'
@@ -140,9 +143,14 @@ const OVERRIDES = {
             MAXPOLLINTERVALMS: 'maxPollIntervalMs',
             AUTOOFFSETRESET: 'autoOffsetReset',
             ENABLEAUTOCOMMIT: 'enableAutoCommit',
+            PARTITIONSCONSUMEDCONCURRENTLY: 'partitionsConsumedConcurrently',
             INVALIDJSONBEHAVIOR: 'invalidJsonBehavior',
             INVALIDJSONMETRICS: 'invalidJsonMetrics'
         }
+    },
+
+    EVENTSINK: {
+        SINKS: 'sinks'
     },
 
     IGNOREPROXIES: 'ignoreProxies',
