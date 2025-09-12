@@ -1299,6 +1299,127 @@
                 right: 0;
                 transform: translate(-50%, 100%);
             }
+
+            /* cly-vue-color-picker__body--new-ui */
+            &--new-ui {
+                box-sizing: border-box;
+                width: 248px;
+                height: 432px;
+                padding: 8px;
+                border-radius: 16px;
+                background: #FFF;
+                box-shadow: 0 33px 9px 0 rgba(120, 120, 120, 0.00),
+                    0 21px 9px 0 rgba(120, 120, 120, 0.00),
+                    0 12px 7px 0 rgba(120, 120, 120, 0.00),
+                    0 5px 5px 0 rgba(120, 120, 120, 0.00),
+                    0 1px 3px 0 rgba(120, 120, 120, 0.00);
+
+                /* .cly-vue-color-picker__body--new-ui .cly-vue-color-picker__button */
+                & .cly-vue-color-picker__button {
+                    font-size: 14px;
+                    font-weight: 400;
+                    line-height: 20px;
+                    border-radius: 6px;
+                    padding: 6px 10px;
+                }
+
+                /* .cly-vue-color-picker__body--new-ui .vc-sketch */
+                & .vc-sketch {
+                    box-sizing: border-box;
+                    /*  232 = picker dropdown with (248) - 2 * horizontal padding (2 * 8px) */
+                    width: 232px;
+                    /* 276 = controls height (28px) + controls top margin (16px) + saturation height (232px) */
+                    height: 276px;
+                    padding: 0;
+
+                    /* .cly-vue-color-picker__body--new-ui .vc-sketch .vc-sketch-controls */
+                    & .vc-sketch-controls {
+                        margin-top: 16px;
+
+                        /* .cly-vue-color-picker__body--new-ui .vc-sketch .vc-sketch-controls .vc-alpha-picker */
+                        /* .cly-vue-color-picker__body--new-ui .vc-sketch .vc-sketch-controls .vc-hue-picker */
+                        & .vc-alpha-picker,
+                        & .vc-hue-picker {
+                            height: 8px;
+                            width: 8px;
+                            background: transparent;
+                            border: 2px solid #fff;
+                            border-radius: 50%;
+                            transform: translate(-2px, -2px);
+                        }
+
+                        /* .cly-vue-color-picker__body--new-ui .vc-sketch .vc-sketch-controls .vc-sketch-alpha-wrap */
+                        & .vc-sketch-alpha-wrap {
+                            margin-top: 8px;
+                        }
+
+                        /* .cly-vue-color-picker__body--new-ui .vc-sketch .vc-sketch-controls .vc-sketch-color-wrap */
+                        & .vc-sketch-color-wrap {
+                            display: none;
+                        }
+
+                        /* .cly-vue-color-picker__body--new-ui .vc-sketch .vc-sketch-controls .vc-sketch-sliders */
+                        & .vc-sketch-sliders {
+                            padding: 0;
+                        }
+
+                        /* .cly-vue-color-picker__body--new-ui .vc-sketch .vc-sketch-controls .vc-sketch-sliders .vc-alpha-gradient */
+                        /* .cly-vue-color-picker__body--new-ui .vc-sketch .vc-sketch-controls .vc-sketch-sliders .vc-hue */
+                        & .vc-sketch-sliders .vc-alpha-gradient,
+                        & .vc-sketch-sliders .vc-hue {
+                            border-radius: 8px;
+                        }
+                    }
+
+                    /* .cly-vue-color-picker__body--new-ui .vc-sketch .vc-sketch-saturation-wrap .vc-saturation .vc-saturation-circle */
+                    & .vc-saturation .vc-saturation-circle {
+                        width: 16px;
+                        height: 16px;
+                        box-shadow: none;
+                        border: 4px solid white;
+                        transform: translate(-8px, -8px);
+                    }
+
+                    /* .cly-vue-color-picker__body .vc-sketch .vc-sketch-saturation-wrap */
+                    & .vc-sketch-saturation-wrap {
+                        /*  232 = picker dropdown with (248) - 2 * horizontal padding (2 * 8px) */
+                        width: 232px;
+                        /*  232 = picker dropdown height (248) - 2 * vertical padding (2 * 8px) */
+                        height: 232px;
+                        border-radius: 12px;
+                        padding-bottom: 0;
+                        bottom: 0;
+
+                        /* .cly-vue-color-picker__body .vc-sketch .vc-sketch-saturation-wrap .vc-saturation */
+                        & .vc-saturation {
+                            /*  232 = picker dropdown with (248) - 2 * horizontal padding (2 * 8px) */
+                            width: 232px;
+                            /*  232 = picker dropdown height (248) - 2 * vertical padding (2 * 8px) */
+                            height: 232px;
+                            border-radius: 12px;
+                        }
+
+                    }
+                }
+
+                /* cly-vue-color-picker__body--new-ui .cly-vue-color-picker__buttons-container */
+                & .cly-vue-color-picker__buttons-container {
+                    justify-content: flex-end;
+                    margin-top: 8px;
+                    padding: 0;
+                    gap: 4px;
+
+                    /* cly-vue-color-picker__body--new-ui .cly-vue-color-picker__buttons-container .cly-vue-color-picker__button */
+                    & .cly-vue-color-picker__button {
+                        border-radius: 8px;
+                        margin-left: 0;
+                    }
+                }
+            }
+
+            & .cly-vue-color-picker__buttons-container {
+                margin-top: 16px;
+            }
         }
 
         /* .cly-vue-color-picker__buttons-container */
@@ -1307,6 +1428,152 @@
             align-items: center;
             justify-content: flex-end;
             padding-right: 12px;
+        }
+
+        /* cly-vue-color-picker__color-input */
+        &__color-input {
+            position: relative;
+
+            /* cly-vue-color-picker__color-input .el-input__inner */
+            & .el-input__inner {
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 20px;
+                color: #383a3f;
+                background-color: #fff;
+                border: 1px solid #e2e4e8;
+                border-radius: 6px;
+                padding: 6px 10px;
+
+                &::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+            }
+
+            /* cly-vue-color-picker__color-input.el-input-group--append .el-input__inner */
+            &.el-input-group--append .el-input__inner {
+                padding-right: 28px;
+            }
+
+            /* cly-vue-color-picker__color-input.el-input-group--prepend .el-input__inner */
+            &.el-input-group--prepend .el-input__inner {
+                padding-left: 28px;
+            }
+
+            /* cly-vue-color-picker__color-input .el-input-group__append */
+            & .el-input-group__append {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 8px;
+                width: 8px;
+                background: none;
+                border: none;
+                border-radius: 0;
+                color: #81868d;
+            }
+
+            /* cly-vue-color-picker__color-input .el-input-group__prepend */
+            & .el-input-group__prepend {
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 8px;
+                width: 8px;
+                background: none;
+                border: none;
+                border-radius: 0;
+                color: #81868d;
+            }
+
+            /* cly-vue-color-picker__color-input--alpha */
+            &--alpha {
+                max-width: 30%;
+            }
+        }
+
+        /* .cly-vue-color-picker__color-input-rgb */
+        &__color-input-rgb {
+            display: flex;
+            align-items: center;
+
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 20px;
+            color: #383a3f;
+            background-color: #fff;
+            border: 1px solid #e2e4e8;
+            border-radius: 6px;
+
+            /* .cly-vue-color-picker__color-input-rgb .el-input__inner */
+            & .el-input__inner {
+                border: none;
+                box-shadow: none;
+                text-align: center;
+                padding: 6px;
+
+                /* .cly-vue-color-picker__color-input-rgb .el-input__inner::-webkit-inner-spin-button */
+                &::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+
+                /* .cly-vue-color-picker__color-input-rgb .el-input__inner::first-child */
+                &::first-child {
+                    padding-left: 10px;
+                }
+
+                /* .cly-vue-color-picker__color-input-rgb .el-input__inner::last-child */
+                &::last-child {
+                    padding-right: 10px;
+                }
+            }
+
+            /* .cly-vue-color-picker__color-input-rgb .el-input__inner .el-input-group__prepend */
+            & .el-input-group__prepend {
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 8px;
+                width: 8px;
+                background: none;
+                border: none;
+                border-radius: 0;
+                text-transform: uppercase;
+
+                font-size: 12px;
+                color: #81868d;
+            }
+        }
+
+        /* cly-vue-color-picker__color-inputs-container */
+        &__color-inputs-container {
+            margin-top: 16px;
+
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* .cly-vue-color-picker__color-inputs-wrapper */
+        &__color-inputs-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
         }
 
         /* .cly-vue-color-picker__input */
@@ -1328,6 +1595,11 @@
             border: 1px solid #CFD6E4;
             border-radius: 4px;
             text-transform: uppercase;
+
+            /* cly-vue-color-picker__input--new-ui */
+            &--new-ui {
+                padding-right: 6px;
+            }
         }
 
         /* .cly-vue-color-picker__input-arrow */

@@ -673,24 +673,17 @@
             },
 
             computedAttrs() {
-                if (this.isTextareaInput) {
-                    return {
-                        ...this.$attrs,
-                        extensions: this.textareaExtensions
-                    };
-                }
-
-                if (this.isUploadInput) {
-                    return {
-                        ...this.$attrs,
+                return {
+                    ...this.$attrs,
+                    ...this.isColorPickerInput && { newUI: true },
+                    ...this.isTextareaInput && { extensions: this.textareaExtensions },
+                    ...this.isUploadInput && {
                         action: '',
                         drag: true,
                         multiple: false,
                         showFileList: false
-                    };
-                }
-
-                return this.$attrs;
+                    }
+                };
             },
 
             controlsProp() {
@@ -699,6 +692,10 @@
 
             isDropdownInput() {
                 return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_DROPDOWN;
+            },
+
+            isColorPickerInput() {
+                return this.type === COUNTLY_CONTENT_SIDEBAR_INPUT_COMPONENT_BY_TYPE_COLOR_PICKER;
             },
 
             isComponentWithOptions() {
