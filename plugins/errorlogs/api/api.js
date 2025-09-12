@@ -165,6 +165,9 @@ const readFromEnd = (file, size) => {
                         }
                     });
                 }
+                else {
+                    common.returnMessage(params, 200, 'Invalid log');
+                }
             });
         });
         return true;
