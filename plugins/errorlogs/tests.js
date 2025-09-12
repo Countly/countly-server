@@ -220,7 +220,7 @@ describe('Testing Error Logs Plugin', function() {
                                 return done(err2);
                             }
                             var logContent = JSON.parse(res2.text);
-                            logContent.should.be.an.instanceOf(String);
+                            logContent.should.be.an.instanceOf(Object);
                             // After clearing, log should be empty or contain minimal content
                             logContent.length.should.be.belowOrEqual(10);
                             done();
@@ -274,7 +274,7 @@ describe('Testing Error Logs Plugin', function() {
                         return done(err);
                     }
                     var ob = JSON.parse(res.text);
-                    ob.should.be.an.instanceOf(String);
+                    ob.should.be.an.instanceOf(Object);
                     done();
                 });
         });

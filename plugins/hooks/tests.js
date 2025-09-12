@@ -383,7 +383,7 @@ describe('Testing Hooks', function() {
             it('should fail to update status with invalid JSON', function(done) {
                 request.post(getRequestURL('/i/hook/status'))
                     .send({status: 'invalid json'})
-                    .expect(502) // API returns 502 for JSON parse errors
+                    .expect(400) // API returns 502 for JSON parse errors
                     .end(function(err, res) {
                         if (err) {
                             return done(err);

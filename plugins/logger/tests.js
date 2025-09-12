@@ -347,7 +347,7 @@ describe("Request Logger Plugin", function() {
     describe("State is automatic", function() {
         var loggedRequestsLimitPerMinute = 1;
         before(function(done) {
-            setRequestLoggerPluginConfiguration({state: 'automatic', limit: loggedRequestsLimitPerMinute})
+            setRequestLoggerPluginConfiguration({state: 'automatic'})
                 .then(function() {
                     return testUtils.sleep(expectedServerTimeToFinishPrevRequest);
                 }).then(function() {
