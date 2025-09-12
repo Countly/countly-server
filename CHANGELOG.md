@@ -2,9 +2,57 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.19
+Enterprise Fixes
+- [home] Fix home download render issue
+- [journeys] Fix for handling the skip threshold value when saving the journey
+- [journeys] Performance improvement on journey stat user list & UI bugfixes
+
+Dependencies:
+- Bump express-rate-limit from 8.0.1 to 8.1.0
+- Bump mongodb from 6.18.0 to 6.19.0
+- Bump nodemailer from 7.0.5 to 7.0.6
+- Bump puppeteer from 24.17.0 to 24.19.0
+- Bump sass from 1.90.0 to 1.92.1
+
+## Version 25.03.18
+Fixes:
+- [server-stats] Add new events to breakdown
+- [server-stats] Fix breakdown event calculation
+
+Enterprise Fixes:
+- [journeys] Fix for clearing content queue when journey is paused
+- [journeys] Fix for content shown event handling
+- [journeys] Fix for performance issues when huge number of journey instances created
+- [journeys] Update skip threshold when journeys are paused
+
+Dependencies:
+- Bump get-random-values from 3.0.0 to 4.0.0
+- Bump puppeteer from 24.16.1 to 24.16.2
+
+## Version 25.03.17
+Enterprise Fixes:
+- [ldap] Recursive user search in ldap added
+- [license] Update metric endpoint permission
+
+Dependencies:
+- Bump puppeteer from 24.16.2 to 24.17.0
+
+## Version 25.03.16
+Enterprise Fixes:
+- [journeys] Fix for skip threshold check in concurrent requests
+- [journeys] Prevent showing journey builder when viewing journey list page
+
+Dependencies:
+- Bump get-random-values from 3.0.0 to 4.0.0
+- Bump puppeteer from 24.16.1 to 24.16.2
+
+## Version 25.03.15
+Enterprise Fixes:
+- [cohorts] Unescape segmentation properties options to prevent duplicated values
+- [ldap] Connection timeout values are added to LDAP config
 
 ## Version 25.03.14
-
 Fixes:
 - [dashboard] Localized missing string in the dashboard
 - [localization] Added French translations
@@ -13,7 +61,12 @@ Enterprise Fixes:
 - [active_directory] Fix for body parser empty request body issue
 
 Dependencies:
+- Bump eslint-plugin-vue from 10.3.0 to 10.4.0
+- Bump fs-extra from 11.3.0 to 11.3.1
 - Bump lint-staged from 16.1.2 to 16.1.4
+- Bump puppeteer from 24.15.0 to 24.16.1
+- Bump sass from 1.89.2 to 1.90.0
+- Bump typescript from 5.8.3 to 5.9.2
 
 
 ## Version 25.03.13

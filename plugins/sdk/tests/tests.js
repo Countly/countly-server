@@ -1,7 +1,6 @@
 const spt = require('supertest');
 const should = require('should');
-const testUtils = require('../../test/testUtils');
-const plugins = require('../../plugins/pluginManager');
+const testUtils = require('../../../test/testUtils');
 
 const request = spt(testUtils.url);
 // change these in local testing directly or set env vars (also COUNTLY_CONFIG_HOSTNAME should be set with port)
@@ -9,8 +8,49 @@ let API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
 let APP_KEY = testUtils.get('APP_KEY');
 let APP_ID = testUtils.get("APP_ID");
 const config_ver = 2;
+var validOptions = {
+    "tracking": false,
+    "networking": false,
+    "crt": false,
+    "vt": false,
+    "st": false,
+    "cet": false,
+    "ecz": false,
+    "cr": false,
+    "sui": false,
+    "eqs": false,
+    "rqs": false,
+    "czi": false,
+    "dort": false,
+    "scui": false,
+    "lkl": false,
+    "lvs": false,
+    "lsv": false,
+    "lbc": false,
+    "ltlpt": false,
+    "ltl": false,
+    "lt": false,
+    "rcz": false,
+    "bom": false,
+    "bom_at": false,
+    "bom_rqp": false,
+    "bom_ra": false,
+    "bom_d": false
+};
 
 describe('SDK Plugin', function() {
+    beforeEach(function(done) {
+        request
+            .post('/i/sdk-config/update-enforcement')
+            .query({ api_key: API_KEY_ADMIN, app_id: APP_ID, enforcement: JSON.stringify(validOptions)})
+            .expect(200)
+            .end(function(err, res) {
+                should.not.exist(err);
+                res.body.should.have.property('result', 'Success');
+                done();
+            });
+    });
+
     //==================================================================================================================
     // method=sc tests
     //==================================================================================================================
@@ -145,7 +185,8 @@ describe('SDK Plugin', function() {
                 });
         });
 
-        it('8. should update correct config parameter', function(done) {
+        // modified after introducing enforcement
+        it('8. should not return unenforced config parameter', function(done) {
             request
                 .get('/o')
                 .query({ method: 'config-upload', api_key: API_KEY_ADMIN, app_id: APP_ID, config: JSON.stringify({ lt: 500}) })
@@ -160,7 +201,7 @@ describe('SDK Plugin', function() {
                         .end(function(err, res) {
                             should.not.exist(err);
                             checkCommonConfigParam(res);
-                            res.body.c.lt.should.be.exactly(500);
+                            res.body.c.should.not.have.property('lt'); // by default it is not enforced
                             done();
                         });
                 });
@@ -187,6 +228,101 @@ describe('SDK Plugin', function() {
                 });
         });
 
+    });
+    describe('POST /i/sdk-config/update-enforcement', function() {
+        it('1. should return enforced config parameter', function(done) {
+            request
+                .get('/o')
+                .query({ method: 'config-upload', api_key: API_KEY_ADMIN, app_id: APP_ID, config: JSON.stringify({ lt: 500 }) })
+                .expect(200)
+                .end(function(err, res) {
+                    should.not.exist(err);
+                    res.body.should.have.property('result', 'Success');
+                    request
+                        .post('/i/sdk-config/update-enforcement')
+                        .query({ api_key: API_KEY_ADMIN, app_id: APP_ID, enforcement: JSON.stringify({ lt: true }) })
+                        .expect(200)
+                        .end(function(err, res) {
+                            should.not.exist(err);
+                            res.body.should.have.property('result', 'Success');
+                            request
+                                .get('/o/sdk')
+                                .query({ method: 'sc', app_key: APP_KEY, device_id: 'test' })
+                                .expect(200)
+                                .end(function(err, res) {
+                                    should.not.exist(err);
+                                    checkCommonConfigParam(res);
+                                    res.body.c.lt.should.be.exactly(500); // lt is enforced
+                                    done();
+                                });
+                        });
+                });
+        });
+        checkBadCredentials('/i/sdk-config/update-enforcement', 'sdk-config', false, true);
+        it('7. should reject invalid enforcement format, string', function(done) {
+            request
+                .post('/i/sdk-config/update-enforcement')
+                .query({ api_key: API_KEY_ADMIN, app_id: APP_ID, enforcement: 'invalid json' })
+                .expect(400)
+                .end(function(err, res) {
+                    should.not.exist(err);
+                    res.body.should.have.property('result', 'Error parsing enforcement');
+                    done();
+                });
+        });
+        it('8. should reject invalid enforcement format, array', function(done) {
+            request
+                .post('/i/sdk-config/update-enforcement')
+                .query({ api_key: API_KEY_ADMIN, app_id: APP_ID, enforcement: [] })
+                .expect(400)
+                .end(function(err, res) {
+                    should.not.exist(err);
+                    res.body.should.have.property('result', 'Wrong enforcement format');
+                    done();
+                });
+        });
+        it('9. should remove unwanted keys', function(done) {
+            request
+                .post('/i/sdk-config/update-enforcement')
+                .query({ api_key: API_KEY_ADMIN, app_id: APP_ID, enforcement: JSON.stringify({ ...validOptions, garbage: true }) })
+                .expect(200)
+                .end(function(err, res) {
+                    should.not.exist(err);
+                    res.body.should.have.property('result', 'Success');
+                    request
+                        .get('/o')
+                        .query({ method: 'sdk-enforcement', api_key: API_KEY_ADMIN, app_id: APP_ID })
+                        .expect(200)
+                        .end(function(err, res) {
+                            should.not.exist(err);
+                            for (var key in validOptions) {
+                                res.body.should.have.property(key);
+                                res.body[key].should.be.a.Boolean();
+                                res.body[key].should.be.exactly(validOptions[key]);
+                            }
+                            res.body.should.not.have.property('garbage'); // garbage should be removed
+                            done();
+                        });
+                });
+        });
+    });
+    describe('GET /o?method=sdk-enforcement', function() {
+        it('1. should return enforcement info for the app', function(done) {
+            request
+                .get('/o')
+                .query({ method: 'sdk-enforcement', api_key: API_KEY_ADMIN, app_id: APP_ID })
+                .expect(200)
+                .end(function(err, res) {
+                    should.not.exist(err);
+                    for (var key in validOptions) {
+                        res.body.should.have.property(key);
+                        res.body[key].should.be.a.Boolean();
+                        res.body[key].should.be.exactly(validOptions[key]);
+                    }
+                    done();
+                });
+        });
+        checkBadCredentials('/o', 'sdk-enforcement');
     });
 });
 
@@ -225,9 +361,13 @@ function checkBadCredentials(endpoint, method, userType, usePost) {
         { method: method, app_id: APP_ID },
         { method: method, api_key: API_KEY_ADMIN, app_id: 'invalid_app_id' },
         { method: method, api_key: API_KEY_ADMIN },
-        {method: method}
+        { method: method }
     ];
     var responses = ['User does not exist', 'Missing parameter "api_key" or "auth_token"', 'Invalid parameter "app_id"', 'Missing parameter "app_id"', 'Missing parameter "app_id"'];
+    if (usePost) {
+        titles[4] = '6. should require api_key or auth_token';
+        responses[4] = 'Missing parameter "api_key" or "auth_token"';
+    }
 
     // for app_key and device_id requiring endpoints
     if (userType) {
@@ -249,9 +389,6 @@ function checkBadCredentials(endpoint, method, userType, usePost) {
                     .get(endpoint)
                     .query(queries[index]);
                 if (usePost) {
-                    if (index === 3 || index === 4) {
-                        return done();
-                    }
                     req = request
                         .post(endpoint)
                         .send(queries[index]);

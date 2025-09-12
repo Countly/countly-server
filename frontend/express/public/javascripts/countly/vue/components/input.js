@@ -540,8 +540,8 @@
                                 <div\
                                     class="text-medium cly-vue-listbox__item"\
                                     :style="[option.disabled ? {\'pointer-events\' : \'none\'} : {\'pointer-events\': \'all\'}]"\
-                                    :key="option.value"\
-                                    v-for="option in searchedOptions">\
+                                    :key="option.value + \'-\' + index"\
+                                    v-for="(option, index) in searchedOptions">\
                                     <div v-if="sortable" class="drag-handler"><img src="images/icons/drag-icon.svg" /></div>\
                                     <el-checkbox :test-id="testId + \'-\' + (option.label ? option.label.replaceAll(\' \', \'-\').toLowerCase() : \'el-checkbox\')" :label="option.value" v-tooltip="option.label" :key="option.value" :disabled="(disableNonSelected && !innerValue.includes(option.value)) || option.disabled">{{option.label}}</el-checkbox>\
                                 </div>\

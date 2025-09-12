@@ -8,7 +8,7 @@ if (myArgs[0] === "help") {
 }
 pluginManager.dbConnection().then((db) => {
     stats.getTop(db, {}, function(toReturn) {
-        var apps = Object.keys(toReturn);
+        var apps = toReturn.map(o => o.a);
         db.collection("apps").find({_id: {$in: apps.map(id => db.ObjectID(id))}}, {projection: {name: 1}}).toArray(function(err, appResult) {
             if (appResult) {
                 for (let i = 0; i < appResult.length; i++) {
@@ -16,17 +16,15 @@ pluginManager.dbConnection().then((db) => {
                 }
             }
             db.close();
-            var res = [];
-            for (let app in toReturn) {
-                if (toReturn[app]) {
-                    toReturn[app].app = stats.getAppName(app, appNames);
-                    res.push(toReturn[app]);
+            for (let i = 0; i < toReturn.length; i++) {
+                if (toReturn[i].a) {
+                    toReturn[i].a = stats.getAppName(toReturn[i].a, appNames);
                 }
             }
-            res.sort(function(a, b) {
-                return b["data-points"] - a["data-points"];
+            toReturn.sort(function(a, b) {
+                return b["v"] - a["v"];
             });
-            console.table(res, ["app", "data-points"]);
+            console.table(toReturn, ["a", "v"]);
         });
     });
 });

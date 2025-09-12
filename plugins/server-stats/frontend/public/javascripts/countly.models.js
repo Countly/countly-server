@@ -122,6 +122,8 @@
                 "ps": periodData.ps,
                 "cs": periodData.cs,
                 "custom": periodData.custom,
+                llm: periodData.llm,
+                aclk: periodData.aclk,
             };
             let sortable = [];
             for (var event in brokendownEvents) {
@@ -152,7 +154,10 @@
                     "ps": periodData.ps,
                     "cs": periodData.cs,
                     "custom": periodData.custom,
+                    llm: periodData.llm,
+                    aclk: periodData.aclk,
                 },
+
                 "sorted_breakdown": sortable,
             });
         }
