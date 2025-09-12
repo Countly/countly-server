@@ -165,21 +165,21 @@ plugins.connectToAllDatabases().then(function() {
         server_views: true,
         server_feedback: true,
         server_user_details: true,
-        user_sessions: true,
+        /*user_sessions: true,
         user_events: true,
         user_crashes: true,
         user_views: true,
         user_feedback: true,
-        user_details: true
+        user_details: true*/
     });
 
-    plugins.setUserConfigs("tracking", {
+    /*plugins.setUserConfigs("tracking", {
         user_sessions: false,
         user_events: false,
         user_crashes: false,
         user_views: false,
         user_feedback: false
-    });
+    });*/
 
     /**
     * Initialize Plugins
