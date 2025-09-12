@@ -2,8 +2,50 @@ var manager = {};
 const common = require('./common.js'),
     log = require('./log.js')('api:deletionManager'),
     plugins = require('../../plugins/pluginManager.js');
+var WhereClauseConverter;
+try {
+    WhereClauseConverter = require('../../plugins/clickhouse/api/WhereClauseConverter');
+}
+catch (error) {
+    log.e('Failed to load WhereClauseConverter', error);
+}
 
 (function() {
+    /**
+     * Deletes data from Clickhouse based on provided parameters.
+     * @param {object} my_params  - parameters containing the query object.
+     * @returns {Object} query runner result
+     */
+    function deleteFromClickhouse(my_params) {
+        if (!common.queryRunner) {
+            throw new Error('QueryRunner not initialized. Ensure API server is fully started.');
+        }
+        const queryDef = {
+            name: 'DELETE_GRANULAR_DATA',
+            adapters: {
+                clickhouse: {
+                    handler: async function(params) {
+                        const converter = new WhereClauseConverter();
+                        const { sql: whereSQL, params: ch_params } = converter.queryObjToWhere(params.query);
+                        let query = `ALTER TABLE  drill_events DELETE ${whereSQL}`;
+                        var data = await common.clickhouseQueryService.aggregate({query: query, params: ch_params}, {});
+
+                        return {
+                            _queryMeta: {
+                                adapter: 'clickhouse',
+                                query: query
+                            },
+                            data: data
+                        };
+
+                    }
+                }
+            }
+        };
+
+        return common.queryRunner.executeQuery(queryDef, my_params, {});
+    }
+
     plugins.register("/core/delete_granular_data", async function(ob) {
         var db = ob.db;
         var query = ob.query;
@@ -59,6 +101,7 @@ const common = require('./common.js'),
                                 var is_clickhouse = false;
                                 if (is_clickhouse) {
                                 //Put here clickhouse deletion code
+                                    await deleteFromClickhouse({query: task.query});
                                 }
                                 else {
                                     await common.drillDb.collection(task.collection).deleteMany(task.query);

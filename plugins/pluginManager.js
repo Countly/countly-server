@@ -60,7 +60,7 @@ var pluginManager = function pluginManager() {
     /**
      *  Events prefixed with [CLY]_ that should be recorded in drill
      */
-    this.internalDrillEvents = ["[CLY]_session_update", "[CLY]_property_update", "[CLY]_session", "[CLY]_llm_interaction", "[CLY]_llm_interaction_feedback", "[CLY]_llm_tool_used", "[CLY]_llm_tool_usage_parameter"];
+    this.internalDrillEvents = ["[CLY]_session_begin", "[CLY]_property_update", "[CLY]_session", "[CLY]_llm_interaction", "[CLY]_llm_interaction_feedback", "[CLY]_llm_tool_used", "[CLY]_llm_tool_usage_parameter"];
     /**
      *  Segments for events prefixed with [CLY]_ that should be omitted
      */

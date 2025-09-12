@@ -58,7 +58,7 @@ class QueryRunner {
      * @private
      */
     _getComparisonMode() {
-        return config.database?.comparisonLogs?.mode || 'files';
+        return config.database?.comparisonLogs?.mode || 'disabled';
     }
 
     /**
