@@ -58,7 +58,7 @@ const readFromEnd = (file, size) => {
                     console.error(errList);
                 }
                 else {
-                    logs = logfiles;
+                    logs = {...logs, ...logfiles};
                 }
                 if (params.qstring.log && logs[params.qstring.log]) {
                     if (params.qstring.download) {
