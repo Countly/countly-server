@@ -15,6 +15,11 @@ for (let count = 0; count < 12; count += 1) {
 describe('Stats job', () => {
     it('Generates data summary', () => {
         const { all, avg, month3 } = StatsJob.generateDataSummary(allData);
+        console.log('All Data:', allData);
+        console.log('Data Summary:');
+        console.log(`- All: ${all}`);
+        console.log(`- Avg: ${avg}`);
+        console.log(`- Month 3: ${month3}`);
 
         should(all).equal(12000);
         should(avg).equal(1000);
