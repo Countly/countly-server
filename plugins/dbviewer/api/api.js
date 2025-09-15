@@ -644,15 +644,24 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
             const hasTs = !!schema.ts;
             const hasId = !!schema._id;
 
-            if (!orderClause && (hasTs || hasId)) {
+            if (!orderClause) {
                 const parts = [];
-                if (hasTs) {
-                    parts.push('`ts` DESC');
+                if (schema.a) {
+                    parts.push('`a`');
                 }
-                if (hasId) {
-                    parts.push('`_id` DESC');
+                if (schema.e) {
+                    parts.push('`e`');
                 }
-                orderClause = parts.length ? (' ORDER BY ' + parts.join(', ')) : '';
+                if (schema.n) {
+                    parts.push('`n`');
+                }
+                if (schema.ts) {
+                    parts.push('`ts`');
+                }
+
+                if (parts.length) {
+                    orderClause = ' ORDER BY ' + parts.join(', ');
+                }
             }
 
             if (selectList !== '*') {
@@ -693,6 +702,7 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
 
             const tableRef = `${qi(chDb)}.${qi(table)}`;
             const dataSQL = `SELECT ${selectList} FROM ${tableRef} ${enhancedWhereSQL}${orderClause} LIMIT ${limit + 1}`;
+            log.d(FEATURE_NAME, dataSQL, finalParams);
             const useApproximateUniq = plugins.getConfig("drill", params && params.app && params.app.plugins, true).clickhouse_use_approximate_uniq;
             try {
                 const [countResult, dataRows] = await Promise.all([
