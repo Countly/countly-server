@@ -177,6 +177,9 @@ sudo countly task dist-all
 # after install call
 sudo countly check after install
 
+#install MCP
+(cd "$DIR/../mcp"; npm install; cp .env.example .env; npm run build;)
+
 #finally start countly api and dashboard
 if [ "$INSIDE_DOCKER" != "1" ]; then
     sudo countly start
