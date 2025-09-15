@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "countly-analytics-http": {
+      "command": "node",
+      "args": ["build/index.js", "--http", "--port", "3101", "--hostname", "0.0.0.0"],
+      "env": {
+        "COUNTLY_API_KEY": "your_api_key_here",
+        "COUNTLY_SERVER_URL": "https://your-countly-server.com"
+      }
+    },
+    "countly-analytics-stdio": {
+      "command": "node",
+      "args": ["build/index.js"],
+      "env": {
+        "COUNTLY_API_KEY": "your_api_key_here",
+        "COUNTLY_SERVER_URL": "https://your-countly-server.com"
+      }
+    }
+  }
+}

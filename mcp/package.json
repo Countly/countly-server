@@ -1,0 +1,40 @@
+{
+  "name": "countly-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Countly Analytics Platform",
+  "main": "build/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "./scripts/start-server.sh --http",
+    "start:stdio": "node build/index.js",
+    "test": "node tests/test-validation.js",
+    "test:tools": "node tests/test-mcp-tools.js",
+    "test:comprehensive": "node tests/test-all-tools.js",
+    "demo": "node examples/demo-real-data.js"
+  },
+  "keywords": [
+    "mcp",
+    "countly",
+    "analytics",
+    "server"
+  ],
+  "author": "Countly MCP Server",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.4",
+    "axios": "^1.6.0",
+    "countly-sdk-nodejs": "^24.10.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "build/"
+  ]
+}

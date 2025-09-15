@@ -376,6 +376,22 @@
         },
         {
             "files": [
+                "mcp/**/*.js"
+            ],
+            "rules": {
+                "no-console": "off"
+            },
+            "parserOptions": {
+                "ecmaVersion": 2023,
+                "sourceType": "module"
+            },
+            "env": {
+                "node": true,
+                "es2023": true
+            }
+        },
+        {
+            "files": [
                 "plugins/content/frontend/content-blocks/**/*.js",
                 "plugins/journey_engine/frontend/builder/**/*.js"
             ],

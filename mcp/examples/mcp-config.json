@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "countly": {
+      "command": "node",
+      "args": ["build/index.js"],
+      "env": {
+        "COUNTLY_SERVER_URL": "https://your-countly-server.com",
+        "COUNTLY_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}

@@ -10,6 +10,6 @@ plugins/*/frontend/public/*
 plugins/*/frontend/public/javascripts/*
 bin/scripts/nghttp2/*
 plugins/push/api/parts/apn/*
-
+mcp/build/*
 !plugins/*/frontend/public/javascripts
 !plugins/*/frontend/public/javascripts/countly.*.js
