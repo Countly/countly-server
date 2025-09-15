@@ -37,9 +37,11 @@ describe('Stats job', () => {
 
     it('Generates data monthly', () => {
         const monthlyData = StatsJob.generateDataMonthly(allData);
+        console.log('All Data:', allData);
+        console.log(monthlyData);
 
-        should(monthlyData['Last 6 months']).equal((1000).toLocaleString());
-        should(monthlyData['Last 12 months']).equal((1000).toLocaleString());
+        should(monthlyData['Last 6 months']).equal(1000);
+        should(monthlyData['Last 12 months']).equal(1000);
 
         const expectedDP = [];
         for (let count = 0; count < 12; count += 1) {
