@@ -13,7 +13,7 @@ class DataBatchReader {
     * @param {function} onData - Finction to call when getting new data from stream
     */
     constructor(db, options, onData,) {
-        log.e("Creating dataBatchReader", JSON.stringify(options));
+        log.d("Creating dataBatchReader", JSON.stringify(options));
         this.db = db;
         this.pipeline = options.pipeline || [];
         this.match = options.match || {};
@@ -41,7 +41,7 @@ class DataBatchReader {
     * Check if stream is closed and restart if needed
     */
     async checkState() {
-        log.e("Checking state for batcher to revive if dead");
+        log.d("Checking state for batcher to revive if dead");
         //Check last token in database. If it is older than 60 seconds. Set up again
         try {
             var token = await common.db.collection("plugins").findOne({"_id": "_changeStreams"}, {projection: {[this.name]: 1}});
@@ -49,12 +49,12 @@ class DataBatchReader {
                 var lu = token[this.name].lu.valueOf();
                 var now = Date.now().valueOf();
                 if (now - lu > this.reviveInterval) {
-                    log.e("Stream is closed. Restarting it");
+                    log.d("Stream is closed. Restarting it");
                     this.setUp();
                 }
             }
             else {
-                log.e("Processor does not exists. Set it up again.");
+                log.d("Processor does not exists. Set it up again.");
                 this.setUp();
             }
         }
@@ -116,11 +116,11 @@ class DataBatchReader {
         var res = await common.db.collection("plugins").findOne({"_id": "_changeStreams"}, {projection: {[this.name]: 1}});
         if (!res || !res[this.name]) {
             //none exists. create token with current time
-            log.e("None exists. Creating new token for " + this.name);
+            log.w("None exists. Creating new token for " + this.name);
             await common.db.collection("plugins").updateOne({"_id": "_changeStreams"}, {$set: {[this.name]: {"token": "timed", "cd": Date.now(), "_id": null, localId: this.localId}}}, {"upsert": true});
         }
         else {
-            log.e("some exits. Checking if it is stale for " + this.name);
+            log.w("some exits. Checking if it is stale for " + this.name);
             //we have some document. Check last cd and start process on localId if it is stale
             var lu = 0;
             if (res[this.name].lu) {
@@ -128,7 +128,7 @@ class DataBatchReader {
             }
             var now = Date.now().valueOf();
             if (now - lu > this.reviveInterval) {
-                log.e("It is stale. Setting up again for " + this.name);
+                log.d("It is stale. Setting up again for " + this.name);
                 //try setting this as correct local id
                 var query = {"_id": "_changeStreams"};
                 query[this.name + ".localId"] = res[this.name].localId;
@@ -140,16 +140,16 @@ class DataBatchReader {
                 var newDoc = await common.db.collection("plugins").updateOne(query, {$set: set}, {"upsert": false});
                 if (newDoc && newDoc.modifiedCount > 0) {
                     //all good
-                    log.e(this.name + ": set up with localId - " + this.localId);
+                    log.d(this.name + ": set up with localId - " + this.localId);
                 }
                 else {
-                    log.e(this.name + ": Could not set up with localId - " + this.localId);
+                    log.w(this.name + ": Could not set up with localId - " + this.localId);
                     //Do not contiinue. Some other process might have started thos
                     return;
                 }
             }
             else {
-                log.e("Seems like there is one running. do not do anything yet.");
+                log.d("Seems like there is one running. do not do anything yet.");
                 //do not start yet. Wait for next interval
                 return;
             }

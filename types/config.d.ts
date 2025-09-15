@@ -7,6 +7,7 @@ export interface MongoDBConfig {
   max_pool_size?: number; // default: 500
   username?: string;
   password?: string;
+
   mongos?: boolean;
   dbOptions?: Record<string, any>;
   serverOptions?: Record<string, any>;
@@ -216,17 +217,19 @@ export interface KafkaProducerConfig {
 /** Kafka consumer configuration */
 export interface KafkaConsumerConfig {
   /** Minimum bytes to fetch per request */
-  fetchMinBytes?: number; // default: 1024
+  fetchMinBytes?: number; // default: 262144 (256KB)
   /** Maximum wait time for fetch requests in milliseconds */
-  fetchMaxWaitMs?: number; // default: 500
+  fetchMaxWaitMs?: number; // default: 1000
   /** Maximum bytes to fetch per request */
   fetchMaxBytes?: number; // default: 52428800 (50MB)
   /** Maximum bytes per partition per fetch */
   maxPartitionFetchBytes?: number; // default: 1048576 (1MB)
   /** Minimum messages to queue before consuming */
-  queuedMinMessages?: number; // default: 100000
+  queuedMinMessages?: number; // default: 50000
   /** Maximum memory for message queue in KB */
-  queuedMaxMessagesKbytes?: number; // default: 1048576 (1GB)
+  queuedMaxMessagesKbytes?: number; // default: 524288 (512MB)
+  /** Number of partitions to consume concurrently per process */
+  partitionsConsumedConcurrently?: number; // default: 4
   /** Consumer session timeout in milliseconds */
   sessionTimeoutMs?: number; // default: 30000
   /** Maximum time between polls in milliseconds */
@@ -235,6 +238,10 @@ export interface KafkaConsumerConfig {
   autoOffsetReset?: "latest" | "earliest"; // default: "latest"
   /** Disable auto-commit for exactly-once processing */
   enableAutoCommit?: boolean; // default: false
+  /** How to handle invalid JSON messages */
+  invalidJsonBehavior?: "skip" | "fail"; // default: "skip"
+  /** Whether to log metrics for invalid JSON messages */
+  invalidJsonMetrics?: boolean; // default: true
 }
 
 /** Kafka rdkafka (librdkafka) configuration */
