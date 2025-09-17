@@ -10,7 +10,7 @@ const { VISUALIZATION_TYPE, TIME_UNITS } = require('../../../support/constants')
 
 
 describe('Create New Custom Dashboard', () => {
-    beforeEach(function() {
+    beforeEach(function () {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
         navigationHelpers.openDashboardsMenu();
@@ -29,7 +29,7 @@ describe('Create New Custom Dashboard', () => {
         //***Report***
         Report Type: Dashboard Report
         Frequency: Daily
-    `, function() {
+    `, function () {
 
         const dashboard = generateDashboardFixture();
         const report = generateReportFixture();
@@ -84,5 +84,64 @@ describe('Create New Custom Dashboard', () => {
 
         reportHelper.openReportPreviewButton();
         reportHelper.verifyReportPreviewPageImage();
+    });
+
+    it.only(`Create a private custom dashboard and duplicate it and edit it and delete it then verify the flow`, function () {
+
+        const dashboard = generateDashboardFixture();
+        const editedDashboard = generateDashboardFixture();
+        const editPermissionEmail = generateDashboardFixture();
+        const viewOnlyPermissionEmail = generateDashboardFixture();
+
+        dashboardsHelper.clickDashboardsNewButton();
+        dashboardsHelper.typeDashboardName(dashboard.dashboardName);
+        dashboardsHelper.selectPrivateDashboardVisibility();
+        dashboardsHelper.selectNotifyAllUsersViaEmail();
+        dashboardsHelper.selectUseCustomRefreshRate();
+        dashboardsHelper.clickCreateDashboardButton();
+        dashboardsHelper.verifyDashboardCreatedNotification();
+        dashboardsHelper.closeNotification();
+
+        dashboardsHelper.verifyCustomDashboardElements({
+            dashboardName: dashboard.dashboardName,
+            createdTime: "just now",
+            createdBy: "devops+uitests@count.ly",
+        });
+
+        // Duplicate dashboard
+        dashboardsHelper.duplicateDashboard();
+        dashboardsHelper.clickSaveDashboardButton();
+        dashboardsHelper.verifyDashboardCreatedNotification();
+        dashboardsHelper.closeNotification();
+
+        dashboardsHelper.verifyCustomDashboardElements({
+            dashboardName: "Copy - " + dashboard.dashboardName,
+            createdTime: "just now",
+            createdBy: "devops+uitests@count.ly",
+        });
+
+        //Edit  dashboard
+        dashboardsHelper.editDashboard();
+        dashboardsHelper.typeDashboardName(editedDashboard.dashboardName);
+        dashboardsHelper.selectSomeSpecificUsersDashboardVisibility();
+        dashboardsHelper.typeEditPermissonEmail(editPermissionEmail.email);
+        dashboardsHelper.typeViewOnlyPermissonEmail(viewOnlyPermissionEmail.email);
+        dashboardsHelper.clickSaveDashboardButton();
+        dashboardsHelper.verifyDashboardEditedNotification();
+        dashboardsHelper.closeNotification();
+
+        dashboardsHelper.verifyCustomDashboardElements({
+            dashboardName: editedDashboard.dashboardName,
+            createdTime: "seconds",
+            createdBy: "devops+uitests@count.ly",
+        });
+
+        //Delete dashboard
+        dashboardsHelper.deleteDashboard();
+        dashboardsHelper.verifyDashboardShouldBeDeleted(editedDashboard.dashboardName);
+        dashboardsHelper.clickYesDeleteDashboardButton();
+        dashboardsHelper.verifyDashboardDeletedNotification();
+        dashboardsHelper.closeNotification();
+
     });
 });
