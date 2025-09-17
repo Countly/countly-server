@@ -7,9 +7,7 @@ Cypress.Commands.add("typeInput", (element, tag) => {
     cy.getElement(element).clear().type(tag);
 });
 
-Cypress.Commands.add("typeInputWithIndex", (element, tag, options = {}) => {
-    const { index = 0, force = false } = options;
-
+Cypress.Commands.add("typeInputWithIndex", (element, tag, { index = 0, force = false } = {}) => {
     cy.getElement(element)
         .eq(index)
         .clear({ force })
