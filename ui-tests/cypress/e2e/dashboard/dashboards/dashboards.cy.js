@@ -9,8 +9,8 @@ const { generateReportFixture } = require('../../../fixtures/generators/reports'
 const { VISUALIZATION_TYPE, TIME_UNITS } = require('../../../support/constants');
 
 
-describe('Create New Custom Dashboard',() => {
-    beforeEach(function () {
+describe('Create New Custom Dashboard', () => {
+    beforeEach(function() {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
         navigationHelpers.openDashboardsMenu();
@@ -29,7 +29,7 @@ describe('Create New Custom Dashboard',() => {
         //***Report***
         Report Type: Dashboard Report
         Frequency: Daily
-    `, function () {
+    `, function() {
 
         const dashboard = generateDashboardFixture();
         const report = generateReportFixture();
@@ -86,7 +86,7 @@ describe('Create New Custom Dashboard',() => {
         reportHelper.verifyReportPreviewPageImage();
     });
 
-    it(`Create a private custom dashboard and duplicate it and edit it and delete it then verify the flow`, function () {
+    it(`Create a private custom dashboard and duplicate it and edit it and delete it then verify the flow`, function() {
 
         const dashboard = generateDashboardFixture();
         const editedDashboard = generateDashboardFixture();

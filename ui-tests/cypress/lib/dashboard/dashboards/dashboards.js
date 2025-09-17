@@ -17,7 +17,7 @@ const typeDashboardName = (dashboardName) => {
 };
 
 const clickCreateDashboardButton = () => {
-    cy.clickElement(customDashboardDrawerElements.CREATE_BUTTON,true);
+    cy.clickElement(customDashboardDrawerElements.CREATE_BUTTON, true);
     cy.checkPaceActive();
 };
 
@@ -136,19 +136,19 @@ const clickCreateWidgetButton = () => {
 
 const selectPrivateDashboardVisibility = () => {
     cy.clickElement(customDashboardDrawerElements.DASHBOARD_VISIBILITY_RADIO_BUTTON_PRIVATE);
-}
+};
 
 const selectNotifyAllUsersViaEmail = () => {
     cy.clickElement(customDashboardDrawerElements.NOTIFY_VIA_EMAIL_CHECKBOX_INPUT);
-}
+};
 
 const selectUseCustomRefreshRate = () => {
     cy.clickElement(customDashboardDrawerElements.USE_REFRESH_RATE_CHECKBOX_INPUT);
-}
+};
 
 const selectSomeSpecificUsersDashboardVisibility = () => {
     cy.clickElement(customDashboardDrawerElements.DASHBOARD_VISIBILITY_RADIO_BUTTON_SOME_SPECIFIC_USERS);
-}
+};
 
 const duplicateDashboard = () => {
     cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON);
@@ -164,7 +164,7 @@ const verifyDashboardEditedNotification = () => {
     cy.verifyElement({
         labelElement: customDashboardElements.NOTIFICATION_SAVED_SUCCESSFULLY_MESSAGE,
         labelText: "Dashboard edited successfully!"
-    }); 
+    });
 };
 
 const deleteDashboard = () => {
@@ -179,7 +179,7 @@ const verifyDashboardShouldBeDeleted = (dashboardName) => {
         labelText: "Delete dashboard?"
     });
 
-    cy.verifyElement({      
+    cy.verifyElement({
         element: customDashboardElements.DELETE_POPUP_CLOSE_ICON
     });
 
@@ -200,8 +200,8 @@ const verifyDashboardShouldBeDeleted = (dashboardName) => {
 };
 
 const clickYesDeleteDashboardButton = () => {
-    cy.clickElement(customDashboardElements.DELETE_POPUP_DELETE_BUTTON,true);
-}
+    cy.clickElement(customDashboardElements.DELETE_POPUP_DELETE_BUTTON, true);
+};
 
 const verifyDashboardDeletedNotification = () => {
     cy.verifyElement({
@@ -211,19 +211,19 @@ const verifyDashboardDeletedNotification = () => {
 };
 
 const clickSaveDashboardButton = () => {
-    cy.clickElement(customDashboardDrawerElements.CREATE_BUTTON,1,true);
+    cy.clickElement(customDashboardDrawerElements.CREATE_BUTTON, 1, true);
 };
 
 const typeEditPermissionEmail = (editPermissionEmail) => {
-    cy.clickElement(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_INPUT)
-    cy.typeInputWithIndex(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX, editPermissionEmail,{ index: 1, force: true });
-    cy.clickElement(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_INPUT,true)
-}
+    cy.clickElement(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_INPUT);
+    cy.typeInputWithIndex(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX, editPermissionEmail, { index: 1, force: true });
+    cy.clickElement(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_INPUT, true);
+};
 
 const typeViewOnlyPermissionEmail = (viewPermissionEmail) => {
-    cy.clickElement(customDashboardDrawerElements.DASHBOARD_VIEW_PERMISSIONS_INPUT)
-    cy.typeInputWithIndex(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX, viewPermissionEmail,{index:1, force: true});
-}
+    cy.clickElement(customDashboardDrawerElements.DASHBOARD_VIEW_PERMISSIONS_INPUT);
+    cy.typeInputWithIndex(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX, viewPermissionEmail, {index: 1, force: true});
+};
 
 module.exports = {
     clickDashboardsNewButton,
