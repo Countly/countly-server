@@ -26,7 +26,7 @@
                                     {{ i18n('jobs.base-configuration') }}
                                 </h5>
                                 <div class="bu-field bu-mb-3 bu-is-flex">
-                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 120px;">{{ i18n('jobs.default-schedule') }}:</label>
+                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 160px;">{{ i18n('jobs.default-schedule') }}:</label>
                                     <div class="bu-control bu-is-flex-grow-1 bu-is-flex bu-is-align-items-center">
                                         <span class="bu-tag bu-is-info bu-is-light bu-mr-2">
                                             {{ jobDetails.config && jobDetails.config.defaultConfig && jobDetails.config.defaultConfig.schedule && jobDetails.config.defaultConfig.schedule.value
@@ -52,7 +52,7 @@
                                     class="bu-field bu-mb-3 bu-is-flex"
                                     v-if="jobDetails.config && jobDetails.config.scheduleOverride"
                                 >
-                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 120px;">{{ i18n('jobs.schedule-override') }}:</label>
+                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 160px;">{{ i18n('jobs.schedule-override') }}:</label>
                                     <div class="bu-control bu-is-flex-grow-1 bu-is-flex bu-is-align-items-center">
                                         <span class="bu-tag bu-is-warning bu-is-light bu-mr-2">
                                             {{ jobDetails.config.scheduleOverride }}
@@ -67,7 +67,7 @@
                                     v-if="jobDetails.config && jobDetails.config.retryOverride"
                                 >
                                     <div class="bu-is-flex">
-                                        <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 120px;">{{ i18n('jobs.retry-override') }}:</label>
+                                        <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 160px;">{{ i18n('jobs.retry-override') }}:</label>
                                         <div class="bu-control bu-is-flex-grow-1">
                                             <div class="bu-notification bu-is-light bu-is-info bu-p-3 bu-mt-2">
                                                 <div class="bu-mb-2 bu-is-flex bu-is-align-items-center">
@@ -90,7 +90,7 @@
                                     {{ i18n('jobs.current-state') }}
                                 </h5>
                                 <div class="bu-field bu-mb-3 bu-is-flex">
-                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 120px;">{{ i18n('jobs.last-status') }}:</label>
+                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 160px;">{{ i18n('jobs.last-status') }}:</label>
                                     <div class="bu-control bu-is-flex-grow-1">
                                         <cly-status-tag
                                             :text="jobDetails.config && jobDetails.config.enabled !== false
@@ -102,7 +102,7 @@
                                     </div>
                                 </div>
                                 <div class="bu-field bu-mb-3 bu-is-flex">
-                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 120px;">{{ i18n('jobs.last-run') }}:</label>
+                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 160px;">{{ i18n('jobs.last-run') }}:</label>
                                     <div class="bu-control bu-is-flex-grow-1">
                                         <span class="bu-tag bu-is-light">
                                             {{ jobDetails.currentState && jobDetails.currentState.lastRun ? formatDateTime(jobDetails.currentState.lastRun) : i18n('common.never') }}
@@ -110,7 +110,7 @@
                                     </div>
                                 </div>
                                 <div class="bu-field bu-mb-3 bu-is-flex">
-                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 120px;">{{ i18n('jobs.next-run') }}:</label>
+                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 160px;">{{ i18n('jobs.next-run') }}:</label>
                                     <div class="bu-control bu-is-flex-grow-1">
                                         <span class="bu-tag bu-is-light">
                                             {{ jobDetails.currentState && jobDetails.currentState.nextRun ? formatDateTime(jobDetails.currentState.nextRun) : i18n('common.not-scheduled') }}
@@ -118,7 +118,7 @@
                                     </div>
                                 </div>
                                 <div class="bu-field bu-mb-3 bu-is-flex">
-                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 120px;">{{ i18n('jobs.last-run-duration') }}:</label>
+                                    <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 160px;">{{ i18n('jobs.last-run-duration') }}:</label>
                                     <div class="bu-control bu-is-flex-grow-1">
                                         <span class="bu-tag bu-is-light">
                                             {{ jobDetails.currentState && jobDetails.currentState.lastRunDuration ? jobDetails.currentState.lastRunDuration + 's' : '-' }}
@@ -133,7 +133,7 @@
                                 </h5>
                                 <div class="bu-field bu-mb-3">
                                     <div class="bu-is-flex">
-                                        <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 120px;">{{ i18n('jobs.fail-at') }}:</label>
+                                        <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 160px;">{{ i18n('jobs.fail-at') }}:</label>
                                         <div class="bu-control bu-is-flex-grow-1">
                                             <span class="bu-tag bu-is-light">
                                                 {{ jobDetails.currentState && jobDetails.currentState.failedAt ? formatDateTime(jobDetails.currentState.failedAt) : i18n('common.never') }}
@@ -143,7 +143,7 @@
                                 </div>
                                 <div class="bu-field bu-mb-3">
                                     <div class="bu-is-flex">
-                                        <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 120px;">{{ i18n('jobs.fail-reason') }}:</label>
+                                        <label class="bu-label bu-mr-2 bu-is-flex-grow-0 bu-is-flex-shrink-0 bu-is-flex bu-is-align-items-center" style="width: 160px;">{{ i18n('jobs.fail-reason') }}:</label>
                                         <div class="bu-control bu-is-flex-grow-1">
                                             <pre
                                                 class="bu-p-3 bu-has-background-white-ter bu-is-family-code"
