@@ -142,6 +142,8 @@ describe('Create New Custom Dashboard', () => {
         dashboardsHelper.clickYesDeleteDashboardButton();
         dashboardsHelper.verifyDashboardDeletedNotification();
         dashboardsHelper.closeNotification();
-
+        dashboardsHelper.searchDashboard(editedDashboard.dashboardName);
+        dashboardsHelper.verifyDashboardShouldBeDeleted();
+       
     });
 });

@@ -5,6 +5,7 @@ import {
     customDashboardDrawerElements,
     newWidgetDrawerElements
 } from "../../../support/elements/dashboard/dashboards/dashboards";
+import sidebarElements from '../../../support/elements/sidebar/sidebar';
 
 //Dashboard Sidebar Menu 
 const clickDashboardsNewButton = () => {
@@ -225,6 +226,16 @@ const typeViewOnlyPermissionEmail = (viewPermissionEmail) => {
     cy.typeInputWithIndex(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX, viewPermissionEmail, {index: 1, force: true});
 };
 
+const searchDashboard = (dashboardName) => {
+    cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.DASHBOARDS)
+    cy.typeInput(dashboardsMenuElements().DASHBOARD_SEARCH_BOX, dashboardName);
+}
+
+const verifyDashboardShouldBeDeleted = () => {
+    cy.shouldNotExist(customDashboardElements.DASHBOARD_ITEM);
+}
+
+
 module.exports = {
     clickDashboardsNewButton,
     typeDashboardName,
@@ -253,5 +264,7 @@ module.exports = {
     verifyDashboardDeletedNotification,
     clickSaveDashboardButton,
     typeEditPermissionEmail,
-    typeViewOnlyPermissionEmail
+    typeViewOnlyPermissionEmail,
+    searchDashboard,
+    verifyDashboardShouldBeDeleted
 };
