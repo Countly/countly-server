@@ -227,13 +227,13 @@ const typeViewOnlyPermissionEmail = (viewPermissionEmail) => {
 };
 
 const searchDashboard = (dashboardName) => {
-    cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.DASHBOARDS)
+    cy.clickElement(sidebarElements.SIDEBAR_MENU_OPTIONS.DASHBOARDS);
     cy.typeInput(dashboardsMenuElements().DASHBOARD_SEARCH_BOX, dashboardName);
-}
+};
 
 const verifyDashboardShouldBeDeleted = () => {
     cy.shouldNotExist(customDashboardElements.DASHBOARD_ITEM);
-}
+};
 
 
 module.exports = {

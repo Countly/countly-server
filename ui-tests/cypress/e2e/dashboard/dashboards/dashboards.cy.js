@@ -144,6 +144,5 @@ describe('Create New Custom Dashboard', () => {
         dashboardsHelper.closeNotification();
         dashboardsHelper.searchDashboard(editedDashboard.dashboardName);
         dashboardsHelper.verifyDashboardShouldBeDeleted();
-       
     });
 });
