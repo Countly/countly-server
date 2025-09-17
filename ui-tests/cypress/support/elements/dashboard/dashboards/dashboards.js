@@ -31,6 +31,13 @@ const customDashboardElements = {
 
     NOTIFICATION_SAVED_SUCCESSFULLY_MESSAGE: 'cly-notification-text',
     NOTIFICATION_SAVED_SUCCESSFULLY_MESSAGE_CLOSE_ICON: 'cly-notification-full-size-close-icon',
+
+    //Delete popup elements
+    DELETE_POPUP_TITLE: "cly-confirm-test-id-cly-confirm-dialog-title-label",
+    DELETE_POPUP_CLOSE_ICON: "el-dialog-test-id-el-dialog-close-button",
+    DELETE_POPUP_SUBTITLE: "el-dialog-test-id-el-dialog-content-label",
+    DELETE_POPUP_CANCEL_BUTTON: "cly-confirm-test-id-cly-confirm-dialog-cancel-button",
+    DELETE_POPUP_DELETE_BUTTON: "cly-confirm-test-id-cly-confirm-dialog-save-button"
 };
 
 const customDashboardWidgetElements = (index = 0) => ({
