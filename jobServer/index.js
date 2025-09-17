@@ -42,6 +42,7 @@ const http = require('http');
 const formidable = require('formidable');
 
 const countlyConfig = require('../api/config', 'dont-enclose');
+const jobServerConfig = require("./config");
 const JobServer = require('./JobServer');
 const Logger = require('../api/utils/log.js');
 const log = new Logger('jobServer:index');
@@ -295,6 +296,17 @@ if (require.main === module) {
     initializeSystem()
         .then(async({dbConnections}) => {
             log.i('Starting job server initialization sequence...');
+
+            // if resumeOnRestart is true, all scheduled jobs lastRunAt will be deleted when starting the job server
+            // lastRunAt for all scheduled jobs have to be preserved in order to calculate lastRunDuration
+            if (jobServerConfig.PULSE.resumeOnRestart === true) {
+                await dbConnections.countlyDb.collection(jobServerConfig.PULSE.db.collection).updateMany(
+                    { type: 'single' },
+                    [
+                        { $set: { lastRunAtCpy: '$lastRunAt' } },
+                    ],
+                );
+            }
 
             jobServer = await JobServer.create(Logger, pluginManager, dbConnections);
 

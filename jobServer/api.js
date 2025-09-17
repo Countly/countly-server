@@ -231,7 +231,7 @@ function getLatestStatusInfo(scheduledJob, manualRuns) {
         lockedAt: scheduledJob?.lockedAt || null,
         failedAt: scheduledJob?.failedAt || null,
         lastFinishedAt: scheduledJob?.lastFinishedAt || null,
-        lastRunAt: scheduledJob?.lastRunAt || null,
+        lastRunAt: scheduledJob?.lastRunAt || scheduledJob?.lastRunAtCpy || null,
         failReason: scheduledJob?.failReason || null,
         // Count manual runs
         manualRunCount: manualRuns.length,
