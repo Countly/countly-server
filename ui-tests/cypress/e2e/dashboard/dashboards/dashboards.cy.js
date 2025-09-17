@@ -109,7 +109,7 @@ describe('Create New Custom Dashboard', () => {
         });
 
         // Duplicate dashboard
-        dashboardsHelper.duplicateDashboard();
+        dashboardsHelper.openDuplicateDashboard();
         dashboardsHelper.clickSaveDashboardButton();
         dashboardsHelper.verifyDashboardCreatedNotification();
         dashboardsHelper.closeNotification();
@@ -121,7 +121,7 @@ describe('Create New Custom Dashboard', () => {
         });
 
         //Edit  dashboard
-        dashboardsHelper.editDashboard();
+        dashboardsHelper.openEditDashboard();
         dashboardsHelper.typeDashboardName(editedDashboard.dashboardName);
         dashboardsHelper.selectSomeSpecificUsersDashboardVisibility();
         dashboardsHelper.typeEditPermissionEmail(editPermissionEmail.email);
@@ -137,7 +137,7 @@ describe('Create New Custom Dashboard', () => {
         });
 
         //Delete dashboard
-        dashboardsHelper.deleteDashboard();
+        dashboardsHelper.openDeleteDashboard();
         dashboardsHelper.verifyDeleteDashboardPopupElements(editedDashboard.dashboardName);
         dashboardsHelper.clickYesDeleteDashboardButton();
         dashboardsHelper.verifyDashboardDeletedNotification();

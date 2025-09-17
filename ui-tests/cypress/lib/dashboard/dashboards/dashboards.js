@@ -151,12 +151,12 @@ const selectSomeSpecificUsersDashboardVisibility = () => {
     cy.clickElement(customDashboardDrawerElements.DASHBOARD_VISIBILITY_RADIO_BUTTON_SOME_SPECIFIC_USERS);
 };
 
-const duplicateDashboard = () => {
+const openDuplicateDashboard = () => {
     cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON);
     cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON_DUPLICATE_OPTION);
 };
 
-const editDashboard = () => {
+const openEditDashboard = () => {
     cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON);
     cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON_EDIT_OPTION);
 };
@@ -168,7 +168,7 @@ const verifyDashboardEditedNotification = () => {
     });
 };
 
-const deleteDashboard = () => {
+const openDeleteDashboard = () => {
     cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON);
     cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON_DELETE_OPTION);
 };
@@ -255,10 +255,10 @@ module.exports = {
     selectNotifyAllUsersViaEmail,
     selectUseCustomRefreshRate,
     selectSomeSpecificUsersDashboardVisibility,
-    duplicateDashboard,
-    editDashboard,
+    openDuplicateDashboard,
+    openEditDashboard,
     verifyDashboardEditedNotification,
-    deleteDashboard,
+    openDeleteDashboard,
     verifyDeleteDashboardPopupElements,
     clickYesDeleteDashboardButton,
     verifyDashboardDeletedNotification,
