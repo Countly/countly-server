@@ -172,7 +172,7 @@ const deleteDashboard = () => {
     cy.clickElement(customDashboardElements.MORE_OPTIONS_BUTTON_DELETE_OPTION);
 };
 
-const verifyDashboardShouldBeDeleted = (dashboardName) => {
+const verifyDeleteDashboardPopupElements = (dashboardName) => {
 
     cy.verifyElement({
         labelElement: customDashboardElements.DELETE_POPUP_TITLE,
@@ -248,7 +248,7 @@ module.exports = {
     editDashboard,
     verifyDashboardEditedNotification,
     deleteDashboard,
-    verifyDashboardShouldBeDeleted,
+    verifyDeleteDashboardPopupElements,
     clickYesDeleteDashboardButton,
     verifyDashboardDeletedNotification,
     clickSaveDashboardButton,

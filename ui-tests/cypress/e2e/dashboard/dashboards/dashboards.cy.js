@@ -138,7 +138,7 @@ describe('Create New Custom Dashboard', () => {
 
         //Delete dashboard
         dashboardsHelper.deleteDashboard();
-        dashboardsHelper.verifyDashboardShouldBeDeleted(editedDashboard.dashboardName);
+        dashboardsHelper.verifyDeleteDashboardPopupElements(editedDashboard.dashboardName);
         dashboardsHelper.clickYesDeleteDashboardButton();
         dashboardsHelper.verifyDashboardDeletedNotification();
         dashboardsHelper.closeNotification();
