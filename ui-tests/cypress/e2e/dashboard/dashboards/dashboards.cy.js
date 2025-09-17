@@ -86,7 +86,7 @@ describe('Create New Custom Dashboard', () => {
         reportHelper.verifyReportPreviewPageImage();
     });
 
-    it.only(`Create a private custom dashboard and duplicate it and edit it and delete it then verify the flow`, function () {
+    it(`Create a private custom dashboard and duplicate it and edit it and delete it then verify the flow`, function () {
 
         const dashboard = generateDashboardFixture();
         const editedDashboard = generateDashboardFixture();

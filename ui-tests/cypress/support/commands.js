@@ -7,6 +7,15 @@ Cypress.Commands.add("typeInput", (element, tag) => {
     cy.getElement(element).clear().type(tag);
 });
 
+Cypress.Commands.add("typeInputWithIndex", (element, tag, options = {}) => {
+    const { index = 0, force = false } = options;
+  
+    cy.getElement(element)
+      .eq(index)
+      .clear({ force })
+      .type(`${tag}{enter}`, { force });
+});
+
 Cypress.Commands.add("clearInput", (element) => {
     cy.getElement(element).clear();
 });

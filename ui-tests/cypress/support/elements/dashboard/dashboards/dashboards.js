@@ -64,9 +64,11 @@ const customDashboardDrawerElements = {
     DASHBOARD_EDIT_PERMISSIONS_LABEL: "dashboard-users-edit-permission-label-header",
     DASHBOARD_EDIT_PERMISSIONS_SUB_LABEL: "dashboard-users-edit-permission-label-sub-header",
     DASHBOARD_EDIT_PERMISSIONS_INPUT: "edit-permission-user-email-input",
+    DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX: "search-email-input",
     DASHBOARD_VIEW_PERMISSIONS_LABEL: "dashboard-users-view-permission-label-header",
     DASHBOARD_VIEW_PERMISSIONS_SUB_LABEL: "dashboard-users-view-permission-label-sub-header",
     DASHBOARD_VIEW_PERMISSIONS_INPUT: "view-permission-user-email-input",
+    DASHBOARD_VIEW_ONLY_PERMISSIONS_SEARCH_BOX: "search-email-input",
 
     DASHBOARD_ADDITIONAL_SETTINGS_LABEL: "dashboard-additional-settings-label",
     NOTIFY_VIA_EMAIL_CHECKBOX_LABEL: 'dashboard-send-email-checkbox-el-checkbox-label',
