@@ -214,15 +214,15 @@ const clickSaveDashboardButton = () => {
     cy.clickElement(customDashboardDrawerElements.CREATE_BUTTON,1,true);
 };
 
-const typeEditPermissonEmail = (editPemissionEmail) => {
+const typeEditPermissionEmail = (editPermissionEmail) => {
     cy.clickElement(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_INPUT)
-    cy.typeInputWithIndex(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX, editPemissionEmail,{ index: 1, force: true });
+    cy.typeInputWithIndex(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX, editPermissionEmail,{ index: 1, force: true });
     cy.clickElement(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_INPUT,true)
 }
 
-const typeViewOnlyPermissonEmail = (viewPermissionemail) => {
+const typeViewOnlyPermissionEmail = (viewPermissionEmail) => {
     cy.clickElement(customDashboardDrawerElements.DASHBOARD_VIEW_PERMISSIONS_INPUT)
-    cy.typeInputWithIndex(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX, viewPermissionemail,{index:1, force: true});
+    cy.typeInputWithIndex(customDashboardDrawerElements.DASHBOARD_EDIT_PERMISSIONS_SEARCH_BOX, viewPermissionEmail,{index:1, force: true});
 }
 
 module.exports = {
@@ -252,6 +252,6 @@ module.exports = {
     clickYesDeleteDashboardButton,
     verifyDashboardDeletedNotification,
     clickSaveDashboardButton,
-    typeEditPermissonEmail,
-    typeViewOnlyPermissonEmail
+    typeEditPermissionEmail,
+    typeViewOnlyPermissionEmail
 };

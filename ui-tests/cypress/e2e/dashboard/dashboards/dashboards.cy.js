@@ -9,7 +9,7 @@ const { generateReportFixture } = require('../../../fixtures/generators/reports'
 const { VISUALIZATION_TYPE, TIME_UNITS } = require('../../../support/constants');
 
 
-describe('Create New Custom Dashboard', () => {
+describe('Create New Custom Dashboard',() => {
     beforeEach(function () {
         navigationHelpers.goToLoginPage();
         loginHelpers.login(user.username, user.password);
@@ -124,8 +124,8 @@ describe('Create New Custom Dashboard', () => {
         dashboardsHelper.editDashboard();
         dashboardsHelper.typeDashboardName(editedDashboard.dashboardName);
         dashboardsHelper.selectSomeSpecificUsersDashboardVisibility();
-        dashboardsHelper.typeEditPermissonEmail(editPermissionEmail.email);
-        dashboardsHelper.typeViewOnlyPermissonEmail(viewOnlyPermissionEmail.email);
+        dashboardsHelper.typeEditPermissionEmail(editPermissionEmail.email);
+        dashboardsHelper.typeViewOnlyPermissionEmail(viewOnlyPermissionEmail.email);
         dashboardsHelper.clickSaveDashboardButton();
         dashboardsHelper.verifyDashboardEditedNotification();
         dashboardsHelper.closeNotification();
