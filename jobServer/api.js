@@ -257,7 +257,7 @@ function getLatestStatusInfo(scheduledJob, manualRuns) {
     const latestManualRun = sortedManualRuns[0];
 
     // Update with the latest manual run data
-    if (latestManualRun.lastRunAt && (!statusInfo.lastRunAt || new Date(latestManualRun.lastRunAt) > new Date(statusInfo.lastRunAt))) {
+    if (latestManualRun.lastRunAt && (!statusInfo.lastRunAt && new Date(latestManualRun.lastFinishedAt) > new Date(statusInfo.lastFinishedAt))) {
         statusInfo.lastRunAt = latestManualRun.lastRunAt;
     }
 
