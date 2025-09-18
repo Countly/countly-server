@@ -77,7 +77,7 @@ calculatedDataManager.longtask = async function(options) {
             return;
         }
         var start = Date.now().valueOf();
-        var my_function = my_options.query_function || fetch.fetchFromGranuralData;
+        var my_function = my_options.query_function || fetch.fetchFromGranularData;
         my_function(my_options.query_data, function(err, res) {
             if (err) {
                 my_options.errored = true;

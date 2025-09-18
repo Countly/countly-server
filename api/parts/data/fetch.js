@@ -21,7 +21,6 @@ var fetch = {},
     crypto = require('crypto'),
     usage = require('./usage.js'),
     plugins = require('../../../plugins/pluginManager.js');
-const { fetchAggregatedSegmentedEventData } = require('../queries/events.js');
 
 
 /**
@@ -45,34 +44,14 @@ fetch.fetchEventMetaData = async function(options) {
     }
     return meta;
 };
-fetch.fetchFromGranuralData = async function(queryData, callback) {
+fetch.fetchFromGranularData = async function(queryData, callback) {
     var data;
-    if (queryData.queryName === "uniqueCount") {
-        data = await common.drillQueryRunner.getUniqueCount(queryData);
-        callback(null, data);
-    }
-    else if (queryData.queryName === "uniqueGraph") {
-        data = await common.drillQueryRunner.getUniqueGraph(queryData);
-        callback(null, data);
-    }
-    else if (queryData.queryName === "viewsTableData") {
-        data = await common.drillQueryRunner.getViewsTableData(queryData);
-        callback(null, data);
-    }
-    else if (queryData.queryName === "aggregatedSessionData") {
-        data = await common.drillQueryRunner.aggregatedSessionData(queryData);
-        callback(null, data);
-    }
-    else if (queryData.queryName === "segmentValuesForPeriod") {
-        data = await common.drillQueryRunner.segmentValuesForPeriod(queryData);
-        callback(null, data);
-    }
-    else if (common.drillQueryRunner[queryData.queryName] && typeof common.drillQueryRunner[queryData.queryName] === "function") {
+    if (common.drillQueryRunner[queryData.queryName] && typeof common.drillQueryRunner[queryData.queryName] === "function") {
         data = await common.drillQueryRunner[queryData.queryName](queryData);
         callback(null, data);
     }
     else {
-
+        console.log("Invalid query name - " + queryData.queryName);
         callback("Invalid query name - " + queryData.queryName, null);
     }
     /*else {
@@ -141,7 +120,7 @@ fetch.prefetchEventData = async function(collection, params) {
                 }
                 var rr = countlyCommon.getPeriodRange(params.qstring.period, currentTimezone);
                 //get range for selecting data
-                var data = await fetchAggregatedSegmentedEventData({
+                var data = await common.drillQueryRunner.fetchAggregatedSegmentedEventData({
                     "apps": [params.app_id + ""],
                     "events": [params.qstring.event],
                     "ts": rr,
@@ -1585,6 +1564,8 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
         "app_versions": "av",
         "os": "p",
         "platforms": "p",
+        "platform": "p",
+        "locale": "la",
         "os_versions": "pv",
         "platform_versions": "pv",
         "resolutions": "r",
@@ -1757,7 +1738,7 @@ fetch.formatTotalUsersObj = function(obj, forMetric, prev) {
  * @param {object} options  - options of query
  * @param {funtyion} callback  - callback function with result
  */
-async function fetchFromGranural(collection, params, options, callback) {
+async function fetchFromGranular(collection, params, options, callback) {
     if (params.qstring.segmentation) {
         if (params.qstring.segmentation === "key") {
             params.qstring.segmentation = "n";
@@ -1785,10 +1766,18 @@ async function fetchFromGranural(collection, params, options, callback) {
     if (collection === "users") {
         queryObject.event = "[CLY]_session";
     }
-
-    var data = await common.drillQueryRunner.getAggregatedData(queryObject);
+    var data;
+    if (collection === "users") {
+        data = await common.drillQueryRunner.aggregatedSessionData(queryObject);
+    }
+    else {
+        data = await common.drillQueryRunner.getAggregatedData(queryObject);
+    }
     var modelData = common.convertArrayToModel(data, params.qstring.segmentation);
     modelData.lu = Date.now();
+    if (!options.id_prefix) {
+        options.id_prefix = params.app_id + "_" + crypto.createHash('sha1').update(queryObject.event + params.app_id).digest('hex');
+    }
     var pp = options.id_prefix.split("_");
     try {
         var meta = await common.drillReadBatcher.getOne("drill_meta", {"_id": pp[0] + "_meta_" + pp[1]});
@@ -1839,8 +1828,8 @@ function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         callback({});
         return;
     }
-    if (params.qstring.fetchFromGranural) {
-        fetchFromGranural(collection, params, options, callback);
+    if (params.qstring.fetchFromGranular) {
+        fetchFromGranular(collection, params, options, callback);
         return;
     }
 

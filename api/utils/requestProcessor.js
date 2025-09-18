@@ -2638,6 +2638,9 @@ const processRequest = (params) => {
                     validateRead(params, 'core', countlyApi.data.fetch.fetchEventGroupById);
                     break;
                 case 'events':
+                    if (plugins.getConfig("api").calculate_aggregated_from_granular) {
+                        params.qstring.fetchFromGranular = true;
+                    }
                     if (params.qstring.events) {
                         try {
                             params.qstring.events = JSON.parse(params.qstring.events);

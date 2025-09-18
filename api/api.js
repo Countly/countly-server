@@ -26,7 +26,7 @@ console.log('ClickHouse config:', JSON.stringify(countlyConfig.clickhouse, null,
 console.log('Logging config:', JSON.stringify(countlyConfig.logging, null, 2));
 console.log('=== END CONFIG DEBUG ===');
 
-var {MongoDbQueryRunner} = require('./utils/mongoDbQueryRunner.js');
+var granuralQueries = require('./parts/queries/coreAggregation.js');
 
 //Add deletion manager endpoint
 require('./utils/deletionManager.js');
@@ -59,10 +59,9 @@ plugins.connectToAllDatabases().then(function() {
     common.queryRunner = new QueryRunner();
     console.log('✓ Batchers and QueryRunner initialized');
 
-
+    common.drillQueryRunner = granuralQueries;
     if (common.drillDb) {
         common.drillReadBatcher = new ReadBatcher(common.drillDb);
-        common.drillQueryRunner = new MongoDbQueryRunner(common.drillDb);
         console.log('✓ Drill database components initialized');
     }
 
@@ -107,7 +106,8 @@ plugins.connectToAllDatabases().then(function() {
         batch_read_ttl: 600,
         batch_read_period: 60,
         user_merge_paralel: 1,
-        trim_trailing_ending_spaces: false
+        trim_trailing_ending_spaces: false,
+        calculate_aggregated_from_granular: false
     });
 
     /**
