@@ -330,31 +330,24 @@ usage.processSession = function(ob) {
                     if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
                         drill_updates.custom = JSON.parse(JSON.stringify(params.app_user.custom));
                     }
-                    drill_updates["sg.ended"] = "true";
-
-                    //Update for session doc in mongo
-                    ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates}}});
-                    //Insert to use as trigger
-                    ob.drill_updates.push({
-                        "insertOne": {
-                            "document": {
-                                "_id": params.app_user.lsid + "_" + params.time.mstimestamp,
-                                "a": params.app_id,
-                                "e": "[CLY]_session_update",
-                                "did": params.app_user.did,
-                                "uid": params.app_user.uid,
-                                "_uid": params.app_user._id,
-                                "lsid": params.app_user.lsid,
-                                "sg": {"ended": "true"},
-                                "ts": params.time.timestamp,
-                                "custom": drill_updates.custom,
-                                "c": 0,
-                                "dur": drill_updates.dur || 0,
-                                "sum": 0,
-                                "cd": new Date()
-                            }
+                    try {
+                        var lasts = (params.qstring.end_session.ls * 1000);
+                        let idsplit = params.app_user.lsid.split("_");
+                        if (idsplit[3] && idsplit[3].length === 13) {
+                            lasts = parseInt(idsplit[3]);
                         }
-                    });
+                        params.qstring.events.unshift({
+                            "_id": params.app_user.lsid,
+                            "key": "[CLY]_session",
+                            "segmentation": params.app_user.lsparams || { ended: "true" },
+                            "dur": (drill_updates.dur || 0),
+                            "count": 1,
+                            "timestamp": lasts
+                        });
+                    }
+                    catch (ex) {
+                        log.e("Error adding previous session end event: " + ex);
+                    }
                     //}
                 }
                 userProps.sd = 0 + session_duration;
@@ -397,27 +390,20 @@ usage.processSession = function(ob) {
                 //if (drill_updates2.dur || drill_updates2.custom) {
                 ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
                 //}
-
-                ob.drill_updates.push({
-                    "insertOne": {
-                        "document": {
-                            "_id": params.app_user.lsid + "_" + params.time.mstimestamp,
-                            "a": params.app_id,
-                            "e": "[CLY]_session_update",
-                            "did": params.app_user.did,
-                            "uid": params.app_user.uid,
-                            "_uid": params.app_user._id,
-                            "lsid": params.app_user.lsid,
-                            "ts": params.time.timestamp,
-                            "sg": {"ended": "true"},
-                            "custom": drill_updates2.custom,
-                            "c": 0,
-                            "dur": drill_updates2.dur || 0,
-                            "sum": 0,
-                            "cd": new Date()
-                        }
-                    }
+                var lasts2 = (params.qstring.end_session.ls * 1000);
+                let idsplit = params.app_user.lsid.split("_");
+                if (idsplit[3] && idsplit[3].length === 13) {
+                    lasts2 = parseInt(idsplit[3]);
+                }
+                params.qstring.events.unshift({
+                    "_id": params.app_user.lsid,
+                    "key": "[CLY]_session",
+                    "segmentation": params.app_user.lsparams || { ended: "true" },
+                    "dur": (drill_updates2.dur || 0),
+                    "count": 1,
+                    "timestamp": lasts2
                 });
+
             }
             userProps.data = {};
         }

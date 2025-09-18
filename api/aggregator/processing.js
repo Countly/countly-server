@@ -124,11 +124,11 @@ var crypto = require('crypto');
             mongo: {
                 db: common.drillDb,
                 pipeline: [
-                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
+                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session_begin"}},
                 ],
                 fallback: {
                     pipeline: [{
-                        "$match": {"e": {"$in": ["[CLY]_session"]}}
+                        "$match": {"e": {"$in": ["[CLY]_session_begin"]}}
                     }]
                 }
             }
@@ -137,7 +137,7 @@ var crypto = require('crypto');
             for await (const {token, events} of eventSource) {
                 if (events && Array.isArray(events)) {
                     for (var k = 0; k < events.length; k++) {
-                        if (events[k].e === "[CLY]_session" && events[k].a) {
+                        if (events[k].e === "[CLY]_session_begin" && events[k].a) {
                             try {
                                 var app = await common.readBatcher.getOne("apps", common.db.ObjectID(events[k].a));
                                 //record event totals in aggregated data
@@ -167,11 +167,11 @@ var crypto = require('crypto');
             mongo: {
                 db: common.drillDb,
                 pipeline: [
-                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session_update"}},
+                    {"$match": {"operationType": "insert", "fullDocument.e": "[CLY]_session"}},
                 ],
                 fallback: {
                     pipeline: [{
-                        "$match": {"e": {"$in": ["[CLY]_session_update"]}}
+                        "$match": {"e": {"$in": ["[CLY]_session"]}}
                     }]
                 }
             }
@@ -180,7 +180,7 @@ var crypto = require('crypto');
             for await (const {token, events} of eventSource) {
                 if (events && Array.isArray(events)) {
                     for (var k = 0; k < events.length; k++) {
-                        if (events[k].e === "[CLY]_session_update" && events[k].a) {
+                        if (events[k].e === "[CLY]_session" && events[k].a) {
                             try {
                                 var app = await common.readBatcher.getOne("apps", common.db.ObjectID(events[k].a));
                                 //record event totals in aggregated data
@@ -320,8 +320,17 @@ var crypto = require('crypto');
                     //Should sort before by event 
                     for (var z = 0; z < events.length; z++) {
                         if (events[z].a && events[z].e) {
+                            if (events[z].e === "[CLY]_property_update") {
+                                continue;
+                            }
                             if (events[z].e === "[CLY]_custom") {
                                 events[z].e = events[z].n;
+                            }
+                            if (events[z].e === "[CLY]_view_update") {
+                                events[z].e = "[CLY]_view";
+                            }
+                            if (events[z].e === "[CLY]_session_begin") {
+                                events[z].e = "[CLY]_session";
                             }
                             let event_hash = crypto.createHash("sha1").update(events[z].e + events[z].a).digest("hex");
                             var meta = await drillMetaCache.getOne("drill_meta", {_id: events[z].a + "_meta_" + event_hash});
@@ -341,7 +350,7 @@ var crypto = require('crypto');
                                 };
                             }
                             for (var sgk in events[z].sg) {
-                                if (!meta.sg || !meta.sg[events[z].sg[sgk]]) {
+                                if (!meta.sg || !meta.sg[sgk]) {
                                     meta.sg = meta.sg || {};
                                     var type = determineType(events[z].sg[sgk]);
                                     meta.sg[sgk] = {
@@ -352,7 +361,7 @@ var crypto = require('crypto');
                                 }
                             }
 
-                            if (events[z].e === "[CLY]_session" || events[z].e === "[CLY]_session_upadate") {
+                            if (events[z].e === "[CLY]_session" || events[z].e === "[CLY]_session_begin") {
                                 var meta_up = await drillMetaCache.getOne("drill_meta", {_id: events[z].a + "_meta_up"});
                                 if ((!meta_up || !meta_up._id) && !updates[app_id + "_meta_up"]) {
                                     updates[app_id + "_meta_up"] = {
