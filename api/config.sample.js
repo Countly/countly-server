@@ -161,7 +161,7 @@ var countlyConfig = {
     */
     kafka: {
         enabled: false, // Enable/disable Kafka integration globally (when true, becomes hard dependency)
-        drillEventsTopic: "countly-drill-events", // Default topic name for event data
+        drillEventsTopic: "drill-events", // Default topic name for event data
         groupIdPrefix: "cly_", // Prefix added to all consumer group IDs
         partitions: 10, // Default number of partitions for new topics
         replicationFactor: 1, // Default replication factor for new topics (use 3+ in production)
@@ -209,20 +209,27 @@ var countlyConfig = {
         // Consumer-specific settings (handled by KafkaConsumer)
         consumer: {
             // Fetch size controls for batch processing optimization
-            fetchMinBytes: 1024, // Minimum bytes to fetch per request (default: 1KB, triggers immediate fetch)
-            fetchMaxWaitMs: 500, // Maximum wait time for fetch requests in milliseconds (default: 500ms)
+            fetchMinBytes: 262144, // Minimum bytes to fetch per request (default: 256KB, better than 1KB for throughput)
+            fetchMaxWaitMs: 1000, // Maximum wait time for fetch requests in milliseconds (default: 1000ms, better than 500ms)
             fetchMaxBytes: 52428800, // Maximum bytes to fetch per request (default: 50MB)
             maxPartitionFetchBytes: 1048576, // Maximum bytes per partition per fetch (default: 1MB)
 
             // Queue controls for memory management
-            queuedMinMessages: 100000, // Minimum messages to queue before consuming (default: 100,000)
-            queuedMaxMessagesKbytes: 1048576, // Maximum memory for message queue in KB (default: 1GB)
+            queuedMinMessages: 50000, // Minimum messages to queue before consuming (default: 50,000, lower memory usage)
+            queuedMaxMessagesKbytes: 524288, // Maximum memory for message queue in KB (default: 512MB, lower memory usage)
+
+            // Concurrency and performance settings
+            partitionsConsumedConcurrently: 4, // Number of partitions to consume concurrently per process (default: 4)
 
             // Consumer group settings
             sessionTimeoutMs: 30000, // Consumer session timeout in milliseconds (default: 30 seconds) - WARNING: Too low causes rebalances, potentially losing in-flight messages
             maxPollIntervalMs: 300000, // Maximum time between polls in milliseconds (default: 5 minutes) - WARNING: Too low causes consumer to be kicked out, losing uncommitted offsets
-            autoOffsetReset: "latest", // Where to start reading when no offset exists (latest/earliest)
-            enableAutoCommit: false // Disable auto-commit for exactly-once processing (default: false) - WARNING: true can cause data loss on consumer crash before processing
+            autoOffsetReset: 'earliest', // Where to start reading when no offset exists (latest/earliest)
+            enableAutoCommit: false, // Disable auto-commit for exactly-once processing (default: false) - WARNING: true can cause data loss on consumer crash before processing
+
+            // Error handling settings
+            invalidJsonBehavior: "skip", // How to handle invalid JSON messages: 'skip' or 'fail' (default: skip)
+            invalidJsonMetrics: true // Whether to log metrics for invalid JSON messages (default: true)
         }
     },
 
@@ -311,8 +318,10 @@ var countlyConfig = {
     * @type {object} 
     * @property {string} [default=warn] - default level of logging for {@link logger}
     * @property {array=} info - modules to log for information level for {@link logger}
+    * @property {boolean} [prettyPrint=false] - whether to pretty print the logs
     */
     logging: {
+        prettyPrint: false,
         info: ["jobs", "push"],
         default: "warn"
     },

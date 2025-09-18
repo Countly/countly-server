@@ -1,7 +1,7 @@
 # TODO: if plugins grep hoooks compile v8-sandbox hooks with base as parent and then later copy to plugins/hooks/node_modules
 
 # Global ARGs - available in all stages
-ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,config-transfer,consolidate,data-manager,hooks,dashboards,journey_engine,content,clickhouse,guides,sdk
+ARG COUNTLY_PLUGINS=mobile,web,desktop,plugins,density,locale,browser,sources,views,license,drill,funnels,retention_segments,flows,cohorts,surveys,remote-config,ab-testing,formulas,activity-map,concurrent_users,logger,systemlogs,populator,reports,crashes,geo,block,users,star-rating,slipping-away-users,compare,server-stats,dbviewer,crash_symbolication,crashes-jira,groups,white-labeling,alerts,times-of-day,compliance-hub,onboarding,active_users,config-transfer,consolidate,data-manager,hooks,dashboards,journey_engine,content,clickhouse,guides,sdk,kafka
 ARG GEOIP=empty
 
 ###############################################################################
@@ -104,10 +104,10 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
 RUN --mount=type=cache,id=npm-cache,target=/root/.npm,sharing=locked \
     npm install argon2 --omit=dev --build-from-source --unsafe-perm=true
 
-# Update GeoIP database if license key provided
+# Update GeoIP database if license key provided (with error handling for Node.js 24.x compatibility)
 RUN --mount=type=cache,id=geoip-cache,target=/tmp/geoip-cache,sharing=locked \
     if [ -n "$GEOIP" ] && [ "$GEOIP" != "empty" ]; then \
-        GEOIP_CACHE_DIR=/tmp/geoip-cache node ./node_modules/geoip-lite/scripts/updatedb.js license_key="$GEOIP"; \
+        GEOIP_CACHE_DIR=/tmp/geoip-cache node ./node_modules/geoip-lite/scripts/updatedb.js license_key="$GEOIP" || echo "GeoIP update failed (known issue with Node.js 24.x), skipping..."; \
     fi
 
 # 3) offline geocoder data  (cached on its own)

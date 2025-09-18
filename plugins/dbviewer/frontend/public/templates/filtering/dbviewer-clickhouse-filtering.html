@@ -1,0 +1,139 @@
+<script type="text/x-template" id="dbviewer-clickhouse-filtering">
+  <div class="dbviewer-filter__container">
+    <validation-observer v-slot="observer">
+      <div class="bu-columns bu-is-gapless bu-is-multiline">
+        <div class="bu-column bu-is-12">
+        <label class="text-small">{{ i18n('dbviewer.filter-query') }}</label>
+          <cly-dbviewer-filter-row
+            class="bu-mt-2"
+            v-for="(row, idx) in rows"
+            :key="row.id"
+            :row="row"
+            :is-first-row="idx === 0"
+            :fields="fields"
+            :disabled="disabled"
+            :allow-delete-first-row="allowDeleteFirstRow"
+            @update-row="onUpdateRow"
+            @delete-row="onDeleteRow"
+          />
+        </div>
+
+        <div class="bu-column bu-is-12 bu-mt-4">
+          <div class="bu-columns bu-is-gapless bu-is-mobile">
+            <div class="bu-column bu-is-2">
+              <el-button
+                class="is-light-blue"
+                @click="addRow"
+                size="small"
+                :disabled="observer.invalid || disabled"
+              >
+                + Add Filter
+              </el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </validation-observer>
+  </div>
+</script>
+
+<script type="text/x-template" id="cly-dbviewer-filter-row">
+  <div
+    class="bu-columns bu-is-gapless bu-is-mobile dbviewer-filter"
+  >
+    <div class="bu-column bu-is-12">
+      <div
+        class="bu-columns bu-is-gapless bu-is-mobile dbviewer-filter__conjuction"
+        v-if="showConjunction"
+      >
+        <div class="bu-column bu-is-12">
+          <el-radio-group v-model="local.conjunction" @change="onConjunctionChange" :disabled="disabled" size="mini">
+            <el-radio-button label="AND">AND</el-radio-button>
+            <el-radio-button label="OR">OR</el-radio-button>
+          </el-radio-group>
+        </div>
+      </div>
+      <div v-else-if="!isFirstRow" class="bu-pt-2"></div>
+
+      <div
+        class="bu-columns bu-is-gapless bu-is-mobile bu-is-align-items-center bu-is-flex dbviewer-filter__row"
+      >
+        <!-- Field -->
+        <div class="bu-column bu-is-4">
+          <validation-provider :rules="'required'" v-slot="validation">
+            <el-select
+              v-model="local.field"
+              placeholder="Select Field"
+              size="small"
+              :disabled="disabled"
+              :class="{'is-error': validation.errors.length > 0}"
+              @change="onFieldChange"
+              :popper-append-to-body="false"
+            >
+              <el-option
+                v-for="field in fields"
+                :key="field.value"
+                :label="field.label"
+                :value="field.value"
+              />
+            </el-select>
+          </validation-provider>
+        </div>
+
+        <!-- Operator -->
+        <div class="bu-column bu-is-3">
+          <validation-provider :rules="'required'" v-slot="validation">
+            <el-select
+              v-model="local.operator"
+              placeholder="Select Operator"
+              size="small"
+              :disabled="disabled || !local.field"
+              :class="{'is-error': validation.errors.length > 0}"
+              @change="onOperatorChange"
+              :popper-append-to-body="false"
+            >
+              <el-option
+                v-for="operator in defaultOperators"
+                :key="operator.value"
+                :label="operator.label"
+                :value="operator.value"
+              />
+            </el-select>
+          </validation-provider>
+        </div>
+
+        <!-- Value -->
+        <div class="bu-column bu-is-4">
+          <validation-provider :rules="needsValue ? 'required' : ''" v-slot="validation">
+            <el-input
+              v-model="local.value"
+              placeholder="Enter value"
+              size="small"
+              type="textarea"
+              :rows="1"
+              :disabled="disabled || !local.operator"
+              :class="{'is-error': validation.errors.length > 0}"
+              :title="(disabled || !local.operator) ? 'Please select your field and operator first' : ''"
+              @change="onValueChange"
+            />
+          </validation-provider>
+        </div>
+
+        <!-- Delete -->
+        <div
+          class="bu-column bu-is-1 bu-is-flex bu-is-align-items-center bu-is-justify-content-center"
+          v-if="allowDeleteFirstRow || !isFirstRow"
+        >
+          <el-button
+            type="text"
+            class="dbviewer-filter__delete"
+            @click="deleteRow"
+            :disabled="disabled"
+          >
+            <i class="el-icon-close"></i>
+          </el-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
