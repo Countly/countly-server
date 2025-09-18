@@ -19,6 +19,15 @@ class CleanupCustomFieldJob extends Job {
         };
     }
 
+    /**
+     * This job will be disabled when created
+     * @public
+     * @returns {boolean} True if job should be enabled by default, false otherwise
+     */
+    getEnabled() {
+        return false;
+    }
+
     /** function run
      * @param {object} countlyDb - db connection object
      * @param {function} doneJob - function to call when finishing Job
@@ -55,12 +64,9 @@ class CleanupCustomFieldJob extends Job {
 
         pluginManager.loadConfigs(countlyDb, async() => {
             const crashConfig = pluginManager.getConfig('crashes');
-            const activateJob = crashConfig.activate_custom_field_cleanup_job;
             const maxCustomFieldKeys = crashConfig.max_custom_field_keys || DEFAULT_MAX_CUSTOM_FIELD_KEYS;
 
-            if (activateJob) {
-                await cleanupCustomField(countlyDb, maxCustomFieldKeys);
-            }
+            await cleanupCustomField(countlyDb, maxCustomFieldKeys);
 
             return endJob();
         });
