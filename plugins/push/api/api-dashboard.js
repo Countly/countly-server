@@ -15,12 +15,29 @@ function add(from, to) {
     });
 }
 
+/**
+ * Generate event ids for event docs query
+ * @param {string} event event name
+ * @param {string} app_id application id
+ * @param {number} agy ago year
+ * @param {number} agm ago month
+ * @param {number} noy now year
+ * @param {number[]} mts month numbers array
+ * @param {number} nom now month
+ * @returns {string[]} event doc ids
+ */
 function eventIdFilter(event, app_id, agy, agm, noy, mts, nom) {
     const eventHash = crypto
         .createHash('sha1')
         .update(common.fixEventKey(event) + app_id)
         .digest('hex');
     const prefix = app_id + "_" + eventHash + "_";
+    /**
+     * Generate ids of event docs
+     * @param {string} seg segment name
+     * @param {string} val segment value
+     * @returns {string[]} event doc ids
+     */
     const ids = (seg, val) => ([
         prefix + seg + '_' + noy + ':' + (nom + 1) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0],
         prefix + seg + '_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + '_' + crypto.createHash('md5').update(val + '').digest('base64')[0]
@@ -30,7 +47,7 @@ function eventIdFilter(event, app_id, agy, agm, noy, mts, nom) {
         .concat(ids('a', 'true'))
         .concat(ids('t', 'true'))
         .concat(platforms.map(p => ids('ap', 'true' + p)).flat())
-        .concat(platforms.map(p => ids('tp', 'true' + p)).flat())
+        .concat(platforms.map(p => ids('tp', 'true' + p)).flat());
 }
 
 /**
