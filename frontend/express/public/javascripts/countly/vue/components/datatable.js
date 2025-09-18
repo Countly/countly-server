@@ -252,17 +252,20 @@
         watch: {
             dataView: {
                 handler: function(newDataView) {
-                    // Update useCursorPagination based on the data view
-                    if (newDataView) {
-                        const hasCursorData = newDataView.hasNextPage !== undefined || newDataView.nextCursor !== undefined;
-                        const shouldUseCursor = hasCursorData && (newDataView.hasNextPage || newDataView.nextCursor);
+                    // Skip if component is paused or has no data
+                    if (this.paused || !newDataView || !newDataView.rows || newDataView.rows.length === 0) {
+                        return;
+                    }
 
-                        if (shouldUseCursor && !this.controlParams.useCursorPagination) {
-                            this.controlParams.useCursorPagination = true;
-                        }
-                        else if (!shouldUseCursor && this.controlParams.useCursorPagination) {
-                            this.controlParams.useCursorPagination = false;
-                        }
+                    // Update useCursorPagination based on the data view
+                    const hasCursorData = newDataView.hasNextPage !== undefined || newDataView.nextCursor !== undefined;
+                    const shouldUseCursor = hasCursorData && (newDataView.hasNextPage || newDataView.nextCursor);
+
+                    if (shouldUseCursor && !this.controlParams.useCursorPagination) {
+                        this.controlParams.useCursorPagination = true;
+                    }
+                    else if (!shouldUseCursor && this.controlParams.useCursorPagination) {
+                        this.controlParams.useCursorPagination = false;
                     }
                 },
                 deep: true
@@ -270,6 +273,11 @@
             controlParams: {
                 deep: true,
                 handler: _.debounce(function() {
+                    // Skip if component is paused or has no data
+                    if (this.paused || !this.dataView || !this.dataView.rows || this.dataView.rows.length === 0) {
+                        return;
+                    }
+
                     // Clear cursor history when search or filters change
                     if (this.controlParams.searchQuery !== this.lastSearchQuery) {
                         this.controlParams.cursorHistory = [];
