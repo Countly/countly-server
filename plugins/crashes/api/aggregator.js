@@ -448,7 +448,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                         {
                             $match: {
                                 operationType: 'insert',
-                                'fullDocument.e': { $in: ['[CLY]_session'] },
+                                'fullDocument.e': { $in: ['[CLY]_session_begin'] },
                             },
                         },
                         {
@@ -469,7 +469,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                         pipeline: [
                             {
                                 $match: {
-                                    e: { $in: ['[CLY]_session'] }
+                                    e: { $in: ['[CLY]_session_begin'] }
                                 },
                             },
                         ],
@@ -487,7 +487,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                 for (let idx = 0; idx < events.length; idx += 1) {
                     const currEvent = events[idx];
                     // Kafka will send all events here, so filter out if needed.
-                    if (currEvent.e === '[CLY]_session' && 'a' in currEvent) {
+                    if (currEvent.e === '[CLY]_session_begin' && 'a' in currEvent) {
                         common.readBatcher.getOne('apps', common.db.ObjectID(currEvent.a), async(err, app) => {
                             if (err) {
                                 log.e('Error getting app data for session', err);
@@ -541,8 +541,8 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                     pipeline: [
                         {
                             $match: {
-                                operationType: 'update',
-                                'fullDocument.e': { $in: ['[CLY]_session_update'] }
+                                operationType: 'insert',
+                                'fullDocument.e': { $in: ['[CLY]_session'] }
                             },
                         },
                         {
@@ -564,7 +564,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                         pipeline: [
                             {
                                 $match: {
-                                    e: { $in: ['[CLY]_session_update'] },
+                                    e: { $in: ['[CLY]_session'] },
                                 },
                             },
                         ],
@@ -580,36 +580,29 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                 for (let idx = 0; idx < events.length; idx += 1) {
                     const currEvent = events[idx];
                     // Kafka will send all events here, so filter out if needed.
-                    if (currEvent.e === '[CLY]_session_update' && 'a' in currEvent) {
-                        common.readBatcher.getOne('apps', common.db.ObjectID(currEvent.a), async(err, app) => {
-                            if (err) {
-                                log.e('Error getting app data for session update', err);
+                    if (currEvent.e === '[CLY]_session' && 'a' in currEvent) {
+                        common.readBatcher.getOne('apps', common.db.ObjectID(currEvent.a), async(appErr, app) => {
+                            if (appErr) {
+                                log.e('Error getting app data for session update', appErr);
                                 return;
                             }
 
                             if (app && '_id' in app) {
                                 const params = {app_id: currEvent.a, app, time: common.initTimeObj(app.timezone, currEvent.ts), appTimezone: (app.timezone || 'UTC')};
-                                const currUser = await common.db.collection(`app_users${currEvent.a}`).findOne({ _id: currEvent._uid }, { ls: 1, _id: 0 });
-                                // check if it is not user's first session
-                                if (currUser?.ls) {
-                                    //record crash free session
-                                    const fatalCrash = await common.drillDb.collection('drill_events').findOne({
-                                        e: '[CLY]_crash',
-                                        a: currEvent.a,
-                                        uid: currEvent.uid,
-                                        ts: { $gte: (currUser?.ls * 1000) },
-                                        'sg.nonfatal': false,
-                                    }, {ts: 1, _id: 0});
+                                const platform = currEvent.up?.p;
+                                const version = currEvent.up?.av;
 
+                                // check if it is not user's first session
+                                if (currEvent.up?.ls) {
+                                    // get app user so we get more details about user crash
+                                    const currUser = await common.db.collection(`app_users${currEvent.a}`).findOne({ _id: currEvent._uid });
+                                    //record crash free session
                                     const fatalMetrics = [];
 
-                                    if (!fatalCrash) {
+                                    if (!currUser.hadFatalCrash) {
                                         fatalMetrics.push('crfses');
                                         fatalMetrics.push('crauf');
                                     }
-
-                                    const platform = currUser?.p;
-                                    const version = currUser?.av;
 
                                     if (fatalMetrics.length) {
                                         const ts = currEvent.sg?.prev_start || currUser?.hadAnyFatalCrash || 0;
@@ -621,15 +614,8 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                                     }
 
                                     var nonFatalMetrics = [];
-                                    var nonFatalCrash = await common.drillDb.collection('drill_events').findOne({
-                                        e: '[CLY]_crash',
-                                        a: currEvent.a,
-                                        uid: currEvent.uid,
-                                        ts: {$gte: (currUser?.ls * 1000)},
-                                        'sg.nonfatal': true,
-                                    }, {ts: 1, _id: 0});
 
-                                    if (!nonFatalCrash) {
+                                    if (!currUser.hadNonFatalCrash) {
                                         nonFatalMetrics.push('craunf');
                                         nonFatalMetrics.push('crnfses');
                                     }
