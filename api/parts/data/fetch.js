@@ -1565,7 +1565,7 @@ fetch.getTotalUsersObjWithOptions = function(metric, params, options, callback) 
         "os": "p",
         "platforms": "p",
         "platform": "p",
-        "locale": "la",
+        "locale":"la",
         "os_versions": "pv",
         "platform_versions": "pv",
         "resolutions": "r",
