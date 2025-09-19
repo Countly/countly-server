@@ -1,3 +1,11 @@
+## Version 24.05.X
+Features:
+- [remote-config] Enable comparing newer/older app version in conditions
+
+Fixes:
+- [remote-config] Fix condition matching with compound conditions
+
+
 ## Version 24.05.38
 Enterprise Fixes:
 - [home] Fix home download render issue
