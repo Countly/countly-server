@@ -115,12 +115,14 @@ catch (error) {
             adapters: {
                 mongodb: {
                     handler: fetchAggregatedSegmentedEventDataMongo
-                },
-                clickhouse: {
-                    handler: clickHouseRunner.fetchAggregatedSegmentedEventDataClickhouse
                 }
             }
         };
+        if (clickHouseRunner && clickHouseRunner.fetchAggregatedSegmentedEventDataClickhouse) {
+            queryDef.adapters.clickhouse = {
+                handler: clickHouseRunner.fetchAggregatedSegmentedEventDataClickhouse
+            };
+        }
 
         return common.queryRunner.executeQuery(queryDef, params, options);
     };
