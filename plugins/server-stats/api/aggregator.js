@@ -4,7 +4,7 @@ var plugins = require('../../pluginManager.js'),
 var log = common.log('server-stats:aggregator');
 //const { DataBatchReader } = require('../../../api/parts/data/dataBatchReader');
 const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.js');
-const internalEventsSkipped = ["[CLY]_orientation", "[CLY]_session_update"];
+const internalEventsSkipped = ["[CLY]_orientation", "[CLY]_session", "[CLY]_property_update", "[CLY]_view_update"];
 (function() {
     /** Data batch reader option for data point counting*/
     /*plugins.register("/aggregator", function() {
@@ -65,7 +65,7 @@ const internalEventsSkipped = ["[CLY]_orientation", "[CLY]_session_update"];
                         if (internalEventsSkipped.includes(events[k].e)) {
                             continue;
                         }
-                        else if (events[k].e === "[CLY]_session") {
+                        else if (events[k].e === "[CLY]_session_begin") {
                             stats.updateDataPoints(common.manualWriteBatcher, events[k].a, 1, 0, false, token);
                         }
                         else if (events[k].e in stats.internalEventsEnum) {

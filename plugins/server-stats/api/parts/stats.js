@@ -3,6 +3,7 @@ const moment = require("moment");
 const internalEventsEnum =
 {
     "[CLY]_session": "s",
+    "[CLY]_session_begin": "s", //Using only this one when increasing session count
     "[CLY]_view": "v",
     "[CLY]_nps": "n",
     "[CLY]_crash": "c",

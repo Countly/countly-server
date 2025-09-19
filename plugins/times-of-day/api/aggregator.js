@@ -106,7 +106,7 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
             for await (const {token, events} of eventSource) {
                 if (events && Array.isArray(events)) {
                     for (var k = 0; k < events.length; k++) {
-                        if ((events[k].e === '[CLY]_session' || events[k].e === '[CLY]_custom')) {
+                        if ((events[k].e === '[CLY]_session_begin' || events[k].e === '[CLY]_custom')) {
                             let next = events[k];
                             next.dow = next.dow || (next.up && next.up.dow);
                             next.hour = next.hour || (next.up && next.up.hour);
@@ -127,6 +127,9 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
                                         let setData = {s: next.e, a: common.db.ObjectID(next.a)};
                                         if (next.e === "[CLY]_custom") {
                                             setData.s = next.n;
+                                        }
+                                        else {
+                                            setData.s = "[CLY]_session";
                                         }
                                         let id = next.a + "_" + setData.s + "_" + datestr;
                                         let incData = {};

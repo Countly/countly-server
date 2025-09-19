@@ -388,7 +388,7 @@ usage.processSession = function(ob) {
                 drill_updates2["sg.ended"] = "true";
                 drill_updates2.lu = new Date();
                 //if (drill_updates2.dur || drill_updates2.custom) {
-                ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
+                //ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
                 //}
                 var lasts2 = (params.qstring.end_session.ls * 1000);
                 let idsplit = params.app_user.lsid.split("_");

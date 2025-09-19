@@ -64,6 +64,12 @@ var obb = {};
             pipeline.push({"$group": {"_id": null, "u": {"$sum": 1}, "d": {"$sum": "$d"}, "t": {"$sum": "$t"}, "n": {"$sum": "$n"}}});
 
         }
+
+        //Union with the one having [CLY]_session_begin.
+        var copy_pipeline = JSON.parse(JSON.stringify(pipeline));
+        copy_pipeline[0].$match.e = "[CLY]_session_begin";
+        pipeline.push({"$unionWith": {"coll": "drill_events", "pipeline": copy_pipeline}});
+        pipeline.push({"$group": {"_id": "$_id", "u": {"$max": "$u"}, "d": {"$max": "$d"}, "t": {"$max": "$t"}, "n": {"$max": "$n"}}});
         var data = await common.drillDb.collection("drill_events").aggregate(pipeline).toArray();
         for (var z = 0; z < data.length; z++) {
             // data[z]._id = data[z]._id.replaceAll(/\:0/gi, ":");
