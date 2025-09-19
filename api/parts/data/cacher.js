@@ -176,7 +176,6 @@ class Cacher {
         }
         else {
             this.data[collection][id].last_used = Date.now();
-
             return new Promise((resolve) => {
                 resolve(this.data[collection][id].data);
             });

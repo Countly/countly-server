@@ -1,3 +1,5 @@
+const moment = require('moment-timezone');
+
 var plugin = {},
     common = require('../../../api/utils/common.js'),
     //log = common.log('crashes:ingestor'),
@@ -156,8 +158,8 @@ plugins.internalDrillEvents.push("[CLY]_crash");
 
                             report.binary_images = JSON.stringify(report.binary_images);
                         }
-                        report.nonfatal = (report.nonfatal && report.nonfatal !== "false") ? "true" : "false";
-                        report.not_os_specific = (params.qstring.crash._not_os_specific) ? "true" : "false";
+                        report.nonfatal = (report.nonfatal && report.nonfatal !== "false") ? true : false;
+                        report.not_os_specific = (params.qstring.crash._not_os_specific) ? true : false;
                         var seed = error + params.app_id + report.nonfatal + "";
                         if (!params.qstring.crash._not_os_specific) {
                             seed = report.os + seed;
@@ -168,6 +170,50 @@ plugins.internalDrillEvents.push("[CLY]_crash");
                         if (!report.name) {
                             report.name = (report.error.split('\n')[0] + "").trim();
                         }
+
+                        const dbAppUser = params.app_user;
+                        let updateUser = {};
+                        if (!report.nonfatal) {
+                            if (!dbAppUser.hadFatalCrash) {
+                                updateUser.hadFatalCrash = "true";
+                            }
+                            updateUser.hadAnyFatalCrash = moment().unix();
+                        }
+                        else if (report.nonfatal) {
+                            if (!dbAppUser.hadNonfatalCrash) {
+                                updateUser.hadNonfatalCrash = "true";
+                            }
+                            updateUser.hadAnyNonfatalCrash = moment().unix();
+                        }
+
+                        if ('app_version' in report && typeof report.app_version !== 'string') {
+                            report.app_version += '';
+                        }
+
+                        // Parse app_version into separate major, minor, patch version fields
+                        if ('app_version' in report) {
+                            const versionComponents = common.parseAppVersion(report.app_version);
+
+                            // Only store the components as separate fields if parsing was successful
+                            if (versionComponents.success) {
+                                report.app_version_major = versionComponents.major;
+                                report.app_version_minor = versionComponents.minor;
+                                report.app_version_patch = versionComponents.patch;
+                            }
+                        }
+
+                        let updateData = {};
+
+                        updateData.$inc = { 'data.crashes': 1 };
+
+                        if (Object.keys(updateUser).length) {
+                            updateData.$set = updateUser;
+                        }
+
+                        if ('updates' in ob) {
+                            ob.updates.push(updateData);
+                        }
+
                         params.qstring.events.push({
                             key: "[CLY]_crash",
                             count: 1,

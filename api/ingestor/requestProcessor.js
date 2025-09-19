@@ -121,7 +121,7 @@ function fillUserProperties(dbAppUser, meta_doc) {
             dbAppUser.ls = (dbAppUser.lac) ? dbAppUser.lac : dbAppUser.ls;
         }
 
-        if (dbAppUser[shortRep]) {
+        if (typeof dbAppUser[shortRep] !== "undefined") {
             setType = countlyUP[i].type || "";
             if (meta_doc && meta_doc.up && meta_doc.up[i]) {
                 setType = meta_doc.up[i];
@@ -791,9 +791,19 @@ const validateAppForWriteAPI = (params, done) => {
                                     ob.params.previous_session_start = ob.params.app_user.ls;
 
                                     if (ob.params.qstring.begin_session) {
+                                        ob.params.app_user.lsparams = {
+                                            request_id: params.request_id,
+                                            prev_session: params.previous_session,
+                                            prev_start: params.previous_session_start,
+                                            postfix: crypto.createHash('md5').update(params.app_user.did + "").digest('base64')[0],
+                                            ended: "false"
+                                        };
+
                                         params.qstring.events = params.qstring.events || [];
+
+                                        ob.updates.push({"$set": {"lsparams": ob.params.app_user.lsparams}});
                                         params.qstring.events.unshift({
-                                            key: "[CLY]_session",
+                                            key: "[CLY]_session_begin",
                                             dur: params.qstring.session_duration || 0,
                                             count: 1,
                                             timestamp: params.time.mstimestamp,

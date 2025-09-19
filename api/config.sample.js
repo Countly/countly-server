@@ -161,7 +161,7 @@ var countlyConfig = {
     */
     kafka: {
         enabled: false, // Enable/disable Kafka integration globally (when true, becomes hard dependency)
-        drillEventsTopic: "countly-drill-events", // Default topic name for event data
+        drillEventsTopic: "drill-events", // Default topic name for event data
         groupIdPrefix: "cly_", // Prefix added to all consumer group IDs
         partitions: 10, // Default number of partitions for new topics
         replicationFactor: 1, // Default replication factor for new topics (use 3+ in production)
@@ -318,8 +318,10 @@ var countlyConfig = {
     * @type {object} 
     * @property {string} [default=warn] - default level of logging for {@link logger}
     * @property {array=} info - modules to log for information level for {@link logger}
+    * @property {boolean} [prettyPrint=false] - whether to pretty print the logs
     */
     logging: {
+        prettyPrint: false,
         info: ["jobs", "push"],
         default: "warn"
     },
