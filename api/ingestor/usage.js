@@ -336,6 +336,7 @@ usage.processSession = function(ob) {
                         if (idsplit[3] && idsplit[3].length === 13) {
                             lasts = parseInt(idsplit[3]);
                         }
+                        params.qstring.events = params.qstring.events || [];
                         params.qstring.events.unshift({
                             "_id": params.app_user.lsid,
                             "key": "[CLY]_session",
