@@ -213,7 +213,25 @@ catch (error) {
     };
 
 
+    agg.viewsTableData = async function(params, options) {
+        if (!common.queryRunner) {
+            throw new Error('QueryRunner not initialized. Ensure API server is fully started.');
+        }
 
-
+        const queryDef = {
+            name: 'VIEWS_TABLE_DATA',
+            adapters: {
+                mongodb: {
+                    handler: mongodbRunner.getViewsTableData
+                }
+            }
+        };
+        if (clickHouseRunner && clickHouseRunner.getViewsTableData) {
+            queryDef.adapters.clickhouse = {
+                handler: clickHouseRunner.getViewsTableData
+            };
+        }
+        return common.queryRunner.executeQuery(queryDef, params, options);
+    };
 }(coreAggregator));
 module.exports = coreAggregator;

@@ -164,5 +164,68 @@ var obb = {};
         //Group by hour
     };
 
+
+    agg.getViewsTableData = async function(options) {
+        var match = options.dbFilter || {};
+        if (options.appID) {
+            match.a = options.appID + "";
+        }
+        match.e = "[CLY]_view";
+        if (options.period) {
+            match.ts = countlyCommon.getPeriodRange(options.period, "UTC", options.periodOffset);
+        }
+
+        var pipeline = [];
+        pipeline.push({"$match": match});
+        pipeline.push({"$group": {"_id": {"u": "$uid", "sg": "$n" }, "t": {"$sum": 1}, "d": {"$sum": "$dur"}, "s": {"$sum": "$sg.visit"}, "e": {"$sum": "$sg.exit"}, "b": {"$sum": "$sg.bounce"}}});
+        pipeline.push({"$addFields": {"u": 1}});
+        //Union with cly action
+        pipeline.push({
+            "$unionWith": {
+                "coll": "drill_events",
+                "pipeline": [
+                    {"$match": {"e": "[CLY]_action", "sg.type": "scroll", "ts": match.ts, "a": match.a}},
+                    {"$group": {"_id": {"u": "$uid", "sg": "$n"}, "scr": {"$sum": "$sg.scr"}}}
+                ]
+            }
+        });
+        pipeline.push({"$group": {"_id": "$_id.sg", "u": {"$sum": "$u"}, "t": {"$sum": "$t"}, "d": {"$sum": "$d"}, "s": {"$sum": "$s"}, "e": {"$sum": "$e"}, "b": {"$sum": "$b"}, "scr": {"$sum": "$scr"}}});
+
+        //Union with data from view updates and group by _id.sg
+        var match2 = JSON.parse(JSON.stringify(match));
+        match2.e = "[CLY]_view_update";
+        pipeline2 = [
+            {"$match": match2},
+            {"$group": {"_id": {"u": "$uid", "sg": "$n"}, "t": {"$sum": 0}, "d": {"$sum": "$dur"}, "s": {"$sum": 0}, "e": {"$sum": "$sg.exit"}, "b": {"$sum": "$sg.bounce"}, "scr": {"$sum": 0}, "u": {"$sum": 1}}}, //t and scr are 0 as they are not tracked in view update
+            {"$group": {"_id": "$_id.sg", "u": {"$sum": "$u"}, "t": {"$sum": "$t"}, "d": {"$sum": "$d"}, "s": {"$sum": "$s"}, "e": {"$sum": "$e"}, "b": {"$sum": "$b"}, "scr": {"$sum": "$scr"}}}
+        ];
+
+        pipeline.push({"$unionWith": {"coll": "drill_events", "pipeline": pipeline2}});
+        pipeline.push({"$group": {"_id": "$_id", "u": {"$max": "$u"}, "t": {"$max": "$t"}, "d": {"$max": "$d"}, "s": {"$max": "$s"}, "e": {"$max": "$e"}, "b": {"$max": "$b"}, "scr": {"$max": "$scr"}}});
+        pipeline.push({
+            "$addFields": {
+                "scr-calc": { $cond: [ { $or: [{$eq: ["$t", 0]}, {$eq: ['$scr', 0]}]}, 0, {'$divide': ['$scr', "$t"]}] },
+                "d-calc": { $cond: [ { $or: [{$eq: ["$t", 0]}, {$eq: ['$d', 0]}]}, 0, {'$divide': ['$d', "$t"]}] },
+                "br": { $cond: [ { $or: [{$eq: ["$s", 0]}, {$eq: ['$b', 0]}]}, 0, {'$divide': [{"$min": ['$b', "$s"]}, "$s"]}] },
+                "b": {"$min": [{"$ifNull": ["$b", 0]}, {"$ifNull": ["$s", 0]}]},
+                "view": "$_id"
+            }
+        });
+        var data = await common.drillDb.collection("drill_events").aggregate(pipeline).toArray();
+        for (var z = 0; z < data.length; z++) {
+            data[z]._id = data[z]._id.replaceAll(/\:0/gi, ":");
+            if (data[z].sg) {
+                data[z].sg = data[z].sg.replaceAll(/\./gi, ":");
+            }
+        }
+        return {
+            _queryMeta: {
+                adapter: 'mongodb',
+                query: pipeline || 'MongoDB event segmentation aggregation pipeline',
+            },
+            data: data
+        };
+    };
+
 }(obb));
 module.exports = obb;
