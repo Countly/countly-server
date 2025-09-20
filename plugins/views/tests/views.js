@@ -486,7 +486,7 @@ describe('Testing views plugin', function() {
                     if (err) {
                         console.log(err);
                     }
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                 });
         });
     });
@@ -524,7 +524,7 @@ describe('Testing views plugin', function() {
                     if (err) {
                         console.log(err);
                     }
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                 });
 
 
@@ -910,7 +910,7 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user100" + '&timestamp=' + (myTime - 30) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                 });
         });
         verifyTotals("30days");
@@ -1280,7 +1280,7 @@ describe('Testing views plugin', function() {
                     .get('/i?app_key=' + APP_KEY + '&device_id=' + "userOmit2" + '&timestamp=' + myTime + '&events=' + data)
                     .expect(200)
                     .end(function(err, res) {
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
 
             });
@@ -1324,7 +1324,7 @@ describe('Testing views plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 500 * testUtils.testScalingFactor + 2000);
                 });
         });
     });

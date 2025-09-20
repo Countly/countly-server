@@ -2,21 +2,17 @@
  * Retention Aggregation Query Definition
  * Provides both MongoDB and ClickHouse implementations for drill aggregation
  */
-const WhereClauseConverter = require('../../../clickhouse/api/WhereClauseConverter');
-const QueryHelpers = require('../../../clickhouse/api/QueryHelpers');
 const common = require('../../../../api/utils/common.js');
 const log = common.log('views:queries');
 
 
-var bucketExpr = function(bucket, timezone = 'UTC') {
-    switch (bucket) {
-    case 'd': return "formatDateTime(toTimeZone(ts, '" + timezone + "'), '%Y:%m:%d')";
-    case 'w': return "formatDateTime(toTimeZone(ts, '" + timezone + "'), '%Y:w%V')";
-    case 'm': return "formatDateTime(toTimeZone(ts, '" + timezone + "'), '%Y:m%m')";
-    case 'h': return "formatDateTime(toTimeZone(ts, '" + timezone + "'), '%Y:%m:%d:%H')";
-    default: return '';
-    }
-};
+var clickHouseRunner;
+try {
+    clickHouseRunner = require('../../../plugins/clickhouse/api/queries/clickhouseCoreQueries.js');
+}
+catch (error) {
+    log.e('Failed to load ClickHouse query runner', error);
+}
 
 /**
  * MongoDB handler ccalculating total user count for events in given period
@@ -67,50 +63,6 @@ async function getTotalsMongodb(params) {
 }
 
 /**
- * Clickhouse handler calculating total user count for events in given period
- * Executes drill aggregation using Clickhouse SQL
- * @param {Object} params - Query parameters object containing all necessary data
- * @param {Object} params.query - query for match stage
- * @param {string} params.userKey - field to determine unique user by. (uid by default)
- * @returns {Array} Returns array with data
- */
-async function getTotalsClickhouse(params) {
-    var { query, userKey, useApproximateUniq = true } = params;
-    try {
-
-        userKey = userKey || "uid";
-        if (userKey.indexOf(".") > 0) {
-            userKey = "`" + userKey.replaceAll(".", "`.`") + "`";
-        }
-        const uniqFunction = QueryHelpers.getUniqFunction(useApproximateUniq);
-
-        const converter = new WhereClauseConverter();
-        const { sql: whereSQL, params: ch_params } = converter.queryObjToWhere(query);
-        const clickhouse_query = `
-            SELECT ${uniqFunction}(${userKey}) as u,
-            COUNT(c) as t
-            FROM drill_events
-            ${whereSQL}
-        `;
-        var rawResult = await common.clickhouseQueryService.aggregate({query: clickhouse_query, params: ch_params}, {});
-        //converting to same we have in mongodb
-        rawResult = rawResult[0] || {};
-        return {
-            _queryMeta: {
-                adapter: 'clickhouse',
-                query: clickhouse_query
-            },
-            data: rawResult
-        };
-    }
-    catch (error) {
-        log.e(error);
-        log.e('ClickHouse views.getTotalsClickhouse failed', error);
-        throw error;
-    }
-}
-
-/**
  * MongoDB handler ccalculating unique user count for specific views
  * Executes drill aggregation using MongoDB pipeline
  * @param {Object} params - Query parameters object containing all necessary data
@@ -153,50 +105,6 @@ async function getUniqueCountMongodb(params) {
         log.e('MongoDB formulas.getNumberOfPromiseMongoDb aggregation failed', error);
         throw error;
     }
-}
-
-/**
- * Clickhouse handler calculating unique user count for specific views
- * Executes drill aggregation using Clickhouse SQL
- * @param {Object} params - Query parameters object containing all necessary data
- * @param {Object} params.query - query for match stage
- * @param {string} params.userKey - field to determine unique user by. (uid by default)
- * @returns {Array} Returns array with data
- */
-async function getUniqueCountClickhouse(params) {
-    var { query, userKey, useApproximateUniq = true } = params;
-    try {
-        userKey = userKey || "uid";
-        if (userKey.indexOf(".") > 0) {
-            userKey = "`" + userKey.replaceAll(".", "`.`") + "`";
-        }
-
-        const uniqFunction = QueryHelpers.getUniqFunction(useApproximateUniq);
-        const converter = new WhereClauseConverter();
-        const { sql: whereSQL, params: ch_params } = converter.queryObjToWhere(query);
-        const clickhouse_query = `
-            SELECT n as _id, ${uniqFunction}(${userKey}) as u
-            FROM drill_events
-            ${whereSQL}
-            GROUP BY n
-        `;
-        const rawResult = await common.clickhouseQueryService.aggregate({query: clickhouse_query, params: ch_params}, {});
-        //converting to same we have in mongodb
-
-        return {
-            _queryMeta: {
-                adapter: 'clickhouse',
-                query: clickhouse_query
-            },
-            data: rawResult
-        };
-    }
-    catch (error) {
-        log.e(error);
-        log.e('ClickHouse views.getTotalsClickhouse failed', error);
-        throw error;
-    }
-
 }
 
 
@@ -281,40 +189,7 @@ async function getGraphValuesMongodb(params) {
  * @param {string} params.userKey - field to determine unique user by. (uid by default)
  * @returns {Array} Returns array with data
  */
-async function getGraphValuesClickhouse(params) {
-    var { query, userKey, useApproximateUniq = true, timezone, bucket} = params;
-    try {
-        userKey = userKey || "uid";
-        if (userKey.indexOf(".") > 0) {
-            userKey = "`" + userKey.replaceAll(".", "`.`") + "`";
-        }
 
-        const uniqFunction = QueryHelpers.getUniqFunction(useApproximateUniq);
-        const converter = new WhereClauseConverter();
-        const { sql: whereSQL, params: ch_params } = converter.queryObjToWhere(query);
-        const clickhouse_query = `
-            SELECT ${bucketExpr(bucket, timezone)} as _id,n as n, ${uniqFunction}(${userKey}) as u
-            FROM drill_events
-            ${whereSQL}
-            GROUP BY n, ${bucketExpr(bucket, timezone)}
-        `;
-        const rawResult = await common.clickhouseQueryService.aggregate({query: clickhouse_query, params: ch_params}, {});
-        //converting to same we have in mongodb
-
-        return {
-            _queryMeta: {
-                adapter: 'clickhouse',
-                query: clickhouse_query
-            },
-            data: rawResult
-        };
-    }
-    catch (error) {
-        log.e(error);
-        log.e('ClickHouse views.getTotalsClickhouse failed', error);
-        throw error;
-    }
-}
 
 /**
  * Fetch totals for period
@@ -333,12 +208,15 @@ async function getTotals(params, options) {
         adapters: {
             mongodb: {
                 handler: getTotalsMongodb
-            },
-            clickhouse: {
-                handler: getTotalsClickhouse
             }
         }
     };
+
+    if (clickHouseRunner && clickHouseRunner.getViewsTotals) {
+        queryDef.adapters.clickhouse = {
+            handler: clickHouseRunner.getViewsTotals
+        };
+    }
     return common.queryRunner.executeQuery(queryDef, params, options);
 }
 
@@ -358,12 +236,14 @@ async function getUniqueCount(params, options) {
         adapters: {
             mongodb: {
                 handler: getUniqueCountMongodb
-            },
-            clickhouse: {
-                handler: getUniqueCountClickhouse
             }
         }
     };
+    if (clickHouseRunner && clickHouseRunner.getViewsUniqueCount) {
+        queryDef.adapters.clickhouse = {
+            handler: clickHouseRunner.getViewsUniqueCount
+        };
+    }
     return common.queryRunner.executeQuery(queryDef, params, options);
 }
 
@@ -383,12 +263,15 @@ async function getGraphValues(params, options) {
         adapters: {
             mongodb: {
                 handler: getGraphValuesMongodb
-            },
-            clickhouse: {
-                handler: getGraphValuesClickhouse
             }
         }
     };
+    if (clickHouseRunner && clickHouseRunner.getViewsGraphValues) {
+        queryDef.adapters.clickhouse = {
+            handler: clickHouseRunner.getViewsGraphValues
+        };
+    }
+
     return common.queryRunner.executeQuery(queryDef, params, options);
 }
 
