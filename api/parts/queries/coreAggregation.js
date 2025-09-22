@@ -115,12 +115,14 @@ catch (error) {
             adapters: {
                 mongodb: {
                     handler: fetchAggregatedSegmentedEventDataMongo
-                },
-                clickhouse: {
-                    handler: clickHouseRunner.fetchAggregatedSegmentedEventDataClickhouse
                 }
             }
         };
+        if (clickHouseRunner && clickHouseRunner.fetchAggregatedSegmentedEventDataClickhouse) {
+            queryDef.adapters.clickhouse = {
+                handler: clickHouseRunner.fetchAggregatedSegmentedEventDataClickhouse
+            };
+        }
 
         return common.queryRunner.executeQuery(queryDef, params, options);
     };
@@ -211,7 +213,25 @@ catch (error) {
     };
 
 
+    agg.viewsTableData = async function(params, options) {
+        if (!common.queryRunner) {
+            throw new Error('QueryRunner not initialized. Ensure API server is fully started.');
+        }
 
-
+        const queryDef = {
+            name: 'VIEWS_TABLE_DATA',
+            adapters: {
+                mongodb: {
+                    handler: mongodbRunner.getViewsTableData
+                }
+            }
+        };
+        if (clickHouseRunner && clickHouseRunner.getViewsTableData) {
+            queryDef.adapters.clickhouse = {
+                handler: clickHouseRunner.getViewsTableData
+            };
+        }
+        return common.queryRunner.executeQuery(queryDef, params, options);
+    };
 }(coreAggregator));
 module.exports = coreAggregator;

@@ -9,6 +9,7 @@ var APP_ID = "";
 var DEVICE_ID = "1234567890";
 var drill_db = "";
 
+var session_event = "[CLY]_session_begin";
 describe('Testing Density metrics', function() {
     describe('Empty density', function() {
         it('should have no densities', function(done) {
@@ -44,11 +45,12 @@ describe('Testing Density metrics', function() {
                     setTimeout(done, 2000);
                 });
         });
+
     });
     //{"2015":{"1":{"15":{"400dpi":{"t":1,"n":1,"u":1}},"400dpi":{"u":1,"t":1,"n":1}},"400dpi":{"u":1,"t":1,"n":1},"w3":{"400dpi":{"u":1}}},"meta":{"density":["400dpi"]}}
     describe('Verify density', function() {
         it('should have density', function(done) {
-            testUtils.validateTotalsInDrillData(drill_db, {app_id: APP_ID, event: "[CLY]_session", query: {"up.dnst": "400dpi"}, values: {u: 1, t: 1, n: 1}}, done);
+            testUtils.validateTotalsInDrillData(drill_db, {app_id: APP_ID, event: session_event, query: {"up.dnst": "400dpi"}, values: {u: 1, t: 1, n: 1}}, done);
         });
     });
     describe('write bulk density', function() {
@@ -82,7 +84,7 @@ describe('Testing Density metrics', function() {
 
             testUtils.validateBreakdownTotalsInDrillData(drill_db, {
                 app_id: APP_ID,
-                event: "[CLY]_session",
+                event: session_event,
                 breakdownKeys: ["up.dnst"],
                 values: {
                     "100dpi": {"n": 1, "t": 1, "u": 1},
@@ -115,7 +117,7 @@ describe('Testing Density metrics', function() {
                 });
         });
         it('should have density and platform(stored density has to pe affected by platform)', function(done) {
-            testUtils.validateTotalsInDrillData(drill_db, {app_id: APP_ID, event: "[CLY]_session", query: {"up.dnst": "a400dpi", "up.p": "Android"}, values: {u: 1, t: 1, n: 1}}, done);
+            testUtils.validateTotalsInDrillData(drill_db, {app_id: APP_ID, event: session_event, query: {"up.dnst": "a400dpi", "up.p": "Android"}, values: {u: 1, t: 1, n: 1}}, done);
         });
 
     });
@@ -137,7 +139,7 @@ describe('Testing Density metrics', function() {
     });
     describe('verify empty density', function() {
         it('should have no densities', function(done) {
-            testUtils.validateTotalsInDrillData(drill_db, {app_id: APP_ID, event: "[CLY]_session", query: {}, values: {u: 0, t: 0, n: 0}}, done);
+            testUtils.validateTotalsInDrillData(drill_db, {app_id: APP_ID, event: session_event, query: {}, values: {u: 0, t: 0, n: 0}}, done);
         });
     });
 });

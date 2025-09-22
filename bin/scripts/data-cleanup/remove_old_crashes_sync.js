@@ -46,7 +46,7 @@ Promise.all(
         pluginManager.dbConnection("countly"),
         pluginManager.dbConnection("countly_drill")
     ])
-    .spread(async function(db, drillDb) {
+    .then(async function([db, drillDb]) {
         try {
             const apps = (APP_ID.length) ? [{_id: APP_ID}] : await db.collection('apps').find({}, { _id: 1 }).toArray();
 
