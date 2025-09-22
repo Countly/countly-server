@@ -194,7 +194,7 @@ var obb = {};
         //Union with data from view updates and group by _id.sg
         var match2 = JSON.parse(JSON.stringify(match));
         match2.e = "[CLY]_view_update";
-        pipeline2 = [
+        var pipeline2 = [
             {"$match": match2},
             {"$group": {"_id": {"u": "$uid", "sg": "$n"}, "t": {"$sum": 0}, "d": {"$sum": "$dur"}, "s": {"$sum": 0}, "e": {"$sum": "$sg.exit"}, "b": {"$sum": "$sg.bounce"}, "scr": {"$sum": 0}, "u": {"$sum": 1}}}, //t and scr are 0 as they are not tracked in view update
             {"$group": {"_id": "$_id.sg", "u": {"$sum": "$u"}, "t": {"$sum": "$t"}, "d": {"$sum": "$d"}, "s": {"$sum": "$s"}, "e": {"$sum": "$e"}, "b": {"$sum": "$b"}, "scr": {"$sum": "$scr"}}}
