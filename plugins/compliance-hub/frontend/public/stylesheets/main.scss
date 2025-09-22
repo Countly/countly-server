@@ -19,13 +19,18 @@
 .cly-vue-compliance__consent_history_expanded_column {
     height: 16px;
 }
+.cly-vue-compliance__consent_history_expanded_column:last-child {
+    /* Internal note: The style written for the .el-table__expanded-cell class 
+       inside crashes is affecting the global scope because no plugin namespace 
+       was provided. This line was added as a temporary fix to keep consistency */
+    padding-bottom: 32px;
+}
 .cly-vue-compliance__consent_history {
     .el-table__expanded-cell {
         padding-left: 68px !important;
         padding-top: 32px !important;
         padding-bottom: 32px !important;
     }
-
 }
 
 .cly-vue-complaince__hub_style_none {
@@ -35,7 +40,6 @@
     
     .cly-vue-section__content {
         border-top: 0;
-        
     }
   }
 
@@ -44,3 +48,15 @@
         margin-bottom: 1.5rem;
     }
   }
+
+.compliance-hub-consent-history {
+    &__metrics {
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    &__debug-panel {
+        margin-left: -16px;
+    }
+}
