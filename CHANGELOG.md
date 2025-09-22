@@ -2,6 +2,9 @@
 Fixes:
 - [push] Fix: Migrate push to the new events model
 
+Enterprise Fixes:
+- [oidc] fix for sending state in oidc login
+
 ## Version 25.03.19
 Enterprise Fixes
 - [home] Fix home download render issue
