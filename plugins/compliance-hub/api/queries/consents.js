@@ -36,7 +36,7 @@ function mapConsentFieldsForDrillEvents(query) {
             const result = {};
             for (const [key, value] of Object.entries(obj)) {
                 // Handle nested field mapping (e.g., change.attribution -> sg.attribution)
-                let mappedKey = key;
+                let mappedKey;
                 if (key.startsWith('change.')) {
                     mappedKey = 'sg.' + key.substring(7);
                 }
@@ -360,15 +360,11 @@ async function fetchConsentsList(params, options = {}) {
         adapters: {
             mongodb: {
                 handler: mongodbConsentsHandler,
-                transform: async(data) => transformMongodbConsents(data, {
-                    timezone: params.timezone
-                })
+                transform: async(data) => transformMongodbConsents(data)
             },
             clickhouse: {
                 handler: clickhouseConsentsHandler,
-                transform: async(data) => transformClickhouseConsents(data, {
-                    timezone: params.timezone
-                })
+                transform: async(data) => transformClickhouseConsents(data)
             }
         }
     };
