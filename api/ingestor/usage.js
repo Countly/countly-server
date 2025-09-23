@@ -248,6 +248,26 @@ usage.processCoreMetrics = function(params) {
         if (params.qstring.metrics._resolution) {
             params.collectedMetrics[common.dbUserMap.resolution] = params.qstring.metrics._resolution;
         }
+        if (params.qstring.metrics._app_version) {
+            const versionComponents = common.parseAppVersion(params.qstring.metrics._app_version);
+            if (versionComponents.success) {
+                params.collectedMetrics.av_major = versionComponents.major;
+                params.collectedMetrics.av_minor = versionComponents.minor;
+                params.collectedMetrics.av_patch = versionComponents.patch;
+                params.collectedMetrics.av_prerelease = versionComponents.prerelease;
+                params.collectedMetrics.av_build = versionComponents.build;
+            }
+            else {
+                log.d("App version %s is not a valid semantic version. It cannot be separated into semantic version parts", params.qstring.metrics._app_version);
+                params.collectedMetrics.av_major = null;
+                params.collectedMetrics.av_minor = null;
+                params.collectedMetrics.av_patch = null;
+                params.collectedMetrics.av_prerelease = null;
+                params.collectedMetrics.av_build = null;
+            }
+        }
+
+
     }
 };
 
@@ -276,7 +296,9 @@ usage.returnRequestMetrics = function(params) {
             params.collectedMetrics[key] = escapedMetricVal;
         }
         else {
-            delete params.collectedMetrics[key];
+            if (!common.isNumber(params.collectedMetrics[key])) {
+                delete params.collectedMetrics[key];
+            }
         }
     }
     return params.collectedMetrics;
