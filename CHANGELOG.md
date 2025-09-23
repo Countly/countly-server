@@ -1,4 +1,4 @@
-## Version 24.05.X
+## Version 24.05.39
 Features:
 - [remote-config] Enable comparing newer/older app version in conditions
 
