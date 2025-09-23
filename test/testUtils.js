@@ -234,6 +234,12 @@ var testUtils = function testUtils() {
         pipeline.push({"$group": {"_id": iid, "t": {"$sum": 1}, "ls": {"$min": "$up.ls"}, n: {"$max": "$n"}, "fs": {"$min": "$up.fs"}}});
 
         pipeline.push({"$group": {"_id": iid2, "n": {"$sum": 1}, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        if (options.event === "[CLY]_session") {
+            var pipeline2 = JSON.parse(JSON.stringify(pipeline));
+            pipeline2[0]["$match"]["e"] = "[CLY]_session_begin";
+            pipeline.push({"$unionWith": {coll: "drill_events", pipeline: pipeline2}});
+            pipeline.push({"$group": {"_id": "$_id", "n": {"$max": "$n"}, "u": {"$max": "$u"}, "t": {"$max": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        }
         db.collection("drill_events").aggregate(pipeline, function(err, res) {
             console.log(res);
             if (err) {
@@ -303,6 +309,12 @@ var testUtils = function testUtils() {
         options.values = options.values || {};
         pipeline.push({"$group": {"_id": "$uid", "t": {"$sum": "$c"}, "ls": {"$min": "$up.ls"}, "fs": {"$min": "$up.fs"}}});
         pipeline.push({"$group": {"_id": null, "u": {"$sum": 1}, "t": {"$sum": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        if (options.event === "[CLY]_session") {
+            var pipeline2 = JSON.parse(JSON.stringify(pipeline));
+            pipeline2[0]["$match"]["e"] = "[CLY]_session_begin";
+            pipeline.push({"$unionWith": {coll: "drill_events", pipeline: pipeline2}});
+            pipeline.push({"$group": {"_id": null, "u": {"$max": "$u"}, "t": {"$max": "$t"}, "fs": {"$min": "$fs"}, "ls": {"$min": "$ls"}}});
+        }
         console.log(JSON.stringify(pipeline));
         db.collection("drill_events").aggregate(pipeline, function(err, res) {
             console.log(res);

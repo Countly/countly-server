@@ -380,8 +380,9 @@ usage.processSession = function(ob) {
         else {
             var drill_updates2 = {};
             if (params.app_user.lsid) {
-                if (params.app_user.sd > 0 || session_duration > 0) {
-                    drill_updates2.dur = params.app_user.sd + (session_duration || 0);
+                drill_updates2.dur = (params.app_user.sd || 0) + (session_duration || 0);
+                if (drill_updates2.dur === 0) {
+                    delete drill_updates2.dur;
                 }
                 if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
                     drill_updates2.custom = JSON.parse(JSON.stringify(params.app_user.custom));
@@ -396,6 +397,7 @@ usage.processSession = function(ob) {
                 if (idsplit[3] && idsplit[3].length === 13) {
                     lasts2 = parseInt(idsplit[3]);
                 }
+                params.qstring.events = params.qstring.events || [];
                 params.qstring.events.unshift({
                     "_id": params.app_user.lsid,
                     "key": "[CLY]_session",
