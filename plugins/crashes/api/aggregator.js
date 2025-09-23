@@ -6,11 +6,11 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
 const { WriteBatcher } = require('../../../api/parts/data/batcher.js');
 const log = require('../../../api/utils/log.js')('crashes:aggregator');
 
-var ranges = ['ram', 'bat', 'disk', 'run', 'session'];
-var segments = ['os_version', 'os_name', 'manufacture', 'device', 'resolution', 'app_version', 'cpu', 'opengl', 'orientation', 'view', 'browser'];
-var bools = { root: true, online: true, muted: true, signal: true, background: true };
+const ranges = ['ram', 'bat', 'disk', 'run', 'session'];
+const segments = ['os_version', 'os_name', 'manufacture', 'device', 'resolution', 'app_version', 'cpu', 'opengl', 'orientation', 'view', 'browser'];
+const bools = { root: true, online: true, muted: true, signal: true, background: true };
 
-var props = [
+const props = [
     //device metrics
     'os',
     'os_version',
@@ -67,9 +67,9 @@ var props = [
 
 const recordCustomMetric = function(params, collection, id, metrics, value, segm, uniques, lastTimestamp, token, localBatcher) {
     value = value || 1;
-    var updateUsersZero = {},
-        updateUsersMonth = {},
-        tmpSet = {};
+    const updateUsersZero = {};
+    const updateUsersMonth = {};
+    const tmpSet = {};
 
     if (metrics) {
         for (let i = 0; i < metrics.length; i++) {
@@ -82,10 +82,10 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
             tmpSet, updateUsersZero, updateUsersMonth);
         }
     }
-    var dbDateIds = common.getDateIds(params);
+    const dbDateIds = common.getDateIds(params);
 
     if (Object.keys(updateUsersZero).length || Object.keys(tmpSet).length) {
-        var update = {
+        const update = {
             $set: {
                 m: dbDateIds.zero,
                 a: `${params.app_id}`,
@@ -232,7 +232,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
 
                                 let AllUsersUpdate = {$set: {group: 0, 'uid': currEvent.uid}};
                                 if (!user || !user.reports) {
-                                    var inc = {crashes: 1};
+                                    const inc = {crashes: 1};
                                     if (groupSet.nonfatal === false) {
                                         inc.usersfatal = 1;
                                         inc.fatal = 1;
@@ -249,7 +249,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                                     set.sessions = currEvent.up.sc;
                                 }
 
-                                var userAll = await common.db.collection('app_crashusers' + params.app_id).findOneAndUpdate({group: 0, 'uid': currEvent.uid}, AllUsersUpdate, {upsert: true, new: false, returnDocument: 'before', returnNewDocument: false});
+                                const userAll = await common.db.collection('app_crashusers' + params.app_id).findOneAndUpdate({group: 0, 'uid': currEvent.uid}, AllUsersUpdate, {upsert: true, new: false, returnDocument: 'before', returnNewDocument: false});
 
                                 if ((currEvent.sg.nonfatal === true) && currEvent.up.sc && currEvent.up.sc > 0 && currEvent.up.tp) {
                                     metaInc.loss = currEvent.up.tp / currEvent.up.sc;
@@ -295,7 +295,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                                     // Segment type range
                                     if (ranges.includes(props[i])) {
                                         if (currEvent.sg[props[i] + '_current'] && currEvent.sg[props[i] + '_total']) {
-                                            var ratio = ((parseInt(currEvent.sg[props[i] + '_current']) / parseInt(currEvent.sg[props[i] + '_total'])) * 100).toFixed(2);
+                                            const ratio = ((parseInt(currEvent.sg[props[i] + '_current']) / parseInt(currEvent.sg[props[i] + '_total'])) * 100).toFixed(2);
                                             groupInc[props[i] + '.total'] = parseFloat(ratio);
                                             groupInc[props[i] + '.count'] = 1;
                                             groupMin[props[i] + '.min'] = parseFloat(ratio);
@@ -380,17 +380,17 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                                     app_version_list: currEvent.sg.app_version,
                                 };
 
-                                var crashGroup = await common.db.collection('app_crashgroups' + params.app_id).findOneAndUpdate({'groups': {$elemMatch: {$eq: hash}}}, update, {upsert: true, new: false, returnDocument: 'before', returnNewDocument: false});
+                                const crashGroup = await common.db.collection('app_crashgroups' + params.app_id).findOneAndUpdate({'groups': {$elemMatch: {$eq: hash}}}, update, {upsert: true, new: false, returnDocument: 'before', returnNewDocument: false});
                                 if (!crashGroup) {
                                     metaInc.isnew = 1;
                                     metaInc.crashes = 1;
                                 }
-                                var lastTs;
+                                let lastTs;
 
                                 if (crashGroup) {
                                     lastTs = crashGroup.lastTs;
                                     if (crashGroup.latest_version !== currEvent.sg.app_version) {
-                                        var group = {};
+                                        let group = {};
                                         if (crashGroup.latest_version && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.latest_version.replace(/\./g, ':')) > 0) {
                                             group.latest_version = currEvent.sg.app_version;
                                             group.latest_version_for_sort = common.transformAppVersion(currEvent.sg.app_version);
@@ -448,7 +448,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                         {
                             $match: {
                                 operationType: 'insert',
-                                'fullDocument.e': { $in: ['[CLY]_session'] },
+                                'fullDocument.e': { $in: ['[CLY]_session_begin'] },
                             },
                         },
                         {
@@ -469,7 +469,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                         pipeline: [
                             {
                                 $match: {
-                                    e: { $in: ['[CLY]_session'] }
+                                    e: { $in: ['[CLY]_session_begin'] }
                                 },
                             },
                         ],
@@ -487,7 +487,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                 for (let idx = 0; idx < events.length; idx += 1) {
                     const currEvent = events[idx];
                     // Kafka will send all events here, so filter out if needed.
-                    if (currEvent.e === '[CLY]_session' && 'a' in currEvent) {
+                    if (currEvent.e === '[CLY]_session_begin' && 'a' in currEvent) {
                         common.readBatcher.getOne('apps', common.db.ObjectID(currEvent.a), async(err, app) => {
                             if (err) {
                                 log.e('Error getting app data for session', err);
@@ -496,17 +496,17 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
 
                             // record event totals in aggregated data
                             if (app && '_id' in app) {
-                                var params = {
+                                const params = {
                                     'app_id': currEvent.a,
                                     'app': app,
                                     'time': common.initTimeObj(app.timezone, currEvent.ts),
                                     'appTimezone': (app.timezone || 'UTC'),
                                 };
 
-                                var metrics = ['cr_s', 'cr_u'];
+                                const metrics = ['cr_s', 'cr_u'];
                                 const platform = currEvent.up?.p;
                                 const version = currEvent.up?.av;
-                                var lastTs = currEvent.sg?.prev_start || 0;
+                                const lastTs = currEvent.sg?.prev_start || 0;
 
                                 //WE DON"T know platfirm and version from previous session. So it if changes  - new model is not recording that.
                                 recordCustomMetric(params, 'crashdata', params.app_id, metrics, 1, null, ['cr_u'], lastTs, token, localWriteBatcher);
@@ -541,8 +541,8 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                     pipeline: [
                         {
                             $match: {
-                                operationType: 'update',
-                                'fullDocument.e': { $in: ['[CLY]_session_update'] }
+                                operationType: 'insert',
+                                'fullDocument.e': { $in: ['[CLY]_session'] }
                             },
                         },
                         {
@@ -564,7 +564,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                         pipeline: [
                             {
                                 $match: {
-                                    e: { $in: ['[CLY]_session_update'] },
+                                    e: { $in: ['[CLY]_session'] },
                                 },
                             },
                         ],
@@ -580,36 +580,29 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                 for (let idx = 0; idx < events.length; idx += 1) {
                     const currEvent = events[idx];
                     // Kafka will send all events here, so filter out if needed.
-                    if (currEvent.e === '[CLY]_session_update' && 'a' in currEvent) {
-                        common.readBatcher.getOne('apps', common.db.ObjectID(currEvent.a), async(err, app) => {
-                            if (err) {
-                                log.e('Error getting app data for session update', err);
+                    if (currEvent.e === '[CLY]_session' && 'a' in currEvent) {
+                        common.readBatcher.getOne('apps', common.db.ObjectID(currEvent.a), async(appErr, app) => {
+                            if (appErr) {
+                                log.e('Error getting app data for session update', appErr);
                                 return;
                             }
 
                             if (app && '_id' in app) {
                                 const params = {app_id: currEvent.a, app, time: common.initTimeObj(app.timezone, currEvent.ts), appTimezone: (app.timezone || 'UTC')};
-                                const currUser = await common.db.collection(`app_users${currEvent.a}`).findOne({ _id: currEvent._uid }, { ls: 1, _id: 0 });
+                                const platform = currEvent.up?.p;
+                                const version = currEvent.up?.av;
+
                                 // check if it is not user's first session
-                                if (currUser?.ls) {
-                                    //record crash free session
-                                    const fatalCrash = await common.drillDb.collection('drill_events').findOne({
-                                        e: '[CLY]_crash',
-                                        a: currEvent.a,
-                                        uid: currEvent.uid,
-                                        ts: { $gte: (currUser?.ls * 1000) },
-                                        'sg.nonfatal': false,
-                                    }, {ts: 1, _id: 0});
+                                if (currEvent.up?.ls) {
+                                    // get app user to get more details about crash user
+                                    const currUser = await common.db.collection(`app_users${currEvent.a}`).findOne({ _id: currEvent._uid });
 
                                     const fatalMetrics = [];
 
-                                    if (!fatalCrash) {
+                                    if (!currUser?.hadFatalCrash) {
                                         fatalMetrics.push('crfses');
                                         fatalMetrics.push('crauf');
                                     }
-
-                                    const platform = currUser?.p;
-                                    const version = currUser?.av;
 
                                     if (fatalMetrics.length) {
                                         const ts = currEvent.sg?.prev_start || currUser?.hadAnyFatalCrash || 0;
@@ -620,27 +613,20 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                                         recordCustomMetric(params, 'crashdata', `any**${version}**${params.app_id}`, fatalMetrics, 1, null, ['crauf'], ts, token, localWriteBatcher);
                                     }
 
-                                    var nonFatalMetrics = [];
-                                    var nonFatalCrash = await common.drillDb.collection('drill_events').findOne({
-                                        e: '[CLY]_crash',
-                                        a: currEvent.a,
-                                        uid: currEvent.uid,
-                                        ts: {$gte: (currUser?.ls * 1000)},
-                                        'sg.nonfatal': true,
-                                    }, {ts: 1, _id: 0});
+                                    const nonfatalMetrics = [];
 
-                                    if (!nonFatalCrash) {
-                                        nonFatalMetrics.push('craunf');
-                                        nonFatalMetrics.push('crnfses');
+                                    if (!currUser?.hadNonfatalCrash) {
+                                        nonfatalMetrics.push('craunf');
+                                        nonfatalMetrics.push('crnfses');
                                     }
 
-                                    if (nonFatalMetrics.length) {
-                                        const ts = currEvent.sg?.prev_start || currUser?.hadAnyNonFatalCrash || 0;
+                                    if (nonfatalMetrics.length) {
+                                        const ts = currEvent.sg?.prev_start || currUser?.hadAnyNonfatalCrash || 0;
 
-                                        recordCustomMetric(params, 'crashdata', params.app_id, nonFatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
-                                        recordCustomMetric(params, 'crashdata', `${platform}**${version}**${params.app_id}`, nonFatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
-                                        recordCustomMetric(params, 'crashdata', `${platform}**any**${params.app_id}`, nonFatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
-                                        recordCustomMetric(params, 'crashdata', `any**${version}**${params.app_id}`, nonFatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
+                                        recordCustomMetric(params, 'crashdata', params.app_id, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
+                                        recordCustomMetric(params, 'crashdata', `${platform}**${version}**${params.app_id}`, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
+                                        recordCustomMetric(params, 'crashdata', `${platform}**any**${params.app_id}`, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
+                                        recordCustomMetric(params, 'crashdata', `any**${version}**${params.app_id}`, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
                                     }
                                 }
                             }
