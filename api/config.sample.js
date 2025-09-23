@@ -27,13 +27,13 @@ var countlyConfig = {
     database: {
         failOnConnectionError: true,
         debug: false,
-        adapterPreference: ['mongodb', 'clickhouse'],
+        adapterPreference: ['mongodb'],
         adapters: {
             mongodb: {
                 enabled: true
             },
             clickhouse: {
-                enabled: true
+                enabled: false
             }
         },
         comparisonLogs: {
@@ -249,7 +249,7 @@ var countlyConfig = {
     * - sinks: ['mongo', 'kafka'] - Write to both in parallel
     */
     eventSink: {
-        sinks: ['mongo', 'kafka'], // Default: MongoDB only. Add 'kafka' for dual writes
+        sinks: ['mongo'], // Default: MongoDB only. Add 'kafka' for dual writes
     },
 
     /**
