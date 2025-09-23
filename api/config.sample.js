@@ -34,6 +34,7 @@ var countlyConfig = {
             },
             clickhouse: {
                 enabled: false
+            }
         },
         comparisonLogs: {
             mode: 'disabled' // Options: 'disabled', 'files', 'logs', 'both' - WARNING: DEVELOPMENT ONLY, use 'disabled' in production
