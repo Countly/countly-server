@@ -39,6 +39,10 @@ const create = (params) => {
             'type': 'Boolean'
         }
     };
+    if (!params.qstring.args) {
+        common.returnMessage(params, 400, 'Error: args not found');
+        return false;
+    }
     params.qstring.args = JSON.parse(params.qstring.args);
     const {obj, errors} = common.validateArgs(params.qstring.args, argProps, true);
     if (!obj) {
@@ -59,7 +63,14 @@ const create = (params) => {
 
 /**
  * Event Groups CRUD - The function updating which created `Event Groups` data by `_id`
- * @param {Object} params - 
+ * @param {Object} params - params object containing the query string and other parameters
+ * @returns {Boolean} 
+ * This function updates the event groups based on the provided parameters.
+ * It handles different update scenarios:
+ * 1. If `args` is provided, it updates the event group with the specified `_id`.
+ * 2. If `event_order` is provided, it updates the order of the events in the group.
+ * 3. If `update_status` is provided, it updates the status of the specified event groups.
+ * 4. If none of these parameters are found, it returns a 400 error indicating that the required arguments are not found.
  */
 const update = (params) => {
     if (params.qstring.args) {
@@ -72,7 +83,7 @@ const update = (params) => {
             common.returnMessage(params, 200, 'Success');
         });
     }
-    if (params.qstring.event_order) {
+    else if (params.qstring.event_order) {
         params.qstring.event_order = JSON.parse(params.qstring.event_order);
         var bulkArray = [];
         params.qstring.event_order.forEach(function(id, index) {
@@ -91,7 +102,7 @@ const update = (params) => {
             common.returnMessage(params, 200, 'Success');
         });
     }
-    if (params.qstring.update_status) {
+    else if (params.qstring.update_status) {
         params.qstring.update_status = JSON.parse(params.qstring.update_status);
         params.qstring.status = JSON.parse(params.qstring.status);
         var idss = params.qstring.update_status;
@@ -145,6 +156,10 @@ const update = (params) => {
         }
         );
     }
+    else {
+        common.returnMessage(params, 400, 'Error: args not found');
+        return false;
+    }
 };
 
 /**
@@ -152,6 +167,10 @@ const update = (params) => {
  * @param {Object} params - 
  */
 const remove = async(params) => {
+    if (!params.qstring.args) {
+        common.returnMessage(params, 400, 'Error: args not found');
+        return false;
+    }
     params.qstring.args = JSON.parse(params.qstring.args);
     var idss = params.qstring.args;
     common.db.collection(COLLECTION_NAME).remove({_id: { $in: params.qstring.args }}, (error) =>{
