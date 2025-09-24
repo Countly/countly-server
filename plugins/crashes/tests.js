@@ -188,10 +188,6 @@ function verifyCrashMetrics(users, crashes, loss, metrics) {
 describe('Testing Crashes', function() {
 //{"users":{"total":0,"affected":0,"fatal":0,"nonfatal":0},"crashes":{"total":0,"unique":0,"resolved":0,"unresolved":0,"fatal":0,"nonfatal":0,"news":0,"renewed":0,"os":{},"highest_app":""},"loss":0,"groups":[],"data":{}}
 
-    beforeEach(async() => {
-        await new Promise(resolve => setTimeout(resolve, 4000));
-    });
-
     describe('Empty crashes', function() {
         it('should have no crashes', function(done) {
             API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
@@ -3081,8 +3077,6 @@ describe('Testing Crashes', function() {
             };
 
             await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`);
-
-            await new Promise(resolve => setTimeout(resolve, 2000));
 
             const crashGroupQuery = JSON.stringify({
                 os: crashData._os,
