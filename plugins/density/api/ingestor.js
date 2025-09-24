@@ -24,7 +24,7 @@ var exported = {},
             }
 
 
-            if (!params.app_user.dnst || params.qstring.metrics._density !== params.app_user.dnst) {
+            if (params.qstring.metrics._density && (!params.app_user.dnst || params.qstring.metrics._density !== params.app_user.dnst)) {
                 ob.updates.push({$set: {dnst: params.qstring.metrics._density}});
             }
         }

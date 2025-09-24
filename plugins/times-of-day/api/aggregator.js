@@ -95,10 +95,10 @@ const UnifiedEventSource = require('../../../api/eventSource/UnifiedEventSource.
                 db: common.drillDb,
                 pipeline: [
                     {"$match": {"operationType": "insert", "fullDocument.e": {"$in": ["[CLY]_custom", "[CLY]_session"]}}},
-                    {"$project": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd", "ts": "$fullDocument.ts", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "hour": "$fullDocument.up.hour", "dow": "$fullDocument.up.dow"}}
+                    {"$project": {"__id": "$fullDocument._id", "cd": "$fullDocument.cd", "ts": "$fullDocument.ts", "a": "$fullDocument.a", "e": "$fullDocument.e", "n": "$fullDocument.n", "hour": "$fullDocument.up.hour", "dow": "$fullDocument.up.dow", "c": "$fullDocument.c"}}
                 ],
                 fallback: {
-                    pipeline: [ {"$match": {"e": {"$in": ["[CLY]_custom", "[CLY]_session"]}}}, {"$project": {"__id": "$_id", "ts": "$ts", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "hour": "$up.hour", "dow": "$up.dow"}}]
+                    pipeline: [ {"$match": {"e": {"$in": ["[CLY]_custom", "[CLY]_session"]}}}, {"$project": {"__id": "$_id", "ts": "$ts", "cd": "$cd", "a": "$a", "e": "$e", "n": "$n", "c": "$c", "hour": "$up.hour", "dow": "$up.dow"}}]
                 }
             }
         });
