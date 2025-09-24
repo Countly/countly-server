@@ -601,7 +601,7 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
                 }
             }
 
-            const useApproximateUniq = plugins.getConfig("drill", params && params.app && params.app.plugins, true).clickhouse_use_approximate_uniq;
+            const useApproximateUniq = plugins.getConfig("drill", params.app && params.app.plugins, true).clickhouse_use_approximate_uniq;
             const limit = parseInt(params.qstring.limit || 10);
             const sSearch = params.qstring.sSearch || '';
             const cursor = params.qstring.cursor || null;
@@ -626,9 +626,10 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
                     }
                 });
 
-                const paginationResp = result && result.data ? result.data : { data: [] };
-                const start = paginationResp.data.length ? 1 : 0;
-                const end = paginationResp.data.length;
+                const paginationResp = (result && result.data) ? result.data : { data: [] };
+
+                const start = (paginationResp.data && paginationResp.data.length) ? 1 : 0;
+                const end = paginationResp.data ? paginationResp.data.length : 0;
                 const pages = limit > 0 ? Math.max(1, Math.ceil((paginationResp.total || 0) / limit)) : 1;
                 const curPage = start ? 1 : 0;
 
