@@ -590,22 +590,19 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                             if (app && '_id' in app) {
                                 const params = {app_id: currEvent.a, app, time: common.initTimeObj(app.timezone, currEvent.ts), appTimezone: (app.timezone || 'UTC')};
                                 const platform = currEvent.up?.p;
-                                const version = currEvent.up?.av;
+                                const version = currEvent.up_extra?.av_prev || currEvent.up?.av;
 
                                 // check if it is not user's first session
                                 if (currEvent.up?.ls) {
-                                    // get app user to get more details about crash user
-                                    const currUser = await common.db.collection(`app_users${currEvent.a}`).findOne({ _id: currEvent._uid });
-
                                     const fatalMetrics = [];
 
-                                    if (!currUser?.hadFatalCrash) {
+                                    if (!currEvent.up_extra?.hadFatalCrash) {
                                         fatalMetrics.push('crfses');
                                         fatalMetrics.push('crauf');
                                     }
 
                                     if (fatalMetrics.length) {
-                                        const ts = currEvent.sg?.prev_start || currUser?.hadAnyFatalCrash || 0;
+                                        const ts = currEvent.sg?.prev_start || currEvent.up_extra?.hadAnyFatalCrash || 0;
 
                                         recordCustomMetric(params, 'crashdata', params.app_id, fatalMetrics, 1, null, ['crauf'], ts, token, localWriteBatcher);
                                         recordCustomMetric(params, 'crashdata', `${platform}**${version}**${params.app_id}`, fatalMetrics, 1, null, ['crauf'], ts, token, localWriteBatcher);
@@ -615,13 +612,13 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
 
                                     const nonfatalMetrics = [];
 
-                                    if (!currUser?.hadNonfatalCrash) {
+                                    if (!currEvent.up_extra?.hadNonfatalCrash) {
                                         nonfatalMetrics.push('craunf');
                                         nonfatalMetrics.push('crnfses');
                                     }
 
                                     if (nonfatalMetrics.length) {
-                                        const ts = currEvent.sg?.prev_start || currUser?.hadAnyNonfatalCrash || 0;
+                                        const ts = currEvent.sg?.prev_start || currEvent.up_extra?.hadAnyNonfatalCrash || 0;
 
                                         recordCustomMetric(params, 'crashdata', params.app_id, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
                                         recordCustomMetric(params, 'crashdata', `${platform}**${version}**${params.app_id}`, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
