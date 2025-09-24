@@ -1,3 +1,8 @@
+## Version 24.05.X
+Fixes:
+- [populator] Fix nps generator
+
+
 ## Version 24.05.39
 Features:
 - [remote-config] Enable comparing newer/older app version in conditions
