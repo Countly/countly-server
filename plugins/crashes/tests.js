@@ -3078,6 +3078,8 @@ describe('Testing Crashes', function() {
 
             await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`);
 
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
             const crashGroupQuery = JSON.stringify({
                 os: crashData._os,
                 latest_version: crashData._app_version,
@@ -3105,6 +3107,9 @@ describe('Testing Crashes', function() {
             };
 
             await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`).expect(200);
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
             const crashGroupQuery = JSON.stringify({
                 os: crashData._os,
                 latest_version: crashData._app_version,
@@ -3130,6 +3135,9 @@ describe('Testing Crashes', function() {
             };
 
             await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`).expect(200);
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
             const crashGroupQuery = JSON.stringify({
                 os: crashData._os,
                 latest_version: crashData._app_version,
@@ -3157,6 +3165,8 @@ describe('Testing Crashes', function() {
             await request.get('/i')
                 .query({ app_key: APP_KEY, device_id: DEVICE_ID, crash: JSON.stringify(crashData) })
                 .expect(200);
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
             const crashGroupQuery = JSON.stringify({
                 latest_version: { $in: [`${crashData._app_version}`] },
