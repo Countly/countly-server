@@ -326,15 +326,15 @@ var processToDrill = async function(params, drill_updates, callback) {
             //Setting params depending in event
             if (eventKey === "[CLY]_session") {
                 dbEventObject._id = params.request_id;
-
-                if ('up_extra' in currEvent) {
-                    dbEventObject.up_extra = currEvent.up_extra;
-                }
             }
             else {
                 dbEventObject._id = params.request_hash + "_" + params.app_user.uid + "_" + Date.now().valueOf() + "_" + i;
             }
             eventKey = currEvent.key;
+
+            if ('up_extra' in currEvent) {
+                dbEventObject.up_extra = currEvent.up_extra;
+            }
 
             var time = params.time;
             if (events[i].timestamp) {
@@ -817,7 +817,11 @@ const validateAppForWriteAPI = (params, done) => {
                                                 prev_start: params.previous_session_start,
                                                 postfix: crypto.createHash('md5').update(params.app_user.did + "").digest('base64')[0],
                                                 ended: "false"
-                                            }
+                                            },
+                                            up_extra: {
+                                                av_prev: params.app_user.av,
+                                                p_prev: params.app_user.p,
+                                            },
                                         });
                                     }
                                     plugins.dispatch("/sdk/process_user", ob, function() { //
