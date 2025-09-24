@@ -511,13 +511,16 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                                 //WE DON"T know platfirm and version from previous session. So it if changes  - new model is not recording that.
                                 recordCustomMetric(params, 'crashdata', params.app_id, metrics, 1, null, ['cr_u'], lastTs, token, localWriteBatcher);
                                 if (platform && version) {
-                                    recordCustomMetric(params, 'crashdata', `${platform}**${version}**${params.app_id}`, metrics, 1, null, ['cr_u'], lastTs, token, localWriteBatcher);
+                                    const ts = platform === currEvent.up_extra?.p_prev && version === currEvent.up_extra?.av_prev ? lastTs : 0;
+                                    recordCustomMetric(params, 'crashdata', `${platform}**${version}**${params.app_id}`, metrics, 1, null, ['cr_u'], ts, token, localWriteBatcher);
                                 }
                                 if (platform) {
-                                    recordCustomMetric(params, 'crashdata', `${platform}**any**${params.app_id}`, metrics, 1, null, ['cr_u'], lastTs, token, localWriteBatcher);
+                                    const ts = platform === currEvent.up_extra?.p_prev ? lastTs : 0;
+                                    recordCustomMetric(params, 'crashdata', `${platform}**any**${params.app_id}`, metrics, 1, null, ['cr_u'], ts, token, localWriteBatcher);
                                 }
                                 if (version) {
-                                    recordCustomMetric(params, 'crashdata', `any**${version}**${params.app_id}`, metrics, 1, null, ['cr_u'], lastTs, token, localWriteBatcher);
+                                    const ts = version === currEvent.up_extra?.av_prev ? lastTs : 0;
+                                    recordCustomMetric(params, 'crashdata', `any**${version}**${params.app_id}`, metrics, 1, null, ['cr_u'], ts, token, localWriteBatcher);
                                 }
                             }
                         });
