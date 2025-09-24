@@ -130,7 +130,7 @@ plugins.internalDrillEvents.push("[CLY]_crash");
                                     for (let key in params.qstring.crash["_" + props[i]]) {
                                         let safeKey = key.replace(/^\$/, "").replace(/\./g, ":");
                                         if (safeKey) {
-                                            report[props[i] + "_" + safeKey] = params.qstring.crash["_" + props[i]][key];
+                                            report[props[i]][safeKey] = params.qstring.crash["_" + props[i]][key];
                                         }
                                     }
                                 }
