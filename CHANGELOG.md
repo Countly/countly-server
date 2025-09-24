@@ -1,3 +1,8 @@
+## Version 25.03.X
+Fixes:
+- [populator] Fix nps generator
+
+
 ## Version 25.03.20
 Fixes:
 - [push] Fix: Migrate push to the new events model
