@@ -362,7 +362,14 @@ usage.processSession = function(ob) {
                             "segmentation": params.app_user.lsparams || { ended: "true" },
                             "dur": (drill_updates.dur || 0),
                             "count": 1,
-                            "timestamp": lasts
+                            "timestamp": lasts,
+                            up_extra: {
+                                hadFatalCrash: params.app_user.hadFatalCrash,
+                                hadAnyFatalCrash: params.app_user.hadAnyFatalCrash,
+                                hadnonfatalCrash: params.app_user.hadNonfatalCrash,
+                                hadAnyNonfatalCrash: params.app_user.hadAnyNonfatalCrash,
+                                av_prev: params.app_user.av,
+                            },
                         });
                     }
                     catch (ex) {
@@ -423,7 +430,14 @@ usage.processSession = function(ob) {
                     "segmentation": params.app_user.lsparams || { ended: "true" },
                     "dur": (drill_updates2.dur || 0),
                     "count": 1,
-                    "timestamp": lasts2
+                    "timestamp": lasts2,
+                    up_extra: {
+                        hadFatalCrash: params.app_user.hadFatalCrash,
+                        hadAnyFatalCrash: params.app_user.hadAnyFatalCrash,
+                        hadnonfatalCrash: params.app_user.hadNonfatalCrash,
+                        hadAnyNonfatalCrash: params.app_user.hadAnyNonfatalCrash,
+                        av_prev: params.app_user.av,
+                    },
                 });
 
             }
