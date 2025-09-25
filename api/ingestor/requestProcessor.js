@@ -806,6 +806,19 @@ const validateAppForWriteAPI = (params, done) => {
                                         params.qstring.events = params.qstring.events || [];
 
                                         ob.updates.push({"$set": {"lsparams": ob.params.app_user.lsparams}});
+                                        const up_extra = { av_prev: params.app_user.av, p_prev: params.app_user.p };
+                                        if (params.app_user.hadFatalCrash) {
+                                            up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
+                                        }
+                                        if (params.app_user.hadAnyFatalCrash) {
+                                            up_extra.hadFatalCrash = params.app_user.hadAnyFatalCrash;
+                                        }
+                                        if (params.app_user.hadNonfatalCrash) {
+                                            up_extra.hadFatalCrash = params.app_user.hadNonfatalCrash;
+                                        }
+                                        if (params.app_user.hadAnyNonfatalCrash) {
+                                            up_extra.hadFatalCrash = params.app_user.hadAnyNonfatalCrash;
+                                        }
                                         params.qstring.events.unshift({
                                             key: "[CLY]_session_begin",
                                             dur: params.qstring.session_duration || 0,
@@ -818,10 +831,7 @@ const validateAppForWriteAPI = (params, done) => {
                                                 postfix: crypto.createHash('md5').update(params.app_user.did + "").digest('base64')[0],
                                                 ended: "false"
                                             },
-                                            up_extra: {
-                                                av_prev: params.app_user.av,
-                                                p_prev: params.app_user.p,
-                                            },
+                                            up_extra,
                                         });
                                     }
                                     plugins.dispatch("/sdk/process_user", ob, function() { //
