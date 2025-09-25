@@ -337,6 +337,19 @@ usage.processSession = function(ob) {
                             lasts = parseInt(idsplit[3]);
                         }
                         params.qstring.events = params.qstring.events || [];
+                        const up_extra = { av_prev: params.app_user.av };
+                        if (params.app_user.hadFatalCrash) {
+                            up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
+                        }
+                        if (params.app_user.hadAnyFatalCrash) {
+                            up_extra.hadFatalCrash = params.app_user.hadAnyFatalCrash;
+                        }
+                        if (params.app_user.hadNonfatalCrash) {
+                            up_extra.hadFatalCrash = params.app_user.hadNonfatalCrash;
+                        }
+                        if (params.app_user.hadAnyNonfatalCrash) {
+                            up_extra.hadFatalCrash = params.app_user.hadAnyNonfatalCrash;
+                        }
                         params.qstring.events.unshift({
                             "_id": params.app_user.lsid,
                             "key": "[CLY]_session",
@@ -344,13 +357,7 @@ usage.processSession = function(ob) {
                             "dur": (drill_updates.dur || 0),
                             "count": 1,
                             "timestamp": lasts,
-                            up_extra: {
-                                hadFatalCrash: params.app_user.hadFatalCrash,
-                                hadAnyFatalCrash: params.app_user.hadAnyFatalCrash,
-                                hadnonfatalCrash: params.app_user.hadNonfatalCrash,
-                                hadAnyNonfatalCrash: params.app_user.hadAnyNonfatalCrash,
-                                av_prev: params.app_user.av,
-                            },
+                            up_extra,
                         });
                     }
                     catch (ex) {
@@ -403,6 +410,20 @@ usage.processSession = function(ob) {
                 if (idsplit[3] && idsplit[3].length === 13) {
                     lasts2 = parseInt(idsplit[3]);
                 }
+                const up_extra = { av_prev: params.app_user.av };
+                if (params.app_user.hadFatalCrash) {
+                    up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
+                }
+                if (params.app_user.hadAnyFatalCrash) {
+                    up_extra.hadFatalCrash = params.app_user.hadAnyFatalCrash;
+                }
+                if (params.app_user.hadNonfatalCrash) {
+                    up_extra.hadFatalCrash = params.app_user.hadNonfatalCrash;
+                }
+                if (params.app_user.hadAnyNonfatalCrash) {
+                    up_extra.hadFatalCrash = params.app_user.hadAnyNonfatalCrash;
+                }
+
                 params.qstring.events.unshift({
                     "_id": params.app_user.lsid,
                     "key": "[CLY]_session",
@@ -410,13 +431,7 @@ usage.processSession = function(ob) {
                     "dur": (drill_updates2.dur || 0),
                     "count": 1,
                     "timestamp": lasts2,
-                    up_extra: {
-                        hadFatalCrash: params.app_user.hadFatalCrash,
-                        hadAnyFatalCrash: params.app_user.hadAnyFatalCrash,
-                        hadnonfatalCrash: params.app_user.hadNonfatalCrash,
-                        hadAnyNonfatalCrash: params.app_user.hadAnyNonfatalCrash,
-                        av_prev: params.app_user.av,
-                    },
+                    up_extra,
                 });
 
             }
