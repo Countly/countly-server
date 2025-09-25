@@ -115,9 +115,11 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
 };
 
 const recalculateStats = async function(currEvent) {
-    const av_prev = currEvent.up_extra?.av_prev;
-    const av_latest = currEvent.up?.av;
-    if (av_prev && common.versionCompare(av_latest, av_prev) > 0) {
+    const avPrev = currEvent.up_extra?.av_prev;
+    const avLatest = currEvent.up?.av;
+    const isAvNewer = avPrev && avLatest && common.versionCompare(avLatest, avPrev) > 0;
+
+    if ('hadFatalCrash' in currEvent.up_extra && 'hadNonfatalCrash' in currEvent.up_extra && isAvNewer) {
         const crashuserCollectionName = `app_crashusers${currEvent.a}`;
         const crashgroupCollectionName = `app_crashgroups{currEvent.a}`;
 
@@ -132,7 +134,7 @@ const recalculateStats = async function(currEvent) {
                 .findOne({ groups: crashgroupId });
 
             if (crashgroup && crashgroup.is_resolved && crashgroup.resolved_version) {
-                if (common.versionCompare(av_latest, crashgroup.resolved_version.replace(/\./g, ":")) > 0) {
+                if (common.versionCompare(avLatest, crashgroup.resolved_version.replace(/\./g, ":")) > 0) {
 
                     //update crash stats
                     common.db.collection(crashuserCollectionName).remove({group: crashgroupId, uid: currEvent.uid});
