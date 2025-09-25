@@ -330,9 +330,6 @@ usage.processSession = function(ob) {
         }
 
         if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
-            console.log("Skipping because of cooldown");
-            console.log(params.time.timestamp - lastEndSession);
-            console.log(plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown);
             delete params.qstring.begin_session;//do not start a new session.
         }
         else {
@@ -353,7 +350,7 @@ usage.processSession = function(ob) {
                         drill_updates.custom = JSON.parse(JSON.stringify(params.app_user.custom));
                     }
                     try {
-                        var lasts = (params.qstring.end_session.ls * 1000);
+                        var lasts = (params.app_user.ls * 1000);
                         let idsplit = params.app_user.lsid.split("_");
                         if (idsplit[3] && idsplit[3].length === 13) {
                             lasts = parseInt(idsplit[3]);
@@ -394,7 +391,7 @@ usage.processSession = function(ob) {
             update.$inc.sc = 1;
         }
     }
-    else if (params.qstring.end_session) {
+    else if (params.qstring.end_session && params.app_user && params.app_user[common.dbUserMap.has_ongoing_session]) {
         // check if request is too old, ignore it
         if (!params.qstring.ignore_cooldown) {
             userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
@@ -414,7 +411,7 @@ usage.processSession = function(ob) {
                 //if (drill_updates2.dur || drill_updates2.custom) {
                 //ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
                 //}
-                var lasts2 = (params.qstring.end_session.ls * 1000);
+                var lasts2 = (params?.app_user?.ls * 1000);
                 let idsplit = params.app_user.lsid.split("_");
                 if (idsplit[3] && idsplit[3].length === 13) {
                     lasts2 = parseInt(idsplit[3]);
