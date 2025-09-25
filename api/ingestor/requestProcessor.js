@@ -811,13 +811,13 @@ const validateAppForWriteAPI = (params, done) => {
                                             up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
                                         }
                                         if (params.app_user.hadAnyFatalCrash) {
-                                            up_extra.hadFatalCrash = params.app_user.hadAnyFatalCrash;
+                                            up_extra.hadAnyFatalCrash = params.app_user.hadAnyFatalCrash;
                                         }
                                         if (params.app_user.hadNonfatalCrash) {
-                                            up_extra.hadFatalCrash = params.app_user.hadNonfatalCrash;
+                                            up_extra.hadNonfatalCrash = params.app_user.hadNonfatalCrash;
                                         }
                                         if (params.app_user.hadAnyNonfatalCrash) {
-                                            up_extra.hadFatalCrash = params.app_user.hadAnyNonfatalCrash;
+                                            up_extra.hadAnyNonfatalCrash = params.app_user.hadAnyNonfatalCrash;
                                         }
                                         params.qstring.events.unshift({
                                             key: "[CLY]_session_begin",
