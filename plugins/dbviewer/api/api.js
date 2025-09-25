@@ -10,8 +10,13 @@ var common = require('../../../api/utils/common.js'),
 const { MongoInvalidArgumentError } = require('mongodb');
 
 const { EJSON } = require('bson');
-const CursorPagination = require('../../../plugins/clickhouse/api/CursorPagination.js');
-const WhereClauseConverter = require('../../../plugins/clickhouse/api/WhereClauseConverter');
+let clickHouseRunner;
+try {
+    clickHouseRunner = require('../../clickhouse/api/queries/clickhouseCoreQueries.js');
+}
+catch (e) {
+    log.d('ClickHouse plugin not found, ClickHouse queries will be unavailable');
+}
 
 const FEATURE_NAME = 'dbviewer';
 const whiteListedAggregationStages = {
@@ -540,6 +545,9 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
          * @param {string} table - ClickHouse table name
          */
         async function chGetCollection(chDb, table) {
+            if (!clickHouseRunner || !clickHouseRunner.getDbviewerCollection) {
+                return common.returnMessage(params, 400, 'ClickHouse plugin not loaded properly.');
+            }
             if (!common.clickhouseQueryService) {
                 return common.returnMessage(params, 400, 'ClickHouse is not configured.');
             }
@@ -547,18 +555,16 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
                 return common.returnMessage(params, 400, 'Missing ClickHouse database or table.');
             }
 
-            // projection
-            let selectList = '*';
-            const projRaw = params.qstring.project || params.qstring.projection;
+            let projectionObj = null;
+            let sortObj = null;
+            let filterObj = {};
 
+            const projRaw = params.qstring.project || params.qstring.projection;
             if (projRaw) {
                 try {
                     const parsed = EJSON.parse(projRaw);
                     if (parsed && typeof parsed === 'object') {
-                        const cols = Object.keys(parsed).filter(k => parsed[k]);
-                        if (cols.length) {
-                            selectList = cols.map(qi).join(', ');
-                        }
+                        projectionObj = parsed;
                     }
                 }
                 catch (SyntaxError) {
@@ -566,29 +572,12 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
                 }
             }
 
-            // sort
-            let orderClause = '';
-            let sortObj = null;
             const sortRaw = params.qstring.sort;
-
             if (sortRaw) {
                 try {
-                    sortObj = EJSON.parse(sortRaw);
-                    if (sortObj && typeof sortObj === 'object' && !Array.isArray(sortObj)) {
-                        const allowedSortKeys = await getSortKeys(common.clickhouseQueryService, chDb, table);
-                        const invalidKeys = Object.keys(sortObj).filter(k => !allowedSortKeys.includes(k));
-                        if (invalidKeys.length) {
-                            return common.returnMessage(params, 400, 'Invalid sort key(s): ' + invalidKeys.join(', ') + '. Allowed sort keys: ' + allowedSortKeys.join(', ') + '.');
-                        }
-                        const parts = [];
-                        for (const [col, dir] of Object.entries(sortObj)) {
-                            const d = (typeof dir === 'string' ? dir.toLowerCase() : dir);
-                            const ord = d === -1 ? 'DESC' : 'ASC';
-                            parts.push(`${qi(col)} ${ord}`);
-                        }
-                        if (parts.length) {
-                            orderClause = ' ORDER BY ' + parts.join(', ');
-                        }
+                    const parsed = EJSON.parse(sortRaw);
+                    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                        sortObj = parsed;
                     }
                 }
                 catch (err) {
@@ -596,20 +585,15 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
                 }
             }
 
-            // filter
-            let whereSQL = '';
-            let whereParams = {};
-            let finalQuery = {};
             const filterRaw = params.qstring.filter;
-
             if (filterRaw) {
                 try {
-                    const filterObj = (typeof filterRaw === 'string') ? EJSON.parse(filterRaw) : filterRaw;
-                    if (filterObj && Array.isArray(filterObj.rows) && filterObj.rows.length) {
-                        finalQuery = rowsToMongoQuery(filterObj.rows);
+                    const parsed = (typeof filterRaw === 'string') ? EJSON.parse(filterRaw) : filterRaw;
+                    if (parsed && Array.isArray(parsed.rows) && parsed.rows.length) {
+                        filterObj = rowsToMongoQuery(parsed.rows);
                     }
-                    else if (filterObj && typeof filterObj === 'object') {
-                        finalQuery = filterObj;
+                    else if (parsed && typeof parsed === 'object') {
+                        filterObj = parsed;
                     }
                 }
                 catch (err) {
@@ -617,122 +601,51 @@ const isClickhouseEnabled = () => plugins.isPluginEnabled && plugins.isPluginEna
                 }
             }
 
-            // sSearch
-            if (params.qstring.sSearch && params.qstring.sSearch !== "") {
-                if (Object.keys(finalQuery).length) {
-                    finalQuery = {
-                        $and: [
-                            finalQuery,
-                            { sSearch: params.qstring.sSearch }
-                        ]
-                    };
-                }
-                else {
-                    finalQuery = { sSearch: params.qstring.sSearch };
-                }
-            }
-
-            if (Object.keys(finalQuery).length) {
-                const converter = new WhereClauseConverter();
-                const out = converter.queryObjToWhere(finalQuery);
-                whereSQL = out.sql || '';
-                whereParams = out.params || {};
-                log.d('DBViewer WhereClause', whereSQL);
-            }
-
-            const schema = await getSchema(common.clickhouseQueryService, chDb, table);
-            const hasTs = !!schema.ts;
-            const hasId = !!schema._id;
-
-            if (!orderClause) {
-                const parts = [];
-                if (schema.a) {
-                    parts.push('`a`');
-                }
-                if (schema.e) {
-                    parts.push('`e`');
-                }
-                if (schema.n) {
-                    parts.push('`n`');
-                }
-                if (schema.ts) {
-                    parts.push('`ts`');
-                }
-
-                if (parts.length) {
-                    orderClause = ' ORDER BY ' + parts.join(', ');
-                }
-            }
-
-            if (selectList !== '*') {
-                const selectedCols = selectList.split(',').map(s => s.trim());
-
-                const extra = [];
-                if (hasTs && selectedCols.indexOf('ts') === -1) {
-                    extra.push('`ts`');
-                }
-                if (hasId && selectedCols.indexOf('_id') === -1) {
-                    extra.push('`_id`');
-                }
-                if (extra.length) {
-                    selectList = selectList + ', ' + extra.join(', ');
-                }
-            }
-
-            // pagination
-            let enhancedWhereSQL = whereSQL;
-            let finalParams = { ...whereParams };
-            let paginationMode = CursorPagination.MODES.SNAPSHOT;
-            let snapshotTs = CursorPagination.formatDateForClickHouse(new Date());
+            const useApproximateUniq = plugins.getConfig("drill", params.app && params.app.plugins, true).clickhouse_use_approximate_uniq;
             const limit = parseInt(params.qstring.limit || 10);
+            const sSearch = params.qstring.sSearch || '';
+            const cursor = params.qstring.cursor || null;
+            const paginationMode = params.qstring.paginationMode || undefined;
 
-            if (params.qstring.cursor && (hasTs || hasId)) {
-                const cursorData = CursorPagination.decodeCursor(params.qstring.cursor);
-                const cursorWhere = CursorPagination.buildCursorWhere(cursorData, 'DESC', paginationMode);
-                if (cursorWhere.sql) {
-                    if (enhancedWhereSQL) {
-                        enhancedWhereSQL = enhancedWhereSQL + cursorWhere.sql;
-                    }
-                    else {
-                        enhancedWhereSQL = 'WHERE 1=1' + cursorWhere.sql;
-                    }
-                    Object.assign(finalParams, cursorWhere.params);
-                }
-            }
-
-            const tableRef = `${qi(chDb)}.${qi(table)}`;
-            const dataSQL = `SELECT ${selectList} FROM ${tableRef} ${enhancedWhereSQL}${orderClause} LIMIT ${limit + 1}`;
-            log.d(FEATURE_NAME, dataSQL, finalParams);
-            const useApproximateUniq = plugins.getConfig("drill", params && params.app && params.app.plugins, true).clickhouse_use_approximate_uniq;
             try {
-                const [countResult, dataRows] = await Promise.all([
-                    CursorPagination.getCount(common.clickhouseQueryService, whereSQL, whereParams, useApproximateUniq),
-                    common.clickhouseQueryService.aggregate({
-                        query: dataSQL,
-                        params: { ...finalParams }
-                    })
-                ]);
+                const result = await clickHouseRunner.getDbviewerCollection({
+                    chDb,
+                    table,
+                    projection: projectionObj,
+                    sort: sortObj,
+                    filter: filterObj,
+                    sSearch,
+                    limit,
+                    cursor,
+                    paginationMode,
+                    useApproximateUniq,
+                    _dbviewerHelpers: {
+                        qi,
+                        getSchema: (db, tbl) => getSchema(common.clickhouseQueryService, db, tbl),
+                        getSortKeys: (db, tbl) => getSortKeys(common.clickhouseQueryService, db, tbl)
+                    }
+                });
 
-                const paginationResp = CursorPagination.buildPaginationResponse(dataRows, limit, countResult, paginationMode, snapshotTs);
-                const start = paginationResp.data.length ? 1 : 0;
-                const end = paginationResp.data.length;
-                const pages = limit > 0 ? Math.max(1, Math.ceil(countResult.total / limit)) : 1;
+                const paginationResp = (result && result.data) ? result.data : { data: [] };
+
+                const start = (paginationResp.data && paginationResp.data.length) ? 1 : 0;
+                const end = paginationResp.data ? paginationResp.data.length : 0;
+                const pages = limit > 0 ? Math.max(1, Math.ceil((paginationResp.total || 0) / limit)) : 1;
                 const curPage = start ? 1 : 0;
 
                 return common.returnOutput(params, {
                     limit: limit,
                     start: start,
                     end: end,
-                    total: countResult.total,
+                    total: paginationResp.total || 0,
                     pages: pages,
                     curPage: curPage,
-                    collections: paginationResp.data,
+                    collections: paginationResp.data || [],
                     hasNextPage: paginationResp.hasNextPage,
                     nextCursor: paginationResp.nextCursor,
                     paginationMode: paginationResp.paginationMode
                 });
             }
-
             catch (e) {
                 log.e('ClickHouse query failed', e);
                 return common.returnMessage(params, 500, e.message || 'ClickHouse query failed.');

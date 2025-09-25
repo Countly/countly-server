@@ -10,22 +10,9 @@ var DEVICE_ID = "1234567890";
 
 //var params = {"_os": "Android","_os_version": "4.4","_resolution": "1200x800", "_density": "400dpi", "_device": "Nexus 5","_carrier": "Vodafone","_app_version": "1.0"};
 
-function end_session(device_id, done) {
-    request
-        .get('/i?device_id=' + device_id + '&app_key=' + APP_KEY + "&end_session=1&ignore_cooldown=1")
-        .expect(200)
-        .end(function(err, res) {
-            if (err) {
-                return done(err);
-            }
-            var ob = JSON.parse(res.text);
-            ob.should.have.property('result', 'Success');
-            setTimeout(done, 1000 * testUtils.testScalingFactor);
-        });
-}
 var compareAgainstGranuralData = function(options, data, done) {
     request
-        .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&query=' + JSON.stringify(options.query) + '&no_cache=true&period=' + (options.period || "30ddays"))
+        .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&no_cache=true&app_id=' + APP_ID + '&query=' + JSON.stringify(options.query) + '&period=' + (options.period || "30ddays"))
         .expect(200)
         .end(function(err, res) {
             if (err) {
@@ -159,9 +146,6 @@ describe('Writing app metrics', function() {
                         setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
             });
-            it('end session for first device', function(done) {
-                end_session(DEVICE_ID + '1', done);
-            });
         });
         //{"2014":{"9":{"17":{"Android":{"n":1,"t":1,"u":1},"a4:4":{"n":1,"t":1,"u":1}},"Android":{"n":1,"t":1,"u":1},"a4:4":{"n":1,"t":1,"u":1}},"Android":{"n":1,"t":1,"u":1},"a4:4":{"n":1,"t":1,"u":1},"w38":{"Android":{"u":1},"a4:4":{"u":1}}},"_id":"541992a901f67bb240000087","meta":{"os":["Android"],"os_versions":["a4:4"]}}
         describe('Verify device_details', function() {
@@ -201,11 +185,8 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
-            });
-            it('end session for device', function(done) {
-                end_session(DEVICE_ID + '2', done);
             });
         });
         //{"2014":{"9":{"17":{"Android":{"n":1,"t":1,"u":1},"a4:4":{"n":1,"t":1,"u":1}},"Android":{"n":1,"t":1,"u":1},"a4:4":{"n":1,"t":1,"u":1}},"Android":{"n":1,"t":1,"u":1},"a4:4":{"n":1,"t":1,"u":1},"w38":{"Android":{"u":1},"a4:4":{"u":1}}},"_id":"541992a901f67bb240000087","meta":{"os":["Android"],"os_versions":["a4:4"]}}
@@ -240,11 +221,8 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
-            });
-            it('end session for device', function(done) {
-                end_session(DEVICE_ID + '4', done);
             });
         });
         //{"2014":{"9":{"17":{"Android":{"n":1,"t":1,"u":1},"a4:4":{"n":1,"t":1,"u":1}},"Android":{"n":1,"t":1,"u":1},"a4:4":{"n":1,"t":1,"u":1}},"Android":{"n":1,"t":1,"u":1},"a4:4":{"n":1,"t":1,"u":1},"w38":{"Android":{"u":1},"a4:4":{"u":1}}},"_id":"541992a901f67bb240000087","meta":{"os":["Android"],"os_versions":["a4:4"]}}
@@ -292,11 +270,8 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
-            });
-            it('end session for first device', function(done) {
-                end_session(DEVICE_ID + '6', done);
             });
         });
         //{"2014":{"9":{"17":{"Nexus 5":{"n":1,"t":1,"u":1}},"Nexus 5":{"n":1,"t":1,"u":1}},"Nexus 5":{"n":1,"t":1,"u":1},"w38":{"Nexus 5":{"u":1}}},"_id":"541991c801f67bb240000083","meta":{"devices":["Nexus 5"]}}
@@ -344,12 +319,6 @@ describe('Writing app metrics', function() {
                         setTimeout(done, 1000 * testUtils.testScalingFactor);
                     });
             });
-            it('end session for first device', function(done) {
-                end_session(DEVICE_ID, done);
-            });
-            it('end session for test device', function(done) {
-                end_session(DEVICE_ID + 'test', done);
-            });
         });
         //{"2014":{"9":{"17":{"Vodafone":{"n":1,"t":1,"u":1}},"Vodafone":{"n":1,"t":1,"u":1}},"Vodafone":{"n":1,"t":1,"u":1},"w38":{"Vodafone":{"u":1}}},"_id":"5419935501f67bb24000008b","meta":{"carriers":["Vodafone"]}}
         describe('Verify carriers', function() {
@@ -390,11 +359,8 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
-            });
-            it('end session for device', function(done) {
-                end_session(DEVICE_ID + '8', done);
             });
         });
         //{"2014":{"9":{"17":{"1:0":{"n":1,"t":1,"u":1}},"1:0":{"n":1,"t":1,"u":1}},"1:0":{"n":1,"t":1,"u":1},"w38":{"1:0":{"u":1}}},"_id":"541993cb01f67bb24000008d","meta":{"app_versions":["1:0"]}}
@@ -425,11 +391,8 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
-            });
-            it('end session for device', function(done) {
-                end_session(DEVICE_ID + '9', done);
             });
         });
         describe('Verify device_details', function() {
@@ -515,11 +478,8 @@ describe('Writing app metrics', function() {
                         }
                         var ob = JSON.parse(res.text);
                         ob.should.have.property('result', 'Success');
-                        setTimeout(done, 1000 * testUtils.testScalingFactor);
+                        setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
                     });
-            });
-            it('end session for device', function(done) {
-                end_session(DEVICE_ID + '10', done);
             });
         });
         describe('Verify device_details', function() {

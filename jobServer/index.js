@@ -301,7 +301,7 @@ if (require.main === module) {
             // lastRunAt for all scheduled jobs have to be preserved in order to calculate lastRunDuration
             if (jobServerConfig.PULSE.resumeOnRestart === true) {
                 await dbConnections.countlyDb.collection(jobServerConfig.PULSE.db.collection).updateMany(
-                    { type: 'single' },
+                    { type: 'single', lastRunAt: { $exists: true } },
                     [
                         { $set: { lastRunAtCpy: '$lastRunAt' } },
                     ],

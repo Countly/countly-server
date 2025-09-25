@@ -248,6 +248,26 @@ usage.processCoreMetrics = function(params) {
         if (params.qstring.metrics._resolution) {
             params.collectedMetrics[common.dbUserMap.resolution] = params.qstring.metrics._resolution;
         }
+        if (params.qstring.metrics._app_version) {
+            const versionComponents = common.parseAppVersion(params.qstring.metrics._app_version);
+            if (versionComponents.success) {
+                params.collectedMetrics.av_major = versionComponents.major;
+                params.collectedMetrics.av_minor = versionComponents.minor;
+                params.collectedMetrics.av_patch = versionComponents.patch;
+                params.collectedMetrics.av_prerelease = versionComponents.prerelease;
+                params.collectedMetrics.av_build = versionComponents.build;
+            }
+            else {
+                log.d("App version %s is not a valid semantic version. It cannot be separated into semantic version parts", params.qstring.metrics._app_version);
+                params.collectedMetrics.av_major = null;
+                params.collectedMetrics.av_minor = null;
+                params.collectedMetrics.av_patch = null;
+                params.collectedMetrics.av_prerelease = null;
+                params.collectedMetrics.av_build = null;
+            }
+        }
+
+
     }
 };
 
@@ -276,7 +296,9 @@ usage.returnRequestMetrics = function(params) {
             params.collectedMetrics[key] = escapedMetricVal;
         }
         else {
-            delete params.collectedMetrics[key];
+            if (!common.isNumber(params.collectedMetrics[key])) {
+                delete params.collectedMetrics[key];
+            }
         }
     }
     return params.collectedMetrics;
@@ -308,9 +330,6 @@ usage.processSession = function(ob) {
         }
 
         if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown) {
-            console.log("Skipping because of cooldown");
-            console.log(params.time.timestamp - lastEndSession);
-            console.log(plugins.getConfig("api", params.app && params.app.plugins, true).session_cooldown);
             delete params.qstring.begin_session;//do not start a new session.
         }
         else {
@@ -331,7 +350,7 @@ usage.processSession = function(ob) {
                         drill_updates.custom = JSON.parse(JSON.stringify(params.app_user.custom));
                     }
                     try {
-                        var lasts = (params.qstring.end_session.ls * 1000);
+                        var lasts = (params.app_user.ls * 1000);
                         let idsplit = params.app_user.lsid.split("_");
                         if (idsplit[3] && idsplit[3].length === 13) {
                             lasts = parseInt(idsplit[3]);
@@ -386,7 +405,7 @@ usage.processSession = function(ob) {
             update.$inc.sc = 1;
         }
     }
-    else if (params.qstring.end_session) {
+    else if (params.qstring.end_session && params.app_user && params.app_user[common.dbUserMap.has_ongoing_session]) {
         // check if request is too old, ignore it
         if (!params.qstring.ignore_cooldown) {
             userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
@@ -394,8 +413,9 @@ usage.processSession = function(ob) {
         else {
             var drill_updates2 = {};
             if (params.app_user.lsid) {
-                if (params.app_user.sd > 0 || session_duration > 0) {
-                    drill_updates2.dur = params.app_user.sd + (session_duration || 0);
+                drill_updates2.dur = (params.app_user.sd || 0) + (session_duration || 0);
+                if (drill_updates2.dur === 0) {
+                    delete drill_updates2.dur;
                 }
                 if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
                     drill_updates2.custom = JSON.parse(JSON.stringify(params.app_user.custom));
@@ -405,11 +425,12 @@ usage.processSession = function(ob) {
                 //if (drill_updates2.dur || drill_updates2.custom) {
                 //ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
                 //}
-                var lasts2 = (params.qstring.end_session.ls * 1000);
+                var lasts2 = (params?.app_user?.ls * 1000);
                 let idsplit = params.app_user.lsid.split("_");
                 if (idsplit[3] && idsplit[3].length === 13) {
                     lasts2 = parseInt(idsplit[3]);
                 }
+
                 const up_extra = { av_prev: params.app_user.av };
                 if (params.app_user.hadFatalCrash) {
                     up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
@@ -424,6 +445,7 @@ usage.processSession = function(ob) {
                     up_extra.hadFatalCrash = params.app_user.hadAnyNonfatalCrash;
                 }
 
+                params.qstring.events = params.qstring.events || [];
                 params.qstring.events.unshift({
                     "_id": params.app_user.lsid,
                     "key": "[CLY]_session",

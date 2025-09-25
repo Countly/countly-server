@@ -1,10 +1,14 @@
-const CursorPagination = require('../../../clickhouse/api/CursorPagination');
-const QueryHelpers = require('../../../clickhouse/api/QueryHelpers');
-const WhereClauseConverter = require('../../../clickhouse/api/WhereClauseConverter');
 const common = require('../../../../api/utils/common');
 const countlyCommon = require('../../../../api/lib/countly.common.js');
 const log = common.log('compliance-hub:queries');
 const moment = require('moment-timezone');
+let clickHouseRunner;
+try {
+    clickHouseRunner = require('../../../clickhouse/api/queries/clickhouseCoreQueries.js');
+}
+catch (e) {
+    log.d('ClickHouse plugin not found, ClickHouse queries will be unavailable');
+}
 
 /**
  * Maps field names(formerly consent_history) to drill_event column names
@@ -136,134 +140,6 @@ async function mongodbConsentsHandler(params) {
 }
 
 /**
- * ClickHouse handler for consent events list
- * @param {Object} params - Query parameters
- * @returns {Promise<Object>} QueryRunner result
- */
-async function clickhouseConsentsHandler(params) {
-    if (!common.clickhouseQueryService) {
-        throw new Error('ClickHouse query service not available. Ensure ClickHouse plugin is loaded.');
-    }
-
-    const essential = { a: params.appID, e: '[CLY]_consent' };
-    let enhanced = {};
-
-    if (params.period) {
-        countlyCommon.getPeriodObj(params);
-        essential.ts = countlyCommon.getTimestampRangeQuery(params, false);
-    }
-
-    let userQuery = mapConsentFieldsForDrillEvents(params.query || {});
-    userQuery = sanitizeClickhouseFilterQuery(userQuery);
-    if (Object.keys(userQuery).length && (userQuery.$and || userQuery.$or || userQuery.$nor)) {
-        enhanced = { $and: [ essential, userQuery ] };
-    }
-    else if (Object.keys(userQuery).length) {
-        enhanced = { ...userQuery, ...essential };
-    }
-    else {
-        enhanced = essential;
-    }
-
-    if (params.sSearch && params.sSearch !== '') {
-        const sCond = { sSearch: [{ field: 'did', value: params.sSearch }] };
-        if (enhanced.$and && Array.isArray(enhanced.$and)) {
-            enhanced.$and.push(sCond);
-        }
-        else {
-            enhanced = { $and: [ enhanced, sCond ] };
-        }
-    }
-
-    const converter = new WhereClauseConverter();
-    const { sql: whereSQL, params: bindParams } = converter.queryObjToWhere(enhanced);
-    const selectFields = [
-        'did AS device_id',
-        'uid',
-        'sg._type AS type',
-        'sg',
-        'ts',
-        'toUnixTimestamp64Milli(ts) AS ts_ms',
-        '_id',
-        'up'
-    ];
-    let query = `SELECT ${selectFields.join(', ')} FROM drill_events ${whereSQL}`.trim();
-
-    const paginationMode = CursorPagination.determinePaginationMode(params);
-    const snapshotTs = paginationMode === CursorPagination.MODES.SNAPSHOT ? CursorPagination.formatDateForClickHouse(new Date()) : null;
-    let cursorWhere = { sql: '', params: {} };
-    if (params.cursor) {
-        const cursorData = CursorPagination.decodeCursor(params.cursor);
-        cursorWhere = CursorPagination.buildCursorWhere(cursorData, 'ASC', paginationMode);
-    }
-    if (cursorWhere.sql) {
-        query = `${query} ${cursorWhere.sql}`;
-        Object.assign(bindParams, cursorWhere.params);
-    }
-
-    if (params.sort && Object.keys(params.sort)) {
-        const allowed = new Set(['device_id', 'uid', 'type', 'ts', 'a', 'e', 'n']);
-        const fieldMap = {
-            'device_id': 'did',
-            'uid': 'uid',
-            'type': 'sg._type',
-            'ts': 'ts',
-            'a': 'a',
-            'e': 'e',
-            'n': 'n'
-        };
-
-        const clauses = [];
-        for (const [field, direction] of Object.entries(params.sort)) {
-            if (allowed.has(field)) {
-                const mappedField = fieldMap[field] || field;
-                clauses.push(`${mappedField} ${direction === 1 ? 'ASC' : 'DESC'}`);
-            }
-        }
-
-        if (clauses.length) {
-            const tsClause = clauses.find(clause => clause.startsWith('ts'));
-            const otherClauses = clauses.filter(clause => !clause.startsWith('ts'));
-
-            if (tsClause) {
-                query += ` ORDER BY a, e, n, ${tsClause}`;
-                if (otherClauses.length) {
-                    query += `, ${otherClauses.join(', ')}`;
-                }
-            }
-            else {
-                query += ` ORDER BY a, e, n, ts, ${otherClauses.join(', ')}`;
-            }
-        }
-        else {
-            query += ' ORDER BY a, e, n, ts';
-        }
-    }
-    else {
-        query += ' ORDER BY a, e, n, ts';
-    }
-
-    const limit = parseInt(params.limit) || 20;
-    query += ` LIMIT ${limit + 1}`;
-
-    const rows = await common.clickhouseQueryService.query({ query, params: bindParams });
-    const countResult = await CursorPagination.getCount(common.clickhouseQueryService, whereSQL, bindParams, params.useApproximateUniq);
-    const pagination = CursorPagination.buildPaginationResponse(rows, limit, countResult, paginationMode, snapshotTs);
-
-    return {
-        _queryMeta: {
-            adapter: 'clickhouse',
-            query: {
-                sql: query,
-                params: bindParams,
-                countFunction: QueryHelpers.getUniqFunction(params.useApproximateUniq)
-            }
-        },
-        data: pagination
-    };
-}
-
-/**
  * Transform consent rows from drill_events to consent_history for backward compatibility
  * @param {Array<Object>} rows - Raw rows array
  * @returns {Array<Object>} Transformed rows
@@ -355,18 +231,25 @@ async function fetchConsentsList(params, options = {}) {
     if (!common.queryRunner) {
         throw new Error('QueryRunner not initialized. Ensure API server is fully started.');
     }
+
+    params._consentsHelpers = {
+        mapConsentFieldsForDrillEvents,
+        sanitizeClickhouseFilterQuery
+    };
+
+    const adapters = {
+        mongodb: { handler: mongodbConsentsHandler, transform: async(d) => transformMongodbConsents(d) }
+    };
+    if (clickHouseRunner && clickHouseRunner.getComplianceHubConsents) {
+        adapters.clickhouse = {
+            handler: clickHouseRunner.getComplianceHubConsents,
+            transform: async(d) => transformClickhouseConsents(d)
+        };
+    }
+
     const queryDef = {
         name: 'FETCH_COMPLIANCE_HUB_CONSENTS',
-        adapters: {
-            mongodb: {
-                handler: mongodbConsentsHandler,
-                transform: async(data) => transformMongodbConsents(data)
-            },
-            clickhouse: {
-                handler: clickhouseConsentsHandler,
-                transform: async(data) => transformClickhouseConsents(data)
-            }
-        }
+        adapters
     };
     return common.queryRunner.executeQuery(queryDef, params, options);
 }

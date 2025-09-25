@@ -97,7 +97,7 @@ var obb = {};
    */
     agg.getAggregatedData = async function(options) {
         var pipeline = options.pipeline || [];
-        var match = options.match || {};
+        var match = options.match || {"e": "[CLY]_custom"};
 
         if (options.appID) {
             match.a = options.appID + "";
@@ -111,7 +111,7 @@ var obb = {};
             }
         }
         if (options.name) {
-            if (Array.isArray(options.event)) {
+            if (Array.isArray(options.name)) {
                 match.n = {"$in": options.name};
             }
             else {
@@ -128,17 +128,25 @@ var obb = {};
 
         pipeline.push({"$addFields": {"d": agg.getDateStringProjection(options.bucket, options.timezone)}});
         if (options.segmentation) {
-            /*if (Array.isArray(options.segmentation)) {
-
-            }
-            else {*/
             pipeline.push({"$unwind": ("$" + options.segmentation)});
-            pipeline.push({"$group": {"_id": {"d": "$d", "sg": "$" + options.segmentation}, "c": {"$sum": "$c"}, "dur": {"$sum": "$dur"}, "s": {"$sum": "$s"}}});
-            pipeline.push({"$project": { "_id": "$_id.d", "sg": "$_id.sg", "c": 1, "dur": 1, "s": 1}});
-            //}
+            if (options.event_breakdown) {
+                pipeline.push({"$group": {"_id": {"d": "$d", "sg": "$" + options.segmentation, "n": "$n"}, "c": {"$sum": "$c"}, "dur": {"$sum": "$dur"}, "s": {"$sum": "$s"}}});
+                pipeline.push({"$project": { "_id": "$_id.d", "sg": "$_id.sg", "n": "$_id.n", "c": 1, "dur": 1, "s": 1}});
+            }
+            else {
+                pipeline.push({"$group": {"_id": {"d": "$d", "sg": "$" + options.segmentation}, "c": {"$sum": "$c"}, "dur": {"$sum": "$dur"}, "s": {"$sum": "$s"}}});
+                pipeline.push({"$project": { "_id": "$_id.d", "sg": "$_id.sg", "c": 1, "dur": 1, "s": 1}});
+            }
         }
         else {
-            pipeline.push({"$group": {"_id": "$d", "c": {"$sum": "$c"}, "dur": {"$sum": "$dur"}, "s": {"$sum": "$s"}}});
+            if (options.event_breakdown) {
+                pipeline.push({"$group": {"_id": {"d": "$d", "n": "$n"}, "c": {"$sum": "$c"}, "dur": {"$sum": "$dur"}, "s": {"$sum": "$s"}}});
+                pipeline.push({"$project": { "_id": "$_id.d", "n": "$_id.n", "c": 1, "dur": 1, "s": 1}});
+            }
+            else {
+                pipeline.push({"$group": {"_id": "$d", "c": {"$sum": "$c"}, "dur": {"$sum": "$dur"}, "s": {"$sum": "$s"}}});
+            }
+
         }
         try {
             var data = await common.drillDb.collection("drill_events").aggregate(pipeline).toArray();
@@ -164,6 +172,62 @@ var obb = {};
         //Group by hour
     };
 
+
+    agg.getSegmentedEventModelData = async function(options) {
+        var pipeline = [];
+        var match = {"e": "[CLY]_custom", "a": options.appID + ""};
+        if (options.name) {
+            if (Array.isArray(options.name)) {
+                match.n = {"$in": options.name};
+            }
+            else {
+                match.n = options.name;
+            }
+        }
+        if (options.period) {
+            match.ts = countlyCommon.getPeriodRange(options.period, options.timezone, options.periodOffset);
+        }
+
+        if (options.bucket !== "h" && options.bucket !== "d" && options.bucket !== "m" && options.bucket !== "w") {
+            options.bucket = "h";
+        }
+
+        pipeline.push({"$match": match});
+        pipeline.push({"$addFields": {"d": agg.getDateStringProjection(options.bucket, options.timezone)}});
+
+        pipeline.push({"$unwind": ("$" + options.segmentation)});
+        pipeline.push({"$group": {"_id": {"d": "$d", "sg": "$" + options.segmentation}, "c": {"$sum": "$c"}, "dur": {"$sum": "$dur"}, "s": {"$sum": "$s"}}});
+        pipeline.push({"$group": {"_id": "$_id.sg", "totalc": {"$sum": "$c"}, "values": {"$push": {"d": "$_id.d", "c": "$c", "dur": "$dur", "s": "$s"}}}});
+        pipeline.push({"$sort": {"totalc": -1}});
+        if (options.limit) {
+            pipeline.push({"$limit": options.limit});
+        }
+        pipeline.push({"$unwind": "$values"});
+        pipeline.push({"$project": {"_id": "$_id", "d": "$values.d", "c": "$values.c", "dur": "$values.dur", "s": "$values.s"}});
+
+        try {
+            var data = await common.drillDb.collection("drill_events").aggregate(pipeline).toArray();
+        }/*  */
+        catch (e) {
+            console.log(e);
+        }
+        data = data || [];
+        for (var z = 0; z < data.length; z++) {
+            data[z]._id = data[z]._id.replaceAll(/\:0/gi, ":");
+            if (data[z].sg) {
+                data[z].sg = data[z].sg.replaceAll(/\./gi, ":");
+            }
+        }
+
+        return {
+            _queryMeta: {
+                adapter: 'mongodb',
+                query: pipeline || 'MongoDB event segmentation aggregation pipeline',
+            },
+            data: data
+        };
+
+    };
 
     agg.getViewsTableData = async function(options) {
         var match = options.dbFilter || {};

@@ -180,6 +180,27 @@ catch (error) {
         return common.queryRunner.executeQuery(queryDef, params, options);
     };
 
+    agg.getSegmentedEventModelData = async function(params, options) {
+        if (!common.queryRunner) {
+            throw new Error('QueryRunner not initialized. Ensure API server is fully started.');
+        }
+
+        const queryDef = {
+            name: 'GET_SEGMENTED_EVENT_MODEL_DATA',
+            adapters: {
+                mongodb: {
+                    handler: mongodbRunner.getSegmentedEventModelData
+                }
+            }
+        };
+        if (clickHouseRunner && clickHouseRunner.getSegmentedEventModelData) {
+            queryDef.adapters.clickhouse = {
+                handler: clickHouseRunner.getSegmentedEventModelData
+            };
+        }
+        return common.queryRunner.executeQuery(queryDef, params, options);
+    };
+
 
     /**
    * Gets aggregated data chosen timezone.If not set - returns in UTC timezone.
