@@ -114,6 +114,57 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
     }
 };
 
+const recalculateStats = async function(currEvent) {
+    const av_prev = currEvent.up_extra?.av_prev;
+    const av_latest = currEvent.up?.av;
+    if (av_prev && common.versionCompare(av_latest, av_prev) > 0) {
+        const crashuserCollectionName = `app_crashusers${currEvent.a}`;
+        const crashgroupCollectionName = `app_crashgroups{currEvent.a}`;
+
+        const crashgroupIds = await common.db.collection(crashuserCollectionName)
+            .find({ uid: currEvent.uid, group: { $ne: 0 } }, { group: 1, _id: 0 })
+            .toArray();
+
+        let shouldRecalculate = false;
+        for (let idx = 0; idx < crashgroupIds.length; idx += 1) {
+            const crashgroupId = crashgroupIds[idx];
+            const crashgroup = await common.db.collection(crashgroupCollectionName)
+                .findOne({ groups: crashgroupId });
+
+            if (crashgroup && crashgroup.is_resolved && crashgroup.resolved_version) {
+                if (common.versionCompare(av_latest, crashgroup.resolved_version.replace(/\./g, ":")) > 0) {
+
+                    //update crash stats
+                    common.db.collection(crashuserCollectionName).remove({group: crashgroupId, uid: currEvent.uid});
+                    common.db.collection(crashgroupCollectionName).update({_id: crashgroupId, users: {$gt: 0} }, {$inc: {users: -1}});
+                    const mod = {crashes: -1};
+                    if (!crashgroup.nonfatal) {
+                        mod.fatal = -1;
+                    }
+
+                    const res = common.db.collection(crashuserCollectionName)
+                        .findAndModify({group: 0, uid: currEvent.uid}, {}, {$inc: mod}, {upsert: true, new: true});
+                    const crashuser = res && res.ok ? res.value : null;
+                    if (crashuser && crashuser.crashes <= 0) {
+                        common.db.collection(crashuserCollectionName)
+                            .remove({group: 0, uid: currEvent.uid});
+                    }
+
+                    shouldRecalculate = true;
+                }
+            }
+        }
+
+        if (shouldRecalculate) {
+            const userCount = await common.db.collection('app_crashusers' + currEvent.a)
+                .count({ group: 0, crashes: { $gt: 0 } });
+            const userFatalCount = await common.db.collection('app_crashusers' + currEvent.a)
+                .count({ group: 0, crashes: { $gt: 0 }, fatal: { $gt: 0 } });
+            await common.db.collection(crashgroupCollectionName)
+                .update({ _id: 'meta' }, { $set: { users: userCount, usersFatal: userFatalCount } });
+        }
+    }
+};
 
 (() => {
     plugins.register('/aggregator', async() => {
@@ -256,7 +307,7 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                                     groupInc.loss = currEvent.up.tp / currEvent.up.sc;
                                 }
 
-                                if (!user || !user.reports) {
+                                if (!userAll || !userAll.reports) {
                                     groupInc.users = 1;
                                 }
 
@@ -496,6 +547,8 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
 
                             // record event totals in aggregated data
                             if (app && '_id' in app) {
+                                await recalculateStats(currEvent);
+
                                 const params = {
                                     'app_id': currEvent.a,
                                     'app': app,
@@ -591,7 +644,13 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                             }
 
                             if (app && '_id' in app) {
-                                const params = {app_id: currEvent.a, app, time: common.initTimeObj(app.timezone, currEvent.ts), appTimezone: (app.timezone || 'UTC')};
+                                await recalculateStats(currEvent);
+                                const params = {
+                                    app_id: currEvent.a,
+                                    app,
+                                    time: common.initTimeObj(app.timezone, currEvent.ts),
+                                    appTimezone: (app.timezone || 'UTC')
+                                };
                                 const platform = currEvent.up?.p;
                                 const version = currEvent.up_extra?.av_prev || currEvent.up?.av;
 
