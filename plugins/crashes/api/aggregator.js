@@ -119,7 +119,7 @@ const recalculateStats = async function(currEvent) {
     const avLatest = currEvent.up?.av;
     const isAvNewer = avPrev && avLatest && common.versionCompare(avLatest, avPrev) > 0;
 
-    if ('hadFatalCrash' in currEvent.up_extra && 'hadNonfatalCrash' in currEvent.up_extra && isAvNewer) {
+    if (typeof currEvent.up_extra?.hadFatalCrash !== 'undefined' && typeof currEvent.up_extra?.hadNonfatalCrash !== 'undefined' && isAvNewer) {
         const crashuserCollectionName = `app_crashusers${currEvent.a}`;
         const crashgroupCollectionName = `app_crashgroups{currEvent.a}`;
 
