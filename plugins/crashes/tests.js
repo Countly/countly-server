@@ -187,6 +187,11 @@ function verifyCrashMetrics(users, crashes, loss, metrics) {
 
 describe('Testing Crashes', function() {
 //{"users":{"total":0,"affected":0,"fatal":0,"nonfatal":0},"crashes":{"total":0,"unique":0,"resolved":0,"unresolved":0,"fatal":0,"nonfatal":0,"news":0,"renewed":0,"os":{},"highest_app":""},"loss":0,"groups":[],"data":{}}
+    this.timeout(10000);
+
+    beforeEach(async() => {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    });
 
     describe('Empty crashes', function() {
         it('should have no crashes', function(done) {
@@ -3077,6 +3082,9 @@ describe('Testing Crashes', function() {
             };
 
             await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`);
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
             const crashGroupQuery = JSON.stringify({
                 os: crashData._os,
                 latest_version: crashData._app_version,
@@ -3104,6 +3112,9 @@ describe('Testing Crashes', function() {
             };
 
             await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`).expect(200);
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
             const crashGroupQuery = JSON.stringify({
                 os: crashData._os,
                 latest_version: crashData._app_version,
@@ -3129,6 +3140,9 @@ describe('Testing Crashes', function() {
             };
 
             await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`).expect(200);
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
             const crashGroupQuery = JSON.stringify({
                 os: crashData._os,
                 latest_version: crashData._app_version,
@@ -3156,6 +3170,8 @@ describe('Testing Crashes', function() {
             await request.get('/i')
                 .query({ app_key: APP_KEY, device_id: DEVICE_ID, crash: JSON.stringify(crashData) })
                 .expect(200);
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
             const crashGroupQuery = JSON.stringify({
                 latest_version: { $in: [`${crashData._app_version}`] },
