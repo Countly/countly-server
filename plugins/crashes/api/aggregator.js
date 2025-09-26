@@ -309,7 +309,7 @@ const recalculateStats = async function(currEvent) {
                                     groupInc.loss = currEvent.up.tp / currEvent.up.sc;
                                 }
 
-                                if (!userAll || !userAll.reports) {
+                                if (!user || !user.reports) {
                                     groupInc.users = 1;
                                 }
 
