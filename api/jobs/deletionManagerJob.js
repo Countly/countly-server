@@ -27,8 +27,7 @@ class DeletionManagerJob extends Job {
     getSchedule() {
         return {
             type: "schedule",
-            // value: "* * * * *" // Every minute
-            value: "*/5 * * * *" // todo: Every 5 minutes for now to testing purposes.
+            value: "* * * * *" // Every minute
         };
     }
 
@@ -216,7 +215,7 @@ class DeletionManagerJob extends Job {
             }
         }
         catch (e) {
-            log.e("markFailedOrRetry fallback", { taskId: task && task._id, err: (e && e.message) || e });
+            log.e("markFailedOrRetry fallback", { taskId: task._id, err: (e && e.message) || e });
             await common.db.collection("deletion_manager").updateOne(
                 { _id: task._id },
                 {
