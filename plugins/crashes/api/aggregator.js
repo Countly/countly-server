@@ -121,7 +121,7 @@ const recalculateStats = async function(currEvent) {
 
     if (typeof currEvent.up_extra?.hadFatalCrash !== 'undefined' && typeof currEvent.up_extra?.hadNonfatalCrash !== 'undefined' && isAvNewer) {
         const crashuserCollectionName = `app_crashusers${currEvent.a}`;
-        const crashgroupCollectionName = `app_crashgroups{currEvent.a}`;
+        const crashgroupCollectionName = `app_crashgroups${currEvent.a}`;
 
         const crashgroupIds = await common.db.collection(crashuserCollectionName)
             .find({ uid: currEvent.uid, group: { $ne: 0 } }, { group: 1, _id: 0 })
@@ -129,7 +129,7 @@ const recalculateStats = async function(currEvent) {
 
         let shouldRecalculate = false;
         for (let idx = 0; idx < crashgroupIds.length; idx += 1) {
-            const crashgroupId = crashgroupIds[idx];
+            const crashgroupId = crashgroupIds[idx].group;
             const crashgroup = await common.db.collection(crashgroupCollectionName)
                 .findOne({ groups: crashgroupId });
 
@@ -137,19 +137,17 @@ const recalculateStats = async function(currEvent) {
                 if (common.versionCompare(avLatest, crashgroup.resolved_version.replace(/\./g, ":")) > 0) {
 
                     //update crash stats
-                    common.db.collection(crashuserCollectionName).remove({group: crashgroupId, uid: currEvent.uid});
-                    common.db.collection(crashgroupCollectionName).update({_id: crashgroupId, users: {$gt: 0} }, {$inc: {users: -1}});
+                    await common.db.collection(crashuserCollectionName).deleteMany({group: crashgroupId, uid: currEvent.uid});
+                    await common.db.collection(crashgroupCollectionName).updateOne({_id: crashgroupId, users: {$gt: 0} }, {$inc: {users: -1}});
                     const mod = {crashes: -1};
                     if (!crashgroup.nonfatal) {
                         mod.fatal = -1;
                     }
 
-                    const res = common.db.collection(crashuserCollectionName)
-                        .findAndModify({group: 0, uid: currEvent.uid}, {}, {$inc: mod}, {upsert: true, new: true});
-                    const crashuser = res && res.ok ? res.value : null;
+                    const crashuser = await common.db.collection(crashuserCollectionName)
+                        .findOneAndUpdate({group: 0, uid: currEvent.uid}, {$inc: mod}, {upsert: true, returnNewDocument: true});
                     if (crashuser && crashuser.crashes <= 0) {
-                        common.db.collection(crashuserCollectionName)
-                            .remove({group: 0, uid: currEvent.uid});
+                        await common.db.collection(crashuserCollectionName).deleteMany({group: 0, uid: currEvent.uid});
                     }
 
                     shouldRecalculate = true;
@@ -159,11 +157,11 @@ const recalculateStats = async function(currEvent) {
 
         if (shouldRecalculate) {
             const userCount = await common.db.collection('app_crashusers' + currEvent.a)
-                .count({ group: 0, crashes: { $gt: 0 } });
+                .countDocuments({ group: 0, crashes: { $gt: 0 } });
             const userFatalCount = await common.db.collection('app_crashusers' + currEvent.a)
-                .count({ group: 0, crashes: { $gt: 0 }, fatal: { $gt: 0 } });
+                .countDocuments({ group: 0, crashes: { $gt: 0 }, fatal: { $gt: 0 } });
             await common.db.collection(crashgroupCollectionName)
-                .update({ _id: 'meta' }, { $set: { users: userCount, usersFatal: userFatalCount } });
+                .updateOne({ _id: 'meta' }, { $set: { users: userCount, usersFatal: userFatalCount } });
         }
     }
 };
