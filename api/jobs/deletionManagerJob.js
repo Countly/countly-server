@@ -77,9 +77,7 @@ class DeletionManagerJob extends Job {
                     const mongoOk = await this.deleteMongo(task);
                     let chOk = true;
                     if (clickHouseRunner && clickHouseRunner.deleteGranularDataByQuery) {
-                        console.time("deletionManagerJob_4");
                         chOk = await this.deleteClickhouse(task);
-                        console.timeEnd("deletionManagerJob_4");
                     }
                     if (mongoOk && chOk) {
                         await common.db.collection("deletion_manager").deleteOne({ _id: task._id });
