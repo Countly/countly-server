@@ -550,8 +550,6 @@ const recalculateStats = async function(currEvent) {
 
                             // record event totals in aggregated data
                             if (app && '_id' in app) {
-                                await recalculateStats(currEvent);
-
                                 const params = {
                                     'app_id': currEvent.a,
                                     'app': app,
