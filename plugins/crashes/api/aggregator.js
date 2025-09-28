@@ -119,17 +119,17 @@ const recalculateStats = async function(currEvent) {
     const avLatest = currEvent.up?.av;
     const isAvNewer = avPrev && avLatest && common.versionCompare(avLatest, avPrev) > 0;
 
-    if (typeof currEvent.up_extra?.hadFatalCrash !== 'undefined' && typeof currEvent.up_extra?.hadNonfatalCrash !== 'undefined' && isAvNewer) {
+    if ((typeof currEvent.up_extra?.hadFatalCrash !== 'undefined' || typeof currEvent.up_extra?.hadNonfatalCrash !== 'undefined') && isAvNewer) {
         const crashuserCollectionName = `app_crashusers${currEvent.a}`;
         const crashgroupCollectionName = `app_crashgroups${currEvent.a}`;
 
-        const crashgroupIds = await common.db.collection(crashuserCollectionName)
+        const crashusers = await common.db.collection(crashuserCollectionName)
             .find({ uid: currEvent.uid, group: { $ne: 0 } }, { group: 1, _id: 0 })
             .toArray();
 
         let shouldRecalculate = false;
-        for (let idx = 0; idx < crashgroupIds.length; idx += 1) {
-            const crashgroupId = crashgroupIds[idx].group;
+        for await (const cu of crashusers) {
+            const crashgroupId = cu.group;
             const crashgroup = await common.db.collection(crashgroupCollectionName)
                 .findOne({ groups: crashgroupId });
 
@@ -137,8 +137,8 @@ const recalculateStats = async function(currEvent) {
                 if (common.versionCompare(avLatest, crashgroup.resolved_version.replace(/\./g, ":")) > 0) {
 
                     //update crash stats
-                    await common.db.collection(crashuserCollectionName).deleteMany({group: crashgroupId, uid: currEvent.uid});
-                    await common.db.collection(crashgroupCollectionName).updateOne({_id: crashgroupId, users: {$gt: 0} }, {$inc: {users: -1}});
+                    common.db.collection(crashuserCollectionName).deleteMany({group: crashgroupId, uid: currEvent.uid});
+                    common.db.collection(crashgroupCollectionName).updateOne({_id: crashgroupId, users: {$gt: 0} }, {$inc: {users: -1}});
                     const mod = {crashes: -1};
                     if (!crashgroup.nonfatal) {
                         mod.fatal = -1;
@@ -147,7 +147,7 @@ const recalculateStats = async function(currEvent) {
                     const crashuser = await common.db.collection(crashuserCollectionName)
                         .findOneAndUpdate({group: 0, uid: currEvent.uid}, {$inc: mod}, {upsert: true, returnNewDocument: true});
                     if (crashuser && crashuser.crashes <= 0) {
-                        await common.db.collection(crashuserCollectionName).deleteMany({group: 0, uid: currEvent.uid});
+                        common.db.collection(crashuserCollectionName).deleteMany({group: 0, uid: currEvent.uid});
                     }
 
                     shouldRecalculate = true;
@@ -156,12 +156,12 @@ const recalculateStats = async function(currEvent) {
         }
 
         if (shouldRecalculate) {
-            const userCount = await common.db.collection('app_crashusers' + currEvent.a)
+            const userCount = await common.db.collection(crashuserCollectionName)
                 .countDocuments({ group: 0, crashes: { $gt: 0 } });
-            const userFatalCount = await common.db.collection('app_crashusers' + currEvent.a)
+            const userFatalCount = await common.db.collection(crashuserCollectionName)
                 .countDocuments({ group: 0, crashes: { $gt: 0 }, fatal: { $gt: 0 } });
-            await common.db.collection(crashgroupCollectionName)
-                .updateOne({ _id: 'meta' }, { $set: { users: userCount, usersFatal: userFatalCount } });
+            common.db.collection(crashgroupCollectionName)
+                .updateOne({ _id: 'meta' }, { $set: { users: userCount, usersfatal: userFatalCount } });
         }
     }
 };
@@ -281,11 +281,10 @@ const recalculateStats = async function(currEvent) {
 
                                 const user = await common.db.collection('app_crashusers' + params.app_id).findOneAndUpdate({group: hash, 'uid': currEvent.uid}, {$set: set, $inc: {reports: 1}}, {upsert: true, new: false, returnDocument: 'before', returnNewDocument: false});
 
-                                let AllUsersUpdate = {$set: {group: 0, 'uid': currEvent.uid}};
+                                let AllUsersUpdate = {$set: {group: 0, uid: currEvent.uid}};
                                 if (!user || !user.reports) {
                                     const inc = {crashes: 1};
                                     if (groupSet.nonfatal === false) {
-                                        inc.usersfatal = 1;
                                         inc.fatal = 1;
                                     }
                                     AllUsersUpdate.$inc = inc;
@@ -432,15 +431,17 @@ const recalculateStats = async function(currEvent) {
                                 };
 
                                 const crashGroup = await common.db.collection('app_crashgroups' + params.app_id).findOneAndUpdate({'groups': {$elemMatch: {$eq: hash}}}, update, {upsert: true, new: false, returnDocument: 'before', returnNewDocument: false});
-                                if (!crashGroup) {
+                                const crashgroupIsNew = (!crashGroup || !crashGroup.reports) ? true : false;
+                                if (crashgroupIsNew) {
                                     metaInc.isnew = 1;
                                     metaInc.crashes = 1;
                                 }
+
                                 let lastTs;
 
                                 if (crashGroup) {
                                     lastTs = crashGroup.lastTs;
-                                    if (crashGroup.latest_version !== currEvent.sg.app_version) {
+                                    if (crashGroup && !crashgroupIsNew) {
                                         let group = {};
                                         if (crashGroup.latest_version && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.latest_version.replace(/\./g, ':')) > 0) {
                                             group.latest_version = currEvent.sg.app_version;
@@ -461,6 +462,8 @@ const recalculateStats = async function(currEvent) {
                                         if (crashGroup.resolved_version && crashGroup.is_resolved && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.resolved_version.replace(/\./g, ':')) > 0) {
                                             group.is_resolved = false;
                                             group.is_renewed = true;
+                                            metaInc.reoccurred = 1;
+                                            metaInc.resolved = -1;
                                         }
                                         if (Object.keys(group).length > 0) {
                                             common.db.collection('app_crashgroups' + params.app_id).updateOne({'groups': {$elemMatch: {$eq: hash}}}, {$set: group}, function() {});
@@ -657,10 +660,15 @@ const recalculateStats = async function(currEvent) {
                                 // check if it is not user's first session
                                 if (currEvent.up?.ls) {
                                     const fatalMetrics = [];
+                                    const userUpdate = {};
 
                                     if (!currEvent.up_extra?.hadFatalCrash) {
                                         fatalMetrics.push('crfses');
                                         fatalMetrics.push('crauf');
+                                        userUpdate.hadAnyFatalCrash = moment(currEvent.ts).unix();
+                                    }
+                                    else {
+                                        userUpdate.hadFatalCrash = false;
                                     }
 
                                     if (fatalMetrics.length) {
@@ -677,6 +685,10 @@ const recalculateStats = async function(currEvent) {
                                     if (!currEvent.up_extra?.hadNonfatalCrash) {
                                         nonfatalMetrics.push('craunf');
                                         nonfatalMetrics.push('crnfses');
+                                        userUpdate.hadAnyNonfatalCrash = moment(currEvent.ts).unix();
+                                    }
+                                    else {
+                                        userUpdate.hadNonfatalCrash = false;
                                     }
 
                                     if (nonfatalMetrics.length) {
@@ -687,6 +699,8 @@ const recalculateStats = async function(currEvent) {
                                         recordCustomMetric(params, 'crashdata', `${platform}**any**${params.app_id}`, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
                                         recordCustomMetric(params, 'crashdata', `any**${version}**${params.app_id}`, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
                                     }
+
+                                    common.db.collection(`app_users${currEvent.a}`).updateOne({ _id: currEvent._uid }, { $set: userUpdate });
                                 }
                             }
                         });
