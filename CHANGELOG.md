@@ -1,6 +1,8 @@
 ## Version 25.03.X
 Fixes:
 - [populator] Fix nps generator
+- [surveys] Fix survey details results summary tiles display when journeys plugin in not enabled
+- [feedback] Prevent showing application when switching NPS and Survey pages
 
 
 ## Version 25.03.20
