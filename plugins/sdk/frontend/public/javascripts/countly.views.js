@@ -1,4 +1,4 @@
-/*global app, countlyVue, countlySDK, CV, countlyCommon, CountlyHelpers*/
+/*global app, countlyVue, countlySDK, CV, countlyCommon, CountlyHelpers, Vue*/
 (function() {
     var enable_logs = false;
     var SC_VER = 2; // check/update sdk/api/api.js for this
@@ -103,6 +103,7 @@
 
     var SDKConfigurationView = countlyVue.views.create({
         template: CV.T('/sdk/templates/config.html'),
+        mixins: [countlyVue.mixins.hasDrawers('sdkSettings')],
         created: function() {
             var self = this;
             Promise.all([
@@ -409,6 +410,79 @@
             });
         },
         methods: {
+            openSettingsDrawer: function() {
+                this.openDrawer('sdkSettings', {});
+                var self = this;
+                this.$nextTick(function() {
+                    var config = Object.assign({}, self.$store.getters["countlySDK/sdk/all"]);
+                    if (typeof config.bom_rqp !== "undefined") {
+                        config.bom_rqp = config.bom_rqp / 100;
+                    }
+                    for (var key in config) { // remove internal
+                        if (self.configs[key] && self.configs[key].type === "preset") {
+                            delete config[key];
+                        }
+                        if (self.configs[key] && self.configs[key].enforced === false) {
+                            delete config[key];
+                        }
+                    }
+                    var obj = {v: SC_VER, t: Date.now(), c: config};
+                    var attempt = 0;
+                    var applyJson = function() {
+                        if (self.$refs.sdkSettingsDrawer && self.$refs.sdkSettingsDrawer.setRawJson) {
+                            self.$refs.sdkSettingsDrawer.setRawJson(JSON.stringify(obj, null, 2));
+                        }
+                        else if (attempt < 5) { // retry a few times if component not yet ready
+                            attempt += 1; setTimeout(applyJson, 150);
+                        }
+                    };
+                    applyJson();
+                });
+            },
+            onRawSettingsSaved: function(updated) {
+                var cfg = updated.c || updated;
+                if (typeof cfg.bom_rqp !== 'undefined') {
+                    cfg.bom_rqp = Math.round(cfg.bom_rqp * 100); // revert to integer percentage
+                }
+                // derive enforcement from key presence
+                var enforcement = {};
+                for (var k in this.configs) {
+                    if (this.configs[k].type === 'preset') {
+                        continue;
+                    }
+                    enforcement[k] = Object.prototype.hasOwnProperty.call(cfg, k);
+                }
+
+                // save config and enforcement
+                var self = this;
+                var saveConfigReq = CV.$.ajax({
+                    type: 'POST',
+                    url: countlyCommon.API_PARTS.data.w + '/sdk-config/upload',
+                    data: { app_id: countlyCommon.ACTIVE_APP_ID, config: JSON.stringify({c: cfg}) },
+                    dataType: 'json'
+                });
+                var saveEnforcementReq = CV.$.ajax({
+                    type: 'POST',
+                    url: countlyCommon.API_PARTS.data.w + '/sdk-config/update-enforcement',
+                    data: { app_id: countlyCommon.ACTIVE_APP_ID, enforcement: JSON.stringify(enforcement) },
+                    dataType: 'json'
+                });
+                Promise.all([saveConfigReq, saveEnforcementReq]).then(function() {
+                    for (var key in enforcement) { // reflect enforcement changes in UI
+                        if (self.configs[key]) {
+                            self.configs[key].enforced = enforcement[key];
+                        }
+                    }
+                    self.$store.dispatch('countlySDK/initialize').then(function() {
+                        self.$store.dispatch('countlySDK/initializeEnforcement').then(function() {
+                            self.diff = [];
+                            CountlyHelpers.notify({title: 'SDK Config', message: 'Configuration saved', type: 'success'});
+                        });
+                    });
+                }).catch(function(xhr) {
+                    CountlyHelpers.alert((xhr && xhr.responseJSON && xhr.responseJSON.result) || 'Error saving configuration', 'red');
+                });
+            },
             onChange: function(key, value) {
                 log("onChange", key, value);
                 this.configs[key].value = value;
@@ -758,6 +832,80 @@
             }
         }
     });
+    Vue.component("cly-sdk-settings-drawer", countlyVue.views.create({
+        props: { controls: {type: Object} },
+        data: function() {
+            return { rawJson: '', jsonError: '', showInfo: true, original: '', diffKeys: [] };
+        },
+        computed: {
+            isSaveDisabled: function() {
+                return !!this.jsonError || this.rawJson.trim().length === 0 || this.rawJson === this.original;
+            }
+        },
+        methods: {
+            setRawJson: function(v) {
+                this.rawJson = v; this.original = v; this.jsonError = ''; this.updateDiff();
+            },
+            formatJson: function() {
+                try {
+                    this.rawJson = JSON.stringify(JSON.parse(this.rawJson), null, 2); this.jsonError = '';
+                }
+                catch (e) {
+                    this.jsonError = 'Invalid JSON: ' + e.message;
+                }
+                this.updateDiff();
+            },
+            onInput: function() {
+                try {
+                    JSON.parse(this.rawJson); this.jsonError = '';
+                }
+                catch (e) {
+                    this.jsonError = e.message;
+                }
+                this.updateDiff();
+            },
+            updateDiff: function() {
+                var diff = [];
+                try {
+                    var current = JSON.parse(this.rawJson);
+                    var original = JSON.parse(this.original);
+                    var curC = current.c || current; var orgC = original.c || original;
+                    var keys = {}; Object.keys(curC).forEach(k=>{
+                        keys[k] = true;
+                    }); Object.keys(orgC).forEach(k=>{
+                        keys[k] = true;
+                    });
+                    Object.keys(keys).forEach(k=>{
+                        if (JSON.stringify(curC[k]) !== JSON.stringify(orgC[k])) {
+                            diff.push(k);
+                        }
+                    });
+                }
+                catch (e) {
+                    // Ignore JSON parse errors while user is typing
+                }
+                this.diffKeys = diff;
+            },
+            handleClose: function() {
+                this.jsonError = '';
+            },
+            onSubmit: function() {
+                if (this.jsonError) {
+                    return;
+                }
+                var parsed;
+                try {
+                    parsed = JSON.parse(this.rawJson);
+                }
+                catch (e) {
+                    this.jsonError = e.message; return;
+                }
+                this.$emit('saved', parsed);
+                this.original = this.rawJson;
+            }
+        },
+        template: CV.T('/sdk/templates/settings_drawer.html')
+    }));
     countlyVue.container.registerTab("/manage/sdk", {
         priority: 2,
         route: "#/manage/sdk/configurations",

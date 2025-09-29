@@ -1,0 +1,35 @@
+<cly-drawer ref="drawer" @submit="onSubmit" @close="handleClose" class="sdk-settings-drawer" v-bind="$props.controls"
+    name="sdkSettings" title="SDK Behavior Settings" saveButtonLabel="Save" :size="5" :saveDisabled="isSaveDisabled">
+    <template v-slot:default="drawerScope">
+        <cly-form-step id="sdk-settings-step" style="margin-left: 32px; margin-right: 32px;">
+            <div class="cly-vue-drawer-step__section bu-mb-5">
+                <div class="bu-is-flex bu-is-align-items-center bu-mb-3" style="gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+                    <el-button size="small" type="info" @click="formatJson" icon="fas fa-indent">Format JSON</el-button>
+                    <el-button size="small" @click="$emit('download-config')" icon="cly-icon-btn fas fa-download" :title="'Download configuration'" aria-label="Download configuration"></el-button>
+                </div>
+                <div v-if="showInfo" class="bu-mt-2 bu-has-text-grey">
+                    You can change or remove values of your configuration.
+                </div>
+                <div class="text-small text-heading bu-mb-1">Your current active configuration:</div>
+                <el-input
+                type="textarea"
+                :class="{'is-error': jsonError}"
+                v-model="rawJson"
+                :autosize="{minRows: 18, maxRows: 30}"
+                placeholder='{"c": { /* add keys here */ }}'
+                @input="onInput"
+                ></el-input>
+                <div v-if="!rawJson" class="bu-mt-2 bu-has-text-grey-light text-small">No current config loaded yet. It will appear here momentarily or you can paste JSON manually.</div>
+                <div v-if="diffKeys.length" class="bu-mt-3">
+                    <div class="text-small text-heading">Changed Keys ({{diffKeys.length}})</div>
+                    <div class="bu-tags" style="gap:4px;flex-wrap:wrap;display:flex;">
+                        <span v-for="k in diffKeys" :key="k" class="bu-tag is-info is-light">{{k}}</span>
+                    </div>
+                </div>
+                <div v-if="jsonError" class="validation-error bu-mt-2">
+                    <cly-notification type="error" :text="jsonError"></cly-notification>
+                </div>
+            </div>
+        </cly-form-step>
+    </template>
+</cly-drawer>

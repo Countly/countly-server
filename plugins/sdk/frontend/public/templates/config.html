@@ -14,8 +14,8 @@
                 </el-button>
             </div>
             <div class="bu-level-item">
-                <el-button @click="downloadConfig" type="default" size="small" icon="cly-icon-btn cly-icon-download">
-                    Download Config
+                <el-button @click="openSettingsDrawer" type="default" size="small" icon="cly-icon-btn fas fa-cog">
+                    Settings
                 </el-button>
             </div>
         </template>
@@ -156,4 +156,10 @@
                 </div>
         <cly-diff-helper :diff="diff" @discard="unpatch" @save="save"></cly-diff-helper>
     </cly-main>
+    <cly-sdk-settings-drawer
+        ref="sdkSettingsDrawer"
+        :controls="drawers.sdkSettings"
+        @saved="onRawSettingsSaved"
+        @download-config="downloadConfig"
+    ></cly-sdk-settings-drawer>
 </div>

@@ -32,7 +32,12 @@ const validOptions = [
     "bom_at",
     "bom_rqp",
     "bom_ra",
-    "bom_d"
+    "bom_d",
+    "upcl", // user property cache. dart only
+    "eb", // event blacklist dart only
+    "upb", // user property blacklist dart only
+    "sb", // segment blacklist dart only
+    "esb" // event segment blacklist dart only
 ];
 
 plugins.register("/permissions/features", function(ob) {
@@ -220,6 +225,41 @@ plugins.register("/permissions/features", function(ob) {
 
         switch (paths[3]) {
         case 'update-parameter': validateUpdate(params, FEATURE_NAME, updateParameter);
+            break;
+        case 'upload': // POST /i/sdk-config/upload
+            validateUpdate(params, FEATURE_NAME, function() {
+                var uploadConfig = params.qstring.config;
+                if (uploadConfig && typeof uploadConfig === "string") {
+                    try {
+                        uploadConfig = JSON.parse(uploadConfig);
+                    }
+                    catch (ex) {
+                        return common.returnMessage(params, 400, 'Invalid config format');
+                    }
+                }
+                if (!uploadConfig || typeof uploadConfig !== "object") {
+                    return common.returnMessage(params, 400, 'Config must be a valid object');
+                }
+                var configToSave = uploadConfig.c || uploadConfig;
+                for (var key in configToSave) {
+                    if (validOptions.indexOf(key) === -1) {
+                        delete configToSave[key];
+                    }
+                }
+                common.outDb.collection('sdk_configs').updateOne(
+                    {_id: params.qstring.app_id + ""},
+                    {$set: {config: configToSave}},
+                    {upsert: true},
+                    function(err) {
+                        if (err) {
+                            common.returnMessage(params, 500, 'Error saving config to database');
+                        }
+                        else {
+                            common.returnOutput(params, {result: 'Success'});
+                        }
+                    }
+                );
+            });
             break;
         case 'update-enforcement':
             validateUpdate(params, FEATURE_NAME, function() {
