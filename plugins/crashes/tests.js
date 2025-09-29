@@ -222,7 +222,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -404,7 +404,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -614,7 +614,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
