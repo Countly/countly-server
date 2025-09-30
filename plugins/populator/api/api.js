@@ -61,7 +61,7 @@ const FEATURE_NAME = 'populator';
 
         if (!validatedArgs.result) {
             common.returnMessage(obParams, 400, "Invalid params: " + validatedArgs.errors.join());
-            return false;
+            return true;
         }
         const template = validatedArgs.obj;
         if (template.behavior && template.behavior.sequences && !template.behavior.sequences.length) {
@@ -70,7 +70,7 @@ const FEATURE_NAME = 'populator';
             }
             catch (e) {
                 common.returnMessage(obParams, 400, "Invalid type for behavior!");
-                return false;
+                return true;
             }
         }
 
@@ -641,15 +641,15 @@ const FEATURE_NAME = 'populator';
         const obParams = ob.params;
         if (!obParams.qstring.environment_id) {
             common.returnMessage(obParams, 401, "Missing parameter environment_id");
-            return false;
+            return true;
         }
         if (!obParams.qstring.template_id) {
             common.returnMessage(obParams, 401, "Missing parameter template_id");
-            return false;
+            return true;
         }
         if (!obParams.qstring.app_id) {
             common.returnMessage(obParams, 401, "Missing parameter app_id");
-            return false;
+            return true;
         }
         validateRead(obParams, FEATURE_NAME, function() {
             let startPos = 0;
@@ -717,11 +717,11 @@ const FEATURE_NAME = 'populator';
         const obParams = ob.params;
         if (!obParams.qstring.environment_id) {
             common.returnMessage(obParams, 401, "Missing parameter environment_id");
-            return false;
+            return true;
         }
         if (!obParams.qstring.template_id) {
             common.returnMessage(obParams, 401, "Missing parameter template_id");
-            return false;
+            return true;
         }
         validateDelete(obParams, FEATURE_NAME, function() {
             common.db.collection('populator_environment_users').deleteMany({
