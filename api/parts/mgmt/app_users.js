@@ -289,60 +289,57 @@ usersApi.delete = function(app_id, query, params, callback) {
                     }
 
                     //remove from drill_events
+                    plugins.dispatch("/core/delete_granular_data", {
+                        db: "drill",
+                        collection: "drill_events",
+                        query: { a: app_id + "", uid: { $in: res[0].uid } }
+                    });
 
-                    common.drillDb.collection('drill_events').remove({"a": (app_id + ""), uid: {$in: res[0].uid}}, function(err1) {
-                        if (err1) {
-                            log.e("Failed to delete data from drill_events collection", err1);
-                            common.returnMessage(params, 500, { errorMessage: "User deletion failed. Failed to delete some data related to this user." });
-                            return;
+                    common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}}, function(err) {
+                        if (res[0].exported) {
+                            //delete exports if exist
+                            for (let i = 0;i < res[0].exported.length; i++) {
+                                let id = res[0].exported[i].split("/");
+                                id = id[id.length - 1]; //last one is filename
+                                id = id.substr(id.length - 7);
 
+                                deleteMyExport(id).then(
+                                    function() {},
+                                    function(err5) {
+                                        console.log(err5);
+                                    }
+                                );
+                            }
                         }
-                        common.db.collection("app_users" + app_id).remove({uid: {$in: res[0].uid}}, function(err) {
-                            if (res[0].exported) {
-                                //delete exports if exist
-                                for (let i = 0;i < res[0].exported.length; i++) {
-                                    let id = res[0].exported[i].split("/");
-                                    id = id[id.length - 1]; //last one is filename
-                                    id = id.substr(id.length - 7);
-
-                                    deleteMyExport(id).then(
-                                        function() {},
-                                        function(err5) {
-                                            console.log(err5);
-                                        }
-                                    );
-                                }
+                        //deleting userimages(if they exist);
+                        if (res[0].picture) {
+                            for (let i = 0;i < res[0].picture.length; i++) {
+                                //remove /userimages/ 
+                                let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
+                                var pp = path.resolve(__dirname, './../../../frontend/express/public/userimages/' + id);
+                                countlyFs.deleteFile("userimages", pp, {id: id}, function(err6) {
+                                    if (err6) {
+                                        console.log(err6);
+                                    }
+                                });
                             }
-                            //deleting userimages(if they exist);
-                            if (res[0].picture) {
-                                for (let i = 0;i < res[0].picture.length; i++) {
-                                    //remove /userimages/ 
-                                    let id = res[0].picture[i].substr(12, res[0].picture[i].length - 12);
-                                    var pp = path.resolve(__dirname, './../../../frontend/express/public/userimages/' + id);
-                                    countlyFs.deleteFile("userimages", pp, {id: id}, function(err6) {
-                                        if (err6) {
-                                            console.log(err6);
-                                        }
-                                    });
-                                }
+                        }
+                        try {
+                            fs.appendFileSync(path.resolve(__dirname, './../../../log/deletedUsers' + app_id + '.txt'), res[0].uid.join("\n") + "\n", "utf-8");
+                        }
+                        catch (err2) {
+                            console.log(err2);
+                        }
+                        plugins.dispatch("/systemlogs", {
+                            params: params,
+                            action: "app_user_deleted",
+                            data: {
+                                app_id: app_id,
+                                query: JSON.stringify(query),
+                                uids: res[0].uid,
                             }
-                            try {
-                                fs.appendFileSync(path.resolve(__dirname, './../../../log/deletedUsers' + app_id + '.txt'), res[0].uid.join("\n") + "\n", "utf-8");
-                            }
-                            catch (err2) {
-                                console.log(err2);
-                            }
-                            plugins.dispatch("/systemlogs", {
-                                params: params,
-                                action: "app_user_deleted",
-                                data: {
-                                    app_id: app_id,
-                                    query: JSON.stringify(query),
-                                    uids: res[0].uid,
-                                }
-                            });
-                            callback(err, res[0].uid);
                         });
+                        callback(err, res[0].uid);
                     });
                 });
             });

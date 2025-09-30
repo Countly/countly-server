@@ -1656,9 +1656,9 @@ function uploadFile(myfile, id, callback) {
         });
         common.db.collection('feedback' + appId).drop(function() {});
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        }
+        }*/
     });
     plugins.register("/i/apps/clear", function(ob) {
         var appId = ob.appId;
@@ -1672,13 +1672,13 @@ function uploadFile(myfile, id, callback) {
                 $lt: ob.moment.unix()
             }
         }, function() {});
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).remove({
                 ts: {
                     $lt: ob.moment.unix()
                 }
             }, function() {});
-        }
+        }*/
     });
     plugins.register("/i/apps/clear_all", function(ob) {
         var appId = ob.appId;
@@ -1694,9 +1694,9 @@ function uploadFile(myfile, id, callback) {
             }, () => {});
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        }
+        }*/
     });
     plugins.register("/i/apps/reset", function(ob) {
         var appId = ob.appId;
@@ -1716,9 +1716,9 @@ function uploadFile(myfile, id, callback) {
             }, () => {});
         });
         common.db.collection("events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_star_rating" + appId).digest('hex')).drop(function() {});
-        }
+        }*/
     });
     plugins.register("/i/device_id", function(ob) {
         var appId = ob.app_id;

@@ -1653,7 +1653,11 @@ plugins.setConfigs("crashes", {
                             common.db.collection('app_crashgroups' + params.qstring.app_id).remove({'_id': group._id }, function() {
                                 if (common.drillDb) {
                                     common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + params.qstring.app_id).digest('hex')).remove({"sg.crash": group._id}, function() {});
-                                    common.drillDb.collection("drill_events").remove({"a": params.qstring.app_id + "", e: "[CLY]_crash", "sg.crash": group._id}, function() {});
+                                    plugins.dispatch("/core/delete_granular_data", {
+                                        db: "drill",
+                                        collection: "drill_events",
+                                        query: { a: params.qstring.app_id + "", e: "[CLY]_crash", "n": group._id + "" }
+                                    });
                                     plugins.dispatch("/crash/delete", {appId: params.qstring.app_id, crash: group._id + ""});
                                 }
                                 var id = common.crypto.createHash('sha1').update(params.qstring.app_id + group._id + "").digest('hex');
@@ -1806,10 +1810,10 @@ plugins.setConfigs("crashes", {
         common.db.collection('app_crashes' + appId).drop(function() {});
         common.db.collection('crash_share').remove({'app_id': appId }, function() {});
         common.db.collection('crashdata').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + appId).digest('hex')).drop(function() {});
             common.drillDb.collection("drill_events").remove({"a": appId + "", e: "[CLY]_crash"}, function() {});
-        }
+        }*/
     });
 
     plugins.register("/i/apps/clear", function(ob) {
@@ -1817,10 +1821,10 @@ plugins.setConfigs("crashes", {
         var ids = ob.ids;
         common.db.collection('crashdata').remove({$and: [{'_id': {$regex: appId + ".*"}}, {'_id': {$nin: ids}}]}, function() {});
         common.db.collection('app_crashes' + appId).remove({ts: {$lt: ob.moment.unix()}}, function() {});
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + appId).digest('hex')).remove({ts: {$lt: ob.moment.valueOf()}}, function() {});
             common.drillDb.collection("drill_events").remove({a: appId + "", e: "[CLY]_crash", ts: {$lt: ob.moment.valueOf()}}, function() {});
-        }
+        }*/
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {
@@ -1850,10 +1854,10 @@ plugins.setConfigs("crashes", {
         });
         common.db.collection('crash_share').remove({'app_id': appId }, function() {});
         common.db.collection('crashdata').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + appId).digest('hex')).drop(function() {});
             common.drillDb.collection("drill_events").remove({"a": appId + "", e: "[CLY]_crash"}, function() {});
-        }
+        }*/
     });
 
     plugins.register("/i/apps/reset", function(ob) {
@@ -1883,10 +1887,10 @@ plugins.setConfigs("crashes", {
         });
         common.db.collection('crash_share').remove({'app_id': appId }, function() {});
         common.db.collection('crashdata').remove({'_id': {$regex: appId + ".*"}}, function() {});
-        if (common.drillDb) {
-            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + appId).digest('hex')).drop(function() {});
-            common.drillDb.collection("drill_events").remove({"a": appId + "", e: "[CLY]_crash"}, function() {});
-        }
+        /*if (common.drillDb) {
+             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_crash" + appId).digest('hex')).drop(function() {});
+             common.drillDb.collection("drill_events").remove({"a": appId + "", e: "[CLY]_crash"}, function() {});
+        }*/
     });
 }(plugin));
 

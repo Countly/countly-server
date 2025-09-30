@@ -146,19 +146,16 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                                             //remove from meta
                                             common.db.collection("app_viewsmeta").remove({'_id': viewid});
                                             if (common.drillDb) {
-                                                deleteDocs.push(common.drillDb.collection(
-                                                    "drill_events" + crypto.createHash('sha1').update("[CLY]_view" + params.qstring.app_id).digest('hex')
-                                                ).remove({"sg.name": viewName}));
-                                                deleteDocs.push(common.drillDb.collection(
-                                                    "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex')
-                                                ).remove({"sg.view": viewUrl}));
-                                                //Before new ingestion
-                                                deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_view", "sg.name": viewName}));
-                                                deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_action", "sg.view": viewUrl}));
-
-                                                //After new ingestion
-                                                deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_view", "n": viewName}));
-                                                deleteDocs.push(common.drillDb.collection("drill_events").remove({"a": (appId + ""), "e": "[CLY]_action", "n": viewUrl}));
+                                                plugins.dispatch("/core/delete_granular_data", {
+                                                    db: "drill",
+                                                    collection: "drill_events",
+                                                    query: { a: appId + "", e: "[CLY]_view", n: viewName }
+                                                });
+                                                plugins.dispatch("/core/delete_granular_data", {
+                                                    db: "drill",
+                                                    collection: "drill_events",
+                                                    query: { a: appId + "", e: "[CLY]_action", n: viewUrl }
+                                                });
                                             }
                                             plugins.dispatch("/view/delete", {appId: appId, view: viewid + ""});
                                             /** */
@@ -2373,10 +2370,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             common.db.collection(colName).drop(function() {});
             common.db.collection("views").remove({'_id': common.db.ObjectID(appId)}, {}, function() {}); //remove views record
         });
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
-        }
+        }*/
     });
 
     plugins.register("/i/apps/clear_all", function(ob) {
@@ -2407,10 +2404,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
                 //common.db.collection('app_views' + appId).ensureIndex({"uid": 1}, function() {});
             });
             /** old end */
-            if (common.drillDb) {
+            /*if (common.drillDb) {
                 common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
                 common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
-            }
+            }*/
         });
     });
 
@@ -2444,10 +2441,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
             }
         });
         //old format end
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).remove({ts: {$lt: ob.moment.valueOf()}}, function() {});
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).remove({ts: {$lt: ob.moment.valueOf()}}, function() {});
-        }
+        }*/
     });
 
     plugins.register("/i/apps/reset", function(ob) {
@@ -2481,10 +2478,10 @@ const escapedViewSegments = { "name": true, "segment": true, "height": true, "wi
         });
 
 
-        if (common.drillDb) {
+        /*if (common.drillDb) {
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
             common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
-        }
+        }*/
     });
 
     plugins.register("/dashboard/data", function(ob) {
