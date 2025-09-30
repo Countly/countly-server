@@ -1,6 +1,6 @@
-## Version 24.05.X
+## Version 24.05.40
 Fixes:
-- [populator] Fix nps generator
+- [populator] Fix NPS generator
 
 
 ## Version 24.05.39
