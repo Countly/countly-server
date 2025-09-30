@@ -2,6 +2,12 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.21
+Fixes:
+- [feedback] Prevent showing the application when switching between the NPS and Survey pages
+- [populator] Fix NPS generator
+- [surveys] Fix survey details results summary tiles display when journeys plugin in not enabled
+
 ## Version 25.03.20
 Fixes:
 - [push] Fix: Migrate push to the new events model
