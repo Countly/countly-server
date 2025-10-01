@@ -658,15 +658,10 @@ const recalculateStats = async function(currEvent) {
                                 // check if it is not user's first session
                                 if (currEvent.up?.ls) {
                                     const fatalMetrics = [];
-                                    const userUpdate = {};
 
                                     if (!currEvent.up_extra?.hadFatalCrash) {
                                         fatalMetrics.push('crfses');
                                         fatalMetrics.push('crauf');
-                                        userUpdate.hadAnyFatalCrash = moment(currEvent.ts).unix();
-                                    }
-                                    else {
-                                        userUpdate.hadFatalCrash = false;
                                     }
 
                                     if (fatalMetrics.length) {
@@ -683,10 +678,6 @@ const recalculateStats = async function(currEvent) {
                                     if (!currEvent.up_extra?.hadNonfatalCrash) {
                                         nonfatalMetrics.push('craunf');
                                         nonfatalMetrics.push('crnfses');
-                                        userUpdate.hadAnyNonfatalCrash = moment(currEvent.ts).unix();
-                                    }
-                                    else {
-                                        userUpdate.hadNonfatalCrash = false;
                                     }
 
                                     if (nonfatalMetrics.length) {
@@ -697,8 +688,6 @@ const recalculateStats = async function(currEvent) {
                                         recordCustomMetric(params, 'crashdata', `${platform}**any**${params.app_id}`, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
                                         recordCustomMetric(params, 'crashdata', `any**${version}**${params.app_id}`, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
                                     }
-
-                                    common.db.collection(`app_users${currEvent.a}`).updateOne({ _id: currEvent._uid }, { $set: userUpdate });
                                 }
                             }
                         });

@@ -369,6 +369,21 @@ usage.processSession = function(ob) {
                         if (params.app_user.hadAnyNonfatalCrash) {
                             up_extra.hadAnyNonfatalCrash = params.app_user.hadAnyNonfatalCrash;
                         }
+
+                        if (!params.app_user.hadFatalCrash) {
+                            userProps.hadAnyFatalCrash = moment(params.time.timestamp).unix();
+                        }
+                        else {
+                            userProps.hadFatalCrash = false;
+                        }
+
+                        if (!params.app_user.hadNonfatalCrash) {
+                            userProps.hadAnyNonfatalCrash = moment(params.time.timestamp).unix();
+                        }
+                        else {
+                            userProps.hadNonfatalCrash = false;
+                        }
+
                         params.qstring.events.unshift({
                             "_id": params.app_user.lsid,
                             "key": "[CLY]_session",
