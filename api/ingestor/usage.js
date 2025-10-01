@@ -356,13 +356,42 @@ usage.processSession = function(ob) {
                             lasts = parseInt(idsplit[3]);
                         }
                         params.qstring.events = params.qstring.events || [];
+                        const up_extra = { av_prev: params.app_user.av };
+                        if (params.app_user.hadFatalCrash) {
+                            up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
+                        }
+                        if (params.app_user.hadAnyFatalCrash) {
+                            up_extra.hadAnyFatalCrash = params.app_user.hadAnyFatalCrash;
+                        }
+                        if (params.app_user.hadNonfatalCrash) {
+                            up_extra.hadNonfatalCrash = params.app_user.hadNonfatalCrash;
+                        }
+                        if (params.app_user.hadAnyNonfatalCrash) {
+                            up_extra.hadAnyNonfatalCrash = params.app_user.hadAnyNonfatalCrash;
+                        }
+
+                        if (!params.app_user.hadFatalCrash) {
+                            userProps.hadAnyFatalCrash = moment(params.time.timestamp).unix();
+                        }
+                        else {
+                            userProps.hadFatalCrash = false;
+                        }
+
+                        if (!params.app_user.hadNonfatalCrash) {
+                            userProps.hadAnyNonfatalCrash = moment(params.time.timestamp).unix();
+                        }
+                        else {
+                            userProps.hadNonfatalCrash = false;
+                        }
+
                         params.qstring.events.unshift({
                             "_id": params.app_user.lsid,
                             "key": "[CLY]_session",
                             "segmentation": params.app_user.lsparams || { ended: "true" },
                             "dur": (drill_updates.dur || 0),
                             "count": 1,
-                            "timestamp": lasts
+                            "timestamp": lasts,
+                            up_extra,
                         });
                     }
                     catch (ex) {
@@ -416,14 +445,30 @@ usage.processSession = function(ob) {
                 if (idsplit[3] && idsplit[3].length === 13) {
                     lasts2 = parseInt(idsplit[3]);
                 }
+
                 params.qstring.events = params.qstring.events || [];
+                const up_extra = { av_prev: params.app_user.av };
+                if (params.app_user.hadFatalCrash) {
+                    up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
+                }
+                if (params.app_user.hadAnyFatalCrash) {
+                    up_extra.hadAnyFatalCrash = params.app_user.hadAnyFatalCrash;
+                }
+                if (params.app_user.hadNonfatalCrash) {
+                    up_extra.hadNonfatalCrash = params.app_user.hadNonfatalCrash;
+                }
+                if (params.app_user.hadAnyNonfatalCrash) {
+                    up_extra.hadAnyNonfatalCrash = params.app_user.hadAnyNonfatalCrash;
+                }
+
                 params.qstring.events.unshift({
                     "_id": params.app_user.lsid,
                     "key": "[CLY]_session",
                     "segmentation": params.app_user.lsparams || { ended: "true" },
                     "dur": (drill_updates2.dur || 0),
                     "count": 1,
-                    "timestamp": lasts2
+                    "timestamp": lasts2,
+                    up_extra,
                 });
 
             }

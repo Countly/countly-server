@@ -12,6 +12,7 @@ var COMMENT_ID = "";
 var CRASHES = [];
 var CRASH_URL = "";
 var RE = /^-{0,1}\d*\.{0,1}\d+$/;
+const EXTRA_TEST_DELAY = 5000;
 
 function verifyMetrics(ob, correct) {
     ob.should.not.be.empty;
@@ -221,7 +222,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -269,7 +270,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor + 5000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -403,7 +404,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -451,7 +452,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor + 5000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -613,7 +614,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -661,7 +662,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor + 5000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -830,7 +831,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor + 5000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -1015,7 +1016,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor + 5000);
+                    setTimeout(done, 500 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -1159,7 +1160,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -1255,7 +1256,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -1360,7 +1361,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -1476,7 +1477,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -1556,7 +1557,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -1634,7 +1635,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 10 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
     });
@@ -1783,7 +1784,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -1863,7 +1864,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -1943,7 +1944,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -1991,7 +1992,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -2072,7 +2073,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -2088,7 +2089,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -2136,7 +2137,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -2435,7 +2436,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -2604,7 +2605,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -3003,7 +3004,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor + 5000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -3019,7 +3020,7 @@ describe('Testing Crashes', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 100 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY);
                 });
         });
     });
@@ -3077,6 +3078,9 @@ describe('Testing Crashes', function() {
             };
 
             await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`);
+
+            await new Promise(resolve => setTimeout(resolve, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY));
+
             const crashGroupQuery = JSON.stringify({
                 os: crashData._os,
                 latest_version: crashData._app_version,
@@ -3104,6 +3108,9 @@ describe('Testing Crashes', function() {
             };
 
             await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`).expect(200);
+
+            await new Promise(resolve => setTimeout(resolve, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY));
+
             const crashGroupQuery = JSON.stringify({
                 os: crashData._os,
                 latest_version: crashData._app_version,
@@ -3129,6 +3136,9 @@ describe('Testing Crashes', function() {
             };
 
             await request.get(`/i?app_key=${APP_KEY}&device_id=${DEVICE_ID}&crash=${JSON.stringify(crashData)}`).expect(200);
+
+            await new Promise(resolve => setTimeout(resolve, 100 * testUtils.testScalingFactor + EXTRA_TEST_DELAY));
+
             const crashGroupQuery = JSON.stringify({
                 os: crashData._os,
                 latest_version: crashData._app_version,
@@ -3156,6 +3166,8 @@ describe('Testing Crashes', function() {
             await request.get('/i')
                 .query({ app_key: APP_KEY, device_id: DEVICE_ID, crash: JSON.stringify(crashData) })
                 .expect(200);
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
             const crashGroupQuery = JSON.stringify({
                 latest_version: { $in: [`${crashData._app_version}`] },

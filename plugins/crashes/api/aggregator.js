@@ -114,6 +114,57 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
     }
 };
 
+const recalculateStats = async function(currEvent) {
+    const avPrev = currEvent.up_extra?.av_prev;
+    const avLatest = currEvent.up?.av;
+    const isAvNewer = avPrev && avLatest && common.versionCompare(avLatest, avPrev) > 0;
+
+    if ((typeof currEvent.up_extra?.hadFatalCrash !== 'undefined' || typeof currEvent.up_extra?.hadNonfatalCrash !== 'undefined') && isAvNewer) {
+        const crashuserCollectionName = `app_crashusers${currEvent.a}`;
+        const crashgroupCollectionName = `app_crashgroups${currEvent.a}`;
+
+        const crashusers = await common.db.collection(crashuserCollectionName)
+            .find({ uid: currEvent.uid, group: { $ne: 0 } }, { group: 1, _id: 0 })
+            .toArray();
+
+        let shouldRecalculate = false;
+        for await (const cu of crashusers) {
+            const crashgroupId = cu.group;
+            const crashgroup = await common.db.collection(crashgroupCollectionName)
+                .findOne({ groups: crashgroupId });
+
+            if (crashgroup && crashgroup.is_resolved && crashgroup.resolved_version) {
+                if (common.versionCompare(avLatest, crashgroup.resolved_version.replace(/\./g, ":")) > 0) {
+
+                    //update crash stats
+                    common.db.collection(crashuserCollectionName).deleteMany({group: crashgroupId, uid: currEvent.uid});
+                    common.db.collection(crashgroupCollectionName).updateOne({_id: crashgroupId, users: {$gt: 0} }, {$inc: {users: -1}});
+                    const mod = {crashes: -1};
+                    if (!crashgroup.nonfatal) {
+                        mod.fatal = -1;
+                    }
+
+                    const crashuser = await common.db.collection(crashuserCollectionName)
+                        .findOneAndUpdate({group: 0, uid: currEvent.uid}, {$inc: mod}, {upsert: true, returnNewDocument: true});
+                    if (crashuser && crashuser.crashes <= 0) {
+                        common.db.collection(crashuserCollectionName).deleteMany({group: 0, uid: currEvent.uid});
+                    }
+
+                    shouldRecalculate = true;
+                }
+            }
+        }
+
+        if (shouldRecalculate) {
+            const userCount = await common.db.collection(crashuserCollectionName)
+                .countDocuments({ group: 0, crashes: { $gt: 0 } });
+            const userFatalCount = await common.db.collection(crashuserCollectionName)
+                .countDocuments({ group: 0, crashes: { $gt: 0 }, fatal: { $gt: 0 } });
+            common.db.collection(crashgroupCollectionName)
+                .updateOne({ _id: 'meta' }, { $set: { users: userCount, usersfatal: userFatalCount } });
+        }
+    }
+};
 
 (() => {
     plugins.register('/aggregator', async() => {
@@ -230,11 +281,10 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
 
                                 const user = await common.db.collection('app_crashusers' + params.app_id).findOneAndUpdate({group: hash, 'uid': currEvent.uid}, {$set: set, $inc: {reports: 1}}, {upsert: true, new: false, returnDocument: 'before', returnNewDocument: false});
 
-                                let AllUsersUpdate = {$set: {group: 0, 'uid': currEvent.uid}};
+                                let AllUsersUpdate = {$set: {group: 0, uid: currEvent.uid}};
                                 if (!user || !user.reports) {
                                     const inc = {crashes: 1};
                                     if (groupSet.nonfatal === false) {
-                                        inc.usersfatal = 1;
                                         inc.fatal = 1;
                                     }
                                     AllUsersUpdate.$inc = inc;
@@ -381,15 +431,17 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                                 };
 
                                 const crashGroup = await common.db.collection('app_crashgroups' + params.app_id).findOneAndUpdate({'groups': {$elemMatch: {$eq: hash}}}, update, {upsert: true, new: false, returnDocument: 'before', returnNewDocument: false});
-                                if (!crashGroup) {
+                                const crashgroupIsNew = (!crashGroup || !crashGroup.reports) ? true : false;
+                                if (crashgroupIsNew) {
                                     metaInc.isnew = 1;
                                     metaInc.crashes = 1;
                                 }
+
                                 let lastTs;
 
                                 if (crashGroup) {
                                     lastTs = crashGroup.lastTs;
-                                    if (crashGroup.latest_version !== currEvent.sg.app_version) {
+                                    if (crashGroup && !crashgroupIsNew) {
                                         let group = {};
                                         if (crashGroup.latest_version && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.latest_version.replace(/\./g, ':')) > 0) {
                                             group.latest_version = currEvent.sg.app_version;
@@ -410,6 +462,8 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                                         if (crashGroup.resolved_version && crashGroup.is_resolved && common.versionCompare(currEvent.sg.app_version.replace(/\./g, ':'), crashGroup.resolved_version.replace(/\./g, ':')) > 0) {
                                             group.is_resolved = false;
                                             group.is_renewed = true;
+                                            metaInc.reoccurred = 1;
+                                            metaInc.resolved = -1;
                                         }
                                         if (Object.keys(group).length > 0) {
                                             common.db.collection('app_crashgroups' + params.app_id).updateOne({'groups': {$elemMatch: {$eq: hash}}}, {$set: group}, function() {});
@@ -511,13 +565,16 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                                 //WE DON"T know platfirm and version from previous session. So it if changes  - new model is not recording that.
                                 recordCustomMetric(params, 'crashdata', params.app_id, metrics, 1, null, ['cr_u'], lastTs, token, localWriteBatcher);
                                 if (platform && version) {
-                                    recordCustomMetric(params, 'crashdata', `${platform}**${version}**${params.app_id}`, metrics, 1, null, ['cr_u'], lastTs, token, localWriteBatcher);
+                                    const ts = platform === currEvent.up_extra?.p_prev && version === currEvent.up_extra?.av_prev ? lastTs : 0;
+                                    recordCustomMetric(params, 'crashdata', `${platform}**${version}**${params.app_id}`, metrics, 1, null, ['cr_u'], ts, token, localWriteBatcher);
                                 }
                                 if (platform) {
-                                    recordCustomMetric(params, 'crashdata', `${platform}**any**${params.app_id}`, metrics, 1, null, ['cr_u'], lastTs, token, localWriteBatcher);
+                                    const ts = platform === currEvent.up_extra?.p_prev ? lastTs : 0;
+                                    recordCustomMetric(params, 'crashdata', `${platform}**any**${params.app_id}`, metrics, 1, null, ['cr_u'], ts, token, localWriteBatcher);
                                 }
                                 if (version) {
-                                    recordCustomMetric(params, 'crashdata', `any**${version}**${params.app_id}`, metrics, 1, null, ['cr_u'], lastTs, token, localWriteBatcher);
+                                    const ts = version === currEvent.up_extra?.av_prev ? lastTs : 0;
+                                    recordCustomMetric(params, 'crashdata', `any**${version}**${params.app_id}`, metrics, 1, null, ['cr_u'], ts, token, localWriteBatcher);
                                 }
                             }
                         });
@@ -588,24 +645,27 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
                             }
 
                             if (app && '_id' in app) {
-                                const params = {app_id: currEvent.a, app, time: common.initTimeObj(app.timezone, currEvent.ts), appTimezone: (app.timezone || 'UTC')};
+                                await recalculateStats(currEvent);
+                                const params = {
+                                    app_id: currEvent.a,
+                                    app,
+                                    time: common.initTimeObj(app.timezone, currEvent.ts),
+                                    appTimezone: (app.timezone || 'UTC')
+                                };
                                 const platform = currEvent.up?.p;
-                                const version = currEvent.up?.av;
+                                const version = currEvent.up_extra?.av_prev || currEvent.up?.av;
 
                                 // check if it is not user's first session
                                 if (currEvent.up?.ls) {
-                                    // get app user to get more details about crash user
-                                    const currUser = await common.db.collection(`app_users${currEvent.a}`).findOne({ _id: currEvent._uid });
-
                                     const fatalMetrics = [];
 
-                                    if (!currUser?.hadFatalCrash) {
+                                    if (!currEvent.up_extra?.hadFatalCrash) {
                                         fatalMetrics.push('crfses');
                                         fatalMetrics.push('crauf');
                                     }
 
                                     if (fatalMetrics.length) {
-                                        const ts = currEvent.sg?.prev_start || currUser?.hadAnyFatalCrash || 0;
+                                        const ts = currEvent.sg?.prev_start || currEvent.up_extra?.hadAnyFatalCrash || 0;
 
                                         recordCustomMetric(params, 'crashdata', params.app_id, fatalMetrics, 1, null, ['crauf'], ts, token, localWriteBatcher);
                                         recordCustomMetric(params, 'crashdata', `${platform}**${version}**${params.app_id}`, fatalMetrics, 1, null, ['crauf'], ts, token, localWriteBatcher);
@@ -615,13 +675,13 @@ const recordCustomMetric = function(params, collection, id, metrics, value, segm
 
                                     const nonfatalMetrics = [];
 
-                                    if (!currUser?.hadNonfatalCrash) {
+                                    if (!currEvent.up_extra?.hadNonfatalCrash) {
                                         nonfatalMetrics.push('craunf');
                                         nonfatalMetrics.push('crnfses');
                                     }
 
                                     if (nonfatalMetrics.length) {
-                                        const ts = currEvent.sg?.prev_start || currUser?.hadAnyNonfatalCrash || 0;
+                                        const ts = currEvent.sg?.prev_start || currEvent.up_extra?.hadAnyNonfatalCrash || 0;
 
                                         recordCustomMetric(params, 'crashdata', params.app_id, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
                                         recordCustomMetric(params, 'crashdata', `${platform}**${version}**${params.app_id}`, nonfatalMetrics, 1, null, ['craunf'], ts, token, localWriteBatcher);
