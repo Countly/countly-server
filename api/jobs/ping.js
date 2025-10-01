@@ -23,7 +23,6 @@ class PingJob extends job.Job {
 
                 try {
                     var custom = await tracker.getAllData();
-                    console.log("custom", custom);
                     if (Object.keys(custom).length) {
                         user.user_details({"custom": custom });
                     }
