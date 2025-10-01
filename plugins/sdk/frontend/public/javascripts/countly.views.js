@@ -135,207 +135,207 @@
             return {
                 groups: {
                     global: {
-                        label: "Global Controls",
+                        label: CV.i18n("sdk.sbs.title.groups.global"),
                         list: ["tracking", "networking"]
                     },
                     features: {
-                        label: "SDK Features",
+                        label: CV.i18n("sdk.sbs.title.groups.features"),
                         list: ["crt", "vt", "st", "cet", "lt", "ecz", "cr", "rcz"]
                     },
                     settings: {
-                        label: "SDK Settings",
+                        label: CV.i18n("sdk.sbs.title.groups.settings"),
                         list: ["sui", "eqs", "rqs", "czi", "dort", "scui"]
                     },
                     backoff: {
-                        label: "Backoff Settings",
+                        label: CV.i18n("sdk.sbs.title.groups.backoff"),
                         list: ["bom_preset", "bom", "bom_at", "bom_rqp", "bom_ra", "bom_d"]
                     },
                     limits: {
-                        label: "SDK Limits",
+                        label: CV.i18n("sdk.sbs.title.groups.limits"),
                         list: ["lkl", "lvs", "lsv", "lbc", "ltlpt", "ltl"]
                     },
                 },
                 configs: {
                     tracking: {
                         type: "switch",
-                        name: "Allow Tracking",
-                        description: "Enable or disable any tracking (gathering) of data in the SDK (default: enabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.tracking"),
+                        description: CV.i18n("sdk.sbs.msg.configs.tracking"),
                         default: true,
                         enforced: false,
                         value: null
                     },
                     networking: {
                         type: "switch",
-                        name: "Allow Networking",
-                        description: "Enable or disable all networking calls from SDK except SDK behavior call. Does not effect tracking of data (default: enabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.networking"),
+                        description: CV.i18n("sdk.sbs.msg.configs.networking"),
                         default: true,
                         enforced: false,
                         value: null
                     },
                     crt: {
                         type: "switch",
-                        name: "Allow Crash Tracking",
-                        description: "Enable or disable tracking of crashes (default: enabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.crt"),
+                        description: CV.i18n("sdk.sbs.msg.configs.crt"),
                         default: true,
                         enforced: false,
                         value: null
                     },
                     vt: {
                         type: "switch",
-                        name: "Allow View Tracking",
-                        description: "Enable or disable tracking of views (default: enabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.vt"),
+                        description: CV.i18n("sdk.sbs.msg.configs.vt"),
                         default: true,
                         enforced: false,
                         value: null
                     },
                     st: {
                         type: "switch",
-                        name: "Allow Session Tracking",
-                        description: "Enable or disable tracking of sessions (default: enabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.st"),
+                        description: CV.i18n("sdk.sbs.msg.configs.st"),
                         default: true,
                         enforced: false,
                         value: null
                     },
                     sui: {
                         type: "number",
-                        name: "Session Update Interval",
-                        description: "How often to send session update information to server in seconds (default: 60)",
+                        name: CV.i18n("sdk.sbs.title.configs.sui"),
+                        description: CV.i18n("sdk.sbs.msg.configs.sui"),
                         default: 60,
                         enforced: false,
                         value: null
                     },
                     cet: {
                         type: "switch",
-                        name: "Allow Custom Event Tracking",
-                        description: "Enable or disable tracking of custom events (default: enabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.cet"),
+                        description: CV.i18n("sdk.sbs.msg.configs.cet"),
                         default: true,
                         enforced: false,
                         value: null
                     },
                     lt: {
                         type: "switch",
-                        name: "Allow Location Tracking",
-                        description: "Enable or disable tracking of location (default: enabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.lt"),
+                        description: CV.i18n("sdk.sbs.msg.configs.lt"),
                         default: true,
                         enforced: false,
                         value: null
                     },
                     ecz: {
                         type: "switch",
-                        name: "Enable Content Zone",
-                        description: "Enable or disable listening to Journey related contents (default: disabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.ecz"),
+                        description: CV.i18n("sdk.sbs.msg.configs.ecz"),
                         default: false,
                         enforced: false,
                         value: null
                     },
                     cr: {
                         type: "switch",
-                        name: "Require Consent",
-                        description: "Enable or disable requiring consent for tracking (default: disabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.cr"),
+                        description: CV.i18n("sdk.sbs.msg.configs.cr"),
                         default: false,
                         enforced: false,
                         value: null
                     },
                     rqs: {
                         type: "number",
-                        name: "Request Queue Size",
-                        description: "How many requests to store in queue, if SDK cannot connect to server (default: 1000)",
+                        name: CV.i18n("sdk.sbs.title.configs.rqs"),
+                        description: CV.i18n("sdk.sbs.msg.configs.rqs"),
                         default: 1000,
                         enforced: false,
                         value: null
                     },
                     eqs: {
                         type: "number",
-                        name: "Event Queue Size",
-                        description: "How many events to store in queue before they would be batched and sent to server (default: 100)",
+                        name: CV.i18n("sdk.sbs.title.configs.eqs"),
+                        description: CV.i18n("sdk.sbs.msg.configs.eqs"),
                         default: 100,
                         enforced: false,
                         value: null
                     },
                     czi: {
                         type: "number",
-                        name: "Content Zone Interval",
-                        description: "How often to check for new Journey content in seconds (default: 30, min: 15)",
+                        name: CV.i18n("sdk.sbs.title.configs.czi"),
+                        description: CV.i18n("sdk.sbs.msg.configs.czi"),
                         default: 30,
                         enforced: false,
                         value: null
                     },
                     dort: {
                         type: "number",
-                        name: "Request Drop Age",
-                        description: "Provide time in hours after which an old request should be dropped if they are not sent to server (default: 0 = disabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.dort"),
+                        description: CV.i18n("sdk.sbs.msg.configs.dort"),
                         default: 0,
                         enforced: false,
                         value: null
                     },
                     lkl: {
                         type: "number",
-                        name: "Max Key Length",
-                        description: "Maximum length of Event and segment keys (including name) (default: 128)",
+                        name: CV.i18n("sdk.sbs.title.configs.lkl"),
+                        description: CV.i18n("sdk.sbs.msg.configs.lkl"),
                         default: 128,
                         enforced: false,
                         value: null
                     },
                     lvs: {
                         type: "number",
-                        name: "Max Value Size",
-                        description: "Maximum length of an Event's segment value (default: 256)",
+                        name: CV.i18n("sdk.sbs.title.configs.lvs"),
+                        description: CV.i18n("sdk.sbs.msg.configs.lvs"),
                         default: 256,
                         enforced: false,
                         value: null
                     },
                     lsv: {
                         type: "number",
-                        name: "Max Number of Segments",
-                        description: "Maximum amount of segmentation key/value pairs per Event (default: 100)",
+                        name: CV.i18n("sdk.sbs.title.configs.lsv"),
+                        description: CV.i18n("sdk.sbs.msg.configs.lsv"),
                         default: 100,
                         enforced: false,
                         value: null
                     },
                     lbc: {
                         type: "number",
-                        name: "Max Breadcrumb Count",
-                        description: "Maximum breadcrumb count that can be provided by the developer (default: 100)",
+                        name: CV.i18n("sdk.sbs.title.configs.lbc"),
+                        description: CV.i18n("sdk.sbs.msg.configs.lbc"),
                         default: 100,
                         enforced: false,
                         value: null
                     },
                     ltlpt: {
                         type: "number",
-                        name: "Max Trace Line Per Thread",
-                        description: "Maximum stack trace lines that would be recorded per thread (default: 30)",
+                        name: CV.i18n("sdk.sbs.title.configs.ltlpt"),
+                        description: CV.i18n("sdk.sbs.msg.configs.ltlpt"),
                         default: 30,
                         enforced: false,
                         value: null
                     },
                     ltl: {
                         type: "number",
-                        name: "Max Trace Length Per Line",
-                        description: "Maximum length of a stack trace line to be recorded (default: 200)",
+                        name: CV.i18n("sdk.sbs.title.configs.ltl"),
+                        description: CV.i18n("sdk.sbs.msg.configs.ltl"),
                         default: 200,
                         enforced: false,
                         value: null
                     },
                     scui: {
                         type: "number",
-                        name: "SDK Behavior Update Interval",
-                        description: "How often to check for new behavior settings in hours (default: 4)",
+                        name: CV.i18n("sdk.sbs.title.configs.scui"),
+                        description: CV.i18n("sdk.sbs.msg.configs.scui"),
                         default: 4,
                         enforced: false,
                         value: null
                     },
                     rcz: {
                         type: "switch",
-                        name: "Allow Refresh Content Zone",
-                        description: "Enable or disable refreshing Journey content (default: enabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.rcz"),
+                        description: CV.i18n("sdk.sbs.msg.configs.rcz"),
                         default: true,
                         enforced: false,
                         value: null
                     },
                     bom_preset: {
                         type: "preset",
-                        name: "Backoff Preset",
-                        description: "Choose a preset for backoff settings or customize manually",
+                        name: CV.i18n("sdk.sbs.title.configs.bom_preset"),
+                        description: CV.i18n("sdk.sbs.msg.configs.bom_preset"),
                         default: "Default",
                         enforced: false,
                         value: null,
@@ -359,47 +359,47 @@
                     },
                     bom: {
                         type: "switch",
-                        name: "Enable Backoff Mechanism",
-                        description: "Enable or disable backoff mechanism for requests (default: enabled)",
+                        name: CV.i18n("sdk.sbs.title.configs.bom"),
+                        description: CV.i18n("sdk.sbs.msg.configs.bom"),
                         default: true,
                         enforced: false,
                         value: null
                     },
                     bom_at: {
                         type: "number",
-                        name: "Backoff Timeout Limit",
-                        description: "Maximum server delay acceptable before backoff mechanism can kick in (default: 10)",
+                        name: CV.i18n("sdk.sbs.title.configs.bom_at"),
+                        description: CV.i18n("sdk.sbs.msg.configs.bom_at"),
                         default: 10,
                         enforced: false,
                         value: null
                     },
                     bom_rqp: {
                         type: "number",
-                        name: "Backoff Requests Queue Percentage",
-                        description: "Percentage of fullness that is acceptable for backoff mechanism to work (default: 50)",
+                        name: CV.i18n("sdk.sbs.title.configs.bom_rqp"),
+                        description: CV.i18n("sdk.sbs.msg.configs.bom_rqp"),
                         default: 50,
                         enforced: false,
                         value: null
                     },
                     bom_ra: {
                         type: "number",
-                        name: "Backoff Requests Age",
-                        description: "Maximum amount of request age(in hours) that is allowed in backoff (default: 24)",
+                        name: CV.i18n("sdk.sbs.title.configs.bom_ra"),
+                        description: CV.i18n("sdk.sbs.msg.configs.bom_ra"),
                         default: 24,
                         enforced: false,
                         value: null
                     },
                     bom_d: {
                         type: "number",
-                        name: "Backoff Delay",
-                        description: "Delay in seconds that would be applied to requests in backoff (default: 60)",
+                        name: CV.i18n("sdk.sbs.title.configs.bom_d"),
+                        description: CV.i18n("sdk.sbs.msg.configs.bom_d"),
                         default: 60,
                         enforced: false,
                         value: null
                     }
                 },
                 diff: [],
-                description: "Not all SDKs and SDK versions yet support this feature. Refer to respective SDK documentation for more information"
+                description: CV.i18n("sdk.sbs.msg.tooltip"),
             };
         },
         mounted: function() {
@@ -485,11 +485,12 @@
                 if (key && !this.configs[key]) {
                     key = null; // if key is not valid, enforce all
                 }
-                var helper_msg = "You are about to enforce all current settings. This would override these settings in your SDK. Do you want to continue?";
-                var helper_title = "Enforce all current settings?";
+                CV.i18n("remote-config.type.s");
+                var helper_msg = CV.i18n("sdk.sbs.msg.popup.enforce_all");
+                var helper_title = CV.i18n("sdk.sbs.title.popup.enforce_all");
                 if (key) {
-                    helper_msg = "You are about to enforce the current setting. This would override this setting in your SDK. Do you want to continue?";
-                    helper_title = "Enforce current setting?";
+                    helper_msg = CV.i18n("sdk.sbs.msg.popup.enforce");
+                    helper_title = CV.i18n("sdk.sbs.title.popup.enforce");
                 }
                 var self = this;
                 // eslint-disable-next-line no-console
@@ -518,7 +519,7 @@
                     }
                     self.save(enforcement);
                 },
-                ["No, don't enforce", "Yes, enforce"],
+                [CV.i18n("sdk.sbs.button.popup.negative.enforce"), CV.i18n("sdk.sbs.button.popup.positive.enforce")],
                 { title: helper_title }
                 );
             },
@@ -526,8 +527,8 @@
                 if (key && !this.configs[key]) {
                     return;
                 }
-                var helper_msg = "You are about to revert the enforcement of the current setting. Your SDK would use default or developer set value if exist. Do you want to continue?";
-                var helper_title = "Revert Enforced Setting?";
+                var helper_msg = CV.i18n("sdk.sbs.msg.popup.reverse_enforce");
+                var helper_title = CV.i18n("sdk.sbs.title.popup.reverse_enforce");
                 var self = this;
                 CountlyHelpers.confirm(helper_msg, "red", function(result) {
                     if (!result) {
@@ -545,13 +546,13 @@
                         });
                     }
                 },
-                ["No, don't revert", "Yes, revert"],
+                [CV.i18n("sdk.sbs.button.popup.negative.reverse_enforce"), CV.i18n("sdk.sbs.button.popup.positive.reverse_enforce")],
                 { title: helper_title }
                 );
             },
             resetSDKConfiguration: function() {
-                var helper_msg = "You are about to reset your SDK behavior to default state. This would override all these settings if set in your SDK. Do you want to continue?";
-                var helper_title = "Reset Behavior?";
+                var helper_msg = CV.i18n("sdk.sbs.msg.popup.reset_configuration");
+                var helper_title = CV.i18n("sdk.sbs.title.popup.reset_configuration");
                 var self = this;
 
                 CountlyHelpers.confirm(helper_msg, "red", function(result) {
@@ -592,7 +593,7 @@
                         self.save();
                     }
                 },
-                ["No, don't reset", "Yes, reset"],
+                [CV.i18n("sdk.sbs.button.popup.negative.reset_configuration"), CV.i18n("sdk.sbs.button.popup.positive.reset_configuration")],
                 { title: helper_title }
                 );
             },
@@ -679,7 +680,7 @@
             checkSdkSupport: function() {
                 log("checkSdkSupport");
                 for (var key in this.configs) {
-                    this.configs[key].tooltipMessage = "No SDK data present. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this option.";
+                    this.configs[key].tooltipMessage = CV.i18n("sdk.sbs.msg.tooltip.neutral.sdk_support");
                     this.configs[key].tooltipClass = 'tooltip-neutral';
                 }
 
@@ -742,15 +743,15 @@
                         this.compareVersions(context, latestVersions[p.label], configSupportedVersions[p.configKey], p.name);
                     });
                     if (viableSDKCount > 0 && context.supportLevel === viableSDKCount) {
-                        this.configs[configKey].tooltipMessage = 'You are using SDKs that support this option.';
+                        this.configs[configKey].tooltipMessage = CV.i18n("sdk.sbs.msg.tooltip.success.sdk_support");
                         this.configs[configKey].tooltipClass = 'tooltip-success';
                     }
                     else if (context.unsupportedList.length > 0) { // some/all wrong version
-                        this.configs[configKey].tooltipMessage = 'Some SDKs you use do not support this option: ' + context.unsupportedList.join(', ') + '. Try upgrading to the latest version.';
+                        this.configs[configKey].tooltipMessage = CV.i18n("sdk.sbs.msg.tooltip.warning.sdk_support", context.unsupportedList.join(', '));
                         this.configs[configKey].tooltipClass = 'tooltip-warning';
                     }
                     else { // none supported
-                        this.configs[configKey].tooltipMessage = 'None of the SDKs you use support this option. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this option.';
+                        this.configs[configKey].tooltipMessage = CV.i18n("sdk.sbs.msg.tooltip.danger.sdk_support");
                         this.configs[configKey].tooltipClass = 'tooltip-danger';
                     }
                 });
@@ -762,7 +763,7 @@
         priority: 2,
         route: "#/manage/sdk/configurations",
         component: SDKConfigurationView,
-        title: "SDK Behavior Settings",
+        title: CV.i18n("sdk.sbs.title"),
         name: "configurations",
         permission: FEATURE_NAME,
         vuex: [
