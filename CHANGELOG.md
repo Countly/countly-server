@@ -2,6 +2,10 @@
 Fixes:
 - [alerts] Fix: Migrate alerts to the new events model
 
+Enterprise Fixes:
+- [users] Update user custom field number formatting
+- [users] Fix condition for custom property update
+
 
 ## Version 25.03.21
 Fixes:
