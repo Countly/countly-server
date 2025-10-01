@@ -32,6 +32,14 @@ class DeletionManagerJob extends Job {
     }
 
     /**
+     * Get concurrency for the job - do not allow run in parallel
+     * @returns {number} Concurrency level
+     */
+    getConcurrency() {
+        return 1;
+    }
+
+    /**
      * Run the job
      * @param {done} done callback
     */
