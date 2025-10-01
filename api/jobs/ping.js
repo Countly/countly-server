@@ -20,6 +20,11 @@ class PingJob extends job.Job {
                 if (!user) {
                     return done();
                 }
+
+                var custom = tracker.getAllData();
+                if (Object.keys(custom).length) {
+                    user.user_details({"custom": custom });
+                }
                 var days = 90;
                 var current_sync = Date.now();
 

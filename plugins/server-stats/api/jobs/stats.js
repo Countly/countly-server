@@ -118,16 +118,16 @@ class StatsJob extends job.Job {
             data.DP.push((i < 9 ? '0' + (i + 1) : i + 1) + '. ' + order[i] + ': ' + ((DP[order[i]] || 0).toLocaleString()));
         }
         if (avg12) {
-            data['Last 12 months avg'] = Math.round(avg12monthDP / avg12);
+            data.DPAvg12months = Math.round(avg12monthDP / avg12);
         }
         if (avg6) {
-            data['Last 6 months avg'] = Math.round(avg6monthDP / avg6);
+            data.DPAvg6months = Math.round(avg6monthDP / avg6);
         }
         if (lastMonthDP) {
-            data['Last month'] = lastMonthDP;
+            data.DPLastMonth = lastMonthDP;
         }
         if (thisMonthDP) {
-            data['This month'] = thisMonthDP;
+            data.DPThisMonth = thisMonthDP;
         }
 
         return data;

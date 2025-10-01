@@ -79,10 +79,10 @@ tracker.enable = function() {
             Countly.track_errors();
         }
         setTimeout(function() {
-            if (plugins.getConfig("tracking").server_user_details) {
-                collectServerStats();
+            var custom = tracker.getAllData();
+            if (Object.keys(custom).length) {
+                Countly.user_details({"custom": custom });
             }
-            collectServerData();
         }, 20000);
     }
 };
@@ -168,40 +168,44 @@ tracker.getSDK = function() {
 /**
 * Get server stats
 **/
-function collectServerStats() { // eslint-disable-line no-unused-vars
+tracker.collectServerStats = function() {
+    var props = {};
     stats.getServer(common.db, function(data) {
         common.db.collection("apps").aggregate([{$project: {last_data: 1}}, {$sort: {"last_data": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errApps, resApps) {
             common.db.collection("members").aggregate([{$project: {last_login: 1}}, {$sort: {"last_login": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errLogin, resLogin) {
                 if (resApps && resApps[0]) {
-                    Countly.userData.set("last_data", resApps[0].last_data || 0);
+                    props.last_data = resApps[0].last_data || 0;
                 }
                 if (resLogin && resLogin[0]) {
-                    Countly.userData.set("last_login", resLogin[0].last_login || 0);
+                    props.last_login = resLogin[0].last_login || 0;
                 }
                 if (data) {
                     if (data.app_users) {
-                        Countly.userData.set("app_users", data.app_users);
+                        props.app_users = data.app_users;
                     }
                     if (data.apps) {
-                        Countly.userData.set("apps", data.apps);
+                        props.apps = data.apps;
                     }
                     if (data.users) {
-                        Countly.userData.set("users", data.users);
+                        props.users = data.users;
                     }
                 }
-                Countly.userData.save();
+                return props;
             });
         });
     });
-}
+};
 
 /**
 * Get server data
+* @returns {Object} server data
 **/
-function collectServerData() {
-    Countly.userData.set("trial", versionInfo.trial ? true : false);
-    Countly.userData.set("plugins", plugins.getPlugins());
-    Countly.userData.set("nodejs", process.version);
+tracker.collectServerData = function() {
+    var props = {};
+    props.trial = versionInfo.trial ? true : false;
+    props.plugins = plugins.getPlugins();
+    props.nodejs = process.version;
+    props.countly = versionInfo.version;
     var edition = "Lite";
     if (IS_FLEX) {
         edition = "Flex";
@@ -209,12 +213,25 @@ function collectServerData() {
     else if (versionInfo.type !== "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") {
         edition = "Enterprise";
     }
-    Countly.userData.set("edition", edition);
+    props.edition = edition;
     if (common.db.build && common.db.build.version) {
-        Countly.userData.set("mongodb", common.db.build.version);
+        props.mongodb = common.db.build.version;
     }
-    Countly.userData.save();
-}
+    return props;
+};
+
+/**
+ * Get all eligible data
+ * @returns {Object} all eligible data
+ */
+tracker.getAllData = function() {
+    var props = {};
+    if (plugins.getConfig("tracking").server_user_details) {
+        Object.assign(props, tracker.collectServerStats());
+    }
+    Object.assign(props, tracker.collectServerData());
+    return props;
+};
 
 /**
 * Strip traling slashes from url
