@@ -79,10 +79,11 @@ tracker.enable = function() {
             Countly.track_errors();
         }
         setTimeout(function() {
-            var custom = tracker.getAllData();
-            if (Object.keys(custom).length) {
-                Countly.user_details({"custom": custom });
-            }
+            tracker.getAllData().then((custom) => {
+                if (Object.keys(custom).length) {
+                    Countly.user_details({"custom": custom });
+                }
+            });
         }, 20000);
     }
 };
@@ -167,30 +168,33 @@ tracker.getSDK = function() {
 
 /**
 * Get server stats
+* @returns {Promise<Object>} server stats
 **/
 tracker.collectServerStats = function() {
     var props = {};
-    stats.getServer(common.db, function(data) {
-        common.db.collection("apps").aggregate([{$project: {last_data: 1}}, {$sort: {"last_data": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errApps, resApps) {
-            common.db.collection("members").aggregate([{$project: {last_login: 1}}, {$sort: {"last_login": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errLogin, resLogin) {
-                if (resApps && resApps[0]) {
-                    props.last_data = resApps[0].last_data || 0;
-                }
-                if (resLogin && resLogin[0]) {
-                    props.last_login = resLogin[0].last_login || 0;
-                }
-                if (data) {
-                    if (data.app_users) {
-                        props.app_users = data.app_users;
+    return new Promise((resolve) => {
+        stats.getServer(common.db, function(data) {
+            common.db.collection("apps").aggregate([{$project: {last_data: 1}}, {$sort: {"last_data": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errApps, resApps) {
+                common.db.collection("members").aggregate([{$project: {last_login: 1}}, {$sort: {"last_login": -1}}, {$limit: 1}], {allowDiskUse: true}, function(errLogin, resLogin) {
+                    if (resApps && resApps[0]) {
+                        props.last_data = resApps[0].last_data || 0;
                     }
-                    if (data.apps) {
-                        props.apps = data.apps;
+                    if (resLogin && resLogin[0]) {
+                        props.last_login = resLogin[0].last_login || 0;
                     }
-                    if (data.users) {
-                        props.users = data.users;
+                    if (data) {
+                        if (data.app_users) {
+                            props.app_users = data.app_users;
+                        }
+                        if (data.apps) {
+                            props.apps = data.apps;
+                        }
+                        if (data.users) {
+                            props.users = data.users;
+                        }
                     }
-                }
-                return props;
+                    resolve(props);
+                });
             });
         });
     });
@@ -200,12 +204,13 @@ tracker.collectServerStats = function() {
 * Get server data
 * @returns {Object} server data
 **/
-tracker.collectServerData = function() {
+tracker.collectServerData = async function() {
     var props = {};
     props.trial = versionInfo.trial ? true : false;
     props.plugins = plugins.getPlugins();
     props.nodejs = process.version;
     props.countly = versionInfo.version;
+    props.docker = hasDockerEnv() || hasDockerCGroup() || hasDockerMountInfo();
     var edition = "Lite";
     if (IS_FLEX) {
         edition = "Flex";
@@ -217,6 +222,14 @@ tracker.collectServerData = function() {
     if (common.db.build && common.db.build.version) {
         props.mongodb = common.db.build.version;
     }
+    const sdkData = await tracker.getSDKData();
+    if (sdkData && sdkData.sdk_versions && Object.keys(sdkData.sdk_versions).length) {
+        props.sdks = Object.keys(sdkData.sdk_versions);
+        for (const [key, value] of Object.entries(sdkData.sdk_versions)) {
+            props[key] = value;
+        }
+    }
+
     return props;
 };
 
@@ -224,14 +237,214 @@ tracker.collectServerData = function() {
  * Get all eligible data
  * @returns {Object} all eligible data
  */
-tracker.getAllData = function() {
+tracker.getAllData = async function() {
     var props = {};
     if (plugins.getConfig("tracking").server_user_details) {
-        Object.assign(props, tracker.collectServerStats());
+        Object.assign(props, await tracker.collectServerStats());
     }
-    Object.assign(props, tracker.collectServerData());
+    Object.assign(props, await tracker.collectServerData());
     return props;
 };
+
+/**
+ * Query sdks collection for current and previous year (month 0) and combine meta_v2 data
+ * @returns {Promise<Object>} Combined meta_v2 data from all matching documents
+ */
+tracker.getSDKData = async function() {
+    var currentYear = new Date().getFullYear();
+    var previousYear = currentYear - 1;
+
+    // Build regex pattern to match: appid_YYYY:0_shard
+    // Matches any app ID, year (current or previous), month 0, and any shard number
+    var yearPattern = `(${currentYear}|${previousYear})`;
+    var pattern = new RegExp(`^[a-f0-9]{24}_${yearPattern}:0_\\d+$`);
+
+    try {
+        // Use aggregation pipeline to combine meta_v2 data on MongoDB side
+        var pipeline = [
+            // Match documents for current and previous year, month 0, any shard
+            {
+                $match: {
+                    _id: pattern
+                }
+            },
+            // Project only meta_v2 field and convert to array of key-value pairs
+            {
+                $project: {
+                    meta_v2: { $objectToArray: "$meta_v2" }
+                }
+            },
+            // Unwind meta_v2 array to process each meta key separately
+            {
+                $unwind: "$meta_v2"
+            },
+            // Convert nested objects to arrays for merging
+            {
+                $project: {
+                    metaKey: "$meta_v2.k",
+                    metaValue: { $objectToArray: "$meta_v2.v" }
+                }
+            },
+            // Unwind nested values
+            {
+                $unwind: "$metaValue"
+            },
+            // Group by meta key and inner key to collect all unique combinations
+            {
+                $group: {
+                    _id: {
+                        metaKey: "$metaKey",
+                        innerKey: "$metaValue.k"
+                    },
+                    value: { $first: "$metaValue.v" }
+                }
+            },
+            // Group by meta key to rebuild nested structure
+            {
+                $group: {
+                    _id: "$_id.metaKey",
+                    values: {
+                        $push: {
+                            k: "$_id.innerKey",
+                            v: "$value"
+                        }
+                    }
+                }
+            },
+            // Convert arrays back to objects
+            {
+                $project: {
+                    _id: 0,
+                    k: "$_id",
+                    v: { $arrayToObject: "$values" }
+                }
+            },
+            // Group all into single document
+            {
+                $group: {
+                    _id: null,
+                    meta_v2: {
+                        $push: {
+                            k: "$k",
+                            v: "$v"
+                        }
+                    }
+                }
+            },
+            // Convert final array to object
+            {
+                $project: {
+                    _id: 0,
+                    meta_v2: { $arrayToObject: "$meta_v2" }
+                }
+            }
+        ];
+
+        var result = await common.db.collection("sdks").aggregate(pipeline).toArray();
+
+        // Extract combined meta_v2 or return empty object if no results
+        var combinedMeta = (result && result[0] && result[0].meta_v2) ? result[0].meta_v2 : {};
+
+        // Process sdk_version to extract highest version per SDK
+        var sdkVersions = {};
+        if (combinedMeta.sdk_version) {
+            for (var versionKey in combinedMeta.sdk_version) {
+                // Parse SDK version format: [sdk_name]_major:minor:patch
+                var match = versionKey.match(/^\[([^\]]+)\]_(\d+):(\d+):(\d+)$/);
+                if (match) {
+                    var sdkName = match[1];
+                    var major = parseInt(match[2], 10);
+                    var minor = parseInt(match[3], 10);
+                    var patch = parseInt(match[4], 10);
+
+                    // Check if this SDK exists and compare versions
+                    if (!sdkVersions[sdkName]) {
+                        sdkVersions[sdkName] = {
+                            version: `${major}.${minor}.${patch}`,
+                            major: major,
+                            minor: minor,
+                            patch: patch
+                        };
+                    }
+                    else {
+                        var current = sdkVersions[sdkName];
+                        // Compare versions (major.minor.patch)
+                        if (major > current.major ||
+                            (major === current.major && minor > current.minor) ||
+                            (major === current.major && minor === current.minor && patch > current.patch)) {
+                            sdkVersions[sdkName] = {
+                                version: `${major}.${minor}.${patch}`,
+                                major: major,
+                                minor: minor,
+                                patch: patch
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
+        // Convert to simple object with just SDK name -> version string
+        var simpleSdkVersions = {};
+        for (var sdk in sdkVersions) {
+            simpleSdkVersions[`sdk_${sdk}`] = sdkVersions[sdk].version;
+        }
+
+        return {
+            meta_v2: combinedMeta,
+            sdk_versions: simpleSdkVersions,
+            years: [previousYear, currentYear],
+            month: 0
+        };
+    }
+    catch (error) {
+        logger("tracker:server").error("Error querying SDK data:", error);
+        return {
+            meta_v2: {},
+            error: error.message
+        };
+    }
+};
+
+/**
+ * Check if running in Docker environment
+ * @returns {boolean} if running in docker
+ */
+function hasDockerEnv() {
+    try {
+        fs.statSync('/.dockerenv');
+        return true;
+    }
+    catch {
+        return false;
+    }
+}
+
+/** 
+ * Check if running in Docker by inspecting cgroup info
+ * @returns {boolean} if running in docker
+ */
+function hasDockerCGroup() {
+    try {
+        return fs.readFileSync('/proc/self/cgroup', 'utf8').includes('docker');
+    }
+    catch {
+        return false;
+    }
+}
+
+/** 
+ * Check if running in Docker by inspecting mountinfo
+ * @returns {boolean} if running in docker
+ */
+function hasDockerMountInfo() {
+    try {
+        return fs.readFileSync('/proc/self/mountinfo', 'utf8').includes('/docker/containers/');
+    }
+    catch {
+        return false;
+    }
+}
 
 /**
 * Strip traling slashes from url

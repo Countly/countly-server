@@ -40,8 +40,8 @@ describe('Stats job', () => {
         console.log('All Data:', allData);
         console.log(monthlyData);
 
-        should(monthlyData['Last 6 months avg']).equal(1000);
-        should(monthlyData['Last 12 months avg']).equal(1000);
+        should(monthlyData['DPAvg6months']).equal(1000);
+        should(monthlyData['DPAvg12months']).equal(1000);
 
         const expectedDP = [];
         for (let count = 0; count < 12; count += 1) {

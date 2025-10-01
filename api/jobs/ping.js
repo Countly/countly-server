@@ -21,9 +21,15 @@ class PingJob extends job.Job {
                     return done();
                 }
 
-                var custom = tracker.getAllData();
-                if (Object.keys(custom).length) {
-                    user.user_details({"custom": custom });
+                try {
+                    var custom = await tracker.getAllData();
+                    console.log("custom", custom);
+                    if (Object.keys(custom).length) {
+                        user.user_details({"custom": custom });
+                    }
+                }
+                catch (ex) {
+                    console.log("Error collecting server data:", ex);
                 }
                 var days = 90;
                 var current_sync = Date.now();
