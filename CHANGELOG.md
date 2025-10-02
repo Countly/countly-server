@@ -1,3 +1,8 @@
+## Version 25.03.X
+Fixes:
+- [alerts] Fix: Migrate alerts to the new events model
+
+
 ## Version 25.03.21
 Fixes:
 - [feedback] Prevent showing the application when switching between the NPS and Survey pages
