@@ -2,6 +2,9 @@
 Fixes:
 - [alerts] Fix: Migrate alerts to the new events model
 
+Enterprise Fixes:
+- [users] Fix add/remove user to profile group
+
 
 ## Version 25.03.21
 Fixes:
