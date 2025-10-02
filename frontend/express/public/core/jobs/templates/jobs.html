@@ -113,19 +113,6 @@
                         </template>
                     </el-table-column>
 
-                    <!-- Total Column (if needed) -->
-                    <el-table-column
-                        prop="total"
-                        :label="i18n('jobs.job-total-scheduled')"
-                        sortable="custom"
-                    >
-                        <template v-slot="scope">
-                            <p :data-test-id="'datatable-jobs-total-' + scope.$index">
-                                {{ scope.row.total }}
-                            </p>
-                        </template>
-                    </el-table-column>
-
                     <!-- Last Run Status Column -->
                     <el-table-column
                         prop="lastRunStatus"
@@ -149,6 +136,19 @@
                             >
                                 <i class="ion-alert-circled bu-ml-2" style="color: #D23F00;"></i>
                             </el-tooltip>
+                        </template>
+                    </el-table-column>
+
+                    <!-- Total Column (if needed) -->
+                    <el-table-column
+                        prop="total"
+                        :label="i18n('jobs.job-total-runs')"
+                        sortable="custom"
+                    >
+                        <template v-slot="scope">
+                            <p class="bu-is-family-code" :data-test-id="'datatable-jobs-total-' + scope.$index">
+                                {{ scope.row.total }}
+                            </p>
                         </template>
                     </el-table-column>
 
