@@ -32,7 +32,12 @@ const validOptions = [
     "bom_at",
     "bom_rqp",
     "bom_ra",
-    "bom_d"
+    "bom_d",
+    "upcl", // user property cache. dart only
+    "eb", // event blacklist dart only
+    "upb", // user property blacklist dart only
+    "sb", // segment blacklist dart only
+    "esb" // event segment blacklist dart only
 ];
 
 plugins.register("/permissions/features", function(ob) {

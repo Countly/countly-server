@@ -121,7 +121,38 @@
                 var enforceData = enforcement || {};
                 for (var key in this.configs) {
                     if (this.diff.indexOf(key) === -1) {
-                        this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
+                        var stored = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
+                        // format experimental fields for UI
+                        if (key === 'eb' || key === 'upb' || key === 'sb') {
+                            if (Array.isArray(stored)) {
+                                this.configs[key].value = stored.join(',');
+                            }
+                            else if (typeof stored === 'string') {
+                                this.configs[key].value = stored;
+                            }
+                            else {
+                                this.configs[key].value = '';
+                            }
+                        }
+                        else if (key === 'esb') {
+                            if (typeof stored === 'object') {
+                                try {
+                                    this.configs[key].value = JSON.stringify(stored, null, 2);
+                                }
+                                catch (ex) {
+                                    this.configs[key].value = '{}';
+                                }
+                            }
+                            else if (typeof stored === 'string') {
+                                this.configs[key].value = stored;
+                            }
+                            else {
+                                this.configs[key].value = '{}';
+                            }
+                        }
+                        else {
+                            this.configs[key].value = stored;
+                        }
                         this.configs[key].enforced = !!enforceData[key];
                     }
                 }
@@ -153,6 +184,10 @@
                     limits: {
                         label: "SDK Limits",
                         list: ["lkl", "lvs", "lsv", "lbc", "ltlpt", "ltl"]
+                    },
+                    experimental: {
+                        label: "Experimental",
+                        list: ["upcl", "eb", "upb", "sb", "esb"]
                     },
                 },
                 configs: {
@@ -396,6 +431,50 @@
                         default: 60,
                         enforced: false,
                         value: null
+                    },
+                    upcl: {
+                        type: "number",
+                        name: "User Property Cache",
+                        description: "How many user property to store in cache before they would be batched and sent to server (default: 100)",
+                        default: 100,
+                        enforced: false,
+                        value: null
+                    },
+                    eb: {
+                        type: "text",
+                        name: "Event Blacklist",
+                        description: "Comma separated list of custom event keys to blacklist in SDK (default: empty)",
+                        default: "",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'event1,event2,event3' }
+                    },
+                    upb: {
+                        type: "text",
+                        name: "User Property Blacklist",
+                        description: "Comma separated list of user property keys to blacklist in SDK (default: empty)",
+                        default: "",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'prop1,prop2' }
+                    },
+                    sb: {
+                        type: "text",
+                        name: "Segmentation Blacklist",
+                        description: "Comma separated list of segmentation keys to blacklist in SDK (default: empty)",
+                        default: "",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'key1,key2' }
+                    },
+                    esb: {
+                        type: "text",
+                        name: "Event Segmentation Blacklist",
+                        description: "Arrays of segmentation keys to blacklist for specific events. Example: { \"event1\": [\"seg1\", \"seg2\"] }",
+                        default: "{}",
+                        enforced: false,
+                        value: null,
+                        attrs: { type: 'textarea', rows: 6, placeholder: '{"event1": ["seg1","seg2"]}' }
                     }
                 },
                 diff: [],
@@ -589,6 +668,15 @@
                         }
                     }
                     if (self.diff.length !== 0) {
+                        try {
+                            if (typeof self.configs.esb.value === 'string') {
+                                JSON.parse(self.configs.esb.value || '{}');
+                            }
+                        }
+                        catch (ex) {
+                            CountlyHelpers.notify({ message: ex.message || 'Invalid experimental configuration', sticky: false, type: 'error' });
+                            return;
+                        }
                         self.save();
                     }
                 },
@@ -602,9 +690,47 @@
                 log(`save: ${JSON.stringify(params)} and diff: ${JSON.stringify(this.diff)}`);
                 var data = params || {};
                 for (var i = 0; i < this.diff.length; i++) {
-                    log(`save: ${this.diff[i]} = ${this.configs[this.diff[i]].value}`);
-                    data[this.diff[i]] = this.configs[this.diff[i]].value;
-                    this.configs[this.diff[i]].enforced = true;
+                    var dkey = this.diff[i];
+                    var val = this.configs[dkey].value;
+                    if (dkey === 'eb' || dkey === 'upb' || dkey === 'sb') {
+                        // trimmed
+                        if (typeof val === 'string') {
+                            var arr = val.split(',').map(function(s) {
+                                return s.trim();
+                            }).filter(function(s) {
+                                return s.length > 0;
+                            });
+                            data[dkey] = arr;
+                        }
+                        else if (Array.isArray(val)) {
+                            data[dkey] = val;
+                        }
+                        else {
+                            data[dkey] = [];
+                        }
+                    }
+                    else if (dkey === 'esb') {
+                        if (typeof val === 'string') {
+                            try {
+                                data[dkey] = JSON.parse(val || '{}');
+                            }
+                            catch (ex) {
+                                CountlyHelpers.notify({ message: 'Event Segmentation Blacklist contains invalid JSON', sticky: false, type: 'error' });
+                                return;
+                            }
+                        }
+                        else if (typeof val === 'object') {
+                            data[dkey] = val;
+                        }
+                        else {
+                            data[dkey] = {};
+                        }
+                    }
+                    else {
+                        data[dkey] = val;
+                    }
+                    log(`save: ${dkey} = ${JSON.stringify(data[dkey])}`);
+                    this.configs[dkey].enforced = true;
                 }
                 if (!enforcement) {
                     enforcement = {};
@@ -627,7 +753,37 @@
                 log("unpatch", params);
                 var data = params || {};
                 for (var key in this.configs) {
-                    this.configs[key].value = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
+                    var stored = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
+                    if (key === 'eb' || key === 'upb' || key === 'sb') {
+                        if (Array.isArray(stored)) {
+                            this.configs[key].value = stored.join(',');
+                        }
+                        else if (typeof stored === 'string') {
+                            this.configs[key].value = stored;
+                        }
+                        else {
+                            this.configs[key].value = '';
+                        }
+                    }
+                    else if (key === 'esb') {
+                        if (typeof stored === 'object') {
+                            try {
+                                this.configs[key].value = JSON.stringify(stored, null, 2);
+                            }
+                            catch (ex) {
+                                this.configs[key].value = '{}';
+                            }
+                        }
+                        else if (typeof stored === 'string') {
+                            this.configs[key].value = stored;
+                        }
+                        else {
+                            this.configs[key].value = '{}';
+                        }
+                    }
+                    else {
+                        this.configs[key].value = stored;
+                    }
                 }
             },
             semverToNumber: function(version) {
@@ -680,6 +836,9 @@
                 log("checkSdkSupport");
                 for (var key in this.configs) {
                     this.configs[key].tooltipMessage = "No SDK data present. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this option.";
+                    if (key === 'upcl' || key === 'eb' || key === 'upb' || key === 'sb' || key === 'esb') {
+                        this.configs[key].tooltipMessage = "This is an experimental option. SDK support for this option may be limited or unavailable.";
+                    }
                     this.configs[key].tooltipClass = 'tooltip-neutral';
                 }
 
