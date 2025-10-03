@@ -173,14 +173,29 @@ var testUtils = function testUtils() {
 
     this.triggerJobToRun = function(jobName, callback) {
         var request = reqq.agent(this.url);
+        var self = this;
         request.get("/jobs/i?jobName=" + encodeURIComponent(jobName) + "&action=runNow&api_key=" + props.API_KEY_ADMIN)
             .expect(200)
-            .end(function(err, res) {
+            .end(async function(err, res) {
                 console.log(res.text);
                 if (err) {
                     callback(err);
                 }
                 else {
+                    var retries = 10;
+                    for (var i = 0; i < retries; i++) {
+                        //do query to check if deletions are done
+                        var del = await self.db.collection("deletion_manager").findOne({});
+                        if (!del) {
+                            i = retries;
+                        }
+                        else {
+                            console.log("Waiting for deletions to finish...");
+                            await new Promise(r => setTimeout(r, 5000));
+
+                        }
+                    }
+                    //
                     callback();
                 }
             });
