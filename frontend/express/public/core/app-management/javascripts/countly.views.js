@@ -394,6 +394,7 @@
                                 });
                                 self.$store.dispatch("countlyCommon/addToAllApps", data);
                                 self.$store.dispatch("countlyCommon/updateActiveApp", data._id + "");
+                                countlyCommon.setActiveApp(data._id);
                                 if (self.firstApp) {
                                     countlyCommon.ACTIVE_APP_ID = data._id + "";
                                     app.onAppManagementSwitch(data._id + "", data && data.type || "mobile");
