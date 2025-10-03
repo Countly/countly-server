@@ -1,6 +1,7 @@
 var should = require('should');
 var countlyConfig = require("../frontend/express/config.js");
 var common = require('../api/utils/common.js');
+const reqq = require('supertest');
 should.Assertion.add('haveSameItems', function(other) {
     this.params = { operator: 'to be have same items' };
 
@@ -171,19 +172,17 @@ var testUtils = function testUtils() {
     };
 
     this.triggerJobToRun = function(jobName, callback) {
-        this.db.collection("jobConfigs").updateOne({ jobName: jobName}, {$set: {runNow: true}}, function(err, res) {
-            if (err) {
-                callback(err);
-            }
-            else {
-                if (res.result.nModified === 0) {
-                    callback("Job not found");
+        var request = reqq.agent(this.url);
+        request.get("/jobs/i?jobName=" + encodeURIComponent(jobName) + "&action=runNow&api_key=" + props.API_KEY_ADMIN)
+            .expect(200)
+            .end(function(err, res) {
+                if (err) {
+                    callback(err);
                 }
                 else {
                     callback();
                 }
-            }
-        });
+            });
     };
 
     this.triggerMergeProcessing = function(callback) {

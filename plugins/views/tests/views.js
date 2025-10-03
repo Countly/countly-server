@@ -623,8 +623,16 @@ describe('Testing views plugin', function() {
                     if (err) {
                         console.log(err);
                     }
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 500 * testUtils.testScalingFactor + 2000);
                 });
+        });
+        it('Trigger deletion job to run to clean out data completely from granular data', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", function(error) {
+                if (error) {
+                    console.log(error);
+                }
+                setTimeout(done, 500 * testUtils.testScalingFactor + 2000);
+            });
         });
         verifyTotals("30days");
     });
@@ -996,11 +1004,7 @@ describe('Testing views plugin', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
                 });
         });
-        it("wait", function(done) {
-            setTimeout(done, 30000);
-        });
         verifyTotals("30days");
-
         it("End the first view(should not flush yet)", function(done) {
             var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "dur": 100, "segmentation": {"name": "testviewFirst"}}]);
             request
@@ -1046,14 +1050,8 @@ describe('Testing views plugin', function() {
         verifyTotals("30days");
     });
 
-    describe("wait", function() {
-        it("waiting some time for db to settle", function(done) {
-            setTimeout(done, 30000);
-        });
-    });
-
     describe('reset app', function() {
-        it('should reset data', function(done) {
+        it('trigger reset endpoint', function(done) {
             var params = {app_id: APP_ID, "period": "reset"};
             request
                 .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
@@ -1066,6 +1064,11 @@ describe('Testing views plugin', function() {
                     ob.should.have.property('result', 'Success');
                     setTimeout(done, 500 * testUtils.testScalingFactor);
                 });
+        });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+                setTimeout(done, 500 * testUtils.testScalingFactor);
+            });
         });
     });
 
@@ -1431,7 +1434,7 @@ describe('Testing views plugin', function() {
     });
 
     describe('reset app', function() {
-        it('should reset data', function(done) {
+        it('trigger reset endpoint', function(done) {
             var params = {app_id: APP_ID, "period": "reset"};
             request
                 .get('/i/apps/reset?api_key=' + API_KEY_ADMIN + "&args=" + JSON.stringify(params))
@@ -1442,8 +1445,13 @@ describe('Testing views plugin', function() {
                     }
                     var ob = JSON.parse(res.text);
                     ob.should.have.property('result', 'Success');
-                    setTimeout(done, 500 * testUtils.testScalingFactor + 2000);
+                    setTimeout(done, 500 * testUtils.testScalingFactor);
                 });
+        });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+                setTimeout(done, 500 * testUtils.testScalingFactor);
+            });
         });
     });
 
