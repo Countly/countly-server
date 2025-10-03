@@ -6,6 +6,7 @@ var APP_KEY = "";
 var API_KEY_ADMIN = "";
 var APP_ID = "";
 var crypto = require('crypto');
+var waitTime = 3000;
 //var DEVICE_ID = "1234567890";
 
 //add data
@@ -178,7 +179,6 @@ function verifyTotals(period, order, orderString) {
             .get('/o/aggregate?api_key=' + API_KEY_ADMIN + '&no_cache=true&app_id=' + APP_ID + '&query={"queryName":"viewsTableData"}&period=' + period)
             .expect(200)
             .end(function(err, res) {
-                console.log(res.text);
                 var resDecoded = JSON.parse(res.text) || {};
                 resDecoded = resDecoded.result || {};
                 resDecoded.aaData = resDecoded.data || [];
@@ -318,7 +318,7 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user00" + '&timestamp=' + (myTime - (365 * 24 * 60 * 60 * 1000)) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
 
@@ -341,7 +341,7 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - (25 * 24 * 60 * 60 * 1000)) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
                 });
         });
     });
@@ -379,7 +379,7 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime - (24 * 60 * 60 * 1000)) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 1000 * testUtils.testScalingFactor);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
                 });
         });
     });
@@ -437,7 +437,7 @@ describe('Testing views plugin', function() {
                 .get('/i?app_key=' + APP_KEY + '&device_id=' + "user1" + '&timestamp=' + (myTime) + '&events=' + data)
                 .expect(200)
                 .end(function(err, res) {
-                    setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
                 });
         });
     });
@@ -486,7 +486,7 @@ describe('Testing views plugin', function() {
                     if (err) {
                         console.log(err);
                     }
-                    setTimeout(done, 1000 * testUtils.testScalingFactor + 2000);
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
                 });
         });
     });
@@ -932,7 +932,125 @@ describe('Testing views plugin', function() {
         verifyTotals("30days");
     });
 
+    describe("test setting bounce and exit", function() {
+        it("Starting session and adding view for some new user", function(done) {
+            tableResponse["30days"].iTotalRecords += 1;
+            tableResponse["30days"].iTotalDisplayRecords += 1;
+            pushValues("30days", 4, {"u": 1, "t": 1, "s": 1, "d": 155});
+            var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "dur": 155, "segmentation": {"name": "testviewBounceExit", "visit": 1, "start": 1}}]);
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&begin_session=1&timestamp=' + (myTime - 10) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
+                });
+        });
+        verifyTotals("30days");
+        it("Sending end event for view(duration should not appear yet)", function(done) {
+            var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "dur": 200, "segmentation": {"name": "testviewBounceExit"}}]);
+            //pushValues("30days", 4, {"d":200});
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&timestamp=' + (myTime - 5) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
+                });
+        });
+        verifyTotals("30days");
+        it("Sending end session event for user(bounce and exit should be set)", function(done) {
+            pushValues("30days", 4, {"e": 1, "b": 1, "d": 200});
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&timestamp=' + (myTime - 1) + '&end_session=1&ignore_cooldown=1')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
+                });
 
+        });
+        verifyTotals("30days");
+
+    });
+
+    describe("testing that newest view info is saved, updated and flushed", function() {
+        it("Starting session and adding view for some new user", function(done) {
+            tableResponse["30days"].iTotalRecords += 1;
+            tableResponse["30days"].iTotalDisplayRecords += 1;
+            pushValues("30days", 5, {"u": 1, "t": 1, "s": 1, "d": 50});
+            var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "dur": 50, "segmentation": {"name": "testviewFirst", "visit": 1, "start": 1}}]);
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&begin_session=1&timestamp=' + (myTime - 10) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
+                });
+        });
+        it("wait", function(done) {
+            setTimeout(done, 30000);
+        });
+        verifyTotals("30days");
+
+        it("End the first view(should not flush yet)", function(done) {
+            var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "dur": 100, "segmentation": {"name": "testviewFirst"}}]);
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&timestamp=' + (myTime - 5) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
+                });
+        });
+        verifyTotals("30days");
+        it("Starting second view(should flush first view)", function(done) {
+            pushValues("30days", 5, {"d": 100});
+            tableResponse["30days"].iTotalRecords += 1;
+            tableResponse["30days"].iTotalDisplayRecords += 1;
+            pushValues("30days", 6, {"u": 1, "t": 1, "d": 100});
+            var data = JSON.stringify([{"key": "[CLY]_view", "count": 1, "segmentation": {"name": "testviewSecond", "visit": 1, "dur": 100}}]);
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&timestamp=' + (myTime - 3) + '&events=' + data)
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
+                });
+        });
+        verifyTotals("30days");
+        it("Ending session(should flush second view without end view event)", function(done) {
+            pushValues("30days", 6, {"e": 1, "b": 0});
+            request
+                .get('/i?app_key=' + APP_KEY + '&device_id=' + "userBounceExit" + '&timestamp=' + (myTime - 1) + '&end_session=1&ignore_cooldown=1')
+                .expect(200)
+                .end(function(err, res) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    setTimeout(done, 100 * testUtils.testScalingFactor + waitTime);
+                });
+        });
+        verifyTotals("30days");
+    });
+
+    describe("wait", function() {
+        it("waiting some time for db to settle", function(done) {
+            setTimeout(done, 30000);
+        });
+    });
 
     describe('reset app', function() {
         it('should reset data', function(done) {
