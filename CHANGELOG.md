@@ -1,3 +1,9 @@
+## Version 24.05.XX
+Enterprise Fixes:
+- [users] Update user custom field number formatting
+- [users] Fix condition for custom property update
+
+
 ## Version 24.05.40
 Fixes:
 - [populator] Fix NPS generator
