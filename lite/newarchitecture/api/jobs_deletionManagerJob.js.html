@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>api/lib/countly.event - Documentation</title>
+    <title>jobs/deletionManagerJob.js - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -37,469 +37,255 @@
 
 <div id="main">
     
-    <h1 class="page-title">api/lib/countly.event</h1>
-    
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        
-            
-        
-    
-</header>
-
-<article>
-    
-        <div class="container-overview">
-        
-            
-                <div class="description usertext"><p>This module defines default model to handle event data</p></div>
-            
-
-            
-                
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>This module defines default model to handle event data</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.event.js.html">lib/countly.event.js</a>, <a href="lib_countly.event.js.html#line4">line 4</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            
-        
-        </div>
-    
-
-    
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li><a href="module-api_lib_countly.model-countlyMetric.html">module:api/lib/countly.model~countlyMetric</a></li>
-    </ul>
-
-
-    
-
-    
-
-    
-    
-    
-
-     
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    <h4 class="name" id=".getSegmentedData"><span class="type-signature type-signature-static">(static) </span>getSegmentedData<span class="signature">(segment)</span><span class="type-signature"> &rarr; {array}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Get event data by segments</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.event.js.html">lib/countly.event.js</a>, <a href="lib_countly.event.js.html#line43">line 43</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>segment</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>segment for which to get data</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5 class="h5-returns">Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>with event data objects</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">array</span>
-
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".getSubperiodData"><span class="type-signature type-signature-static">(static) </span>getSubperiodData<span class="signature">(options)</span><span class="type-signature"> &rarr; {array}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Get event data by periods</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.event.js.html">lib/countly.event.js</a>, <a href="lib_countly.event.js.html#line27">line 27</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>options object</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5 class="h5-returns">Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>with event data objects</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">array</span>
-
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
+    <h1 class="page-title">jobs/deletionManagerJob.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const common = require('../utils/common.js');
+const log = require("../utils/log.js")("job:deletionManager");
+const Job = require("../../jobServer/Job.js");
+const deletionManager = require('../utils/deletionManager.js');
+
+let clickHouseRunner;
+try {
+    clickHouseRunner = require('../../plugins/clickhouse/api/queries/clickhouseCoreQueries.js');
+}
+catch {
+    //
+}
+
+// Constants for managing stale tasks and retries
+const STALE_MS = 24 * 60 * 60 * 1000; // 24h
+const RETRY_DELAY_MS = 30 * 60 * 1000; // 30m
+const MAX_RETRIES = 3;
+
+const BATCH_LIMIT = 10; // Number of tasks to process in one run
+
+/** Class for the deletion manager job **/
+class DeletionManagerJob extends Job {
+    /**
+     * Get schedule for the job
+     * @returns {GetScheduleConfig} Schedule configuration objectd
+     */
+    getSchedule() {
+        return {
+            type: "schedule",
+            value: "* * * * *" // Every minute
+        };
+    }
+
+    /**
+     * Get concurrency for the job - do not allow run in parallel
+     * @returns {number} Concurrency level
+     */
+    getConcurrency() {
+        return 1;
+    }
+
+    /**
+     * Run the job
+     * @param {done} done callback
+    */
+    async run() {
+        const now = Date.now();
+        const batchId = common.db.ObjectID() + '';
+        const summary = [];
+
+        // Reset stale tasks (running > 24h)
+        await this.resetStaleTasks();
+
+        // Reserve a batch of records to process
+        await common.db.collection("deletion_manager").aggregate([
+            {
+                $match: {
+                    running: false,
+                    status: deletionManager.DELETION_STATUS.QUEUED,
+                    $or: [{ retry_at: { $exists: false } }, { retry_at: null }, { retry_at: { $lte: now } }]
+                }
+            },
+            { $sort: { ts: 1 } },
+            { $limit: BATCH_LIMIT },
+            { $set: { running: true, status: deletionManager.DELETION_STATUS.RUNNING, hb: now, error: null, batch_id: batchId } },
+            {
+                $merge: {
+                    into: "deletion_manager",
+                    on: "_id",
+                    whenMatched: "merge",
+                    whenNotMatched: "discard"
+                }
+            }
+        ]).toArray();
+
+        // Fetch and process the reserved batch
+        const toProcess = await common.db.collection("deletion_manager")
+            .find({ batch_id: batchId, running: true, status: deletionManager.DELETION_STATUS.RUNNING })
+            .sort({ ts: 1 })
+            .toArray();
+
+        for (const task of toProcess) {
+            try {
+                if (task.db === "drill" &amp;&amp; task.collection === "drill_events") {
+                    const mongoOk = await this.deleteMongo(task);
+                    let chOk = true;
+                    if (clickHouseRunner &amp;&amp; clickHouseRunner.deleteGranularDataByQuery) {
+                        chOk = await this.deleteClickhouse(task);
+                    }
+                    if (mongoOk &amp;&amp; chOk) {
+                        await common.db.collection("deletion_manager").deleteOne({ _id: task._id });
+                        summary.push({ query: task.query, status: "deleted" });
+                    }
+                    else {
+                        summary.push({ query: task.query, status: "error" });
+                    }
+                }
+            }
+            catch (e) {
+                await this.markFailedOrRetry(task, (e &amp;&amp; e.message) || e);
+                summary.push({ task: task.query, status: "error", error: (e &amp;&amp; e.message) || e });
+                log.e("Deletion task failed", task._id, e);
+            }
+        }
+        return summary;
+    }
+
+    /**
+     * Reset stale deletion tasks that have been running longer than STALE_MS.
+     */
+    async resetStaleTasks() {
+        try {
+            const now = Date.now();
+            await common.db.collection("deletion_manager").updateMany(
+                {
+                    running: true,
+                    $expr: { $lt: [{ $ifNull: ["$hb", "$ts"] }, now - STALE_MS] }
+                },
+                {
+                    $set: { running: false, status: deletionManager.DELETION_STATUS.QUEUED, hb: now, error: "stale_reset" },
+                    $unset: { batch_id: "" }
+                }
+            );
+        }
+        catch (e) {
+            log.e("resetStaleTasks failed", e?.message || String(e));
+        }
+    }
+
+    /**
+     * Delete documents from MongoDB
+     * @param {Object} task - The deletion task
+     */
+    async deleteMongo(task) {
+        if (!task.query || !Object.keys(task.query).length) {
+            await this.markFailedOrRetry(task, "empty_mongo_query");
+            return false;
+        }
+
+        let res;
+        try {
+            res = await common.drillDb.collection(task.collection).deleteMany(task.query || {});
+        }
+        catch (err) {
+            await this.markFailedOrRetry(task, "mongo_delete_error: " + err?.message || err + "");
+            return false;
+        }
+
+        log.d("Mongo deletion done", { taskId: task._id, deletedCount: res?.deletedCount || 0 });
+        return true;
+    }
+
+    /**
+ * Deletes data from Clickhouse based on provided parameters.
+ * @param {object} task - Task object containing deletion parameters.
+ * @returns {Object} query runner result
+ */
+    async deleteClickhouse(task) {
+        if (!common.queryRunner) {
+            log.e("queryRunner not available, skipping ClickHouse delete", { taskId: task._id });
+            await this.markFailedOrRetry(task, "queryRunner_unavailable");
+            return false;
+        }
+
+        if (!task.query || !Object.keys(task.query).length) {
+            log.e("Skipping ClickHouse delete (empty query)", { taskId: task._id });
+            await this.markFailedOrRetry(task, "empty_ch_query");
+            return false;
+        }
+
+        const queryDef = {
+            name: 'DELETE_GRANULAR_DATA',
+            adapters: {
+                clickhouse: {
+                    handler: clickHouseRunner.deleteGranularDataByQuery
+                }
+            }
+        };
+
+        try {
+            await common.queryRunner.executeQuery(queryDef, { queryObj: task.query, targetTable: task.collection }, {});
+            log.d("ClickHouse deletion scheduled (runner)", { taskId: task._id });
+            return true;
+        }
+        catch (err) {
+            log.e("ClickHouse deletion failed (runner)", {
+                taskId: task._id,
+                error: err &amp;&amp; err.message ? err.message : String(err)
+            });
+            await this.markFailedOrRetry(task, "clickhouse_delete_error: " + (err?.message || err + ""));
+            return false;
+        }
+    }
+
+    /**
+     * Marks a task as failed or schedules it for a retry based on the number of previous failures.
+     * @param {Object} task - The task object to update.
+     * @param {string} message - The error message to log
+     */
+    async markFailedOrRetry(task, message) {
+        try {
+            const now = Date.now();
+            const failCount = (task.fail_count || 0) + 1;
+            if (failCount >= MAX_RETRIES) {
+                await common.db.collection("deletion_manager").updateOne(
+                    { _id: task._id },
+                    {
+                        $set: { running: false, status: deletionManager.DELETION_STATUS.FAILED, fail_count: failCount, error: message, hb: now },
+                        $unset: { batch_id: "" }
+                    }
+                );
+            }
+            else {
+                await common.db.collection("deletion_manager").updateOne(
+                    { _id: task._id },
+                    {
+                        $set: { running: false, status: deletionManager.DELETION_STATUS.QUEUED, fail_count: failCount, error: message, retry_at: now + RETRY_DELAY_MS, hb: now },
+                        $unset: { batch_id: "" }
+                    }
+                );
+            }
+        }
+        catch (e) {
+            log.e("markFailedOrRetry fallback", { taskId: task._id, err: (e &amp;&amp; e.message) || e });
+            await common.db.collection("deletion_manager").updateOne(
+                { _id: task._id },
+                {
+                    $set: { running: false, status: deletionManager.DELETION_STATUS.FAILED, error: message, hb: Date.now() },
+                    $unset: { batch_id: "" }
+                }
+            );
+        }
+    }
+}
+
+module.exports = DeletionManagerJob;
+</code></pre>
+        </article>
+    </section>
 
 
 

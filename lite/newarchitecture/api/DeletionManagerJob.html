@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>api/lib/countly.event - Documentation</title>
+    <title>DeletionManagerJob - Documentation</title>
     
     
     <script src="scripts/prettify/prettify.js"></script>
@@ -37,7 +37,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">api/lib/countly.event</h1>
+    <h1 class="page-title">DeletionManagerJob</h1>
     
 
     
@@ -49,8 +49,13 @@
 
 <header>
     
+        <h2>
         
-            
+            DeletionManagerJob
+        
+        </h2>
+        
+            <div class="class-description usertext"><p>Class for the deletion manager job</p></div>
         
     
 </header>
@@ -60,25 +65,25 @@
         <div class="container-overview">
         
             
-                <div class="description usertext"><p>This module defines default model to handle event data</p></div>
-            
 
-            
-                
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="DeletionManagerJob"><span class="type-signature"></span>new DeletionManagerJob<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
 
 
 
 
 <dl class="details">
     
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>This module defines default model to handle event data</p></li></ul></dd>
-    
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.event.js.html">lib/countly.event.js</a>, <a href="lib_countly.event.js.html#line4">line 4</a>
+        <a href="jobs_deletionManagerJob.js.html">jobs/deletionManagerJob.js</a>, <a href="jobs_deletionManagerJob.js.html#line22">line 22</a>
     </li></ul></dd>
     
 
@@ -142,21 +147,9 @@
 
 
 
-            
         
         </div>
     
-
-    
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li><a href="module-api_lib_countly.model-countlyMetric.html">module:api/lib/countly.model~countlyMetric</a></li>
-    </ul>
-
 
     
 
@@ -180,7 +173,7 @@
 
     
 
-    <h4 class="name" id=".getSegmentedData"><span class="type-signature type-signature-static">(static) </span>getSegmentedData<span class="signature">(segment)</span><span class="type-signature"> &rarr; {array}</span></h4>
+    <h4 class="name" id="deleteClickhouse"><span class="type-signature type-signature-async">(async) </span>deleteClickhouse<span class="signature">(task)</span><span class="type-signature"> &rarr; {Object}</span></h4>
 
     
 
@@ -190,13 +183,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Get event data by segments</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Deletes data from Clickhouse based on provided parameters.</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.event.js.html">lib/countly.event.js</a>, <a href="lib_countly.event.js.html#line43">line 43</a>
+        <a href="jobs_deletionManagerJob.js.html">jobs/deletionManagerJob.js</a>, <a href="jobs_deletionManagerJob.js.html#line158">line 158</a>
     </li></ul></dd>
     
 
@@ -268,165 +261,7 @@
 
         <tr>
             
-                <td class="name"><code>segment</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>segment for which to get data</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5 class="h5-returns">Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>with event data objects</p>
-</div>
-
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">array</span>
-
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-        
-            
-
-    
-
-    <h4 class="name" id=".getSubperiodData"><span class="type-signature type-signature-static">(static) </span>getSubperiodData<span class="signature">(options)</span><span class="type-signature"> &rarr; {array}</span></h4>
-
-    
-
-
-
-
-<dl class="details">
-    
-    <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Get event data by periods</p></li></ul></dd>
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="lib_countly.event.js.html">lib/countly.event.js</a>, <a href="lib_countly.event.js.html#line27">line 27</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <h5 class="h5-parameters">Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>task</code></td>
             
 
             <td class="type">
@@ -443,7 +278,7 @@
 
             
 
-            <td class="description last"><p>options object</p></td>
+            <td class="description last"><p>Task object containing deletion parameters.</p></td>
         </tr>
 
     
@@ -469,7 +304,7 @@
 
         
 <div class="param-desc">
-    <p>with event data objects</p>
+    <p>query runner result</p>
 </div>
 
 
@@ -480,7 +315,7 @@
     </dt>
     <dd>
         
-<span class="param-type">array</span>
+<span class="param-type">Object</span>
 
 
 
@@ -488,6 +323,736 @@
 </dl>
 
     
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="deleteMongo"><span class="type-signature type-signature-async">(async) </span>deleteMongo<span class="signature">(task)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Delete documents from MongoDB</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="jobs_deletionManagerJob.js.html">jobs/deletionManagerJob.js</a>, <a href="jobs_deletionManagerJob.js.html#line134">line 134</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>task</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The deletion task</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getConcurrency"><span class="type-signature"></span>getConcurrency<span class="signature">()</span><span class="type-signature"> &rarr; {number}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get concurrency for the job - do not allow run in parallel</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="jobs_deletionManagerJob.js.html">jobs/deletionManagerJob.js</a>, <a href="jobs_deletionManagerJob.js.html#line38">line 38</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Concurrency level</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">number</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="getSchedule"><span class="type-signature"></span>getSchedule<span class="signature">()</span><span class="type-signature"> &rarr; {GetScheduleConfig}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get schedule for the job</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="jobs_deletionManagerJob.js.html">jobs/deletionManagerJob.js</a>, <a href="jobs_deletionManagerJob.js.html#line27">line 27</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Schedule configuration objectd</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">GetScheduleConfig</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="markFailedOrRetry"><span class="type-signature type-signature-async">(async) </span>markFailedOrRetry<span class="signature">(task, message)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Marks a task as failed or schedules it for a retry based on the number of previous failures.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="jobs_deletionManagerJob.js.html">jobs/deletionManagerJob.js</a>, <a href="jobs_deletionManagerJob.js.html#line200">line 200</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>task</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The task object to update.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The error message to log</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="resetStaleTasks"><span class="type-signature type-signature-async">(async) </span>resetStaleTasks<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Reset stale deletion tasks that have been running longer than STALE_MS.</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="jobs_deletionManagerJob.js.html">jobs/deletionManagerJob.js</a>, <a href="jobs_deletionManagerJob.js.html#line111">line 111</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="run"><span class="type-signature type-signature-async">(async) </span>run<span class="signature">(done)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Run the job</p></li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="jobs_deletionManagerJob.js.html">jobs/deletionManagerJob.js</a>, <a href="jobs_deletionManagerJob.js.html#line46">line 46</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>done</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">done</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>callback</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
