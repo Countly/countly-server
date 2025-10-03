@@ -176,6 +176,7 @@ var testUtils = function testUtils() {
         request.get("/jobs/i?jobName=" + encodeURIComponent(jobName) + "&action=runNow&api_key=" + props.API_KEY_ADMIN)
             .expect(200)
             .end(function(err, res) {
+                console.log(res.text);
                 if (err) {
                     callback(err);
                 }
