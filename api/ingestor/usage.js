@@ -304,7 +304,7 @@ usage.returnRequestMetrics = function(params) {
     return params.collectedMetrics;
 };
 
-usage.updateEndSessionParams = function(params, eventList) {
+usage.updateEndSessionParams = function(params, eventList, session_duration) {
     var user = params.app_user;
     if (!user || !eventList || !Array.isArray(eventList)) {
         return;
@@ -327,7 +327,7 @@ usage.updateEndSessionParams = function(params, eventList) {
         "key": "[CLY]_session",
         "lsid": user.lsid,
         "segmentation": user.lsparams,
-        "dur": user.sd || 0,
+        "dur": ((user.sd || 0) + (session_duration || 0)),
         "count": 1,
         "up_extra": up_extra
     };
@@ -343,6 +343,7 @@ usage.updateEndSessionParams = function(params, eventList) {
 
     //Flush last view stored for user
     if (user.last_view) {
+        user.last_view.segments = user.last_view.segments || {};
         user.last_view.segments.exit = 1;
         if (user.vc < 2) {
             user.last_view.segments.bounce = 1;
@@ -350,7 +351,7 @@ usage.updateEndSessionParams = function(params, eventList) {
         var lastViewDoc = {
             "key": "[CLY]_view", //Will be renamed to [CLY]_view_update before inserting to drill
             "name": user.last_view.name,
-            "segmentation": user.last_view.segments || {},
+            "segmentation": user.last_view.segments,
             "dur": user.last_view.duration || 0,
             "_id": (user.last_view._idv ? (params.app_id + "_" + user.uid + '_' + user.last_view._idv + '_up') : (user.lvid + '_up')),
             "timestamp": user.last_view.ts,
@@ -455,7 +456,7 @@ usage.processSession = function(ob) {
             if (params.app_user.lsid) {
                 params.qstring.events = params.qstring.events || [];
                 console.log("Ending previous session" + params.app_user.lsid);
-                usage.updateEndSessionParams(params, params.qstring.events);
+                usage.updateEndSessionParams(params, params.qstring.events, session_duration);
             }
         }
         if (params.app_user[common.dbUserMap.has_ongoing_session]) {
