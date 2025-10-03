@@ -1,6 +1,7 @@
 ## Version 25.03.X
 Fixes:
 - [alerts] Fix: Migrate alerts to the new events model
+- [oidc] Fix for session state storage
 
 Enterprise Fixes:
 - [users] Update user custom field number formatting
