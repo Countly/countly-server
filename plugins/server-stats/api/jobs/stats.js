@@ -3,11 +3,9 @@
 const job = require('../../../../api/parts/jobs/job.js'),
     tracker = require('../../../../api/parts/mgmt/tracker.js'),
     log = require('../../../../api/utils/log.js')('job:stats'),
-    config = require('../../../../frontend/express/config.js'),
     pluginManager = require('../../../pluginManager.js'),
     serverStats = require('../parts/stats.js'),
-    moment = require('moment-timezone'),
-    request = require('countly-request')(pluginManager.getConfig('security'));
+    moment = require('moment-timezone');
 
 let drill;
 try {
@@ -17,14 +15,6 @@ catch (ex) {
     log.e(ex);
     drill = null;
 }
-
-const promisedLoadConfigs = function(db) {
-    return new Promise((resolve) => {
-        pluginManager.loadConfigs(db, () => {
-            resolve();
-        });
-    });
-};
 
 /** Representing a StatsJob. Inherits api/parts/jobs/job.js (job.Job) */
 class StatsJob extends job.Job {
@@ -73,9 +63,19 @@ class StatsJob extends job.Job {
         const ids6 = {};
         const ids0 = {};
         const order = [];
+        var thisMonth = "";
+        var lastMonth = "";
+        var thisMonthDP = 0;
+        var lastMonthDP = 0;
 
         for (let i = 0; i < 12; i++) {
             order.push(utcMoment.format('MMM YYYY'));
+            if (i === 0) {
+                thisMonth = utcMoment.format('YYYY:M');
+            }
+            if (i === 1) {
+                lastMonth = utcMoment.format('YYYY:M');
+            }
             ids[utcMoment.format('YYYY:M')] = utcMoment.format('MMM YYYY');
             if (i < 7) {
                 ids6[utcMoment.format('YYYY:M')] = utcMoment.format('MMM YYYY');
@@ -105,6 +105,12 @@ class StatsJob extends job.Job {
                     avg6monthDP += DP[ids[key]];
                     avg6++;
                 }
+                if (key === thisMonth) {
+                    thisMonthDP = value;
+                }
+                if (key === lastMonth) {
+                    lastMonthDP = value;
+                }
             }
         }
 
@@ -112,10 +118,16 @@ class StatsJob extends job.Job {
             data.DP.push((i < 9 ? '0' + (i + 1) : i + 1) + '. ' + order[i] + ': ' + ((DP[order[i]] || 0).toLocaleString()));
         }
         if (avg12) {
-            data['Last 12 months'] = Math.round(avg12monthDP / avg12).toLocaleString();
+            data.DPAvg12months = Math.round(avg12monthDP / avg12);
         }
         if (avg6) {
-            data['Last 6 months'] = Math.round(avg6monthDP / avg6).toLocaleString();
+            data.DPAvg6months = Math.round(avg6monthDP / avg6);
+        }
+        if (lastMonthDP) {
+            data.DPLastMonth = lastMonthDP;
+        }
+        if (thisMonthDP) {
+            data.DPThisMonth = thisMonthDP;
         }
 
         return data;
@@ -128,94 +140,80 @@ class StatsJob extends job.Job {
     * @returns {undefined} Returns nothing, only callback
     **/
     run(db, done) {
-        if (config.web.track !== 'none') {
-            db.collection('members').find({global_admin: true}).toArray(async(err, members) => {
-                if (!err && members.length > 0) {
-                    let license = {};
-                    if (drill) {
-                        try {
-                            license = await drill.loadLicense(undefined, db);
-                        }
-                        catch (error) {
-                            log.e(error);
-                            // do nothing, most likely there is no license
+        pluginManager.loadConfigs(db, async function() {
+            let license = {};
+            if (drill) {
+                try {
+                    license = await drill.loadLicense(undefined, db);
+                }
+                catch (error) {
+                    log.e(error);
+                    // do nothing, most likely there is no license
+                }
+            }
+
+            var server = tracker.getBulkServer();
+            var user = tracker.getBulkUser(server);
+            if (!user) {
+                return done();
+            }
+            var days = 30;
+            var current_sync = Date.now();
+
+            //generate dates in YYYY:M:D format for dates from "days" variable back up to today
+            const specificDates = [];
+            const utcMoment = moment.utc();
+            for (let i = 0; i < days; i++) {
+                specificDates.push(utcMoment.format('YYYY:M:D'));
+                utcMoment.subtract(1, 'days');
+            }
+
+            const options = {
+                dailyDates: specificDates,
+                monthlyBreakdown: true,
+                license_hosting: license.license_hosting,
+            };
+
+            // Atomically retrieve old last_sync value and set new one
+            var syncResult = await db.collection("plugins").findOneAndUpdate(
+                {_id: "version"},
+                {$set: {last_dp_sync: current_sync}},
+                {
+                    upsert: true,
+                    returnDocument: 'before',
+                    projection: {last_dp_sync: 1}
+                }
+            );
+
+            var last_dp_sync = syncResult.value ? syncResult.value.last_dp_sync : null;
+            if (last_dp_sync) {
+                days = Math.floor((new Date().getTime() - last_dp_sync) / (1000 * 60 * 60 * 24));
+            }
+
+            if (days > 0) {
+                serverStats.fetchDatapoints(db, {}, options, async(allData) => {
+                    const dataMonthly = StatsJob.generateDataMonthly(allData);
+
+                    if (allData.daily) {
+                        for (const key in allData.daily) {
+                            var parts = key.split(':');
+                            //convert date in YYYY:M:D format to timestamp for noon (12:00:00) of that day in UTC
+                            const timestamp = moment.tz(parts[0] + '-' + parts[1] + '-' + parts[2] + ' 12:00:00', 'YYYY-M-D HH:mm:ss', 'UTC').valueOf();
+                            //send datapoint event with timestamp for noon of that day
+                            user.add_event({key: "DP", count: allData.daily[key], timestamp: timestamp});
                         }
                     }
-
-                    const options = {
-                        monthlyBreakdown: true,
-                        license_hosting: license.license_hosting,
-                    };
-
-                    serverStats.fetchDatapoints(db, {}, options, async(allData) => {
-                        const dataSummary = StatsJob.generateDataSummary(allData);
-
-                        let date = new Date();
-                        const usersData = [];
-
-                        await promisedLoadConfigs(db);
-
-                        let domain = '';
-
-                        try {
-                            // try to extract hostname from full domain url
-                            const urlObj = new URL(pluginManager.getConfig('api').domain);
-                            domain = urlObj.hostname;
-                        }
-                        catch (_) {
-                            // do nothing, domain from config will be used as is
-                        }
-
-                        usersData.push({
-                            device_id: domain,
-                            timestamp: Math.floor(date.getTime() / 1000),
-                            hour: date.getHours(),
-                            dow: date.getDay(),
-                            user_details: JSON.stringify({
-                                custom: {
-                                    dataPointsAll: dataSummary.all,
-                                    dataPointsMonthlyAvg: dataSummary.avg,
-                                    dataPointsLast3Months: dataSummary.month3,
-                                },
-                            }),
-                        });
-
-                        var formData = {
-                            app_key: 'e70ec21cbe19e799472dfaee0adb9223516d238f',
-                            requests: JSON.stringify(usersData)
-                        };
-
-                        request.post({
-                            url: 'https://stats.count.ly/i/bulk',
-                            json: formData
-                        }, function(a) {
-                            log.d('Done running stats job: %j', a);
-                            done();
-                        });
-
-                        if (tracker.isEnabled()) {
-                            const dataMonthly = StatsJob.generateDataMonthly(allData);
-
-                            const Countly = tracker.getSDK();
-                            Countly.user_details({
-                                'custom': dataMonthly,
-                            });
-
-                            Countly.userData.save();
-                        }
+                    user.user_details({'custom': dataMonthly});
+                    server.start(function() {
+                        server.stop();
+                        done();
                     });
-                }
-                else {
-                    done();
-                }
-            });
-        }
-        else {
-            db.collection('plugins').updateOne({_id: 'plugins'}, {$unset: {remoteConfig: 1}}).catch(dbe => {
-                log.e('Db error', dbe);
-            });
-            done();
-        }
+                });
+            }
+            else {
+                done();
+            }
+        });
     }
 }
 
