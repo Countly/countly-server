@@ -55,6 +55,22 @@
 // Set process name
 process.title = "countly: dashboard node " + process.argv[1];
 
+var fs = require('fs');
+var path = require('path');
+var IS_FLEX = false;
+
+if (fs.existsSync(path.resolve('/opt/deployment_env.json'))) {
+    var deploymentConf = fs.readFileSync('/opt/deployment_env.json', 'utf8');
+    try {
+        if (JSON.parse(deploymentConf).DEPLOYMENT_ID) {
+            IS_FLEX = true;
+        }
+    }
+    catch (e) {
+        IS_FLEX = false;
+    }
+}
+
 var versionInfo = require('./version.info'),
     pack = require('../../package.json'),
     COUNTLY_VERSION = versionInfo.version,
@@ -67,6 +83,7 @@ var versionInfo = require('./version.info'),
     COUNTLY_HELPCENTER_LINK = (typeof versionInfo.helpCenterLink === "undefined") ? true : (typeof versionInfo.helpCenterLink === "string") ? versionInfo.helpCenterLink : (typeof versionInfo.helpCenterLink === "boolean") ? versionInfo.helpCenterLink : true,
     COUNTLY_FEATUREREQUEST_LINK = (typeof versionInfo.featureRequestLink === "undefined") ? true : (typeof versionInfo.featureRequestLink === "string") ? versionInfo.featureRequestLink : (typeof versionInfo.featureRequestLink === "boolean") ? versionInfo.featureRequestLink : true,
     express = require('express'),
+    https = require('https'),
     SkinStore = require('./libs/connect-mongo.js'),
     expose = require('./libs/express-expose.js'),
     dollarDefender = require('./libs/dollar-defender.js')({
@@ -76,8 +93,6 @@ var versionInfo = require('./version.info'),
         }
     }),
     crypto = require('crypto'),
-    fs = require('fs'),
-    path = require('path'),
     jimp = require('jimp'),
     flash = require('connect-flash'),
     cookieParser = require('cookie-parser'),
@@ -111,11 +126,27 @@ var versionInfo = require('./version.info'),
 
 console.log("Starting Countly", "version", versionInfo.version, "package", pack.version);
 
+// TEMPORARY DEBUG LOGGING - FRONTEND
+console.log('=== FRONTEND CONFIG DEBUG ===');
+console.log('countlyConfig:', JSON.stringify(countlyConfig, null, 2));
+console.log('Process ENV:', {
+    NODE_ENV: process.env.NODE_ENV,
+    SERVICE_TYPE: process.env.SERVICE_TYPE,
+    COUNTLY_CONFIG_PATH: process.env.COUNTLY_CONFIG_PATH
+});
+console.log('=== END FRONTEND CONFIG DEBUG ===');
+
 var COUNTLY_NAMED_TYPE = "Countly Lite v" + COUNTLY_VERSION;
 var COUNTLY_TYPE_CE = true;
 var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
 var COUNTLY_TRACK_TYPE = "OSS";
-if (versionInfo.footer) {
+
+if (IS_FLEX) {
+    COUNTLY_NAMED_TYPE = "Countly v" + COUNTLY_VERSION;
+    COUNTLY_TYPE_CE = false;
+    COUNTLY_TRACK_TYPE = "Flex";
+}
+else if (versionInfo.footer) {
     COUNTLY_NAMED_TYPE = versionInfo.footer;
     COUNTLY_TYPE_CE = false;
     if (COUNTLY_NAMED_TYPE === "Countly Cloud") {
@@ -165,8 +196,8 @@ plugins.setConfigs("frontend", {
     session_timeout: 30,
     use_google: true,
     code: true,
-    google_maps_api_key: "",
     offline_mode: false,
+    self_tracking: "",
 });
 
 if (!plugins.isPluginEnabled('tracker')) {
@@ -186,7 +217,6 @@ plugins.setUserConfigs("frontend", {
     session_timeout: false,
     use_google: false,
     code: false,
-    google_maps_api_key: ""
 });
 
 plugins.setConfigs("security", {
@@ -200,8 +230,8 @@ plugins.setConfigs("security", {
     password_rotation: 3,
     password_autocomplete: true,
     robotstxt: "User-agent: *\nDisallow: /",
-    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains\nX-Content-Type-Options: nosniff",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nAccess-Control-Allow-Origin:*",
+    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nX-Content-Type-Options: nosniff",
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000; includeSubDomains; preload\nAccess-Control-Allow-Origin:*",
     dashboard_rate_limit_window: 60,
     dashboard_rate_limit_requests: 500
 });
@@ -956,8 +986,9 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             countly_tracking = plugins.isPluginEnabled('tracker') ? true : plugins.getConfig('frontend').countly_tracking,
             countly_domain = plugins.getConfig('api').domain,
             licenseNotification, licenseError;
+        var isLocked = false;
         configs.export_limit = plugins.getConfig("api").export_limit;
-        app.loadThemeFiles(configs.theme, function(theme) {
+        app.loadThemeFiles(configs.theme, async function(theme) {
             if (configs._user.theme) {
                 res.cookie("theme", configs.theme);
             }
@@ -970,6 +1001,13 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             res.header('Pragma', 'no-cache');
             if (member.upgrade) {
                 countlyDb.collection('members').update({"_id": member._id}, {$unset: {upgrade: ""}}, function() {});
+            }
+            if (IS_FLEX) {
+                let locked = await countlyDb.collection('mycountly').findOne({_id: 'lockServer'});
+                if (locked?.isLocked === true) {
+                    isLocked = true;
+                }
+
             }
 
             if (req.session.licenseError) {
@@ -1038,6 +1076,8 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
                         helpCenterLink: COUNTLY_HELPCENTER_LINK,
                         featureRequestLink: COUNTLY_FEATUREREQUEST_LINK,
                     },
+                    mycountly: IS_FLEX,
+                    isLocked: isLocked,
                 };
 
 
@@ -1721,7 +1761,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
             try {
                 // This is to check that the uploaded image is a real image
                 // If jimp cannot read it then it is not a real image
-                const image = await jimp.read(tmp_path);
+                const image = await jimp.Jimp.read(tmp_path);
 
                 if (!image) {
                     fs.unlink(tmp_path, function() {});
@@ -1953,7 +1993,24 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
     countlyDb.collection('jobs').createIndex({ name: 1 }, function() {});
     countlyDb.collection('long_tasks').createIndex({ manually_create: 1, start: -1 }, function() {});
 
-    app.listen(countlyConfig.web.port, countlyConfig.web.host || '');
+    const serverOptions = {
+        port: countlyConfig.web.port,
+        host: countlyConfig.web.host || ''
+    };
+
+    if (countlyConfig.web.ssl &amp;&amp; countlyConfig.web.ssl.enabled) {
+        const sslOptions = {
+            key: fs.readFileSync(countlyConfig.web.ssl.key),
+            cert: fs.readFileSync(countlyConfig.web.ssl.cert)
+        };
+        if (countlyConfig.web.ssl.ca) {
+            sslOptions.ca = fs.readFileSync(countlyConfig.web.ssl.ca);
+        }
+        https.createServer(sslOptions, app).listen(serverOptions.port, serverOptions.host);
+    }
+    else {
+        app.listen(serverOptions.port, serverOptions.host);
+    }
 });
 </code></pre>
         </article>
@@ -1969,7 +2026,7 @@ Promise.all([plugins.dbConnection(countlyConfig), plugins.dbConnection("countly_
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Mon Feb 24 2025 16:16:37 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Fri Oct 03 2025 16:04:03 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

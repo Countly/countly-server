@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>parts/data/QueryRunner.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="../app/index.html" >App Server</a></h2><h2><a href="../api/index.html" >API Server</a></h2><h2><a href="../browser/index.html" >Browser side</a></h2><h2><a href="../apidoc/index.html" >API Reference</a></h2><h3>Classes</h3><ul><li><a href="AppExpireJob.html">AppExpireJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="AppExpireJob.html#getEnabled">getEnabled</a></li><li data-type='method' style='display: none;'><a href="AppExpireJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="AppExpireJob.html#run">run</a></li></ul></li><li><a href="Cache.html">Cache</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Cache.html#cls">cls</a></li><li data-type='method' style='display: none;'><a href="Cache.html#has">has</a></li><li data-type='method' style='display: none;'><a href="Cache.html#init">init</a></li><li data-type='method' style='display: none;'><a href="Cache.html#purge">purge</a></li><li data-type='method' style='display: none;'><a href="Cache.html#purgeAll">purgeAll</a></li><li data-type='method' style='display: none;'><a href="Cache.html#read">read</a></li><li data-type='method' style='display: none;'><a href="Cache.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="Cache.html#update">update</a></li><li data-type='method' style='display: none;'><a href="Cache.html#write">write</a></li></ul></li><li><a href="Cacher.html">Cacher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Cacher.html#cache">cache</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#checkAll">checkAll</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#getOne">getOne</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#invalidate">invalidate</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#keysFromProjectionObject">keysFromProjectionObject</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Cacher.html#updateCacheOne">updateCacheOne</a></li></ul></li><li><a href="CentralMaster.html">CentralMaster</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralMaster.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralMaster.html#send">send</a></li></ul></li><li><a href="CentralSuper.html">CentralSuper</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralSuper.html#fromMe">fromMe</a></li><li data-type='method' style='display: none;'><a href="CentralSuper.html#isForMe">isForMe</a></li></ul></li><li><a href="CentralWorker.html">CentralWorker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CentralWorker.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#date">date</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#detach">detach</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#request">request</a></li><li data-type='method' style='display: none;'><a href="CentralWorker.html#send">send</a></li></ul></li><li><a href="ChangeStreamEventSource.html">ChangeStreamEventSource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ChangeStreamEventSource.html#acknowledge">acknowledge</a></li><li data-type='method' style='display: none;'><a href="ChangeStreamEventSource.html#getNext">getNext</a></li><li data-type='method' style='display: none;'><a href="ChangeStreamEventSource.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="ChangeStreamEventSource.html#stop">stop</a></li></ul></li><li><a href="Channel.html">Channel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Channel.html#attach">attach</a></li><li data-type='method' style='display: none;'><a href="Channel.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="Channel.html#send">send</a></li></ul></li><li><a href="CleanTokensJob.html">CleanTokensJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="CleanTokensJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="CleanTokensJob.html#run">run</a></li></ul></li><li><a href="ClearAutoTasks.html">ClearAutoTasks</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ClearAutoTasks.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="ClearAutoTasks.html#run">run</a></li></ul></li><li><a href="DataBatchReader.html">DataBatchReader</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DataBatchReader.html#acknowledgeToken">acknowledgeToken</a></li><li data-type='method' style='display: none;'><a href="DataBatchReader.html#checkState">checkState</a></li><li data-type='method' style='display: none;'><a href="DataBatchReader.html#close">close</a></li><li data-type='method' style='display: none;'><a href="DataBatchReader.html#processNextDateRange">processNextDateRange</a></li><li data-type='method' style='display: none;'><a href="DataBatchReader.html#setUp">setUp</a></li></ul></li><li><a href="DataStore.html">DataStore</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DataStore.html#iterate">iterate</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#read">read</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#remove">remove</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#update">update</a></li><li data-type='method' style='display: none;'><a href="DataStore.html#write">write</a></li></ul></li><li><a href="DefaultRetryPolicy.html">DefaultRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#delay">delay</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li><li data-type='method' style='display: none;'><a href="DefaultRetryPolicy.html#run">run</a></li></ul></li><li><a href="DeletionManagerJob.html">DeletionManagerJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="DeletionManagerJob.html#deleteClickhouse">deleteClickhouse</a></li><li data-type='method' style='display: none;'><a href="DeletionManagerJob.html#deleteMongo">deleteMongo</a></li><li data-type='method' style='display: none;'><a href="DeletionManagerJob.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="DeletionManagerJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="DeletionManagerJob.html#markFailedOrRetry">markFailedOrRetry</a></li><li data-type='method' style='display: none;'><a href="DeletionManagerJob.html#resetStaleTasks">resetStaleTasks</a></li><li data-type='method' style='display: none;'><a href="DeletionManagerJob.html#run">run</a></li></ul></li><li><a href="EventSinkFactory.html">EventSinkFactory</a><ul class='methods'><li data-type='method' style='display: none;'><a href="EventSinkFactory.html#.create">create</a></li></ul></li><li><a href="EventSinkInterface.html">EventSinkInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#_createResult">_createResult</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#_setClosed">_setClosed</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#_setInitialized">_setInitialized</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#_validateEvents">_validateEvents</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#close">close</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#getType">getType</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#isClosed">isClosed</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#isInitialized">isInitialized</a></li><li data-type='method' style='display: none;'><a href="EventSinkInterface.html#write">write</a></li></ul></li><li><a href="EventSourceFactory.html">EventSourceFactory</a><ul class='methods'><li data-type='method' style='display: none;'><a href="EventSourceFactory.html#.create">create</a></li></ul></li><li><a href="EventSourceInterface.html">EventSourceInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="EventSourceInterface.html#acknowledge">acknowledge</a></li><li data-type='method' style='display: none;'><a href="EventSourceInterface.html#getNext">getNext</a></li><li data-type='method' style='display: none;'><a href="EventSourceInterface.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="EventSourceInterface.html#stop">stop</a></li></ul></li><li><a href="Handle.html">Handle</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Handle.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Handle.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Handle.html#runTransient">runTransient</a></li><li data-type='method' style='display: none;'><a href="Handle.html#suspendJob">suspendJob</a></li></ul></li><li><a href="IPCFa%25C3%25A7adeJob.html">IPCFaçadeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#resourceName">resourceName</a></li><li data-type='method' style='display: none;'><a href="IPCFa%2525C3%2525A7adeJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCJob.html">IPCJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="IPCJob.html#retryPolicy">retryPolicy</a></li></ul></li><li><a href="IPCRetryPolicy.html">IPCRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IPCRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="IdChannel.html">IdChannel</a><ul class='methods'><li data-type='method' style='display: none;'><a href="IdChannel.html#send">send</a></li></ul></li><li><a href="IdStartsWithChannel.html">IdStartsWithChannel</a></li><li><a href="InsertBatcher.html">InsertBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="InsertBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#insert">insert</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="InsertBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Job.html">Job</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Job.html#_abort">_abort</a></li><li data-type='method' style='display: none;'><a href="Job.html#_finish">_finish</a></li><li data-type='method' style='display: none;'><a href="Job.html#_replaceAll">_replaceAll</a></li><li data-type='method' style='display: none;'><a href="Job.html#_run">_run</a></li><li data-type='method' style='display: none;'><a href="Job.html#_runWithRetries">_runWithRetries</a></li><li data-type='method' style='display: none;'><a href="Job.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="Job.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Job.html#db">db</a></li><li data-type='method' style='display: none;'><a href="Job.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="Job.html#in">in</a></li><li data-type='method' style='display: none;'><a href="Job.html#now">now</a></li><li data-type='method' style='display: none;'><a href="Job.html#once">once</a></li><li data-type='method' style='display: none;'><a href="Job.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="Job.html#replace">replace</a></li><li data-type='method' style='display: none;'><a href="Job.html#replaceAfter">replaceAfter</a></li><li data-type='method' style='display: none;'><a href="Job.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="Job.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Job.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Job.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Job.html#.insert">insert</a></li><li data-type='method' style='display: none;'><a href="Job.html#.load">load</a></li><li data-type='method' style='display: none;'><a href="Job.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Job.html#.updateMany">updateMany</a></li></ul></li><li><a href="Jsonable.html">Jsonable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Jsonable.html#setData">setData</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#toJSON">toJSON</a></li><li data-type='method' style='display: none;'><a href="Jsonable.html#updateData">updateData</a></li></ul></li><li><a href="KafkaEventSink.html">KafkaEventSink</a><ul class='methods'><li data-type='method' style='display: none;'><a href="KafkaEventSink.html#close">close</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSink.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSink.html#isConnected">isConnected</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSink.html#write">write</a></li></ul></li><li><a href="KafkaEventSource.html">KafkaEventSource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="KafkaEventSource.html#acknowledge">acknowledge</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSource.html#getNext">getNext</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSource.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="KafkaEventSource.html#stop">stop</a></li></ul></li><li><a href="Manager.html">Manager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Manager.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="Manager.html#check">check</a></li><li data-type='method' style='display: none;'><a href="Manager.html#checkAfterDelay">checkAfterDelay</a></li><li data-type='method' style='display: none;'><a href="Manager.html#create">create</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getPool">getPool</a></li><li data-type='method' style='display: none;'><a href="Manager.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="Manager.html#hasResources">hasResources</a></li><li data-type='method' style='display: none;'><a href="Manager.html#job">job</a></li><li data-type='method' style='display: none;'><a href="Manager.html#process">process</a></li><li data-type='method' style='display: none;'><a href="Manager.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runIPC">runIPC</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runLocally">runLocally</a></li><li data-type='method' style='display: none;'><a href="Manager.html#schedule">schedule</a></li><li data-type='method' style='display: none;'><a href="Manager.html#start">start</a></li></ul></li><li><a href="MongoDbQueryRunner.html">MongoDbQueryRunner</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#aggregatedSessionData">aggregatedSessionData</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#calculateTimezoneFromOffset">calculateTimezoneFromOffset</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#fixTimestampToMilliseconds">fixTimestampToMilliseconds</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getAggregatedData">getAggregatedData</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getDateStringProjection">getDateStringProjection</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getPeriodRange">getPeriodRange</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getUniqueCount">getUniqueCount</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getUniqueGraph">getUniqueGraph</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#getViewsTableData">getViewsTableData</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#segmentValuesForPeriod">segmentValuesForPeriod</a></li><li data-type='method' style='display: none;'><a href="MongoDbQueryRunner.html#timesOfDay">timesOfDay</a></li></ul></li><li><a href="MongoEventSink.html">MongoEventSink</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MongoEventSink.html#close">close</a></li><li data-type='method' style='display: none;'><a href="MongoEventSink.html#initialize">initialize</a></li><li data-type='method' style='display: none;'><a href="MongoEventSink.html#write">write</a></li></ul></li><li><a href="Mongoable.html">Mongoable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#_id">_id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#id">id</a></li><li data-type='member' style='display: none;'><a href="Mongoable.html#.collection">collection</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Mongoable.html#refresh">refresh</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#save">save</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#update">update</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#updateAtomically">updateAtomically</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.batchInsert">batchInsert</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.deleteOne">deleteOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findMany">findMany</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOne">findOne</a></li><li data-type='method' style='display: none;'><a href="Mongoable.html#.findOneAndUpdate">findOneAndUpdate</a></li></ul></li><li><a href="MonitorJob.html">MonitorJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="MonitorJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="MonitorJob.html#run">run</a></li></ul></li><li><a href="NoRetryPolicy.html">NoRetryPolicy</a><ul class='methods'><li data-type='method' style='display: none;'><a href="NoRetryPolicy.html#errorIsRetriable">errorIsRetriable</a></li></ul></li><li><a href="PassThrough.html">PassThrough</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PassThrough.html#pass">pass</a></li><li data-type='method' style='display: none;'><a href="PassThrough.html#start">start</a></li></ul></li><li><a href="PingJob.html">PingJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="PingJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="PingJob.html#run">run</a></li></ul></li><li><a href="ReadBatcher.html">ReadBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ReadBatcher.html#cache">cache</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#checkAll">checkAll</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getMany">getMany</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#getOne">getOne</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#invalidate">invalidate</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#keysFromProjectionObject">keysFromProjectionObject</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="ReadBatcher.html#schedule">schedule</a></li></ul></li><li><a href="Resource.html">Resource</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Resource.html#checkActive">checkActive</a></li><li data-type='method' style='display: none;'><a href="Resource.html#close">close</a></li><li data-type='method' style='display: none;'><a href="Resource.html#closed">closed</a></li><li data-type='method' style='display: none;'><a href="Resource.html#done">done</a></li><li data-type='method' style='display: none;'><a href="Resource.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="Resource.html#open">open</a></li><li data-type='method' style='display: none;'><a href="Resource.html#opened">opened</a></li><li data-type='method' style='display: none;'><a href="Resource.html#start">start</a></li></ul></li><li><a href="ResourceFa%25C3%25A7ade.html">ResourceFaçade</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#kill">kill</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#open">open</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#reject">reject</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#resolve">resolve</a></li><li data-type='method' style='display: none;'><a href="ResourceFa%2525C3%2525A7ade.html#run">run</a></li></ul></li><li><a href="ResourceInterface.html">ResourceInterface</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourceInterface.html#abort">abort</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceClosed">onceClosed</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOnline">onceOnline</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#onceOpened">onceOpened</a></li><li data-type='method' style='display: none;'><a href="ResourceInterface.html#run">run</a></li></ul></li><li><a href="ResourcePool.html">ResourcePool</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcePool.html#canBeTerminated">canBeTerminated</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#canRun">canRun</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#close">close</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#getResource">getResource</a></li><li data-type='method' style='display: none;'><a href="ResourcePool.html#kill">kill</a></li></ul></li><li><a href="ResourcefulJob.html">ResourcefulJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#createResource">createResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#releaseResource">releaseResource</a></li><li data-type='method' style='display: none;'><a href="ResourcefulJob.html#resourceName">resourceName</a></li></ul></li><li><a href="TTLCleanup.html">TTLCleanup</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TTLCleanup.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="TTLCleanup.html#run">run</a></li></ul></li><li><a href="TestDataClass.html">TestDataClass</a></li><li><a href="TopEventsJob.html">TopEventsJob</a><ul class='members'><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.COLLECTION_NAME">COLLECTION_NAME</a></li><li data-type='member' style='display: none;'><a href="TopEventsJob.html#.PERIODS">PERIODS</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="TopEventsJob.html#encodeEvents">encodeEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsCollentions">eventsCollentions</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#eventsFilter">eventsFilter</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#fetchEventTotalCounts">fetchEventTotalCounts</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getAppEvents">getAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#getSessionCount">getSessionCount</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#init">init</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#mutatePeriod">mutatePeriod</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#run">run</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#saveAppEvents">saveAppEvents</a></li><li data-type='method' style='display: none;'><a href="TopEventsJob.html#timeSecond">timeSecond</a></li></ul></li><li><a href="TransientJob.html">TransientJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="TransientJob.html#_save">_save</a></li><li data-type='method' style='display: none;'><a href="TransientJob.html#_sendAndSave">_sendAndSave</a></li></ul></li><li><a href="UnifiedEventSink.html">UnifiedEventSink</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UnifiedEventSink.html#close">close</a></li><li data-type='method' style='display: none;'><a href="UnifiedEventSink.html#getSinkTypes">getSinkTypes</a></li><li data-type='method' style='display: none;'><a href="UnifiedEventSink.html#isClosed">isClosed</a></li><li data-type='method' style='display: none;'><a href="UnifiedEventSink.html#isInitialized">isInitialized</a></li><li data-type='method' style='display: none;'><a href="UnifiedEventSink.html#write">write</a></li></ul></li><li><a href="UnifiedEventSource.html">UnifiedEventSource</a></li><li><a href="UserMergeJob.html">UserMergeJob</a><ul class='methods'><li data-type='method' style='display: none;'><a href="UserMergeJob.html#getSchedule">getSchedule</a></li><li data-type='method' style='display: none;'><a href="UserMergeJob.html#run">run</a></li></ul></li><li><a href="Validatable.html">Validatable</a><ul class='members'><li data-type='member' style='display: none;'><a href="Validatable.html#json">json</a></li><li data-type='member' style='display: none;'><a href="Validatable.html#.scheme">scheme</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="Validatable.html#validate">validate</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.discriminator">discriminator</a></li><li data-type='method' style='display: none;'><a href="Validatable.html#.validate">validate</a></li></ul></li><li><a href="WriteBatcher.html">WriteBatcher</a><ul class='methods'><li data-type='method' style='display: none;'><a href="WriteBatcher.html#add">add</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#addDb">addDb</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#addFlushCallback">addFlushCallback</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flush">flush</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#flushAll">flushAll</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#get">get</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#loadConfig">loadConfig</a></li><li data-type='method' style='display: none;'><a href="WriteBatcher.html#schedule">schedule</a></li></ul></li><li><a href="changeStreamReader.html">changeStreamReader</a><ul class='methods'><li data-type='method' style='display: none;'><a href="changeStreamReader.html#acknowledgeToken">acknowledgeToken</a></li><li data-type='method' style='display: none;'><a href="changeStreamReader.html#checkState">checkState</a></li><li data-type='method' style='display: none;'><a href="changeStreamReader.html#close">close</a></li><li data-type='method' style='display: none;'><a href="changeStreamReader.html#processBadRange">processBadRange</a></li><li data-type='method' style='display: none;'><a href="changeStreamReader.html#processNextDateRange">processNextDateRange</a></li><li data-type='method' style='display: none;'><a href="changeStreamReader.html#setUp">setUp</a></li></ul></li><li><a href="module-api_lib_countly.model-countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.fetchValue">countlyMetric.fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.clearObject">countlyMetric.clearObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.extendDb">countlyMetric.extendDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getBars">countlyMetric.getBars</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getData">countlyMetric.getData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getDb">countlyMetric.getDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMeta">countlyMetric.getMeta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMetrics">countlyMetric.getMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getNumber">countlyMetric.getNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getPeriod">countlyMetric.getPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getRangeData">countlyMetric.getRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getStackedBarData">countlyMetric.getStackedBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTableData">countlyMetric.getTableData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTimelineData">countlyMetric.getTimelineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTotalUsersObj">countlyMetric.getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getUniqueMetrics">countlyMetric.getUniqueMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.reset">countlyMetric.reset</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setDb">countlyMetric.setDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setMetrics">countlyMetric.setMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setPeriod">countlyMetric.setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setTotalUsersObj">countlyMetric.setTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setUniqueMetrics">countlyMetric.setUniqueMetrics</a></li></ul></li><li><a href="module-api_parts_data_QueryRunner-QueryRunner.html">QueryRunner</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_QueryRunner-QueryRunner.html#executeQuery">executeQuery</a></li></ul></li><li><a href="module-api_utils_common-DataTable.html">DataTable</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#_getSearchField">_getSearchField</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getAggregationPipeline">getAggregationPipeline</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common-DataTable.html#getProcessedResult">getProcessedResult</a></li></ul></li></ul><h3>Modules</h3><ul><li><a href="module-api_lib_countly.common.html">api/lib/countly.common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.common.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.calculatePeriodObject">calculatePeriodObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.calculateUniqueFromMap">calculateUniqueFromMap</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractData">extractData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractMetric">extractMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.fixPercentageDelta">fixPercentageDelta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.formatTime">formatTime</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPeriodRange">getPeriodRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getTimestampRangeQuery">getTimestampRangeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.isValidPeriodParam">isValidPeriodParam</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setTimezone">setTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.stringIncrement">stringIncrement</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.union">union</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.validateEmail">validateEmail</a></li></ul></li><li><a href="module-api_lib_countly.countries.html">api/lib/countly.countries</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.countries.html#.getLocationData">getLocationData</a></li></ul></li><li><a href="module-api_lib_countly.device_details.html">api/lib/countly.device_details</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.device_details.html#.fixBarSegmentData">fixBarSegmentData</a></li></ul></li><li><a href="module-api_lib_countly.devices.html">api/lib/countly.devices</a></li><li><a href="module-api_lib_countly.event.html">api/lib/countly.event</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSegmentedData">getSegmentedData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.event.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_lib_countly.model.html">api/lib/countly.model</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.load">load</a></li></ul></li><li><a href="module-api_lib_countly.users.html">api/lib/countly.users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSessionData">getSessionData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_parts_data_events.html">api/parts/data/events</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_events.html#.processEvents">processEvents</a></li></ul></li><li><a href="module-api_parts_data_stats.html">api/parts/data/stats</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getOverall">getOverall</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getServer">getServer</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_stats.html#.getUser">getUser</a></li></ul></li><li><a href="module-api_parts_data_usage.html">api/parts/data/usage</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.getPredefinedMetrics">getPredefinedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDuration">processSessionDuration</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.processSessionDurationRange">processSessionDurationRange</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.returnAllProcessedMetrics">returnAllProcessedMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setLocation">setLocation</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_usage.html#.setUserLocation">setUserLocation</a></li></ul></li><li><a href="module-api_config.html">api/config</a></li><li><a href="module-api_parts_data_QueryRunner.html">api/parts/data/QueryRunner</a></li><li><a href="module-api_parts_data_exports.html">api/parts/data/exports</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.convertData">convertData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromData">fromData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromDatabase">fromDatabase</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromRequest">fromRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.output">output</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.stream">stream</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenArray">flattenArray</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~flattenObject">flattenObject</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~getValues">getValues</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~isObjectId">isObjectId</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~preventCSVInjection">preventCSVInjection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~processCSVvalue">processCSVvalue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValue">transformValue</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#~transformValuesInObject">transformValuesInObject</a></li></ul></li><li><a href="module-api_parts_data_fetch.html">api/parts/data/fetch</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchAllApps">fetchAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCollection">fetchCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchCountries">fetchCountries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDashboard">fetchDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataEventsOverview">fetchDataEventsOverview</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDataTopEvents">fetchDataTopEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchDurations">fetchDurations</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventData">fetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroupById">fetchEventGroupById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventGroups">fetchEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEventMetaData">fetchEventMetaData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchEvents">fetchEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchFrequency">fetchFrequency</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchLoyalty">fetchLoyalty</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventData">fetchMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMergedEventGroups">fetchMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchMetric">fetchMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchSessions">fetchSessions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeData">fetchTimeData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTop">fetchTop</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTops">fetchTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.fetchTotalUsersObj">fetchTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.formatTotalUsersObj">formatTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventData">getMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventGroups">getMergedEventGroups</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetric">getMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetricWithOptions">getMetricWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getPeriodObj">getPeriodObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObj">getTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObjForEvents">getTimeObjForEvents</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObj">getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObjWithOptions">getTotalUsersObjWithOptions</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.metricToCollection">metricToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.prefetchEventData">prefetchEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchData">fetchData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchFromGranular">fetchFromGranular</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~fetchTimeObj">fetchTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~getDataforTops">getDataforTops</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#~union">union</a></li></ul></li><li><a href="module-api_parts_mgmt_app_users.html">api/parts/mgmt/app_users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.count">count</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.delete">delete</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.export">export</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.getUid">getUid</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.merge">merge</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.search">search</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#.update">update</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_app_users.html#~getAggregatedAppUsers">getAggregatedAppUsers</a></li></ul></li><li><a href="module-api_parts_mgmt_apps.html">api/parts/mgmt/apps</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.createApp">createApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.deleteApp">deleteApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAllApps">getAllApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppPlugins">getAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getAppsDetails">getAppsDetails</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.getCurrentUserApps">getCurrentUserApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.resetApp">resetApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateApp">updateApp</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#.updateAppPlugins">updateAppPlugins</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~checkUniqueKey">checkUniqueKey</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAllAppData">deleteAllAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppData">deleteAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deleteAppLongTasks">deleteAppLongTasks</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~deletePeriodAppData">deletePeriodAppData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~iconUpload">iconUpload</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCategory">isValidCategory</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidCountry">isValidCountry</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidTimezone">isValidTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~isValidType">isValidType</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~packApps">packApps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~processAppProps">processAppProps</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_apps.html#~validateAppUpdateProps">validateAppUpdateProps</a></li></ul></li><li><a href="module-api_parts_mgmt_cms.html">api/parts/mgmt/cms</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.clearCache">clearCache</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntries">getEntries</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#.getEntriesWithUpdate">getEntriesWithUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~fetchFromCMS">fetchFromCMS</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~syncCMSDataToDB">syncCMSDataToDB</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_cms.html#~transformAndStoreData">transformAndStoreData</a></li></ul></li><li><a href="module-api_parts_mgmt_date_presets.html">api/parts/mgmt/date_presets</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_date_presets.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_date_presets.html#.delete">delete</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_date_presets.html#.getAll">getAll</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_date_presets.html#.update">update</a></li></ul></li><li><a href="module-api_parts_mgmt_ip.html">api/parts/mgmt/ip</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#.getHost">getHost</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~getNetworkIP">getNetworkIP</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_ip.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_mail.html">api/parts/mgmt/mail</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.escapedHTMLString">escapedHTMLString</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.getUserFirstName">getUserFirstName</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.lookup">lookup</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendAutomatedMessageError">sendAutomatedMessageError</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendLocalizedMessage">sendLocalizedMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMail">sendMail</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendMessage">sendMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendPasswordResetInfo">sendPasswordResetInfo</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMember">sendToNewMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToNewMemberLink">sendToNewMemberLink</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#.sendToUpdatedMember">sendToUpdatedMember</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_mail.html#~getPluginConfig">getPluginConfig</a></li></ul></li><li><a href="module-api_parts_mgmt_tracker.html">api/parts/mgmt/tracker</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enable">enable</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.enableDashboard">enableDashboard</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.getSDK">getSDK</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.isEnabled">isEnabled</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportEvent">reportEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#.reportUserEvent">reportUserEvent</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerData">collectServerData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~collectServerStats">collectServerStats</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDistro">getDistro</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getDomain">getDomain</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~getHosting">getHosting</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_tracker.html#~stripTrailingSlash">stripTrailingSlash</a></li></ul></li><li><a href="module-api_parts_mgmt_users.html">api/parts/mgmt/users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.checkNoteEditPermission">checkNoteEditPermission</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.createUser">createUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteNote">deleteNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUser">deleteUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.deleteUserNotes">deleteUserNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchNotes">fetchNotes</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.fetchUserAppIds">fetchUserAppIds</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getAllUsers">getAllUsers</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getCurrentUser">getCurrentUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.getUserById">getUserById</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.resetTimeBan">resetTimeBan</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.saveNote">saveNote</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#.updateUser">updateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~argon2Hash">argon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~deleteUserPresets">deleteUserPresets</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~depCheck">depCheck</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~isArgon2Hash">isArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~killAllSessionForUser">killAllSessionForUser</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~sha512Hash">sha512Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~updateUserPasswordToArgon2">updateUserPasswordToArgon2</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyArgon2Hash">verifyArgon2Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_mgmt_users.html#~verifyMemberArgon2Hash">verifyMemberArgon2Hash</a></li></ul></li><li><a href="module-api_utils_authorizer.html">api/utils/authorizer</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.check_if_expired">check_if_expired</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.clean">clean</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.extend_token">extend_token</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.getToken">getToken</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.read">read</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify">verify</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify_return">verify_return</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#~verify_token">verify_token</a></li></ul></li><li><a href="module-api_utils_common.html">api/utils/common</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~escape_html_entities">escape_html_entities</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~getJSON">getJSON</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordMetric">recordMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~recordSegmentMetric">recordSegmentMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#~stripPort">stripPort</a></li></ul></li><li><a href="module-api_utils_countlyFs.html">api/utils/countlyFs</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.fs">fs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.gridfs">gridfs</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_countlyFs.html#.type">type</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.deleteFile">deleteFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.exists">exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getData">getData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getHandler">getHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getSize">getSize</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStats">getStats</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.getStream">getStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.rename">rename</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveData">saveData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveFile">saveFile</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.saveStream">saveStream</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_countlyFs.html#.setHandler">setHandler</a></li></ul></li><li><a href="module-api_utils_localization.html">api/utils/localization</a></li><li><a href="module-api_utils_pdf.html">api/utils/pdf</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_pdf.html#.renderPDF">renderPDF</a></li></ul></li><li><a href="module-api_utils_random-sfc32.html">api/utils/random-sfc32</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_random-sfc32.html#~random">random</a></li></ul></li><li><a href="module-api_utils_render.html">api/utils/render</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#.renderView">renderView</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~fetchChromeExecutablePath">fetchChromeExecutablePath</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~saveScreenshot">saveScreenshot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_render.html#~timeout">timeout</a></li></ul></li><li><a href="module-api_utils_requestProcessor.html">api/utils/requestProcessor</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#.processRequest">processRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~checksumSaltVerification">checksumSaltVerification</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~fetchAppUser">fetchAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~ignorePossibleDevices">ignorePossibleDevices</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadDbVersionMarks">loadDbVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~loadFsVersionMarks">loadFsVersionMarks</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processBulkRequest">processBulkRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processFetchRequest">processFetchRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processRequestData">processRequestData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~processUser">processUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~restartRequest">restartRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForFetchAPI">validateAppForFetchAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateAppForWriteAPI">validateAppForWriteAPI</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_requestProcessor.html#~validateRedirect">validateRedirect</a></li></ul></li><li><a href="module-api_utils_rights.html">api/utils/rights</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.dbUserHasAccessToCollection">dbUserHasAccessToCollection</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.getBaseAppFilter">getBaseAppFilter</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.hasAdminAccess">hasAdminAccess</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateAppAdmin">validateAppAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateCreate">validateCreate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateDelete">validateDelete</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateGlobalAdmin">validateGlobalAdmin</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateRead">validateRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUpdate">validateUpdate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUser">validateUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForRead">validateUserForRead</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#.validateUserForWrite">validateUserForWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~dbLoadEventsData">dbLoadEventsData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~loadAndCacheEventsData">loadAndCacheEventsData</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validateWrite">validateWrite</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~validate_token_if_exists">validate_token_if_exists</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_rights.html#~wrapCallback">wrapCallback</a></li></ul></li><li><a href="module-api_utils_taskmanager.html">api/utils/taskmanager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkIfRunning">checkIfRunning</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkResult">checkResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.createTask">createTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.deleteResult">deleteResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.editTask">editTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.errorResults">errorResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getCounts">getCounts</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getId">getId</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResult">getResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResultByQuery">getResultByQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResults">getResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getTableQueryResult">getTableQueryResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.nameResult">nameResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.rerunTask">rerunTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.saveResult">saveResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#~getResult">getResult</a></li></ul></li><li></li><li><a href="module-api_utils_utils.html">api/utils/utils</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt">decrypt</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt_old">decrypt_old</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.encrypt">encrypt</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#ACCEPTABLE">ACCEPTABLE</a></li><li><a href="global.html#IPC">IPC</a></li><li><a href="global.html#LEVELS">LEVELS</a></li><li><a href="global.html#callback">callback</a></li><li><a href="global.html#checksumSaltVerification">checksumSaltVerification</a></li><li><a href="global.html#clearTaskRecord">clearTaskRecord</a></li><li><a href="global.html#common">common</a></li><li><a href="global.html#create">create</a></li><li><a href="global.html#createLogFunction">createLogFunction</a></li><li><a href="global.html#createLogger">createLogger</a></li><li><a href="global.html#createLoggingSpan">createLoggingSpan</a></li><li><a href="global.html#d">d</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#dig">dig</a></li><li><a href="global.html#discoverLeader">discoverLeader</a></li><li><a href="global.html#dot">dot</a></li><li><a href="global.html#e">e</a></li><li><a href="global.html#f">f</a></li><li><a href="global.html#fetchDataForAggregator">fetchDataForAggregator</a></li><li><a href="global.html#fillUserProperties">fillUserProperties</a></li><li><a href="global.html#flush">flush</a></li><li><a href="global.html#fromCountlyRoot">fromCountlyRoot</a></li><li><a href="global.html#getCountryName">getCountryName</a></li><li><a href="global.html#getId">getId</a></li><li><a href="global.html#getLevel">getLevel</a></li><li><a href="global.html#getTraceContext">getTraceContext</a></li><li><a href="global.html#handleRequest">handleRequest</a></li><li><a href="global.html#hasOpenTelemetry">hasOpenTelemetry</a></li><li><a href="global.html#i">i</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#ignorePossibleDevices">ignorePossibleDevices</a></li><li><a href="global.html#imAlive">imAlive</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#levels">levels</a></li><li><a href="global.html#locFromGeocoder">locFromGeocoder</a></li><li><a href="global.html#locFromGeoip">locFromGeoip</a></li><li><a href="global.html#logLevel">logLevel</a></li><li><a href="global.html#logdb">logdb</a></li><li><a href="global.html#mongodbHandler">mongodbHandler</a></li><li><a href="global.html#periodic">periodic</a></li><li><a href="global.html#processBulkRequest">processBulkRequest</a></li><li><a href="global.html#processRequest">processRequest</a></li><li><a href="global.html#processRequestData">processRequestData</a></li><li><a href="global.html#processUser">processUser</a></li><li><a href="global.html#promiseOrCallback">promiseOrCallback</a></li><li><a href="global.html#pushAsync">pushAsync</a></li><li><a href="global.html#pushSync">pushSync</a></li><li><a href="global.html#random">random</a></li><li><a href="global.html#recordMetrics">recordMetrics</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#setDefault">setDefault</a></li><li><a href="global.html#setLevel">setLevel</a></li><li><a href="global.html#setPrettyPrint">setPrettyPrint</a></li><li><a href="global.html#setup">setup</a></li><li><a href="global.html#sub">sub</a></li><li><a href="global.html#total">total</a></li><li><a href="global.html#transformToKafkaEventFormat">transformToKafkaEventFormat</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#uploadFormFile">uploadFormFile</a></li><li><a href="global.html#validateAppForWriteAPI">validateAppForWriteAPI</a></li><li><a href="global.html#validateJobClass">validateJobClass</a></li><li><a href="global.html#w">w</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">parts/data/QueryRunner.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Query Runner
+ * Unified query execution with automatic adapter selection
+ * Supports multiple database adapters with configuration-based selection
+ * @module api/parts/data/QueryRunner
+ */
+const config = require('../../config');
+const log = require('../../utils/log.js')('query-runner');
+const fs = require('fs');
+const path = require('path');
+
+config.database = config.database || {};
+if (!config.database.adapters || Object.keys(config.database.adapters).length === 0) {
+    config.database.adapters = {
+        mongodb: {
+            enabled: true
+        }
+    };
+}
+/**
+ * QueryRunner Class
+ * 
+ * Provides unified query execution across multiple database adapters.
+ * Automatically selects the best available adapter based on configuration preferences.
+ * 
+ * Features:
+ * - Multi-adapter support (MongoDB, ClickHouse)
+ * - Configuration-based adapter selection
+ * - Forced adapter execution
+ * - Automatic fallback to available adapters
+ * 
+ * @class QueryRunner
+ * @example
+ * // Create instance (usually done in api.js)
+ * const queryRunner = new QueryRunner();
+ * 
+ * // Define a query with multiple adapters
+ * const queryDef = {
+ *   name: 'FETCH_ANALYTICS_DATA',
+ *   adapters: {
+ *     mongodb: {
+ *       handler: mongoHandler
+ *     },
+ *     clickhouse: {
+ *       handler: clickhouseHandler
+ *     }
+ *   }
+ * };
+ * 
+ * // Execute with automatic adapter selection
+ * const data = await queryRunner.executeQuery(queryDef, params);
+ */
+class QueryRunner {
+
+    /**
+     * Get the current comparison mode from config
+     * @returns {string} The comparison mode ('disabled', 'files', 'logs', 'both')
+     * @private
+     */
+    _getComparisonMode() {
+        return config.database?.comparisonLogs?.mode || 'disabled';
+    }
+
+    /**
+     * Ensure comparison logs directory exists
+     * @returns {string} Path to the comparison logs directory
+     * @private
+     */
+    ensureComparisonLogsDir() {
+        const comparisonLogsDir = path.join(process.cwd(), 'comparison_logs');
+        if (!fs.existsSync(comparisonLogsDir)) {
+            fs.mkdirSync(comparisonLogsDir, { recursive: true });
+        }
+        return comparisonLogsDir;
+    }
+
+    /**
+     * Write comparison results to JSON file and/or application logs
+     * @param {string} queryName - Query name for file naming
+     * @param {Object} comparisonData - Data to write
+     * @private
+     */
+    writeComparisonLog(queryName, comparisonData) {
+        const comparisonMode = this._getComparisonMode();
+
+        // Skip logging if disabled
+        if (comparisonMode === 'disabled') {
+            return;
+        }
+
+        // Add development warning to comparison data
+        const dataWithWarning = {
+            ...comparisonData,
+            warning: "DEVELOPMENT FEATURE: Query comparison logging should be disabled in production environments for performance reasons"
+        };
+
+        try {
+            // Write to files if mode is 'files' or 'both'
+            if (comparisonMode === 'files' || comparisonMode === 'both') {
+                const comparisonLogsDir = this.ensureComparisonLogsDir();
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `${queryName}_${timestamp}.json`;
+                const filepath = path.join(comparisonLogsDir, filename);
+
+                // Use async file write to avoid blocking
+                fs.writeFile(filepath, JSON.stringify(dataWithWarning, null, 2), (err) => {
+                    if (err) {
+                        log.e('Failed to write comparison log file', err);
+                    }
+                    else {
+                        log.d(`Comparison log written to file: ${filepath}`);
+                    }
+                });
+            }
+
+            // Write to application logs if mode is 'logs' or 'both'
+            if (comparisonMode === 'logs' || comparisonMode === 'both') {
+                log.w('DEVELOPMENT FEATURE: Query comparison logging to application logs should be disabled in production');
+                // Log summary instead of full data to prevent log flooding
+                const logSummary = {
+                    queryName: dataWithWarning.queryName,
+                    timestamp: dataWithWarning.timestamp,
+                    warning: dataWithWarning.warning,
+                    adaptersExecuted: Object.keys(dataWithWarning.adapters || {}),
+                    results: Object.entries(dataWithWarning.adapters || {}).map(([adapter, data]) => ({
+                        adapter,
+                        success: data.success,
+                        duration: data.duration,
+                        resultCount: Array.isArray(data.transformedResult) ? data.transformedResult.length : 'N/A'
+                    }))
+                };
+                log.i(`Query comparison summary for '${queryName}':`, JSON.stringify(logSummary, null, 2));
+            }
+        }
+        catch (error) {
+            log.w('Failed to write comparison log - this development feature should be disabled in production', error);
+        }
+    }
+
+    /**
+     * Execute a query definition directly without registration
+     * @param {Object} queryDef - Query definition object
+     * @param {string} queryDef.name - Query name for logging and debugging
+     * @param {Object} queryDef.adapters - Adapter configurations keyed by adapter name
+     * @param {Object} [queryDef.adapters.mongodb] - MongoDB adapter configuration
+     * @param {Function} queryDef.adapters.mongodb.handler - Async function that executes MongoDB query
+     * @param {Function} [queryDef.adapters.mongodb.transform] - Optional transformation function for MongoDB results
+     * @param {boolean} [queryDef.adapters.mongodb.available] - Whether this adapter is available (defaults to true)
+     * @param {Object} [queryDef.adapters.clickhouse] - ClickHouse adapter configuration
+     * @param {Function} queryDef.adapters.clickhouse.handler - Async function that executes ClickHouse query
+     * @param {Function} [queryDef.adapters.clickhouse.transform] - Optional transformation function for ClickHouse results
+     * @param {boolean} [queryDef.adapters.clickhouse.available] - Whether this adapter is available (defaults to true)
+     * @param {Object} params - Query parameters passed to the handler function
+     * @param {Object} [options] - Execution options
+     * @param {string} [options.adapter] - Force specific adapter ('mongodb' or 'clickhouse')
+     * @param {boolean} [options.comparison] - Enable comparison mode (runs on all adapters)
+     * @param {Object} [transformOptions] - Options passed to adapter-specific transform functions
+     * @returns {Promise&lt;any>} Query result as returned by the handler (and transformed if transform is provided)
+     * @throws {Error} If query definition is invalid or no suitable adapter found
+     * @example
+     * const queryDef = {
+     *   name: 'FETCH_USER_EVENTS',
+     *   adapters: {
+     *     mongodb: {
+     *       handler: async (params) => { 
+     *         return await db.collection('events').find(params.filter).toArray();
+     *       },
+     *       transform: async (result, transformOptions) => {
+     *         return result.data.map(doc => ({ id: doc._id, count: doc.count }));
+     *       }
+     *     },
+     *     clickhouse: {
+     *       handler: async (params) => {
+     *         return await ch.query({ query: params.sql });
+     *       },
+     *       transform: async (result, transformOptions) => {
+     *         return result.data.map(row => ({ id: row.id, count: parseInt(row.count) }));
+     *       }
+     *     }
+     *   }
+     * };
+     * 
+     * const result = await queryRunner.executeQuery(
+     *   queryDef, 
+     *   { filter: { app_id: '123' } }, 
+     *   { adapter: 'clickhouse' },
+     *   { type: 'drill_format' }
+     * );
+     */
+    async executeQuery(queryDef, params, options = {}, transformOptions = {}) {
+        const startTime = Date.now();
+        try {
+            if (!queryDef || !queryDef.adapters) {
+                throw new Error('Invalid query definition: must have adapters');
+            }
+
+            if (!queryDef.name) {
+                throw new Error('Query definition must have a name');
+            }
+
+            const queryName = queryDef.name;
+
+            // Check if comparison mode is enabled (either explicitly or via config)
+            const comparisonMode = this._getComparisonMode();
+            const shouldRunComparison = options.comparison || (comparisonMode !== 'disabled');
+
+            if (shouldRunComparison) {
+                return await this.executeQueryWithComparison(queryDef, params, options, transformOptions);
+            }
+
+            const selectedAdapter = this.selectAdapterForDef(queryDef, options.adapter);
+            let result = await this.executeOnAdapter(queryDef, selectedAdapter, params, options);
+
+            // Apply adapter-specific transformation if provided
+            const adapterTransform = queryDef.adapters[selectedAdapter]?.transform;
+            if (adapterTransform &amp;&amp; typeof adapterTransform === 'function') {
+                const transformStartTime = Date.now();
+                try {
+                    // Pass only the data to transform, then reconstruct the result
+                    const transformedData = await adapterTransform(result.data, transformOptions);
+                    result = {
+                        _queryMeta: result._queryMeta,
+                        data: transformedData
+                    };
+                    const transformDuration = Date.now() - transformStartTime;
+                    log.d(`Query transformation completed: ${queryName} on ${selectedAdapter} in ${transformDuration}ms`);
+                }
+                catch (transformError) {
+                    const transformDuration = Date.now() - transformStartTime;
+                    log.e(`Query transformation failed: ${queryName} on ${selectedAdapter} after ${transformDuration}ms`, transformError);
+                    throw transformError;
+                }
+            }
+
+            const duration = Date.now() - startTime;
+            log.d(`Query completed: ${queryName} on ${selectedAdapter} in ${duration}ms`);
+
+            // Enforce QueryRunner convention: handlers must return { _queryMeta, data }
+            if (!result || typeof result !== 'object' || !Object.prototype.hasOwnProperty.call(result, '_queryMeta') || !Object.prototype.hasOwnProperty.call(result, 'data')) {
+                throw new Error(`Handler for query '${queryName}' on adapter '${selectedAdapter}' must return object with '_queryMeta' and 'data' properties`);
+            }
+
+            return result.data;
+        }
+        catch (error) {
+            const duration = Date.now() - startTime;
+            const queryName = queryDef?.name || 'unnamed_query';
+            log.e(`Query execution failed: ${queryName} after ${duration}ms`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Execute query with comparison mode - runs on all available adapters
+     * @param {Object} queryDef - Query definition object
+     * @param {Object} params - Query parameters
+     * @param {Object} options - Execution options
+     * @param {Object} transformOptions - Transform options
+     * @returns {Promise&lt;any>} Result from the selected adapter (normal flow)
+     * @private
+     */
+    async executeQueryWithComparison(queryDef, params, options, transformOptions) {
+        const queryName = queryDef.name || 'unnamed_query';
+        const comparisonData = {
+            queryName,
+            timestamp: new Date().toISOString(),
+            notes: {
+                dataConsistency: "Ensure both adapters are querying equivalent data. MongoDB and ClickHouse may have different field schemas."
+            },
+            adapters: {}
+        };
+
+        // Determine the primary adapter for return value
+        const primaryAdapter = this.selectAdapterForDef(queryDef, options.adapter);
+        let primaryResult = null;
+
+        // Get all available adapters for this query
+        const availableAdapters = Object.keys(queryDef.adapters).filter(
+            name => queryDef.adapters[name].available !== false &amp;&amp; this.isAdapterAvailable(name)
+        );
+
+        log.d(`Comparison mode: Running query '${queryName}' on all adapters: ${availableAdapters.join(', ')}`);
+
+        // Execute on all available adapters
+        for (const adapterName of availableAdapters) {
+            const adapterStartTime = Date.now();
+            const adapterData = {
+                adapter: adapterName,
+                startTime: new Date().toISOString(),
+                success: false,
+                duration: 0,
+                query: null,
+                rawResult: null,
+                transformedResult: null,
+                error: null
+            };
+
+            try {
+                // Execute query on adapter
+                log.d(`Comparison mode: Executing on ${adapterName}`);
+                const rawResult = await this.executeOnAdapter(queryDef, adapterName, params, options);
+
+                // Extract query metadata and actual data from standardized format
+                if (!rawResult._queryMeta?.query) {
+                    log.d(`Query '${queryName}' on adapter '${adapterName}' returned no query metadata`);
+                }
+                adapterData.query = rawResult._queryMeta?.query || null;
+                adapterData.rawResult = rawResult.data;
+
+                adapterData.success = true;
+
+                // Apply adapter-specific transformation if provided
+                let transformedResult = rawResult;
+                const adapterTransform = queryDef.adapters[adapterName]?.transform;
+                if (adapterTransform &amp;&amp; typeof adapterTransform === 'function') {
+                    try {
+                        // Pass only the data to transform, consistent with normal mode
+                        const transformedData = await adapterTransform(rawResult.data, transformOptions);
+                        transformedResult = {
+                            _queryMeta: rawResult._queryMeta,
+                            data: transformedData
+                        };
+                        adapterData.transformedResult = transformedData;
+                    }
+                    catch (transformError) {
+                        log.e(`Comparison mode: Transformation failed for ${adapterName}`, transformError);
+                        adapterData.transformError = transformError.message;
+                        adapterData.transformedResult = null;
+                    }
+                }
+                else {
+                    // No transform, return the raw data (not the full result with _queryMeta)
+                    adapterData.transformedResult = rawResult.data;
+                }
+
+                // Store primary result for return
+                if (adapterName === primaryAdapter) {
+                    primaryResult = transformedResult;
+                }
+
+                adapterData.duration = Date.now() - adapterStartTime;
+                log.d(`Comparison mode: ${adapterName} completed in ${adapterData.duration}ms`);
+            }
+            catch (error) {
+                adapterData.success = false;
+                adapterData.error = error.message;
+                adapterData.duration = Date.now() - adapterStartTime;
+                log.e(`Comparison mode: ${adapterName} failed after ${adapterData.duration}ms`, error);
+
+                // If primary adapter failed, throw error to maintain normal flow
+                if (adapterName === primaryAdapter) {
+                    throw error;
+                }
+            }
+
+            comparisonData.adapters[adapterName] = adapterData;
+        }
+
+        // Write comparison log
+        this.writeComparisonLog(queryName, comparisonData);
+
+        log.d(`Comparison mode: Query '${queryName}' completed on all adapters, returning result from ${primaryAdapter}`);
+        return primaryResult ? primaryResult.data : primaryResult;
+    }
+
+    /**
+     * Execute query on specific adapter
+     * @param {Object} query - Query definition object
+     * @param {string} query.name - Query name for logging
+     * @param {Object} query.adapters - Adapter configurations
+     * @param {string} adapterName - Adapter name to execute ('mongodb' or 'clickhouse')
+     * @param {Object} params - Query parameters passed to the handler
+     * @param {Object} [options] - Additional execution options passed to handler
+     * @returns {Promise&lt;any>} Query result as returned by the handler
+     * @throws {Error} If handler not found or execution fails
+     * @private
+     */
+    async executeOnAdapter(query, adapterName, params, options = {}) {
+        try {
+
+            const handler = query.adapters[adapterName]?.handler;
+            if (!handler) {
+                log.e(`No handler found for query '${query.name}' on adapter '${adapterName}'`);
+                throw new Error(`No handler found for query '${query.name}' on adapter '${adapterName}'`);
+            }
+
+            log.d(`Executing query '${query.name}' on adapter '${adapterName}'`);
+
+            return await handler(params, options);
+        }
+        catch (error) {
+            log.e(`Query execution failed: ${query.name} on ${adapterName}`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Select best adapter for a query definition based on availability and configuration
+     * @param {Object} queryDef - Query definition object
+     * @param {string} queryDef.name - Query name for logging
+     * @param {Object} queryDef.adapters - Adapter configurations
+     * @param {string} [forceAdapter] - Force specific adapter ('mongodb' or 'clickhouse')
+     * @returns {string} Selected adapter name
+     * @throws {Error} If forced adapter unavailable or no suitable adapter found
+     * @private
+     */
+    selectAdapterForDef(queryDef, forceAdapter) {
+        const queryName = queryDef.name || 'unnamed_query';
+
+        // Use forced adapter if specified
+        if (forceAdapter) {
+            if (!this.isAdapterAvailable(forceAdapter)) {
+                log.e(`Forced adapter '${forceAdapter}' is not available`);
+                throw new Error(`Adapter '${forceAdapter}' is not available`);
+            }
+            if (!queryDef.adapters[forceAdapter] || queryDef.adapters[forceAdapter].available === false) {
+                log.e(`Forced adapter '${forceAdapter}' is not supported by query '${queryName}'`);
+                throw new Error(`Adapter '${forceAdapter}' not supported by query '${queryName}'`);
+            }
+            return forceAdapter;
+        }
+
+        // Get available adapters
+        const availableAdapters = Object.keys(queryDef.adapters).filter(
+            name => queryDef.adapters[name].available !== false &amp;&amp; this.isAdapterAvailable(name)
+        );
+
+        if (availableAdapters.length === 0) {
+            log.e(`No suitable adapter found for query '${queryName}'`);
+            throw new Error(`No suitable adapter found for query '${queryName}'`);
+        }
+
+        // Use adapter preference from config
+        const adapterPreference = config.database?.adapterPreference || ['mongodb', 'clickhouse'];
+
+        // Find first available adapter in preference order
+        for (const preferred of adapterPreference) {
+            if (availableAdapters.includes(preferred)) {
+                return preferred;
+            }
+        }
+
+        // If no preferred adapter is available, use first available
+        return availableAdapters[0];
+    }
+
+    /**
+     * Check if adapter is available based on configuration
+     * @param {string} adapterName - Adapter name to check ('mongodb' or 'clickhouse')
+     * @returns {boolean} True if adapter is enabled in config
+     * @private
+     */
+    isAdapterAvailable(adapterName) {
+        return config.database?.adapters?.[adapterName]?.enabled === true;
+    }
+
+}
+
+module.exports = QueryRunner;</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Fri Oct 03 2025 16:04:01 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+<script src="scripts/collapse.js" defer></script>
+
+
+</body>
+</html>
