@@ -241,7 +241,7 @@ var obb = {};
 
         var pipeline = [];
         pipeline.push({"$match": match});
-        pipeline.push({"$group": {"_id": {"u": "$uid", "sg": "$n" }, "t": {"$sum": 1}, "d": {"$sum": "$dur"}, "s": {"$sum": "$sg.visit"}, "e": {"$sum": "$sg.exit"}, "b": {"$sum": "$sg.bounce"}}});
+        pipeline.push({"$group": {"_id": {"u": "$uid", "sg": "$n" }, "t": {"$sum": 1}, "d": {"$sum": "$dur"}, "s": {"$sum": "$sg.start"}, "e": {"$sum": "$sg.exit"}, "b": {"$sum": "$sg.bounce"}}});
         pipeline.push({"$addFields": {"u": 1}});
         //Union with cly action
         pipeline.push({
@@ -265,7 +265,7 @@ var obb = {};
         ];
 
         pipeline.push({"$unionWith": {"coll": "drill_events", "pipeline": pipeline2}});
-        pipeline.push({"$group": {"_id": "$_id", "u": {"$max": "$u"}, "t": {"$max": "$t"}, "d": {"$max": "$d"}, "s": {"$max": "$s"}, "e": {"$max": "$e"}, "b": {"$max": "$b"}, "scr": {"$max": "$scr"}}});
+        pipeline.push({"$group": {"_id": "$_id", "u": {"$max": "$u"}, "t": {"$max": "$t"}, "d": {"$sum": "$d"}, "s": {"$max": "$s"}, "e": {"$max": "$e"}, "b": {"$max": "$b"}, "scr": {"$max": "$scr"}}});
         pipeline.push({
             "$addFields": {
                 "scr-calc": { $cond: [ { $or: [{$eq: ["$t", 0]}, {$eq: ['$scr', 0]}]}, 0, {'$divide': ['$scr', "$t"]}] },

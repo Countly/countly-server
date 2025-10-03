@@ -1497,6 +1497,11 @@ describe('Writing app events', function() {
                         setTimeout(done, 100 * testUtils.testScalingFactor);
                     });
             });
+            it('Trigger deletion job to run', function(done) {
+                testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+                    setTimeout(done, 5000);
+                });
+            });
         });
     });
 });

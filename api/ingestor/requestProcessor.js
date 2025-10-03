@@ -317,7 +317,7 @@ var processToDrill = async function(params, drill_updates, callback) {
             }
             var upWithMeta = fillUserProperties(dbAppUser, params.app?.ovveridden_types?.prop);
             dbEventObject[common.dbUserMap.device_id] = params.qstring.device_id;
-            dbEventObject.lsid = dbAppUser.lsid;
+            dbEventObject.lsid = events[i].lsid || dbAppUser.lsid;
             dbEventObject[common.dbEventMap.user_properties] = upWithMeta.up;
             dbEventObject.custom = upWithMeta.upCustom;
             dbEventObject.cmp = upWithMeta.upCampaign;

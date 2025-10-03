@@ -1,5 +1,4 @@
 var pluginOb = {},
-    crypto = require('crypto'),
     common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     log = common.log('views:ingestor');
@@ -70,27 +69,31 @@ const FEATURE_NAME = 'views';
 
     plugins.register("/sdk/process_user", async function(ob) {
         var params = ob.params;
-
         var update = {};
 
         if (params.qstring.begin_session && params.app_user.vc !== 0) {
             update = {"$set": {"vc": 0}};
         }
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
+
             //do this before to make sure they are not processed before duration is added
             var current_views = {};
-            var drill_updates = {};
+            /*var drill_updates = {};
             var have_drill = false;
-            var fetch_appuserviews = false;
+            var fetch_appuserviews = false;*/
             var vc = 0;
 
+            var last_started_view = null;
 
             for (let p = 0; p < params.qstring.events.length; p++) {
                 var currE = params.qstring.events[p];
                 if (currE.key === "[CLY]_view") {
+                    if (currE._system_auto_added) {
+                        continue;
+                    }
                     if (currE.segmentation && currE.segmentation.name) {
                         currE.name = currE.segmentation.name;
-                        var view_id = crypto.createHash('md5').update(currE.segmentation.name).digest('hex');
+                        //var view_id = crypto.createHash('md5').update(currE.segmentation.name).digest('hex');
                         currE.dur = Math.round(currE.dur || currE.segmentation.dur || 0);
                         delete currE.segmentation.dur;
                         //currE.vw = view_id;
@@ -102,7 +105,6 @@ const FEATURE_NAME = 'views';
                             current_views[currE.segmentation.name] = current_views[currE.segmentation.name] || {};
                             var doc = {"i": p};
                             if (currE.segmentation._idv) {
-
                                 doc._idv = currE.segmentation._idv;
                                 current_views[currE.segmentation.name][currE.segmentation._idv] = doc;
                                 //if default not set or it is set as one with _idv, replace with newest
@@ -131,23 +133,40 @@ const FEATURE_NAME = 'views';
                                     }
                                 }
                                 params.qstring.events[p].dur = 0; //not use duration from this one anymore;
-
                             }
                             else {
-                                have_drill = true;
-                                drill_updates[view_id] = drill_updates[view_id] || {};
-                                drill_updates[view_id].duration = (drill_updates[view_id].duration || 0) + currE.dur;
-                                if (currE.segmentation) {
-                                    drill_updates[view_id].segments = drill_updates[view_id].segments || {};
-                                    if (currE.segmentation._idv) {
-                                        drill_updates[view_id]._idv = currE.segmentation._idv;
+                                //have_drill = true;
+                                var updateForLastView = false;
+                                if (params.app_user.last_view) {
+                                    if (currE.segmentation && currE.segmentation.name === params.app_user.last_view.name) {
+                                        if (currE.segmentation._idv) {
+                                            if (currE.segmentation._idv === params.app_user.last_view._idv) {
+                                                updateForLastView = true;
+                                            }
+                                        }
+                                        else {
+                                            if (!params.app_user.last_view._idv) {
+                                                updateForLastView = true;
+                                            }
+                                        }
                                     }
-                                    else {
-                                        fetch_appuserviews = true;
+                                }
+                                if (updateForLastView) {
+                                    currE.key = null;
+                                    params.app_user.last_view.duration = currE.dur;
+                                    if (currE.segmentation) {
+                                        params.app_user.last_view.segments = params.app_user.last_view.segments || {};
+                                        for (var k in currE.segmentation) {
+                                            params.app_user.last_view.segments[k] = currE.segmentation[k];
+                                        }
                                     }
-                                    for (var k in currE.segmentation) {
-                                        drill_updates[view_id].segments["sg." + k] = currE.segmentation[k];
+                                    params.app_user.last_view.isEnded = true;
+                                    if (currE.timestamp) {
+                                        params.app_user.last_view.timestamp = currE.timestamp;
                                     }
+
+                                    update.$set = update.$set || {};
+                                    update.$set.last_view = params.app_user.last_view;
                                 }
                                 //store as update for drill.
                             }
@@ -158,6 +177,7 @@ const FEATURE_NAME = 'views';
                             update.$set.lv = currE.segmentation.name;
                             vc++;
                             update.$max = {lvt: params.time.timestamp};
+                            last_started_view = currE;
                         }
                     }
                 }
@@ -185,10 +205,42 @@ const FEATURE_NAME = 'views';
             if (vc > 0) {
                 if (update.$set && update.$set.vc > -1) {
                     update.$set.vc += vc;
+                    //We have new view started.
                 }
                 else {
                     update.$inc = update.$inc || {};
                     update.$inc.vc = vc;
+                }
+            }
+
+            if (last_started_view) {
+                // If we have a last started view, we store it
+
+                update.$set.last_view = {
+                    "_idv": last_started_view.segmentation && last_started_view.segmentation._idv,
+                    "name": last_started_view.name,
+                    "timestamp": last_started_view.timestamp,
+                    "duration": 0,
+                    "segments": {},
+                    "isEnded": last_started_view.isEnded || false
+                };
+                for (var segk in last_started_view.segmentation) {
+                    if (segk !== "visit") {
+                        update.$set.last_view.segments[segk] = last_started_view.segmentation[segk];
+                    }
+                }
+
+                // delete update.$set.last_view.segments.visit;
+                if (params.app_user.last_view && params.app_user.last_view.isEnded) {
+                    //Flush view update event for previously kept view
+                    params.qstring.events.push({
+                        "key": "[CLY]_view",
+                        "name": params.app_user.last_view.name,
+                        "timestamp": params.app_user.last_view.timestamp,
+                        "segmentation": params.app_user.last_view.segments || {},
+                        "dur": params.app_user.last_view.duration || 0,
+                        "_id": (params.app_user.last_view._idv ? (params.app_id + "_" + params.app_user.uid + '_' + params.app_user.last_view._idv + '_up') : (params.app_user.lvid + '_up'))
+                    });
                 }
             }
         }
@@ -196,7 +248,7 @@ const FEATURE_NAME = 'views';
             ob.updates.push(update);
         }
 
-        var update_uvc = false;
+        /*var update_uvc = false;
         if (params.qstring.end_session && params.app_user.vc) {
             update_uvc = true;
             fetch_appuserviews = true;
@@ -218,59 +270,39 @@ const FEATURE_NAME = 'views';
                         }
                     }
                     if (lvid) {
-                        var update4 = {"$set": {"sg.exit": 1}};
+                        drill_updates[lvid] = drill_updates[lvid] || {};
+                        drill_updates[lvid].segmentation = drill_updates[lvid].segmentation || {};
+                        drill_updates[lvid].segmentation.exit = 1;
                         if (params.app_user.vc < 2) {
-                            update4.$set["sg.bounce"] = 1;
+                            drill_updates[lvid].segmentation.bounce = 1;
                         }
-                        ob.drill_updates.push({"updateOne": {"filter": {"_id": lvid}, "update": update4}});
                     }
                 }
-                /*If we want to add to updates with all drill updates ar once*/
+
                 for (var iid in drill_updates) {
-                    var upp = {};
-                    if (Object.keys(drill_updates[iid].segments).length > 0) {
-                        upp.$set = drill_updates[iid].segments;
+                    var doc2 = {
+                        "e": "[CLY]_view_update",
+                        "n": drill_updates[iid].name,
+                        "segmentation": drill_updates[iid].segmentation,
+                        "dur": drill_updates[iid].duration || 0
+
+                    };
+                    if (drill_updates[iid]._idv) {
+                        doc2._id = params.app_id + "_" + params.app_user.uid + '_' + drill_updates[iid]._idv + '_up';
                     }
-                    if (drill_updates[iid].duration) {
-                        upp.$inc = {"dur": drill_updates[iid].duration};
+                    else if (res && res[iid] && res[iid].lvid) {
+                        doc2._id = res[iid].lvid + '_up';
                     }
-                    if (Object.keys(upp).length > 0) {
-                        if (drill_updates[iid]._idv) {
-                            ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_id + "_" + params.app_user.uid + '_' + drill_updates[iid]._idv}, "update": upp}});
-                        }
-                        else if (res && res[iid] && res[iid].lvid) {
-                            ob.drill_updates.push({"updateOne": {"filter": {"_id": res[iid].lvid}, "update": upp}});
-                        }
-                        else if (params.app_user.lvid) {
-                            ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lvid}, "update": upp}});
-                        }
-                        else {
-                            log.d("Missing view information: " + params.app_id + " " + params.app_user.uid + " " + ob.viewName);
-                        }
+                    else if (params.app_user.lvid) {
+                        doc2._id = params.app_user.lvid + '_up';
                     }
+                    params.qstring.events.push(doc2);
                 }
-
-
-                /* If we want to do all fallback merging
-                    for (var iid in drill_updates) {
-                        if (res && res[iid] && res[iid].lvid) {
-                            updateViewParams(res[iid].lvid, drill_updates[iid], params);
-                        }
-                        else if (params.app_user.lvid) {
-                            updateViewParams(params.app_user.lvid, drill_updates[iid], params);
-                        }
-                        else if (drill_updates[iid]._idv) {
-                            updateViewParams(params.app_id + "_" + params.app_user.uid + "_" + drill_updates[iid]._idv, drill_updates[iid], params);
-                        }
-                        else {
-                            log.e("Missing view information: " + params.app_id + " " + params.app_user.uid + " " + ob.viewName);
-                        }
-                    }*/
             }
             catch (err) {
                 log.e(err);
             }
-        }
+        }*/
 
     });
 
