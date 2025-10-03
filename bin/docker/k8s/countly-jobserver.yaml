@@ -31,7 +31,7 @@ spec:
 #        image: gcr.io/countly-01/api:23.03     # Countly Enterprise
         imagePullPolicy: Always
         command: ["node"]
-        args: ["--max-old-space-size=2048", "/opt/countly/core/jobServer/index.js"]
+        args: ["--max-old-space-size=2048", "/opt/countly/jobServer/index.js"]
         ports:
         - containerPort: 3001
         env:
