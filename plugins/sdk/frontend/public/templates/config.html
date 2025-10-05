@@ -69,13 +69,26 @@
                                                 v-else-if="getData[key].type === 'function'" 
                                                 v-html="getData[key].render(getData[key])">
                                             </div>
-                                            <el-input
-                                                v-else-if="getData[key].type === 'text'" 
-                                                @input="onChange(key, $event)"
-                                                :value="getData[key].value || getData[key].default"
-                                                v-bind="getData[key].attrs"
-                                                >
-                                            </el-input>
+                                            <template v-else-if="getData[key].type === 'text'">
+                                                <div class="validation-wrapper">
+                                                    <el-input
+                                                        @input="onChange(key, $event)"
+                                                        :value="getData[key].value || getData[key].default"
+                                                        v-bind="getData[key].attrs"
+                                                        :class="{ 'config-invalid': key === 'esb' && validationErrors && validationErrors.esb }">
+                                                    </el-input>
+                                                    <div class="config-validation-box" v-if="key === 'esb'">
+                                                        <div v-if="validationErrors && validationErrors.esb" class="status-box invalid">
+                                                            <span class="dot red"></span>
+                                                            <span class="status-text">{{ validationErrors.esb }}</span>
+                                                        </div>
+                                                        <div v-else class="status-box valid">
+                                                            <span class="dot green"></span>
+                                                            <span class="status-text">Valid JSON</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
                                             <el-select 
                                                 v-else-if="getData[key].type === 'select'" 
                                                 @change="onChange(key, $event)"

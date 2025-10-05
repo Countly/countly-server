@@ -125,7 +125,7 @@
                         // format experimental fields for UI
                         if (key === 'eb' || key === 'upb' || key === 'sb') {
                             if (Array.isArray(stored)) {
-                                this.configs[key].value = stored.join(',');
+                                this.configs[key].value = this.arrayToCsv(stored);
                             }
                             else if (typeof stored === 'string') {
                                 this.configs[key].value = stored;
@@ -443,34 +443,34 @@
                     eb: {
                         type: "text",
                         name: "Event Blacklist",
-                        description: "Comma separated list of custom event keys to blacklist in SDK (default: empty)",
+                        description: "CSV* list of custom event keys to blacklist in SDK (default: empty)<br>* Use double quotes for values with commas",
                         default: "",
                         enforced: false,
                         value: null,
-                        attrs: { type: 'textarea', rows: 4, placeholder: 'event1,event2,event3' }
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'event1,event2 or "event3"' }
                     },
                     upb: {
                         type: "text",
                         name: "User Property Blacklist",
-                        description: "Comma separated list of user property keys to blacklist in SDK (default: empty)",
+                        description: "CSV* list of user property keys to blacklist in SDK (default: empty)<br>* Use double quotes for values with commas",
                         default: "",
                         enforced: false,
                         value: null,
-                        attrs: { type: 'textarea', rows: 4, placeholder: 'prop1,prop2' }
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'prop1,prop2 or "prop3"' }
                     },
                     sb: {
                         type: "text",
                         name: "Segmentation Blacklist",
-                        description: "Comma separated list of segmentation keys to blacklist in SDK (default: empty)",
+                        description: "CSV* list of segmentation keys to blacklist in SDK (default: empty)<br>* Use double quotes for values with commas",
                         default: "",
                         enforced: false,
                         value: null,
-                        attrs: { type: 'textarea', rows: 4, placeholder: 'key1,key2' }
+                        attrs: { type: 'textarea', rows: 4, placeholder: 'key1,key2 or "key3"' }
                     },
                     esb: {
                         type: "text",
                         name: "Event Segmentation Blacklist",
-                        description: "Arrays of segmentation keys to blacklist for specific events. Example: { \"event1\": [\"seg1\", \"seg2\"] }",
+                        description: "Arrays of segmentation keys to blacklist for specific events (default: {})<br> Example: { \"event1\": [\"seg1\", \"seg2\"] }",
                         default: "{}",
                         enforced: false,
                         value: null,
@@ -478,6 +478,7 @@
                     }
                 },
                 diff: [],
+                validationErrors: {},
                 description: "Not all SDKs and SDK versions yet support this feature. Refer to respective SDK documentation for more information"
             };
         },
@@ -485,6 +486,7 @@
             var self = this;
             this.$nextTick(function() {
                 self.checkSdkSupport();
+                self.isJSONInputValid('esb');
             });
         },
         methods: {
@@ -496,6 +498,9 @@
                     if (this.diff.indexOf("bom_preset") === -1) {
                         this.diff.push("bom_preset");
                     }
+                }
+                if (key === 'esb') {
+                    this.isJSONInputValid('esb');
                 }
                 if (this.diff.indexOf(key) === -1) {
                     this.diff.push(key);
@@ -511,6 +516,87 @@
                     else if (this.configs[key].default === value) {
                         this.diff.splice(this.diff.indexOf(key), 1);
                     }
+                }
+            },
+
+            /**
+            * Quoted CSV to array parser
+            * @param {String} str - CSV string
+            * @returns {Array} - Array of parsed values
+            */
+            csvToArray: function(str) {
+                if (typeof str !== 'string') {
+                    return [];
+                }
+                var re = /(?:\s*("(?:[^"]|"")*"|[^,]*?)\s*)(?:,|$)/g;
+                return Array.from(str.matchAll(re))
+                    .map(function(m) {
+                        var val = m[1];
+                        if (!val) {
+                            return null;
+                        }
+                        if (val.charAt(0) === '"' && val.charAt(val.length - 1) === '"') {
+                            val = val.slice(1, -1).replace(/""/g, '"');
+                        }
+                        else {
+                            val = val.trim();
+                        }
+                        return val.length ? val : null;
+                    })
+                    .filter(function(v) {
+                        return v !== null;
+                    });
+            },
+
+            /**
+             * Convert an array to a CSV string
+             * @param {Array} arr - Array of values
+             * @returns {String} - CSV string
+             */
+            arrayToCsv: function(arr) {
+                if (!Array.isArray(arr)) {
+                    return '';
+                }
+                return arr.filter(function(e) {
+                    return e !== null;
+                }).map(function(e) {
+                    e = String(e);
+                    // quote if contains comma, quote, newline or carriage return, or starts/ends with whitespace
+                    if (/[,"\n\r]/.test(e) || /^\s|\s$/.test(e)) {
+                        return '"' + e.replace(/"/g, '""') + '"';
+                    }
+                    return e;
+                }).join(',');
+            },
+
+            /**
+             * Validate a string input and set validationErrors accordingly
+             * @param {String} key - Config key to validate
+             * @returns {Boolean} - True if valid, false otherwise
+             */
+            isJSONInputValid: function(key) {
+                if (!key) {
+                    return true;
+                }
+                var val = this.configs[key].value;
+                if (typeof val === 'string') {
+                    try {
+                        JSON.parse(val);
+                        this.validationErrors[key] = '';
+                        return true;
+                    }
+                    catch (ex) {
+                        this.validationErrors[key] = ex.message || 'Invalid JSON';
+                        return false;
+                    }
+                }
+                else if (typeof val === 'object') { // already parsed
+                    this.validationErrors[key] = '';
+                    return true;
+                }
+                else {
+                    this.validationErrors[key] = 'Invalid JSON';
+                    return false;
                 }
             },
             downloadConfig: function() {
@@ -685,6 +771,12 @@
                 );
             },
             save: function(enforcement) {
+                if (this.validationErrors && Object.keys(this.validationErrors).some(function(k) {
+                    return !!this.validationErrors[k];
+                }, this)) {
+                    CountlyHelpers.notify({ message: 'Please fix format errors before saving', sticky: false, type: 'error' });
+                    return;
+                }
                 var params = this.$store.getters["countlySDK/sdk/all"];
                 log(`save with enforcement: ${JSON.stringify(enforcement)}`);
                 log(`save: ${JSON.stringify(params)} and diff: ${JSON.stringify(this.diff)}`);
@@ -693,13 +785,8 @@
                     var dkey = this.diff[i];
                     var val = this.configs[dkey].value;
                     if (dkey === 'eb' || dkey === 'upb' || dkey === 'sb') {
-                        // trimmed
                         if (typeof val === 'string') {
-                            var arr = val.split(',').map(function(s) {
-                                return s.trim();
-                            }).filter(function(s) {
-                                return s.length > 0;
-                            });
+                            var arr = this.csvToArray(val);
                             data[dkey] = arr;
                         }
                         else if (Array.isArray(val)) {
@@ -756,7 +843,7 @@
                     var stored = typeof data[key] !== "undefined" ? data[key] : this.configs[key].default;
                     if (key === 'eb' || key === 'upb' || key === 'sb') {
                         if (Array.isArray(stored)) {
-                            this.configs[key].value = stored.join(',');
+                            this.configs[key].value = this.arrayToCsv(stored);
                         }
                         else if (typeof stored === 'string') {
                             this.configs[key].value = stored;
@@ -780,6 +867,7 @@
                         else {
                             this.configs[key].value = '{}';
                         }
+                        this.isJSONInputValid('esb'); // re-validate after discarding changes
                     }
                     else {
                         this.configs[key].value = stored;
