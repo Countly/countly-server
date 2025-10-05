@@ -923,8 +923,10 @@
             checkSdkSupport: function() {
                 log("checkSdkSupport");
                 for (var key in this.configs) {
+                    this.configs[key].experimental = false;
                     this.configs[key].tooltipMessage = "No SDK data present. Please use the latest versions of Android, Web, iOS, Flutter or RN SDKs to use this option.";
                     if (key === 'upcl' || key === 'eb' || key === 'upb' || key === 'sb' || key === 'esb') {
+                        this.configs[key].experimental = true;
                         this.configs[key].tooltipMessage = "This is an experimental option. SDK support for this option may be limited or unavailable.";
                     }
                     this.configs[key].tooltipClass = 'tooltip-neutral';

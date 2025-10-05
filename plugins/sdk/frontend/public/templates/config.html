@@ -35,9 +35,10 @@
                                 v-for="key in group.list" :key="key"
                                 class="bu-columns bu-is-vcentered bu-p-5 config-section">
                                     <div class="bu-column bu-is-7">
-                                        <p class="bu-has-text-weight-medium" :data-test-id="getData[key].name.toLowerCase().replaceAll(' ', '-') + '-title-label'">
+                                            <p class="bu-has-text-weight-medium" :data-test-id="getData[key].name.toLowerCase().replaceAll(' ', '-') + '-title-label'">
                                             {{getData[key].name}}
-                                            <cly-tooltip-icon v-if="getData[key].type !== 'preset'"
+                                            <span v-if="getData[key].experimental" style="display:inline-block;width:5px;"></span>
+                                            <cly-tooltip-icon v-if="getData[key].type !== 'preset' && getData[key].tooltipMessage && !getData[key].experimental"
                                                 :tooltip="getData[key].tooltipMessage" 
                                                 placement="right" 
                                                 :tooltip-class="getData[key].tooltipClass">
