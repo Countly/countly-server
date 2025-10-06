@@ -99,10 +99,11 @@ const reloadConfig = function() {
  * processRequest(params);
  */
 const processRequest = (params) => {
-    console.log("Got request in request processor");
     if (!params.req || !params.req.url) {
         return common.returnMessage(params, 400, "Please provide request data");
     }
+
+    console.log("Got request in request processor", params.req.url, process.argv);
 
     const urlParts = url.parse(params.req.url, true),
         queryString = urlParts.query,
