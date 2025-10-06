@@ -172,6 +172,8 @@ const OVERRIDES = {
  * @return {object} recursive config modification
  */
 function dig(config, over, name, value) {
+    console.log("configoverrride", config, over, name, value);
+    
     let comps = name.split('_');
 
     for (let i = comps.length; i > 0; i--) {
