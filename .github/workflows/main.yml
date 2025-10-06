@@ -243,7 +243,16 @@ jobs:
           npm install
           /sbin/my_init &
           node bin/scripts/test.connection.js
-          npx grunt mochaTest       
+          npx grunt mochaTest 
+
+      - name: Nginx
+        shell: bash
+        working-directory: /opt/countly
+        run: |
+          cat /etc/nginx/sites-enabled/default
+          cat /etc/nginx/nginx.conf
+          cat /etc/nginx/sites-enabled/default
+          ls -l /var/log/
 
   ui-tests:
     runs-on: ubuntu-latest
