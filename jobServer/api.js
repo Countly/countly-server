@@ -388,6 +388,7 @@ function buildListViewJob(mainDoc, jobConfig, statusInfo) {
 // /jobs/i endpoint
 // ----------------------------------
 plugins.register('/jobs/i', async function(ob) {
+    console.log("Got jobs request");
     validateGlobalAdmin(ob.params, async function() {
         const { jobName, schedule, retry } = ob.params.qstring || {};
         const action = ob.params.qstring?.action;
@@ -449,13 +450,14 @@ plugins.register('/jobs/i', async function(ob) {
                 // Apply update to job runner
                 common.jobServer.applyConfig({ jobName, ...updateData });
             }
-
+            console.log("Job done");
             log.d(`Job ${jobName} ${action} success`);
             plugins.dispatch('/systemlogs', {
                 params: ob.params,
                 action: `jobs_${action}`,
                 data: { name: jobName, ...updateData },
             });
+            
             common.returnMessage(ob.params, 200, 'Success');
         }
         catch (error) {
