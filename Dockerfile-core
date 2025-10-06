@@ -71,6 +71,7 @@ RUN useradd -r -M -U -d /opt/countly -s /bin/false countly && \
     mkdir /etc/service/countly-ingestor && \
     mkdir /etc/service/countly-aggregator && \
     mkdir /etc/service/countly-dashboard && \
+    mkdir /etc/service/countly-jobserver && \
     echo "" >> /etc/nginx/nginx.conf && \
     echo "daemon off;" >> /etc/nginx/nginx.conf && \
     cp ./bin/commands/docker/nginx.sh /etc/service/nginx/run && \
@@ -78,6 +79,7 @@ RUN useradd -r -M -U -d /opt/countly -s /bin/false countly && \
     cp ./bin/commands/docker/countly-ingestor.sh /etc/service/countly-ingestor/run && \
     cp ./bin/commands/docker/countly-aggregator.sh /etc/service/countly-aggregator/run && \
     cp ./bin/commands/docker/countly-dashboard.sh /etc/service/countly-dashboard/run && \
+    cp ./bin/commands/docker/countly-jobserver.sh /etc/service/countly-jobserver/run && \
     chown -R countly:countly /opt/countly && \
     # cleanup
     npm remove -y --no-save mocha nyc should supertest && \
