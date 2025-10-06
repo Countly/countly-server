@@ -2,6 +2,7 @@
 Fixes:
 - [alerts] Fix: Migrate alerts to the new events model
 - [oidc] Fix for session state storage
+- [applications] Persist newly created app after page reload
 
 Enterprise Fixes:
 - [users] Update user custom field number formatting
