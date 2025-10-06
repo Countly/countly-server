@@ -6,7 +6,7 @@
  * @typedef {import('./JobManager')} JobManager
  * @typedef {import('./JobScanner')} JobScanner
  */
-
+console.log("JobServer API loaded")
 const JobManager = require('./JobManager');
 const JobScanner = require('./JobScanner');
 
