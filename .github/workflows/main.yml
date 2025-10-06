@@ -246,6 +246,7 @@ jobs:
           npx grunt mochaTest 
 
       - name: Nginx
+        if: ${{ always() }}
         shell: bash
         working-directory: /opt/countly
         run: |
