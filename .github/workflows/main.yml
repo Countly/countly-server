@@ -209,10 +209,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check ports
-        shell: bash
-        run: netstat -antu
-
       - name: Copy code
         shell: bash
         run: cp -rf ./* /opt/countly
@@ -248,10 +244,6 @@ jobs:
           /sbin/my_init &
           node bin/scripts/test.connection.js
           npx grunt mochaTest 
-
-      - name: Check ports again
-        shell: bash
-        run: netstat -antu
 
       - name: Nginx
         if: ${{ always() }}
