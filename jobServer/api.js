@@ -1,5 +1,6 @@
 /* api.js */
 // TODO: first version this needs more checks and refactoring and fixes
+console.log("JobServer API loaded2")
 
 const Logger = require('../api/utils/log.js');
 const log = new Logger('jobs:api');
