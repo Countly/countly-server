@@ -388,8 +388,10 @@ function buildListViewJob(mainDoc, jobConfig, statusInfo) {
 // ----------------------------------
 // /jobs/i endpoint
 // ----------------------------------
+
+console.log("Define /jobs/i")
 plugins.register('/jobs/i', async function(ob) {
-    console.log("Got jobs request");
+    console.log("Got jobs request /jobs/i");
     validateGlobalAdmin(ob.params, async function() {
         const { jobName, schedule, retry } = ob.params.qstring || {};
         const action = ob.params.qstring?.action;
