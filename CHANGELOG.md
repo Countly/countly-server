@@ -1,9 +1,21 @@
 ## Version 25.03.X
 Fixes:
-- [populator] Fix nps generator
-- [surveys] Fix survey details results summary tiles display when journeys plugin in not enabled
-- [feedback] Prevent showing application when switching NPS and Survey pages
+- [alerts] Fix: Migrate alerts to the new events model
+- [oidc] Fix for session state storage
+- [applications] Persist newly created app after page reload
 
+Enterprise Fixes:
+- [users] Update user custom field number formatting
+- [users] Fix condition for custom property update
+- [drill] [survey] Fix duplicate question id
+- [drill] [survey] Display survey answer value instead of id in drill result
+
+
+## Version 25.03.21
+Fixes:
+- [feedback] Prevent showing the application when switching between the NPS and Survey pages
+- [populator] Fix NPS generator
+- [surveys] Fix survey details results summary tiles display when journeys plugin in not enabled
 
 ## Version 25.03.20
 Fixes:
