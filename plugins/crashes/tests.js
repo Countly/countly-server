@@ -3201,6 +3201,11 @@ describe('Testing Crashes', function() {
                     setTimeout(done, 200 * testUtils.testScalingFactor);
                 });
         });
+        it('Trigger deletion job to run', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", function() {
+                setTimeout(done, 5000);
+            });
+        });
     });
 
     describe('Verify reset metrics', function() {

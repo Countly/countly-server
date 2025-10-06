@@ -65,7 +65,7 @@ describe('Testing Times Of Day', function() {
 
                 var ob = JSON.parse(res.text);
                 ob.result.should.eql("Success");
-                setTimeout(done, 500 * testUtils.testScalingFactor + 2000);
+                setTimeout(done, 500 * testUtils.testScalingFactor + 3000);
             });
     });
 

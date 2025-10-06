@@ -309,7 +309,7 @@ usage.updateEndSessionParams = function(params, eventList, session_duration) {
     if (!user || !eventList || !Array.isArray(eventList)) {
         return;
     }
-    const up_extra = { av_prev: params.app_user.av };
+    const up_extra = { av_prev: params.app_user.av, p_prev: params.app_user.p };
     if (params.app_user.hadFatalCrash) {
         up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
     }

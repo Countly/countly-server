@@ -831,7 +831,7 @@ const validateAppForWriteAPI = (params, done) => {
                                                 postfix: crypto.createHash('md5').update(params.app_user.did + "").digest('base64')[0],
                                                 ended: "false"
                                             },
-                                            up_extra,
+                                            up_extra
                                         });
                                     }
                                     plugins.dispatch("/sdk/process_user", ob, function() { //
