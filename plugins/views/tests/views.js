@@ -1067,7 +1067,7 @@ describe('Testing views plugin', function() {
         });
         it('Trigger deletion job to run', function(done) {
             testUtils.triggerJobToRun("api:deletionManagerJob", function() {
-                setTimeout(done, 500 * testUtils.testScalingFactor);
+                setTimeout(done, 5000);
             });
         });
     });

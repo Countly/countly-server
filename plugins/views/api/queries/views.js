@@ -8,7 +8,7 @@ const log = common.log('views:queries');
 
 var clickHouseRunner;
 try {
-    clickHouseRunner = require('../../../plugins/clickhouse/api/queries/clickhouseCoreQueries.js');
+    clickHouseRunner = require('../../clickhouse/api/queries/clickhouseCoreQueries.js');
 }
 catch (error) {
     log.e('Failed to load ClickHouse query runner', error);
