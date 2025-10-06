@@ -302,7 +302,7 @@ var countlyConfig = {
     * @property {number} maxUploadFileSize - limit the size of uploaded file
     */
     jobServer: {
-        port: 3020,
+        port: 3011,
         host: "localhost",
         max_sockets: 1024,
         timeout: 120000,
