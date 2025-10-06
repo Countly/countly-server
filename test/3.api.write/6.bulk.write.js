@@ -116,6 +116,9 @@ describe('Bulk writing. Tests against data provided by aggregator.', function() 
                         setTimeout(done, 1000 * testUtils.testScalingFactor);
                     });
             });
+            it('trigger job for database cleanup', function(done) {
+                testUtils.triggerJobToRun("api:deletionManagerJob", done);
+            });
         });
     });
     describe('using metric tests', function() {
@@ -209,6 +212,9 @@ describe('Bulk writing. Tests against data provided by aggregator.', function() 
                         ob.should.have.property('result', 'Success');
                         setTimeout(done, 1000 * testUtils.testScalingFactor);
                     });
+            });
+            it('trigger job for database cleanup', function(done) {
+                testUtils.triggerJobToRun("api:deletionManagerJob", done);
             });
         });
     });
@@ -479,6 +485,9 @@ describe('Bulk writing. Tests against data provided by aggregator.', function() 
                         ob.should.have.property('result', 'Success');
                         setTimeout(done, 1000 * testUtils.testScalingFactor);
                     });
+            });
+            it('trigger job for database cleanup', function(done) {
+                testUtils.triggerJobToRun("api:deletionManagerJob", done);
             });
         });
     });

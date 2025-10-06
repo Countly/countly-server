@@ -179,7 +179,7 @@ var testUtils = function testUtils() {
             .end(async function(err, res) {
                 console.log(res.text);
 
-                var retries = 10;
+                var retries = 9;
                 for (var i = 0; i < retries; i++) {
                     //do query to check if deletions are done
                     var del = await self.db.collection("deletion_manager").count({});
@@ -188,14 +188,13 @@ var testUtils = function testUtils() {
                         i = retries;
                     }
                     else {
-                        if(i === 0) {
+                        if (i === 0) {
                             //Remove after we make jobs endpoint work normally.
                             self.db.collection("jobConfigs").updateOne({ jobName: jobName}, {$set: {runNow: true}}, function(err, res) {
                             });
                         }
                         console.log("Waiting for deletions to finish...");
                         await new Promise(r => setTimeout(r, 5000));
-
                     }
                 }
                 //

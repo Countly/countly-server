@@ -399,6 +399,7 @@ usage.processSession = function(ob) {
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
                 if (params.app_user.lsid) {
                     try {
+                        params.qstring.events = params.qstring.events || [];
                         usage.updateEndSessionParams(params, params.qstring.events);
                         if (!params.app_user.hadFatalCrash) {
                             userProps.hadAnyFatalCrash = moment(params.time.timestamp).unix();
