@@ -2,6 +2,18 @@
 Dependencies:
 - Remove SQLite
 
+## Version 25.03.X
+Fixes:
+- [alerts] Fix: Migrate alerts to the new events model
+- [oidc] Fix for session state storage
+- [applications] Persist newly created app after page reload
+
+Enterprise Fixes:
+- [users] Update user custom field number formatting
+- [users] Fix condition for custom property update
+- [drill] [survey] Fix duplicate question id
+- [drill] [survey] Display survey answer value instead of id in drill result
+
 ## Version 25.03.21
 Fixes:
 - [feedback] Prevent showing the application when switching between the NPS and Survey pages
