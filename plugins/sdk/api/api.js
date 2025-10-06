@@ -34,6 +34,10 @@ const validOptions = [
     "bom_ra",
     "bom_d",
     "upcl", // user property cache. dart only
+    "ew", // event blacklist dart only
+    "upw", // user property whitelist dart only
+    "sw", // segment whitelist dart only
+    "esw", // event segment whitelist dart only
     "eb", // event blacklist dart only
     "upb", // user property blacklist dart only
     "sb", // segment blacklist dart only
