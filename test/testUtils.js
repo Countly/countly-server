@@ -199,7 +199,13 @@ var testUtils = function testUtils() {
         request.get("/jobs/i?jobName=" + encodeURIComponent(jobName) + "&action=runNow&api_key=" + props.API_KEY_ADMIN)
             .expect(200)
             .end(function(err, res) {
-                console.log(res.text);
+                if (res && res.text) {
+                    console.log(res.text);
+                }
+                else {
+                    console.log("No response text");
+                    console.log(JSON.stringify(res));
+                }
                 recheckDeletion(9, self.db, callback);
             });
     };
