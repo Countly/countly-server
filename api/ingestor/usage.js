@@ -304,6 +304,63 @@ usage.returnRequestMetrics = function(params) {
     return params.collectedMetrics;
 };
 
+usage.updateEndSessionParams = function(params, eventList, session_duration) {
+    var user = params.app_user;
+    if (!user || !eventList || !Array.isArray(eventList)) {
+        return;
+    }
+    const up_extra = { av_prev: params.app_user.av, p_prev: params.app_user.p };
+    if (params.app_user.hadFatalCrash) {
+        up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
+    }
+    if (params.app_user.hadAnyFatalCrash) {
+        up_extra.hadAnyFatalCrash = params.app_user.hadAnyFatalCrash;
+    }
+    if (params.app_user.hadNonfatalCrash) {
+        up_extra.hadNonfatalCrash = params.app_user.hadNonfatalCrash;
+    }
+    if (params.app_user.hadAnyNonfatalCrash) {
+        up_extra.hadAnyNonfatalCrash = params.app_user.hadAnyNonfatalCrash;
+    }
+
+    var drill_doc = {
+        "key": "[CLY]_session",
+        "lsid": user.lsid,
+        "segmentation": user.lsparams,
+        "dur": ((user.sd || 0) + (session_duration || 0)),
+        "count": 1,
+        "up_extra": up_extra
+    };
+    var lasts = (user.ls * 1000);
+    let idsplit = user.lsid.split("_");
+    if (idsplit[3] && idsplit[3].length === 13) {
+        lasts = parseInt(idsplit[3]);
+    }
+    drill_doc._id = params.app_id + "_" + user.uid + "_" + user.lsid;
+    drill_doc.timestamp = lasts;
+    drill_doc.segmentation.ended = "true";
+    eventList.push(drill_doc);
+
+    //Flush last view stored for user
+    if (user.last_view) {
+        user.last_view.segments = user.last_view.segments || {};
+        user.last_view.segments.exit = 1;
+        if (user.vc < 2) {
+            user.last_view.segments.bounce = 1;
+        }
+        var lastViewDoc = {
+            "key": "[CLY]_view", //Will be renamed to [CLY]_view_update before inserting to drill
+            "name": user.last_view.name,
+            "segmentation": user.last_view.segments,
+            "dur": user.last_view.duration || 0,
+            "_id": (user.last_view._idv ? (params.app_id + "_" + user.uid + '_' + user.last_view._idv + '_up') : (user.lvid + '_up')),
+            "timestamp": user.last_view.ts,
+            "_system_auto_added": true
+        };
+        eventList.push(lastViewDoc);
+    }
+};
+
 usage.processSession = function(ob) {
     var params = ob.params;
     var userProps = {};
@@ -333,7 +390,6 @@ usage.processSession = function(ob) {
             delete params.qstring.begin_session;//do not start a new session.
         }
         else {
-
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
                 params.qstring.end_session = {"lsid": ob.params.app_user.lsid, "ls": ob.params.app_user.ls, "sd": ob.params.app_user.sd};
             }
@@ -341,35 +397,10 @@ usage.processSession = function(ob) {
             userProps.lsid = params.request_id;
 
             if (params.app_user[common.dbUserMap.has_ongoing_session]) {
-                var drill_updates = {};
                 if (params.app_user.lsid) {
-                    if (params.app_user.sd > 0) {
-                        drill_updates.dur = params.app_user.sd;
-                    }
-                    if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
-                        drill_updates.custom = JSON.parse(JSON.stringify(params.app_user.custom));
-                    }
                     try {
-                        var lasts = (params.app_user.ls * 1000);
-                        let idsplit = params.app_user.lsid.split("_");
-                        if (idsplit[3] && idsplit[3].length === 13) {
-                            lasts = parseInt(idsplit[3]);
-                        }
                         params.qstring.events = params.qstring.events || [];
-                        const up_extra = { av_prev: params.app_user.av };
-                        if (params.app_user.hadFatalCrash) {
-                            up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
-                        }
-                        if (params.app_user.hadAnyFatalCrash) {
-                            up_extra.hadAnyFatalCrash = params.app_user.hadAnyFatalCrash;
-                        }
-                        if (params.app_user.hadNonfatalCrash) {
-                            up_extra.hadNonfatalCrash = params.app_user.hadNonfatalCrash;
-                        }
-                        if (params.app_user.hadAnyNonfatalCrash) {
-                            up_extra.hadAnyNonfatalCrash = params.app_user.hadAnyNonfatalCrash;
-                        }
-
+                        usage.updateEndSessionParams(params, params.qstring.events);
                         if (!params.app_user.hadFatalCrash) {
                             userProps.hadAnyFatalCrash = moment(params.time.timestamp).unix();
                         }
@@ -384,15 +415,6 @@ usage.processSession = function(ob) {
                             userProps.hadNonfatalCrash = false;
                         }
 
-                        params.qstring.events.unshift({
-                            "_id": params.app_user.lsid,
-                            "key": "[CLY]_session",
-                            "segmentation": params.app_user.lsparams || { ended: "true" },
-                            "dur": (drill_updates.dur || 0),
-                            "count": 1,
-                            "timestamp": lasts,
-                            up_extra,
-                        });
                     }
                     catch (ex) {
                         log.e("Error adding previous session end event: " + ex);
@@ -417,7 +439,13 @@ usage.processSession = function(ob) {
             if (!update.$inc) {
                 update.$inc = {};
             }
+            if (!update.$unset) {
+                update.$unset = {};
+            }
+            delete params.app_user.last_view;
+            update.$unset.last_view = "";
             update.$inc.sc = 1;
+
         }
     }
     else if (params.qstring.end_session && params.app_user && params.app_user[common.dbUserMap.has_ongoing_session]) {
@@ -426,53 +454,11 @@ usage.processSession = function(ob) {
             userProps[common.dbUserMap.last_end_session_timestamp] = params.time.timestamp;
         }
         else {
-            var drill_updates2 = {};
             if (params.app_user.lsid) {
-                drill_updates2.dur = (params.app_user.sd || 0) + (session_duration || 0);
-                if (drill_updates2.dur === 0) {
-                    delete drill_updates2.dur;
-                }
-                if (params.app_user.custom && Object.keys(params.app_user.custom).length > 0) {
-                    drill_updates2.custom = JSON.parse(JSON.stringify(params.app_user.custom));
-                }
-                drill_updates2["sg.ended"] = "true";
-                drill_updates2.lu = new Date();
-                //if (drill_updates2.dur || drill_updates2.custom) {
-                //ob.drill_updates.push({"updateOne": {"filter": {"_id": params.app_user.lsid}, "update": {"$set": drill_updates2}}});
-                //}
-                var lasts2 = (params?.app_user?.ls * 1000);
-                let idsplit = params.app_user.lsid.split("_");
-                if (idsplit[3] && idsplit[3].length === 13) {
-                    lasts2 = parseInt(idsplit[3]);
-                }
-
                 params.qstring.events = params.qstring.events || [];
-                const up_extra = { av_prev: params.app_user.av };
-                if (params.app_user.hadFatalCrash) {
-                    up_extra.hadFatalCrash = params.app_user.hadFatalCrash;
-                }
-                if (params.app_user.hadAnyFatalCrash) {
-                    up_extra.hadAnyFatalCrash = params.app_user.hadAnyFatalCrash;
-                }
-                if (params.app_user.hadNonfatalCrash) {
-                    up_extra.hadNonfatalCrash = params.app_user.hadNonfatalCrash;
-                }
-                if (params.app_user.hadAnyNonfatalCrash) {
-                    up_extra.hadAnyNonfatalCrash = params.app_user.hadAnyNonfatalCrash;
-                }
-
-                params.qstring.events.unshift({
-                    "_id": params.app_user.lsid,
-                    "key": "[CLY]_session",
-                    "segmentation": params.app_user.lsparams || { ended: "true" },
-                    "dur": (drill_updates2.dur || 0),
-                    "count": 1,
-                    "timestamp": lasts2,
-                    up_extra,
-                });
-
+                console.log("Ending previous session" + params.app_user.lsid);
+                usage.updateEndSessionParams(params, params.qstring.events, session_duration);
             }
-            userProps.data = {};
         }
         if (params.app_user[common.dbUserMap.has_ongoing_session]) {
             if (!update.$unset) {

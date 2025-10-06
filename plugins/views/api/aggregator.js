@@ -327,5 +327,4 @@ const crypto = require('crypto');
             log.e(err);
         }
     });
-
 }());

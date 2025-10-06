@@ -54,6 +54,9 @@ function transformToKafkaEventFormat(doc) {
     if (doc.sg && typeof doc.sg === 'object') {
         result.sg = doc.sg;
     }
+    if (doc.up_extra && typeof doc.up_extra === 'object') {
+        result.up_extra = doc.up_extra;
+    }
 
     // Optional date field
     if (doc.lu !== undefined && doc.lu !== null) {

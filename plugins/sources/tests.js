@@ -105,6 +105,9 @@ describe('Testing Store metrics', function() {
                     setTimeout(done, 100 * testUtils.testScalingFactor);
                 });
         });
+        it('trigger job for database cleanup', function(done) {
+            testUtils.triggerJobToRun("api:deletionManagerJob", done);
+        });
     });
     describe('verify empty sources', function() {
         it('should have no sources', function(done) {

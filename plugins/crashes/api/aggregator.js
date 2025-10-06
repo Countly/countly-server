@@ -513,8 +513,10 @@ const recalculateStats = async function(currEvent) {
                                 cd: '$fullDocument.cd',
                                 e: '$fullDocument.e',
                                 n: '$fullDocument.n',
-                                sg: '$fullDocument.sg',
                                 ts: '$fullDocument.ts',
+                                up_extra: '$fullDocument.up_extra',
+                                up: '$fullDocument.up',
+                                sg: '$fullDocument.sg'
                             },
                         },
                     ],

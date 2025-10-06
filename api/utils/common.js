@@ -2989,7 +2989,15 @@ common.mergeQuery = function(ob1, ob2) {
             if (!ob1[key]) {
                 ob1[key] = ob2[key];
             }
-            else if (key === "$set" || key === "$setOnInsert" || key === "$unset") {
+            else if (key === "$set" || key === "$setOnInsert") {
+                for (let val in ob2[key]) {
+                    ob1[key][val] = ob2[key][val];
+                    if (ob1.$unset && typeof ob1.$unset[val] !== "undefined") {
+                        delete ob1.$unset[val];
+                    }
+                }
+            }
+            else if (key === "$unset") {
                 for (let val in ob2[key]) {
                     ob1[key][val] = ob2[key][val];
                 }

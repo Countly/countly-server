@@ -1,6 +1,7 @@
 var should = require('should');
 var countlyConfig = require("../frontend/express/config.js");
 var common = require('../api/utils/common.js');
+const reqq = require('supertest');
 should.Assertion.add('haveSameItems', function(other) {
     this.params = { operator: 'to be have same items' };
 
@@ -171,19 +172,35 @@ var testUtils = function testUtils() {
     };
 
     this.triggerJobToRun = function(jobName, callback) {
-        this.db.collection("jobConfigs").updateOne({ jobName: jobName}, {$set: {runNow: true}}, function(err, res) {
-            if (err) {
-                callback(err);
-            }
-            else {
-                if (res.result.nModified === 0) {
-                    callback("Job not found");
+        var request = reqq.agent(this.url);
+        var self = this;
+        request.get("/jobs/i?jobName=" + encodeURIComponent(jobName) + "&action=runNow&api_key=" + props.API_KEY_ADMIN)
+            .expect(200)
+            .end(async function(err, res) {
+                console.log(res.text);
+
+                var retries = 9;
+                for (var i = 0; i < retries; i++) {
+                    //do query to check if deletions are done
+                    var del = await self.db.collection("deletion_manager").count({});
+                    console.log("Deletions left: " + del);
+                    if (!del) {
+                        i = retries;
+                    }
+                    else {
+                        if (i === 0) {
+                            //Remove after we make jobs endpoint work normally.
+                            self.db.collection("jobConfigs").updateOne({ jobName: jobName}, {$set: {runNow: true}}, function(err, res) {
+                            });
+                        }
+                        console.log("Waiting for deletions to finish...");
+                        await new Promise(r => setTimeout(r, 5000));
+                    }
                 }
-                else {
-                    callback();
-                }
-            }
-        });
+                //
+                callback();
+
+            });
     };
 
     this.triggerMergeProcessing = function(callback) {
