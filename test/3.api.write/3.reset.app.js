@@ -59,9 +59,7 @@ describe('Reseting app', function() {
                 });
         });
         it('Trigger deletion job to run', function(done) {
-            testUtils.triggerJobToRun("api:deletionManagerJob", function() {
-                setTimeout(done, 5000);
-            });
+            testUtils.triggerJobToRun("api:deletionManagerJob", done);
         });
     });
 });
