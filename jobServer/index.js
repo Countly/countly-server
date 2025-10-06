@@ -62,6 +62,7 @@ if (require.main === module) {
      * @param {http.ServerResponse} res - The response object
      */
     const handleRequest = function(req, res) {
+        console.log("Got request", req);
         const params = {
             qstring: {},
             res: res,
