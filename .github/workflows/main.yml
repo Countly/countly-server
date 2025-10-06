@@ -251,9 +251,8 @@ jobs:
         working-directory: /opt/countly
         run: |
           cat /etc/nginx/sites-enabled/default
-          cat /etc/nginx/nginx.conf
-          cat /etc/nginx/sites-enabled/default
-          ls -l /var/log/
+          ls -l /var/log/nginx
+          cat /var/log/nginx/error.log
 
   ui-tests:
     runs-on: ubuntu-latest
