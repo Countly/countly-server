@@ -9,6 +9,7 @@ Enterprise Fixes:
 - [users] Fix condition for custom property update
 - [drill] [survey] Fix duplicate question id
 - [drill] [survey] Display survey answer value instead of id in drill result
+- [cohorts] Fix query transformation for chr
 
 
 ## Version 25.03.21
