@@ -102,9 +102,18 @@ class KafkaEventSource extends EventSourceInterface {
         // Create Kafka dependencies - consistent with ChangeStreamEventSource pattern
         this.#log.d(`[${this.#name}] Creating Kafka client and consumer`);
         this.#kafkaClient = new this.#KafkaClient();
+        if (this.#kafkaOptions?.partitionsConsumedConcurrently && this.#kafkaOptions.partitionsConsumedConcurrently > 1) {
+            this.#log.w(`[${this.#name}] Forcing partitionsConsumedConcurrently=1 to match blocking ack model`);
+        }
+        // Important: enforce single-partition processing to match the blocking
+        // acknowledge() flow of this wrapper. With >1 concurrent partitions,
+        // multiple Kafka handlers would race on shared state (#currentBatch/#batchProcessed)
+        // and could deadlock. If higher concurrency is desired, this class must
+        // be refactored to maintain an internal queue + per-batch resolvers.
         this.#kafkaConsumer = new this.#KafkaConsumer(this.#kafkaClient, this.#name, {
             topics: this.#kafkaOptions.topics || [this.#countlyConfig.kafka?.drillEventsTopic || 'countly-drill-events'],
-            ...this.#kafkaOptions
+            ...this.#kafkaOptions,
+            partitionsConsumedConcurrently: 1,
         });
 
         // Start the consumer with blocking handler
