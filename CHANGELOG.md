@@ -2,6 +2,7 @@
 Enterprise Fixes:
 - [users] Update user custom field number formatting
 - [users] Fix condition for custom property update
+- [cohorts] Fix query transformation for chr
 
 
 ## Version 24.05.40
